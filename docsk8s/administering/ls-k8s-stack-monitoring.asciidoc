@@ -1,7 +1,7 @@
 [[ls-k8s-stack-monitoring]]
 === Set up stack monitoring
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 In order to prepare your environment to be production ready, you'll need to set up secure communication between each of your Elastic resources.
 

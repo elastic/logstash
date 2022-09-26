@@ -1,7 +1,7 @@
 [[ls-k8s-recipes]]
 == Recipes
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 We've compiled a number of recipes to support common use cases for running Logstash in Kubernetes.
 

@@ -7,7 +7,7 @@ include::{docs-root}/shared/attributes.asciidoc[]
 [[introduction]]
 == Introduction
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 This guide helps you to run and work with {ls} in a Kubernetes environment.
 

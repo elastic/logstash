@@ -1,7 +1,7 @@
 [[sample-configuration-files]]
 === Sample configuration files
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 These configuration files are used in the <<ls-k8s-quick-start,{ls} and Kubernetes quick start>>. You can use them as templates when you configure Logstash together with the rest of the Elastic Stack in a Kubernetes environment.
 

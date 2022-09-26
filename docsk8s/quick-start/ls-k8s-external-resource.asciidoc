@@ -1,7 +1,7 @@
 [[ls-k8s-external-resource]]
 === Ship to an external resource
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 The <<ls-k8s-quick-start,{ls} and Kubernetes quick start>> guide demonstrates how to send Kubernetes monitoring data into an Elasticsearch cluster in your Kubernetes environment.
 

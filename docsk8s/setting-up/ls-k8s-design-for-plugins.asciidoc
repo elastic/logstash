@@ -1,7 +1,7 @@
 [[ls-k8s-design-for-plugins]]
 === Design your installation based on plugin usage
 
-preview::[]
+WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 Our recommandations for your {ls} Kubernetes installation vary depending on the types of plugins that you plan to use, and their respective requirements.
 
