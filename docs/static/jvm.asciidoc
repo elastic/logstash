@@ -5,7 +5,7 @@
 {ls} requires one of these versions:
 
 * Java 11
-* Java 17 (default, see <<jdk17-upgrade>> for settings info)
+* Java 17 (default). Check out <<jdk17-upgrade>> for settings info.
 
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
