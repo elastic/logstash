@@ -22,7 +22,7 @@ This section includes the following topics:
 Before you start, there are a few things you'll need:
 
 . link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
-. link:https://minikube.sigs.k8s.io[Minikube] - Easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
+. A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
 . A link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-qs.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
 [float]
