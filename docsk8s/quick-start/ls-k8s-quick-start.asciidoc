@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-This guide describes how to set up {ls} to monitor a Kubernetes environment running on Minikube. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
+This guide describes how to set up {ls} to monitor a Kubernetes environment. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
 
 This section includes the following topics:
 
