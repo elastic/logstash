@@ -315,7 +315,7 @@ tasks.register("installDefaultGems") {
     }
 }
 
-tasks.register("installTestGems") {
+tasks.register("installDevelopmentGems") {
     dependsOn bootstrap
     doLast {
       rake(projectDir, buildDir, 'plugin:install-development-dependencies')
@@ -399,7 +399,7 @@ project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
       dependsOn copyPluginTestAlias
-      dependsOn installTestGems
+      dependsOn installDevelopmentGems
     }
   }
 }
@@ -866,7 +866,7 @@ if (System.getenv('OSS') != 'true') {
   project(":logstash-xpack") {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
-        dependsOn installTestGems
+        dependsOn installDevelopmentGems
       }
     }
   }

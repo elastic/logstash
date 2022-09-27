@@ -67,6 +67,28 @@ module LogStash module Instrument
       end
     end
 
+    ##
+    # Ensures that a metric on the provided `namespaces_path` with the provided `key`
+    # is registered, using the provided `metric_instance` IFF it is not already present.
+    #
+    # @param namespaces_path [Array<Symbol>]
+    # @param key [Symbol]
+    # @param metric_instance [Metric]
+    #
+    # @return [Boolean] true IFF the provided `metric_instance` was registered
+    def register?(namespaces_path, key, metric_instance)
+      registered = false
+
+      # Relies on MetricStore#fetch_or_store yielding the block
+      # EXACTLY ONCE to the winner in a race-condition.
+      @metric_store.fetch_or_store(namespaces_path, key) do
+        registered = true
+        metric_instance
+      end
+
+      registered
+    end
+
     # Snapshot the current Metric Store and return it immediately,
     # This is useful if you want to get access to the current metric store without
     # waiting for a periodic call.

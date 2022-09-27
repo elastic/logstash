@@ -73,6 +73,15 @@ describe LogStash::Agent do
       expect(mval(:stats, :reloads, :successes)).to eq(0)
       expect(mval(:stats, :reloads, :failures)).to eq(0)
     end
+
+    it "makes the top-level flow metrics available" do
+      expect(mval(:stats, :flow, :input_throughput)).to be_a_kind_of(java.util.Map)
+      expect(mval(:stats, :flow, :output_throughput)).to be_a_kind_of(java.util.Map)
+      expect(mval(:stats, :flow, :filter_throughput)).to be_a_kind_of(java.util.Map)
+      expect(mval(:stats, :flow, :queue_backpressure)).to be_a_kind_of(java.util.Map)
+      expect(mval(:stats, :flow, :worker_concurrency)).to be_a_kind_of(java.util.Map)
+    end
+
   end
 
   context "when we try to start one pipeline" do
@@ -245,14 +254,16 @@ describe LogStash::Agent do
         # so we try a few times
         try(20) do
           expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipeline stats should exist"
+          expect { mhash(:stats, :pipelines, :main, :flow) }.not_to raise_error , "Events pipeline stats should exist"
           expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
         end
 
         expect(subject.converge_state_and_update.success?).to be_truthy
 
         # We do have to retry here, since stopping a pipeline is a blocking operation
-        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error
-        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error
+        expect { mhash(:stats, :pipelines, :main, :plugins) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :flow) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
+        expect { mhash(:stats, :pipelines, :main, :events) }.to raise_error LogStash::Instrument::MetricStore::MetricNotFound
       end
     end
   end

@@ -87,7 +87,21 @@ describe LogStash::Api::Modules::NodeStats do
         "percent"=>Numeric,
         # load_average is not supported on Windows, set it below
       }
-    },
+   },
+   "events" => {
+      "duration_in_millis" => Numeric,
+      "in" => Numeric,
+      "filtered" => Numeric,
+      "out" => Numeric,
+      "queue_push_duration_in_millis" => Numeric
+   },
+   "flow" => {
+      "output_throughput" => Hash,
+      "filter_throughput" => Hash,
+      "queue_backpressure" => Hash,
+      "worker_concurrency" => Hash,
+      "input_throughput" => Hash
+   },
    "pipelines" => {
      "main" => {
        "events" => {
@@ -96,6 +110,13 @@ describe LogStash::Api::Modules::NodeStats do
          "filtered" => Numeric,
          "out" => Numeric,
          "queue_push_duration_in_millis" => Numeric
+       },
+       "flow" => {
+         "output_throughput" => Hash,
+         "filter_throughput" => Hash,
+         "queue_backpressure" => Hash,
+         "worker_concurrency" => Hash,
+         "input_throughput" => Hash
        },
        "plugins" => {
           "inputs" => Array,

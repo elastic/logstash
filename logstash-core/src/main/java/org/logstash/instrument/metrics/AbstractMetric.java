@@ -23,6 +23,8 @@ package org.logstash.instrument.metrics;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Objects;
+
 /**
  * Abstract implementation of a {@link Metric}. All metrics should subclass this.
  *
@@ -48,8 +50,7 @@ public abstract class AbstractMetric<T> implements Metric<T> {
 
     @Override
     public String toString() {
-        return String.format("%s -  name: %s value:%s", this.getClass().getName(), this.name, getValue() == null ? "null" :
-                getValue().toString());
+        return String.format("%s -  name: %s value:%s", this.getClass().getName(), this.name, Objects.requireNonNullElse(getValue(),"null"));
     }
 
     @Override

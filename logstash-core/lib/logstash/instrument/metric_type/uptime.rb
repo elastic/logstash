@@ -15,26 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/instrument/metric_type/counter"
-require "logstash/instrument/metric_type/gauge"
-require "logstash/instrument/metric_type/uptime"
+java_import org.logstash.instrument.metrics.UptimeMetric
 
-module LogStash module Instrument
-  module MetricType
-    METRIC_TYPE_LIST = {
-      :counter => LogStash::Instrument::MetricType::Counter,
-      :gauge   => LogStash::Instrument::MetricType::Gauge,
-      :uptime  => LogStash::Instrument::MetricType::Uptime,
-    }.freeze
+module LogStash module Instrument module MetricType
+  class Uptime < UptimeMetric
 
-    # Use the string to generate a concrete class for this metrics
-    #
-    # @param [String] The name of the class
-    # @param [Array] Namespaces list
-    # @param [String] The metric key
-    # @raise [NameError] If the class is not found
-    def self.create(type, namespaces, key)
-      METRIC_TYPE_LIST[type].new(namespaces, key)
+    def initialize(namespaces, key)
+      super(key.to_s)
     end
+
+    def execute(action, value = nil)
+      fail("Unsupported operation `action` on Uptime Metric")
+    end
+
   end
-end; end
+end; end; end

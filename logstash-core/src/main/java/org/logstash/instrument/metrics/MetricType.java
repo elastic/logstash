@@ -32,6 +32,11 @@ public enum MetricType {
      * A counter backed by a {@link Long} type
      */
     COUNTER_LONG("counter/long"),
+
+    /**
+     * A counter backed by a {@link Number} type that includes decimal precision
+     */
+    COUNTER_DECIMAL("counter/decimal"),
     /**
      * A gauge backed by a {@link String} type
      */
@@ -55,7 +60,13 @@ public enum MetricType {
     /**
      * A gauge backed by a {@link org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp} type. Note - Java consumers should not use this, exist for legacy Ruby code.
      */
-    GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp");
+    GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp"),
+
+    /**
+     * A flow-rate {@link FlowMetric}, instantiated with one or more backing {@link Metric}{@code <Number>}.
+     */
+    FLOW_RATE("flow/rate"),
+    ;
 
     private final String type;
 
