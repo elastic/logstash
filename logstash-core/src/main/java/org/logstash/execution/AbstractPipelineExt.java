@@ -31,10 +31,12 @@ import java.time.temporal.TemporalUnit;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.codec.binary.Hex;
@@ -43,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyBasicObject;
+import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
@@ -58,13 +61,16 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
+import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.common.io.QueueStorageType;
+import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.ConfigCompiler;
 import org.logstash.config.ir.InvalidIRException;
 import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
+import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
@@ -75,6 +81,9 @@ import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.plugins.ConfigVariableExpander;
+import org.logstash.plugins.factory.ExecutionContextFactoryExt;
+import org.logstash.plugins.factory.PluginFactoryExt;
+import org.logstash.plugins.factory.PluginMetricsFactoryExt;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
 
@@ -83,7 +92,10 @@ import static org.logstash.instrument.metrics.UptimeMetric.ScaleUnits.MILLISECON
 import static org.logstash.instrument.metrics.UptimeMetric.ScaleUnits.SECONDS;
 
 /**
- * JRuby extension to provide ancestor class for Ruby's Pipeline and JavaPipeline classes.
+ * JRuby extension to provide ancestor class for the ruby-defined {@code LogStash::JavaPipeline} class.
+ *
+ * <p>NOTE: Although this class' name implies that it is "abstract", we instantiated it directly
+ *          as a lightweight temporary-scoped pipeline in the ruby-defined {@code LogStash::PipelineAction::Reload}
  * */
 @JRubyClass(name = "AbstractPipeline")
 public class AbstractPipelineExt extends RubyBasicObject {
@@ -104,6 +116,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @SuppressWarnings("serial")
     protected PipelineIR lir;
+    private transient CompiledPipeline lirExecution;
 
     private final RubyString ephemeralId = RubyUtil.RUBY.newString(UUID.randomUUID().toString());
 
@@ -135,13 +148,46 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private QueueReadClientBase filterQueueClient;
 
     private ArrayList<FlowMetric> flowMetrics = new ArrayList<>();
+    private @SuppressWarnings("rawtypes") RubyArray inputs;
+    private @SuppressWarnings("rawtypes") RubyArray filters;
+    private @SuppressWarnings("rawtypes") RubyArray outputs;
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
+    @JRubyMethod(required = 4)
+    public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
+            throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
+        initialize(context, args[0], args[1], args[2]);
+        lirExecution = new CompiledPipeline(
+                lir,
+                new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
+                        lir,
+                        new PluginMetricsFactoryExt(
+                                context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
+                        ).initialize(context, pipelineId(), metric()),
+                        new ExecutionContextFactoryExt(
+                                context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
+                        ).initialize(context, args[3], this, dlqWriter(context)),
+                        RubyUtil.FILTER_DELEGATOR_CLASS
+                ),
+                getSecretStore(context)
+        );
+        inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
+        filters = RubyArray.newArray(context.runtime, lirExecution.filters());
+        outputs = RubyArray.newArray(context.runtime, lirExecution.outputs());
+        if (getSetting(context, "config.debug").isTrue() && LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Compiled pipeline code for pipeline {} : {}", pipelineId(),
+                    lir.getGraph().toString()
+            );
+        }
+        return this;
+    }
+
     @JRubyMethod
-    public final AbstractPipelineExt initialize(final ThreadContext context,
+    private AbstractPipelineExt initialize(final ThreadContext context,
         final IRubyObject pipelineConfig, final IRubyObject namespacedMetric,
         final IRubyObject rubyLogger)
         throws NoSuchAlgorithmException {
@@ -269,6 +315,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return JavaUtil.convertJavaToUsableRubyObject(context.runtime, lir);
     }
 
+    @JRubyMethod(name = "lir_execution")
+    public IRubyObject lirExecution(final ThreadContext context) {
+        return JavaUtil.convertJavaToUsableRubyObject(context.runtime, lirExecution);
+    }
+
     @JRubyMethod(name = "dlq_writer")
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
@@ -373,6 +424,29 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "configured_as_reloadable?")
     public final IRubyObject isConfiguredReloadable(final ThreadContext context) {
         return getSetting(context, "pipeline.reloadable");
+    }
+
+    @JRubyMethod(name = "reloadable?")
+    public RubyBoolean isReloadable(final ThreadContext context) {
+        return isConfiguredReloadable(context).isTrue() && reloadablePlugins(context).isTrue()
+                ? context.tru : context.fals;
+    }
+
+    @JRubyMethod(name = "reloadable_plugins?")
+    public RubyBoolean reloadablePlugins(final ThreadContext context) {
+        return nonReloadablePlugins(context).isEmpty() ? context.tru : context.fals;
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @JRubyMethod(name = "non_reloadable_plugins")
+    public RubyArray nonReloadablePlugins(final ThreadContext context) {
+        final RubyArray result = RubyArray.newArray(context.runtime);
+        Stream.of(inputs, outputs, filters).flatMap(
+                plugins -> ((Collection<IRubyObject>) plugins).stream()
+        ).filter(
+                plugin -> !plugin.callMethod(context, "reloadable?").isTrue()
+        ).forEach(result::add);
+        return result;
     }
 
     @JRubyMethod(name = "collect_stats")
@@ -536,6 +610,17 @@ public class AbstractPipelineExt extends RubyBasicObject {
             .initialize(inputQueueClient, pipelineId.asJavaString(), metric, pluginId);
     }
 
+    public QueueWriter getQueueWriter(final String inputName) {
+        return new JRubyWrappedWriteClientExt(RubyUtil.RUBY, RubyUtil.WRAPPED_WRITE_CLIENT_CLASS)
+                .initialize(
+                        RubyUtil.RUBY.getCurrentContext(),
+                        new IRubyObject[]{
+                                inputQueueClient(), pipelineId().convertToString().intern(),
+                                metric(), RubyUtil.RUBY.newSymbol(inputName)
+                        }
+                );
+    }
+
     @JRubyMethod(name = "pipeline_source_details", visibility = Visibility.PROTECTED)
     @SuppressWarnings("rawtypes")
     public RubyArray getPipelineSourceDetails(final ThreadContext context) {
@@ -588,5 +673,29 @@ public class AbstractPipelineExt extends RubyBasicObject {
             dlqMetric = metric.namespace(context, pipelineNamespacedPath(DLQ_KEY));
         }
         return dlqMetric;
+    }
+
+    @JRubyMethod
+    @SuppressWarnings("rawtypes")
+    public RubyArray inputs() {
+        return inputs;
+    }
+
+    @JRubyMethod
+    @SuppressWarnings("rawtypes")
+    public RubyArray filters() {
+        return filters;
+    }
+
+    @JRubyMethod
+    @SuppressWarnings("rawtypes")
+    public RubyArray outputs() {
+        return outputs;
+    }
+
+    @JRubyMethod(name = "shutdown_requested?")
+    public IRubyObject isShutdownRequested(final ThreadContext context) {
+        // shutdown_requested? MUST be implemented in the concrete implementation of this class.
+        throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
     }
 }
