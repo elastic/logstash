@@ -190,6 +190,12 @@ describe "Test Monitoring API" do
         expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
         expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
         expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
+
+        queue_flow_stats = queue_stats.dig("flow")
+        expect(queue_flow_stats).to_not be_nil
+        expect(queue_flow_stats).to include(
+                                 'growth_bytes' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                 'growth_events' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0))
       else
         expect(queue_stats["type"]).to eq("memory")
       end

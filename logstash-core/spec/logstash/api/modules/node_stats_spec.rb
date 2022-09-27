@@ -124,6 +124,25 @@ describe LogStash::Api::Modules::NodeStats do
           "filters" => Array,
           "outputs" => Array,
        },
+       "queue" => {
+         "capacity" => {
+           "page_capacity_in_bytes" => Numeric,
+           "max_queue_size_in_bytes" => Numeric,
+           "queue_size_in_bytes" => Numeric,
+           "max_unread_events" => Numeric
+         },
+         "events" => Numeric,
+         "type" => String,
+         "data" => {
+           "storage_type" => String,
+           "path" => String,
+           "free_space_in_bytes" => Numeric
+         },
+         "flow" => {
+           "growth_bytes" => Hash,
+           "growth_events" => Hash
+         }
+       }
      }
    },
    "reloads" => {

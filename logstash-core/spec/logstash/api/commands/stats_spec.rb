@@ -181,6 +181,26 @@ describe LogStash::Api::Commands::Stats do
                                                  :input_throughput
                                                )
       end
+      it "returns queue metric information" do
+        expect(report[:main][:queue].keys).to include(
+                                               :capacity,
+                                               :events,
+                                               :type,
+                                               :data,
+                                               :flow)
+        expect(report[:main][:queue][:capacity].keys).to include(
+                                                           :page_capacity_in_bytes,
+                                                           :max_queue_size_in_bytes,
+                                                           :queue_size_in_bytes,
+                                                           :max_unread_events)
+        expect(report[:main][:queue][:data].keys).to include(
+                                                           :storage_type,
+                                                           :path,
+                                                           :free_space_in_bytes)
+        expect(report[:main][:queue][:flow].keys).to include(
+                                                       :growth_bytes,
+                                                       :growth_events)
+      end
     end
     context "when using multiple pipelines" do
       before(:each) do

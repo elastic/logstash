@@ -43,7 +43,9 @@ shared_context "api setup" do
     @agent = make_test_agent(settings)
     @agent.execute
     @pipelines_registry = LogStash::PipelinesRegistry.new
-    pipeline_config = mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }")
+    main_pipeline_settings = mock_settings
+    main_pipeline_settings.set("queue.type", "persisted")
+    pipeline_config = mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }", main_pipeline_settings)
     pipeline_creator =  LogStash::PipelineAction::Create.new(pipeline_config, @agent.metric)
     expect(pipeline_creator.execute(@agent, @pipelines_registry)).to be_truthy
     pipeline_config = mock_pipeline_config(:secondary, "input { generator { id => '123' } } output { null {} }")
