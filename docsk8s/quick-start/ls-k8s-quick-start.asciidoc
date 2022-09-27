@@ -149,9 +149,9 @@ logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 
 [float]
 [[qs-view-monitoring-data]]
-=== View the monitoring data
+=== View the stack monitoring data
 
-Now that your monitoring data is flowing, let's access it in {kib}. 
+Now that your stack monitoring data is flowing, let's access it in {kib}. 
 
 First, enable port forwarding for the {kib} service on port `5601`. Open a second shell window and run the following:
 
