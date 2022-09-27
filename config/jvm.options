@@ -47,8 +47,6 @@
 
 # Turn on JRuby invokedynamic
 -Djruby.compile.invokedynamic=true
-# Force Compilation
--Djruby.jit.threshold=0
 
 ## heap dumps
 
