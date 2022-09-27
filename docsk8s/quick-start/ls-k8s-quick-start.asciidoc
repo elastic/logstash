@@ -169,73 +169,9 @@ Log in to {kib} using the `elastic` username and password. To obtain the passwor
 kubectl get secret demo-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 --
 
-Open the {kib} main menu and select **Management**, then **Dev Tools**.
+Open the {kib} main menu and select **Management**, then **Stack Monitoring**.
 
-In the **Console**, get a list of all indexes:
-
-[source,sh]
---
-GET _cat/indices
---
-
-[source,sh]
---
-yellow open kube-apiserver-2022.09.15                       AfR_vGb3SgSVMwV5Rhpx7w 1 1 197 0  70.6kb  70.6kb
-yellow open .ds-.monitoring-es-8-mb-2022.09.15-000001       MHR5bKM-TOyKKvZwh7baFA 1 1 377 0   1.2mb   1.2mb
-yellow open .ds-metricbeat-8.3.2-2022.09.15-000001          Vu5Arre4TvKBWd26K0nBLA 1 1  26 0  16.1kb  16.1kb
-yellow open .ds-.monitoring-logstash-8-mb-2022.09.15-000001 DMZjKo1bRR6nXA4_w4-pRg 1 1 222 0 245.5kb 245.5kb
---
-
-Indices have been created for {es}, {ls}, {metricbeat}, and the Kubernetes API server.
-
-You can run a `_count` query to find out the number of available records from the Kubernetes API server:
-
-[source,sh]
---
-GET kube-apiserver-2022.09.15/_count
---
-
-[source,sh]
---
-{
-  "count": 19,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  }
-}
---
-
-Run a `_search` query to access the records:
-
-[source,txt]
---
-{
-  "took": 1,
-  "timed_out": false,
-  "_shards": {
-    "total": 1,
-    "successful": 1,
-    "skipped": 0,
-    "failed": 0
-  },
-  "hits": {
-    "total": {
-      "value": 24,
-      "relation": "eq"
-    },
-    "max_score": 1,
-    "hits": [
-...
---
-
-Next, you can check the {kib} visualizations.
-
-. Open the {kib} main menu and select **Management**, then **Stack Monitoring**.
-
-. Select the {ls} **Overview**, and under the **Nodes** tab select the link for the {ls} node.
+Select the {ls} **Overview**, and under the **Nodes** tab select the link for the {ls} node.
 
 image::./images/gs-logstash-node-metrics.png[{ls} metrics data in {kib}]
 
