@@ -536,6 +536,20 @@ Additionally, some amount of back-pressure is both _normal_ and _expected_ for p
 
 |===
 
+Each flow stat includes rates for one or more recent windows of time:
+
+// Templates for short-hand notes in the table below
+:flow-stable: pass:quotes[*Stable*]
+
+[%autowidth.stretch]
+|===
+| Flow Window       | Availability   | Definition
+
+| `current`         | {flow-stable}  | the most recent ~10s
+| `lifetime`        | {flow-stable}  | the lifetime of the relevant pipeline or process
+
+|===
+
 [discrete]
 [[pipeline-stats]]
 ==== Pipeline stats
