@@ -27,4 +27,4 @@ mkdir -p build/distributions/dependencies-reports/
 bin/dependencies-report --csv=build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
 echo "GENERATED DEPENDENCIES REPORT"
-shasum build/reports/dependencies-reports/logstash-${STACK_VERSION}.csv
+shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
