@@ -28,3 +28,6 @@ bin/dependencies-report --csv=build/distributions/dependencies-reports/logstash-
 
 echo "GENERATED DEPENDENCIES REPORT"
 shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
+
+echo "UPLOADING TO INTERMEDIATE BUCKET"
+gsutil cp build/logstash-${STACK_VERSION}-darwin-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
