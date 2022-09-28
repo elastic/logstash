@@ -30,6 +30,8 @@ This section summarizes the changes in the following releases:
 [[logstash-8-4-3]]
 === Logstash 8.4.3 Release Notes
 
+No user-facing changes in Logstash core.
+
 [[logstash-8-4-2]]
 === Logstash 8.4.2 Release Notes
 
