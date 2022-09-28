@@ -64,7 +64,7 @@ public class SimpleFlowMetricTest {
         instance.capture();
         final Map<String, Double> ratesAfterSmallAdvanceCapture = instance.getValue();
         assertFalse(ratesAfterNthCapture.isEmpty());
-        assertEquals(Map.of(LIFETIME_KEY, 367.408, CURRENT_KEY, 377.645), ratesAfterSmallAdvanceCapture);
+        assertEquals(Map.of(LIFETIME_KEY, 367.4, CURRENT_KEY, 377.6), ratesAfterSmallAdvanceCapture);
     }
 
     @Test
@@ -98,6 +98,6 @@ public class SimpleFlowMetricTest {
         // ensure that our metrics cover the _available_ data and no more.
         final Map<String, Double> flowMetricValue = flowMetric.getValue();
         assertThat(flowMetricValue, hasEntry("current",         2999.0));
-        assertThat(flowMetricValue, hasEntry("lifetime",        1500.5));
+        assertThat(flowMetricValue, hasEntry("lifetime",        1501.0));
     }
 }
