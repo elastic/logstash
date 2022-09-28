@@ -540,6 +540,7 @@ Each flow stat includes rates for one or more recent windows of time:
 
 // Templates for short-hand notes in the table below
 :flow-stable: pass:quotes[*Stable*]
+:flow-preview: pass:quotes[_Technology Preview_]
 
 [%autowidth.stretch]
 |===
@@ -547,8 +548,16 @@ Each flow stat includes rates for one or more recent windows of time:
 
 | `current`         | {flow-stable}  | the most recent ~10s
 | `lifetime`        | {flow-stable}  | the lifetime of the relevant pipeline or process
+| `last_1_minute`   | {flow-preview} | the most recent ~1 minute
+| `last_5_minutes`  | {flow-preview} | the most recent ~5 minutes
+| `last_15_minutes` | {flow-preview} | the most recent ~15 minutes
+| `last_1_hour`     | {flow-preview} | the most recent ~1 hour
+| `last_24_hours`   | {flow-preview} | the most recent ~24 hours
 
 |===
+
+NOTE: The flow rate windows marked as "Technology Preview" are subject to change without notice.
+      Future releases of {ls} may include more, fewer, or different windows for each rate in response to community feedback.
 
 [discrete]
 [[pipeline-stats]]

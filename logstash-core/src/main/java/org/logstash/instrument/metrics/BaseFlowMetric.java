@@ -136,4 +136,5 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
                 .map((baseline) -> calculateRate(current, baseline))
                 .orElseGet(OptionalDouble::empty);
     }
+
 }

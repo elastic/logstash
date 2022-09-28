@@ -33,6 +33,11 @@ public interface FlowMetric extends Metric<Map<String,Double>> {
     static FlowMetric create(final String name,
                              final Metric<? extends Number> numerator,
                              final Metric<? extends Number> denominator) {
-        return new SimpleFlowMetric(name, numerator, denominator);
+        // INTERNAL-ONLY system property escape hatch
+        switch (System.getProperty("logstash.flowMetric", "extended")) {
+            case "extended": return new ExtendedFlowMetric(name, numerator, denominator);
+            case "simple"  :
+            default        : return new SimpleFlowMetric(name, numerator, denominator);
+        }
     }
 }
