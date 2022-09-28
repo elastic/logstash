@@ -225,14 +225,14 @@ constructor at instantiation time.
 -----
 @Override
 public void close() {
-    this.sourceField = null;
+    // shutdown a resource that was instantiated during the filter initialization phase.
+    this.statefulResource.shutdown();
     return;
 }
 -----
 
-After a pipeline has been shut down, its filters are closed.
-If your plugin holds additional resources such as database connections,
-implementing this method will allow you to free up those resources.
+Filter plugins can use additional resources to perform operations, such as creating new database connections.
+Implementing the `close` method will allow the plugins to free up those resources when shutting down the pipeline.
 
 [float]
 ==== Unit tests
