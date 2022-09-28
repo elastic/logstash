@@ -226,7 +226,7 @@ constructor at instantiation time.
 @Override
 public void close() {
     // shutdown a resource that was instantiated during the filter initialization phase.
-    this.statefulResource.shutdown();
+    this.sourceField = null;
     return;
 }
 -----
