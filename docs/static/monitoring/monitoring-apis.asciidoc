@@ -820,9 +820,33 @@ Example response:
         "last_failure_timestamp" : null,
         "failures" : 0
       },
-      "queue" : {
-        "type" : "memory"
-      }
+      "queue": {
+        "type" : "persisted",
+        "capacity": {
+          "max_unread_events": 0,
+          "page_capacity_in_bytes": 67108864,
+          "max_queue_size_in_bytes": 1073741824,
+          "queue_size_in_bytes": 3885
+        },
+        "flow": {
+          "growth_bytes": {
+          "lifetime": 0.032,
+          "current": 0.0
+        },
+        "growth_events": {
+          "lifetime": 0.234,
+          "current": 0.012
+        }
+      },
+      "data": {
+        "path": "/pipeline/queue/path",
+        "free_space_in_bytes": 936886480896,
+        "storage_type": "apfs"
+      },
+      "events": 0,
+      "events_count": 0,
+      "queue_size_in_bytes": 3885,
+      "max_queue_size_in_bytes": 1073741824
     }
   }
 }
