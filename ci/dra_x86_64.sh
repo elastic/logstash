@@ -30,4 +30,11 @@ echo "GENERATED DEPENDENCIES REPORT"
 shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
 echo "UPLOADING TO INTERMEDIATE BUCKET"
-gsutil cp build/logstash-${STACK_VERSION}-darwin-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+for file in build/logstash-*; do
+  gsutil cp $file gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+done
+
+gsutil cp build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+gsutil cp build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+gsutil cp build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+gsutil cp build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
