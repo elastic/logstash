@@ -17,6 +17,9 @@ Deploy example
 # install CRD
 kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
 kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
+# prepare cert/key for filebeat <> logstash
+../example/cert/generate_cert.sh
+# deploy example
 kubectl apply -f ../example/beats_ls_es
 ```
 
