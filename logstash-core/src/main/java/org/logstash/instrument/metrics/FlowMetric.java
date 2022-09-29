@@ -20,6 +20,7 @@
 package org.logstash.instrument.metrics;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * A {@link FlowMetric} reports the rates of change of one metric (the numerator)
@@ -39,5 +40,11 @@ public interface FlowMetric extends Metric<Map<String,Double>> {
             case "simple"  :
             default        : return new SimpleFlowMetric(name, numerator, denominator);
         }
+    }
+
+    static <N extends Number, D extends Number> FlowMetric create(final String name,
+                                                                  final Supplier<Metric<N>> numeratorSupplier,
+                                                                  final Supplier<Metric<D>> denominatorSupplier) {
+        return new LazyInstantiatedFlowMetric<>(name, numeratorSupplier, denominatorSupplier);
     }
 }
