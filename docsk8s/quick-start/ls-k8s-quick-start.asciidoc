@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-This guide describes how to set up {ls} to monitor a Kubernetes environment. Kubernetes logs and metrics will be monitored by Filebeat and Metricbeat, respectively, processed through a Logstash pipeline, and then delivered into an Elasticsearch cluster in the Kubernetes environment.
+This guide describes how to set up {ls} to deliver Kubernetes logs to {es}. The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered into an {es} cluster in the Kubernetes environment.
 
 This section includes the following topics:
 
@@ -21,7 +21,6 @@ This section includes the following topics:
 
 Before you start, there are a few things you'll need:
 
-. link:https://helm.sh/[Helm] - The package manager for Kubernetes. We'll use Helm to access the Elastic Kubernetes resources. 
 . A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
 . A link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-qs.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
@@ -36,19 +35,15 @@ Let's start by getting your Minikube Kubernetes cluster up and running:
 minikube start
 --
 
-The Elastic Helm repository contains the Elastic Stack custom resource definition (CRD) files. Add the repository to your Helm repository list:
+Install the Elastic custom resource definition (CRD) files, as well as the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
 
 [source,sh]
 --
-helm repo add elastic https://helm.elastic.co && helm repo update
+kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
+kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
 --
 
-Install the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
-
-[source,sh]
---
-helm install elastic-operator elastic/eck-operator
---
+NOTE: The Elastic CRDs and ECK operator can also be set up using Elastic Helm charts, available at link:https://helm.elastic.co[https://helm.elastic.co].
 
 Check the Kubernetes pods status to confirm that the `elastic-operator` pod is running:
 
@@ -74,6 +69,9 @@ To enable secure communication throughout your Kubernetes resources, run the sam
 ./cert/generate_cert.sh
 --
 
+.**Expand to view output**
+[%collapsible]
+====
 [source,sh]
 --
 Generating RSA private key, 2048 bit long modulus
@@ -95,6 +93,7 @@ Signature ok
 subject=/C=EU/ST=NA/O=Elastic/CN=ClientName
 Getting CA Private Key
 --
+====
 
 Your `logstash-k8s-gs/cert` folder should now contain a set of certificate files, including `client` certificates for Filebeat and Metricbeat, and `server` certificates for Logstash. 
 
