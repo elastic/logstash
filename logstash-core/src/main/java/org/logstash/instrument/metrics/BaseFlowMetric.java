@@ -44,6 +44,8 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
 
     protected final FlowCapture lifetimeBaseline;
 
+    static final String LIFETIME_KEY = "lifetime";
+
     final LongSupplier nanoTimeSupplier;
 
     BaseFlowMetric(final LongSupplier nanoTimeSupplier,
@@ -66,6 +68,10 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
 
     protected FlowCapture doCapture() {
         return new FlowCapture(nanoTimeSupplier.getAsLong(), numeratorMetric.getValue(), denominatorMetric.getValue());
+    }
+
+    protected void injectLifetime(final FlowCapture currentCapture, final Map<String, Double> rates) {
+        calculateRate(currentCapture, lifetimeBaseline).ifPresent((rate) -> rates.put(LIFETIME_KEY, rate));
     }
 
     /**

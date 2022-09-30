@@ -20,7 +20,8 @@
 package org.logstash.instrument.metrics;
 
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,7 +39,6 @@ class SimpleFlowMetric extends BaseFlowMetric {
     private final AtomicReference<FlowCapture> head;
     private final AtomicReference<FlowCapture> instant = new AtomicReference<>();
 
-    static final String LIFETIME_KEY = "lifetime";
     static final String CURRENT_KEY = "current";
 
     public SimpleFlowMetric(final String name,
@@ -79,12 +79,12 @@ class SimpleFlowMetric extends BaseFlowMetric {
             return Map.of();
         }
 
-        final Map<String, Double> rates = new HashMap<>();
+        final Map<String, Double> rates = new LinkedHashMap<>();
 
-        calculateRate(headCapture, lifetimeBaseline).ifPresent((rate) -> rates.put(LIFETIME_KEY, rate));
         calculateRate(headCapture, instant::get).ifPresent((rate) -> rates.put(CURRENT_KEY,  rate));
+        injectLifetime(headCapture, rates);
 
-        return Map.copyOf(rates);
+        return Collections.unmodifiableMap(rates);
     }
 
     private static Duration calculateCapturePeriod(final FlowCapture current, final FlowCapture baseline) {
