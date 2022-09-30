@@ -21,6 +21,7 @@ package org.logstash.instrument.metrics;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.logstash.util.SetOnceReference;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -42,7 +43,7 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
     private final Metric<? extends Number> numeratorMetric;
     private final Metric<? extends Number> denominatorMetric;
 
-    protected final FlowCapture lifetimeBaseline;
+    protected final SetOnceReference<FlowCapture> lifetimeBaseline = SetOnceReference.unset();
 
     static final String LIFETIME_KEY = "lifetime";
 
@@ -57,8 +58,9 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
         this.numeratorMetric = numeratorMetric;
         this.denominatorMetric = denominatorMetric;
 
-        this.lifetimeBaseline = doCapture();
-        LOGGER.trace("FlowMetric({}) -> {}", name, lifetimeBaseline);
+        if (doCapture().isEmpty()) {
+            LOGGER.trace("FlowMetric({}) -> DEFERRED", name);
+        }
     }
 
     @Override
@@ -66,12 +68,36 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
         return MetricType.FLOW_RATE;
     }
 
-    protected FlowCapture doCapture() {
-        return new FlowCapture(nanoTimeSupplier.getAsLong(), numeratorMetric.getValue(), denominatorMetric.getValue());
+    /**
+     * Attempt to perform a capture of our metrics, setting our lifetime baseline if it is not yet set.
+     *
+     * @return a {@link Optional} that contains a {@link FlowCapture} IFF one can be created.
+     */
+    protected Optional<FlowCapture> doCapture() {
+        final Number numeratorValue = numeratorMetric.getValue();
+        if (Objects.isNull(numeratorValue)) {
+            LOGGER.trace("FlowMetric({}) numerator metric {} returned null value", name, numeratorMetric.getName());
+            return Optional.empty();
+        }
+
+        final Number denominatorValue = denominatorMetric.getValue();
+        if (Objects.isNull(denominatorValue)) {
+            LOGGER.trace("FlowMetric({}) numerator metric {} returned null value", name, denominatorMetric.getName());
+            return Optional.empty();
+        }
+
+        final FlowCapture currentCapture = new FlowCapture(nanoTimeSupplier.getAsLong(), numeratorValue, denominatorValue);
+
+        // if our lifetime baseline has not been set, set it now.
+        if (lifetimeBaseline.offer(currentCapture)) {
+            LOGGER.trace("FlowMetric({}) baseline -> {}", name, currentCapture);
+        }
+
+        return Optional.of(currentCapture);
     }
 
     protected void injectLifetime(final FlowCapture currentCapture, final Map<String, Double> rates) {
-        calculateRate(currentCapture, lifetimeBaseline).ifPresent((rate) -> rates.put(LIFETIME_KEY, rate));
+        calculateRate(currentCapture, lifetimeBaseline::get).ifPresent((rate) -> rates.put(LIFETIME_KEY, rate));
     }
 
     /**

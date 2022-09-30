@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
 
@@ -53,20 +54,25 @@ class SimpleFlowMetric extends BaseFlowMetric {
                      final Metric<? extends Number> denominatorMetric) {
         super(nanoTimeSupplier, name, numeratorMetric, denominatorMetric);
 
-        this.head = new AtomicReference<>(this.lifetimeBaseline);
+        this.head = new AtomicReference<>(lifetimeBaseline.orElse(null));
     }
 
     @Override
     public void capture() {
-        final FlowCapture newestHead = doCapture();
+        final Optional<FlowCapture> possibleCapture = doCapture();
+        if (possibleCapture.isEmpty()) { return; }
+
+        final FlowCapture newestHead = possibleCapture.get();
         final FlowCapture previousHead = head.getAndSet(newestHead);
-        instant.getAndAccumulate(previousHead, (current, given) -> {
-            // keep our current value if the given one is less than ~100ms older than our newestHead
-            // this is naive and when captures happen too frequently without relief can result in
-            // our "current" window growing indefinitely, but we are shipping with a 5s cadence
-            // and shouldn't hit this edge-case in practice.
-            return (calculateCapturePeriod(newestHead, given).toMillis() > 100) ? given : current;
-        });
+        if (Objects.nonNull(previousHead)) {
+            instant.getAndAccumulate(previousHead, (current, given) -> {
+                // keep our current value if the given one is less than ~100ms older than our newestHead
+                // this is naive and when captures happen too frequently without relief can result in
+                // our "current" window growing indefinitely, but we are shipping with a 5s cadence
+                // and shouldn't hit this edge-case in practice.
+                return (calculateCapturePeriod(newestHead, given).toMillis() > 100) ? given : current;
+            });
+        }
     }
 
     /**
