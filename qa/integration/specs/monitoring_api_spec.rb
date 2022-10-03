@@ -205,6 +205,7 @@ describe "Test Monitoring API" do
       # monitoring api can fail if the subsystem isn't ready
       result = logstash_service.monitoring_api.logging_get rescue nil
       expect(result).not_to be_nil
+      expect(result).to include("loggers")
       expect(result["loggers"].size).to be > 0
     end
 
