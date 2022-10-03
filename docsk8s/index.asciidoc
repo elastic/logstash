@@ -1,0 +1,64 @@
+[[logstash-and-kubernetes]]
+= Logstash and Kubernetes Reference
+
+include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
+include::{docs-root}/shared/attributes.asciidoc[]
+
+[[introduction]]
+== Introduction
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+This guide helps you to run and work with {ls} in a Kubernetes environment.
+
+Are you trying out {ls} for the first time? We recommend beginning with our guide {logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash].
+
+If you're already familiar with Logstash, then it's time to try it out in Kubernetes. The <<ls-k8s-quick-start,Getting started with Logstash and Kubernetes>> demo guides you through the steps of configuring Logstash inside a running Kubernetes cluster.
+
+// Logstash and Kubernetes Quick start
+include::quick-start/ls-k8s-quick-start.asciidoc[]
+
+// List of sample configuration files and what they're used for
+include::quick-start/sample-configuration-files.asciidoc[]
+
+// Ship to an external resource
+include::quick-start/ls-k8s-external-resource.asciidoc[]
+
+// Setting up
+include::setting-up/ls-k8s-setting-up.asciidoc[]
+
+// Persistent storage requirements
+include::setting-up/ls-k8s-persistent-storage.asciidoc[]
+
+// Designing your installation based on plugin usage
+include::setting-up/ls-k8s-design-for-plugins.asciidoc[]
+
+// Sizing Logstash instances
+include::setting-up/ls-k8s-sizing.asciidoc[]
+
+// Secure your environment
+include::setting-up/ls-k8s-secure.asciidoc[]
+
+// Administering
+include::administering/ls-k8s-administering.asciidoc[]
+
+// Set up stack monitoring
+include::administering/ls-k8s-stack-monitoring.asciidoc[]
+
+// Upgrade Logstash
+include::administering/ls-k8s-upgrade.asciidoc[]
+
+// Logstash logging
+include::administering/ls-k8s-logging.asciidoc[]
+
+// Recipes
+include::ls-k8s-recipes.asciidoc[]
+
+// Troubleshooting
+include::troubleshooting/ls-k8s-troubleshooting.asciidoc[]
+
+// Common problems
+include::troubleshooting/ls-k8s-common-problems.asciidoc[]
+
+// Troubleshooting methods
+include::troubleshooting/ls-k8s-troubleshooting-methods.asciidoc[]

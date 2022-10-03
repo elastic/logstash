@@ -1,0 +1,25 @@
+[[ls-k8s-common-problems]]
+=== Common problems
+
+Following are some suggested resolutions to problems that you may encounter when running Logstash in a Kubernetes environment.
+
+* <<problem-01>>
+* <<problem-02>>
+
+[float]
+[[problem-01]]
+=== Logstash keeps restarting
+When you check the running Kubernetes pods status, {ls} shows continual restarts. 
+
+This can be caused by...
+
+To resolve the problem...
+
+[float]
+[[problem-02]]
+=== Logstash stops with an OOM errors
+The {ls} pod continues to stop running due to an out of memory (OOM) error.
+
+This can be caused by...
+
+To resolve the problem...

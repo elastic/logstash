@@ -1,0 +1,11 @@
+[[ls-k8s-setting-up]]
+== Setting up {ls} and Kubernetes
+++++
+<titleabbrev>Setting up</titleabbrev>
+++++
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+The following topics describe important design considerations for your {ls} setup, as well as the steps to get your {ls} and Kubernetes environment up and running.
+
+Note that before putting your environment into production, you should also follow our guidelines for <<ls-k8s-administering,administering your system>>.

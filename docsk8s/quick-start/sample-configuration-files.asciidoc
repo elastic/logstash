@@ -1,0 +1,102 @@
+[[sample-configuration-files]]
+=== Sample configuration files
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+These configuration files are used in the <<ls-k8s-quick-start,{ls} and Kubernetes quick start>>. You can use them as templates when you configure Logstash together with the rest of the Elastic Stack in a Kubernetes environment.
+
+You can download the files together as a link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-qs.zip[zip archive].
+
+`cert/generate_cert.sh`::
+Generates the `ca.crt`, `client.key`, `client.crt`, `server.key`, and `server.pkcs8.key` used to establish a secure connection between Filebeat and Logstash. The certificates and keys are all contained in the `001-secret.yaml` file that is generated when you run `generate_cert.sh`.
+
+`cert/openssl.conf`::
+The OpenSSL Generated Server Certificate used for TLS communication between resources.
+
+`000-elasticsearch.yaml`::
+Configures a single {es} instance to receive output data from {ls}. 
+
+`001-configmap.yaml`::
+This contains the Logstash settings and pipeline configuration:
++
+[source,yaml]
+--
+  logstash.conf: |
+    input {
+      beats {
+        port => "5044"
+        ssl => true
+        ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
+        ssl_certificate => "/usr/share/logstash/config/server.crt"
+        ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
+        ssl_verify_mode => "force_peer"
+      }
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://demo-es-http:9200"]
+        index => "kube-apiserver-%{+YYYY.MM.dd}"
+        cacert => "/usr/share/logstash/config/es_ca.crt"
+        user => 'elastic'
+        password => '${ELASTICSEARCH_PASSWORD}'
+      }
+    }
+--
+
+`002-deployment.yaml`::
+Contains the configuration definition for {ls}, including memory and CPU resources, the container ports, timeout settings, and similar. This file also includes the mount details for the secrets used in a secure setup:
++
+[source,yaml]
+--
+  volumes:
+    - name: es-certs
+      secret:
+        secretName: demo-es-http-certs-public
+    - name: es-user
+      secret:
+        secretName: demo-es-elastic-user
+    - name: logstash-beats-tls
+      secret:
+        secretName: logstash-beats-tls
+--
++
+* `logstash-beats-tls` is the secret containing the `ca.crt`, `server.crt` and `server.pkcs8.key` to input data from Filebeat and Metricbeat.
+* `demo-es-http-certs-public` contains the CA certificate to output data to {es}. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html[TLS certificates] in the {eck} Guide for details.
+* The {es} password is taken from `demo-es-elastic-user` and passed to the Logstash pipeline as an `ELASTICSEARCH_PASSWORD` environment variable. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-request-elasticsearch-endpoint.html[Access the {es} endpoint] in the {eck} Guide for details.
+
+`003-service.yaml`::
+Sets the TCP ports for the Filebeat and Metricbeat services.
+
+`004-hpa.yaml`::
+The Horizontal Pod Autoscaler is used to configure the horizontal scaling details for CPU and memory for the {ls} instance.
+
+`005-filebeat.yaml`::
+Includes the mount path for the generated certificate and key files, the secrets file `logstash-beats-tls`, and a {ls} output configuration as follows:
++
+[source,yaml]
+--
+    output.logstash:
+      hosts:
+        - "logstash:5044"
+      ssl.certificate_authorities: ["/usr/share/filebeat/ca.crt"]
+      ssl.certificate: "/usr/share/filebeat/client.crt"
+      ssl.key: "/usr/share/filebeat/client.key"
+--
+
+`006-metricbeat.yaml`::
+Enables the {metricbeat} {ls} module and sets it to collect metrics data from `logstash:9600`:
++
+[source,yaml]
+--
+  - module: logstash
+    metricsets:
+      - node
+      - node_stats
+    period: 10s
+    hosts:
+      - logstash:9600
+    xpack.enabled: true
+--
+
+`007-kibana`::
+Configures a single {kib} instance to visualize the logs and metrics data. 

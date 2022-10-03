@@ -1,0 +1,16 @@
+[[ls-k8s-sizing]]
+=== Sizing {ls} instances
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+We have a few recommended heuristics to help you determine the optimal memory and queue sizings for your {ls} instances.
+
+[[sizing-jvm-memory-pods]]
+==== Memory settings on JVMs and pods
+
+Description...
+
+[[sizing-pd-dlq]]
+==== Sizing your {ls} PQ and DLQ
+
+Description...
