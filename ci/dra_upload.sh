@@ -79,3 +79,29 @@ mv build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz .
 
 mkdir -p build/distributions/dependencies-reports/
 mv build/logstash-${STACK_VERSION}.csv build/distributions/dependencies-${STACK_VERSION}.csv
+
+# set required permissions on artifacts and directory
+chmod -R a+r build/*
+chmod -R a+w build
+
+chmod -R a+r $PWD/*
+chmod -R a+w $PWD
+
+# ensure the latest image has been pulled
+docker pull docker.elastic.co/infra/release-manager:latest
+
+# collect the artifacts for use with the unified build
+docker run --rm \
+  --name release-manager \
+  -e VAULT_ADDR \
+  -e VAULT_ROLE_ID \
+  -e VAULT_SECRET_ID \
+  --mount type=bind,readonly=false,src="$PWD",target=/artifacts \
+  docker.elastic.co/infra/release-manager:latest \
+    cli collect \
+      --project logstash \
+      --branch ${RELEASE_BRANCH} \
+      --commit "$(git rev-parse HEAD)" \
+      --workflow "staging" \
+      --version "${STACK_VERSION}" \
+      --artifact-set main
