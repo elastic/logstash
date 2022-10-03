@@ -6,13 +6,16 @@
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
+STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+
 if [ -z "$VERSION_QUALIFIER_OPT" ]; then
   RELEASE=1 rake artifact:all
 else
+  # in case of alpha or beta versions the qualifier should be used
+  # e.g: 8.0.0-alpha1
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:all
+  STACK_VERSION="${STACK_VERSION}-${$VERSION_QUALIFIER_OPT}"
 fi
-
-STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
 echo "Saving tar.gz for docker images"
 docker save docker.elastic.co/logstash/logstash:${STACK_VERSION}-SNAPSHOT | gzip -c > build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz
