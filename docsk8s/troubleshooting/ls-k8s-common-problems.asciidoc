@@ -3,23 +3,38 @@
 
 Following are some suggested resolutions to problems that you may encounter when running Logstash in a Kubernetes environment.
 
-* <<problem-01>>
-* <<problem-02>>
+* <<problem-keep-restart>>
+* <<problem-oom>>
 
 [float]
-[[problem-01]]
+[[problem-keep-restart]]
 === Logstash keeps restarting
 When you check the running Kubernetes pods status, {ls} shows continual restarts. 
 
-This can be caused by...
+```
+NAMESPACE     NAME                                  READY   STATUS    RESTARTS      AGE
+default       logstash-f7768c66d-grzbj              0/1     Running   3 (55s ago)   6m32s
+```
 
-To resolve the problem...
+This can be caused by a few issues.
+
+* Unable to access health check endpoint 
+* Insufficient CPU or memory to start Logstash
+* Logstash startup process takes longer than `initialDelaySeconds`
+
+To resolve the problem
+
+* Set `api.http.host: 0.0.0.0` in `logstash.yml` to enable connection access to endpoint
+* Review CPU and memory usage `kubectl top pods`
+* Review the time constraint of `readinessProbe` and `livenessProbe`
 
 [float]
-[[problem-02]]
+[[problem-oom]]
 === Logstash stops with an OOM errors
-The {ls} pod continues to stop running due to an out of memory (OOM) error.
+The status of {ls} shows `Ready` but the pod continues to stop running.
 
-This can be caused by...
+This can be caused by insufficient memory. If the memory of Logstash use more than the declared resource, kubernetes kill the pod immediately and the log of Logstash does not show any shutdown related message.
 
-To resolve the problem...
+Run `kubectl get event --watch` or `kubectl describe pod` to check kubernetes event if the status shows `OOMKilled`.
+
+To resolve the problem, set a higher limit of memory.
