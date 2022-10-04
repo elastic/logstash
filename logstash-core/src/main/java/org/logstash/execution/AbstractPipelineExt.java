@@ -528,7 +528,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 .equals(QueueFactoryExt.PERSISTED_TYPE)) {
             final Optional<NumberGauge> events = initOrGetNumberGaugeMetric(context, queueNamespace, EVENTS_KEY);
             if (events.isPresent()) {
-                final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_GROWTH_EVENTS_KEY, events.get(), uptimeInPreciseMillis);
+                final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_GROWTH_EVENTS_KEY, events.get(), uptimeInPreciseSeconds);
                 this.flowMetrics.add(growthEventsFlow);
                 storeMetric(context, queueFlowNamespace, growthEventsFlow);
             } else {
@@ -540,7 +540,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
             final Optional<NumberGauge> queueSizeInBytes = initOrGetNumberGaugeMetric(context, queueCapacityNamespace, QUEUE_SIZE_IN_BYTES_KEY);
             if (queueSizeInBytes.isPresent()) {
-                final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_GROWTH_BYTES_KEY, queueSizeInBytes.get(), uptimeInPreciseMillis);
+                final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_GROWTH_BYTES_KEY, queueSizeInBytes.get(), uptimeInPreciseSeconds);
                 this.flowMetrics.add(growthBytesFlow);
                 storeMetric(context, queueFlowNamespace, growthBytesFlow);
             } else {
