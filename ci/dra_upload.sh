@@ -18,6 +18,12 @@ if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
 fi
 
+WORKFLOW="staging"
+if [ -z "$WORKFLOW_TYPE"]; then
+  STACK_VERSION=${STACK_VERSION}-SNAPSHOT
+  WORKFLOW="snapshot"
+fi
+
 echo "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}-no-jdk.deb build/
@@ -111,6 +117,6 @@ docker run --rm \
       --project logstash \
       --branch ${RELEASE_BRANCH} \
       --commit "$(git rev-parse HEAD)" \
-      --workflow "staging" \
+      --workflow "${WORKFLOW}" \
       --version "${STACK_VERSION}" \
       --artifact-set main
