@@ -11,7 +11,8 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digi
 if [ -z "$VERSION_QUALIFIER_OPT" ]; then
   RELEASE=1 rake artifact:all
 else
-  # in case of alpha or beta versions the qualifier should be used
+  # Qualifier is passed from CI as optional field and specify the version postfix
+  # in case of alpha or beta releases:
   # e.g: 8.0.0-alpha1
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:all
   STACK_VERSION="${STACK_VERSION}-${$VERSION_QUALIFIER_OPT}"
