@@ -56,7 +56,6 @@ module LogStash
           opts = {:graph => as_boolean(params.fetch("graph", false)),
                   :vertices => as_boolean(params.fetch("vertices", false))}
           payload = node.pipelines(opts)
-          halt(404) if payload.empty?
           respond_with(:pipelines => payload )
         end
 

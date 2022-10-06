@@ -37,8 +37,9 @@ describe LogStash::Api::Commands::Node do
                        :explicit_id=>false,
                        :type=>"plugin"}
                   }
+  let(:api_service) { LogStash::Api::Service.new(@agent) }
   subject(:report) do
-    factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(@agent))
+    factory = ::LogStash::Api::CommandFactory.new(api_service)
     if report_method == :pipelines
       factory.build(:node).send(report_method, opts)
     elsif report_method == :pipeline
@@ -64,6 +65,25 @@ describe LogStash::Api::Commands::Node do
     end
   end
 
+  describe "#pipelines" do
+    let(:report_method) { :pipelines }
+    it "contains the running pipelines" do
+      expect(report).to include(:main, :secondary)
+    end
+    context 'when the `main` pipeline throws a MetricNotFound exception' do
+      before(:each) do
+        allow(api_service).to receive(:extract_metrics).and_call_original
+        expect(api_service).to receive(:extract_metrics)
+                                .with([:stats, :pipelines, :main, :config], any_args)
+                                .and_raise(LogStash::Instrument::MetricStore::MetricNotFound)
+      end
+
+      it 'does not contain the partially-constructed pipeline' do
+        expect(report).to include(:secondary)
+        expect(report).to_not include(:main)
+      end
+    end
+  end
 
   describe "#pipeline" do
     let(:report_method) { :pipeline }
