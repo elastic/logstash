@@ -63,7 +63,7 @@ public class UptimeMetric extends AbstractMetric<Long> {
         this(name, System::nanoTime);
     }
 
-    public UptimeMetric(final String name, final LongSupplier nanoTimeSupplier) {
+    UptimeMetric(final String name, final LongSupplier nanoTimeSupplier) {
         this(name, nanoTimeSupplier, nanoTimeSupplier.getAsLong(), TimeUnit.MILLISECONDS);
     }
 

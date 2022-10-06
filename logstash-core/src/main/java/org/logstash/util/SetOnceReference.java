@@ -51,7 +51,7 @@ public class SetOnceReference<T> {
         }
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings("unused") // exclusively accessed through VALUE VarHandle
     private volatile T value;
 
     private SetOnceReference() {

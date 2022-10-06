@@ -8,7 +8,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ManualAdvanceClock extends Clock {
+class ManualAdvanceClock extends Clock {
     private final ZoneId zoneId;
     private final AtomicReference<Instant> currentInstant;
     private final Instant zeroInstant;
