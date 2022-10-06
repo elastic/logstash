@@ -122,7 +122,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     }
 
     private static List<RetentionWindow> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
-                                                       final FlowCapture capture) {
+                                                              final FlowCapture capture) {
         return retentionPolicies.stream()
                                 .map((p) -> new RetentionWindow(p, capture))
                                 .collect(Collectors.toUnmodifiableList());
@@ -186,9 +186,9 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
      * meet its {@link FlowMetricRetentionPolicy}, providing access to the youngest capture
      * that is older than the policy's allowed retention (if any).
      * The implementation is similar to a singly-linked list whose youngest captures are at
-     * the tail and oldest captures are at the head, with an additional pre-tail stag.
+     * the tail and oldest captures are at the head, with an additional pre-tail stage.
      * Compaction is always done at read-time and occasionally at write-time.
-     * Both reads and writes are concurrency-safe.
+     * Both reads and writes are non-blocking and concurrency-safe.
      */
     private static class RetentionWindow {
         private final AtomicReference<FlowCapture> stagedCapture = new AtomicReference<>();
@@ -213,7 +213,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
          * @param newestCapture the newest capture to stage
          */
         private void append(final FlowCapture newestCapture) {
-            final Node casTail = this.tail.get(); // for CAS
+            final Node casTail = this.tail.getAcquire(); // for CAS
             final long newestCaptureNanoTime = newestCapture.nanoTime();
 
             // stage our newest capture unless it is older than the currently-staged capture

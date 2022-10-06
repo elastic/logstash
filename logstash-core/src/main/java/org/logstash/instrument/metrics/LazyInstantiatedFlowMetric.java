@@ -10,6 +10,16 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+/**
+ * A {@code LazyInstantiatedFlowMetric} is a {@link FlowMetric} whose underlying {@link Metric}s
+ * may not be available until a later time. It is initialized with two {@link Supplier}{@code <Metric>}s,
+ * and fully initializes when <em>both</em> return non-null values.
+ *
+ * @see FlowMetric#create(String, Supplier, Supplier)
+ *
+ * @param <N> the numerator metric's value type
+ * @param <D> the denominator metric's value type
+ */
 public class LazyInstantiatedFlowMetric<N extends Number, D extends Number> implements FlowMetric {
 
     static final Logger LOGGER = LogManager.getLogger(LazyInstantiatedFlowMetric.class);
@@ -23,9 +33,9 @@ public class LazyInstantiatedFlowMetric<N extends Number, D extends Number> impl
 
     private static final Map<String,Double> EMPTY_MAP = Map.of();
 
-    public LazyInstantiatedFlowMetric(final String name,
-                                      final Supplier<Metric<N>> numeratorSupplier,
-                                      final Supplier<Metric<D>> denominatorSupplier) {
+    LazyInstantiatedFlowMetric(final String name,
+                               final Supplier<Metric<N>> numeratorSupplier,
+                               final Supplier<Metric<D>> denominatorSupplier) {
         this.name = name;
         this.numeratorSupplier = new AtomicReference<>(numeratorSupplier);
         this.denominatorSupplier = new AtomicReference<>(denominatorSupplier);

@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 /**
  * This {@link BaseFlowMetric} is a shared-common base for all internal implementations of {@link FlowMetric}.
  */
-abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> implements FlowMetric {
+abstract class BaseFlowMetric extends AbstractMetric<Map<String, Double>> implements FlowMetric {
 
     static final Logger LOGGER = LogManager.getLogger(BaseFlowMetric.class);
 
@@ -110,8 +110,9 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String,Double>> impleme
      * to calculate a finite rate of change of the numerator relative to the denominator.
      */
     protected static OptionalDouble calculateRate(final FlowCapture current, final FlowCapture baseline) {
-        Objects.requireNonNull(baseline, "baseline");
-        if (baseline == current) { return OptionalDouble.empty(); }
+        Objects.requireNonNull(current, "current must not be null");
+        Objects.requireNonNull(baseline, "baseline must not be null");
+        if (baseline.equals(current)) { return OptionalDouble.empty(); }
 
         final BigDecimal deltaNumerator = current.numerator().subtract(baseline.numerator());
         final BigDecimal deltaDenominator = current.denominator().subtract(baseline.denominator());
