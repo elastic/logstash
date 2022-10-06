@@ -29,80 +29,20 @@ This section summarizes the changes in the following releases:
 [[logstash-8-5-0]]
 === Logstash 8.5.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.5.0
-
-* Release notes for 8.3.2 https://github.com/elastic/logstash/pull/14327[#14327]
-* Release notes for 8.3.3 https://github.com/elastic/logstash/pull/14365[#14365]
-* Backport PR #14327 to main: Release notes for 8.3.2 https://github.com/elastic/logstash/pull/14387[#14387]
-* Backport PR #14365 to main: Release notes for 8.3.3 https://github.com/elastic/logstash/pull/14389[#14389]
 * Update version of the bundled JDK to 17.0.4+8 https://github.com/elastic/logstash/pull/14424[#14424]
 * fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14425[#14425]
-* bump jruby version to 9.3.7.0 https://github.com/elastic/logstash/pull/14455[#14455]
+* bump jruby version to 9.3.7.0 https://github.com/elastic/logstash/pull/14455[#14455] https://github.com/elastic/logstash/pull/14524[#14524]
 * winlogbeat-modules: add docs for interfacing winlogbeat with logstash https://github.com/elastic/logstash/pull/14472[#14472]
-* Created DRA shell script to create artifacts and dependency report https://github.com/elastic/logstash/pull/14522[#14522]
+* Feature: flow metrics integration https://github.com/elastic/logstash/pull/14518[#14518]
 
-=== Logstash Commits between 8.5 and 8.4.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.4.2..8.5"
-
-1d2947668 - (HEAD -> 8.5, origin/8.5) Update plugin versions in gemfile lock for 8.5.0 (#14547) (17 minutes ago) <github-actions[bot]>
-efb2ff9c0 - add initial lock file for 8.5.0 (76 minutes ago) <João Duarte>
-6e0b365c9 - Feature: flow metrics integration (#14518) (2 days ago) <Ry Biesemeyer>
-6534386f2 - Created DRA shell script to create artifacts and dependency report (#14522) (6 days ago) <Andrea Selva>
-0578ddbbd - Upgrade jruby to 9.3.8.0 (#14524) (8 days ago) <Rob Bavey>
-5d7fa78e0 - Fix Windows scripts (#14515) (12 days ago) <Rob Bavey>
-b7b9613c6 - winlogbeat-modules: add docs for interfacing winlogbeat with logstash (#14472) (2 weeks ago) <Dan Kortschak>
-8d41b8549 - Manually import CSV gem to work around thread leak (#14507) (2 weeks ago) <Rob Bavey>
-2a2f5ae24 - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-328a4e20d - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-37ebcee71 - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-248a51235 - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-955c48131 - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-842e45aba - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-5c5a52d6b - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-3d43f86fa - Update add_to_projects_beta.yml (2 weeks ago) <Andres Rodriguez>
-4584b632f - drop support for all DES ciphers in OpenSSL and simplify cipher list (#14499) (2 weeks ago) <João Duarte>
-89c45d6d8 - Change deb/rpm specification to describe as replacement of noarch old Logstash packages (#14346) (2 weeks ago) <Andrea Selva>
-3a7862110 - fix SettingsImpl to remove hardcoded checkpointRetry (#14487) (2 weeks ago) <kaisecheng>
-26289b955 - Forward port release notes for 8.4.0 and 8.4.1 (#14484) (3 weeks ago) <Andrea Selva>
-a10e23685 - Update CI versions after 8.4.1 (#14482) (3 weeks ago) <Andrea Selva>
 2944eacd2 - Add missing reference to full config of LS-to-LS over HTTP (#14466) (3 weeks ago) <Andres Rodriguez>
 88d89fe89 - [Doc] add off-heap memory session (#14431) (4 weeks ago) <kaisecheng>
-a2a82f740 - Bump release and snapshot versions (#14469) (4 weeks ago) <Rob Bavey>
-6bc2483cf - bump jruby version to 9.3.7.0 (#14455) (5 weeks ago) <João Duarte>
-9d16c3bce - Stop pinning mustermann in logstash-core.gemspec (#14453) (5 weeks ago) <João Duarte>
-24c675ccd - remove sinatra constraint (#14446) (5 weeks ago) <João Duarte>
-4cb900ce7 - update flores dependency to at least 0.0.8 (#14437) (5 weeks ago) <João Duarte>
-c124cc6c9 - Remove the `chmod g+s` command from ironbank docker image (#14435) (5 weeks ago) <Rob Bavey>
-cd60c6522 - Update tests to allow integration tests to use the bundled JDK (#14432) (5 weeks ago) <Rob Bavey>
 5767b3b98 - Ensuring COPY instruction is used instead of ADD in Dockerfiles (#14423) (6 weeks ago) <lior-orca>
-2e4837ccf - Fixes typo in running logstash CLI doc (#14428) (6 weeks ago) <Andrea Selva>
 f03330acd - Add monitoring.cluster_uuid as Docker env setting(#14425) (6 weeks ago) <Boris Djurdjevic>
-595967680 - Update feature-request.md (#12873) (6 weeks ago) <Andres Rodriguez>
 4771ad61b - Update version of the bundled JDK to 17.0.4+8 (#14424) (6 weeks ago) <Rob Bavey>
-5b69f6579 - Pin jar-dependencies 0.4.1 (#14421) (7 weeks ago) <kaisecheng>
-788797234 - Open java modules for gradle test after 7.5 upgrade (#14413) (7 weeks ago) <Andrea Selva>
 535499811 - Doc: Fileset must be enabled in module (#14405) (7 weeks ago) <Karen Metts>
-dfa88aa0e - Make version bump github action work with future JRuby versions (#14391) (8 weeks ago) <João Duarte>
-8aa62dc44 - pin bundler 2.3.18 to avoid bug in .19 (#14394) (8 weeks ago) <João Duarte>
-f798d5f0e - Upgrade CI stack version to 8.3.3 (#14393) (8 weeks ago) <Mashhur>
-cf8469857 - Release notes for 8.3.3 (#14365) (#14389) (8 weeks ago) <github-actions[bot]>
-506094eda - Release notes for 8.3.2 (#14327) (#14387) (8 weeks ago) <github-actions[bot]>
 07fe589d8 - [doc] Describe DLQ's age retention policy (#14340) (8 weeks ago) <Andrea Selva>
 3c5ed2b62 - Document the cleaning of consumed events feature (#14341) (8 weeks ago) <Andrea Selva>
-5a6460899 - Bump version to 8.5.0 (#14382) (8 weeks ago) <Rob Bavey>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.4.2..8.5 *.release"
-Changed plugin versions:
-logstash-filter-translate: 3.3.1 -> 3.4.0
-logstash-input-elasticsearch: 4.14.0 -> 4.16.0
-logstash-input-exec: 3.4.0 -> 3.6.0
-logstash-input-file: 4.4.3 -> 4.4.4
-logstash-input-http_poller: 5.3.1 -> 5.4.0
-logstash-output-elasticsearch: 11.6.0 -> 11.9.0
----------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
 
@@ -113,14 +53,11 @@ logstash-output-elasticsearch: 11.6.0 -> 11.9.0
 *Elasticsearch Input - 4.16.0*
 
 * Added `ssl_certificate_verification` option to control SSL certificate verification https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/180[#180]
-
 * Feat: add `retries` option. allow retry for failing query https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/179[#179]
 
 *Exec Input - 3.6.0*
 
 * Refactor: start using scheduler mixin https://github.com/logstash-plugins/logstash-input-exec/pull/33[#33]
-* Fix: Test failures due to insufficient time given for scheduler to start https://github.com/logstash-plugins/logstash-input-exec/pull/32[#32] 
-
 * Fix: behavior incompatiblity between (standalone) LS and LS in Docker https://github.com/logstash-plugins/logstash-input-exec/pull/30[#30]
 
 *File Input - 4.4.4*
@@ -134,9 +71,7 @@ logstash-output-elasticsearch: 11.6.0 -> 11.9.0
 *Elasticsearch Output - 11.9.0*
 
 * Feature: force unresolved dynamic index names to be sent into DLQ. This feature could be explicitly disabled using `dlq_on_failed_indexname_interpolation` setting https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1084[#1084]
-
 * Feature: Adds a new `dlq_custom_codes` option to customize DLQ codes https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1067[#1067]
- 
 * Feature: deprecates the `failure_type_logging_whitelist` configuration option, renaming it `silence_errors_in_log` https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1068[#1068]
 
 
