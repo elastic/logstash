@@ -543,6 +543,23 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testSeekByTimestampWhenSegmentIs1Byte() throws IOException, InterruptedException {
+        final long startTime = System.currentTimeMillis();
+        com.google.common.io.Files.touch(dir.resolve("1.log").toFile());
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+
+            //Exercise
+            final Timestamp seekTarget = new Timestamp(startTime);
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, no entry is available, reader should seek without exception
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertNull("No entry is available after all segments are deleted", readEntry);
+        }
+    }
+
     /**
      * Tests concurrently reading and writing from the DLQ.
      * @throws Exception On Failure

@@ -100,7 +100,9 @@ public final class DeadLetterQueueReader implements Closeable {
         this.segments = new ConcurrentSkipListSet<>(
                 Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
-        segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
+        segments.addAll(listSegmentPaths(queuePath)
+                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
+                .collect(Collectors.toList()));
         this.cleanConsumed = cleanConsumed;
         if (cleanConsumed && segmentCallback == null) {
             throw new IllegalArgumentException("When cleanConsumed is enabled must be passed also a valid segment listener");
