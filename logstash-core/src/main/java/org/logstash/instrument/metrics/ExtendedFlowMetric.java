@@ -69,6 +69,8 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
                        final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies) {
         super(nanoTimeSupplier, name, numeratorMetric, denominatorMetric);
         this.retentionPolicies = List.copyOf(retentionPolicies);
+
+        this.lifetimeBaseline.asOptional().ifPresent(this::appendCapture);
     }
 
     public ExtendedFlowMetric(final LongSupplier nanoTimeSupplier,
