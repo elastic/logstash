@@ -75,11 +75,11 @@ import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.plugins.factory.ExecutionContextFactoryExt;
 import org.logstash.plugins.factory.PluginFactoryExt;
@@ -527,7 +527,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private static FlowMetric createFlowMetric(final RubySymbol name,
                                                final Metric<? extends Number> numeratorMetric,
                                                final Metric<? extends Number> denominatorMetric) {
-        return new FlowMetric(name.asJavaString(), numeratorMetric, denominatorMetric);
+        return FlowMetric.create(name.asJavaString(), numeratorMetric, denominatorMetric);
     }
 
     private LongCounter initOrGetCounterMetric(final ThreadContext context,
