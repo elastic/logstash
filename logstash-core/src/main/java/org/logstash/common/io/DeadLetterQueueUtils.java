@@ -41,7 +41,10 @@ class DeadLetterQueueUtils {
     }
 
     static Stream<Path> listFiles(Path path, String suffix) throws IOException {
-        return Files.list(path).filter(p -> p.toString().endsWith(suffix));
+        try(final Stream<Path> files = Files.list(path)) {
+            return files.filter(p -> p.toString().endsWith(suffix))
+                    .collect(Collectors.toList()).stream();
+        }
     }
 
     static Stream<Path> listSegmentPaths(Path path) throws IOException {
