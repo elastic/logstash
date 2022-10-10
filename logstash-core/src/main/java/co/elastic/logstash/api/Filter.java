@@ -54,6 +54,13 @@ public interface Filter extends Plugin {
     Collection<Event> filter(Collection<Event> events, FilterMatchListener matchListener);
 
     /**
+     * After a pipeline has been shut down, its filters are closed.
+     * If your plugin holds additional resources such as database connections,
+     * implementing this method will allow you to free up those resources.
+     */
+    default void close() { return; }
+
+    /**
      * If this filter maintains state between calls to {@link #filter(Collection, FilterMatchListener)}, this
      * method should return events for all state currently held by the filter. This method will never be called
      * by the Logstash execution engine unless {@link #requiresFlush()} returns {@code true} for this filter.
