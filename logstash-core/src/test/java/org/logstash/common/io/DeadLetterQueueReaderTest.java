@@ -546,7 +546,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testSeekByTimestampWhenSegmentIs1Byte() throws IOException, InterruptedException {
         final long startTime = System.currentTimeMillis();
-        com.google.common.io.Files.touch(dir.resolve("1.log").toFile());
+        Files.write(dir.resolve("1.log"), "1".getBytes());
 
         try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
 
