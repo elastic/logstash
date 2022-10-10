@@ -29,6 +29,9 @@ else
   if [ -z "$VERSION_QUALIFIER_OPT" ]; then
     rake artifact:all
   else
+    # Qualifier is passed from CI as optional field and specify the version postfix
+    # in case of alpha or beta releases:
+    # e.g: 8.0.0-alpha1
     VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:all
     STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
   fi
