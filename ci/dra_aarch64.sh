@@ -35,8 +35,8 @@ else
     RELEASE=1 rake artifact:docker_oss
     rake artifact:dockerfiles
   else
-    VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker
-    VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss
+    VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker
+    VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss
     VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
     # Qualifier is passed from CI as optional field and specify the version postfix
     # in case of alpha or beta releases:
