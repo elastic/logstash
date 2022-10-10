@@ -38,7 +38,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.5.0]]
 ==== Notable issues fixed
 
-* Added missing "monitoring.cluster_uuid" to the env2yaml configuration whitelist and enables the user to set this configuration option via environment variable https://github.com/elastic/logstash/pull/14425[#14425]
+* Added missing "monitoring.cluster_uuid" to the env2yaml list of accepted configurations and enables the user to set this configuration option via environment variable https://github.com/elastic/logstash/pull/14425[#14425]
 * Use COPY instruction instead of ADD in Dockerfiles https://github.com/elastic/logstash/pull/14423[#14423]
 
 [[docs-8.5.0]]
