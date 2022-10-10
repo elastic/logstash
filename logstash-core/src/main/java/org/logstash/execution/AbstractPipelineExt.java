@@ -578,8 +578,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
 
         LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
-        if (Objects.isNull(delegatingGauge.getType()) ||
-                MetricType.GAUGE_NUMBER.asString().equals(delegatingGauge.getType().asString()) == false) {
+        if (Objects.isNull(delegatingGauge.getType()) || delegatingGauge.getType() != MetricType.GAUGE_NUMBER) {
             return Optional.empty();
         }
 
