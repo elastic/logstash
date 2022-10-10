@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -583,7 +584,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
 
         LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
-        if (MetricType.GAUGE_NUMBER.asString().equals(delegatingGauge.getType().asString()) == false) {
+        if (Objects.isNull(delegatingGauge.getType()) ||
+                MetricType.GAUGE_NUMBER.asString().equals(delegatingGauge.getType().asString()) == false) {
             return Optional.empty();
         }
 
