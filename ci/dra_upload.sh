@@ -7,7 +7,7 @@
 export JRUBY_OPTS="-J-Xmx1g"
 
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
-RELEASE_BRANCH=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\)\.[[:digit:]]*$/\1/p'`
+RELEASE_BRANCH=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\)\.[[:digit:]]*$/\1/p'`
 
 echo "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
