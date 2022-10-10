@@ -18,7 +18,7 @@ else
   # in case of alpha or beta releases:
   # e.g: 8.0.0-alpha1
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:all
-  STACK_VERSION="${STACK_VERSION}-${$VERSION_QUALIFIER_OPT}"
+  STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
 fi
 
 echo "Saving tar.gz for docker images"
