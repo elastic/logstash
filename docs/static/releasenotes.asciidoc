@@ -29,20 +29,23 @@ This section summarizes the changes in the following releases:
 [[logstash-8-5-0]]
 === Logstash 8.5.0 Release Notes
 
-* Update version of the bundled JDK to 17.0.4+8 https://github.com/elastic/logstash/pull/14424[#14424]
-* fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14425[#14425]
-* bump jruby version to 9.3.7.0 https://github.com/elastic/logstash/pull/14455[#14455] https://github.com/elastic/logstash/pull/14524[#14524]
-* winlogbeat-modules: add docs for interfacing winlogbeat with logstash https://github.com/elastic/logstash/pull/14472[#14472]
-* Feature: flow metrics integration https://github.com/elastic/logstash/pull/14518[#14518]
+[[features-8.5.0]]
+==== New features and enhancements
 
-2944eacd2 - Add missing reference to full config of LS-to-LS over HTTP (#14466) (3 weeks ago) <Andres Rodriguez>
-88d89fe89 - [Doc] add off-heap memory session (#14431) (4 weeks ago) <kaisecheng>
-5767b3b98 - Ensuring COPY instruction is used instead of ADD in Dockerfiles (#14423) (6 weeks ago) <lior-orca>
-f03330acd - Add monitoring.cluster_uuid as Docker env setting(#14425) (6 weeks ago) <Boris Djurdjevic>
-4771ad61b - Update version of the bundled JDK to 17.0.4+8 (#14424) (6 weeks ago) <Rob Bavey>
-535499811 - Doc: Fileset must be enabled in module (#14405) (7 weeks ago) <Karen Metts>
-07fe589d8 - [doc] Describe DLQ's age retention policy (#14340) (8 weeks ago) <Andrea Selva>
-3c5ed2b62 - Document the cleaning of consumed events feature (#14341) (8 weeks ago) <Andrea Selva>
+* It is often difficult to understand the health of a pipeline, including whether it is exerting or propagating back-pressure or otherwise staying reasonably “caught up” with its inputs. This release adds pipeline "flow" metrics to the node_stats API for each pipeline, which includes the current and lifetime rates for five key pipeline metrics: input_throughput, filter_throughput, output_throughput, queue_backpressure, and worker_concurrency. https://github.com/elastic/logstash/pull/14518[#14518]
+
+[[notable-8.5.0]]
+==== Notable issues fixed
+
+* Added missing "monitoring.cluster_uuid" to the env2yaml configuration whitelist and enables the user to set this configuration option via environment variable https://github.com/elastic/logstash/pull/14425[#14425]
+* Use COPY instruction instead of ADD in Dockerfiles https://github.com/elastic/logstash/pull/14423[#14423]
+
+[[docs-8.5.0]]
+==== Documentation Improvements and Fixes
+
+* Add missing reference to full config of Logstash to Logstash over HTTP https://github.com/elastic/logstash/pull/14466[#14466]
+* Describe DLQ's age retention policy https://github.com/elastic/logstash/pull/14340[#14340]
+* Document the cleaning of consumed events from DLQ https://github.com/elastic/logstash/pull/14341[#14341]
 
 ==== Plugins
 
