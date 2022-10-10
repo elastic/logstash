@@ -6,6 +6,11 @@
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
+# Extract the version number from the version.yml file
+# e.g.: 8.6.0
+# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
+STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+
 if [ -z "$VERSION_QUALIFIER_OPT" ]; then
   RELEASE=1 rake artifact:docker
   RELEASE=1 rake artifact:docker_oss
@@ -14,9 +19,11 @@ else
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss
   VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
+  # Qualifier is passed from CI as optional field and specify the version postfix
+  # in case of alpha or beta releases:
+  # e.g: 8.0.0-alpha1
+  STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
 fi
-
-STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
 echo "Saving tar.gz for docker images"
 docker save docker.elastic.co/logstash/logstash:${STACK_VERSION}-SNAPSHOT | gzip -c > build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz
