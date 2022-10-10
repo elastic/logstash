@@ -109,11 +109,13 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
 
     @Override
     protected IRubyObject closeImpl(final ThreadContext context) {
+        filter.close();
         return context.nil;
     }
 
     @Override
     protected IRubyObject doCloseImpl(final ThreadContext context) {
+        filter.close();
         return context.nil;
     }
 
