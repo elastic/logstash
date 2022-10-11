@@ -10,6 +10,9 @@ export JRUBY_OPTS="-J-Xmx1g"
 # e.g.: 8.6.0
 # The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+
+# WORKFLOW_TYPE is a CI externally configured environment variable where, if not an empty string,
+# it's assumed to be snapshot
 if [ -z "$WORKFLOW_TYPE"]; then
   STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 fi
