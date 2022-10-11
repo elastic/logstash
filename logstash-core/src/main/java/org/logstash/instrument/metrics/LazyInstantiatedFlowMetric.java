@@ -16,26 +16,23 @@ import java.util.function.Supplier;
  * and fully initializes when <em>both</em> return non-null values.
  *
  * @see FlowMetric#create(String, Supplier, Supplier)
- *
- * @param <N> the numerator metric's value type
- * @param <D> the denominator metric's value type
  */
-public class LazyInstantiatedFlowMetric<N extends Number, D extends Number> implements FlowMetric {
+public class LazyInstantiatedFlowMetric implements FlowMetric {
 
     static final Logger LOGGER = LogManager.getLogger(LazyInstantiatedFlowMetric.class);
 
     private final String name;
 
-    private final AtomicReference<Supplier<Metric<N>>> numeratorSupplier;
-    private final AtomicReference<Supplier<Metric<D>>> denominatorSupplier;
+    private final AtomicReference<Supplier<? extends Metric<? extends Number>>> numeratorSupplier;
+    private final AtomicReference<Supplier<? extends Metric<? extends Number>>> denominatorSupplier;
 
     private final SetOnceReference<FlowMetric> inner = SetOnceReference.unset();
 
     private static final Map<String,Double> EMPTY_MAP = Map.of();
 
     LazyInstantiatedFlowMetric(final String name,
-                               final Supplier<Metric<N>> numeratorSupplier,
-                               final Supplier<Metric<D>> denominatorSupplier) {
+                               final Supplier<? extends Metric<? extends Number>> numeratorSupplier,
+                               final Supplier<? extends Metric<? extends Number>> denominatorSupplier) {
         this.name = name;
         this.numeratorSupplier = new AtomicReference<>(numeratorSupplier);
         this.denominatorSupplier = new AtomicReference<>(denominatorSupplier);
@@ -68,10 +65,10 @@ public class LazyInstantiatedFlowMetric<N extends Number, D extends Number> impl
     private Optional<FlowMetric> attemptCreateInner() {
         if (inner.isSet()) { return inner.asOptional(); }
 
-        final Metric<N> numeratorMetric = numeratorSupplier.getAcquire().get();
+        final Metric<? extends Number> numeratorMetric = numeratorSupplier.getAcquire().get();
         if (Objects.isNull(numeratorMetric)) { return Optional.empty(); }
 
-        final Metric<D> denominatorMetric = denominatorSupplier.getAcquire().get();
+        final Metric<? extends Number> denominatorMetric = denominatorSupplier.getAcquire().get();
         if (Objects.isNull(denominatorMetric)) { return Optional.empty(); }
 
         final FlowMetric flowMetric = FlowMetric.create(this.name, numeratorMetric, denominatorMetric);
@@ -91,7 +88,7 @@ public class LazyInstantiatedFlowMetric<N extends Number, D extends Number> impl
         LOGGER.warn("Underlying metrics for `{}` not yet instantiated, could not capture their rates", this.name);
     }
 
-    private static <TT extends Number> Supplier<Metric<TT>> constantMetricSupplierFor(final Metric<TT> mm) {
+    private static Supplier<Metric<? extends Number>> constantMetricSupplierFor(final Metric<? extends Number> mm) {
         return () -> mm;
     }
 }

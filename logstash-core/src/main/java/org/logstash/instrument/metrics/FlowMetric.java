@@ -42,9 +42,9 @@ public interface FlowMetric extends Metric<Map<String,Double>> {
         }
     }
 
-    static <N extends Number, D extends Number> FlowMetric create(final String name,
-                                                                  final Supplier<Metric<N>> numeratorSupplier,
-                                                                  final Supplier<Metric<D>> denominatorSupplier) {
-        return new LazyInstantiatedFlowMetric<>(name, numeratorSupplier, denominatorSupplier);
+    static FlowMetric create(final String name,
+                             final Supplier<? extends Metric<? extends Number>> numeratorSupplier,
+                             final Supplier<? extends Metric<? extends Number>> denominatorSupplier) {
+        return new LazyInstantiatedFlowMetric(name, numeratorSupplier, denominatorSupplier);
     }
 }
