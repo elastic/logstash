@@ -49,12 +49,63 @@ def mock_settings(settings_values={})
   settings
 end
 
-def make_test_agent(settings=mock_settings)
+def make_test_agent(settings=mock_settings, config_source=nil)
     sl = LogStash::Config::SourceLoader.new
-    sl.add_source(LogStash::Config::Source::Local.new(settings))
+    sl.add_source(config_source || LogStash::Config::Source::Local.new(settings))
     sl
 
     ::LogStash::Agent.new(settings, sl)
+end
+
+def make_config_source(settings=mock_settings)
+  TestPipelineConfigSource.new(settings)
+end
+
+##
+# This TestPipelineConfigSource can be added to a LogStash::Config::SourceLoader
+# to provide pipeline config strings directly for testing purposes.
+class TestPipelineConfigSource
+  include LogStash::Util::Loggable
+
+  def initialize(settings)
+    @settings = settings
+    @pipelines = {}
+  end
+
+  def add_pipeline(pipeline_id, config_string, settings_overrides={})
+    logger.debug("adding pipeline `#{pipeline_id}` from string `#{config_string}` with additional settings `#{settings_overrides}`")
+    @pipelines[pipeline_id.to_sym] = compose_pipeline_config(pipeline_id, config_string, settings_overrides)
+  end
+
+  def remove_pipeline(pipeline_id)
+    logger.debug("removing pipeline `#{pipeline_id}`")
+    !!@pipelines.delete(pipeline_id.to_sym)
+  end
+
+  def pipeline_configs
+    @pipelines.values
+  end
+
+  def match?
+    true
+  end
+
+  def config_conflict?
+    false
+  end
+
+  private
+  def compose_pipeline_config(pipeline_id, config_string, pipeline_settings)
+    config_parts = [org.logstash.common.SourceWithMetadata.new("string", pipeline_id.to_s, config_string)]
+
+    merged_pipeline_settings = @settings.clone.tap do |s|
+      s.merge_pipeline_settings('pipeline.id'   => pipeline_id)
+      s.merge_pipeline_settings('config.string' => config_string.dup.freeze)
+      s.merge_pipeline_settings(pipeline_settings)
+    end
+
+    org.logstash.config.ir.PipelineConfig.new(self.class, pipeline_id.to_sym, config_parts, merged_pipeline_settings)
+  end
 end
 
 def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)
