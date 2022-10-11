@@ -6,8 +6,17 @@
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
 
+# Extract the version number from the version.yml file
+# e.g.: 8.6.0
+# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:\s\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 RELEASE_BRANCH=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\)\.[[:digit:]]*$/\1/p'`
+if [ -n "$VERSION_QUALIFIER_OPT" ]; then
+  # Qualifier is passed from CI as optional field and specify the version postfix
+  # in case of alpha or beta releases:
+  # e.g: 8.0.0-alpha1
+  STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
+fi
 
 echo "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
