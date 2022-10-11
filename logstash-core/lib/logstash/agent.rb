@@ -300,6 +300,10 @@ class LogStash::Agent
     @pipelines_registry.loading_pipelines
    end
 
+  def loaded_pipelines
+    @pipelines_registry.loaded_pipelines
+  end
+
   def non_running_pipelines
     @pipelines_registry.non_running_pipelines
   end
