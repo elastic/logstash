@@ -75,7 +75,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
 
     @SuppressWarnings("rawtypes")
     public Optional getMetric() {
-        return Optional.of(lazyMetric);
+        return Optional.ofNullable(lazyMetric);
     }
 
     @Override

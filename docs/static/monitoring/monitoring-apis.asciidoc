@@ -834,8 +834,8 @@ Example response:
           "current": 0.0
         },
         "growth_events": {
-          "lifetime": 0.234,
-          "current": 0.012
+          "lifetime": -1.201,
+          "current": -0.9913
         }
       },
       "data": {
