@@ -28,10 +28,16 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DecimalStyle;
 import java.time.format.ResolverStyle;
 import java.time.temporal.ChronoField;
 import java.util.Date;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.ackedqueue.Queueable;
 
 /**
@@ -42,6 +48,8 @@ import org.logstash.ackedqueue.Queueable;
 @JsonSerialize(using = ObjectMappers.TimestampSerializer.class)
 @JsonDeserialize(using = ObjectMappers.TimestampDeserializer.class)
 public final class Timestamp implements Comparable<Timestamp>, Queueable {
+
+    private static final Logger LOGGER = LogManager.getLogger(Timestamp.class);
 
     private transient org.joda.time.DateTime time;
 
@@ -57,11 +65,11 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
     }
 
     public Timestamp(String iso8601) {
-        this(iso8601, Clock.systemDefaultZone());
+        this(iso8601, Clock.systemDefaultZone(), Locale.getDefault());
     }
 
-    Timestamp(final String iso8601, final Clock clock) {
-        this.instant = tryParse(iso8601, clock);
+    Timestamp(final String iso8601, final Clock clock, final Locale locale) {
+        this.instant = tryParse(iso8601, clock, locale);
     }
 
     Timestamp(final Clock clock) {
@@ -164,13 +172,47 @@ public final class Timestamp implements Comparable<Timestamp>, Queueable {
             .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
             .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
             .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
-            .toFormatter().withZone(ZoneId.systemDefault());
+            .toFormatter()
+            .withZone(ZoneId.systemDefault())
+            .withDecimalStyle(DecimalStyle.ofDefaultLocale());
 
-    private static Instant tryParse(final String iso8601, final Clock clock) {
+    private static Instant tryParse(final String iso8601, final Clock clock, final Locale locale) {
+        final DateTimeFormatter configuredFormatter = LENIENT_ISO_DATE_TIME_FORMATTER.withLocale(locale)
+                                                                                     .withDecimalStyle(DecimalStyle.of(locale))
+                                                                                     .withZone(clock.getZone());
+        return tryParse(iso8601, configuredFormatter)
+                .or(() -> tryFallbackParse(iso8601, configuredFormatter, (f) -> f.withDecimalStyle(DecimalStyle.STANDARD)))
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Invalid ISO8601 input `%s`", iso8601)));
+    }
+
+    private static Optional<Instant> tryParse(final String iso8601,
+                                              final DateTimeFormatter configuredFormatter) {
         try {
-            return LENIENT_ISO_DATE_TIME_FORMATTER.withZone(clock.getZone()).parse(iso8601, Instant::from);
+            return Optional.of(configuredFormatter.parse(iso8601, Instant::from));
         } catch (java.time.format.DateTimeParseException e) {
-            throw new IllegalArgumentException(String.format("Invalid ISO8601 input `%s`", iso8601), e);
+            LOGGER.trace(String.format("Failed to parse `%s` with locale:`%s` and decimal_style:`%s`", iso8601, configuredFormatter.getLocale(), configuredFormatter.getDecimalStyle()), e);
+            return Optional.empty();
         }
+    }
+
+    /**
+     * Attempts to parse the input if-and-only-if the provided {@code formatterTransformer}
+     * effectively transforms the provided {@code baseFormatter}. This is intended to be a
+     * fallback method for a maybe-modified formatter to prevent re-parsing the same input
+     * with the same formatter multiple times.
+     *
+     * @param iso8601 an ISO8601-ish string
+     * @param baseFormatter the base formatter
+     * @param formatterTransformer a transformation operator (such as using DateTimeFormat#withDecimalStyle)
+     * @return an {@code Optional}, which contains a value if-and-only-if the effective format is different
+     *         from the base format and successfully parsed the input
+     */
+    private static Optional<Instant> tryFallbackParse(final String iso8601,
+                                                      final DateTimeFormatter baseFormatter,
+                                                      final UnaryOperator<DateTimeFormatter> formatterTransformer) {
+        final DateTimeFormatter modifiedFormatter = formatterTransformer.apply(baseFormatter);
+        if (modifiedFormatter.equals(baseFormatter)) { return Optional.empty(); }
+
+        return tryParse(iso8601, modifiedFormatter);
     }
 }
