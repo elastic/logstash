@@ -13,7 +13,7 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 
 # WORKFLOW_TYPE is a CI externally configured environment variable where, if not an empty string,
 # it's assumed to be snapshot
-if [ -z "$WORKFLOW_TYPE"]; then
+if [ -n "$WORKFLOW_TYPE"]; then
   STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 fi
 
@@ -34,8 +34,8 @@ if [ -z "$WORKFLOW_TYPE"]; then
 else
   # WORKFLOW_TYPE is set, it has value "SNAPSHOT"
   if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-    RELEASE=1 rake artifact:docker
-    RELEASE=1 rake artifact:docker_oss
+    rake artifact:docker
+    rake artifact:docker_oss
     rake artifact:dockerfiles
   else
     VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker
