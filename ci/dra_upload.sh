@@ -19,7 +19,7 @@ if [ -n "$VERSION_QUALIFIER_OPT" ]; then
 fi
 
 WORKFLOW="staging"
-if [ -z "$WORKFLOW_TYPE"]; then
+if [ -n "$WORKFLOW_TYPE"]; then
   STACK_VERSION=${STACK_VERSION}-SNAPSHOT
   WORKFLOW="snapshot"
 fi
