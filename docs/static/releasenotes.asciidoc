@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-7,Logstash 7.17.7>>
 * <<logstash-7-17-6,Logstash 7.17.6>>
 * <<logstash-7-17-5,Logstash 7.17.5>>
 * <<logstash-7-17-4,Logstash 7.17.4>>
@@ -64,6 +65,69 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-7]]
+=== Logstash 7.17.7 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.7
+
+* Backport PR #14132 to 7.17: Fix debug output for bin/logstash-plugin https://github.com/elastic/logstash/pull/14144[#14144]
+* fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14425[#14425]
+* fix SettingsImpl to remove hardcoded checkpointRetry https://github.com/elastic/logstash/pull/14487[#14487]
+* Backport PR #14487 to 7.17: fix SettingsImpl to remove hardcoded checkpointRetry https://github.com/elastic/logstash/pull/14494[#14494]
+* Backport PR #14425 to 7.17: fix(env2yaml): Add monitoring.cluster_uuid https://github.com/elastic/logstash/pull/14497[#14497]
+* DRA - Update scripts to use the version qualifier in stack_version https://github.com/elastic/logstash/pull/14589[#14589]
+* Extract the branch name passed to release-manager from version file https://github.com/elastic/logstash/pull/14592[#14592]
+* api: source pipelines that are fully-loaded https://github.com/elastic/logstash/pull/14595[#14595]
+* Updates DRA scripts to build snapshot artifacts https://github.com/elastic/logstash/pull/14600[#14600]
+* Backport PR #14592 to 7.17: Extract the branch name passed to release-manager from version file https://github.com/elastic/logstash/pull/14610[#14610]
+* Backport PR #14589 to 7.17: DRA - Update scripts to use the version qualifier in stack_version https://github.com/elastic/logstash/pull/14616[#14616]
+
+=== Logstash Commits between 7.17 and 7.17.6
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.6..7.17"
+
+7a516879f - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#14618) (5 minutes ago) <github-actions[bot]>
+eff28defc -  Backport PR #14589 to 7.17: DRA - Update scripts to use the version qualifier in stack_version (8 hours ago) <github-actions[bot]>
+0728acd6e - Extract the branch name passed to release-manager from version file (#14592) (#14610) (27 hours ago) <github-actions[bot]>
+fcebc8482 - Avoid to upload not created artifacts for Darwin AARCH64 in 7.17 (#14596) (6 days ago) <Andrea Selva>
+1fdde7184 - Some ARM machines doesn't have openjdk11 so resort to the jdk11 alias to be machines portable (#14593) (7 days ago) <Andrea Selva>
+fbf746b8a - Backport dra 7.17 (#14588) (7 days ago) <Andrea Selva>
+525fd342f - Fix debug output for bin/logstash-plugin (#14132) (#14144) (2 weeks ago) <github-actions[bot]>
+015e85169 - Add monitoring.cluster_uuid as Docker env setting(#14425) (#14497) (5 weeks ago) <Andrea Selva>
+fa35bb8f9 - fix SettingsImpl to remove hardcoded checkpointRetry (#14487) (#14494) (5 weeks ago) <github-actions[bot]>
+38574bd6e - Doc: Update release notes with security notice [7.17] (#14467) (7 weeks ago) <Karen Metts>
+82d13eb44 - Version bump for 7.17.7 (#14464) (7 weeks ago) <Rob Bavey>
+361279da1 - Release notes for 7.17.6 (#14462) (7 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.6..7.17 *.release"
+Changed plugin versions:
+logstash-codec-json: 3.1.0 -> 3.1.1
+logstash-input-file: 4.4.3 -> 4.4.4
+logstash-input-unix: 3.1.1 -> 3.1.2
+logstash-integration-rabbitmq: 7.3.0 -> 7.3.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Json Codec - 3.1.1*
+
+* Fix: when decoded JSON includes an `[event][original]` field, having `ecs_compatibility` enabled will no longer overwrite the decoded field https://github.com/logstash-plugins/logstash-codec-json/pull/43[#43]
+
+*File Input - 4.4.4*
+
+* Fixes gzip file handling in read mode when run on JDK12+, including JDK17 that is bundled with Logstash 8.4+ https://github.com/logstash-plugins/logstash-input-file/pull/312[#312]
+
+*Unix Input - 3.1.2*
+
+* Fix: eliminate high CPU usage when data timeout is disabled and no data is available on the socket https://github.com/logstash-plugins/logstash-input-unix/pull/30[#30]
+
+*Rabbitmq Integration - 7.3.1*
+
+* DOCS: clarify the availability and cost of using the `metadata_enabled` option https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/52[#52]
 
 
 [[logstash-7-17-6]]
