@@ -96,7 +96,7 @@ public final class MetricKeys {
 
     public static final RubySymbol UPTIME_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_millis");
 
-    public static final RubySymbol QUEUE_GROWTH_EVENTS_KEY = RubyUtil.RUBY.newSymbol("growth_events");
+    public static final RubySymbol QUEUE_PERSISTED_GROWTH_EVENTS_KEY = RubyUtil.RUBY.newSymbol("queue_persisted_growth_events");
 
-    public static final RubySymbol QUEUE_GROWTH_BYTES_KEY = RubyUtil.RUBY.newSymbol("growth_bytes");
+    public static final RubySymbol QUEUE_PERSISTED_GROWTH_BYTES_KEY = RubyUtil.RUBY.newSymbol("queue_persisted_growth_bytes");
 }
