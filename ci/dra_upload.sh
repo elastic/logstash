@@ -13,7 +13,13 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 
 # This is the branch selector that needs to be passed to the release-manager
 # It has to be the name of the branch which originates the artifacts.
-RELEASE_BRANCH=`git rev-parse --abbrev-ref HEAD`
+RELEASE_VER=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\)\.[[:digit:]]*$/\1/p'`
+if [ -n "$(git ls-remote --heads origin $RELEASE_VER)" ] ; then
+    RELEASE_BRANCH=$RELEASE_VER
+else
+    RELEASE_BRANCH=main
+fi
+
 if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   # Qualifier is passed from CI as optional field and specify the version postfix
   # in case of alpha or beta releases:
@@ -26,6 +32,7 @@ if [ -n "$WORKFLOW_TYPE" ]; then
   STACK_VERSION=${STACK_VERSION}-SNAPSHOT
   WORKFLOW="snapshot"
 fi
+echo "Uploading artifacts for ${WORKFLOW} workflow on branch: ${RELEASE_BRANCH}"
 
 echo "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
