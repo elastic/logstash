@@ -126,13 +126,13 @@ describe "Test Logstash service when config reload is enabled" do
       )
 
       if logstash_service.settings.feature_flag == "persistent_queues"
-        expect(flow_status).to include(
+        expect(pipeline_flow_stats).to include(
                                  'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Number), 'lifetime' => a_kind_of(Number)),
                                  'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Number), 'lifetime' => a_kind_of(Number))
                                )
       else
-        expect(flow_status).to_not include('queue_persisted_growth_bytes')
-        expect(flow_status).to_not include('queue_persisted_growth_events')
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_bytes')
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_events')
       end
     end
 
