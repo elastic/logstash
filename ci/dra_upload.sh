@@ -94,14 +94,6 @@ gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSI
 echo "Downloaded ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
-# reposition files as expected by the release-manager
-mv build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz .
-mv build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz .
-mv build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz .
-mv build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz .
-mv build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz .
-mv build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz .
-
 mkdir -p build/distributions/dependencies-reports/
 mv build/logstash-${STACK_VERSION}.csv build/distributions/dependencies-${STACK_VERSION}.csv
 
