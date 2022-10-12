@@ -1,4 +1,4 @@
-#!/bin/bash -ie
+#!/bin/bash -iex
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
 
 # Since we are using the system jruby, we need to make sure our jvm process
