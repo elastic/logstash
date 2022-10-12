@@ -204,8 +204,8 @@ describe "Test Monitoring API" do
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # monitoring api can fail if the subsystem isn't ready
       result = logstash_service.monitoring_api.logging_get rescue nil
-      expect(result).not_to be_nil
-      expect(result["loggers"].size).to be > 0
+      expect(result).to_not be_nil
+      expect(result).to include(loggers => an_object_having_attributes(:size => a_value > 0))
     end
 
     #default
