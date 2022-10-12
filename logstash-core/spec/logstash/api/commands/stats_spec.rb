@@ -188,8 +188,7 @@ describe LogStash::Api::Commands::Stats do
                                                :capacity,
                                                :events,
                                                :type,
-                                               :data,
-                                               :flow)
+                                               :data)
         expect(report[:main][:queue][:capacity].keys).to include(
                                                            :page_capacity_in_bytes,
                                                            :max_queue_size_in_bytes,
