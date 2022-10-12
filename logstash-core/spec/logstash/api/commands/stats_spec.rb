@@ -178,7 +178,9 @@ describe LogStash::Api::Commands::Stats do
                                                  :filter_throughput,
                                                  :queue_backpressure,
                                                  :worker_concurrency,
-                                                 :input_throughput
+                                                 :input_throughput,
+                                                 :queue_persisted_growth_bytes,
+                                                 :queue_persisted_growth_events
                                                )
       end
       it "returns queue metric information" do
@@ -197,9 +199,6 @@ describe LogStash::Api::Commands::Stats do
                                                            :storage_type,
                                                            :path,
                                                            :free_space_in_bytes)
-        expect(report[:main][:queue][:flow].keys).to include(
-                                                       :growth_bytes,
-                                                       :growth_events)
       end
     end
     context "when using multiple pipelines" do

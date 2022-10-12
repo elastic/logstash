@@ -534,6 +534,18 @@ A pipeline with only one single-threaded input may contribute up to 1.00, a pipe
 
 Additionally, some amount of back-pressure is both _normal_ and _expected_ for pipelines that are _pulling_ data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
 
+| `queue_persisted_growth_bytes` |
+Only available when pipeline is using persisted queue.
+This metric is the growth rate of bytes being pushed into the pipeline's persisted queue relative to wall-clock time (`queue.queue_size_in_bytes` / second).
+
+For the ideal condition, this metric should trend toward zero (or negative).
+
+| `queue_persisted_growth_events` |
+Only available when pipeline is using persisted queue.
+This metric is the growth rate of events being pushed into the pipeline's persisted queue relative to wall-clock time (`queue.events_count` / second).
+
+For the ideal condition, this metric should trend toward zero (or negative).
+
 |===
 
 Each flow stat includes rates for one or more recent windows of time:
@@ -613,6 +625,14 @@ Example response:
         "worker_concurrency" : {
           "current": 1.973,
           "lifetime": 1.721
+        },
+        "queue_persisted_growth_bytes": {
+          "lifetime": 0.032,
+          "current": 0.0
+        },
+        "queue_persisted_growth_events": {
+          "lifetime": -1.201,
+          "current": -0.9913
         }
       },
       "plugins" : {
@@ -771,6 +791,14 @@ Example response:
         "worker_concurrency" : {
           "current": 1.973,
           "lifetime": 1.721
+        },
+        "queue_persisted_growth_bytes": {
+          "lifetime": 0.032,
+          "current": 0.0
+        },
+        "queue_persisted_growth_events": {
+          "lifetime": -1.201,
+          "current": -0.9913
         }
       },
       "plugins" : {
@@ -828,25 +856,16 @@ Example response:
           "max_queue_size_in_bytes": 1073741824,
           "queue_size_in_bytes": 3885
         },
-        "flow": {
-          "growth_bytes": {
-          "lifetime": 0.032,
-          "current": 0.0
+        "data": {
+          "path": "/pipeline/queue/path",
+          "free_space_in_bytes": 936886480896,
+          "storage_type": "apfs"
         },
-        "growth_events": {
-          "lifetime": -1.201,
-          "current": -0.9913
-        }
-      },
-      "data": {
-        "path": "/pipeline/queue/path",
-        "free_space_in_bytes": 936886480896,
-        "storage_type": "apfs"
-      },
-      "events": 0,
-      "events_count": 0,
-      "queue_size_in_bytes": 3885,
-      "max_queue_size_in_bytes": 1073741824
+        "events": 0,
+        "events_count": 0,
+        "queue_size_in_bytes": 3885,
+        "max_queue_size_in_bytes": 1073741824
+      }
     }
   }
 }

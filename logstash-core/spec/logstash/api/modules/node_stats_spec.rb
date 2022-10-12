@@ -116,7 +116,9 @@ describe LogStash::Api::Modules::NodeStats do
          "filter_throughput" => Hash,
          "queue_backpressure" => Hash,
          "worker_concurrency" => Hash,
-         "input_throughput" => Hash
+         "input_throughput" => Hash,
+         "queue_persisted_growth_bytes" => Hash,
+         "queue_persisted_growth_events" => Hash
        },
        "plugins" => {
           "inputs" => Array,
@@ -137,10 +139,6 @@ describe LogStash::Api::Modules::NodeStats do
            "storage_type" => String,
            "path" => String,
            "free_space_in_bytes" => Numeric
-         },
-         "flow" => {
-           "growth_bytes" => Hash,
-           "growth_events" => Hash
          }
        }
      }

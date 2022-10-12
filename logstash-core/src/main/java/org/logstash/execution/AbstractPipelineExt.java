@@ -521,7 +521,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
-        // collect the growth_events & growth_bytes metrics if only persisted queue is enabled.
+        // collect the queue_persisted_growth_events & queue_persisted_growth_bytes metrics if only persisted queue is enabled.
         if (getSetting(context, QueueFactoryExt.CONTEXT_NAME).asJavaString()
                 .equals(QueueFactoryExt.PERSISTED_TYPE)) {
 
@@ -580,8 +580,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             return Optional.empty();
         }
 
-        NumberGauge castedNumberGauge = (NumberGauge) delegatingGauge.getMetric().get();
-        return Optional.of(castedNumberGauge);
+        return Optional.of((NumberGauge) delegatingGauge.getMetric().get());
     }
 
     private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
