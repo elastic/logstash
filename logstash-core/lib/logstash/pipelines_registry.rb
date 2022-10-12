@@ -279,6 +279,10 @@ module LogStash
       select_pipelines { |state| state.loading? }
     end
 
+    def loaded_pipelines
+      select_pipelines { |state| !state.loading? }
+    end
+
     # @return [Hash{String=>Pipeline}]
     def non_running_pipelines
       select_pipelines { |state| state.terminated? }

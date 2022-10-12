@@ -36,7 +36,8 @@ module LogStash
         def pipelines(options={})
           pipeline_ids = service.get_shallow(:stats, :pipelines).keys
           pipeline_ids.each_with_object({}) do |pipeline_id, result|
-            result[pipeline_id] = pipeline(pipeline_id, options)
+            pipeline_node = pipeline(pipeline_id, options)
+            result[pipeline_id] = pipeline_node unless pipeline_node.empty?
           end
         rescue Instrument::MetricStore::MetricNotFound
           {}
@@ -62,8 +63,8 @@ module LogStash
             metrics.merge!(extended_stats)
           end
           metrics
-        rescue
-          {}
+        rescue LogStash::Instrument::MetricStore::MetricNotFound
+          {} # empty
         end
 
         def os
