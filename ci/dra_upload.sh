@@ -108,6 +108,8 @@ chmod -R a+w $PWD
 # ensure the latest image has been pulled
 docker pull docker.elastic.co/infra/release-manager:latest
 
+echo "Creating artifacts for ${worflow} workflow on branch: ${RELEASE_BRANCH}"
+
 # collect the artifacts for use with the unified build
 docker run --rm \
   --name release-manager \
