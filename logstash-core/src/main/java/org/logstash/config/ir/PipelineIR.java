@@ -41,7 +41,7 @@ public final class PipelineIR implements Hashable {
 
     private final Graph graph;
 
-    private QueueVertex queue;
+    private final QueueVertex queue;
 
     // Temporary until we have LIR execution
     // Then we will no longer need this property here
@@ -70,12 +70,7 @@ public final class PipelineIR implements Hashable {
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
 
-        try {
-            queue = (QueueVertex) this.graph.getVertexById(tempQueue.getId());
-        } catch(NoSuchElementException e) {
-            // it's a pipeline without a queue
-            queue = tempQueue;
-        }
+        this.queue = selectQueueVertex(this.graph, tempQueue);
 
         this.graph.validate();
 
@@ -140,5 +135,14 @@ public final class PipelineIR implements Hashable {
     @Override
     public String uniqueHash() {
         return this.uniqueHash;
+    }
+
+    private static QueueVertex selectQueueVertex(final Graph graph, final QueueVertex tempQueue) {
+        try {
+            return (QueueVertex) graph.getVertexById(tempQueue.getId());
+        } catch(NoSuchElementException e) {
+            // it's a pipeline without a queue
+            return tempQueue;
+        }
     }
 }
