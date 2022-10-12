@@ -13,7 +13,8 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 
 # This is the branch selector that needs to be passed to the release-manager
 # It has to be the name of the branch which originates the artifacts.
-RELEASE_BRANCH=`git symbolic-ref --short HEAD`
+RELEASE_BRANCH=`git branch --show-current`
+echo "RELEASE_BRANCH is: ${RELEASE_BRANCH}"
 if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   # Qualifier is passed from CI as optional field and specify the version postfix
   # in case of alpha or beta releases:
@@ -108,7 +109,7 @@ chmod -R a+w $PWD
 # ensure the latest image has been pulled
 docker pull docker.elastic.co/infra/release-manager:latest
 
-echo "Creating artifacts for ${WORKFLOW} workflow on branch: ${RELEASE_BRANCH}"
+echo "Uploading artifacts for ${WORKFLOW} workflow on branch: ${RELEASE_BRANCH}"
 
 # collect the artifacts for use with the unified build
 docker run --rm \
