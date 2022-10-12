@@ -1,7 +1,7 @@
 [[ls-k8s-common-problems]]
 === Common problems
 
-Following are some suggested resolutions to problems that you may encounter when running Logstash in a Kubernetes environment.
+Following are some suggested resolutions to problems that you may encounter when running {ls} in a Kubernetes environment.
 
 * <<problem-keep-restart>>
 * <<problem-oom>>
@@ -11,37 +11,34 @@ Following are some suggested resolutions to problems that you may encounter when
 === Logstash keeps restarting
 When you check the running Kubernetes pods status, {ls} shows continual restarts. 
 
-```
+[source,bash]
+--
 NAMESPACE     NAME                                  READY   STATUS    RESTARTS      AGE
 default       logstash-f7768c66d-grzbj              0/1     Running   3 (55s ago)   6m32s
-```
+--
 
 This can be caused by a few issues:
 
 [float]
-[[problem-health]]
-==== Unable to access health check endpoint
-
-[float]
 [[problem-nometric]]
-===== Metrics API not accessible to `readinessProbe`
+==== Metrics API not accessible to `readinessProbe`
 
-If the `readinessProbe` is unable to access the health check endpoint, the logstash process will be continuously stopped and restarted. To fix set
-```
+If the `readinessProbe` is unable to access the health check endpoint, the {ls} process will be continuously stopped and restarted. To fix it, set the following in `logstash.yml` in `ConfigMap`.
+
+[source,bash]
+--
 api.http.host: 0.0.0.0
-```
-
-in `logstash.yml`
+--
 
 [float]
 [[problem-delay]]
-===== Logstash startup process takes longer than `initialDelaySeconds`
+==== {ls} startup process takes longer than `initialDelaySeconds`
 
-It may be necessary to review the time constraints of `readinessProbe` and `livenessProbe` to ensure that Logstash has enough time to start up and expose the health check endpoint for the `readiness` and `liveness` probes to access.
+It may be necessary to review the time constraints of `readinessProbe` and `livenessProbe` to ensure that {ls} has enough time to start up and expose the health check endpoint for the `readiness` and `liveness` probes to access.
 
 [float]
 [[problem-insufficient]]
-==== Insufficient CPU or memory to start Logstash
+==== Insufficient CPU or memory to start {ls}
 
 Review CPU and memory usage using `kubectl top pods` (note that this requires metrics server to be available for your Kubernetes implementation)
 
@@ -52,10 +49,10 @@ Review CPU and memory usage using `kubectl top pods` (note that this requires me
 
 [float]
 [[problem-oom]]
-=== Logstash stops with OOM errors
+=== {ls} stops with OOM errors
 The status of {ls} shows `Ready` but the pod continues to stop running.
 
-This can be caused by insufficient memory. If the memory of Logstash use more than the declared resource, kubernetes kill the pod immediately and the log of Logstash does not show any shutdown related message.
+This can be caused by insufficient memory. If the memory of {ls} use more than the declared resource, kubernetes kill the pod immediately and the log of {ls} does not show any shutdown related message.
 
 Run `kubectl get event --watch` or `kubectl describe pod` to check kubernetes event if the status shows `OOMKilled`.
 
