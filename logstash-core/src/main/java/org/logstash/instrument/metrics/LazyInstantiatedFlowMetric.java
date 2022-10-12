@@ -17,11 +17,9 @@ import java.util.function.Supplier;
  *
  * @see FlowMetric#create(String, Supplier, Supplier)
  */
-public class LazyInstantiatedFlowMetric implements FlowMetric {
+public class LazyInstantiatedFlowMetric extends AbstractMetric<Map<String, Double>> implements FlowMetric {
 
     static final Logger LOGGER = LogManager.getLogger(LazyInstantiatedFlowMetric.class);
-
-    private final String name;
 
     private final AtomicReference<Supplier<? extends Metric<? extends Number>>> numeratorSupplier;
     private final AtomicReference<Supplier<? extends Metric<? extends Number>>> denominatorSupplier;
@@ -33,7 +31,7 @@ public class LazyInstantiatedFlowMetric implements FlowMetric {
     LazyInstantiatedFlowMetric(final String name,
                                final Supplier<? extends Metric<? extends Number>> numeratorSupplier,
                                final Supplier<? extends Metric<? extends Number>> denominatorSupplier) {
-        this.name = name;
+        super(name);
         this.numeratorSupplier = new AtomicReference<>(numeratorSupplier);
         this.denominatorSupplier = new AtomicReference<>(denominatorSupplier);
     }
@@ -41,11 +39,6 @@ public class LazyInstantiatedFlowMetric implements FlowMetric {
     @Override
     public void capture() {
         getInner().ifPresentOrElse(FlowMetric::capture, this::warnNotInitialized);
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
     }
 
     @Override

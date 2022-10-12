@@ -39,7 +39,6 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -528,17 +527,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
             final RubySymbol[] queueNamespace = buildNamespace(QUEUE_KEY);
             final RubySymbol[] queueCapacityNamespace = buildNamespace(QUEUE_KEY, CAPACITY_KEY);
-            final RubySymbol[] queueFlowNamespace = buildNamespace(QUEUE_KEY, FLOW_KEY);
 
             final Supplier<NumberGauge> eventsGaugeMetricSupplier = () -> initOrGetNumberGaugeMetric(context, queueNamespace, EVENTS_KEY).orElse(null);
-            final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_GROWTH_EVENTS_KEY, eventsGaugeMetricSupplier, () -> uptimeInPreciseSeconds);
+            final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_PERSISTED_GROWTH_EVENTS_KEY, eventsGaugeMetricSupplier, () -> uptimeInPreciseSeconds);
             this.flowMetrics.add(growthEventsFlow);
-            storeMetric(context, queueFlowNamespace, growthEventsFlow);
+            storeMetric(context, flowNamespace, growthEventsFlow);
 
             final Supplier<NumberGauge> queueSizeInBytesMetricSupplier = () -> initOrGetNumberGaugeMetric(context, queueCapacityNamespace, QUEUE_SIZE_IN_BYTES_KEY).orElse(null);
-            final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_GROWTH_BYTES_KEY, queueSizeInBytesMetricSupplier, () -> uptimeInPreciseSeconds);
+            final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_PERSISTED_GROWTH_BYTES_KEY, queueSizeInBytesMetricSupplier, () -> uptimeInPreciseSeconds);
             this.flowMetrics.add(growthBytesFlow);
-            storeMetric(context, queueFlowNamespace, growthBytesFlow);
+            storeMetric(context, flowNamespace, growthBytesFlow);
         }
         return context.nil;
     }
