@@ -26,6 +26,7 @@ if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   # in case of alpha or beta releases:
   # e.g: 8.0.0-alpha1
   STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
+  RELEASE_VER="${RELEASE_VER}-${VERSION_QUALIFIER_OPT}"
 fi
 
 WORKFLOW="staging"
