@@ -276,8 +276,8 @@ describe "Test Monitoring API" do
       )
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(flow_status).to include(
-                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Number)),
-                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Number))
+                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
+                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
                                )
       else
         expect(flow_status).to_not include('queue_persisted_growth_bytes')
