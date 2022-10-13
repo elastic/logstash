@@ -18,7 +18,7 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
-
+        echo "INFO: WORKFLOW_TYPE is snapshot"
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:all
         else
@@ -31,6 +31,7 @@ case "$WORKFLOW_TYPE" in
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 	;;
     staging)
+        echo "INFO: WORKFLOW_TYPE is staging"
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:all
         else
@@ -42,6 +43,7 @@ case "$WORKFLOW_TYPE" in
         fi
 	;;
     *)
+        echo "INFO: WORKFLOW_TYPE is not set, exiting..."
         exit 1
 	;;
 esac
