@@ -54,15 +54,15 @@ case "$WORKFLOW_TYPE" in
 	;;
 esac
 
-echo "Saving tar.gz for docker images"
+echo "INFO: Saving tar.gz for docker images"
 docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz
 docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz
 docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz
 
-echo "GENERATED ARTIFACTS"
+echo "INFO: GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
-echo "UPLOADING TO INTERMEDIATE BUCKET"
+echo "INFO: UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 gsutil cp build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 gsutil cp build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/

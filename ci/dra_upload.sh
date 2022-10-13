@@ -38,9 +38,9 @@ case "$WORKFLOW_TYPE" in
 	;;
 esac
 
-echo "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
+echo "INFO: Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
 
-echo "Download all the artifacts for version ${STACK_VERSION}"
+echo "INFO: Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}-no-jdk.deb build/
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}.csv build/
@@ -97,7 +97,7 @@ gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-ubi8-${STACK_
 
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}.csv build/
 
-echo "Downloaded ARTIFACTS"
+echo "INFO: Downloaded ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
 mkdir -p build/distributions/dependencies-reports/

@@ -46,22 +46,22 @@ case "$WORKFLOW_TYPE" in
 	;;
 esac
 
-echo "Saving tar.gz for docker images"
+echo "INFO: Saving tar.gz for docker images"
 docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz
 docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz
 docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz
 
-echo "GENERATED ARTIFACTS"
+echo "INFO: GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
-echo "Creating dependencies report for ${STACK_VERSION}"
+echo "INFO: Creating dependencies report for ${STACK_VERSION}"
 mkdir -p build/distributions/dependencies-reports/
 bin/dependencies-report --csv=build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
-echo "GENERATED DEPENDENCIES REPORT"
+echo "INFO: GENERATED DEPENDENCIES REPORT"
 shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
-echo "UPLOADING TO INTERMEDIATE BUCKET"
+echo "INFO: UPLOADING TO INTERMEDIATE BUCKET"
 for file in build/logstash-*; do
   gsutil cp $file gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 done
