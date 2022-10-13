@@ -11,14 +11,10 @@ export JRUBY_OPTS="-J-Xmx1g"
 # The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
-# WORKFLOW_TYPE is a CI externally configured environment variable where, if not an empty string,
-# it's assumed to be snapshot
-
+# WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
-        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 
-        # WORKFLOW_TYPE is set, it has value "SNAPSHOT"
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:docker
             rake artifact:docker_oss
@@ -32,6 +28,8 @@ case "$WORKFLOW_TYPE" in
             # e.g: 8.0.0-alpha1
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
+
+        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 	;;
     staging)
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
