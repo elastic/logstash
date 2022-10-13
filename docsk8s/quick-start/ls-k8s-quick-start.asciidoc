@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-This guide describes how to set up {ls} to deliver Kubernetes logs to {es}. The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered into an {es} cluster in the Kubernetes environment.
+This guide describes how to set up {ls} to deliver Kubernetes logs to {es}. The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered into an {es} cluster in the Kubernetes environment. This also configures local stack monitoring, with a metricbeat instance monitoring the logstash instance.
 
 This section includes the following topics:
 
@@ -13,6 +13,7 @@ This section includes the following topics:
 * <<qs-create-elastic-stack>>
 * <<qs-view-monitoring-data>>
 * <<qs-tidy-up>>
+* <<qs-external-elasticsearch>>
 * <<qs-learn-more>>
 
 [float]
@@ -21,26 +22,19 @@ This section includes the following topics:
 
 Before you start, there are a few things you'll need:
 
-. A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
+. A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Get Started!` section for install and set up instructions.
 . A link:https://github.com/elastic/logstash/blob/feature/kubernetes/k8s/recipes/logstash-k8s-quickstart.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
 [float]
 [[qs-set-up]]
-=== Set up your environment
+=== Prepare environment
 
-.Setup the Elastic Stack
-[%collapsible]
-====
+[float]
+[[qs-crd]]
+==== Install Elastic CRDs
 
+To make it easy to install other elements of the Elastic stack we will install Elastic custom resource definition (CRD) files, as well as the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
 
-Let's start by getting your Minikube Kubernetes cluster up and running:
-
-[source,sh]
---
-minikube start
---
-
-Install the Elastic custom resource definition (CRD) files, as well as the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
 
 [source,sh]
 --
@@ -51,6 +45,7 @@ kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
 NOTE: The Elastic CRDs and ECK operator can also be set up using Elastic Helm charts, available at link:https://helm.elastic.co[https://helm.elastic.co].
 
 Check the Kubernetes pods status to confirm that the `elastic-operator` pod is running:
+
 
 [source,sh]
 --
@@ -65,9 +60,9 @@ elastic-operator-0   1/1     Running   4 (12m ago)   13d
 
 [float]
 [[qs-generate-certificate]]
-=== Generate certificate files
+==== Generate certificate files and create Kubernetes Secret definition
 
-To enable secure communication throughout your Kubernetes resources, run the sample script to generate the CA certificate files. Details about these files are in <<sample-configuration-files,Sample configuration files>>.
+To enable secure communication between the elastic stack components in your Kubernetes cluster, we have provided this sample script to generate the CA certificate files. Details about these files are in <<sample-configuration-files,Sample configuration files>>.
 
 [source,sh]
 --
@@ -98,26 +93,39 @@ Signature ok
 subject=/C=EU/ST=NA/O=Elastic/CN=ClientName
 Getting CA Private Key
 --
-====
 
-Your `logstash-k8s-gs/cert` folder should now contain a set of certificate files, including `client` certificates for Filebeat and Metricbeat, and `server` certificates for Logstash. 
+Your `logstash-k8s-qs/cert` folder should now contain a set of certificate files, including `client` certificates for Filebeat and Metricbeat, and `server` certificates for Logstash.
 
-The parent `logstash-k8s-gs` directory also has a new `001-secret.yaml` resources file that stores a hash of the client and server certificates.
+The parent `logstash-k8s-qs` directory also has a new `001-secret.yaml` resources file that stores a hash of the client and server certificates.
 
 image::./images/gs-cert-files.png[generated CA certificate files]
 
+====
+
+[float]
+[[qs-create-kubernetes-cluster]]
+=== Create Kubernetes Cluster
+
+As part of this configuration, we will be setting up Elastic Stack components and Logstash
+
 [float]
 [[qs-create-elastic-stack]]
-=== Create an Elastic Stack
+==== Create Elastic Stack components
 
-Now that your environment and certificates are set up, it's time to create an Elastic Stack. Run the following command to deploy the example using the sample CRDs:
+Now that your environment and certificates are set up, it's time to create an Elastic Stack. We will be creating:
 
+* Elasticsearch - you know, for search
+* Kibana - for data visualization
+* Filebeat - to monitor container logs
+* Metricbeat - to monitor logstash and send stack monitoring data.
 
+as well as the secret definition containing the keys and certificates we generated earlier.
+
+Run the following command to deploy the example using the sample resources provided:
 
 [source,sh]
 --
-kubectl apply -f "000-elasticsearch.yaml 005-filebeat.yaml 006-metricbeat.yaml 007-kibana.yaml"
-
+kubectl apply -f "000-elasticsearch.yaml,001-secret.yaml,005-filebeat.yaml,006-metricbeat.yaml,007-kibana.yaml"
 --
 
 The elastic stack resources are created:
@@ -148,7 +156,6 @@ demo-kb-d7f585494-vbf6s                 1/1     Running   0              39s
 elastic-operator-0                      1/1     Running   4 (164m ago)   13d
 --
 
-====
 
 [float]
 [[qs-set-up-logstash]]
@@ -156,192 +163,16 @@ elastic-operator-0                      1/1     Running   4 (164m ago)   13d
 
 Now we have an elastic stack to communicate with, let's set up Logstash.
 
-Firstly, we'll create the `ConfigMaps` to hold logstash settings and
-pipeline configuration. Each configuration file that we want to use, will require
-its own `ConfigMap` definition. Note that rather than setting JVM settings in a
-`jvm.options` config file, we recommend setting `LS_JAVA_OPTS`
-
-[[qs-configmap]]
-`001-configmap.yaml`::
-This contains the Logstash settings and pipeline configuration:
-+
-[source,yaml]
---
-  ---
-# ConfigMap for logstash pipeline definition
-data:
-  logstash.conf: | <1>
-    input {
-      beats {
-        port => "5044"
-        ssl => true
-        ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
-        ssl_certificate => "/usr/share/logstash/config/server.crt"
-        ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
-        ssl_verify_mode => "force_peer"
-      }
-    }
-    output {
-      elasticsearch {
-        hosts => ["https://demo-es-http:9200"]
-        index => "kube-apiserver-%{+YYYY.MM.dd}"
-        cacert => "/usr/share/logstash/config/es_ca.crt"
-        user => 'elastic'
-        password => '${ELASTICSEARCH_PASSWORD}'
-      }
-    }
----
-# ConfigMap for logstash.yml definition
-data:
-  logstash.yml: | <2>
-    api.http.host: "0.0.0.0"
---
-
-<1> Definition of logstash configuration file. We will refer to this later in the deployment file, where we will define volumes
-<2> Definition of `logstash.yml` file (link to logstash.yml file).
-    Each key/value pair to override defaults will need to be defined here. This will be refered to later in
-    the deployment file
+When setting up Logstash in Kubernetes, we will typically use <<qs-configmap, ConfigMaps>> to set up Logstash configurations, and our pipeline definitions - see <<ls-k8s-configuration-files, Logstash Configuration files in Kubernetes>> for more details on how to configure Logstash in Kubernetes.
 
 
-Then, we'll create the deployment definition for {ls}, including memory, CPU resources, the container ports, timeout settings, and similar.
-This file also includes the mount details for the secrets used in a secure setup:
+Then, we'll create the <<qs-deployment, deployment definition>> for {ls}, including memory, CPU resources, the container ports, timeout settings, and similar, and the <<qs-service, Service definition>>, opening up ports on the logstash pods to the internal metricbeat (for stack monitoring) and filebeat in this instance
 
-[[qs-deployment]]
-`002-deployment.yaml`::
-Contains the configuration definition for {ls}.
-+
-[source,yaml]
---
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: logstash-demo
-  template:
-    metadata:
-      labels:
-        app: logstash-demo
-    spec:
-      containers:
-        - name: logstash
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-          image: {docker-image} <1>
-          env:
-            - name: LS_JAVA_OPTS <2>
-              value: "-Xmx1g -Xms1g"
-            - name: ELASTICSEARCH_PASSWORD <11>
-              valueFrom:
-                secretKeyRef:
-                  name: demo-es-elastic-user
-                  key: elastic
-          resources:
-            limits: <3>
-              cpu: 2000m
-              memory: 2Gi
-            requests:
-              cpu: 1000m
-              memory: 2Gi
-          ports: <4>
-            - containerPort: 9600
-              name: stats
-            - containerPort: 5044
-              name: beats
-          livenessProbe: <5>
-            httpGet:
-              path: /
-              port: 9600
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe: <6>
-            httpGet:
-              path: /
-              port: 9600
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
-          volumeMounts: <7>
-            - name: logstash-pipeline
-              mountPath: /usr/share/logstash/pipeline
-            - name: logstash-config <8>
-              mountPath: /usr/share/logstash/config/logstash.yml
-              subPath: logstash.yml
-            - name: es-certs <9>
-              mountPath: /usr/share/logstash/config/es_ca.crt
-              subPath: ca.crt
-            - name: logstash-beats-tls
-              mountPath: /usr/share/logstash/config/ca.crt
-              subPath: ca.crt
-            - name: logstash-beats-tls
-              mountPath: /usr/share/logstash/config/server.pkcs8.key
-              subPath: server.pkcs8.key
-            - name: logstash-beats-tls
-              mountPath: /usr/share/logstash/config/server.crt
-              subPath: server.crt
-      volumes:
-        - name: logstash-pipeline <7>
-          configMap:
-            name: logstash-pipeline
-        - name: logstash-config <8>
-          configMap:
-            name: logstash-config
-        - name: es-certs <9>
-          secret:
-            secretName: demo-es-http-certs-public
-        - name: logstash-beats-tls <10>
-          secret:
-            secretName: logstash-beats-tls
-        - name: es-user <11>
-          secret:
-            secretName: demo-es-elastic-user
---
-
-<1> Logstash docker image
-<2> If you want to change any JVM settings from the default - most commonly setting memory. allocations - prefer to set them in the `LS_JAVA_OPTS` environment variable than recreating the whole `jvm.options` file in a `ConfigMap`.
-<3> Resource/memory limits for the pod. Refer to Kubernetes documentation to set resources appropriately for each pod, but ensure that each pod has sufficient memory to handle the
-    heap specified in <2>, allowing enough memory to deal with direct memory, see {logstash-ref}/config-details.html#heap-size[Logstash JVM settings] for details
-<4> Expose the necessary ports on the container. Here are exposing port `5044` for the beats input, and `9600` for the metricbeat instance to query the logstash metrics API for stack monitoring purposes
-<5> Liveness probe to determine whether Logstash is running. Here we point to the Logstash Metrics API, an HTTP based API that will be ready shortly after logstash starts. Note that the endpoint shows no indication that Logstash is active, only that the API is available
-<6> Readiness probe to determine whether Logstash is running. Here we point to the Logstash Metrics API, an HTTP based API that will be ready shortly after logstash starts. Note that the endpoint shows no indication that Logstash is active, only that the API is available
-<7> The pipeline configuration that we created in <<qs-configmap,the ConfigMap declaration>> needs a `volume` and a `volumeMount`. The `volume` refers to the created <<qs-configmap,config map>> and the `volumeMount` refers to the created `volume` and mounts in a location that logstash will read. Unless a separate `pipeline.yml` file is created by a further `ConfigMap` definition, the expected location of pipeline configurations is `/usr/share/logstash/pipelines` and the `mountPath` should be set accordingly.
-<8> This refers to the <<qs-configmap,Logstash configuration>> we created earlier. This should consist of key/value pairs of entries overriding the default values in {logstash-ref}/logstash-settings-file.html[logstash.yml], using the `flat key syntax` described in that document. To setup, this needs a `volume` and a `volumeMount`. The `volume` refers to the created <<qs-configmap,config map>> and the `volumeMount` refers to the created `volume` and mounts in a location that logstash will read. The `mountPath` should be set to ` `/usr/share/logstash/logstash.yml`
-<9> `Volume` and `VolumeMount` definitions for certificates to use with Elasticsearch. This contains the CA certificate to output data to {es}. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html[TLS certificates] in the {eck} Guide for details.
-<10> `Volume` and `VolumeMount` definitions for certificates to use with Beats
-<11> The {es} password is taken from `demo-es-elastic-user` and passed to the Logstash pipeline as an `ELASTICSEARCH_PASSWORD` environment variable. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-request-elasticsearch-endpoint.html[Access the {es} endpoint] in the {eck} Guide for details.
-
-
-[[qs-service]]
-`003-service.yaml`::
-This file contains the Service definition, opening up ports on the logstash pods to the internal metricbeat (for stack monitoring) and filebeat in this instance
-
-[source,yaml]
---
-spec:
-  type: ClusterIP
-  ports:
-    - port: 9600 <1>
-      name: "stats"
-      protocol: TCP
-      targetPort: 9600 <1>
-    - port: 5044 <2>
-      name: "beats"
-      protocol: TCP
-      targetPort: 5044 <2>
-  selector:
-    app: logstash-demo
---
-
-<1> Opening up port `9600` for metricbeat to connect to the Logstash metrics API
-<2> Opening up port `5044` for filebeat to connect to the beats input defined in the <<qs-configmap,ConfigMap>>
-
+Note that in this example, we will be creating a `Deployment`. Certain Logstash configurations, such as when a persistent queue is required, or certain classes of plugins, should be configured using a `StatefulSet`.
 
 [source,sh]
 --
-kubectl apply -f "001-secret.yaml,001-configmap.yaml,002-deployment.yaml,003-service.yaml"
+kubectl apply -f "001-configmap.yaml,002-deployment.yaml,003-service.yaml"
 --
 
 We should now see the Logstash pod up and running
@@ -374,9 +205,9 @@ logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 
 [float]
 [[qs-view-monitoring-data]]
-=== View the stack monitoring data
+=== View the monitoring data
 
-Now that your stack monitoring data is flowing, let's access it in {kib}. 
+Now that your monitoring data is flowing, let's access it in {kib}.
 
 First, enable port forwarding for the {kib} service on port `5601`. Open a second shell window and run the following:
 
@@ -410,8 +241,82 @@ After finishing with this demo, you can run the following command to remove all 
  
 [source,sh]
 --
-kubectl delete service,pods,deployment,hpa,configmap,secret,beat,elasticsearch,kibana -l app=logstash-demo
+kubectl delete service,pods,deployment,configmap,secret,beat,elasticsearch,kibana -l app=logstash-demo
 --
+
+[float]
+[[qs-external-elasticsearch]]
+=== External Elasticsearch
+
+
+Rather than sending to an elasticsearch cluster in the same Kubernetes cluster as logstash, you may want to send data to an Elastic cloud instance.
+
+
+[float]
+[[qs-send-to-elastic-cloud]]
+=== Sending to Elastic Cloud
+
+To connect to Elastic cloud, we will only need the logstash based components - no need to include the `elasticsearch` or `kibana` components from the walkthrough
+
+We will need to amend the `Deployment`/`StatefulSet` to set `CLOUD_ID` and `API_KEY` environment variables with the appropriate value for your cloud instance.
+
+One way to do this is to create a link:https://kubernetes.io/docs/concepts/configuration/secret/[secret] to store `CLOUD_ID` and `API_KEY`:
+
+
+[source,yaml]
+--
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ess_secret
+type: Opaque
+data:
+  cloud_id: PENMT1VEX0lEPg== <1>
+  password: PEFQSV9LRVk+
+--
+<1> base64 representation of `cloud_id` and `api_key` for your elastic cloud instance - created by
++
+[source,sh]
+--
+echo -n '<CLOUD_ID>' | base64
+echo -n '<API_KEY>' | base64
+--
+
+
+Mount the secrets in the `Deployment`/`StatefulSet`
+
+
+[source,yaml]
+--
+env:
+  - name: CLOUD_ID
+      valueFrom:
+        secretKeyRef:
+          name: ess_secret
+          key: cloud_id
+    - name: API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: ess_secret
+          key: api_key
+
+--
+
+And we will amend the pipeline definition `ConfigMap` to change the destination of the elasticsearch output to the cloud instance.
+
+
+
+[source,yaml]
+--
+    output {
+      elasticsearch {
+        cloud_id => "CLOUD_ID"
+        api_key => "API_KEY"
+        ssl => true
+      }
+--
+
+
 
 [float]
 [[qs-learn-more]]
@@ -419,7 +324,6 @@ kubectl delete service,pods,deployment,hpa,configmap,secret,beat,elasticsearch,k
 
 Now that you're familiar with how to get a {ls} monitoring setup running in your Kubernetes environment, here are a few suggested next steps:
 
-* <<ls-k8s-external-resource>>
 * <<ls-k8s-design-for-plugins>>
 * <<ls-k8s-sizing>>
 * <<ls-k8s-secure>>

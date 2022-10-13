@@ -1,0 +1,260 @@
+[[ls-k8s-configuration-files]]
+=== Logstash Configuration Files in Kubernetes
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+The <<ls-k8s-configuration-files,guide to {ls} configuration files in Kubernetes>> guide demonstrates how to configure logstash, including pipeline configuration, in Kubernetes.
+
+* <<qs-pipeline-configuration>>
+* <<qs-logstash-yaml>>
+* <<qs-jvm-options>>
+* <<qs-logging>>
+
+When configuring logstash, as well as creating the <<qs-pipeline-configuration, pipeline definition(s)>>, you will typically need to configure the logstash instance itself by customizing <<qs-logstash-yaml, the logstash yaml file>>, as well as potentially making changes to the <<qs-jvm-options, jvm options>>, the <<qs-logging, logging settings>>.
+
+[float]
+[[qs-pipeline-configuration]]
+=== Pipeline Configuration
+
+This section will explain how to configure single and multiple pipeline logstash configurations.
+
+[float]
+[[qs-single-pipeline-config]]
+==== Single Pipeline
+
+The existing docker image contains a default `pipeline.yml`, which expects a single pipeline, with the definition of that pipeline present in `/usr/share/logstash/pipeline`, as either a single file or collection of files, typically defined as a `ConfigMap` or series of `ConfigMaps` - note that
+a single Kubernetes `ConfigMap` has a size limit of 1MB.
+
+
+This example contains a simple pipeline definition, with the inputs and outputs split into separate configuration files:
+
+
++
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline <1>
+  labels:
+    app: logstash-demo
+data:
+  logstash-input.conf: | <2>
+    input {
+      beats {
+        port => "5044"
+      }
+    }
+  logstash-output.conf: | <3>
+    output {
+      elasticsearch {
+        hosts => ["https://demo-es-http:9200"]
+      }
+    }
+--
+
+<1> Name of `ConfigMap` to be referenced in `Deployment`.
+<2> This will create a `ConfigMap` representing the inputs for a pipeline.
+<3> This will create a `CongigMap` representing the outputs for a pipeline.
+
+From there, you will define your `Volume` in your `Deployment` template
+
+[source,yaml]
+--
+volumes:
+  - name: logstash-pipeline
+    configMap:
+      name: logstash-pipeline
+--
+
+and mount the volume in your container
+
+[source,yaml]
+--
+volumeMounts:
+    - name: logstash-pipeline
+      mountPath: /usr/share/logstash/pipeline
+--
+
+
+[float]
+[[qs-multiple-pipeline-config]]
+==== Multiple Pipelines
+
+Multiple pipelines <insert link> require a `ConfigMap` to represent pipelines.yml, where pipeline configurations can be created inline, or in separate `configMap` files or folders.
+
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline-yaml <1>
+  labels:
+    app: logstash-demo
+data:
+  pipelines.yml: | <2>
+    - pipeline.id: test
+      pipeline.workers: 1
+      pipeline.batch.size: 1
+      config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
+    - pipeline.id: pipeline2 <3>
+      path.config: "/usr/share/logstash/pipeline2"
+--
+
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline2
+  labels:
+    app: logstash-demo
+data:
+  logstash-input.conf: |
+    input {
+      beats {
+        port => "5044"
+      }
+    }
+  logstash-output.conf: |
+    output {
+      elasticsearch {
+         hosts => ["https://demo-es-http:9200"]
+      }
+    }
+--
+
+[source,yaml]
+--
+volumes:
+  - name: logstash-pipeline-yaml
+    configMap:
+      name: logstash-pipeline-yaml
+    - name: pipeline2
+    configMap:
+      name: pipeline2
+--
+
+
+[float]
+[[qs-logstash-yaml]]
+==== Logstash Configuration
+
+Unless a configuration file is specified, the default values for logstash.yml <insert link to logstash-settings-file> will be used. To override the default values, create a `ConfigMap` with the settings that you wish to override:
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  labels:
+    app: logstash-demo
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+    queue.type: persisted
+    dead_letter_queue.enable: true
+    dead_letter_queue.flush_interval: 1000
+--
+
+In your `Deployment`/`StatefulSet`, create the `Volume`
+
+[source,yaml]
+--
+volumes:
+  - name: logstash-config
+    configMap:
+      name: logstash-config
+--
+
+Create the `volumeMount` in the `container`
+
+[source,yaml]
+--
+  volumeMounts:
+    - name: logstash-config
+      mountPath: /usr/share/logstash/config/logstash.yml
+      subPath: logstash.yml
+--
+
+
+[float]
+[[qs-jvm-options]]
+==== Configuring JVM Options
+
+JVM settings are best set using environment variables to override the default settings in `jvm.options`. This ensures that the expected settings from `jvm.options` are set, and only those options that explicitly need to be overriden are.
+
+The JVM settings should be added in the `LS_JAVA_OPTS` environment variable in the container definition:
+
+[source,yaml]
+--
+spec:
+  containers:
+    - name: logstash
+      env:
+        - name: LS_JAVA_OPTS
+          value: "-Xmx2g -Xms2g"
+--
+
+[float]
+[[qs-logging]]
+==== Logging Configuration
+
+By default, we use the `log4j2.properties` from the logstash docker image, that will log to `stdout` only. To change the log level, to use debug logging, use the `log.level` option in <<qs-logstash-yaml, logstash.yml>>
+
+Additionally, temporary logging changes can be applied using the
+
+If you require broader changes that will persist across container restarts, you will need to create a *full* `log4j2.properties` and ensure that it is visible to the logstash container:
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-log4j
+  labels:
+    app: logstash-demo
+data:
+  log4j2.properties: |
+    status = error
+    name = LogstashPropertiesConfig
+
+    appender.console.type = Console
+    appender.console.name = plain_console
+    appender.console.layout.type = PatternLayout
+    appender.console.layout.pattern = [%d{ISO8601}][%-5p][%-25c]%notEmpty{[%X{pipeline.id}]}%notEmpty{[%X{plugin.id}]} %m%n
+
+    appender.json_console.type = Console
+    appender.json_console.name = json_console
+    appender.json_console.layout.type = JSONLayout
+    appender.json_console.layout.compact = true
+    appender.json_console.layout.eventEol = true
+
+    rootLogger.level = ${sys:ls.log.level}
+    rootLogger.appenderRef.console.ref = ${sys:ls.log.format}_console
+    logger.elasticsearchoutput.name = logstash.outputs.elasticsearch
+    logger.elasticsearchoutput.level = debug
+--
+
+In your `Deployment`/`StatefulSet`, create the `Volume`
+
+[source,yaml]
+--
+volumes:
+        - name: logstash-log4j
+          configMap:
+            name: logstash-log4j
+--
+
+Create the `volumeMount` in the `container`
+
+[source,yaml]
+--
+  volumeMounts:
+    - name: logstash-log4j
+      mountPath: /usr/share/logstash/config/log4j.properties
+      subPath: log4j.properties
+--
