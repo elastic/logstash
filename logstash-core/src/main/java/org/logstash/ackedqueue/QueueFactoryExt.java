@@ -42,6 +42,21 @@ import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 
+    /**
+     * A static value to indicate Persistent Queue is enabled.
+     */
+    public static String PERSISTED_TYPE = "persisted";
+
+    /**
+     * A static value to indicate Memory Queue is enabled.
+     */
+    public static String MEMORY_TYPE = "memory";
+
+    /**
+     * A contextual name to expose the queue type.
+     */
+    public static String CONTEXT_NAME = "queue.type";
+
     private static final long serialVersionUID = 1L;
 
     public QueueFactoryExt(final Ruby runtime, final RubyClass metaClass) {
@@ -51,8 +66,8 @@ public final class QueueFactoryExt extends RubyBasicObject {
     @JRubyMethod(meta = true)
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
-        final String type = getSetting(context, settings, "queue.type").asJavaString();
-        if ("persisted".equals(type)) {
+        final String type = getSetting(context, settings, CONTEXT_NAME).asJavaString();
+        if (PERSISTED_TYPE.equals(type)) {
             final Path queuePath = Paths.get(
                 getSetting(context, settings, "path.queue").asJavaString(),
                 getSetting(context, settings, "pipeline.id").asJavaString()
@@ -77,7 +92,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         getSetting(context, settings, "queue.max_bytes")
                     }
                 );
-        } else if ("memory".equals(type)) {
+        } else if (MEMORY_TYPE.equals(type)) {
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(

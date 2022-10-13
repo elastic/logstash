@@ -502,6 +502,10 @@ Example response:
 Flow rates provide visibility into how a Logstash instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
 This allows us to attach _meaning_ to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
 
+The following flow rates are available for the logstash process as a whole and for each of its pipelines individually.
+In addition, pipelines may have <<pipeline-flow-rates, additional flow rates>> depending on their configuration.
+
+
 [%autowidth.stretch]
 |===
 |Flow Rate | Definition
@@ -533,7 +537,6 @@ It cannot be used to compare one pipeline to another or even one process to _its
 A pipeline with only one single-threaded input may contribute up to 1.00, a pipeline whose inputs have hundreds of inbound connections may contribute much higher numbers to this combined value.
 
 Additionally, some amount of back-pressure is both _normal_ and _expected_ for pipelines that are _pulling_ data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
-
 |===
 
 Each flow stat includes rates for one or more recent windows of time:
@@ -571,8 +574,7 @@ including:
 * stats for each configured filter or output stage
 * info about config reload successes and failures
 (when <<reloading-config,config reload>> is enabled)
-* info about the persistent queue (when
-<<persistent-queues,persistent queues>> are enabled)
+* info about the persistent queue (when <<persistent-queues,persistent queues>> are enabled)
 
 [source,js]
 --------------------------------------------------
@@ -613,6 +615,14 @@ Example response:
         "worker_concurrency" : {
           "current": 1.973,
           "lifetime": 1.721
+        },
+        "queue_persisted_growth_bytes" : {
+          "current": 783100,
+          "lifetime": 17
+        },
+        "queue_persisted_growth_events" : {
+          "current": 11,
+          "lifetime": 0.003
         }
       },
       "plugins" : {
@@ -771,6 +781,14 @@ Example response:
         "worker_concurrency" : {
           "current": 1.973,
           "lifetime": 1.721
+        },
+        "queue_persisted_growth_bytes" : {
+          "current": 783100,
+          "lifetime": 17
+        },
+        "queue_persisted_growth_events" : {
+          "current": 11,
+          "lifetime": 0.003
         }
       },
       "plugins" : {
@@ -820,13 +838,52 @@ Example response:
         "last_failure_timestamp" : null,
         "failures" : 0
       },
-      "queue" : {
-        "type" : "memory"
+      "queue": {
+        "type" : "persisted",
+        "capacity": {
+          "max_unread_events": 0,
+          "page_capacity_in_bytes": 67108864,
+          "max_queue_size_in_bytes": 1073741824,
+          "queue_size_in_bytes": 3885
+        },
+        "data": {
+          "path": "/pipeline/queue/path",
+          "free_space_in_bytes": 936886480896,
+          "storage_type": "apfs"
+        },
+        "events": 0,
+        "events_count": 0,
+        "queue_size_in_bytes": 3885,
+        "max_queue_size_in_bytes": 1073741824
       }
     }
   }
 }
 --------------------------------------------------
+
+[discrete]
+[[pipeline-flow-rates]]
+===== Pipeline flow rates
+
+Each pipeline's entry in the API response includes a number of pipeline-scoped <<flow-stats,_flow_ rates>> such as `input_throughput`, `worker_concurrency`, and `queue_backpressure` to provide visibility into the flow of events through the pipeline.
+
+When configured with a <<persistent-queues,persistent queue>>, the pipeline's `flow` will include additional rates to provide visibility into the health of the pipeline's persistent queue:
+
+[%autowidth.stretch]
+|===
+|Flow Rate | Definition
+
+| `queue_persisted_growth_events` |
+This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (`queue.events_count` / second).
+A positive number indicates that the queue's event-count is growing, and a negative number indicates that the queue is shrinking.
+
+| `queue_persisted_growth_bytes` |
+This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second).
+A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
+
+NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events.
+      This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: <<garbage-collection, PQ disk garbage collection>>).
+|===
 
 [discrete]
 [[reload-stats]]

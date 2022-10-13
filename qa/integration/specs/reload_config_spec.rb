@@ -124,6 +124,16 @@ describe "Test Logstash service when config reload is enabled" do
         'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
         'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
       )
+
+      if logstash_service.settings.feature_flag == "persistent_queues"
+        expect(pipeline_flow_stats).to include(
+                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
+                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
+                               )
+      else
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_bytes')
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_events')
+      end
     end
 
     # check reload stats

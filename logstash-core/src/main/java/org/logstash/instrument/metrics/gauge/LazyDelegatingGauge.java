@@ -27,6 +27,8 @@ import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
+import java.util.Optional;
+
 /**
  * A lazy proxy to a more specific typed {@link GaugeMetric}. The metric will only be initialized if the initial value is set, or once the {@code set} operation is called.
  * <p><strong>Intended only for use with Ruby's duck typing, Java consumers should use the specific typed {@link GaugeMetric}</strong></p>
@@ -69,6 +71,11 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     @SuppressWarnings("deprecation")
     public Object get() {
         return lazyMetric == null ? null : lazyMetric.get();
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Optional getMetric() {
+        return Optional.ofNullable(lazyMetric);
     }
 
     @Override

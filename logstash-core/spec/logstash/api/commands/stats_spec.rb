@@ -18,7 +18,8 @@
 require "spec_helper"
 
 describe LogStash::Api::Commands::Stats do
-  include_context "api setup"
+  # enable PQ to ensure PQ-related metrics are present
+  include_context "api setup", {"queue.type" => "persisted"}
 
   let(:report_method) { :run }
   let(:extended_pipeline) { nil }
@@ -178,8 +179,26 @@ describe LogStash::Api::Commands::Stats do
                                                  :filter_throughput,
                                                  :queue_backpressure,
                                                  :worker_concurrency,
-                                                 :input_throughput
+                                                 :input_throughput,
+                                                 :queue_persisted_growth_bytes,
+                                                 :queue_persisted_growth_events
                                                )
+      end
+      it "returns queue metric information" do
+        expect(report[:main][:queue].keys).to include(
+                                               :capacity,
+                                               :events,
+                                               :type,
+                                               :data)
+        expect(report[:main][:queue][:capacity].keys).to include(
+                                                           :page_capacity_in_bytes,
+                                                           :max_queue_size_in_bytes,
+                                                           :queue_size_in_bytes,
+                                                           :max_unread_events)
+        expect(report[:main][:queue][:data].keys).to include(
+                                                           :storage_type,
+                                                           :path,
+                                                           :free_space_in_bytes)
       end
     end
     context "when using multiple pipelines" do
