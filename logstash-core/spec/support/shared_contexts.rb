@@ -35,7 +35,7 @@ shared_context "execution_context" do
   end
 end
 
-shared_context "api setup" do
+shared_context "api setup" do |settings_overrides={}|
 
   ##
   # blocks until the condition returns true, or the limit has passed
@@ -56,7 +56,7 @@ shared_context "api setup" do
 
   before :all do
     clear_data_dir
-    settings = mock_settings("config.reload.automatic" => true, "queue.type" => "persisted")
+    settings = mock_settings({"config.reload.automatic" => true}.merge(settings_overrides))
     config_source = make_config_source(settings)
     config_source.add_pipeline('main', "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }")
 

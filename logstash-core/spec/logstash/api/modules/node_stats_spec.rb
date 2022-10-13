@@ -21,7 +21,8 @@ require "sinatra"
 require "logstash/api/modules/node_stats"
 
 describe LogStash::Api::Modules::NodeStats do
-  include_context "api setup"
+  # enable PQ to ensure PQ-related metrics are present
+  include_context "api setup", {"queue.type" => "persisted"}
   include_examples "not found"
 
   extend ResourceDSLMethods

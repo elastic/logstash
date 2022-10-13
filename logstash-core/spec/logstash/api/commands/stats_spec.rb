@@ -18,7 +18,8 @@
 require "spec_helper"
 
 describe LogStash::Api::Commands::Stats do
-  include_context "api setup"
+  # enable PQ to ensure PQ-related metrics are present
+  include_context "api setup", {"queue.type" => "persisted"}
 
   let(:report_method) { :run }
   let(:extended_pipeline) { nil }
