@@ -4,7 +4,7 @@
 echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
-set -x
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
@@ -18,7 +18,7 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
-        echo "INFO: WORKFLOW_TYPE is snapshot"
+        echo "INFO: Running the workflow $WORKFLOW_TYPE..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:all
         else
@@ -31,7 +31,7 @@ case "$WORKFLOW_TYPE" in
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
 	;;
     staging)
-        echo "INFO: WORKFLOW_TYPE is staging"
+        echo "INFO: Running the workflow $WORKFLOW_TYPE..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:all
         else
