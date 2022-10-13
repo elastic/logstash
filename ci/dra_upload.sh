@@ -26,15 +26,16 @@ if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   # in case of alpha or beta releases:
   # e.g: 8.0.0-alpha1
   STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
-  RELEASE_VER="${RELEASE_VER}-${VERSION_QUALIFIER_OPT}"
+  PLAIN_STACK_VERSION="${PLAIN_STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
 fi
 
-WORKFLOW="staging"
-if [ -n "$WORKFLOW_TYPE" ]; then
-  STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-  WORKFLOW="snapshot"
-fi
-echo "Uploading artifacts for ${WORKFLOW} workflow on branch: ${RELEASE_BRANCH}"
+case "$WORKFLOW_TYPE" in
+    snapshot)
+        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
+	;;
+esac
+
+echo "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
 
 echo "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
@@ -119,6 +120,6 @@ docker run --rm \
       --project logstash \
       --branch ${RELEASE_BRANCH} \
       --commit "$(git rev-parse HEAD)" \
-      --workflow "${WORKFLOW}" \
+      --workflow "${WORKFLOW_TYPE}" \
       --version "${PLAIN_STACK_VERSION}" \
       --artifact-set main
