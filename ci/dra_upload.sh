@@ -1,5 +1,8 @@
 #!/bin/bash -iex
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
+echo "####################################################################"
+echo "##################### Starting $0"
+echo "####################################################################"
 
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
@@ -125,3 +128,7 @@ docker run --rm \
       --workflow "${WORKFLOW_TYPE}" \
       --version "${PLAIN_STACK_VERSION}" \
       --artifact-set main
+
+echo "####################################################################"
+echo "##################### Finishing $0"
+echo "####################################################################"

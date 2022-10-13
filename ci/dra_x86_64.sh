@@ -1,6 +1,10 @@
 #!/bin/bash -ie
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
 
+echo "####################################################################"
+echo "##################### Starting $0"
+echo "####################################################################"
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
@@ -66,3 +70,7 @@ gsutil cp build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 gsutil cp build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 gsutil cp build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 gsutil cp build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+
+echo "####################################################################"
+echo "##################### Finishing $0"
+echo "####################################################################"
