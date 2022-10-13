@@ -35,7 +35,13 @@ fi
 case "$WORKFLOW_TYPE" in
     snapshot)
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-	;;
+        ;;
+    staging)
+        ;;
+    *)
+        echo "ERROR: Worklflow (WORKFLOW_TYPE variable) is not set, exiting..."
+	exit 1
+        ;;
 esac
 
 echo "INFO: Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"

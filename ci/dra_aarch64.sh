@@ -17,7 +17,7 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
-
+        echo "INFO: Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:docker
             rake artifact:docker_oss
@@ -31,10 +31,11 @@ case "$WORKFLOW_TYPE" in
             # e.g: 8.0.0-alpha1
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
-
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-	;;
+        echo "INFO: Build complete, setting STACK_VERSION to $STACK_VERSION."
+        ;;
     staging)
+        echo "INFO: Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:docker
             RELEASE=1 rake artifact:docker_oss
@@ -48,10 +49,12 @@ case "$WORKFLOW_TYPE" in
             # e.g: 8.0.0-alpha1
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
-	;;
+        echo "INFO: Build complete, setting STACK_VERSION to $STACK_VERSION."
+        ;;
     *)
+        echo "ERROR: Workflow (WORKFLOW_TYPE variable) is not set, exiting..."
         exit 1
-	;;
+        ;;
 esac
 
 echo "INFO: Saving tar.gz for docker images"
