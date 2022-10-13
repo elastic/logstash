@@ -10,6 +10,7 @@ export JRUBY_OPTS="-J-Xmx1g"
 # e.g.: 8.6.0
 # The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+PLAIN_STACK_VERSION=$STACK_VERSION
 
 # This is the branch selector that needs to be passed to the release-manager
 # It has to be the name of the branch which originates the artifacts.
@@ -120,5 +121,5 @@ docker run --rm \
       --branch ${RELEASE_BRANCH} \
       --commit "$(git rev-parse HEAD)" \
       --workflow "${WORKFLOW}" \
-      --version "${STACK_VERSION}" \
+      --version "${PLAIN_STACK_VERSION}" \
       --artifact-set main
