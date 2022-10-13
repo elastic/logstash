@@ -73,7 +73,7 @@ This section summarizes the changes in the following releases:
 [[notable-7-17-7]]
 ==== Notable issues fixed
 * Makes `monitoring.cluster_uuid` a configurable variable that can be passed to docker container by use of an environment flag https://github.com/elastic/logstash/pull/14425[#14425]
-* Fixes an issue of `queue.checkpoint.retry` that not respect the user config https://github.com/elastic/logstash/pull/14487[#14487]
+* Fixes an issue that `queue.checkpoint.retry` was not respecting the user config https://github.com/elastic/logstash/pull/14487[#14487]
 * Fixes an issue where the Node API could present empty information about a pipeline that was in the process of starting up for the first time in a given process lifetime. https://github.com/elastic/logstash/pull/14595[#14595]
 
 ==== Plugins
