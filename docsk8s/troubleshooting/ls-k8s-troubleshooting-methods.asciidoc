@@ -88,7 +88,7 @@ jdk/bin/jstack -l 1 > /tmp/jstack_output.txt
 jdk/bin/jcmd 1 GC.heap_dump /tmp/heap_dump.hprof
 --
 
-==== Extrat file from the container
+==== Extract file from the container
 [source,bash]
 --
 kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
