@@ -49,9 +49,7 @@ case "$WORKFLOW_TYPE" in
 esac
 
 info "Saving tar.gz for docker images"
-docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz
-docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz
-docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz
+save_docker_tarballs "${STACK_VERSION}" "aarch64"
 
 info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done

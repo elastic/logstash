@@ -6,6 +6,17 @@ function error {
     echo "ERROR: $1"
 }
 
+function save_docker_tarballs {
+    ver=$1
+    arch=$2
+    for image in logstash logstash-oss logstash-ubi8; do
+        # docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz
+        # docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz
+        # docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz
+        docker save docker.elastic.co/logstash/$image:$ver | gzip -c > build/$image-$ver-docker-image-$arch.tar.gz
+    done
+}
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
