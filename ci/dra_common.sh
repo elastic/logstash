@@ -4,22 +4,21 @@ function info {
 
 function error {
     echo "ERROR: $1"
+    exit 1
 }
 
 function save_docker_tarballs {
-    ver=$1
-    arch=$2
+    local arch="${1:?architecture required}"
+    local version="${2:?stack-version required}"
     for image in logstash logstash-oss logstash-ubi8; do
-        # docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-x86_64.tar.gz
-        # docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-x86_64.tar.gz
-        # docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-x86_64.tar.gz
-        docker save docker.elastic.co/logstash/$image:$ver | gzip -c > build/$image-$ver-docker-image-$arch.tar.gz
+        docker save "docker.elastic.co/logstash/${image}:${version}" | gzip -c > "build/${image}-${version}-docker-image-${arch}.tar.gz"
     done
 }
 
 function upload_to_bucket {
-    file=$1
-    gsutil cp $file gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+    local file="${1:?file required}"
+    local version="${2:?stack-version required}"
+    gsutil cp "${file}" "gs://logstash-ci-artifacts/dra/${version}/"
 }
 
 # Since we are using the system jruby, we need to make sure our jvm process

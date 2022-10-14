@@ -49,7 +49,7 @@ case "$WORKFLOW_TYPE" in
 esac
 
 info "Saving tar.gz for docker images"
-save_docker_tarballs "${STACK_VERSION}" "aarch64"
+save_docker_tarballs "aarch64" "${STACK_VERSION}"
 
 info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
@@ -57,7 +57,7 @@ for file in build/logstash-*; do shasum $file;done
 info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 for image in logstash logstash-oss logstash-ubi8; do
-    upload_to_bucket build/$image-${STACK_VERSION}-docker-image-aarch64.tar.gz
+    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-aarch64.tar.gz" ${STACK_VERSION}
 done
 
 echo "####################################################################"

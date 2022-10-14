@@ -41,7 +41,7 @@ case "$WORKFLOW_TYPE" in
 esac
 
 info "Saving tar.gz for docker images"
-save_docker_tarballs "${STACK_VERSION}" "x86_64"
+save_docker_tarballs "x86_64" "${STACK_VERSION}"
 
 info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
@@ -61,7 +61,7 @@ done
 gsutil cp build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 
 for image in logstash logstash-oss logstash-ubi8; do
-    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-x86_64.tar.gz"
+    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-x86_64.tar.gz" ${STACK_VERSION}
 done
 
 echo "####################################################################"
