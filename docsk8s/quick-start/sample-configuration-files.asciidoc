@@ -10,6 +10,8 @@ You can download the files together as a link:https://github.com/elastic/logstas
 
 [[qs-setup-files]]
 
+These files are used to create certificates and keys required for secure communication between beats and logstash are included for illustration purposes only - in production, supply your own keys and certificates as appopriate.
+
 `cert/generate_cert.sh`::
 Generates the `ca.crt`, `client.key`, `client.crt`, `server.key`, and `server.pkcs8.key` used to establish a secure connection between Filebeat and Logstash. The certificates and keys are all contained in the `001-secret.yaml` file that is generated when you run `generate_cert.sh`.
 
@@ -20,7 +22,6 @@ This will create a secrets file `001-secret.yaml`, which we will install as part
 
 [[qs-logstash-configuration-files]]
 ==== Logstash Configuration Files
-
 
 
 [[qs-configmap]]
@@ -59,10 +60,9 @@ data:
     api.http.host: "0.0.0.0"
 --
 
-<1> Definition of logstash configuration file. We will refer to this later in the deployment file, where we will define volumes
+<1> Definition of logstash configuration file. We will refer to this later in the deployment file, where we will define volumes.
 <2> Definition of `logstash.yml` file (link to logstash.yml file).
-Each key/value pair to override defaults will need to be defined here. This will be refered to later in
-the deployment file
+Each key/value pair to override defaults will need to be defined here. This will be referred to later in the deployment file.
 
 [[qs-secrets]]
 `001-secrets.yaml`::
@@ -227,9 +227,51 @@ spec:
 <1> Opening up port `9600` for metricbeat to connect to the Logstash metrics API
 <2> Opening up port `5044` for filebeat to connect to the beats input defined in the <<qs-configmap,ConfigMap>>
 
+[[qs-additional-logstash-configuration]]
 
-`004-hpa.yaml`::
-The Horizontal Pod Autoscaler is used to configure the horizontal scaling details for CPU and memory for the {ls} instance.
+[[qs-autoscaler]]
+`004-hpa.yml`::
+
+This sets up a horizontal pod autoscaler to scale logstash instances up and down, depending on the load on the logtash instance(s). See link:https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/[kubernetes autoscaler docs] for more details.
+
+[source,yaml]
+--
+apiVersion: autoscaling/v2 <1>
+kind: HorizontalPodAutoscaler
+metadata:
+  name: logstash
+  labels:
+    app: logstash-demo
+spec:
+  minReplicas: 1 <2>
+  maxReplicas: 2
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60 <3>
+    scaleDown:
+      stabilizationWindowSeconds: 180
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: logstash <4>
+  metrics:
+    - type: Resource <5>
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+--
+<1> Requires kubernetes `1.23` and up
+<2> Specify the maximum and minimum number of Logstashes desired for the cluster
+<3> Specify stabilization windows to avoid "flapping" the replica count, using a rolling
+<4> This refers to the `Deployment` created <<qs-deployment, earlier>>
 
 
 [[qs-stack-monitoring-files]]
@@ -299,3 +341,4 @@ Configures a single {es} instance to receive output data from {ls}.
 
 `007-kibana.yaml`::
 Configures a single {kib} instance to visualize the logs and metrics data.
+

@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-This guide describes how to set up {ls} to deliver Kubernetes logs to {es}. The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered into an {es} cluster in the Kubernetes environment. This also configures local stack monitoring, with a metricbeat instance monitoring the logstash instance.
+This guide provides a walkthrough of how to set up {ls} to deliver Kubernetes logs to {es}. This will set up a Kubernetes cluster, containing {es}, {kib} to store and visualize the logs,  The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered to the {es} pod in the Kubernetes cluster. This also configures local stack monitoring, using a metricbeat pod to monitoring logstash.
 
 This section includes the following topics:
 
@@ -22,7 +22,7 @@ This section includes the following topics:
 
 Before you start, there are a few things you'll need:
 
-. A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Get Started!` section for install and set up instructions.
+. A running Kubernetes cluster - For local/single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Get Started!` section for install and set up instructions.
 . A link:https://github.com/elastic/logstash/blob/feature/kubernetes/k8s/recipes/logstash-k8s-quickstart.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
 [float]
@@ -196,18 +196,10 @@ logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
 --
 
 
-//Commenting out - not sure if we need this here, as it may confuse matters,
-//we can talk about autoscaling in a subsequent section
-//
-//`004-hpa.yaml`::
-//The Horizontal Pod Autoscaler is used to configure the horizontal scaling details for CPU and memory for the {ls} instance.
-
 
 [float]
-[[qs-view-monitoring-data]]
-=== View the monitoring data
-
-Now that your monitoring data is flowing, let's access it in {kib}.
+[[qs-view-data]]
+=== View your data
 
 First, enable port forwarding for the {kib} service on port `5601`. Open a second shell window and run the following:
 
@@ -225,13 +217,53 @@ Log in to {kib} using the `elastic` username and password. To obtain the passwor
 kubectl get secret demo-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 --
 
+This walkthrough sends two types of date to {es} - kubernetes logs and stack monitoring data
+
+[float]
+[[qs-view-data]]
+==== View your data
+
+The filebeat instance attached to this cluster will send log entries from the `kube-api-server` logs to an index specified in the logstash configuration.
+
+To verify that this data is indeed being sent to {es}
+
+Open the {kib} main menu and select **Management**, then **Dev Tools** , and perform the following query:
+
+[source,http request]
+--
+GET kube-apiserver-*/_count
+--
+
+and you should the count rise as more events are discovered from the apiserver logs
+
+[source,json]
+--
+{
+  "count": 89,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  }
+}
+--
+
+
+
+[float]
+[[qs-view-monitoring-data]]
+==== View the stack monitoring data
+
+This walkthrough also sends stack monitoring data to the {es} instance:
+
 Open the {kib} main menu and select **Management**, then **Stack Monitoring**.
 
 Select the {ls} **Overview**, and under the **Nodes** tab select the link for the {ls} node.
 
 image::./images/gs-logstash-node-metrics.png[{ls} metrics data in {kib}]
 
-That's it! The Kubernetes API server metrics data is flowing through {ls} into {es} and {kib}. You can monitor the JVM Heap, CPU Utilization, and System Load data as it updates in real time.
+That's it! The Logstash pod metrics data is flowing through {ls} into {es} and {kib}. You can monitor the JVM Heap, CPU Utilization, and System Load data as it updates in real time.
 
 [float]
 [[qs-tidy-up]]
@@ -244,9 +276,14 @@ After finishing with this demo, you can run the following command to remove all 
 kubectl delete service,pods,deployment,configmap,secret,beat,elasticsearch,kibana -l app=logstash-demo
 --
 
+
+[float]
+[[qs-next-steps]]
+=== Next Steps
+
 [float]
 [[qs-external-elasticsearch]]
-=== External Elasticsearch
+==== Send logs to an External Elasticsearch
 
 
 Rather than sending to an elasticsearch cluster in the same Kubernetes cluster as logstash, you may want to send data to an Elastic cloud instance.
@@ -254,7 +291,7 @@ Rather than sending to an elasticsearch cluster in the same Kubernetes cluster a
 
 [float]
 [[qs-send-to-elastic-cloud]]
-=== Sending to Elastic Cloud
+===== Sending to Elastic Cloud
 
 To connect to Elastic cloud, we will only need the logstash based components - no need to include the `elasticsearch` or `kibana` components from the walkthrough
 
@@ -304,8 +341,6 @@ env:
 
 And we will amend the pipeline definition `ConfigMap` to change the destination of the elasticsearch output to the cloud instance.
 
-
-
 [source,yaml]
 --
     output {
@@ -316,11 +351,24 @@ And we will amend the pipeline definition `ConfigMap` to change the destination 
       }
 --
 
+[float]
+[[qs-scale-logstash]]
+==== Scale Logstash with Horizontal Pod Autoscaler
 
+For a simple Logstash setup, without <<ls-k8s-persistent-storage, persistent storage>>, or <<ls-k8s-design-for-plugins, plugins that require the storing of local state>>, we can introduce a simple <<qs-autoscaler, horizontal pod autoscaler>>.
+
+Apply the autoscaler as follows:
+
+[source,bash]
+--
+kubectl apply -f "004-hpa.yaml"
+--
+
+NOTE: When using more than one logstash pod, use the link:https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-autodiscover.html#_kubernetes[autodiscover] features of beats to monitor the different logstash pods, otherwise only one logstash pod will be monitored.
 
 [float]
 [[qs-learn-more]]
-=== Learn more
+==== Learn more
 
 Now that you're familiar with how to get a {ls} monitoring setup running in your Kubernetes environment, here are a few suggested next steps:
 

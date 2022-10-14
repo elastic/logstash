@@ -3,20 +3,22 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-The <<ls-k8s-configuration-files,guide to {ls} configuration files in Kubernetes>> guide demonstrates how to configure logstash, including pipeline configuration, in Kubernetes.
+The <<ls-k8s-configuration-files,guide to {ls} configuration and settings files in Kubernetes>> guide demonstrates how to configure logstash, including pipeline configuration, in Kubernetes.
 
 * <<qs-pipeline-configuration>>
 * <<qs-logstash-yaml>>
 * <<qs-jvm-options>>
 * <<qs-logging>>
 
-When configuring logstash, as well as creating the <<qs-pipeline-configuration, pipeline definition(s)>>, you will typically need to configure the logstash instance itself by customizing <<qs-logstash-yaml, the logstash yaml file>>, as well as potentially making changes to the <<qs-jvm-options, jvm options>>, the <<qs-logging, logging settings>>.
+Configuring Logstash includes two types of configuration files: _pipeline configuration files_, which define the Logstash processing pipeline, and _settings files_ which specify options that control Logstsah startup and execution.
+{logstash-ref}/config-setting-files.html[Config Settings Files] contains information on these files, and this guide explains how these map to a Kubernetes configuration.
 
 [float]
 [[qs-pipeline-configuration]]
 === Pipeline Configuration
 
-This section will explain how to configure single and multiple pipeline logstash configurations.
+This section will explain how to configure single and multiple pipeline logstash configurations. Note that this section does not describe how to set this up using {logstash-ref}/management/centralized-pipelines[Centralized Pipeline Management]
+
 
 [float]
 [[qs-single-pipeline-config]]
@@ -132,11 +134,15 @@ volumes:
   - name: logstash-pipeline-yaml
     configMap:
       name: logstash-pipeline-yaml
-    - name: pipeline2
+  - name: pipeline2
     configMap:
       name: pipeline2
 --
 
+[float]
+[[qs-settings]]
+
+==== Settings configuration
 
 [float]
 [[qs-logstash-yaml]]
