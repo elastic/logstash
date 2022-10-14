@@ -56,9 +56,9 @@ for file in build/logstash-*; do shasum $file;done
 
 info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
-gsutil cp build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
-gsutil cp build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
-gsutil cp build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+for image in logstash logstash-oss logstash-ubi8; do
+    upload_to_bucket build/$image-${STACK_VERSION}-docker-image-aarch64.tar.gz
+done
 
 echo "####################################################################"
 echo "##################### Finishing $0"

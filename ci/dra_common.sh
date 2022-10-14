@@ -17,6 +17,11 @@ function save_docker_tarballs {
     done
 }
 
+function upload_to_bucket {
+    file=$1
+    gsutil cp $file gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+}
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
