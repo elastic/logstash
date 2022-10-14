@@ -4,20 +4,12 @@ echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
 
-# Since we are using the system jruby, we need to make sure our jvm process
-# uses at least 1g of memory, If we don't do this we can get OOM issues when
-# installing gems. See https://github.com/elastic/logstash/issues/5179
-export JRUBY_OPTS="-J-Xmx1g"
-
-# Extract the version number from the version.yml file
-# e.g.: 8.6.0
-# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
-STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+source ./dra_common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
-        echo "INFO: Building artifacts for the $WORKFLOW_TYPE workflow..."
+        info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:docker
             rake artifact:docker_oss
@@ -32,10 +24,10 @@ case "$WORKFLOW_TYPE" in
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-        echo "INFO: Build complete, setting STACK_VERSION to $STACK_VERSION."
+        info "Build complete, setting STACK_VERSION to $STACK_VERSION."
         ;;
     staging)
-        echo "INFO: Building artifacts for the $WORKFLOW_TYPE workflow..."
+        info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:docker
             RELEASE=1 rake artifact:docker_oss
@@ -49,23 +41,22 @@ case "$WORKFLOW_TYPE" in
             # e.g: 8.0.0-alpha1
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
-        echo "INFO: Build complete, setting STACK_VERSION to $STACK_VERSION."
+        info "Build complete, setting STACK_VERSION to $STACK_VERSION."
         ;;
     *)
-        echo "ERROR: Workflow (WORKFLOW_TYPE variable) is not set, exiting..."
-        exit 1
+        error "Workflow (WORKFLOW_TYPE variable) is not set, exiting..."
         ;;
 esac
 
-echo "INFO: Saving tar.gz for docker images"
+info "Saving tar.gz for docker images"
 docker save docker.elastic.co/logstash/logstash:${STACK_VERSION} | gzip -c > build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz
 docker save docker.elastic.co/logstash/logstash-oss:${STACK_VERSION} | gzip -c > build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz
 docker save docker.elastic.co/logstash/logstash-ubi8:${STACK_VERSION} | gzip -c > build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz
 
-echo "INFO: GENERATED ARTIFACTS"
+info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
-echo "INFO: UPLOADING TO INTERMEDIATE BUCKET"
+info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 gsutil cp build/logstash-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
 gsutil cp build/logstash-oss-${STACK_VERSION}-docker-image-aarch64.tar.gz gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
