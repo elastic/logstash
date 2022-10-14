@@ -55,7 +55,7 @@ shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
 info "UPLOADING TO INTERMEDIATE BUCKET"
 for file in build/logstash-*; do
-  upload_to_bucket $file
+  upload_to_bucket $file ${STACK_VERSION}
 done
 
 gsutil cp build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
