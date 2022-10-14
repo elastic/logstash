@@ -58,7 +58,8 @@ for file in build/logstash-*; do
   upload_to_bucket $file ${STACK_VERSION}
 done
 
-gsutil cp build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv gs://logstash-ci-artifacts/dra/${STACK_VERSION}/
+# Upload Dependencies Report
+upload_to_bucket "build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv" ${STACK_VERSION}
 
 for image in logstash logstash-oss logstash-ubi8; do
     upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-x86_64.tar.gz" ${STACK_VERSION}
