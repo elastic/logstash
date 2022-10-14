@@ -85,7 +85,7 @@ volumeMounts:
 
 Multiple pipelines <insert link> require a `ConfigMap` to represent pipelines.yml, where pipeline configurations can be created inline, or in separate `configMap` files or folders.
 
-
+pipelines.yml `ConfigMap` with an inline pipeline definition
 [source,yaml]
 --
 apiVersion: v1
@@ -101,10 +101,11 @@ data:
       pipeline.batch.size: 1
       config.string: "input { generator {} } filter { sleep { time => 1 } } output { stdout { codec => dots } }"
     - pipeline.id: pipeline2 <3>
+      pipeline.workers: 8
       path.config: "/usr/share/logstash/pipeline2"
 --
 
-
+Pipelines can also be defined in separate files, as with the single pipeline example
 [source,yaml]
 --
 apiVersion: v1
@@ -123,20 +124,40 @@ data:
   logstash-output.conf: |
     output {
       elasticsearch {
-         hosts => ["https://demo-es-http:9200"]
+        hosts => ["https://demo-es-http:9200"]
+        index => "kube-apiserver-%{+YYYY.MM.dd}"
+        cacert => "/usr/share/logstash/config/es_ca.crt"
+        user => 'elastic'
+        password => '${ELASTICSEARCH_PASSWORD}'
       }
     }
 --
 
+Create the volume in your `Deployment`/`StatefulSet`
+
 [source,yaml]
 --
 volumes:
-  - name: logstash-pipeline-yaml
+  - name: logstash-pipelines-yaml
     configMap:
-      name: logstash-pipeline-yaml
+      name: logstash-pipelines-yaml
   - name: pipeline2
     configMap:
       name: pipeline2
+--
+
+and mount the volume in your container spec
+
+[source,yaml]
+--
+#
+volumeMounts:
+    - name: pipeline2
+      mountPath: /usr/share/logstash/pipeline2
+    - name: logstash-pipelines-yaml
+      mountPath: /usr/share/logstash/config/pipelines.yml
+      subPath: pipelines.yml
+
 --
 
 [float]
@@ -146,7 +167,7 @@ volumes:
 
 [float]
 [[qs-logstash-yaml]]
-==== Logstash Configuration
+==== logstash.yml
 
 Unless a configuration file is specified, the default values for logstash.yml <insert link to logstash-settings-file> will be used. To override the default values, create a `ConfigMap` with the settings that you wish to override:
 
@@ -189,11 +210,11 @@ Create the `volumeMount` in the `container`
 
 [float]
 [[qs-jvm-options]]
-==== Configuring JVM Options
+==== JVM Options
 
 JVM settings are best set using environment variables to override the default settings in `jvm.options`. This ensures that the expected settings from `jvm.options` are set, and only those options that explicitly need to be overriden are.
 
-The JVM settings should be added in the `LS_JAVA_OPTS` environment variable in the container definition:
+The JVM settings should be added in the `LS_JAVA_OPTS` environment variable in the container definition of your `Deployment`/`StatefulSet`:
 
 [source,yaml]
 --

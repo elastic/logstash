@@ -220,8 +220,8 @@ kubectl get secret demo-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 -
 This walkthrough sends two types of date to {es} - kubernetes logs and stack monitoring data
 
 [float]
-[[qs-view-data]]
-==== View your data
+[[qs-view-k8s-logs]]
+==== View your kubernetes logs
 
 The filebeat instance attached to this cluster will send log entries from the `kube-api-server` logs to an index specified in the logstash configuration.
 
