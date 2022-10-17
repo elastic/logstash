@@ -182,9 +182,8 @@ metadata:
 data:
   logstash.yml: |
     api.http.host: "0.0.0.0"
-    queue.type: persisted
-    dead_letter_queue.enable: true
-    dead_letter_queue.flush_interval: 1000
+    log.level: info
+    pipeline.workers: 2
 --
 
 In your `Deployment`/`StatefulSet`, create the `Volume`
@@ -232,9 +231,7 @@ spec:
 
 By default, we use the `log4j2.properties` from the logstash docker image, that will log to `stdout` only. To change the log level, to use debug logging, use the `log.level` option in <<qs-logstash-yaml, logstash.yml>>
 
-Additionally, temporary logging changes can be applied using the
-
-If you require broader changes that will persist across container restarts, you will need to create a *full* `log4j2.properties` and ensure that it is visible to the logstash container:
+Temporary logging changes can be applied using the {logstash-ref}/logging.html#_logging_apis[Logging APIs], but if you require broader changes that will persist across container restarts, you will need to create a *full* and correct `log4j2.properties` and ensure that it is visible to the logstash container. This example uses a `configMap`, and uses the base `log4j2.properties` file from the docker container, adding debug logging for elasticsearch output plugins.
 
 [source,yaml]
 --
