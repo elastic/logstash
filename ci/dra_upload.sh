@@ -1,15 +1,10 @@
 #!/bin/bash -iex
 #Note - ensure that the -e flag is set to properly set the $? status if any command fails
+echo "####################################################################"
+echo "##################### Starting $0"
+echo "####################################################################"
 
-# Since we are using the system jruby, we need to make sure our jvm process
-# uses at least 1g of memory, If we don't do this we can get OOM issues when
-# installing gems. See https://github.com/elastic/logstash/issues/5179
-export JRUBY_OPTS="-J-Xmx1g"
-
-# Extract the version number from the version.yml file
-# e.g.: 8.6.0
-# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
-STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
+source ./dra_common.sh
 PLAIN_STACK_VERSION=$STACK_VERSION
 
 # This is the branch selector that needs to be passed to the release-manager
@@ -32,12 +27,17 @@ fi
 case "$WORKFLOW_TYPE" in
     snapshot)
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-	;;
+        ;;
+    staging)
+        ;;
+    *)
+        error "Worklflow (WORKFLOW_TYPE variable) is not set, exiting..."
+        ;;
 esac
 
-echo "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
+info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
 
-echo "Download all the artifacts for version ${STACK_VERSION}"
+info "Download all the artifacts for version ${STACK_VERSION}"
 mkdir build/
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}-no-jdk.deb build/
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}.csv build/
@@ -94,7 +94,7 @@ gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-ubi8-${STACK_
 
 gsutil cp gs://logstash-ci-artifacts/dra/${STACK_VERSION}/logstash-${STACK_VERSION}.csv build/
 
-echo "Downloaded ARTIFACTS"
+info "Downloaded ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
 mkdir -p build/distributions/dependencies-reports/
@@ -125,3 +125,7 @@ docker run --rm \
       --workflow "${WORKFLOW_TYPE}" \
       --version "${PLAIN_STACK_VERSION}" \
       --artifact-set main
+
+echo "####################################################################"
+echo "##################### Finishing $0"
+echo "####################################################################"
