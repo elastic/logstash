@@ -17,7 +17,7 @@ Configuring Logstash includes two types of configuration files: _pipeline config
 [[qs-pipeline-configuration]]
 === Pipeline Configuration
 
-This section will explain how to configure single and multiple pipeline logstash configurations. Note that this section does not describe how to set this up using {logstash-ref}/management/centralized-pipelines[Centralized Pipeline Management]
+This section will explain how to configure single and multiple pipeline logstash configurations. Note that this section does not describe how to set this up using {logstash-ref}/logstash-centralized-pipeline-management.html[Centralized Pipeline Management]
 
 
 [float]
