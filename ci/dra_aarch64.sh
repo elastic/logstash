@@ -4,7 +4,7 @@ echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
 
-source ./dra_common.sh
+source ./$(dirname "$0")/dra_common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
