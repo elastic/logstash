@@ -42,7 +42,7 @@ include::setting-up/ls-k8s-secure.asciidoc[]
 // Administering
 include::administering/ls-k8s-administering.asciidoc[]
 
-// Set up stack monitoring
+// Stack Monitoring
 include::administering/ls-k8s-stack-monitoring.asciidoc[]
 
 // Upgrade Logstash
