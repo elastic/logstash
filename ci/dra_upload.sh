@@ -4,7 +4,7 @@ echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
 
-source ./dra_common.sh
+source ./$(dirname "$0")/dra_common.sh
 PLAIN_STACK_VERSION=$STACK_VERSION
 
 # This is the branch selector that needs to be passed to the release-manager
