@@ -29,6 +29,3 @@ gem "logstash-devutils", "~> 2", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
-
-# TODO: waiting for a Puma release
-gem 'puma', github: 'kares/puma', ref: 'jruby-ssl-all_with-jar'
