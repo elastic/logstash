@@ -11,13 +11,11 @@ case "$WORKFLOW_TYPE" in
     snapshot)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            rake artifact:docker
-            rake artifact:docker_oss
-            rake artifact:dockerfiles
+            build_docker_images
+            build_docker_files
         else
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
+            build_docker_images "VERSION_QUALIFIER=$VERSION_QUALIFIER_OPT"
+            build_docker_files "VERSION_QUALIFIER=$VERSION_QUALIFIER_OPT"
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
@@ -29,13 +27,11 @@ case "$WORKFLOW_TYPE" in
     staging)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            RELEASE=1 rake artifact:docker
-            RELEASE=1 rake artifact:docker_oss
-            rake artifact:dockerfiles
+            build_docker_images "RELEASE=1"
+            build_docker_files
         else
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
+            build_docker_images "VERSION_QUALIFIER=$VERSION_QUALIFIER_OPT RELEASE=1"
+            build_docker_files "VERSION_QUALIFIER=$VERSION_QUALIFIER_OPT"
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
