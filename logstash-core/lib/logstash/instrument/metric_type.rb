@@ -17,12 +17,14 @@
 
 require "logstash/instrument/metric_type/counter"
 require "logstash/instrument/metric_type/gauge"
+require "logstash/instrument/metric_type/uptime"
 
 module LogStash module Instrument
   module MetricType
     METRIC_TYPE_LIST = {
       :counter => LogStash::Instrument::MetricType::Counter,
-      :gauge => LogStash::Instrument::MetricType::Gauge
+      :gauge   => LogStash::Instrument::MetricType::Gauge,
+      :uptime  => LogStash::Instrument::MetricType::Uptime,
     }.freeze
 
     # Use the string to generate a concrete class for this metrics

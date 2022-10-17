@@ -172,7 +172,8 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                         if (stalledCount == 0) {
                             LOGGER.error("The shutdown process appears to be stalled due to busy or blocked plugins. Check the logs for more information.");
                             if (isPqDraining) {
-                                LOGGER.info("The queue is draining before shutdown.");
+                                String pipelineId = pipeline.callMethod(context, "pipeline_id").asJavaString();
+                                LOGGER.info("The queue for pipeline {} is draining before shutdown.", pipelineId);
                             }
                         }
                         ++stalledCount;

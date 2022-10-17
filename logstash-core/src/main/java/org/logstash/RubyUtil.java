@@ -47,7 +47,6 @@ import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.ConvergeResultExt;
 import org.logstash.execution.EventDispatcherExt;
 import org.logstash.execution.ExecutionContextExt;
-import org.logstash.execution.JavaBasePipelineExt;
 import org.logstash.execution.PipelineReporterExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.execution.ShutdownWatcherExt;
@@ -238,8 +237,6 @@ public final class RubyUtil {
     public static final RubyClass HOOKS_REGISTRY_CLASS;
 
     public static final RubyClass ABSTRACT_PIPELINE_CLASS;
-
-    public static final RubyClass JAVA_PIPELINE_CLASS;
 
     /**
      * Logstash Ruby Module.
@@ -488,9 +485,6 @@ public final class RubyUtil {
         LOGGABLE_MODULE.defineAnnotatedMethods(LoggableExt.class);
         ABSTRACT_PIPELINE_CLASS =
             setupLogstashClass(AbstractPipelineExt::new, AbstractPipelineExt.class);
-        JAVA_PIPELINE_CLASS = setupLogstashClass(
-            ABSTRACT_PIPELINE_CLASS, JavaBasePipelineExt::new, JavaBasePipelineExt.class
-        );
         final RubyModule json = LOGSTASH_MODULE.defineOrGetModuleUnder("Json");
         final RubyClass stdErr = RUBY.getStandardError();
         LOGSTASH_ERROR = LOGSTASH_MODULE.defineClassUnder(

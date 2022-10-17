@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'time'
+
 shared_context "execution_context" do
   let(:pipeline) { double("pipeline") }
   let(:pipeline_id) { :main }
@@ -33,29 +35,43 @@ shared_context "execution_context" do
   end
 end
 
-shared_context "api setup" do
+shared_context "api setup" do |settings_overrides={}|
+
+  ##
+  # blocks until the condition returns true, or the limit has passed
+  # @return [true] if the condition was met
+  # @return [false] if the condition was NOT met
+  def block_until(limit_seconds, &condition)
+    deadline = Time.now + limit_seconds
+    loop.with_index do |_,try|
+      break if Time.now >= deadline
+      return true if condition.call
+
+      next_sleep = [(2.0**(try))/10, 2, deadline - Time.now].min
+      Kernel::sleep(next_sleep) unless next_sleep <= 0
+    end
+    # one last try
+    condition.call
+  end
+
   before :all do
     clear_data_dir
-    settings = mock_settings
-    config_string = "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }"
-    settings.set("config.string", config_string)
-    settings.set("config.reload.automatic", false)
-    @agent = make_test_agent(settings)
-    @agent.execute
-    @pipelines_registry = LogStash::PipelinesRegistry.new
-    pipeline_config = mock_pipeline_config(:main, "input { generator { id => '123' } } output { null {} }")
-    pipeline_creator =  LogStash::PipelineAction::Create.new(pipeline_config, @agent.metric)
-    expect(pipeline_creator.execute(@agent, @pipelines_registry)).to be_truthy
-    pipeline_config = mock_pipeline_config(:secondary, "input { generator { id => '123' } } output { null {} }")
-    pipeline_creator =  LogStash::PipelineAction::Create.new(pipeline_config, @agent.metric)
-    expect(pipeline_creator.execute(@agent, @pipelines_registry)).to be_truthy
+    settings = mock_settings({"config.reload.automatic" => true}.merge(settings_overrides))
+    config_source = make_config_source(settings)
+    config_source.add_pipeline('main', "input { generator {id => 'api-generator-pipeline' count => 100 } } output { dummyoutput {} }")
+
+    @agent = make_test_agent(settings, config_source)
+    @agent_execution_task = Stud::Task.new { @agent.execute }
+    block_until(30) { @agent.loaded_pipelines.keys.include?(:main) } or fail('main pipeline did not come up')
+
+    config_source.add_pipeline('main', "input { generator { id => '123' } } output { null {} }")
+    config_source.add_pipeline('secondary', "input { generator { id => '123' } } output { null {} }")
+    block_until(30) { ([:main, :secondary] - @agent.running_pipelines.keys).empty? } or fail('pipelines did not come up')
   end
 
   after :all do
-    @pipelines_registry.running_pipelines.each do |_, pipeline|
-      pipeline.shutdown
-      pipeline.thread.join
-    end
+    @agent_execution_task.stop!
+    @agent_execution_task.wait
     @agent.shutdown
   end
 

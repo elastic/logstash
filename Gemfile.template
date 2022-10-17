@@ -9,23 +9,24 @@ gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28", require: false
 gem "rake", "~> 12", require: false
 gem "ruby-progressbar", "~> 1", require: false
-gem "logstash-output-elasticsearch", ">= 10.4.2"
+gem "logstash-output-elasticsearch", ">= 11.6.0"
 gem "polyglot", require: false
 gem "treetop", require: false
 gem "faraday", "~> 1", :require => false # due elasticsearch-transport (elastic-transport) depending faraday '~> 1'
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856
 gem "gems", "~> 1", :group => :build
-gem "octokit", "~> 4", :group => :build
+gem "octokit", "~> 4.25", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
 
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
-gem "flores", "~> 0.0.6", :group => :development
+gem "flores", "~> 0.0.8", :group => :development
 gem "json-schema", "~> 2", :group => :development
 gem "logstash-devutils", "~> 2", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
 gem "webmock", "~> 3", :group => :development
+gem "jar-dependencies", "= 0.4.1" # Gem::LoadError with jar-dependencies 0.4.2

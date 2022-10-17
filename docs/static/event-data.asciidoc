@@ -1,38 +1,37 @@
 [[event-dependent-configuration]]
-=== Accessing event data and fields in the configuration
+=== Accessing event data and fields
 
-The logstash agent is a processing pipeline with 3 stages: inputs -> filters ->
-outputs. Inputs generate events, filters modify them, outputs ship them
-elsewhere.
+A Logstash pipeline usually has three stages: inputs -> filters -> outputs. 
+Inputs generate events, filters modify them, and outputs ship them elsewhere.
 
-All events have properties. For example, an apache access log would have things
+All events have properties. 
+For example, an Apache access log has properties
 like status code (200, 404), request path ("/", "index.html"), HTTP verb
-(GET, POST), client IP address, etc. Logstash calls these properties "fields."
+(GET, POST), client IP address, and so forth. 
+Logstash calls these properties "fields".
 
-Some of the configuration options in Logstash require the existence of fields in
-order to function.  Because inputs generate events, there are no fields to
+Some configuration options in Logstash require the existence of fields in
+order to function.  
+Because inputs generate events, there are no fields to
 evaluate within the input block--they do not exist yet!
 
-Because of their dependency on events and fields, the following configuration
-options will only work within filter and output blocks.
-
-IMPORTANT: Field references, sprintf format and conditionals, described below,
-do not work in an input block.
+IMPORTANT: <<logstash-config-field-references>>, <<sprintf>>, and <<conditionals,conditionals>> do not work in input blocks.
+These configuration options depend on events and fields, and therefore, work only within filter and output blocks.
 
 [discrete]
 [[logstash-config-field-references]]
 ==== Field references
 
-It is often useful to be able to refer to a field by name. To do this,
-you can use the Logstash <<field-references-deepdive,field reference syntax>>.
+When you need to refer to a field by name, you can use the Logstash <<field-references-deepdive,field reference syntax>>. 
 
-The basic syntax to access a field is `[fieldname]`. If you are referring to a
-**top-level field**, you can omit the `[]` and simply use `fieldname`.
-To refer to a **nested field**, you specify
-the full path to that field: `[top-level field][nested field]`.
+The basic syntax to access a field is `[fieldname]`. 
+If you are referring to a **top-level field**, you can omit the `[]` and simply
+use `fieldname`.
+To refer to a **nested field**, specify the full path to that field:
+`[top-level field][nested field]`.
 
-For example, the following event has five top-level fields (agent, ip, request, response,
-ua) and three nested fields (status, bytes, os).
+For example, this event has five top-level fields (agent, ip, request,
+response, ua) and three nested fields (status, bytes, os).
 
 [source,js]
 ----------------------------------
@@ -51,8 +50,9 @@ ua) and three nested fields (status, bytes, os).
 
 ----------------------------------
 
-To reference the `os` field, you specify `[ua][os]`. To reference a top-level
-field such as `request`, you can simply specify the field name.
+To reference the `os` field, specify `[ua][os]`. 
+To reference a top-level field such as `request`, you can simply specify the
+field name.
 
 For more detailed information, see <<field-references-deepdive>>.
 
@@ -60,10 +60,10 @@ For more detailed information, see <<field-references-deepdive>>.
 [[sprintf]]
 ==== sprintf format
 
-The field reference format is also used in what Logstash calls 'sprintf format'. This format
-enables you to refer to field values from within other strings. For example, the
-statsd output has an 'increment' setting that enables you to keep a count of
-apache logs by status code:
+The field reference format is also used in what Logstash calls 'sprintf format'. 
+This format enables you to embed field values in other strings. 
+For example, the statsd output has an 'increment' setting that enables you to
+keep a count of apache logs by status code:
 
 [source,js]
 ----------------------------------
@@ -90,7 +90,7 @@ output {
 ----------------------------------
 
 NOTE: The sprintf format continues to support http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[deprecated joda time format] strings as well using the `%{+FORMAT}` syntax.
-      These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
+These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
 
 NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 
@@ -120,7 +120,7 @@ if EXPRESSION {
 
 What's an expression? Comparison tests, boolean logic, and so on!
 
-You can use the following comparison operators:
+You can use these comparison operators:
 
 * equality: `==`,  `!=`,  `<`,  `>`,  `<=`, `>=`
 * regexp: `=~`, `!~` (checks a pattern on the right against a string value on the left)
@@ -137,7 +137,7 @@ Supported unary operators are:
 Expressions can be long and complex. Expressions can contain other expressions,
 you can negate expressions with `!`, and you can group them with parentheses `(...)`.
 
-For example, the following conditional uses the mutate filter to remove the field `secret` if the field
+For example, this conditional uses the mutate filter to remove the field `secret` if the field
 `action` has a value of `login`:
 
 [source,js]

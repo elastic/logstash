@@ -1,0 +1,43 @@
+
+---
+services:
+  - logstash
+
+config:
+  input_decode: |-
+    input {
+      java_stdin {
+          codec => json
+      }
+    }
+    output {
+      file {
+        path => "${PATH_TO_OUT}"
+      }
+    }
+
+  input_decode_configured: |-
+    input {
+      java_stdin {
+          codec => plain {
+            charset => "ASCII-8BIT"
+          }
+      }
+    }
+    output {
+      file {
+        path => "${PATH_TO_OUT}"
+      }
+    }    
+
+  output_encode: |-
+    input {
+      generator {
+        count => 4
+      }
+    }
+    output {
+      java_stdout {
+        codec => json
+      }
+    }

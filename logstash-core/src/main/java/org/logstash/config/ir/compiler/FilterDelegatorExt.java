@@ -109,7 +109,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
-    protected IRubyObject getConcurrency(final ThreadContext context) {
+    protected IRubyObject isThreadsafe(final ThreadContext context) {
         return filter.callMethod(context, "threadsafe?");
     }
 

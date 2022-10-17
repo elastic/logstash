@@ -1,0 +1,9 @@
+[[ls-k8s-administering]]
+== Administering {ls} and Kubernetes
+++++
+<titleabbrev>Administering</titleabbrev>
+++++
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+These pages describe the steps to take after you've gotten your system <<ls-k8s-setting-up,up and running>>. These include both routine tasks to manage and maintain your {ls} and Kubernetes resources, as well as recommended "hardening" steps, such as setting up security and external health monitoring, that prepare your environment for production.

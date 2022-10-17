@@ -1,0 +1,72 @@
+---
+apiVersion: v1
+
+# The repository name in registry1, excluding /ironbank/
+name: "elastic/logstash/logstash"
+
+# List of tags to push for the repository in registry1
+# The most specific version should be the first tag and will be shown
+# on ironbank.dsop.io
+tags:
+- "{{ elastic_version }}"
+- "latest"
+
+# Build args passed to Dockerfile ARGs
+args:
+  BASE_IMAGE: "redhat/ubi/ubi8"
+  BASE_TAG: "8.6"
+  LOGSTASH_VERSION: "{{ elastic_version }}"
+  GOLANG_VERSION: "1.17.8"
+
+# Docker image labels
+labels:
+  org.opencontainers.image.title: "logstash"
+  ## Human-readable description of the software packaged in the image
+  org.opencontainers.image.description: "Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'"
+  ## License(s) under which contained software is distributed
+  org.opencontainers.image.licenses: "Elastic License"
+  ## URL to find more information on the image
+  org.opencontainers.image.url: "https://www.elastic.co/products/logstash"
+  ## Name of the distributing entity, organization or individual
+  org.opencontainers.image.vendor: "Elastic"
+  org.opencontainers.image.version: "{{ elastic_version }}"
+  ## Keywords to help with search (ex. "cicd,gitops,golang")
+  # mil.dso.ironbank.image.keywords: "FIXME"
+  ## This value can be "opensource" or "commercial"
+  # mil.dso.ironbank.image.type: "FIXME"
+  ## Product the image belongs to for grouping multiple images
+  mil.dso.ironbank.product.name: "Logstash"
+
+# List of resources to make available to the offline build context
+resources:
+- filename: logstash-{{ elastic_version }}-linux-x86_64.tar.gz
+  url: <artifact_path>/logstash-{{ elastic_version }}-linux-x86_64.tar.gz
+  validation:
+    type: sha512
+    value: <INSERT SHA512 VALUE FROM https://artifacts.elastic.co/downloads/logstash/logstash-{{ elastic_version }}-linux-x86_64.tar.gz.sha512>
+- filename: go1.17.8.linux-amd64.tar.gz
+  url: https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz
+  validation:
+    type: sha256
+    value: 980e65a863377e69fd9b67df9d8395fd8e93858e7a24c9f55803421e453f4f99
+- filename: v2.3.0.tar.gz
+  url: https://github.com/go-yaml/yaml/archive/v2.3.0.tar.gz
+  validation:
+    type: sha512
+    value: ba934e9cb5ebd2346d3897308b71d13bc6471a8dbc0dc0d46a02644ee6b6553d20c20393471b81025b572a9b03e3326bde9c3e8be156474f1a1f91ff027b6a4f
+
+# List of project maintainers
+maintainers:
+- name: "Nassim Kammah"
+  username: "nkammah"
+  email: "nassim.kammah@elastic.co"
+- name: "Joao Duarte"
+  username: "joaodiasduarte"
+  email: "joao@elastic.co"
+- name: "Rob Bavey"
+  username: "robbavey"
+  email: "rob.bavey@elastic.co"
+- name: "Kaise Cheng"
+  username: "kaisecheng"
+  email: "kaise.cheng@elastic.co"
+

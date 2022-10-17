@@ -30,29 +30,29 @@ WORKDIR /opt/logstash
 RUN for iter in `seq 1 10`; do ./gradlew wrapper --warning-mode all && exit_code=0 && break || exit_code=$? && echo "gradlew error: retry $iter in 10s" && sleep 10; done; exit $exit_code
 WORKDIR /home/logstash
 
-ADD versions.yml /opt/logstash/versions.yml
-ADD LICENSE.txt /opt/logstash/LICENSE.txt
-ADD NOTICE.TXT /opt/logstash/NOTICE.TXT
-ADD licenses /opt/logstash/licenses
-ADD CONTRIBUTORS /opt/logstash/CONTRIBUTORS
-ADD Gemfile.template Gemfile.jruby-2.6.lock.* /opt/logstash/
-ADD Rakefile /opt/logstash/Rakefile
-ADD build.gradle /opt/logstash/build.gradle
-ADD rubyUtils.gradle /opt/logstash/rubyUtils.gradle
-ADD rakelib /opt/logstash/rakelib
-ADD config /opt/logstash/config
-ADD spec /opt/logstash/spec
-ADD qa /opt/logstash/qa
-ADD lib /opt/logstash/lib
-ADD pkg /opt/logstash/pkg
-ADD buildSrc /opt/logstash/buildSrc
-ADD tools /opt/logstash/tools
-ADD logstash-core /opt/logstash/logstash-core
-ADD logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
-ADD bin /opt/logstash/bin
-ADD modules /opt/logstash/modules
-ADD x-pack /opt/logstash/x-pack
-ADD ci /opt/logstash/ci
+COPY versions.yml /opt/logstash/versions.yml
+COPY LICENSE.txt /opt/logstash/LICENSE.txt
+COPY NOTICE.TXT /opt/logstash/NOTICE.TXT
+COPY licenses /opt/logstash/licenses
+COPY CONTRIBUTORS /opt/logstash/CONTRIBUTORS
+COPY Gemfile.template Gemfile.jruby-2.6.lock.* /opt/logstash/
+COPY Rakefile /opt/logstash/Rakefile
+COPY build.gradle /opt/logstash/build.gradle
+COPY rubyUtils.gradle /opt/logstash/rubyUtils.gradle
+COPY rakelib /opt/logstash/rakelib
+COPY config /opt/logstash/config
+COPY spec /opt/logstash/spec
+COPY qa /opt/logstash/qa
+COPY lib /opt/logstash/lib
+COPY pkg /opt/logstash/pkg
+COPY buildSrc /opt/logstash/buildSrc
+COPY tools /opt/logstash/tools
+COPY logstash-core /opt/logstash/logstash-core
+COPY logstash-core-plugin-api /opt/logstash/logstash-core-plugin-api
+COPY bin /opt/logstash/bin
+COPY modules /opt/logstash/modules
+COPY x-pack /opt/logstash/x-pack
+COPY ci /opt/logstash/ci
 
 USER root
 RUN rm -rf build && \

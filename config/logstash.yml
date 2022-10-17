@@ -214,8 +214,9 @@
 #
 # queue.type: memory
 #
-# If using queue.type: persisted, the directory path where the data files will be stored.
-# Default is path.data/queue
+# If `queue.type: persisted`, the directory path where the pipeline data files will be stored.
+# Each pipeline will group its PQ files in a subdirectory matching its `pipeline.id`.
+# Default is path.data/queue.
 #
 # path.queue:
 #
@@ -271,6 +272,21 @@
 #
 # dead_letter_queue.flush_interval: 5000
 
+# If using dead_letter_queue.enable: true, controls which entries should be dropped to avoid exceeding the size limit.
+# Set the value to `drop_newer` (default) to stop accepting new events that would push the DLQ size over the limit.
+# Set the value to `drop_older` to remove queue pages containing the oldest events to make space for new ones.
+#
+# dead_letter_queue.storage_policy: drop_newer
+
+# If using dead_letter_queue.enable: true, the interval that events have to be considered valid. After the interval has
+# expired the events could be automatically deleted from the DLQ.
+# The interval could be expressed in days, hours, minutes or seconds, using as postfix notation like 5d,
+# to represent a five days interval.
+# The available units are respectively d, h, m, s for day, hours, minutes and seconds.
+# If not specified then the DLQ doesn't use any age policy for cleaning events.
+#
+# dead_letter_queue.retain.age: 1d
+
 # If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
 # could be "drop_newer" or "drop_older".
 # With drop_newer, messages that were inserted most recently are dropped, logging an error line.
@@ -322,7 +338,8 @@
 #xpack.monitoring.elasticsearch.cloud_auth: logstash_system:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.monitoring.elasticsearch.api_key: "id:api_key"
-#xpack.monitoring.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.monitoring.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
+#xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
 #xpack.monitoring.elasticsearch.ssl.truststore.password: password
 #xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
@@ -345,7 +362,8 @@
 #xpack.management.elasticsearch.cloud_auth: logstash_admin_user:password
 # another authentication alternative is to use an Elasticsearch API key
 #xpack.management.elasticsearch.api_key: "id:api_key"
-#xpack.management.elasticsearch.ssl.certificate_authority: [ "/path/to/ca.crt" ]
+#xpack.management.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
+#xpack.management.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
 #xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.truststore.password: password
 #xpack.management.elasticsearch.ssl.keystore.path: /path/to/file

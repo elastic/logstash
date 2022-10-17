@@ -25,7 +25,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.29'
+        classpath 'org.yaml:snakeyaml:1.30'
     }
 }
 
@@ -90,7 +90,9 @@ allprojects {
       "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
       "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
       "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-      "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED"
+      "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+      "--add-opens=java.base/java.lang=ALL-UNNAMED",
+      "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
       //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
       testLogging {
@@ -288,7 +290,7 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-def bundlerVersion = "~> 2"
+def bundlerVersion = "2.3.18"
 
 tasks.register("installBundler") {
     dependsOn assemblyDeps
@@ -313,7 +315,7 @@ tasks.register("installDefaultGems") {
     }
 }
 
-tasks.register("installTestGems") {
+tasks.register("installDevelopmentGems") {
     dependsOn bootstrap
     doLast {
       rake(projectDir, buildDir, 'plugin:install-development-dependencies')
@@ -340,7 +342,7 @@ tasks.register("assembleTarDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
-      rake(projectDir, buildDir, 'artifact:no_bundle_jdk_tar')
+      rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
   }
 }
 
@@ -397,7 +399,7 @@ project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
       dependsOn copyPluginTestAlias
-      dependsOn installTestGems
+      dependsOn installDevelopmentGems
     }
   }
 }
@@ -864,7 +866,7 @@ if (System.getenv('OSS') != 'true') {
   project(":logstash-xpack") {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
-        dependsOn installTestGems
+        dependsOn installDevelopmentGems
       }
     }
   }

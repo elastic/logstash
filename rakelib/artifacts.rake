@@ -129,7 +129,7 @@ namespace "artifact" do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
 
     #without JDK
     system("./gradlew bootstrap") #force the build of Logstash jars
@@ -161,10 +161,23 @@ namespace "artifact" do
     system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
+  # Create an archive pack using settings appropriate for the running machine
+  def create_local_archive_pack(bundle_jdk)
+    @bundles_jdk = bundle_jdk
+    system("./gradlew copyJdk") if bundle_jdk
+    build_tar('ELASTIC-LICENSE')
+    system("./gradlew deleteLocalJdk") if bundle_jdk
+  end
+
+
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
-    @bundles_jdk = false
-    build_tar('ELASTIC-LICENSE')
+    create_local_archive_pack(false)
+  end
+
+  desc "Build a JDK bundled tar.gz of default logstash plugins with all dependencies"
+  task "bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
+    create_local_archive_pack(true)
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
@@ -173,7 +186,7 @@ namespace "artifact" do
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0',"-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
 
     #without JDK
     @bundles_jdk = false
@@ -293,6 +306,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('ironbank')
   end
 
   desc "Generate Dockerfile for oss images"
@@ -303,14 +317,20 @@ namespace "artifact" do
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building full Dockerfiles")
     build_dockerfile('full')
   end
 
   desc "Generate Dockerfile for full images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
-    puts("[dockerfiles] Building default Dockerfiles")
+    puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
+  end
+
+  desc "Generate build context for ironbank"
+  task "dockerfile_ironbank" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building ironbank Dockerfiles")
+    build_dockerfile('ironbank')
   end
 
   # Auxiliary tasks
@@ -613,6 +633,7 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
         out.config_files << "/etc/default/logstash"
+        out.replaces << "logstash < 7.10.0"
       when "debian", "ubuntu"
         require "fpm/package/deb"
 
@@ -631,6 +652,8 @@ namespace "artifact" do
         out.config_files << "/etc/logstash/pipelines.yml"
         out.config_files << "/lib/systemd/system/logstash.service"
         out.config_files << "/etc/default/logstash"
+        out.conflicts << "logstash (<< 7.10.0)"
+        out.replaces << "logstash (<< 7.10.0)"
     end
 
     # Packaging install/removal scripts
@@ -729,7 +752,7 @@ namespace "artifact" do
     }
     Dir.chdir("docker") do |dir|
       system(env, "make public-dockerfiles_#{flavor}")
-      puts "Dockerfiles created in #{::File.join(env['ARTIFACTS_DIR'], 'docker')}"
+      puts "Dockerfiles created in #{env['ARTIFACTS_DIR']}"
     end
   end
 end

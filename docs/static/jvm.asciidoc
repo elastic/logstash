@@ -5,7 +5,7 @@
 {ls} requires one of these versions:
 
 * Java 11
-* Java 17 (see <<jdk17-upgrade>> for settings info)
+* Java 17 (default). Check out <<jdk17-upgrade>> for settings info.
 
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
@@ -20,7 +20,7 @@ for the official word on supported versions across releases.
 ===== 
 {ls} offers architecture-specific
 https://www.elastic.co/downloads/logstash[downloads] that include
-Adoptium Eclipse Temurin 11, the latest long term support (LTS) release of the JDK.
+Adoptium Eclipse Temurin 17, the latest long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the
 version that is bundled. 
@@ -67,7 +67,7 @@ installation, you may get an error message, and {ls} will not start properly.
 [[jdk17-upgrade]]
 ==== Using JDK 17
 
-{ls} supports JDK 17, but you need to update settings in `jvm.options` and
+{ls} uses JDK 17 by default, but you need to update settings in `jvm.options` and
 `log4j2.properties` if you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later.
 
 

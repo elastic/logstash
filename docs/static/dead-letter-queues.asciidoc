@@ -111,12 +111,15 @@ dead_letter_queue.flush_interval: 5000
 NOTE: You may not use the same `dead_letter_queue` path for two different
 Logstash instances.
 
+[[file-rotation]]
 ===== File rotation
 
 Dead letter queues have a built-in file rotation policy that manages the file
 size of the queue. When the file size reaches a preconfigured threshold, a new
 file is created automatically.
 
+[[size-management]]
+===== Size management
 By default, the maximum size of each dead letter queue is set to 1024mb. To
 change this setting, use the `dead_letter_queue.max_bytes` option.  Entries
 will be dropped if they would increase the size of the dead letter queue beyond
@@ -124,6 +127,42 @@ this setting.
 Use the `dead_letter_queue.storage_policy` option to control which entries should be dropped to avoid exceeding the size limit. 
 Set the value to `drop_newer` (default) to stop accepting new values that would push the file size over the limit. 
 Set the value to `drop_older` to remove the oldest events to make space for new ones.
+
+[[age-policy]]
+====== Age policy
+You can use the age policy to automatically control the volume of events in the dead letter queue.
+Use the the `dead_letter_queue.retain.age` setting (in `logstash.yml` or `pipelines.yml`) to have {ls}
+remove events that are older than a value you define.
+Available time units are `d`, `h`, `m`, `s` respectively for days, hours, minutes and seconds.
+There is no default time unit, so you need to specify it.
+
+[source,yaml]
+-----
+dead_letter_queue.retain.age: 2d
+-----
+
+The age policy is verified and applied on event writes and during pipeline shutdown.
+For that reason, your dead-letter-queue folder may store expired events for longer than specified,
+and the reader pipeline could possibly encounter outdated events.
+
+[[auto-clean]]
+===== Automatic cleaning of consumed events
+
+By default, the dead letter queue input plugin does not remove the events that it consumes.
+Instead, it commits a reference to avoid re-processing events.
+Use the `clean_consumed` setting in the dead letter queue input plugin in order
+to remove segments that have been fully consumed, freeing space while processing.
+
+[source,yaml]
+-----
+input {
+  dead_letter_queue {
+  	path => "/path/to/data/dead_letter_queue"
+  	pipeline_id => "main"
+    clean_consumed => true 
+  }
+}
+-----
 
 [[processing-dlq-events]]
 ==== Processing events in the dead letter queue

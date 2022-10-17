@@ -25,6 +25,9 @@ require "json"
 require "logstash/util"
 
 describe "Test Logstash service when config reload is enabled" do
+
+  define_negated_matcher :exclude, :include
+
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
@@ -44,6 +47,8 @@ describe "Test Logstash service when config reload is enabled" do
   let(:initial_config_file) { config_to_temp_file(@fixture.config("initial", { :port => initial_port, :file => output_file1 })) }
   let(:reload_config_file) { config_to_temp_file(@fixture.config("reload", { :port => reload_port, :file => output_file2 })) }
 
+  let(:max_retry) { 30 }
+
   it "can reload when changes are made to TCP port and grok pattern" do
     logstash_service = @fixture.get_service("logstash")
     logstash_service.spawn_logstash("-f", "#{initial_config_file}", "--config.reload.automatic", "true")
@@ -60,7 +65,13 @@ describe "Test Logstash service when config reload is enabled" do
     result = logstash_service.monitoring_api.event_stats
     expect(result["in"]).to eq(1)
     expect(result["out"]).to eq(1)
-    
+
+    # make sure the pipeline flow has non-zero input throughput after receiving data
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
+      expect(pipeline_flow_stats['input_throughput']).to include('lifetime' => (a_value >  0))
+    end
+
     # do a reload
     logstash_service.reload_config(initial_config_file, reload_config_file)
 
@@ -69,7 +80,20 @@ describe "Test Logstash service when config reload is enabled" do
     
     # make sure old socket is closed
     expect(is_port_open?(initial_port)).to be false
-    
+
+    # check pipeline flow metrics. They should be both present and reset.
+    # since we have processed zero events since the reload, we expect their rates to be either unavailable or zero.
+    pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
+    expect(pipeline_flow_stats).to_not be_nil
+    expect(pipeline_flow_stats).to include('input_throughput', 'queue_backpressure')
+    aggregate_failures do
+      expect(pipeline_flow_stats['input_throughput']).to exclude('lifetime').or(include('lifetime' => 0))
+      expect(pipeline_flow_stats['input_throughput']).to exclude('current').or(include('current' => 0))
+      expect(pipeline_flow_stats['queue_backpressure']).to exclude('lifetime').or(include('lifetime' => 0))
+      expect(pipeline_flow_stats['queue_backpressure']).to exclude('current').or(include('current' => 0))
+    end
+
+    # send data, and wait for at least some of the events to make it through the output.
     send_data(reload_port, sample_data)
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
       expect(LogStash::Util.blank?(IO.read(output_file2))).to be false
@@ -84,7 +108,34 @@ describe "Test Logstash service when config reload is enabled" do
     pipeline_event_stats = logstash_service.monitoring_api.pipeline_stats("main")["events"]
     expect(pipeline_event_stats["in"]).to eq(1)
     expect(pipeline_event_stats["out"]).to eq(1)
-    
+
+    # make sure the pipeline flow has non-zero input/output throughput after receiving data
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
+      expect(pipeline_flow_stats).to_not be_nil
+      expect(pipeline_flow_stats).to include(
+        # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
+        # to be zero, so we are just looking for these to be _populated_
+        'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
+        # should be non-zero so long as pipeline uptime is less than ~10 minutes.
+        'input_throughput'   => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+        'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
+      )
+
+      if logstash_service.settings.feature_flag == "persistent_queues"
+        expect(pipeline_flow_stats).to include(
+                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
+                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
+                               )
+      else
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_bytes')
+        expect(pipeline_flow_stats).to_not include('queue_persisted_growth_events')
+      end
+    end
+
     # check reload stats
     pipeline_reload_stats = logstash_service.monitoring_api.pipeline_stats("main")["reloads"]
     instance_reload_stats = logstash_service.monitoring_api.node_stats["reloads"]

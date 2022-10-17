@@ -552,6 +552,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             return null;
         }
 
+        @Override
+        public Codec buildRubyCodecWrapper(RubyObject rubyCodec) {
+            return null;
+        }
+
         private static <T> T setupPlugin(final RubyString name,
             final Map<String, Supplier<T>> suppliers) {
             final String key = name.asJavaString();
@@ -737,6 +742,11 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         @Override
         public Codec buildDefaultCodec(String codecName) {
+            return null;
+        }
+
+        @Override
+        public Codec buildRubyCodecWrapper(RubyObject rubyCodec) {
             return null;
         }
     }

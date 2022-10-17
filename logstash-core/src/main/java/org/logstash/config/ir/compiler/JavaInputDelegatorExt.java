@@ -29,7 +29,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
-import org.logstash.execution.JavaBasePipelineExt;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -45,7 +45,7 @@ public class JavaInputDelegatorExt extends RubyObject {
 
     private AbstractNamespacedMetricExt metric;
 
-    private JavaBasePipelineExt pipeline;
+    private AbstractPipelineExt pipeline;
 
     private transient Input input;
 
@@ -55,7 +55,7 @@ public class JavaInputDelegatorExt extends RubyObject {
         super(runtime, metaClass);
     }
 
-    public static JavaInputDelegatorExt create(final JavaBasePipelineExt pipeline,
+    public static JavaInputDelegatorExt create(final AbstractPipelineExt pipeline,
                                                final AbstractNamespacedMetricExt metric, final Input input,
                                                final Map<String, Object> pluginArgs) {
         final JavaInputDelegatorExt instance =

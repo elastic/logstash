@@ -1,0 +1,14 @@
+[[ls-k8s-stack-monitoring]]
+=== Set up stack monitoring
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+In order to prepare your environment to be production ready, you'll need to set up secure communication between each of your Elastic resources.
+
+An important step to making your environment production ready is to configure stack monitoring. Monitoring logs and metrics data can be sent to an external resource, such as {ess} or {eck}, so that in the event that any components of your environment become unresponsive, your monitoring data is available.
+
+Follow these steps to configure monitoring:
+
+. Step 1
+. Step 2
+. Step 3

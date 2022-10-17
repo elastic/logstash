@@ -1,0 +1,46 @@
+[[ls-k8s-design-for-plugins]]
+=== Design your installation based on plugin usage
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+Our recommandations for your {ls} Kubernetes installation vary depending on the types of plugins that you plan to use, and their respective requirements.
+
+[[designing-pull-based]]
+==== Pull-based plugins
+
+Designing recommendations for pull-based plugins depend on whether or not the plugins support autoscaling.
+
+**Autoscaling**
+
+These plugins can autoscale by tracking work done externally to {ls}. Examples include Kafka, Azure Event Hubs in certain configurations, and others.
+
+Recipe link.
+
+**Non-autoscaling**
+
+Description.
+
+Recipe link.
+
+[[designing-push-based]]
+==== Push-based plugins
+
+Designing recommendations for push-based plugins depend on whether or not the plugins support autoscaling.
+
+**Autoscaling**
+
+These plugins support autoscaling. Examples include Beats, HTTP, and others.
+
+Recipe link.
+
+**Non-autoscaling**
+
+These plugins do not support autoscaling, either because they have a dependency on `sincedb`, or because ...
+
+Recipe link.
+
+**Other resources required**
+
+Certain plugins require additional resources to be available in order for them to run. Examples include the JDBC and JMS plugins, which require JARs to be available on on `classpath`.
+
+Recipe link.

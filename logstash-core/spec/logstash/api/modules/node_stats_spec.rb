@@ -21,7 +21,8 @@ require "sinatra"
 require "logstash/api/modules/node_stats"
 
 describe LogStash::Api::Modules::NodeStats do
-  include_context "api setup"
+  # enable PQ to ensure PQ-related metrics are present
+  include_context "api setup", {"queue.type" => "persisted"}
   include_examples "not found"
 
   extend ResourceDSLMethods
@@ -87,7 +88,21 @@ describe LogStash::Api::Modules::NodeStats do
         "percent"=>Numeric,
         # load_average is not supported on Windows, set it below
       }
-    },
+   },
+   "events" => {
+      "duration_in_millis" => Numeric,
+      "in" => Numeric,
+      "filtered" => Numeric,
+      "out" => Numeric,
+      "queue_push_duration_in_millis" => Numeric
+   },
+   "flow" => {
+      "output_throughput" => Hash,
+      "filter_throughput" => Hash,
+      "queue_backpressure" => Hash,
+      "worker_concurrency" => Hash,
+      "input_throughput" => Hash
+   },
    "pipelines" => {
      "main" => {
        "events" => {
@@ -97,12 +112,36 @@ describe LogStash::Api::Modules::NodeStats do
          "out" => Numeric,
          "queue_push_duration_in_millis" => Numeric
        },
+       "flow" => {
+         "output_throughput" => Hash,
+         "filter_throughput" => Hash,
+         "queue_backpressure" => Hash,
+         "worker_concurrency" => Hash,
+         "input_throughput" => Hash,
+         "queue_persisted_growth_bytes" => Hash,
+         "queue_persisted_growth_events" => Hash
+       },
        "plugins" => {
           "inputs" => Array,
           "codecs" => Array,
           "filters" => Array,
           "outputs" => Array,
        },
+       "queue" => {
+         "capacity" => {
+           "page_capacity_in_bytes" => Numeric,
+           "max_queue_size_in_bytes" => Numeric,
+           "queue_size_in_bytes" => Numeric,
+           "max_unread_events" => Numeric
+         },
+         "events" => Numeric,
+         "type" => String,
+         "data" => {
+           "storage_type" => String,
+           "path" => String,
+           "free_space_in_bytes" => Numeric
+         }
+       }
      }
    },
    "reloads" => {

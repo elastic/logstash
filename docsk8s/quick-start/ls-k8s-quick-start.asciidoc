@@ -1,0 +1,202 @@
+[[ls-k8s-quick-start]]
+== Quick start
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+This guide describes how to set up {ls} to deliver Kubernetes logs to {es}. The logs will be monitored by Filebeat, processed through a Logstash pipeline, and then delivered into an {es} cluster in the Kubernetes environment.
+
+This section includes the following topics:
+
+* <<qs-prerequisites>>
+* <<qs-set-up>>
+* <<qs-generate-certificate>>
+* <<qs-create-elastic-stack>>
+* <<qs-view-monitoring-data>>
+* <<qs-tidy-up>>
+* <<qs-learn-more>>
+
+[float]
+[[qs-prerequisites]]
+=== Prerequisites
+
+Before you start, there are a few things you'll need:
+
+. A running Kubernetes cluster - For single node testing we recommend using link:https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node Kubernetes cluster on your system. Check the `Getting Started` section for install and set up instructions.
+. A link:https://github.com/elastic/logstash/blob/feature/kubernetes/k8s/recipes/logstash-k8s-quickstart.zip[small zip file] of config files - Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
+
+[float]
+[[qs-set-up]]
+=== Set up your environment
+
+Let's start by getting your Minikube Kubernetes cluster up and running:
+
+[source,sh]
+--
+minikube start
+--
+
+Install the Elastic custom resource definition (CRD) files, as well as the `elastic-operator` custom controller, which will be used to manage the Elastic resources in your cluster:
+
+[source,sh]
+--
+kubectl create -f https://download.elastic.co/downloads/eck/2.4.0/crds.yaml
+kubectl apply -f https://download.elastic.co/downloads/eck/2.4.0/operator.yaml
+--
+
+NOTE: The Elastic CRDs and ECK operator can also be set up using Elastic Helm charts, available at link:https://helm.elastic.co[https://helm.elastic.co].
+
+Check the Kubernetes pods status to confirm that the `elastic-operator` pod is running:
+
+[source,sh]
+--
+kubectl get pods
+--
+
+[source,sh]
+--
+NAME                 READY   STATUS    RESTARTS      AGE
+elastic-operator-0   1/1     Running   4 (12m ago)   13d
+--
+
+[float]
+[[qs-generate-certificate]]
+=== Generate certificate files
+
+To enable secure communication throughout your Kubernetes resources, run the sample script to generate the CA certificate files. Details about these files are in <<sample-configuration-files,Sample configuration files>>.
+
+[source,sh]
+--
+./cert/generate_cert.sh
+--
+
+.**Expand to view output**
+[%collapsible]
+====
+[source,sh]
+--
+Generating RSA private key, 2048 bit long modulus
+.......................+++
+...........................................................................+++
+e is 65537 (0x10001)
+Generating RSA private key, 2048 bit long modulus
+..............................................+++
+.............................................+++
+e is 65537 (0x10001)
+Signature ok
+subject=/C=EU/ST=NA/O=Elastic/CN=ServerHostName
+Getting CA Private Key
+Generating RSA private key, 2048 bit long modulus
+............+++
+.......................................................................................................................................+++
+e is 65537 (0x10001)
+Signature ok
+subject=/C=EU/ST=NA/O=Elastic/CN=ClientName
+Getting CA Private Key
+--
+====
+
+Your `logstash-k8s-gs/cert` folder should now contain a set of certificate files, including `client` certificates for Filebeat and Metricbeat, and `server` certificates for Logstash. 
+
+The parent `logstash-k8s-gs` directory also has a new `001-secret.yaml` resources file that stores a hash of the client and server certificates.
+
+image::./images/gs-cert-files.png[generated CA certificate files]
+
+[float]
+[[qs-create-elastic-stack]]
+=== Create an Elastic Stack
+
+Now that your environment and certificates are set up, it's time to create an Elastic Stack. Run the following command to deploy the example using the sample CRDs:
+
+[source,sh]
+--
+kubectl apply -f .
+--
+
+The resources are created:
+
+[source,sh]
+--
+elasticsearch.elasticsearch.k8s.elastic.co/demo created
+configmap/logstash-pipeline created
+configmap/logstash-config created
+secret/logstash-beats-tls created
+deployment.apps/logstash created
+service/logstash created
+horizontalpodautoscaler.autoscaling/logstash created
+beat.beat.k8s.elastic.co/demo created
+beat.beat.k8s.elastic.co/demo configured
+kibana.kibana.k8s.elastic.co/demo created
+--
+
+[source,sh]
+--
+kubectl get pods
+--
+
+The pods are starting up. You may need to wait a minute or two for all of them to be ready.
+
+[source,sh]
+--
+NAME                                    READY   STATUS    RESTARTS       AGE
+demo-beat-filebeat-7f4d97f69f-qkkbl     1/1     Running   0              42s
+demo-beat-metricbeat-59f4b68cc7-9zrrn   1/1     Running   0              39s
+demo-es-default-0                       1/1     Running   0              41s
+demo-kb-d7f585494-vbf6s                 1/1     Running   0              39s
+elastic-operator-0                      1/1     Running   4 (164m ago)   13d
+logstash-7974b9ccb9-jd5xl               1/1     Running   0              42s
+--
+
+[float]
+[[qs-view-monitoring-data]]
+=== View the stack monitoring data
+
+Now that your stack monitoring data is flowing, let's access it in {kib}. 
+
+First, enable port forwarding for the {kib} service on port `5601`. Open a second shell window and run the following:
+
+[source,sh]
+--
+kubectl port-forward service/demo-kb-http 5601
+--
+
+Then, open up a web browser at address `https://localhost:5601`. Depending on your browser you may need to accept the site certificate.
+
+Log in to {kib} using the `elastic` username and password. To obtain the password, run:
+
+[source,sh]
+--
+kubectl get secret demo-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
+--
+
+Open the {kib} main menu and select **Management**, then **Stack Monitoring**.
+
+Select the {ls} **Overview**, and under the **Nodes** tab select the link for the {ls} node.
+
+image::./images/gs-logstash-node-metrics.png[{ls} metrics data in {kib}]
+
+That's it! The Kubernetes API server metrics data is flowing through {ls} into {es} and {kib}. You can monitor the JVM Heap, CPU Utilization, and System Load data as it updates in real time.
+
+[float]
+[[qs-tidy-up]]
+=== Tidy up
+
+After finishing with this demo, you can run the following command to remove all of the created resources:
+ 
+[source,sh]
+--
+kubectl delete service,pods,deployment,hpa,configmap,secret,beat,elasticsearch,kibana -l app=logstash-demo
+--
+
+[float]
+[[qs-learn-more]]
+=== Learn more
+
+Now that you're familiar with how to get a {ls} monitoring setup running in your Kubernetes environment, here are a few suggested next steps:
+
+* <<ls-k8s-external-resource>>
+* <<ls-k8s-design-for-plugins>>
+* <<ls-k8s-sizing>>
+* <<ls-k8s-secure>>
+* <<ls-k8s-stack-monitoring>>
+
+As well, we have a variety of <<ls-k8s-recipes,recipes>> that you can use as templates to configure an environment to match your specific use case.

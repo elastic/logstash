@@ -476,6 +476,28 @@ describe LogStash::Agent do
           expect(value).to be > initial_generator_threshold
         end
 
+        it "does not reset the global flow metrics" do
+          snapshot = subject.metric.collector.snapshot_metric
+          subject.capture_flow_metrics
+
+          flow_metrics = snapshot.metric_store.get_with_path("/stats/flow")[:stats][:flow]
+
+          input_throughput_current = flow_metrics[:input_throughput].value.get("current")
+          input_throughput_lifetime = flow_metrics[:input_throughput].value.get("lifetime")
+          filter_throughput_current = flow_metrics[:filter_throughput].value.get("current")
+          filter_throughput_lifetime = flow_metrics[:filter_throughput].value.get("lifetime")
+          worker_concurrency_current = flow_metrics[:worker_concurrency].value.get("current")
+          worker_concurrency_lifetime = flow_metrics[:worker_concurrency].value.get("lifetime")
+
+          # rates depend on [events/wall-clock time], the expectation is non-zero values
+          expect(input_throughput_current).to be > 0
+          expect(input_throughput_lifetime).to be > 0
+          expect(filter_throughput_current).to be > 0
+          expect(filter_throughput_lifetime).to be > 0
+          expect(worker_concurrency_current).to be > 0
+          expect(worker_concurrency_lifetime).to be > 0
+        end
+
         it "increases the successful reload count" do
           skip("This test fails randomly, tracked in https://github.com/elastic/logstash/issues/8005")
           snapshot = subject.metric.collector.snapshot_metric

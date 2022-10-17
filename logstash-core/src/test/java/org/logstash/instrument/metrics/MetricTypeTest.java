@@ -42,12 +42,14 @@ public class MetricTypeTest {
     public void ensurePassivity(){
         Map<MetricType, String> nameMap = new HashMap<>(EnumSet.allOf(MetricType.class).size());
         nameMap.put(MetricType.COUNTER_LONG, "counter/long");
+        nameMap.put(MetricType.COUNTER_DECIMAL, "counter/decimal");
         nameMap.put(MetricType.GAUGE_TEXT, "gauge/text");
         nameMap.put(MetricType.GAUGE_BOOLEAN, "gauge/boolean");
         nameMap.put(MetricType.GAUGE_NUMBER, "gauge/number");
         nameMap.put(MetricType.GAUGE_UNKNOWN, "gauge/unknown");
         nameMap.put(MetricType.GAUGE_RUBYHASH, "gauge/rubyhash");
         nameMap.put(MetricType.GAUGE_RUBYTIMESTAMP, "gauge/rubytimestamp");
+        nameMap.put(MetricType.FLOW_RATE, "flow/rate");
 
         //ensure we are testing all of the enumerations
         assertThat(EnumSet.allOf(MetricType.class).size()).isEqualTo(nameMap.size());

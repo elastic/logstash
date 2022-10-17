@@ -1,0 +1,8 @@
+[[ls-k8s-external-resource]]
+=== Ship to an external resource
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+The <<ls-k8s-quick-start,{ls} and Kubernetes quick start>> guide demonstrates how to send Kubernetes monitoring data into an Elasticsearch cluster in your Kubernetes environment.
+
+As a next step, this guide describes how to send your data from Logstash to an external resource, in this case an Elasticsearch cluster located either on your local system or on the Cloud, using {ess}.

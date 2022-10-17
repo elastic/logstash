@@ -35,6 +35,7 @@ module LogStash
         @proxy = es_settings['proxy']
         @ssl = es_settings['ssl']
         @ca_path = es_settings['cacert']
+        @ca_trusted_fingerprint = es_settings['ca_trusted_fingerprint']
         @truststore_path = es_settings['truststore']
         @truststore_password = es_settings['truststore_password']
         @keystore_path = es_settings['keystore']
@@ -44,7 +45,7 @@ module LogStash
       end
 
       attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth, :api_key
-      attr_accessor :proxy, :ssl, :ca_path, :truststore_path, :truststore_password
+      attr_accessor :proxy, :ssl, :ca_path, :ca_trusted_fingerprint, :truststore_path, :truststore_password
       attr_accessor :keystore_path, :keystore_password, :sniffing, :ssl_certificate_verification
 
       def collection_interval
@@ -76,7 +77,7 @@ module LogStash
       end
 
       def ssl?
-        ssl || ca_path || (truststore_path && truststore_password) || (keystore_path && keystore_password)
+        ssl || ca_path || ca_trusted_fingerprint || truststore? || keystore?
       end
 
       def truststore?
@@ -263,6 +264,7 @@ module LogStash
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.cloud_auth"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.api_key"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate_authority"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.ca_trusted_fingerprint"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.path"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))

@@ -8,6 +8,7 @@ module LogStash module Helpers
 
     ES_SETTINGS = %w(
       ssl.certificate_authority
+      ssl.ca_trusted_fingerprint
       ssl.truststore.path
       ssl.keystore.path
       hosts
@@ -29,6 +30,7 @@ module LogStash module Helpers
       "proxy" => "proxy",
       "sniffing" => "sniffing",
       "ssl.certificate_authority" => "cacert",
+      "ssl.ca_trusted_fingerprint" => "ca_trusted_fingerprint",
       "ssl.truststore.path" => "truststore",
       "ssl.truststore.password" => "truststore_password",
       "ssl.keystore.path" => "keystore",
@@ -93,6 +95,7 @@ module LogStash module Helpers
       return true if verify_https_scheme(feature, settings, prefix)
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.cloud_id") # cloud_id always resolves to https hosts
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.certificate_authority")
+      return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.ca_trusted_fingerprint")
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.truststore.path") && settings.set?("#{prefix}#{feature}.elasticsearch.ssl.truststore.password")
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.keystore.path") && settings.set?("#{prefix}#{feature}.elasticsearch.ssl.keystore.password")
 

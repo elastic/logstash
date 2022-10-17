@@ -76,8 +76,8 @@ describe LogStash::Timestamp do
       subject(:timestamp) { LogStash::Timestamp.parse_iso8601(time_string) }
       context 'with whole seconds' do
         let(:time_string) { "2014-09-23T00:00:00.000-0800" }
-        it 'serializes a 20-byte string' do
-          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00Z"')
+        it 'serializes a 24-byte string' do
+          expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000Z"')
         end
       end
       context 'with excess millis' do
@@ -88,13 +88,13 @@ describe LogStash::Timestamp do
       end
       context 'with excess micros' do
         let(:time_string) { "2014-09-23T00:00:00.000100-0800" }
-        it 'serializes a 24-byte string' do
+        it 'serializes a 27-byte string' do
           expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000100Z"')
         end
       end
       context 'with excess nanos' do
         let(:time_string) { "2014-09-23T00:00:00.000000010-0800" }
-        it 'serializes a 24-byte string' do
+        it 'serializes a 30-byte string' do
           expect(timestamp.to_json).to eq('"2014-09-23T08:00:00.000000010Z"')
         end
       end
@@ -169,7 +169,7 @@ describe LogStash::Timestamp do
   context "at" do
     context "with integer epoch" do
       it "should convert to correct date" do
-        expect(LogStash::Timestamp.at(946702800).to_iso8601).to eq("2000-01-01T05:00:00Z")
+        expect(LogStash::Timestamp.at(946702800).to_iso8601).to eq("2000-01-01T05:00:00.000Z")
       end
 
       it "should return zero usec" do
@@ -177,7 +177,7 @@ describe LogStash::Timestamp do
       end
 
       it "should return prior to epoch date on negative input" do
-        expect(LogStash::Timestamp.at(-1).to_iso8601).to eq("1969-12-31T23:59:59Z")
+        expect(LogStash::Timestamp.at(-1).to_iso8601).to eq("1969-12-31T23:59:59.000Z")
       end
     end
 

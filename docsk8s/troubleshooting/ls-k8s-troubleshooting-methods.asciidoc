@@ -1,0 +1,35 @@
+[[ls-k8s-troubleshooting-methods]]
+=== Troubleshooting methods
+
+There are a number of methods that you can use to diagnose the state of your Logstash and Kubernetes system, both in the event of any problems, and as part of a day-to-day approach to ensuring that everything is running as expected.
+
+<<ls-k8s-checking-resources>>
+<<ls-k8s-viewing-logs>>
+<<ls-k8s-connecting-to-a-container>>
+
+[float]
+[[ls-k8s-checking-resources]]
+=== Checking resources
+
+You can use the standard Kubernetes `get` and `describe` commands to quickly gather details about any resources in your Logstash and Kubernetes environment.
+
+Examples...
+
+
+[float]
+[[ls-k8s-viewing-logs]]
+=== Viewing logs
+
+Following is a list of logs and locations that can be useful to monitor the health of your environment.
+
+Log1::
+Description.
+
+Log2::
+Description.
+
+[float]
+[[ls-k8s-connecting-to-a-container]]
+=== Connecting to a container
+
+At times, you may need to connect directly from your command shell into Logstash and other Kubernetes resources.

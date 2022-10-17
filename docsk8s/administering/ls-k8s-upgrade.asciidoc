@@ -1,0 +1,6 @@
+[[ls-k8s-upgrade]]
+=== Upgrade {ls}
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+We have a number of recommendations about how to upgrade {ls} in a production environment, so as to minimize and mitigate the impact of any potential downtime.

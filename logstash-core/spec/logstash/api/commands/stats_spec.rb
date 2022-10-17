@@ -18,7 +18,8 @@
 require "spec_helper"
 
 describe LogStash::Api::Commands::Stats do
-  include_context "api setup"
+  # enable PQ to ensure PQ-related metrics are present
+  include_context "api setup", {"queue.type" => "persisted"}
 
   let(:report_method) { :run }
   let(:extended_pipeline) { nil }
@@ -72,6 +73,19 @@ describe LogStash::Api::Commands::Stats do
         :out,
         :duration_in_millis,
         :queue_push_duration_in_millis)
+    end
+  end
+
+  describe "#metric flows" do
+    let(:report_method) { :flow }
+
+    it "should validate flow metric keys are exist" do
+      expect(report.keys).to include(
+                               :input_throughput,
+                               :output_throughput,
+                               :filter_throughput,
+                               :queue_backpressure,
+                               :worker_concurrency)
     end
   end
 
@@ -144,6 +158,7 @@ describe LogStash::Api::Commands::Stats do
       it "returns information on pipeline" do
         expect(report[:main].keys).to include(
           :events,
+          :flow,
           :plugins,
           :reloads,
           :queue,
@@ -157,6 +172,33 @@ describe LogStash::Api::Commands::Stats do
           :out,
           :queue_push_duration_in_millis
         )
+      end
+      it "returns flow metric information" do
+        expect(report[:main][:flow].keys).to include(
+                                                 :output_throughput,
+                                                 :filter_throughput,
+                                                 :queue_backpressure,
+                                                 :worker_concurrency,
+                                                 :input_throughput,
+                                                 :queue_persisted_growth_bytes,
+                                                 :queue_persisted_growth_events
+                                               )
+      end
+      it "returns queue metric information" do
+        expect(report[:main][:queue].keys).to include(
+                                               :capacity,
+                                               :events,
+                                               :type,
+                                               :data)
+        expect(report[:main][:queue][:capacity].keys).to include(
+                                                           :page_capacity_in_bytes,
+                                                           :max_queue_size_in_bytes,
+                                                           :queue_size_in_bytes,
+                                                           :max_unread_events)
+        expect(report[:main][:queue][:data].keys).to include(
+                                                           :storage_type,
+                                                           :path,
+                                                           :free_space_in_bytes)
       end
     end
     context "when using multiple pipelines" do

@@ -4,7 +4,7 @@ import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.Input;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.config.ir.compiler.JavaInputDelegatorExt;
-import org.logstash.execution.JavaBasePipelineExt;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.plugins.PluginLookup;
 
@@ -21,7 +21,7 @@ class InputPluginCreator extends AbstractPluginCreator<Input> {
                                        AbstractNamespacedMetricExt typeScopedMetric,
                                        PluginLookup.PluginClass pluginClass, Context pluginContext) {
         Input input = instantiateAndValidate(pluginArgs, id, pluginContext, pluginClass);
-        return JavaInputDelegatorExt.create((JavaBasePipelineExt) pluginsFactory.getExecutionContextFactory().getPipeline(),
+        return JavaInputDelegatorExt.create((AbstractPipelineExt) pluginsFactory.getExecutionContextFactory().getPipeline(),
                 typeScopedMetric, input, pluginArgs);
     }
 }

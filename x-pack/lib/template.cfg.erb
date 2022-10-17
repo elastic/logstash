@@ -41,6 +41,9 @@ output {
     <% if ca_path %>
         cacert => "<%= ca_path %>"
     <% end %>
+    <% if ca_trusted_fingerprint %>
+        ca_trusted_fingerprint => <%= ca_trusted_fingerprint.inspect %>
+    <% end %>
     <% if truststore? %>
         truststore => "<%= truststore_path %>"
         truststore_password => "<%= truststore_password %>"

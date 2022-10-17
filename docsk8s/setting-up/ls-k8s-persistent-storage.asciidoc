@@ -1,0 +1,16 @@
+[[ls-k8s-persistent-storage]]
+=== Persistent storage requirements
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+Some snazzy intro text...
+
+[[persistent-storage-pq-dlq]]
+==== PQ and DLQ for {ls} core
+
+There a few factors to help you decide whether to configure your {ls} core instance to use either a persistent queue {PQ} or a dead letter queue (DLQ).
+
+[[persistent-storage-plugins]]
+==== Plugins that require local storage to track work done
+
+Description...

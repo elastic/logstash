@@ -6,7 +6,7 @@ require 'monitoring/monitoring'
 
 describe LogStash::MonitoringExtension::PipelineRegisterHook do
 
-  subject { described_class.new }
+  subject(:monitoring_extension) { described_class.new }
 
   before(:all) {
     @extension = LogStash::MonitoringExtension.new
@@ -65,6 +65,30 @@ describe LogStash::MonitoringExtension::PipelineRegisterHook do
 
             expect(generated_pipeline_config).to include("ssl_certificate_verification => #{expected_result}")
           end
+        end
+      end
+    end
+
+    context 'ssl ca_trusted_fingerprint setting' do
+      let(:ca_trusted_fingerprint) { SecureRandom.hex(32) }
+
+      let(:settings) do
+        @sys_settings.clone.tap do |s|
+          s.reset
+          s.set_value("xpack.monitoring.enabled", true)
+          s.set_value("xpack.monitoring.elasticsearch.hosts", "https://localhost:9200")
+          s.set_value("xpack.monitoring.elasticsearch.username", "elastic")
+          s.set_value("xpack.monitoring.elasticsearch.password", "changeme")
+
+          s.set_value("xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint", ca_trusted_fingerprint)
+        end
+      end
+
+      context 'the generated pipeline' do
+        subject(:generated_pipeline_config) { monitoring_extension.generate_pipeline_config(settings) }
+
+        it %Q(includes `ca_trusted_fingerprint` with the value of the provided `ssl.ca_trusted_fingerprint`) do
+          expect(generated_pipeline_config).to include(%Q(ca_trusted_fingerprint => "#{ca_trusted_fingerprint}"))
         end
       end
     end

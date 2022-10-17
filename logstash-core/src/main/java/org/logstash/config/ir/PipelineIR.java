@@ -21,6 +21,7 @@
 package org.logstash.config.ir;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.logstash.common.Util;
@@ -56,8 +57,9 @@ public final class PipelineIR implements Hashable {
         Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
         // Connect all the input vertices out to the queue
-        queue = new QueueVertex();
-        tempGraph = tempGraph.chain(queue);
+        QueueVertex tempQueue = new QueueVertex();
+
+        tempGraph = tempGraph.chain(tempQueue);
 
         // Now we connect the queue to the root of the filter section
         tempGraph = tempGraph.chain(filterSection);
@@ -67,6 +69,8 @@ public final class PipelineIR implements Hashable {
 
         // Finally, connect the filter out node to all the outputs
         this.graph = tempGraph.chain(outputSection);
+
+        this.queue = selectQueueVertex(this.graph, tempQueue);
 
         this.graph.validate();
 
@@ -131,5 +135,14 @@ public final class PipelineIR implements Hashable {
     @Override
     public String uniqueHash() {
         return this.uniqueHash;
+    }
+
+    private static QueueVertex selectQueueVertex(final Graph graph, final QueueVertex tempQueue) {
+        try {
+            return (QueueVertex) graph.getVertexById(tempQueue.getId());
+        } catch(NoSuchElementException e) {
+            // it's a pipeline without a queue
+            return tempQueue;
+        }
     }
 }

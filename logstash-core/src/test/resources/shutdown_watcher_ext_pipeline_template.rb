@@ -27,4 +27,7 @@ end
 pipeline.define_singleton_method(:worker_threads_draining?) do
   %{value_placeholder}
 end
+pipeline.define_singleton_method(:pipeline_id) do
+  "fake_test_pipeline"
+end
 pipeline

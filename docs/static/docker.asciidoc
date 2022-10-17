@@ -127,8 +127,8 @@ like this one:
 --------------------------------------------
 FROM {docker-image}
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
-ADD pipeline/ /usr/share/logstash/pipeline/
-ADD config/ /usr/share/logstash/config/
+COPY pipeline/ /usr/share/logstash/pipeline/
+COPY config/ /usr/share/logstash/config/
 --------------------------------------------
 
 Be sure to replace or delete `logstash.conf` in your custom image, so

@@ -39,12 +39,17 @@
 package org.logstash.common.io;
 
 import java.io.Closeable;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
+import org.logstash.FileLockFactory;
+import org.logstash.LockException;
 import org.logstash.Timestamp;
 
 import java.io.IOException;
+import java.nio.channels.FileLock;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -55,16 +60,18 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
+import java.util.LongSummaryStatistics;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static org.logstash.common.io.DeadLetterQueueWriter.getSegmentPaths;
+import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 
 public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
@@ -75,9 +82,12 @@ public final class DeadLetterQueueReader implements Closeable {
     private final ConcurrentSkipListSet<Path> segments;
     private final WatchService watchService;
     private RecordIOReader lastConsumedReader;
+    private final LongAdder consumedEvents = new LongAdder();
+    private final LongAdder consumedSegments = new LongAdder();
 
     // config settings
     private final boolean cleanConsumed;
+    private FileLock fileLock;
 
     public DeadLetterQueueReader(Path queuePath) throws IOException {
         this(queuePath, false, null);
@@ -90,13 +100,23 @@ public final class DeadLetterQueueReader implements Closeable {
         this.segments = new ConcurrentSkipListSet<>(
                 Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId)
         );
-        segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+        segments.addAll(listSegmentPaths(queuePath)
+                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
+                .collect(Collectors.toList()));
         this.cleanConsumed = cleanConsumed;
         if (cleanConsumed && segmentCallback == null) {
             throw new IllegalArgumentException("When cleanConsumed is enabled must be passed also a valid segment listener");
         }
         this.segmentCallback = segmentCallback;
         this.lastConsumedReader = null;
+        if (cleanConsumed) {
+            // force single DLQ reader when clean consumed is requested
+            try {
+                fileLock = FileLockFactory.obtainLock(queuePath, "dlq_reader.lock");
+            } catch (LockException ex) {
+                throw new LockException("Existing `dlg_reader.lock` file in [" + queuePath + "]. Only one DeadLetterQueueReader with `cleanConsumed` set is allowed per Dead Letter Queue.", ex);
+            }
+        }
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
@@ -170,11 +190,11 @@ public final class DeadLetterQueueReader implements Closeable {
     private void pollSegmentsOnWatch(WatchKey key) throws IOException {
         for (WatchEvent<?> watchEvent : key.pollEvents()) {
             if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
             } else if (watchEvent.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
                 final int oldSize = segments.size();
                 segments.clear();
-                segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+                segments.addAll(listSegmentPaths(queuePath).collect(Collectors.toList()));
                 logger.debug("Notified of segment removal, switched from {} to {} segments", oldSize, segments.size());
             }
             key.reset();
@@ -271,7 +291,16 @@ public final class DeadLetterQueueReader implements Closeable {
 
         // delete segment file only after current reader is closed.
         // closing happens in pollEntryBytes method when it identifies the reader is at end of stream
-        deleteSegment(lastConsumedSegmentPath);
+        final Optional<Long> deletedEvents = deleteSegment(lastConsumedSegmentPath);
+        if (deletedEvents.isPresent()) {
+            // update consumed metrics
+            consumedEvents.add(deletedEvents.get());
+            consumedSegments.increment();
+        }
+
+        // publish the metrics to the listener
+        segmentCallback.segmentsDeleted(consumedSegments.intValue(), consumedEvents.longValue());
+
         lastConsumedReader = null;
     }
 
@@ -331,9 +360,16 @@ public final class DeadLetterQueueReader implements Closeable {
         final Comparator<Path> fileTimeAndName = ((Comparator<Path>) this::compareByFileTimestamp)
                 .thenComparingInt(DeadLetterQueueUtils::extractSegmentId);
 
-        try (final Stream<Path> segmentFiles = Files.list(queuePath)) {
-            segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
-                  .forEach(this::deleteSegment);
+        try (final Stream<Path> segmentFiles = listSegmentPaths(queuePath)) {
+            LongSummaryStatistics deletionStats = segmentFiles.filter(p -> fileTimeAndName.compare(p, validSegment) < 0)
+                    .map(this::deleteSegment)
+                    .map(o -> o.orElse(0L))
+                    .mapToLong(Long::longValue)
+                    .summaryStatistics();
+
+            // update consumed metrics
+            consumedSegments.add(deletionStats.getCount());
+            consumedEvents.add(deletionStats.getSum());
         }
     }
 
@@ -358,13 +394,22 @@ public final class DeadLetterQueueReader implements Closeable {
         return timestamp1.compareTo(timestamp2);
     }
 
-    private void deleteSegment(Path segment) {
+    /**
+     * Remove the segment from internal tracking data structures and physically delete the corresponding
+     * file from filesystem.
+     *
+     * @return the number events contained in the removed segment, empty if a problem happened during delete.
+     * */
+    private Optional<Long> deleteSegment(Path segment) {
         segments.remove(segment);
         try {
+            long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
             logger.debug("Deleted segment {}", segment);
+            return Optional.of(eventsInSegment);
         } catch (IOException ex) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
+            return Optional.empty();
         }
     }
 
@@ -387,11 +432,25 @@ public final class DeadLetterQueueReader implements Closeable {
         return currentReader.getChannelPosition();
     }
 
+    long getConsumedEvents() {
+        return consumedEvents.longValue();
+    }
+
+    int getConsumedSegments() {
+        return consumedSegments.intValue();
+    }
+
     @Override
     public void close() throws IOException {
-        if (currentReader != null) {
-            currentReader.close();
+        try {
+            if (currentReader != null) {
+                currentReader.close();
+            }
+            this.watchService.close();
+        } finally {
+            if (this.cleanConsumed) {
+                FileLockFactory.releaseLock(this.fileLock);
+            }
         }
-        this.watchService.close();
     }
 }

@@ -169,7 +169,7 @@ public class SettingsImpl implements Settings {
         public Builder elementClass(final Class<? extends Queueable> elementClass) {
             return new BuilderImpl(
                 this.dirForFiles, elementClass, this.capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, false
+                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
             );
         }
 
@@ -177,7 +177,7 @@ public class SettingsImpl implements Settings {
         public Builder capacity(final int capacity) {
             return new BuilderImpl(
                 this.dirForFiles, this.elementClass, capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, false
+                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
             );
         }
 
@@ -185,7 +185,7 @@ public class SettingsImpl implements Settings {
         public Builder queueMaxBytes(final long size) {
             return new BuilderImpl(
                 this.dirForFiles, this.elementClass, this.capacity, size, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, false
+                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
             );
         }
 
@@ -194,7 +194,7 @@ public class SettingsImpl implements Settings {
             return new BuilderImpl(
                 this.dirForFiles, this.elementClass,
                 this.capacity, this.queueMaxBytes, maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites, false
+                this.checkpointMaxWrites, this.checkpointRetry
             );
         }
 
@@ -203,7 +203,7 @@ public class SettingsImpl implements Settings {
             return new BuilderImpl(
                 this.dirForFiles, this.elementClass,
                 this.capacity, this.queueMaxBytes, this.maxUnread, checkpointMaxAcks,
-                this.checkpointMaxWrites, false
+                this.checkpointMaxWrites, this.checkpointRetry
             );
         }
 
@@ -211,7 +211,7 @@ public class SettingsImpl implements Settings {
         public Builder checkpointMaxWrites(final int checkpointMaxWrites) {
             return new BuilderImpl(
                 this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, false
+                this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, this.checkpointRetry
             );
         }
 

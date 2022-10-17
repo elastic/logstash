@@ -1,0 +1,17 @@
+[[ls-k8s-recipes]]
+== Recipes
+
+WARNING: This documentation is still in development and may be changed or removed in a future release.
+
+We've compiled a number of recipes to support common use cases for running Logstash in Kubernetes.
+
+Refer to the following sections in the Logstash GitHub repo for sample files that you can use as templates. Details for each recipe can be found in the associated README files.
+
+link:https://www.google.com[Recipe name]::
+Brief description.
+
+link:https://www.google.com[Another recipe name]::
+Brief description.
+
+link:https://www.google.com[Yet another recipe name]::
+Brief description.

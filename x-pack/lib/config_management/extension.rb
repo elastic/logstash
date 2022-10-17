@@ -32,6 +32,7 @@ module LogStash
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.api_key"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.proxy"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.certificate_authority"))
+        settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.ca_trusted_fingerprint"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.truststore.path"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.truststore.password"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.keystore.path"))

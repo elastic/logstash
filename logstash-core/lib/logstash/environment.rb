@@ -104,6 +104,7 @@ module LogStash
              Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
            Setting::Numeric.new("dead_letter_queue.flush_interval", 5000),
             Setting::String.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
+    Setting::NullableString.new("dead_letter_queue.retain.age"), # example 5d
          Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
          Setting::TimeValue.new("slowlog.threshold.info", "-1"),
          Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
