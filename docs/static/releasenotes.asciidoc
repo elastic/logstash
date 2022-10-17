@@ -40,6 +40,7 @@ This section summarizes the changes in the following releases:
 
 * Added missing "monitoring.cluster_uuid" to the env2yaml list of accepted configurations and enables the user to set this configuration option via environment variable https://github.com/elastic/logstash/pull/14425[#14425]
 * Use COPY instruction instead of ADD in Dockerfiles https://github.com/elastic/logstash/pull/14423[#14423]
+* Fix DLQ fails to start due to read 1 byte file https://github.com/elastic/logstash/pull/14605[#14605]
 
 [[docs-8.5.0]]
 ==== Documentation Improvements and Fixes
