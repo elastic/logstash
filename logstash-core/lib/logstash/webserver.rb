@@ -196,7 +196,7 @@ module LogStash
     private
 
     def _init_server
-      ::Puma::Server.new(@app, LogStash::DelegatingLogWriter.new(logger))
+      ::Puma::Server.new(@app, nil, log_writer: LogStash::DelegatingLogWriter.new(logger))
     end
 
     def create_server_thread
