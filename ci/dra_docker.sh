@@ -4,6 +4,8 @@ echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
 
+ARCH=${1:-architecture param}
+
 source ./$(dirname "$0")/dra_common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
@@ -49,7 +51,7 @@ case "$WORKFLOW_TYPE" in
 esac
 
 info "Saving tar.gz for docker images"
-save_docker_tarballs "aarch64" "${STACK_VERSION}"
+save_docker_tarballs "${ARCH}" "${STACK_VERSION}"
 
 info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
@@ -57,7 +59,7 @@ for file in build/logstash-*; do shasum $file;done
 info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 for image in logstash logstash-oss logstash-ubi8; do
-    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-aarch64.tar.gz" ${STACK_VERSION}
+    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz" ${STACK_VERSION}
 done
 
 echo "####################################################################"
