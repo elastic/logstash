@@ -95,6 +95,13 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/*/test/**/*'
     @exclude_paths << 'vendor/**/gems/*/spec/**/*'
 
+    # jruby's bundler artifacts
+    @exclude_paths << 'vendor/jruby/bin/bundle*'
+    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/bundler*'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/bundler-*.spec'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/bundler-*'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/rake-*'
+
     @exclude_paths
   end
 
