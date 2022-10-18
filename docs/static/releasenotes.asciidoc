@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-7,Logstash 7.17.7>>
 * <<logstash-7-17-6,Logstash 7.17.6>>
 * <<logstash-7-17-5,Logstash 7.17.5>>
 * <<logstash-7-17-4,Logstash 7.17.4>>
@@ -64,6 +65,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-7]]
+=== Logstash 7.17.7 Release Notes
+
+[[notable-7-17-7]]
+==== Notable issues fixed
+* Makes `monitoring.cluster_uuid` a configurable variable that can be passed to docker container by use of an environment flag https://github.com/elastic/logstash/pull/14425[#14425]
+* Fixes an issue that `queue.checkpoint.retry` was not respecting the user config https://github.com/elastic/logstash/pull/14487[#14487]
+* Fixes an issue where the Node API could present empty information about a pipeline that was in the process of starting up for the first time in a given process lifetime. https://github.com/elastic/logstash/pull/14595[#14595]
+
+==== Plugins
+
+*Json Codec - 3.1.1*
+
+* Fix: when decoded JSON includes an `[event][original]` field, having `ecs_compatibility` enabled will no longer overwrite the decoded field https://github.com/logstash-plugins/logstash-codec-json/pull/43[#43]
+
+*File Input - 4.4.4*
+
+* Fixes gzip file handling in read mode when run on JDK12+, including JDK17 that is bundled with Logstash 8.4+ https://github.com/logstash-plugins/logstash-input-file/pull/312[#312]
+
+*Unix Input - 3.1.2*
+
+* Fix: eliminate high CPU usage when data timeout is disabled and no data is available on the socket https://github.com/logstash-plugins/logstash-input-unix/pull/30[#30]
+
+*Rabbitmq Integration - 7.3.1*
+
+* [DOC] Clarify the availability and cost of using the `metadata_enabled` option https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/52[#52]
 
 
 [[logstash-7-17-6]]
