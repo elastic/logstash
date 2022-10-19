@@ -101,7 +101,7 @@ The `modules.d/logstash-xpack.yml` file contains these settings:
     xpack.enabled: true
 ----------------------------------
  
-Set the `hosts`, `username`, and `password` to authenticate with {ls}.
+Set the `hosts` to connect with {ls}.
 For other module settings, it's recommended that you accept the
 defaults.
 
@@ -114,15 +114,12 @@ To monitor multiple {ls} instances, specify a list of hosts, for example:
 hosts: ["http://localhost:9601","http://localhost:9602","http://localhost:9603"]
 ----------------------------------
 
+*{ls} API security.* If the {ls} API is {ref}/monitoring-logstash.html#monitoring-api-security[secured] (it is not by default), provide a `username`
+and `password` so that {metricbeat} can authenticate successfully.
 
-*Elastic security.* If the Elastic {security-features} are enabled, provide a user 
-ID and password so that {metricbeat} can collect metrics successfully: 
+NOTE: Usage of Keystore or Environment or variable replacements is encouraged for password-type fields to avoid storing them in plain text.
+      For example, specifying the value `"${HTTP_PASS}"` will resolve to the value stored in the <<keystore,secure keystore's>> `HTTP_PASS` variable if present or the same variable from the <<environment-variables,environment>>)
 
-.. Create a user on the production cluster that has the 
-`remote_monitoring_collector` {ref}/built-in-roles.html[built-in role]. 
-
-.. Add the `username` and `password` settings to the module configuration 
-file (`logstash-xpack.yml`).
 --
 
 . Optional: Disable the system module in the {metricbeat}.
