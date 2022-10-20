@@ -4,9 +4,6 @@ echo "####################################################################"
 echo "##################### Starting $0"
 echo "####################################################################"
 
-# If no parameter is passed to the script, we will default to aarch64
-ARCH="${1:-aarch64}"
-
 source ./$(dirname "$0")/dra_common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values

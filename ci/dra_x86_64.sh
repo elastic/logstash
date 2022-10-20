@@ -40,9 +40,6 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
-info "Saving tar.gz for docker images"
-save_docker_tarballs "x86_64" "${STACK_VERSION}"
-
 info "GENERATED ARTIFACTS"
 for file in build/logstash-*; do shasum $file;done
 
