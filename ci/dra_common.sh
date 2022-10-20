@@ -32,6 +32,6 @@ export JRUBY_OPTS="-J-Xmx1g"
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
 # ARCH is a Environment variable set in Jenkins
-if [ -z $ARCH ]; then
+if [ -z "$ARCH" ]; then
 	ARCH=aarch64
 fi
