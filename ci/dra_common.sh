@@ -21,6 +21,17 @@ function upload_to_bucket {
     gsutil cp "${file}" "gs://logstash-ci-artifacts/dra/${version}/"
 }
 
+function build_docker_images {
+    local env_vars="${1:-}"
+    eval "${env_vars} rake artifact:docker"
+    eval "${env_vars} rake artifact:docker_oss"
+}
+
+function build_docker_files {
+    local env_vars="${1:-}"
+    eval "${env_vars} rake artifact:dockerfiles"
+}
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
