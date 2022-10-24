@@ -7,7 +7,7 @@ An important step to making your environment production ready is to configure st
 
 To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need Metricbeat to collect {ls} metrics, {es} to store the metrics and Kibana to view the result.
 
-Assuming you have {es} and Kibana installed on ECK, follow these steps to configure monitoring:
+Assuming you have installed ECK, the following example modifies the link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] of Beats stack monitoring. The recipe has initiated a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config monitoring for multiple {ls}.
 
 * <<ls-k8s-monitor-config-metricbeat>>
 * <<ls-k8s-monitor-config-ls>>
@@ -17,84 +17,61 @@ Assuming you have {es} and Kibana installed on ECK, follow these steps to config
 [[ls-k8s-monitor-config-metricbeat]]
 ==== Config Metricbeat
 
-Deploy the following metricbeat to ECK.
+{metricbeat} has configed to send metrics to `elasticsearch-monitoring` cluster. To monitor {ls}, add logstash module to {metricbeat}
 
 [source,yaml]
 --
 apiVersion: beat.k8s.elastic.co/v1beta1
 kind: Beat
 metadata:
-  name: demo
-  labels:
-    app: logstash-demo
+  name: metricbeat
 spec:
   type: metricbeat
-  version: 8.3.2
+  version: 8.4.2
   elasticsearchRef:
-    name: demo
+    name: elasticsearch-monitoring
   config:
-    metricbeat.modules:
-      - module: elasticsearch
-        ssl.enabled: true
-        metricsets:
-          - ccr
-          - cluster_stats
-          - enrich
-          - index
-          - index_recovery
-          - index_summary
-          - ml_job
-          - node_stats
-          - shard
-        period: 10s
-        hosts:
-          - "https://demo-es-http:9200"
-        username: default-demo-beat-user
-        password: ${ES_PW}
-        ssl.certificate_authorities: ["/usr/share/metricbeat/es_ca.crt"]
-        xpack.enabled: true
-      - module: logstash
-        metricsets:
-          - node
-          - node_stats
-        period: 10s
-        hosts:
-          - logstash:9600
-        xpack.enabled: true
-  deployment:
-    podTemplate:
-      spec:
-        dnsPolicy: ClusterFirstWithHostNet
-        securityContext:
-          runAsUser: 0
-        containers:
-          - name: metricbeat
-            volumeMounts:
-              - name: es-ca
-                mountPath: /usr/share/metricbeat/es_ca.crt
-                subPath: ca.crt
-            env:
-              - name: ES_PW
-                valueFrom:
-                  secretKeyRef:
-                    name: demo-beat-user
-                    key: default-demo-beat-user
-        volumes:
-          - name: es-ca
-            secret:
-              secretName: demo-beat-es-ca
-
+    metricbeat:
+      autodiscover:
+        providers:
+          - type: kubernetes
+            scope: cluster
+            hints.enabled: true
+            templates:
+              - condition:
+                  contains:
+                    kubernetes.labels.app: ls
+                config:
+                  - module: logstash
+                    metricsets:
+                      - node
+                      - node_stats
+                    period: 10s
+                    hosts: "http://${data.host}:9600"
+                    xpack.enabled: true
+...
 --
 
-`elasticsearchRef` points to name of {es} cluster on ECK that stores metrics. In this example, the cluster name is `demo`.
-
-Metricbeat enable `module: logstash` and `module: elasticsearch` to collect metrics from `logstash:9600` and `demo-es-http:9200` for every `10` seconds.
+{metricbeat} scans for the pods with label `app: ls` to collect {ls} metrics from port `9600` for every `10` seconds.
 
 [float]
 [[ls-k8s-monitor-config-ls]]
 === Config {ls}
 
-Put the `cluster_uuid` of the monitoring {es} cluster to `monitoring.cluster_uuid` in the configuration file logstash.yml in `ConfigMap`
+Add label `app: ls` to `Deployment` for autodiscover.
+
+[source,yaml]
+--
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  labels:
+    app: ls
+...
+--
+
+Provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
 
 [source,yaml]
 --
@@ -102,15 +79,17 @@ apiVersion: v1
 data:
   logstash.yml: |
     api.http.host: "0.0.0.0"
-    monitoring.cluster_uuid: MONITORING_ES_CLUSTER_UUID
+    monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 kind: ConfigMap
+metadata:
+  name: logstash-config
 --
 
 [float]
 [[ls-k8s-monitor-kibana]]
 ==== View monitoring data in Kibana
 
-When everything is set, Kibana > Stack Monitoring page shows the chart.
+When everything is set, Kibana > Stack Monitoring page will show the Logstash data.
 
 image::./images/sm-kibana.png[Stack Monitoring screenshot]
 
@@ -124,11 +103,30 @@ Metrics can be sent to {es} cluster that is not managed by ECK. To use it, remov
 apiVersion: beat.k8s.elastic.co/v1beta1
 kind: Beat
 metadata:
-  name: demo
+  name: metricbeat
 spec:
   config:
     output.elasticsearch:
-      hosts: ["https://es-mon1:9200"] 
+      hosts: ["https://es:9200"] 
       username: "elastic"
       password: "changeme"
+...
+--
+
+[[ls-k8s-monitor-elastic-cloud]]
+==== Ship metrics to Elastic Cloud
+
+To configure Metricbeat for sending data to a cluster in Elastic Cloud, remove the `elasticsearchRef` from the specification and provide `cloud.id` and `cloud.auth` that you've obtained during deployment in Elastic Cloud.
+
+[source,yaml]
+--
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: metricbeat
+spec:
+  config:
+    cloud.id: # YOUR CLOUD ID
+    cloud.auth: # YOUR CLOUD AUTH
+...
 --
