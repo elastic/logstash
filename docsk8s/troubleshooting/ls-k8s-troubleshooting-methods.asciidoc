@@ -76,7 +76,7 @@ kubectl exec -it logstash-7477d46bb7-4lcnv -- bash
 
 Sometimes, you may need to get thread dump and heap dump to debug hard problem. First you need to connect to the container, and then run the commands to take the diagnostics.
 
-==== Thread Dump
+==== Thread dump
 [source,bash]
 --
 jdk/bin/jstack -l 1 > /tmp/jstack_output.txt
