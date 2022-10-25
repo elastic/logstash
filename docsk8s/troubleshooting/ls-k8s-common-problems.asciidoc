@@ -50,7 +50,7 @@ Review CPU and memory usage using `kubectl top pods` (requires metrics server to
 [float]
 [[problem-oom]]
 === {ls} stops with OOM errors
-The status of {ls} shows `Ready` but the pod continues to stop running.
+The status of {ls} shows `Ready,` but the pod repeatedly stops running.
 
 This can be caused by insufficient memory. If the memory of {ls} use more than the declared resource, kubernetes kill the pod immediately and the log of {ls} does not show any shutdown related message.
 
