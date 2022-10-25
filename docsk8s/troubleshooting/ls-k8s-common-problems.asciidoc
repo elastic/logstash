@@ -43,7 +43,7 @@ Review the time constraints of `readinessProbe` and `livenessProbe` to ensure th
 Review CPU and memory usage using `kubectl top pods` (requires metrics server to be available for your Kubernetes implementation).
 
 * Set the values of `cpu` and `memory` in your `Deployment` or `StatefulSet` appropriately.
-* Ensure that the JVM memory settings are set appropriately, note that the default `Xmx` value is `1g`, and we recommend that heap size is set to no more than 50-75% of total memory.
+* Ensure that the JVM memory settings are set appropriately. The default `Xmx` value is `1g`, and we recommend that heap size is set to no more than 50-75% of total memory.
 
 
 
