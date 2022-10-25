@@ -7,7 +7,7 @@ An important step to making your environment production ready is to configure st
 
 To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need Metricbeat to collect {ls} metrics, {es} to store the metrics and Kibana to view the result.
 
-Assuming you have installed ECK, the following example modifies the link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] of Beats stack monitoring. The recipe has initiated a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
+Assuming you have installed ECK, the example modifies the link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] of Beats stack monitoring. The recipe has initiated a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
 We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config monitoring for multiple {ls}.
 
 * <<ls-k8s-monitor-config-metricbeat>>
@@ -18,7 +18,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config 
 [[ls-k8s-monitor-config-metricbeat]]
 ==== Config Metricbeat
 
-{metricbeat} has configed to send metrics to `elasticsearch-monitoring` cluster. To monitor {ls}, add logstash module to {metricbeat}
+{metricbeat} has configed to send metrics to `elasticsearch-monitoring` cluster. To monitor {ls}, add logstash module.
 
 [source,yaml]
 --
@@ -95,9 +95,9 @@ When everything is set, Kibana > Stack Monitoring page will show the Logstash da
 image::./images/sm-kibana.png[Stack Monitoring screenshot]
 
 [[ls-k8s-monitor-external]]
-==== Ship metrics to external monitoring {es} cluster
+==== Ship metrics to external {es} cluster
 
-Metrics can be sent to {es} cluster that is not managed by ECK. To use it, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
+Metrics can be sent to {es} cluster that is not managed by ECK. To configure it, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
 
 [source,yaml]
 --
@@ -127,7 +127,7 @@ metadata:
   name: metricbeat
 spec:
   config:
-    cloud.id: # YOUR CLOUD ID
-    cloud.auth: # YOUR CLOUD AUTH
+    cloud.id: CLOUD_ID
+    cloud.auth: CLOUD_AUTH
 ...
 --
