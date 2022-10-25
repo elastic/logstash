@@ -11,12 +11,12 @@ case "$WORKFLOW_TYPE" in
     snapshot)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            SKIP_DOCKER=1 rake artifact:all
+            SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
         else
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" SKIP_DOCKER=1 rake artifact:all
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
@@ -25,12 +25,12 @@ case "$WORKFLOW_TYPE" in
     staging)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            RELEASE=1 SKIP_DOCKER=1 rake artifact:all
+            RELEASE=1 SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
         else
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 SKIP_DOCKER=1 rake artifact:all
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
             STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
         fi
         info "Build complete, setting STACK_VERSION to $STACK_VERSION."

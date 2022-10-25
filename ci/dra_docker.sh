@@ -11,13 +11,13 @@ case "$WORKFLOW_TYPE" in
     snapshot)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            rake artifact:docker
-            rake artifact:docker_oss
-            rake artifact:dockerfiles
+            rake artifact:docker || error "artifact:docker build failed."
+            rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
         else
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker || error "artifact:docker build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
@@ -29,13 +29,13 @@ case "$WORKFLOW_TYPE" in
     staging)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            RELEASE=1 rake artifact:docker
-            RELEASE=1 rake artifact:docker_oss
-            rake artifact:dockerfiles
+            RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
+            RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
         else
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
