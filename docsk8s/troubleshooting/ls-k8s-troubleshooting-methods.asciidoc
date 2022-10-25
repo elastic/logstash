@@ -82,7 +82,7 @@ Sometimes, you may need to get thread dump and heap dump to debug hard problem. 
 jdk/bin/jstack -l 1 > /tmp/jstack_output.txt
 --
 
-==== Heap Dump
+==== Heap dump
 [source,bash]
 --
 jdk/bin/jcmd 1 GC.heap_dump /tmp/heap_dump.hprof
