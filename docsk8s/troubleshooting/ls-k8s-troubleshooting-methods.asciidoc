@@ -74,7 +74,7 @@ kubectl exec -it logstash-7477d46bb7-4lcnv -- bash
 [[ls-k8s-diagnostics]]
 === Running diagnostics
 
-Sometimes, you may need to get thread dump and heap dump to debug hard problem. First you need to connect to the container, and then run the commands to take the diagnostics.
+Thread dumps and heap dumps can be helpful when you are debugging hard problems. Connect to the container, and then run the commands to gather the diagnostics.
 
 ==== Thread dump
 [source,bash]
