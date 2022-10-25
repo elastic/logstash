@@ -26,7 +26,7 @@ case "$WORKFLOW_TYPE" in
         STACK_VERSION=${STACK_VERSION}-SNAPSHOT
         info "Build complete, setting STACK_VERSION to $STACK_VERSION."
         ;;
-    staging) || error "artifact:docker build failed."
+    staging)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
