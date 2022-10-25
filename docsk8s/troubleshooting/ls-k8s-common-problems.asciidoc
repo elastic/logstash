@@ -34,7 +34,7 @@ api.http.host: 0.0.0.0
 [[problem-delay]]
 ==== {ls} startup process takes longer than `initialDelaySeconds`
 
-It may be necessary to review the time constraints of `readinessProbe` and `livenessProbe` to ensure that {ls} has enough time to start up and expose the health check endpoint for the `readiness` and `liveness` probes to access.
+Review the time constraints of `readinessProbe` and `livenessProbe` to ensure that {ls} has enough time to start up and expose the health check endpoint for the `readiness` and `liveness` probes to access.
 
 [float]
 [[problem-insufficient]]
