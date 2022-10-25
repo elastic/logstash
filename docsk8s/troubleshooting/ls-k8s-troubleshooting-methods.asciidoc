@@ -50,7 +50,7 @@ logstash-7d5b749899-tfg4f   37m          882Mi
 
 {ls} Docker containers do not create log files by default. They log to standard output.
 
-To view the log, 
+To view the log, run
 
 [source,bash]
 --
