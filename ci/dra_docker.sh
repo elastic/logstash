@@ -14,12 +14,16 @@ case "$WORKFLOW_TYPE" in
             rake artifact:docker || error "artifact:docker build failed."
             rake artifact:docker_oss || error "artifact:docker_oss build failed."
             rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
-	    if [ "$ARCH" != "aarch64" ]; then rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."; fi
+            if [ "$ARCH" != "aarch64" ]; then
+                rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
+            fi
         else
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker || error "artifact:docker build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss || error "artifact:docker_oss build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
-	    if [ "$ARCH" != "aarch64" ]; then VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."; fi
+            if [ "$ARCH" != "aarch64" ]; then
+                VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
+            fi
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
@@ -34,12 +38,16 @@ case "$WORKFLOW_TYPE" in
             RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
             rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
-	    if [ "$ARCH" != "aarch64" ]; then RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."; fi
+            if [ "$ARCH" != "aarch64" ]; then
+                RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
+            fi
         else
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
-	    if [ "$ARCH" != "aarch64" ]; then VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."; fi
+            if [ "$ARCH" != "aarch64" ]; then
+                VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
+            fi
             # Qualifier is passed from CI as optional field and specify the version postfix
             # in case of alpha or beta releases:
             # e.g: 8.0.0-alpha1
