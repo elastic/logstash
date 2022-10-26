@@ -1,0 +1,17 @@
+[[ls-k8s-monitor-elastic-cloud]]
+==== Ship metrics to Elastic Cloud
+
+To configure Metricbeat for sending data to a cluster in Elastic Cloud, remove the `elasticsearchRef` from the specification and provide `cloud.id` and `cloud.auth` that you've obtained during deployment in Elastic Cloud.
+
+[source,yaml]
+--
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: metricbeat
+spec:
+  config:
+    cloud.id: CLOUD_ID
+    cloud.auth: CLOUD_AUTH
+...
+--
