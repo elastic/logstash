@@ -11,7 +11,7 @@ case "$WORKFLOW_TYPE" in
     snapshot)
         info "Building artifacts for the $WORKFLOW_TYPE workflow..."
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            rake artifact:docker || error "artifact:docker_oss build failed."
+            rake artifact:docker || error "artifact:docker build failed."
             rake artifact:docker_oss || error "artifact:docker_oss build failed."
             rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
 	    if [ "$ARCH" != "aarch64" ]; then rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."; fi
