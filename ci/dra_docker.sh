@@ -58,6 +58,7 @@ info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 for image in logstash logstash-oss logstash-ubi8; do
     upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz" ${STACK_VERSION}
+    upload_to_bucket "build/$image-${STACK_VERSION}-docker-build-context.tar.gz" ${STACK_VERSION}
 done
 
 echo "####################################################################"
