@@ -92,8 +92,15 @@ metadata:
 
 [float]
 [[ls-k8s-monitor-kibana]]
-==== View monitoring data in Kibana
+==== View monitoring data in {kib}
 
-When everything is set, Kibana > Stack Monitoring page will show the Logstash data.
+When everything is set, {kib} > Stack Monitoring page will show the Logstash data.
+
+To access {kib} by `https://localhost:5601`, set the port fowarding.
+
+[source,sh]
+--
+kubectl port-forward service/kibana-monitoring-kb-http 5601
+--
 
 image::./images/sm-kibana.png[Stack Monitoring screenshot]
