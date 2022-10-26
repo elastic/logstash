@@ -18,7 +18,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config 
 [[ls-k8s-monitor-config-metricbeat]]
 ==== Config Metricbeat
 
-{metricbeat} has configed to send metrics to `elasticsearch-monitoring` cluster. To monitor {ls}, add logstash module.
+To monitor {ls}, add logstash module to the recipe.
 
 [source,yaml]
 --
@@ -30,7 +30,7 @@ spec:
   type: metricbeat
   version: 8.4.2
   elasticsearchRef:
-    name: elasticsearch-monitoring
+    name: elasticsearch-monitoring <1>
   config:
     metricbeat:
       autodiscover:
@@ -41,9 +41,9 @@ spec:
             templates:
               - condition:
                   contains:
-                    kubernetes.labels.app: ls
+                    kubernetes.labels.app: ls <2>
                 config:
-                  - module: logstash
+                  - module: logstash <3>
                     metricsets:
                       - node
                       - node_stats
@@ -53,7 +53,11 @@ spec:
 ...
 --
 
-{metricbeat} scans for the pods with label `app: ls` to collect {ls} metrics from port `9600` for every `10` seconds.
+<1> {metricbeat} sends metrics to `elasticsearch-monitoring` cluster.
+
+<2> {metricbeat} scans for the pods with label `app: ls` to collect {ls} metrics.
+
+<3> {metricbeat} logstash module calls metric endpoint from port `9600` for every `10` seconds.
 
 [float]
 [[ls-k8s-monitor-config-ls]]
