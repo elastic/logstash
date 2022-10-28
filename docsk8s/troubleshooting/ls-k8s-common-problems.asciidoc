@@ -54,6 +54,7 @@ The status of {ls} shows `Ready,` but the pod repeatedly stops running.
 
 This situation can be caused by insufficient memory. If {ls} uses more memory than the declared resource, Kubernetes shutdowns the pod immediately and the {ls} log does not show any shutdown related message.
 
-Run `kubectl get event --watch` or `kubectl describe pod` to check kubernetes event if the status shows `OOMKilled`.
+Run `kubectl get event --watch` or `kubectl describe pod` if the event status shows `OOMKilled`.
 
-To resolve the problem, review JVM and memory settings as shown <<problem-insufficient, here>>
+The resolution is similar to the remedy for the insufficient CPU or memory problem. 
+Review JVM and memory settings as shown in <<problem-insufficient>>.
