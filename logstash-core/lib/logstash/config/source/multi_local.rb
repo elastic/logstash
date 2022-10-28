@@ -70,6 +70,8 @@ module LogStash module Config module Source
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
         elsif @detected_marker.is_a?(Class)
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => @detected_marker, :path => pipelines_yaml_location)
+        elsif @detected_marker.kind_of?(ConfigurationError)
+          @conflict_messages << @detected_marker.message
         end
       else
         do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because modules or command line options are specified")
@@ -110,7 +112,7 @@ module LogStash module Config module Source
     end
 
     def detect_pipelines
-      result = read_pipelines_from_yaml(pipelines_yaml_location) rescue nil
+      result = read_pipelines_from_yaml(pipelines_yaml_location)
       if result.is_a?(Array)
         @detected_marker = true
       elsif result.nil?
@@ -120,6 +122,9 @@ module LogStash module Config module Source
       else
         @detected_marker = result.class
       end
+    rescue ConfigurationError => cfg_error
+      @detected_marker = cfg_error
+    ensure
       @detect_pipelines_called = true
     end
 
