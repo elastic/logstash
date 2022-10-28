@@ -1,16 +1,272 @@
 [[ls-k8s-persistent-storage]]
-=== Persistent storage requirements
+=== Stateful {ls}
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-Some snazzy intro text...
+Here are some scenarios that {ls} need to persist data to disk. 
 
-[[persistent-storage-pq-dlq]]
-==== PQ and DLQ for {ls} core
+- {ls} enable persistent queue to store the unconsumed events
+- {ls} enable dead letter queue for the events that cannot be processed.
+- Some plugins save the state of work
 
-There a few factors to help you decide whether to configure your {ls} core instance to use either a persistent queue {PQ} or a dead letter queue (DLQ).
+Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To against data loss during unexpected termination, use `StatefulSet` to deploy {ls}.
+
+[[persistent-storage-statefulset]]
+==== Set up StatefulSet
+
+[source,yaml]
+--
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: logstash
+  labels:
+    app: logstash-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash-demo
+  serviceName: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash-demo
+    spec:
+      containers:
+        - name: logstash
+          image: "docker.elastic.co/logstash/logstash:{version}"
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xmx1g -Xms1g"
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+          ports:
+            - containerPort: 9600
+              name: stats
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 9600
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: logstash-data <2>
+              mountPath: /usr/share/logstash/data
+            - name: logstash-pipeline
+              mountPath: /usr/share/logstash/pipeline
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/logstash.yml
+              subPath: logstash.yml
+            - name: logstash-config
+              mountPath: /usr/share/logstash/config/pipelines.yml
+              subPath: pipelines.yml
+      volumes:
+        - name: logstash-pipeline
+          configMap:
+            name: logstash-pipeline
+        - name: logstash-config
+          configMap:
+            name: logstash-config
+  volumeClaimTemplates: <1>
+    - metadata:
+        name: logstash-data
+        labels:
+          app: logstash-demo
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+--
+
+Everything is similar to `Deployment`, except the usage of `VolumeClaimTemplates`.
+
+<1> Request 2G of persistent storage from `PersistentVolumes`.
+
+<2> Mount the storage to `/usr/share/logstash/data`. This is the default path of {ls} and its plugins for any persistence needs.
+
+TIP: The feature of persistent volume expansion depends on the storage class, checkout your cloud provider.
+
+[[persistent-storage-pq]]
+==== Persistent queue (PQ)
+
+To enable {logstash-ref}/persistent-queues.html[PQ], specifing options in `logstash.yml` are global settings that apply to every pipeline. 
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+    queue.type: persisted
+    queue.max_bytes: 1024mb
+...
+--
+
+To specify options per pipeline, set in `pipelines.yml`.
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+  pipelines.yml: |
+    - pipeline.id: fast_ingestion
+      path.config: "/usr/share/logstash/pipeline/fast.conf"
+      queue.type: persisted
+      queue.max_bytes: 1024mb
+    - pipeline.id: slow_ingestion
+      path.config: "/usr/share/logstash/pipeline/slow.conf"
+      queue.type: persisted
+      queue.max_bytes: 2048mb
+--
+
+Queue data store in `/usr/share/logstash/data/queue/pipeline_id` by default.
+
+[[persistent-storage-pq-util]]
+===== Run PQ utility
+
+In case the pod is terminated ungracefully and hence the persistent queues are corrupted, `pqcheck` and `pqrepair` are the tools for troubleshooting.
+
+To run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files, 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqcheck /usr/share/logstash/data/queue/pipeline_id
+--
+
+To run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue, 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqrepair /usr/share/logstash/data/queue/pipeline_id
+--
+
+[[persistent-storage-pq-drain]]
+===== Draining the queue
+
+Setting `queue.drain: true` to drain and wait for the queues to empty when receive SIGTERM. However, the default `TerminationGracePeriodSeconds` in Kubernetes is 30 seconds. If {ls} is still running after the grace period elapsed, Kubernetes send SIGKILL to terminated the pod immediately. Hence, {ls} cannot finish the draining.
+
+A workaround is to set a very long period like 1 year to `TerminationGracePeriodSeconds` to make sure {ls} get enough time to drain all events.
+
+[[persistent-storage-dlq]]
+==== Dead letter queue (DLQ)
+
+To enable {logstash-ref}/dead-letter-queues.html[dead letter queue], specify options in `logstash.yml`. The default path of DLQ is `/usr/share/logstash/data/dead_letter_queue/pipeline_id`.
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+data:
+  logstash.yml: |
+    api.http.host: "0.0.0.0"
+    dead_letter_queue.enable: true <1>
+  pipelines.yml: |
+    - pipeline.id: main <2>
+      path.config: "/usr/share/logstash/pipeline/main.conf"
+    - pipeline.id: dlq <3>
+      path.config: "/usr/share/logstash/pipeline/dlq.conf"
+--
+
+<1> Enable DLQ for all pipelines that use {logstash-ref}/plugins-outputs-elasticsearch.html[elasticsearch output plugin]
+
+<2> The `main` pipeline generates fail events and sends to DLQ
+
+<3> The `dlq` pipeline consumes the events in DLQ, fixes the error and sends the events to {es} again.
+
+To consume the events in DLQ, create a pipeline to use {logstash-ref}/plugins-inputs-dead_letter_queue.html[dead_letter_queue input plugin].
+
+[source,yaml]
+--
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline
+data:
+  main.conf: | <1>
+    input {
+      exec {
+        command => "uptime"
+        interval => 5
+      }
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://hostname.cloud.es.io:9200"]
+        index => "uptime-%{+YYYY.MM.dd}"
+        user => 'elastic'
+        password => 'changeme'
+      }
+    }
+  dlq.conf: | <2>
+    input {
+      dead_letter_queue {
+        path => "/usr/share/logstash/data/dead_letter_queue"
+        commit_offsets => true
+        pipeline_id => "main"
+      }
+    }
+    filter {
+        # Do your fix here
+    }
+    output {
+      elasticsearch { 
+        hosts => ["https://hostname.cloud.es.io:9200"]
+        index => "dlq-%{+YYYY.MM.dd}"
+        user => 'elastic'
+        password => 'changeme'
+      }
+    }
+--
+
+<1> An example pipeline that insert value to {es}. In the test environment, to generate fail event manually, use {ref}/indices-close.html[_close] API to close the index.
+
+<2> The pipeline consumes DLQ events. Use this pipeline to fix error that cause fail insertion, for example, mapping error.
 
 [[persistent-storage-plugins]]
 ==== Plugins that require local storage to track work done
 
-Description...
+Here is the list of plugins require persistent storage to track the state of work. In order to have them work properly, use `StatefulSet` with `VolumeClaimTemplates`, checkout <<persistent-storage-statefulset>>.
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Plugin |Settings
+|logstash-codec-netflow| {logstash-ref}/plugins-codecs-netflow.html#plugins-codecs-netflow-cache_save_path[cache_save_path]
+|logstash-inputs-couchdb_changes| {logstash-ref}/plugins-inputs-couchdb_changes.html#plugins-inputs-couchdb_changes-sequence_path[sequence_path]
+|logstash-input-dead_letter_queue| {logstash-ref}/plugins-inputs-dead_letter_queue.html#plugins-inputs-dead_letter_queue-sincedb_path[sincedb_path]
+|logstash-input-file| {logstash-ref}/plugins-inputs-file.html#plugins-inputs-file-file_completed_log_path[file_completed_log_path], {logstash-ref}/plugins-inputs-file.html#plugins-inputs-file-sincedb_path[sincedb_path]
+|logstash-input-google_cloud_storage| {logstash-ref}/plugins-inputs-google_cloud_storage.html#plugins-inputs-google_cloud_storage-processed_db_path[processed_db_path]
+|logstash-input-imap| {logstash-ref}/plugins-inputs-imap.html#plugins-inputs-imap-sincedb_path[sincedb_path]
+|logstash-input-jdbc| {logstash-ref}/plugins-inputs-jdbc.html#plugins-inputs-jdbc-last_run_metadata_path[last_run_metadata_path]
+|logstash-input-s3| {logstash-ref}/plugins-inputs-s3.html#plugins-inputs-s3-sincedb_path[sincedb_path]
+|logstash-filters-aggregate| {logstash-ref}/plugins-filters-aggregate.html#plugins-filters-aggregate-aggregate_maps_path[aggregate_maps_path]
+|=======================================================================
+
+[[persistent-storage-autoscaling]]
+==== Ausocaling with StatefulSet
