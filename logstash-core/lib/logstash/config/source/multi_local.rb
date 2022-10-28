@@ -87,9 +87,9 @@ module LogStash module Config module Source
       when Array
         result
       when false
-        raise ConfigurationError.new("Pipelines YAML file is empty. Path: #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
       else
-        raise ConfigurationError.new("Pipelines YAML file must contain an array of pipeline configs. Found \"#{result.class}\" in #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => result.class, :path => pipelines_yaml_location)
       end
     end
 
@@ -105,7 +105,7 @@ module LogStash module Config module Source
     def detect_duplicate_pipelines(pipelines)
       duplicate_ids = pipelines.group_by {|pipeline| pipeline.get("pipeline.id") }.select {|k, v| v.size > 1 }.map {|k, v| k}
       if duplicate_ids.any?
-        raise ConfigurationError.new("Pipelines YAML file contains duplicate pipeline ids: #{duplicate_ids.inspect}. Location: #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-duplicate-ids", :path => pipelines_yaml_location, duplicate_ids: duplicate_ids.inspect)
       end
     end
 
