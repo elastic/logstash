@@ -126,6 +126,10 @@ en:
         Using command-line module configuration to override logstash.yml module configuration.
       config-pipelines-failed-read: >-
         Failed to read pipelines yaml file. Location: %{path}
+      config-pipelines-failed-read-with-exception: >-
+        Failed to read pipelines yaml file. Location: %{path}, Exception: %{exception}
+      config-pipelines-failed-parse-with-exception: >-
+        Failed to parse contents of pipelines yaml file. Location: %{path}, Exception: %{exception}
       config-pipelines-empty: >-
         Pipelines YAML file is empty. Location: %{path}
       config-pipelines-invalid: >-

@@ -94,10 +94,8 @@ module LogStash module Config module Source
     end
 
     def read_pipelines_from_yaml(yaml_location)
-      logger.debug("Reading pipeline configurations from YAML", :location => pipelines_yaml_location)
-      ::YAML.safe_load(::File.read(yaml_location), fallback: false)
-    rescue => e
-      raise ConfigurationError.new("Failed to read pipelines yaml file. Location: #{yaml_location}, Exception: #{e.inspect}")
+      yaml_contents = ::File.read(yaml_location) rescue fail(ConfigurationError, I18n.t("logstash.runner.config-pipelines-failed-read-with-exception", :path => yaml_location, exception: $!.inspect))
+      ::YAML.safe_load(yaml_contents, fallback: false) rescue fail(ConfigurationError, I18n.t("logstash.runner.config-pipelines-failed-parse-with-exception", :path => yaml_location, exception: $!.inspect))
     end
 
     def pipelines_yaml_location
