@@ -35,7 +35,7 @@ Events:
   Warning  FailedScheduling  34s (x2 over 115s)  default-scheduler  0/1 nodes are available: 1 Insufficient cpu.
 --
 
-You can check the CPU and memory resources by running this command
+You can check the CPU and memory resources by running this command:
 [source,bash]
 --
 kubectl top pod logstash-7477d46bb7-4lcnv
@@ -50,7 +50,7 @@ logstash-7d5b749899-tfg4f   37m          882Mi
 
 {ls} Docker containers do not create log files by default. They log to standard output.
 
-To view the log, run
+To view the log, run:
 
 [source,bash]
 --
