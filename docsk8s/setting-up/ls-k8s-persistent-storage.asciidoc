@@ -3,11 +3,11 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-Here are some scenarios that {ls} need to persist data to disk. 
+In some scenarios, {ls} need to persist data to disk: 
 
-- {ls} enable persistent queue to store the unconsumed events
-- {ls} enable dead letter queue for the events that cannot be processed.
-- Some plugins save the state of work
+- Enable persistent queue to absorb bursts of events 
+- Enable dead letter queue for the corrupted events that cannot be processed.
+- Some plugins save and resume the state of work
 
 Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To against data loss during unexpected termination, use `StatefulSet` to deploy {ls}.
 
@@ -101,12 +101,12 @@ Everything is similar to `Deployment`, except the usage of `VolumeClaimTemplates
 
 <2> Mount the storage to `/usr/share/logstash/data`. This is the default path of {ls} and its plugins for any persistence needs.
 
-TIP: The feature of persistent volume expansion depends on the storage class, checkout your cloud provider.
+NOTE: The feature of persistent volume expansion depends on the storage class, checkout your cloud provider.
 
 [[persistent-storage-pq]]
 ==== Persistent queue (PQ)
 
-To enable {logstash-ref}/persistent-queues.html[PQ], specifing options in `logstash.yml` are global settings that apply to every pipeline. 
+To enable {logstash-ref}/persistent-queues.html[PQ] for every pipeline, specify options in `logstash.yml`. 
 
 [source,yaml]
 --
@@ -144,21 +144,21 @@ data:
       queue.max_bytes: 2048mb
 --
 
-Queue data store in `/usr/share/logstash/data/queue/pipeline_id` by default.
+Queue data store in `/usr/share/logstash/data/queue` by default.
 
 [[persistent-storage-pq-util]]
 ===== Run PQ utility
 
 In case the pod is terminated ungracefully and hence the persistent queues are corrupted, `pqcheck` and `pqrepair` are the tools for troubleshooting.
 
-To run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files, 
+To run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
 
 [source,bash]
 --
 kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqcheck /usr/share/logstash/data/queue/pipeline_id
 --
 
-To run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue, 
+To run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue: 
 
 [source,bash]
 --
@@ -168,14 +168,14 @@ kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqrepair /usr/share/logst
 [[persistent-storage-pq-drain]]
 ===== Draining the queue
 
-Setting `queue.drain: true` to drain and wait for the queues to empty when receive SIGTERM. However, the default `TerminationGracePeriodSeconds` in Kubernetes is 30 seconds. If {ls} is still running after the grace period elapsed, Kubernetes send SIGKILL to terminated the pod immediately. Hence, {ls} cannot finish the draining.
+Set `queue.drain: true` to drain and wait for the queues to empty when receive SIGTERM. However, the default `TerminationGracePeriodSeconds` in Kubernetes is 30 seconds. If {ls} is still running after the grace period elapsed, Kubernetes send SIGKILL to terminated the pod immediately. Hence, {ls} cannot finish the draining.
 
 A workaround is to set a very long period like 1 year to `TerminationGracePeriodSeconds` to make sure {ls} get enough time to drain all events.
 
 [[persistent-storage-dlq]]
 ==== Dead letter queue (DLQ)
 
-To enable {logstash-ref}/dead-letter-queues.html[dead letter queue], specify options in `logstash.yml`. The default path of DLQ is `/usr/share/logstash/data/dead_letter_queue/pipeline_id`.
+To enable {logstash-ref}/dead-letter-queues.html[dead letter queue], specify options in `logstash.yml`. The default path of DLQ is `/usr/share/logstash/data/dead_letter_queue`.
 
 [source,yaml]
 --
@@ -196,11 +196,9 @@ data:
 
 <1> Enable DLQ for all pipelines that use {logstash-ref}/plugins-outputs-elasticsearch.html[elasticsearch output plugin]
 
-<2> The `main` pipeline generates fail events and sends to DLQ
+<2> The `main` pipeline generates fail events to DLQ. Checkout the pipeline definition in the next session.
 
-<3> The `dlq` pipeline consumes the events in DLQ, fixes the error and sends the events to {es} again.
-
-To consume the events in DLQ, create a pipeline to use {logstash-ref}/plugins-inputs-dead_letter_queue.html[dead_letter_queue input plugin].
+<3> The `dlq` pipeline consumes the events in DLQ, fixes the error and sends the events to {es} again. Checkout the pipeline definition in the next session.
 
 [source,yaml]
 --
@@ -247,7 +245,7 @@ data:
 
 <1> An example pipeline that insert value to {es}. In the test environment, to generate fail event manually, use {ref}/indices-close.html[_close] API to close the index.
 
-<2> The pipeline consumes DLQ events. Use this pipeline to fix error that cause fail insertion, for example, mapping error.
+<2> The pipeline use {logstash-ref}/plugins-inputs-dead_letter_queue.html[dead_letter_queue input plugin] to consume DLQ events. Add filter plugins to fix error causing fail insertion, for example, mapping error.
 
 [[persistent-storage-plugins]]
 ==== Plugins that require local storage to track work done
@@ -267,6 +265,3 @@ Here is the list of plugins require persistent storage to track the state of wor
 |logstash-input-s3| {logstash-ref}/plugins-inputs-s3.html#plugins-inputs-s3-sincedb_path[sincedb_path]
 |logstash-filters-aggregate| {logstash-ref}/plugins-filters-aggregate.html#plugins-filters-aggregate-aggregate_maps_path[aggregate_maps_path]
 |=======================================================================
-
-[[persistent-storage-autoscaling]]
-==== Ausocaling with StatefulSet
