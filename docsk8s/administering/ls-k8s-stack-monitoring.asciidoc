@@ -5,7 +5,7 @@ WARNING: This documentation is still in development and may be changed or remove
 
 An important step to making your environment production ready is to configure stack monitoring. Monitoring metrics can be sent to an external resource, such as {ess} or {eck}, so that in the event that any components of your environment become unresponsive, your monitoring data is available.
 
-To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need Metricbeat to collect {ls} metrics, {es} to store the metrics and Kibana to view the result.
+To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need {metricbeat} to collect {ls} metrics, {es} to store the metrics and {kib} to view the result.
 
 Assuming you have installed ECK, the example modifies the link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] of Beats stack monitoring. The recipe has initiated a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
 We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config monitoring for multiple {ls}.
