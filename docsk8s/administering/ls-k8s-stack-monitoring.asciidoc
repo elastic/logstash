@@ -1,5 +1,5 @@
 [[ls-k8s-stack-monitoring]]
-=== Stack Monitoring
+=== Stack Monitoring with ECK
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
@@ -7,7 +7,9 @@ An important step to making your environment production ready is to configure st
 
 To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need {metricbeat} to collect {ls} metrics, {es} to store the metrics and {kib} to view the result.
 
-Assuming you have installed ECK, the example modifies the link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] of Beats stack monitoring. The recipe has initiated a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
+NOTE: The prerequisite of the example is having ECK installed. Checkout <<qs-set-up>>
+
+For these examples, we will be modifying the Beats stack monitoring link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] from the ECK examples, which initiates a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
 We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config monitoring for multiple {ls}.
 
 * <<ls-k8s-monitor-config-metricbeat>>
@@ -78,7 +80,7 @@ metadata:
 
 Once the above steps of {metricbeat} and {ls} are set, it is ready to deploy. Go to <<ls-k8s-monitor-kibana>> to confirm everything is working.
 
-Optional steps for showing metrics in {kib} in the same {es} cluster. By default {ls} metrics group in Standalone Cluster. To associate data with the same cluster of {es} and {kib}, provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
+**Optional** steps for showing metrics in {kib} in the same {es} cluster: By default {ls} metrics group in Standalone Cluster. To associate data with the same cluster of {es} and {kib}, provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
 
 [source,yaml]
 --
