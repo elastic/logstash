@@ -57,7 +57,7 @@ spec:
 
 <2> {metricbeat} scans for the pods with label `app: ls` to collect {ls} metrics.
 
-<3> {metricbeat} logstash module calls metric endpoint from port `9600` for every `10` seconds.
+<3> {metricbeat} logstash module calls metric endpoint of each {ls} from port `9600` for every `10` seconds.
 
 [float]
 [[ls-k8s-monitor-config-ls]]
@@ -76,7 +76,9 @@ metadata:
 ...
 --
 
-Provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
+Once the above steps of {metricbeat} and {ls} are set, it is ready to deploy. Go to <<ls-k8s-monitor-kibana>> to confirm everything is working.
+
+Optional steps for showing metrics in {kib} in the same {es} cluster. By default {ls} metrics group in Standalone Cluster. To associate data with the same cluster of {es} and {kib}, provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
 
 [source,yaml]
 --
@@ -90,17 +92,29 @@ metadata:
   name: logstash-config
 --
 
+The get the `cluster_uuid`, go to {kib} > Stack Monitoring page. The URL in the browser shows the uuid in the form of `cluster_uuid:PRODUCTION_ES_CLUSTER_UUID,`.
+
+
 [float]
 [[ls-k8s-monitor-kibana]]
 ==== View monitoring data in {kib}
 
 When everything is set, {kib} > Stack Monitoring page will show the Logstash data.
 
-To access {kib} by `https://localhost:5601`, set the port fowarding.
+To access {kib} by `https://localhost:5601`,
+
+Set the port fowarding:
 
 [source,sh]
 --
 kubectl port-forward service/kibana-monitoring-kb-http 5601
+--
+
+Get the login password:
+
+[source,sh]
+--
+kubectl get secret elasticsearch-monitoring-es-elastic-user -o=jsonpath='{.data.elastic}' | base64 --decode; echo
 --
 
 image::./images/sm-kibana.png[Stack Monitoring screenshot]

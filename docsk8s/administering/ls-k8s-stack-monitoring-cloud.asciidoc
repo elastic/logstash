@@ -1,7 +1,7 @@
 [[ls-k8s-monitor-elastic-cloud]]
 ==== Ship metrics to Elastic Cloud
 
-To configure Metricbeat to send monitoring data to a hosted {ess} on https://cloud.elastic.co/[Elastic Cloud], remove the `elasticsearchRef` from the `spec` and set the `cloud.id` and `cloud.auth` for your https://cloud.elastic.co/[Elastic Cloud] monitoring cluster in the `spec.config` section of the metricbeat configuration.
+To configure {metricbeat} to send monitoring data to a hosted {ess} on https://cloud.elastic.co/[Elastic Cloud], remove the `elasticsearchRef` from the `spec` and set the `cloud.id` and `cloud.auth` for your https://cloud.elastic.co/[Elastic Cloud] monitoring cluster in the `spec.config` section of the {metricbeat} configuration.
 
 [source,yaml]
 --
