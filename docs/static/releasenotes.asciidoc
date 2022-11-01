@@ -30,6 +30,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-5-0]]
 === Logstash 8.5.0 Release Notes
 
+[[known-issues-8.5.0]]
+==== Known issues
+
+Due to a recent change in the Red Hat scan verification process,
+this version of Logstash is not available in the Red Hat Ecosystem Catalog.
+This bug will be fixed in the next release.
+Please use the https://www.docker.elastic.co/r/logstash/logstash[Elastic docker registry] to download the 8.5.0 Logstash image.
+
 [[features-8.5.0]]
 ==== New features and enhancements
 
