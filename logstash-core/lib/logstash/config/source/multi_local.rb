@@ -70,6 +70,8 @@ module LogStash module Config module Source
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
         elsif @detected_marker.is_a?(Class)
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => @detected_marker, :path => pipelines_yaml_location)
+        elsif @detected_marker.kind_of?(ConfigurationError)
+          @conflict_messages << @detected_marker.message
         end
       else
         do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because modules or command line options are specified")
@@ -85,17 +87,15 @@ module LogStash module Config module Source
       when Array
         result
       when false
-        raise ConfigurationError.new("Pipelines YAML file is empty. Path: #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-empty", :path => pipelines_yaml_location)
       else
-        raise ConfigurationError.new("Pipelines YAML file must contain an array of pipeline configs. Found \"#{result.class}\" in #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-invalid", :invalid_class => result.class, :path => pipelines_yaml_location)
       end
     end
 
     def read_pipelines_from_yaml(yaml_location)
-      logger.debug("Reading pipeline configurations from YAML", :location => pipelines_yaml_location)
-      ::YAML.safe_load(::File.read(yaml_location))
-    rescue => e
-      raise ConfigurationError.new("Failed to read pipelines yaml file. Location: #{yaml_location}, Exception: #{e.inspect}")
+      yaml_contents = ::File.read(yaml_location) rescue fail(ConfigurationError, I18n.t("logstash.runner.config-pipelines-failed-read-with-exception", :path => yaml_location, exception: $!.inspect))
+      ::YAML.safe_load(yaml_contents, fallback: false) rescue fail(ConfigurationError, I18n.t("logstash.runner.config-pipelines-failed-parse-with-exception", :path => yaml_location, exception: $!.inspect))
     end
 
     def pipelines_yaml_location
@@ -105,12 +105,12 @@ module LogStash module Config module Source
     def detect_duplicate_pipelines(pipelines)
       duplicate_ids = pipelines.group_by {|pipeline| pipeline.get("pipeline.id") }.select {|k, v| v.size > 1 }.map {|k, v| k}
       if duplicate_ids.any?
-        raise ConfigurationError.new("Pipelines YAML file contains duplicate pipeline ids: #{duplicate_ids.inspect}. Location: #{pipelines_yaml_location}")
+        raise ConfigurationError, I18n.t("logstash.runner.config-pipelines-duplicate-ids", :path => pipelines_yaml_location, duplicate_ids: duplicate_ids.inspect)
       end
     end
 
     def detect_pipelines
-      result = read_pipelines_from_yaml(pipelines_yaml_location) rescue nil
+      result = read_pipelines_from_yaml(pipelines_yaml_location)
       if result.is_a?(Array)
         @detected_marker = true
       elsif result.nil?
@@ -120,6 +120,9 @@ module LogStash module Config module Source
       else
         @detected_marker = result.class
       end
+    rescue ConfigurationError => cfg_error
+      @detected_marker = cfg_error
+    ensure
       @detect_pipelines_called = true
     end
 
