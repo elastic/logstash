@@ -18,6 +18,7 @@ function save_docker_tarballs {
 function upload_to_bucket {
     local file="${1:?file required}"
     local version="${2:?stack-version required}"
+    info "Uploading ${file}..."
     gsutil cp "${file}" "gs://logstash-ci-artifacts/dra/${version}/"
 }
 
