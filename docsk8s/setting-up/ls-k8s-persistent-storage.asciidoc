@@ -196,7 +196,7 @@ data:
 
 <1> Enable DLQ for all pipelines that use {logstash-ref}/plugins-outputs-elasticsearch.html[elasticsearch output plugin]
 
-<2> The `main` pipeline generates fail events to DLQ. Checkout the pipeline definition in the next session.
+<2> The `main` pipeline sends failed events to DLQ. Checkout the pipeline definition in the next section.
 
 <3> The `dlq` pipeline consumes the events in DLQ, fixes the error and sends the events to {es} again. Checkout the pipeline definition in the next session.
 
