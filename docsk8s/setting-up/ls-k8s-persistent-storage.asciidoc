@@ -198,7 +198,7 @@ data:
 
 <2> The `main` pipeline sends failed events to DLQ. Checkout the pipeline definition in the next section.
 
-<3> The `dlq` pipeline consumes the events in DLQ, fixes the error and sends the events to {es} again. Checkout the pipeline definition in the next session.
+<3> The `dlq` pipeline should consume events from the DLQ, fix errors and re-send events to {es}. Checkout the pipeline definition in the next section.
 
 [source,yaml]
 --
