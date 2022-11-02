@@ -250,7 +250,9 @@ data:
 [[persistent-storage-plugins]]
 ==== Plugins that require local storage to track work done
 
-Here is the list of plugins require persistent storage to track the state of work. In order to have them work properly, use `StatefulSet` with `VolumeClaimTemplates`, checkout <<persistent-storage-statefulset>>.
+Logstash plugins that are stateful will typically have some kind of `path` that needs to be configured, such as `sincedb_path` or `last_run_metadata_path`
+
+Here is the list of popular plugins that will require persistent storage, and the use of a `StatefulSet` with `VolumeClaimTemplates`, checkout <<persistent-storage-statefulset>>.
 
 [cols="<,<",options="header",]
 |=======================================================================
