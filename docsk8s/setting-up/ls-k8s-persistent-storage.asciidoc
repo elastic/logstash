@@ -9,7 +9,7 @@ When running {ls} with certain use cases, {ls} needs to persist data to disk:
 - Enable dead letter queue for the corrupted events that cannot be processed.
 - Some plugins save and resume the state of work
 
-Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To against data loss during unexpected termination, use `StatefulSet` to deploy {ls}.
+In these cases, we need to ensure that we can preserve state, and take account that the Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To enable this, we define our {ls} deployment using `StatefulSet` rather than `Deployment`.
 
 [[persistent-storage-statefulset]]
 ==== Set up StatefulSet
