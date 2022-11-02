@@ -72,8 +72,12 @@ for image in logstash logstash-oss logstash-ubi8; do
     upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz" ${STACK_VERSION}
 done
 
+# Upload 'docker-build-context.tar.gz' files only when build x86_64, otherwise they will be
+# overwritten when building aarch64 (or viceversa).
 if [ "$ARCH" != "aarch64" ]; then
-    upload_to_bucket "build/logstash-ironbank-${STACK_VERSION}-docker-build-context.tar.gz" ${STACK_VERSION}
+    for image in logstash logstash-oss logstash-ubi8 logstash-ironbank; do
+        upload_to_bucket "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz" ${STACK_VERSION}
+    done
 fi
 
 echo "####################################################################"
