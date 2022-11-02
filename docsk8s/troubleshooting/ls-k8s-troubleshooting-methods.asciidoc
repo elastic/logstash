@@ -7,6 +7,8 @@ Here are some approaches that you can use to diagnose the state of your {ls} and
 * <<ls-k8s-viewing-logs>>
 * <<ls-k8s-connecting-to-a-container>>
 * <<ls-k8s-diagnostics>>
+* <<ls-k8s-pq-util>>
+* <<ls-k8s-pq-drain>>
 
 [float]
 [[ls-k8s-checking-resources]]
@@ -93,3 +95,29 @@ jdk/bin/jcmd 1 GC.heap_dump /tmp/heap_dump.hprof
 --
 kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
 --
+
+[[ls-k8s-pq-util]]
+=== Running PQ utility
+
+In case the pod is terminated ungracefully and hence the persistent queues are corrupted, `pqcheck` and `pqrepair` are the tools for troubleshooting.
+
+To run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqcheck /usr/share/logstash/data/queue/pipeline_id
+--
+
+To run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue: 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqrepair /usr/share/logstash/data/queue/pipeline_id
+--
+
+[[ls-k8s-pq-drain]]
+=== Draining PQ
+
+Set `queue.drain: true` to drain and wait for the persistent queues to empty when receive SIGTERM. However, the default `TerminationGracePeriodSeconds` in Kubernetes is 30 seconds. If {ls} is still running after the grace period elapsed, Kubernetes send SIGKILL to terminated the pod immediately. Hence, {ls} cannot finish the draining.
+
+A workaround is to set a very long period like 1 year to `TerminationGracePeriodSeconds` to make sure {ls} get enough time to drain all events.
