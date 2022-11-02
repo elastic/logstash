@@ -249,6 +249,7 @@ data:
 
 [[persistent-storage-plugins]]
 ==== Plugins that require local storage to track work done
+Many Logstash plugins are stateful, and need to use persistent storage to track the current state of the work that they are doing. 
 
 Logstash plugins that are stateful will typically have some kind of `path` that needs to be configured, such as `sincedb_path` or `last_run_metadata_path`
 
