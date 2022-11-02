@@ -1,35 +1,95 @@
 [[ls-k8s-troubleshooting-methods]]
-=== Troubleshooting methods
+=== Troubleshooting tips and suggestions
 
-There are a number of methods that you can use to diagnose the state of your Logstash and Kubernetes system, both in the event of any problems, and as part of a day-to-day approach to ensuring that everything is running as expected.
+Here are some approaches that you can use to diagnose the state of your {ls} and Kubernetes system, both in the event of any problems, and as part of a day-to-day approach to ensuring that everything is running as expected.
 
-<<ls-k8s-checking-resources>>
-<<ls-k8s-viewing-logs>>
-<<ls-k8s-connecting-to-a-container>>
+* <<ls-k8s-checking-resources>>
+* <<ls-k8s-viewing-logs>>
+* <<ls-k8s-connecting-to-a-container>>
+* <<ls-k8s-diagnostics>>
 
 [float]
 [[ls-k8s-checking-resources]]
 === Checking resources
 
-You can use the standard Kubernetes `get` and `describe` commands to quickly gather details about any resources in your Logstash and Kubernetes environment.
+You can use the standard Kubernetes `get` and `describe` commands to quickly gather details about any resources in your {ls} and Kubernetes environment.
 
-Examples...
+[source,bash]
+--
+kubectl get pod logstash-7477d46bb7-4lcnv
 
+NAME                                    READY   STATUS        RESTARTS         AGE
+logstash-7477d46bb7-4lcnv               0/1     Pending       0                2m43s
+--
+
+If a Pod fails to reach the `Running` status after a few seconds, run this command to get more insights:
+
+[source,bash]
+--
+kubectl describe pod logstash-7477d46bb7-4lcnv
+
+(...)
+Events:
+  Type     Reason            Age                 From               Message
+  ----     ------            ----                ----               -------
+  Warning  FailedScheduling  34s (x2 over 115s)  default-scheduler  0/1 nodes are available: 1 Insufficient cpu.
+--
+
+You can check the CPU and memory resources by running this command:
+[source,bash]
+--
+kubectl top pod logstash-7477d46bb7-4lcnv
+
+NAME                        CPU(cores)   MEMORY(bytes)
+logstash-7d5b749899-tfg4f   37m          882Mi
+--
 
 [float]
 [[ls-k8s-viewing-logs]]
 === Viewing logs
 
-Following is a list of logs and locations that can be useful to monitor the health of your environment.
+{ls} Docker containers do not create log files by default. They log to standard output.
 
-Log1::
-Description.
+To view the log, run:
 
-Log2::
-Description.
+[source,bash]
+--
+kubectl logs -f logstash-7477d46bb7-4lcnv
+--
+
+To enable debug log, set `log.level: debug` in logstash.yml in `ConfigMap`.
 
 [float]
 [[ls-k8s-connecting-to-a-container]]
 === Connecting to a container
 
-At times, you may need to connect directly from your command shell into Logstash and other Kubernetes resources.
+At times, you may need to connect directly from your command shell into {ls} and other Kubernetes resources.
+
+[source,bash]
+--
+kubectl exec -it logstash-7477d46bb7-4lcnv -- bash
+--
+
+[float]
+[[ls-k8s-diagnostics]]
+=== Running diagnostics
+
+Thread dumps and heap dumps can be helpful when you are debugging hard problems. Connect to the container, and then run the commands to gather the diagnostics.
+
+==== Thread dump
+[source,bash]
+--
+jdk/bin/jstack -l 1 > /tmp/jstack_output.txt
+--
+
+==== Heap dump
+[source,bash]
+--
+jdk/bin/jcmd 1 GC.heap_dump /tmp/heap_dump.hprof
+--
+
+==== Extract file from the container
+[source,bash]
+--
+kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
+--
