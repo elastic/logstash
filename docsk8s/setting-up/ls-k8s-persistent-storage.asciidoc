@@ -245,7 +245,7 @@ data:
 
 <1> An example pipeline that insert value to {es}. In the test environment, to generate fail event manually, use {ref}/indices-close.html[_close] API to close the index.
 
-<2> The pipeline use {logstash-ref}/plugins-inputs-dead_letter_queue.html[dead_letter_queue input plugin] to consume DLQ events. Add filter plugins to fix error causing fail insertion, for example, mapping error.
+<2> This pipeline use {logstash-ref}/plugins-inputs-dead_letter_queue.html[dead_letter_queue input plugin] to consume DLQ events. This example sends to a different index, but you can add filter plugins to fix other types of error causing fail insertion, such as mapping errors.
 
 [[persistent-storage-plugins]]
 ==== Plugins that require local storage to track work done
