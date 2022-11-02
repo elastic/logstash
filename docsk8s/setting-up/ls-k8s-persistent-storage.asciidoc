@@ -105,7 +105,7 @@ NOTE: The feature of persistent volume expansion depends on the storage class, c
 
 [[persistent-storage-pq]]
 ==== Persistent queue (PQ)
-
+Persistent Queues can be configured globally across all pipelines in `logstash.yml`, with settings for individual pipelines in `pipelines.yml`. Note that individual settings in `pipelines.yml` override those in `logstash.yml`
 To enable {logstash-ref}/persistent-queues.html[PQ] for every pipeline, specify options in `logstash.yml`. 
 
 [source,yaml]
