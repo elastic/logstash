@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-In some scenarios, {ls} need to persist data to disk: 
+When running {ls} with certain use cases, {ls} needs to persist data to disk: 
 
 - Enable persistent queue to absorb bursts of events 
 - Enable dead letter queue for the corrupted events that cannot be processed.
