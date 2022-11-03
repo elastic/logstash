@@ -3,7 +3,7 @@
 
 NOTE: The prerequisite of the example is having ECK installed. Checkout <<qs-set-up>>
 
-Metrics can be sent to {es} cluster that is not managed by ECK. To configure it, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
+Metrics can be sent to an {es} cluster that is not managed by ECK. To configure it, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
 
 [source,yaml]
 --
