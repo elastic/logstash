@@ -1,7 +1,7 @@
 [[ls-k8s-monitor-external]]
 ==== Ship metrics to external {es} cluster
 
-NOTE: The prerequisite of the example is having ECK installed. Checkout <<qs-set-up>>
+NOTE: The prerequisite of the example is having CRDs installed. Checkout <<qs-set-up>>
 
 Metrics can be sent to an {es} cluster that is not managed by ECK. To configure it, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
 

@@ -1,11 +1,13 @@
 [[ls-k8s-stack-monitoring]]
-=== Stack Monitoring with ECK
+=== Stack Monitoring
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
 An important step to making your environment production ready is to configure stack monitoring. Monitoring metrics can be sent to an external resource, such as {ess} or {eck}, so that in the event that any components of your environment become unresponsive, your monitoring data is available.
 
 To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need {metricbeat} to collect {ls} metrics, {es} to store the metrics and {kib} to view the result.
+
+==== Stack Monitoring with ECK
 
 NOTE: The prerequisite of the example is having ECK installed. Checkout <<qs-set-up>>
 
@@ -18,7 +20,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config 
 
 [float]
 [[ls-k8s-monitor-config-metricbeat]]
-==== Config Metricbeat
+===== Config Metricbeat
 
 To monitor {ls}, add logstash module to the recipe.
 
@@ -63,7 +65,7 @@ spec:
 
 [float]
 [[ls-k8s-monitor-config-ls]]
-==== Config {ls}
+===== Config {ls}
 
 Add label `app: ls` to `Deployment` for autodiscover.
 
@@ -99,7 +101,7 @@ To get the `cluster_uuid`, go to {kib} > Stack Monitoring page. The URL in the b
 
 [float]
 [[ls-k8s-monitor-kibana]]
-==== View monitoring data in {kib}
+===== View monitoring data in {kib}
 
 When everything is set, {kib} > Stack Monitoring page will show the Logstash data.
 
