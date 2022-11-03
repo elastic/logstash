@@ -37,14 +37,14 @@ case "$WORKFLOW_TYPE" in
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
-            rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
+            RELEASE=1 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
             fi
         else
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
             fi
