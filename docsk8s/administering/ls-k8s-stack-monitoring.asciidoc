@@ -80,7 +80,7 @@ metadata:
 
 Once the above steps of {metricbeat} and {ls} are set, it is ready to deploy. Go to <<ls-k8s-monitor-kibana>> to confirm everything is working.
 
-**Optional** steps for showing metrics in {kib} in the same {es} cluster: By default {ls} metrics group in Standalone Cluster. To associate data with the same cluster of {es} and {kib}, provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
+**Optional** steps for showing metrics in {kib} in the same {es} cluster: By default {ls} metrics will be shown in a Standalone Cluster. To associate data with the same cluster of {es} and {kib}, provide the `cluster_uuid` of the production {es} cluster to `monitoring.cluster_uuid` in logstash.yml.
 
 [source,yaml]
 --
