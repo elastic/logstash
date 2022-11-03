@@ -19,6 +19,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: octokit/graphql-action@v2.x
+        id: add_to_project
+        if: github.event.label.name == env.LOGSTASH_LABEL
+        with:
+          query: |
+            # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
+            mutation AddToIngestProject($project_id: ID!, $content_id: ID!) {
+              addProjectV2ItemById(input: { projectId: $project_id, contentId: $content_id }) {
+                  item {
+                    id
+                  }
+                }
+              }
+          project_id: ${{ env.INGEST_PROJECT_ID }}
+          content_id: ${{ github.event.issue.node_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
+      # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
+      # GH actions to make this a lot more DRY
+      - uses: octokit/graphql-action@v2.x
         id: set_data_processing_area
         if: github.event.label.name == env.LOGSTASH_LABEL
         with:
