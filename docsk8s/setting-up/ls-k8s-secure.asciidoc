@@ -5,19 +5,140 @@ WARNING: This documentation is still in development and may be changed or remove
 
 In order to prepare your environment to be production ready, you'll need to set up secure communication between each of your Elastic resources.
 
-[[security-set-up-tls]]
+[[security-tls]]
 ==== Setting up TLS
 
 It's important to set up transport layer security (TLS) to ensure safe communication between the Elastic Stack components running in Kubernetes.
+Let's take {filebeat} and {ls} TLS mutual verification as an example. {ls} uses server certificates and {filebeat} uses client client certificates.
 
-[[security-eck-secrets]]
+Create a `Secret` containing server and client SSH keys:
 
-==== Using secrets from an ECK installation
-Description.
+[source,sh]
+--
+kubectl create secret generic logstash-beats-tls --from-file=ca.crt --from-file=client.crt --from-file=client.key --from-file=server.crt --from-file=server.pkcs8.key
+--
+
+On {ls} side, configurate the server certificates to the pipeline.
+
+[source,ruby]
+--
+input {
+    beats {
+        port => "5044"
+        ssl => true
+        ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
+        ssl_certificate => "/usr/share/logstash/config/server.crt"
+        ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
+        ssl_verify_mode => "force_peer"
+    }
+}
+--
+
+Mount the keys we just created to {ls} `Deployment`.
+
+[source,yaml]
+--
+(...)
+          volumeMounts:
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/ca.crt
+              subPath: ca.crt
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/server.pkcs8.key
+              subPath: server.pkcs8.key
+            - name: logstash-beats-tls
+              mountPath: /usr/share/logstash/config/server.crt
+              subPath: server.crt
+      volumes:
+        - name: logstash-beats-tls
+          secret:
+            secretName: logstash-beats-tls
+(...)
+--
+
+On {filebeat} side, configurate the client certificates and `VolumeMount`.
+
+[source,yaml]
+--
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: demo
+spec:
+  type: filebeat
+  config:
+    output.logstash:
+      ssl.certificate_authorities: ["/usr/share/filebeat/ca.crt"]
+      ssl.certificate: "/usr/share/filebeat/client.crt"
+      ssl.key: "/usr/share/filebeat/client.key"
+(...)
+  deployment:
+    podTemplate:
+      spec:
+        containers:
+          - name: filebeat
+            volumeMounts:
+              - name: logstash-beats-tls
+                mountPath: /usr/share/filebeat/ca.crt
+                subPath: ca.crt
+              - name: logstash-beats-tls
+                mountPath: /usr/share/filebeat/client.key
+                subPath: client.key
+              - name: logstash-beats-tls
+                mountPath: /usr/share/filebeat/client.crt
+                subPath: client.crt
+        volumes:
+          - name: logstash-beats-tls
+            secret:
+              secretName: logstash-beats-tls
+(...)
+--
+
+[[security-k8s-secret]]
+==== Using secret
+
+One way to config confidential data, such as password, is to use `Secret` and references it as container environment variable.
+
+Encode confidential data with Base64:
+
+[source,sh]
+--
+echo -n "changeme" | base64
+--
+
+Create `Secret` to contain the result of the encoding:
+
+[source,yaml]
+--
+apiVersion: v1
+kind: Secret
+metadata:
+  name: logstash-secret
+type: Opaque
+data:
+  ES_PW: Y2hhbmdlbWU=
+--
+
+Reference the confidential data as container environment variable:
+
+[source,yaml]
+--
+    spec:
+      containers:
+        - name: logstash
+          env:
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: logstash-secret
+                  key: ES_PW
+--
 
 [[security-logstash-keystore]]
-
 ==== Using the {ls} keystore
+
+{ls} can use the key of keystore in place of the confidential data when you configure sensitive settings.
+
+[[security-eck-secrets]]
+==== Using secrets from an ECK installation
 Description.
-
-
