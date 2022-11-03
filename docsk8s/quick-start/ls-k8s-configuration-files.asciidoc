@@ -1,7 +1,7 @@
 [[ls-k8s-configuration-files]]
-=== Logstash Configuration Files in Kubernetes
+=== Logstash configuration files in Kubernetes
 
-WARNING: This documentation is still in development and may be changed or removed in a future release.
+WARNING: This documentation is still in development. This feature may be changed or removed in a future release.
 
 The <<ls-k8s-configuration-files,guide to {ls} configuration and settings files in Kubernetes>> guide demonstrates how to configure logstash, including pipeline configuration, in Kubernetes.
 
