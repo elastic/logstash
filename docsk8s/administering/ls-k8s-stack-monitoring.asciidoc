@@ -94,7 +94,7 @@ metadata:
   name: logstash-config
 --
 
-The get the `cluster_uuid`, go to {kib} > Stack Monitoring page. The URL in the browser shows the uuid in the form of `cluster_uuid:PRODUCTION_ES_CLUSTER_UUID,`.
+To get the `cluster_uuid`, go to {kib} > Stack Monitoring page. The URL in the browser shows the uuid in the form of `cluster_uuid:PRODUCTION_ES_CLUSTER_UUID,`.
 
 
 [float]
