@@ -67,7 +67,7 @@ spec:
 
 [float]
 [[ls-k8s-monitor-config-ls]]
-===== Config {ls}
+===== Configure {ls}
 
 Add label `app: ls` to `Deployment` for autodiscover.
 
