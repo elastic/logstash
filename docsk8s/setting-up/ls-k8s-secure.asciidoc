@@ -5,11 +5,14 @@ WARNING: This documentation is still in development and may be changed or remove
 
 In order to prepare your environment to be production ready, you'll need to set up secure communication between each of your Elastic resources.
 
+[[security-communication]]
+==== Secure communication
+
 [[security-tls]]
-==== Setting up TLS
+===== Setting up TLS
 
 Transport layer security (TLS) helps ensure safe communication between the {stack} components running in {k8s}.
-Let's take {filebeat} and {ls} TLS mutual verification as an example. {ls} serves as the server side, while {filebeat} is the client.
+Let's take {filebeat} and {ls} TLS mutual verification as an link:{filebeat-ref}/configuring-ssl-logstash.html[example]. {ls} serves as the server side, while {filebeat} is the client.
 
 Create a `Secret` containing server and client SSL keys:
 
@@ -91,8 +94,75 @@ spec:
               secretName: logstash-beats-tls
 --
 
+[[security-eck-secrets]]
+===== Securing connection to {es} on ECK
+
+
+[[security-eck-secrets-pw]]
+====== Authentication
+
+ECK creates a user for every Elastic resource. To access these resources, such as {es}, {ls} needs a username and password.
+
+The default username of {es} is `elastic`. You can also run the command to check the username:
+
+[source,sh]
+--
+> kubectl describe secret demo-es-elastic-user
+Name:         demo-es-elastic-user
+Namespace:    default
+Labels:       common.k8s.elastic.co/type=elasticsearch
+              eck.k8s.elastic.co/credentials=true
+              eck.k8s.elastic.co/owner-kind=Elasticsearch
+              eck.k8s.elastic.co/owner-name=demo
+              eck.k8s.elastic.co/owner-namespace=default
+              elasticsearch.k8s.elastic.co/cluster-name=demo
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+elastic:  24 bytes <1>
+--
+
+<1> `elastic` is the username of the resources
+
+To get the password, set `SecretKeyRef` and pass it as a container environment variable in `Deployment`:
+
+[source,yaml]
+--
+    spec:
+      containers:
+        - name: logstash
+          env:
+            - name: ELASTICSEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: demo-es-elastic-user
+                  key: elastic
+--
+
+[[security-eck-secrets-self-signed]]
+====== Using self-signed certificate
+
+If your certificate is issued by a well-known CA, you can skip this section, otherwise, you need to mount the CA certificate from the `Secret` created by ECK.
+
+[source,yaml]
+--
+          volumeMounts:
+            - name: es-certs
+              mountPath: /usr/share/logstash/config/es_ca.crt
+              subPath: ca.crt
+      volumes:
+        - name: es-certs
+          secret:
+            secretName: demo-es-http-certs-public
+--
+
 [[security-k8s-secret]]
 ==== Using secrets
+
+NOTE: This is for illustration purposes. In production, managing {k8s} secrets should be done using recognized link:https://kubernetes.io/docs/concepts/security/secrets-good-practices/[good practices] to ensure the protection of sensitive information.
 
 To store sensitive information, such as a password, we can use a {k8s} `Secret`, and reference it as a container environment variable.
 
@@ -102,6 +172,8 @@ Encode confidential data with Base64:
 --
 echo -n "changeme" | base64
 --
+
+NOTE: Base64 is an encoding algorithm not encryption.
 
 Create `Secret` to hold the result of the encoding:
 
@@ -171,68 +243,3 @@ kind: Deployment
 --
 
 <1> `LOGSTASH_KEYSTORE_PASS` is required when the keystore is protected by {logstash-ref}/keystore.html#keystore-password[password]
-
-[[security-eck-secrets]]
-==== Securing connection to {es} on ECK
-
-
-[[security-eck-secrets-pw]]
-===== Authentication
-
-ECK creates a user for every Elastic resource. To access these resources, such as {es}, {ls} needs a username and password. 
-
-The default username of {es} is `elastic`. You can also run the command to check the username:
-
-[source,sh]
---
-> kubectl describe secret demo-es-elastic-user
-Name:         demo-es-elastic-user
-Namespace:    default
-Labels:       common.k8s.elastic.co/type=elasticsearch
-              eck.k8s.elastic.co/credentials=true
-              eck.k8s.elastic.co/owner-kind=Elasticsearch
-              eck.k8s.elastic.co/owner-name=demo
-              eck.k8s.elastic.co/owner-namespace=default
-              elasticsearch.k8s.elastic.co/cluster-name=demo
-Annotations:  <none>
-
-Type:  Opaque
-
-Data
-====
-elastic:  24 bytes <1>
---
-
-<1> `elastic` is the username of the resources
-
-To get the password, set `SecretKeyRef` and pass it as a container environment variable in `Deployment`:
-
-[source,yaml]
---
-    spec:
-      containers:
-        - name: logstash
-          env:
-            - name: ELASTICSEARCH_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: demo-es-elastic-user
-                  key: elastic
---
-
-[[security-eck-secrets-self-signed]]
-===== Using self-signed certificate
-
-If your certificate is issued by a well-known CA, you can skip this section, otherwise, you need to mount the CA certificate from the `Secret` created by ECK.
-
-[source,yaml]
---
-          volumeMounts:
-            - name: es-certs
-              mountPath: /usr/share/logstash/config/es_ca.crt
-              subPath: ca.crt
-      volumes:
-        - name: es-certs
-          secret:
-            secretName: demo-es-http-certs-public
---
