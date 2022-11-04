@@ -1,5 +1,5 @@
 [[ls-k8s-persistent-storage]]
-=== Stateful {ls}
+=== Stateful {ls} for persistent storage
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
