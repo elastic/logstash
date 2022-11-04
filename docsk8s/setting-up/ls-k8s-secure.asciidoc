@@ -54,7 +54,7 @@ Mount the keys we just created to {ls} `Deployment`:
             secretName: logstash-beats-tls
 --
 
-On {filebeat}, configurate the client certificates:
+On {filebeat}, configure the client certificates:
 
 [source,yaml]
 --
