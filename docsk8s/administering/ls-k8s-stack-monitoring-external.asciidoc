@@ -1,0 +1,21 @@
+[[ls-k8s-monitor-external]]
+==== Ship metrics to external {es} cluster
+
+TIP: Be sure that you have the Elastic CustomResourceDefinitions (CRDs) installed so that you can follow the example. Check out <<qs-set-up>> for set up info.
+
+Metrics can be sent to an {es} cluster that is not managed by ECK. To configure {metricbeat}, remove the `elasticsearchRef` from the specification and include an output configuration in the `spec.config`.
+
+[source,yaml]
+--
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: metricbeat
+spec:
+  config:
+    output.elasticsearch:
+      hosts: ["https://es:9200"] 
+      username: "elastic"
+      password: "changeme"
+...
+--

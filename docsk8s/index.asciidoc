@@ -42,8 +42,14 @@ include::setting-up/ls-k8s-secure.asciidoc[]
 // Administering
 include::administering/ls-k8s-administering.asciidoc[]
 
-// Set up stack monitoring
+// Stack Monitoring
 include::administering/ls-k8s-stack-monitoring.asciidoc[]
+
+// Stack Monitoring external
+include::administering/ls-k8s-stack-monitoring-external.asciidoc[]
+
+// Stack Monitoring Elastic Cloud
+include::administering/ls-k8s-stack-monitoring-cloud.asciidoc[]
 
 // Upgrade Logstash
 include::administering/ls-k8s-upgrade.asciidoc[]
