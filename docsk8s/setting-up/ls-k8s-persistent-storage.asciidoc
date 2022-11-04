@@ -3,7 +3,8 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-When you are running {ls} for certain use cases, you need {ls} to persist data to disk.
+You need {ls} to persist data to disk for certain use cases. 
+{ls} offers some persistent storage options to help:
 
 - Enable persistent queue (PQ) to absorb bursts of events 
 - Enable dead letter queue (DLQ) to accept corrupted events that cannot be processed.
