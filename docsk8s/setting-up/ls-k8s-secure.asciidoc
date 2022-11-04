@@ -92,7 +92,7 @@ spec:
 --
 
 [[security-k8s-secret]]
-==== Using secret
+==== Using secrets
 
 One way to config confidential data, such as password, is to use `Secret` and references it as container environment variable.
 
