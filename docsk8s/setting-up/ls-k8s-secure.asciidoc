@@ -94,7 +94,7 @@ spec:
 [[security-k8s-secret]]
 ==== Using secrets
 
-One way to config confidential data, such as password, is to use `Secret` and references it as container environment variable.
+To store sensitive information, such as a password, we can use a {k8s} `Secret`, and reference it as a container environment variable.
 
 Encode confidential data with Base64:
 
