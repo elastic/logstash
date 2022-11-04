@@ -7,6 +7,8 @@ Here are some approaches that you can use to diagnose the state of your {ls} and
 * <<ls-k8s-viewing-logs>>
 * <<ls-k8s-connecting-to-a-container>>
 * <<ls-k8s-diagnostics>>
+* <<ls-k8s-pq-util>>
+* <<ls-k8s-pq-drain>>
 
 [float]
 [[ls-k8s-checking-resources]]
@@ -93,3 +95,30 @@ jdk/bin/jcmd 1 GC.heap_dump /tmp/heap_dump.hprof
 --
 kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
 --
+
+[[ls-k8s-pq-util]]
+=== Running PQ utilities
+
+In the event of persistent queue corruption, the `pqcheck` and `pqrepair` tools are available for troubleshooting.
+
+Run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqcheck /usr/share/logstash/data/queue/pipeline_id
+--
+
+Run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue: 
+
+[source,bash]
+--
+kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqrepair /usr/share/logstash/data/queue/pipeline_id
+--
+
+[[ls-k8s-pq-drain]]
+=== Draining the PQ
+
+{ls} provides a `queue.drain: true` configuration setting to pause shutdown, when Logstash is stopped gracefully, until all messages from a persistent queue have been handled. 
+Special consideration needs to be taken when using the `queue.drain: true` setting when using {k8s}. By default, a {k8s} pod has a grace period of 30 seconds to shutdown before it is closed forcefully, via a `SIGKILL`, which may cause {ls} to exit before the queue is fully drained.
+
+To avoid {ls} shutting down before the queue is completely drained, we recommend setting the `TerminationGracePeriodSeconds` value to an artifically long period, such as 1 year, to give {ls} sufficient time to drain the queue when this functionality is required. 
