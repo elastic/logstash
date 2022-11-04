@@ -1,7 +1,7 @@
 [[jvm-settings]]
 === JVM settings
 
-Configure the jvm settings in the `jvm.options` <<settings-files,settings file>> or with the <<ls-java-opts, `LS_JAVA_OPTS`>>.
+Configure JVM settings in the `jvm.options` <<settings-files,settings file>>. JVM settings can also be set via the <<ls-java-opts, `LS_JAVA_OPTS`>> environment variable
 This file contains a line-delimited list of JVM arguments following a special syntax:
 
 * lines consisting of whitespace only are ignored
@@ -114,8 +114,8 @@ then 16x until the overflow error resolves.
 [[ls-java-opts]]
 ==== Using `LS_JAVA_OPTS`
 
-`LS_JAVA_OPTS` environment variable could be used to configure jvm options without editing the `jvm.options` <<settings-files,settings file>>.
-The content of the variable is combined with the one present in the `jvm.options`.
+The `LS_JAVA_OPTS` environment variable can also be used to override JVM settings in the `jvm.options` file <<settings-files,settings file>>.
+The content of this variable is additive to options configured in the `jvm.options` file, and will override any settings that exist in both places
 
 For example to set a different locale to launch {ls} instance:
 
