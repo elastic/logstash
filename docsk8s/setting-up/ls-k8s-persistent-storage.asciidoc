@@ -3,7 +3,7 @@
 
 WARNING: This documentation is still in development and may be changed or removed in a future release.
 
-When you are running {ls} for certain use cases, you need {ls} to persist data to disk. You can:
+When you are running {ls} for certain use cases, you need {ls} to persist data to disk.
 
 - Enable persistent queue (PQ) to absorb bursts of events 
 - Enable dead letter queue (DLQ) to accept corrupted events that cannot be processed.
@@ -102,7 +102,7 @@ Everything is similar to `Deployment`, except the usage of `VolumeClaimTemplates
 
 <2> Mount the storage to `/usr/share/logstash/data`. This is the default path of {ls} and its plugins for any persistence needs.
 
-NOTE: The feature of persistent volume expansion depends on the storage class. Check with your cloud provider.
+NOTE: The feature of persistent link:https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/[volume expansion] depends on the storage class. Check with your cloud provider.
 
 [[persistent-storage-pq]]
 ==== Persistent queue (PQ)
