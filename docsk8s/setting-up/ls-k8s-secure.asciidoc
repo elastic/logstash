@@ -179,7 +179,7 @@ kind: Deployment
 [[security-eck-secrets-pw]]
 ===== Authentication
 
-ECK create a user for each Elastic resources. To access the resources, such as {es}, {ls} needs username and password. 
+ECK creates a user for every Elastic resource. To access these resources, such as {es}, {ls} needs a username and password. 
 
 The default username of {es} is `elastic`. You can also run the command to check the username:
 
