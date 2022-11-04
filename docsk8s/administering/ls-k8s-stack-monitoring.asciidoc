@@ -22,7 +22,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to configu
 
 [float]
 [[ls-k8s-monitor-config-metricbeat]]
-===== Config Metricbeat
+===== Configure Metricbeat
 
 To monitor {ls}, add logstash module to the recipe.
 
