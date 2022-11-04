@@ -7,7 +7,8 @@ An important step to making your environment production ready is to configure st
 
 To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack Monitoring] for {ls}, you need {metricbeat} to collect {ls} metrics, {es} to store the metrics and {kib} to view the result.
 
-==== Stack Monitoring with ECK
+[[monitor-with-ECK]]
+==== Stack monitoring with Elastic Cloud on {k8s} (ECK)
 
 NOTE: The prerequisite of the example is having ECK installed. Checkout <<qs-set-up>>
 
