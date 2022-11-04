@@ -99,7 +99,7 @@ kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
 [[ls-k8s-pq-util]]
 === Running PQ utilities
 
-In the event of persistent queue corruption, the `pqcheck` and `pqrepair` tools for available for troubleshooting.
+In the event of persistent queue corruption, the `pqcheck` and `pqrepair` tools are available for troubleshooting.
 
 Run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
 
