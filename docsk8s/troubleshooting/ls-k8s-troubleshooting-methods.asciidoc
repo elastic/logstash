@@ -108,7 +108,7 @@ Run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted
 kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqcheck /usr/share/logstash/data/queue/pipeline_id
 --
 
-To run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue: 
+Run {logstash-ref}/persistent-queues.html#pqrepair[pqrepair] to repair the queue: 
 
 [source,bash]
 --
