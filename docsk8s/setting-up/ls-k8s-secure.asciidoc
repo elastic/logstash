@@ -170,7 +170,7 @@ kind: Deployment
             secretName: logstash-keystore
 --
 
-<1> `LOGSTASH_KEYSTORE_PASS` is required only when the keystore is protected by {logstash-ref}/keystore.html#keystore-password[password]
+<1> `LOGSTASH_KEYSTORE_PASS` is required when the keystore is protected by {logstash-ref}/keystore.html#keystore-password[password]
 
 [[security-eck-secrets]]
 ==== Securing connection to {es} on ECK
