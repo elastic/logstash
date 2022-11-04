@@ -9,7 +9,8 @@ When you are running {ls} for certain use cases, you need {ls} to persist data t
 - Enable dead letter queue (DLQ) to accept corrupted events that cannot be processed.
 - Some plugins save and resume the state of work
 
-In these cases, we need to ensure that we can preserve state, and take account that the Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To enable this, we define our {ls} deployment using `StatefulSet` rather than `Deployment`.
+For all of these cases, we need to ensure that we can preserve state.
+Remember that the {k8s} scheduler can shutdown pods at anytime and spawn the process to another node. To preserve state, we define our {ls} deployment using `StatefulSet` rather than `Deployment`.
 
 [[persistent-storage-statefulset]]
 ==== Set up StatefulSet
