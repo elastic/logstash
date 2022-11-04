@@ -102,7 +102,7 @@ Everything is similar to `Deployment`, except the usage of `VolumeClaimTemplates
 
 <2> Mount the storage to `/usr/share/logstash/data`. This is the default path of {ls} and its plugins for any persistence needs.
 
-NOTE: The feature of persistent volume expansion depends on the storage class, checkout your cloud provider.
+NOTE: The feature of persistent volume expansion depends on the storage class. Check with your cloud provider.
 
 [[persistent-storage-pq]]
 ==== Persistent queue (PQ)
