@@ -108,7 +108,7 @@ To get the `cluster_uuid`, go to {kib} > Stack Monitoring page. The URL in the b
 [[ls-k8s-monitor-kibana]]
 ===== View monitoring data in {kib}
 
-When everything is set, {kib} > Stack Monitoring page will show the Logstash data.
+When everything is set, the {kib} > Stack Monitoring page will show the Logstash data.
 
 To access {kib} by `https://localhost:5601`, set the port forwarding:
 
