@@ -8,7 +8,7 @@ In order to prepare your environment to be production ready, you'll need to set 
 [[security-tls]]
 ==== Setting up TLS
 
-It's important to set up transport layer security (TLS) to ensure safe communication between the Elastic Stack components running in {k8s}.
+Transport layer security (TLS) helps ensure safe communication between the {stack} components running in {k8s}.
 Let's take {filebeat} and {ls} TLS mutual verification as an example. {ls} serves as the server side, while {filebeat} is the client.
 
 Create a `Secret` containing server and client SSL keys:
