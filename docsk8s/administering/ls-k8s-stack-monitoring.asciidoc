@@ -12,8 +12,9 @@ To enable {logstash-ref}/monitoring-with-metricbeat.html[Stack monitoring] for {
 
 TIP: Be sure that you have ECK installed so that you can follow the example. Check out <<qs-set-up>> for set up info.
 
-For these examples, we will be modifying the Beats stack monitoring link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] from the ECK examples, which initiates a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and send metrics to monitoring cluster.
-We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config monitoring for multiple {ls}.
+For these examples, we will be modifying the Beats stack monitoring link:https://github.com/elastic/cloud-on-k8s/blob/main/config/recipes/beats/stack_monitoring.yaml[recipe] from the ECK examples.
+This example initiates a production {es} cluster, a monitoring {es} cluster, {filebeat}, {metricbeat}, a production Kibana and a monitoring Kibana. It monitors {es} and Kibana and sends metrics to the monitoring cluster.
+We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to configure monitoring for multiple {ls} instances.
 
 * <<ls-k8s-monitor-config-metricbeat>>
 * <<ls-k8s-monitor-config-ls>>
@@ -21,7 +22,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config 
 
 [float]
 [[ls-k8s-monitor-config-metricbeat]]
-===== Config Metricbeat
+===== Configure Metricbeat
 
 To monitor {ls}, add the `Logstash` module to the recipe.
 
@@ -64,7 +65,7 @@ spec:
 
 [float]
 [[ls-k8s-monitor-config-ls]]
-===== Config {ls}
+===== Configure {ls}
 
 Add label `app: ls` to `Deployment` for autodiscover.
 
