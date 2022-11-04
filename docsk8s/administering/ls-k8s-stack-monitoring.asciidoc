@@ -23,7 +23,7 @@ We use {metricbeat-ref}/configuration-autodiscover.html[autodiscover] to config 
 [[ls-k8s-monitor-config-metricbeat]]
 ===== Config Metricbeat
 
-To monitor {ls}, add `{ls}` module to the recipe.
+To monitor {ls}, add the `Logstash` module to the recipe.
 
 [source,yaml]
 --
@@ -59,9 +59,7 @@ spec:
 --
 
 <1> {metricbeat} sends metrics to `elasticsearch-monitoring` cluster.
-
 <2> {metricbeat} scans for the pods with label `app: ls` to collect {ls} metrics.
-
 <3> {metricbeat} logstash module calls metric endpoint of each {ls} from port `9600` for every `10` seconds.
 
 [float]
@@ -81,7 +79,7 @@ metadata:
 ...
 --
 
-After you have configured {metricbeat} and {ls}, it is ready to deploy. Go to <<ls-k8s-monitor-kibana>> for info on how to confirm that everything is working.
+After you have configured {metricbeat} and {ls}, the configurations are ready to deploy. Go to <<ls-k8s-monitor-kibana>> for info on how to confirm that everything is working.
 
 [float]
 [[kibana-metrics]]
