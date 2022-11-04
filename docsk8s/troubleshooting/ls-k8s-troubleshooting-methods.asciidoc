@@ -101,7 +101,7 @@ kubectl cp logstash-7477d46bb7-4lcnv:/tmp/heap_dump.hprof ./heap.hprof
 
 In case the pod is terminated ungracefully and hence the persistent queues are corrupted, `pqcheck` and `pqrepair` are the tools for troubleshooting.
 
-To run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
+Run {logstash-ref}/persistent-queues.html#pqcheck[pqcheck] to identify corrupted files: 
 
 [source,bash]
 --
