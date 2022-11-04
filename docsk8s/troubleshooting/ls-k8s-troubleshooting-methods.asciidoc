@@ -118,6 +118,7 @@ kubectl exec logstash-0 -it -- /usr/share/logstash/bin/pqrepair /usr/share/logst
 [[ls-k8s-pq-drain]]
 === Draining the PQ
 
-Set `queue.drain: true` to drain and wait for the persistent queues to empty when receive SIGTERM. However, the default `TerminationGracePeriodSeconds` in {k8s} is 30 seconds. If {ls} is still running after the grace period has elapsed, {k8s} sends a SIGKILL to terminate the pod immediately. Hence, {ls} cannot finish draining.
+{ls} provides a `queue.drain: true` configuration setting to pause shutdown, when Logstash is stopped gracefully, until all messages from a persistent queue have been handled. 
+Special consideration needs to be taken when using the `queue.drain: true` setting when using {k8s}. By default, a {k8s} pod has a grace period of 30 seconds to shutdown before it is closed forcefully, via a `SIGKILL`, which may cause {ls} to exit before the queue is fully drained.
 
 To avoid {ls} shutting down before the queue is completely drained, we recommend setting the `TerminationGracePeriodSeconds` value to an artifically long period, such as 1 year, to give {ls} sufficient time to drain the queue when this functionality is required. 
