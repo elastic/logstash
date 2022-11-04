@@ -5,8 +5,8 @@ WARNING: This documentation is still in development and may be changed or remove
 
 When you are running {ls} for certain use cases, you need {ls} to persist data to disk. You can:
 
-- Enable persistent queue to absorb bursts of events 
-- Enable dead letter queue for the corrupted events that cannot be processed.
+- Enable persistent queue (PQ) to absorb bursts of events 
+- Enable dead letter queue (DLQ) to accept corrupted events that cannot be processed.
 - Some plugins save and resume the state of work
 
 In these cases, we need to ensure that we can preserve state, and take account that the Kubernetes scheduler can shutdown pods at anytime and spawn the process to another node. To enable this, we define our {ls} deployment using `StatefulSet` rather than `Deployment`.
