@@ -1,7 +1,7 @@
 [[jvm-settings]]
 === JVM settings
 
-Configure the jvm settings in the `jvm.options` <<settings-files,settings file>>.
+Configure the jvm settings in the `jvm.options` <<settings-files,settings file>> or with the `LS_JAVA_OPTS` <<environment-variable,environment variable>>.
 This file contains a line-delimited list of JVM arguments following a special syntax:
 
 * lines consisting of whitespace only are ignored
@@ -111,6 +111,18 @@ java -XX:+PrintFlagsFinal -version | grep ThreadStackSize
 Depending on the default stack size, start by multiplying by 4x, then 8x, and
 then 16x until the overflow error resolves.
 
+[[ls-java-opts]]
+==== Using `LS_JAVA_OPTS`
+
+`LS_JAVA_OPTS` environment variable could be used to configure jvm options without editing the `jvm.options` <<settings-files,settings file>>.
+The content of the variable is combined with the one present in the `jvm.options`.
+
+For example to set a different locale to launch {ls} instance:
+
+[source,sh]
+-----
+LS_JAVA_OPTS="-Duser.country=DE -Duser.language=de" bin/logstash -e 'input { stdin { codec => json } }'
+-----
 
 
 
