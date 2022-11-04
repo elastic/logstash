@@ -6,9 +6,9 @@ WARNING: This documentation is still in development and may be changed or remove
 You need {ls} to persist data to disk for certain use cases. 
 {ls} offers some persistent storage options to help:
 
-- Enable persistent queue (PQ) to absorb bursts of events 
-- Enable dead letter queue (DLQ) to accept corrupted events that cannot be processed.
-- Some plugins save and resume the state of work
+* <<persistent-storage-pq,Persistent queue (PQ)>> to absorb bursts of events
+* <<persistent-storage-dlq,Dead letter queue (DLQ)>> to accept corrupted events that cannot be processed
+* <<persistent-storage-plugins,Persistent storage options in some {ls} plugins>>
 
 For all of these cases, we need to ensure that we can preserve state.
 Remember that the {k8s} scheduler can shutdown pods at anytime and spawn the process to another node. To preserve state, we define our {ls} deployment using `StatefulSet` rather than `Deployment`.
