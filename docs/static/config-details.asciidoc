@@ -1,7 +1,7 @@
 [[jvm-settings]]
 === JVM settings
 
-Configure the jvm settings in the `jvm.options` <<settings-files,settings file>> or with the `LS_JAVA_OPTS` <<environment-variable,environment variable>>.
+Configure the jvm settings in the `jvm.options` <<settings-files,settings file>> or with the <<ls-java-opts, `LS_JAVA_OPTS`>>.
 This file contains a line-delimited list of JVM arguments following a special syntax:
 
 * lines consisting of whitespace only are ignored
