@@ -191,7 +191,7 @@ spec:
 --
 
 <1> Logstash docker image
-<2> If you want to change any JVM settings from the default - most commonly setting memory. allocations - prefer to set them in the `LS_JAVA_OPTS` environment variable than recreating the whole `jvm.options` file in a `ConfigMap`.
+<2> Set non-default JVM settings, such as memory allocation, here in the `LS_JAVA_OPTS` env variable to avoid the need to add a whole `jvm.options` file in a `ConfigMap`
 <3> Resource/memory limits for the pod. Refer to Kubernetes documentation to set resources appropriately for each pod. Ensure that each pod has sufficient memory to handle the
 heap specified in <2>, allowing enough memory to deal with direct memory, see {logstash-ref}/jvm-settings.html#heap-size[Logstash JVM settings] for details
 <4> Expose the necessary ports on the container. Here we are exposing port `5044` for the beats input, and `9600` for the metricbeat instance to query the logstash metrics API for stack monitoring purposes
