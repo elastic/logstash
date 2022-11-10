@@ -42,7 +42,9 @@ import java.util.stream.Stream;
  * metrics and other namespaces to it.
  */
 public class NamespacedMetricImpl implements NamespacedMetric {
+
     private final ThreadContext threadContext;
+
     private final AbstractNamespacedMetricExt metrics;
 
     public NamespacedMetricImpl(final ThreadContext threadContext, final AbstractNamespacedMetricExt metrics) {
@@ -62,13 +64,13 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public NamespacedMetric namespace(final String... key) {
-        final IRubyObject[] rubyfiedKeys = Stream.of(key)
+        final IRubyObject[] rubyFieldKeys = Stream.of(key)
             .map(this::getSymbol)
             .toArray(IRubyObject[]::new);
 
         return new NamespacedMetricImpl(
             this.threadContext,
-            this.metrics.namespace(this.threadContext, RubyArray.newArray(this.threadContext.getRuntime(), rubyfiedKeys))
+            this.metrics.namespace(this.threadContext, RubyArray.newArray(this.threadContext.getRuntime(), rubyFieldKeys))
         );
     }
 

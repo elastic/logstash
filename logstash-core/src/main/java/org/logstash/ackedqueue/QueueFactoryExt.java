@@ -55,7 +55,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
     /**
      * A contextual name to expose the queue type.
      */
-    public static String CONTEXT_NAME = "queue.type";
+    public static String QUEUE_TYPE_CONTEXT_NAME = "queue.type";
 
     private static final long serialVersionUID = 1L;
 
@@ -66,7 +66,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
     @JRubyMethod(meta = true)
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
-        final String type = getSetting(context, settings, CONTEXT_NAME).asJavaString();
+        final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
         if (PERSISTED_TYPE.equals(type)) {
             final Path queuePath = Paths.get(
                 getSetting(context, settings, "path.queue").asJavaString(),

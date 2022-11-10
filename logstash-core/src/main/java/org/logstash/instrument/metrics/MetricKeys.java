@@ -43,6 +43,10 @@ public final class MetricKeys {
 
     public static final RubySymbol INPUTS_KEY = RubyUtil.RUBY.newSymbol("inputs");
 
+    public static final RubySymbol FILTERS_KEY = RubyUtil.RUBY.newSymbol("filters");
+
+    public static final RubySymbol OUTPUTS_KEY = RubyUtil.RUBY.newSymbol("outputs");
+
     public static final RubySymbol DURATION_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("duration_in_millis");
 
     public static final RubySymbol PUSH_DURATION_KEY = RubyUtil.RUBY.newSymbol("queue_push_duration_in_millis");
@@ -94,9 +98,22 @@ public final class MetricKeys {
 
     public static final RubySymbol WORKER_CONCURRENCY_KEY = RubyUtil.RUBY.newSymbol("worker_concurrency");
 
+    public static final RubySymbol WORKER_COST_PER_EVENT_KEY = RubyUtil.RUBY.newSymbol("worker_cost_per_event");
+
+    public static final RubySymbol WORKER_UTILIZATION_KEY = RubyUtil.RUBY.newSymbol("worker_utilization");
+
     public static final RubySymbol UPTIME_IN_MILLIS_KEY = RubyUtil.RUBY.newSymbol("uptime_in_millis");
 
     public static final RubySymbol QUEUE_PERSISTED_GROWTH_EVENTS_KEY = RubyUtil.RUBY.newSymbol("queue_persisted_growth_events");
 
     public static final RubySymbol QUEUE_PERSISTED_GROWTH_BYTES_KEY = RubyUtil.RUBY.newSymbol("queue_persisted_growth_bytes");
+
+    public static final RubySymbol PLUGIN_THROUGHPUT_KEY = RubyUtil.RUBY.newSymbol("throughput");
+
+    public static final RubySymbol ENCODE_KEY = RubyUtil.RUBY.newSymbol("encode");
+
+    public static final RubySymbol DECODE_KEY = RubyUtil.RUBY.newSymbol("decode");
+
+    public static final RubySymbol WRITES_IN_KEY = RubyUtil.RUBY.newSymbol("writes_in");
+
 }

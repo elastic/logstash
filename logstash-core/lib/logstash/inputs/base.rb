@@ -118,7 +118,7 @@ class LogStash::Inputs::Base < LogStash::Plugin
   def metric=(metric)
     super
     # Hack to create a new metric namespace using 'plugins' as the root
-    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id))
+    @codec.metric = metric.root.namespace(metric.namespace_name[0...-2].push(:codecs, codec.id.to_sym))
     metric
   end
 
