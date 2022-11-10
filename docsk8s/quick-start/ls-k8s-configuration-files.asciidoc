@@ -3,15 +3,19 @@
 
 WARNING: This documentation is still in development. This feature may be changed or removed in a future release.
 
-The <<ls-k8s-configuration-files,guide to {ls} configuration and settings files in Kubernetes>> guide demonstrates how to configure logstash, including pipeline configuration, in Kubernetes.
+This guide walks you through configuring {ls} and setting up {ls} pipelines in {k8s}.
 
 * <<qs-pipeline-configuration>>
 * <<qs-logstash-yaml>>
 * <<qs-jvm-options>>
 * <<qs-logging>>
 
-Configuring Logstash includes two types of configuration files: _pipeline configuration files_, which define the Logstash processing pipeline, and _settings files_ which specify options that control Logstsah startup and execution.
-{logstash-ref}/config-setting-files.html[Config Settings Files] contains information on these files, and this guide explains how these map to a Kubernetes configuration.
+{ls} uses two types of configuration files: 
+
+* _pipeline configuration files_, which define the Logstash processing pipeline
+* _settings files_ which specify options that control {ls} startup and execution.
+{logstash-ref}/config-setting-files.html[{ls} configuration files] topic contains information on these files.
+This guide explains how these map to a {k8s} configuration.
 
 [discrete]
 [[qs-pipeline-configuration]]
@@ -269,7 +273,7 @@ data:
     logger.elasticsearchoutput.level = debug
 --
 
-In your `Deployment`/`StatefulSet`, create the `Volume`
+In your `Deployment`/`StatefulSet`, create the `Volume`:
 
 [source,yaml]
 --
