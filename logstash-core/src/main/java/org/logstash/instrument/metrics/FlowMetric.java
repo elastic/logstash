@@ -43,6 +43,18 @@ public interface FlowMetric extends Metric<Map<String,Double>> {
     }
 
     static FlowMetric create(final String name,
+                             final Metric<? extends Number> numerator,
+                             final Metric<? extends Number> denominator,
+                             final Number fraction) {
+        // INTERNAL-ONLY system property escape hatch
+        switch (System.getProperty("logstash.flowMetric", "extended")) {
+            case "extended": return new ExtendedFracturedFlowMetric(name, numerator, denominator, fraction);
+            case "simple"  :
+            default        : return new SimpleFracturedFlowMetric(name, numerator, denominator, fraction);
+        }
+    }
+
+    static FlowMetric create(final String name,
                              final Supplier<? extends Metric<? extends Number>> numeratorSupplier,
                              final Supplier<? extends Metric<? extends Number>> denominatorSupplier) {
         return new LazyInstantiatedFlowMetric(name, numeratorSupplier, denominatorSupplier);

@@ -65,6 +65,7 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.DeadLetterQueueFactory;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.IncompleteSourceWithMetadataException;
+import org.logstash.common.SettingKeyDefinitions;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.common.io.DeadLetterQueueWriter;
 import org.logstash.common.io.QueueStorageType;
@@ -211,7 +212,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             )
         );
         settings = pipelineSettings.callMethod(context, "settings");
-        final IRubyObject id = getSetting(context, "pipeline.id");
+        final IRubyObject id = getSetting(context, SettingKeyDefinitions.PIPELINE_ID);
         if (id.isNil()) {
             pipelineId = id();
         } else {
@@ -539,6 +540,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
                                                final Metric<? extends Number> denominatorMetric) {
         return FlowMetric.create(name.asJavaString(), numeratorMetric, denominatorMetric);
     }
+
+    private static FlowMetric createFlowMetric(final RubySymbol name,
+                                               final Metric<? extends Number> numeratorMetric,
+                                               final Metric<? extends Number> denominatorMetric,
+                                               final Number fraction) {
+        return FlowMetric.create(name.asJavaString(), numeratorMetric, denominatorMetric, fraction);
+    }
+
     private static FlowMetric createFlowMetric(final RubySymbol name,
                                                final Supplier<? extends Metric<? extends Number>> numeratorMetricSupplier,
                                                final Supplier<? extends Metric<? extends Number>> denominatorMetricSupplier) {
@@ -606,14 +615,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
             initializePluginThroughputFlowMetric(context, uptimeInPreciseMillis, id);
         }
 
-        for (AbstractFilterDelegatorExt filtersRubyObject: lirExecution.filters()) {
-            IRubyObject id = filtersRubyObject.getId();
-            initializePluginWorkerFlowMetrics(context, uptimeInPreciseMillis, FILTERS_KEY, id.asJavaString());
+        final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
+
+        for (AbstractFilterDelegatorExt delegator: lirExecution.filters()) {
+            initializePluginWorkerFlowMetrics(context, workerCount, uptimeInPreciseMillis, FILTERS_KEY, delegator.getId().asJavaString());
         }
 
-        for (AbstractOutputDelegatorExt rubyObject: lirExecution.outputs()) {
-            IRubyObject id = rubyObject.getId();
-            initializePluginWorkerFlowMetrics(context, uptimeInPreciseMillis, OUTPUTS_KEY, id.asJavaString());
+        for (AbstractOutputDelegatorExt delegator: lirExecution.outputs()) {
+            initializePluginWorkerFlowMetrics(context, workerCount, uptimeInPreciseMillis, OUTPUTS_KEY, delegator.getId().asJavaString());
         }
     }
 
@@ -628,7 +637,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         storeMetric(context, flowNamespace, throughputFlow);
     }
 
-    private void initializePluginWorkerFlowMetrics(final ThreadContext context, final Metric<Number> uptimeInPreciseMillis, final RubySymbol key, final String id) {
+    private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final Metric<Number> uptimeInPreciseMillis, final RubySymbol key, final String id) {
         final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
         final LongCounter counterDuration = initOrGetCounterMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
@@ -636,8 +645,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, counterDuration, counterEvents);
         this.flowMetrics.add(workerCostPerEvent);
 
-        // TODO: worker utilization will be considering number of workers and uptimeInPreciseMillis
-        final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, counterDuration, uptimeInPreciseMillis);
+        final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, counterDuration, uptimeInPreciseMillis, workerCount);
         this.flowMetrics.add(workerUtilization);
 
         final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
