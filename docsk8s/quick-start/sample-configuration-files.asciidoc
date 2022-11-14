@@ -195,7 +195,7 @@ spec:
             secretName: demo-es-elastic-user
 --
 
-<1> {ls} docker image
+<1> {ls} {logstash-ref}/docker.html[docker image]
 <2> Set non-default JVM settings, such as memory allocation, here in the `LS_JAVA_OPTS` env variable to avoid the need to add a whole `jvm.options` file in a `ConfigMap`
 <3> Resource/memory limits for the pod. Refer to Kubernetes documentation to set resources appropriately for each pod. Ensure that each pod has sufficient memory to handle the
 heap specified in <2>, allowing enough memory to deal with direct memory. Check out {logstash-ref}/jvm-settings.html#heap-size[Logstash JVM settings] for details.
