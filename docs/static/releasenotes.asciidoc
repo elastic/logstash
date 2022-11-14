@@ -72,15 +72,13 @@ This section summarizes the changes in the following releases:
 
 *Elasticsearch Output - 11.9.3*
 
-* DOC: clarify that `http_compression` option only affects _requests_; compressed _responses_ have always been read independent of this setting [#1030 ](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1030)
+* DOC: clarify that `http_compression` option only affects _requests_; compressed _responses_ have always been read independent of this setting https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1030[#1030]
 
 * Fix broken link to Logstash Reference https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1085[#1085]
 
-* Fixes a possible infinite-retry-loop that could occur when this plugin is configured with an `action` whose value contains a [sprintf-style placeholder][] that fails to be resolved for an individual event. Events in this state will be routed to the pipeline's [dead letter queue][DLQ] if it is available, or will be logged-and-dropped so that the remaining events in the batch can be processed https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1080[#1080]
- 
-[sprintf-style placeholder]: https://www.elastic.co/guide/en/logstash/current/event-dependent-configuration.html#sprintf
-[DLQ]: https://www.elastic.co/guide/en/logstash/current/dead-letter-queues.html
-
+* Fixes a possible infinite-retry-loop that could occur when this plugin is configured with an `action` whose value contains a <<sprintf,sprintf-style placeholder>> that fails to be resolved for an individual event. 
+Events in this state are routed to the pipeline's <<dead-letter-queues,dead letter queue (DLQ)>> if the DLQ is enabled.
+Otherwise, these events are logged-and-dropped so that the remaining events in the batch can be processed. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1080[#1080]
 
 [[logstash-8-5-0]]
 === Logstash 8.5.0 Release Notes
