@@ -31,48 +31,17 @@ This section summarizes the changes in the following releases:
 [[logstash-8-5-1]]
 === Logstash 8.5.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.5.1
+[[notable-8.5.1]]
+==== Notable issues fixed
 
-* Update settings-file.asciidoc https://github.com/elastic/logstash/pull/14684[#14684]
-* Fix pipelines yaml loading https://github.com/elastic/logstash/pull/14713[#14713]
-* DRA: uploading missing docker-build-context files https://github.com/elastic/logstash/pull/14722[#14722]
-* Backport PR #14722 to 8.5: DRA: uploading missing docker-build-context files https://github.com/elastic/logstash/pull/14723[#14723]
-* Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter https://github.com/elastic/logstash/pull/14727[#14727]
-* 8.5 - Update bundled JDK to 17.0.5+8 https://github.com/elastic/logstash/pull/14728[#14728]
-* DRA: Build dockerfiles for release https://github.com/elastic/logstash/pull/14730[#14730]
-* Backport PR #14730 to 8.5: DRA: Build dockerfiles for release https://github.com/elastic/logstash/pull/14731[#14731]
-* Backport PR #14728 to 8.5: 8.5 - Update bundled JDK to 17.0.5+8 https://github.com/elastic/logstash/pull/14736[#14736]
-* Backport PR #14727 to 8.5: Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter https://github.com/elastic/logstash/pull/14741[#14741]
+* Fixes the reporting of configuration errors when using multiple-pipelines to make them more actionable https://github.com/elastic/logstash/pull/14713[#14713]
 
-=== Logstash Commits between 8.5 and 8.5.0
+[[dependencies-8.5.1]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.5.0..8.5"
+* The bundled JDK has been updated to 17.0.5+8 https://github.com/elastic/logstash/pull/14728[#14728]
 
-d909f33ba - (HEAD -> 8.5, origin/8.5) Update lockfile (#14744) (88 minutes ago) <Rob Bavey>
-8b920e604 - Backport PR #14727 to 8.5: Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter #14741 (10 hours ago) <github-actions[bot]>
-41c847863 - Backport PR #14728 to 8.5: 8.5 - Update bundled JDK to 17.0.5+8 #14736 (6 days ago) <github-actions[bot]>
-713edad9e - DRA: Build dockerfiles for release (#14730) (#14731) (6 days ago) <github-actions[bot]>
-1c3c631e5 - DRA: uploading missing docker-build-context files (#14722) (#14723) (7 days ago) <github-actions[bot]>
-da914f0a6 - Update releasenotes.asciidoc with known issue (#14718) (7 days ago) <Brandon Morelli>
-76ef18e28 - Version bump to 8.5.1 (#14717) (8 days ago) <Rob Bavey>
-cc8c697dd - DRA - Fix docker image build (#14706) (#14708) (2 weeks ago) <github-actions[bot]>
-f5ae5fe5f - Backport PR #14703 to 8.5: Adds upload of missed docker docker-build-context.tar.gz artifacts #14705 (2 weeks ago) <github-actions[bot]>
-322f74e0d - DRA - Fix error reporting (#14698) (#14701) (2 weeks ago) <github-actions[bot]>
-7257cb7f1 - DRA - generalize docker image building (#14670) (#14690) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.5.0..8.5 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.5 -> 6.2.6
-logstash-codec-json: 3.1.0 -> 3.1.1
-logstash-filter-grok: 4.4.2 -> 4.4.3
-logstash-input-tcp: 6.3.0 -> 6.3.1
-logstash-input-unix: 3.1.1 -> 3.1.2
-logstash-integration-rabbitmq: 7.3.0 -> 7.3.1
-logstash-output-elasticsearch: 11.9.0 -> 11.9.3
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-5-1]]
 ==== Plugins
 
 *Cef Codec - 6.2.6*
