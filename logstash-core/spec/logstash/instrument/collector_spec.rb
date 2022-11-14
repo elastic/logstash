@@ -19,7 +19,7 @@ require "logstash/instrument/collector"
 require "spec_helper"
 
 describe LogStash::Instrument::Collector do
-  subject { LogStash::Instrument::Collector.new }
+  subject(:metrics_collector) { LogStash::Instrument::Collector.new }
   describe "#push" do
     let(:namespaces_path) { [:root, :pipelines, :pipelines01] }
     let(:key) { :my_key }
@@ -53,6 +53,30 @@ describe LogStash::Instrument::Collector do
           hash_including({ :exception => instance_of(LogStash::Instrument::MetricStore::NamespacesExpectedError) }))
 
           subject.push(conflicting_namespaces, :random_key, :counter, :increment)
+      end
+    end
+  end
+
+  describe '#get' do
+    let(:namespaces_path) { [:root, :pipelines, :pipelines01] }
+    let(:key) { :my_key }
+
+    {
+      counter: LogStash::Instrument::MetricType::Counter,
+      gauge:   LogStash::Instrument::MetricType::Gauge,
+      uptime:  org.logstash.instrument.metrics.UptimeMetric,
+      timer:   org.logstash.instrument.metrics.TimerMetric,
+    }.each do |type, type_specific_implementation|
+      context "with (type: `#{type}`)" do
+        it "gets an instance of #{type_specific_implementation}" do
+          expect(metrics_collector.get(namespaces_path, key, type)).to be_a_kind_of(type_specific_implementation)
+        end
+
+        it 'gets a singleton instance from multiple consecutive calls' do
+          first = metrics_collector.get(namespaces_path, key, type)
+          second = metrics_collector.get(namespaces_path, key, type)
+          expect(second).to equal(first)
+        end
       end
     end
   end

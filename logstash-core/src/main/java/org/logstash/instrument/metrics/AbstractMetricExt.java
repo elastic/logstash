@@ -21,6 +21,7 @@
 package org.logstash.instrument.metrics;
 
 import org.jruby.Ruby;
+import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
@@ -56,4 +57,19 @@ public abstract class AbstractMetricExt extends RubyObject {
     );
 
     protected abstract IRubyObject getCollector(ThreadContext context);
+
+
+    /**
+     * Normalize the namespace to an array
+     * @param namespaceName a ruby-object, which may be an array
+     * @return an array
+     */
+    @SuppressWarnings("rawtypes")
+    protected RubyArray normalizeNamespace(final IRubyObject namespaceName) {
+        if (namespaceName instanceof RubyArray) {
+            return (RubyArray) namespaceName;
+        } else {
+            return RubyArray.newArray(namespaceName.getRuntime(), namespaceName);
+        }
+    }
 }

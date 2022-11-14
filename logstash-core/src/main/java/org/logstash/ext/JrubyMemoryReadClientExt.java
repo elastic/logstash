@@ -25,6 +25,10 @@ import java.util.concurrent.TimeUnit;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
+import org.jruby.anno.JRubyMethod;
+import org.jruby.runtime.Block;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.execution.MemoryReadBatch;
@@ -84,6 +88,4 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
         startMetrics(batch);
         return batch;
     }
-
-
 }

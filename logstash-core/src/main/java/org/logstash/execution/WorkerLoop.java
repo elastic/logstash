@@ -84,12 +84,15 @@ public final class WorkerLoop implements Runnable {
                 if (batch.filteredSize() > 0 || isFlush) {
                     consumedCounter.add(batch.filteredSize());
                     readClient.startMetrics(batch);
-                    final int outputCount = execution.compute(batch, isFlush, false);
-                    int filteredCount = batch.filteredSize();
-                    filteredCounter.add(filteredCount);
-                    readClient.addOutputMetrics(outputCount);
-                    readClient.addFilteredMetrics(filteredCount);
-                    readClient.closeBatch(batch);
+                    readClient.executeWithTimers(() -> {
+                        final int outputCount = execution.compute(batch, isFlush, false);
+                        int filteredCount = batch.filteredSize();
+                        filteredCounter.add(filteredCount);
+                        readClient.addOutputMetrics(outputCount);
+                        readClient.addFilteredMetrics(filteredCount);
+                        readClient.closeBatch(batch);
+                    });
+
                     if (isFlush) {
                         flushing.set(false);
                     }
@@ -98,9 +101,11 @@ public final class WorkerLoop implements Runnable {
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
             //for this we need to create a new empty batch to contain the final flushed events
             final QueueBatch batch = readClient.newBatch();
-            readClient.startMetrics(batch);
-            execution.compute(batch, true, true);
-            readClient.closeBatch(batch);
+            readClient.executeWithTimers(() -> {
+                readClient.startMetrics(batch);
+                execution.compute(batch, true, true);
+                readClient.closeBatch(batch);
+            });
         } catch (final Exception ex) {
             throw new IllegalStateException(ex);
         }

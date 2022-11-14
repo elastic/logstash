@@ -37,7 +37,7 @@ shared_examples "metrics commons operations" do
     end
   end
 
-  describe "#decrement" do
+  describe "#decrement", skip: "LongCounter impl does not support decrement" do
     it "allows to decrement a key with no amount" do
       expect { subject.decrement(key, 100) }.not_to raise_error
     end
@@ -99,7 +99,6 @@ shared_examples "metrics commons operations" do
       execution = subject.time(:do_something)
       expect { execution.stop }.not_to raise_error
     end
-
 
     it "raises an exception if the key is an empty string" do
       expect { subject.time("") {} }.to raise_error(LogStash::Instrument::MetricNoKeyProvided)

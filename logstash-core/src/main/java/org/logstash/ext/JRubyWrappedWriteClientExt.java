@@ -22,7 +22,6 @@ package org.logstash.ext;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
@@ -33,12 +32,12 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.RubyUtil;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.TimerMetric;
 
 import static org.logstash.instrument.metrics.MetricKeys.*;
 
@@ -51,15 +50,15 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private transient LongCounter eventsMetricsCounter;
 
-    private transient LongCounter eventsMetricsTime;
+    private transient TimerMetric eventsMetricsTime;
 
     private transient LongCounter pipelineMetricsCounter;
 
-    private transient LongCounter pipelineMetricsTime;
+    private transient TimerMetric pipelineMetricsTime;
 
     private transient LongCounter pluginMetricsCounter;
 
-    private transient LongCounter pluginMetricsTime;
+    private transient TimerMetric pluginMetricsTime;
 
     public JRubyWrappedWriteClientExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -87,45 +86,43 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
                 getMetric(metric, STATS_KEY, EVENTS_KEY);
 
             eventsMetricsCounter = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.IN_KEY);
-            eventsMetricsTime = LongCounter.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
+            eventsMetricsTime = TimerMetric.fromRubyBase(eventsMetrics, MetricKeys.PUSH_DURATION_KEY);
 
             final AbstractNamespacedMetricExt pipelineEventMetrics =
                 getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, EVENTS_KEY);
 
             pipelineMetricsCounter = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.IN_KEY);
-            pipelineMetricsTime = LongCounter.fromRubyBase(pipelineEventMetrics, MetricKeys.PUSH_DURATION_KEY);
+            pipelineMetricsTime = TimerMetric.fromRubyBase(pipelineEventMetrics, MetricKeys.PUSH_DURATION_KEY);
 
             final AbstractNamespacedMetricExt pluginMetrics =
                     getMetric(metric, STATS_KEY, PIPELINES_KEY, pipelineIdSym, PLUGINS_KEY, INPUTS_KEY, pluginIdSym, EVENTS_KEY);
             pluginMetricsCounter =
                 LongCounter.fromRubyBase(pluginMetrics, MetricKeys.OUT_KEY);
-            pluginMetricsTime = LongCounter.fromRubyBase(pluginMetrics, MetricKeys.PUSH_DURATION_KEY);
+            pluginMetricsTime = TimerMetric.fromRubyBase(pluginMetrics, MetricKeys.PUSH_DURATION_KEY);
         }
 
         return this;
     }
 
     @JRubyMethod(name = {"push", "<<"}, required = 1)
-    public IRubyObject push(final ThreadContext context, final IRubyObject event)
-        throws InterruptedException {
-        final long start = System.nanoTime();
+    public IRubyObject push(final ThreadContext context,
+                            final IRubyObject event) throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent rubyEvent = (JrubyEventExtLibrary.RubyEvent) event;
+
         incrementCounters(1L);
-        final IRubyObject res = writeClient.doPush(context, (JrubyEventExtLibrary.RubyEvent) event);
-        incrementTimers(start);
-        return res;
+        return executeWithTimers(() -> writeClient.doPush(context, rubyEvent));
     }
 
     @SuppressWarnings("unchecked")
     @JRubyMethod(name = "push_batch", required = 1)
-    public IRubyObject pushBatch(final ThreadContext context, final IRubyObject batch)
-        throws InterruptedException {
-        final long start = System.nanoTime();
-        incrementCounters((long) ((Collection<IRubyObject>) batch).size());
-        final IRubyObject res = writeClient.doPushBatch(
-            context, (Collection<JrubyEventExtLibrary.RubyEvent>) batch
-        );
-        incrementTimers(start);
-        return res;
+    public IRubyObject pushBatch(final ThreadContext context,
+                                 final IRubyObject batch) throws InterruptedException {
+        final Collection<JrubyEventExtLibrary.RubyEvent> rubyEvents = (Collection<JrubyEventExtLibrary.RubyEvent>) batch;
+
+        incrementCounters(rubyEvents.size());
+        return executeWithTimers(() -> writeClient.doPushBatch(
+                context, rubyEvents
+        ));
     }
 
     /**
@@ -146,15 +143,14 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
         pluginMetricsCounter.increment(count);
     }
 
-    private void incrementTimers(final long start) {
-        final long increment = TimeUnit.MILLISECONDS.convert(
-            System.nanoTime() - start, TimeUnit.NANOSECONDS
-        );
-        eventsMetricsTime.increment(increment);
-        pipelineMetricsTime.increment(increment);
-        pluginMetricsTime.increment(increment);
+
+    private <V, E extends Exception> V executeWithTimers(final co.elastic.logstash.api.TimerMetric.ExceptionalSupplier<V,E> supplier) throws E {
+        return eventsMetricsTime.time(() -> pipelineMetricsTime.time(() -> pluginMetricsTime.time(supplier)));
     }
 
+    private <E extends Exception> void executeWithTimers(final Runnable runnable) {
+        eventsMetricsTime.time(() -> pipelineMetricsTime.time(() -> pluginMetricsTime.time(runnable::run)));
+    }
 
     private AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
                                                   final RubySymbol... keys) {
@@ -163,9 +159,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     @Override
     public void push(Map<String, Object> event) {
-        final long start = System.nanoTime();
         incrementCounters(1L);
-        writeClient.push(event);
-        incrementTimers(start);
+        executeWithTimers(() -> writeClient.push(event));
     }
 }

@@ -60,10 +60,10 @@ describe LogStash::WrappedSynchronousQueue do
             expect(store.get_shallow(:events, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
 
             expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.TimerMetric)
 
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
+            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.TimerMetric)
 
             expect(store.get_shallow(:pipeline, :out).value).to eq(0)
             expect(store.get_shallow(:pipeline, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
@@ -80,12 +80,14 @@ describe LogStash::WrappedSynchronousQueue do
             write_client.push_batch(batch)
 
             read_batch = read_client.read_batch.to_java
-            sleep(0.1) # simulate some work for the `duration_in_millis`
-            # TODO: this interaction should be cleaned in an upcoming PR,
-            # This is what the current pipeline does.
-            read_client.add_filtered_metrics(read_batch.filteredSize)
-            read_client.add_output_metrics(read_batch.filteredSize)
-            read_client.close_batch(read_batch)
+            read_client.execute_with_timers do
+              sleep(0.1) # simulate some work for the `duration_in_millis`
+              # TODO: this interaction should be cleaned in an upcoming PR,
+              # This is what the current pipeline does.
+              read_client.add_filtered_metrics(read_batch.filteredSize)
+              read_client.add_output_metrics(read_batch.filteredSize)
+              read_client.close_batch(read_batch)
+            end
             store = collector.snapshot_metric.metric_store
 
             expect(store.get_shallow(:events, :out).value).to eq(5)

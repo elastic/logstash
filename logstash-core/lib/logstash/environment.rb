@@ -52,6 +52,7 @@ module LogStash
            Setting::Boolean.new("config.support_escapes", false),
             Setting::String.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::Boolean.new("metric.collect", true),
+            Setting::String.new("metric.timers", "delayed", true, %w(delayed)),
             Setting::String.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
@@ -127,6 +128,7 @@ module LogStash
     java.lang.System.setProperty("ls.log.format", settings.get("log.format"))
     java.lang.System.setProperty("ls.log.level", settings.get("log.level"))
     java.lang.System.setProperty("ls.pipeline.separate_logs", settings.get("pipeline.separate_logs").to_s)
+    java.lang.System.setProperty("ls.metric.timers", settings.get("metric.timers"))
     unless java.lang.System.getProperty("log4j.configurationFile")
       log4j_config_location = ::File.join(settings.get("path.settings"), "log4j2.properties")
 
