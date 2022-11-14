@@ -21,6 +21,8 @@ package org.logstash.instrument.metrics;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.LongSupplier;
 
 /**
  * A class to apply a fraction on top of extended flow metrics.
@@ -36,11 +38,20 @@ public class ExtendedFracturedFlowMetric extends ExtendedFlowMetric {
      * @param denominatorMetric denominator
      * @param fraction fraction value
      */
-    public ExtendedFracturedFlowMetric(String name,
-                                       Metric<? extends Number> numeratorMetric,
-                                       Metric<? extends Number> denominatorMetric,
-                                       Number fraction) {
+    public ExtendedFracturedFlowMetric(final String name,
+                                       final Metric<? extends Number> numeratorMetric,
+                                       final Metric<? extends Number> denominatorMetric,
+                                       final Number fraction) {
         super(name, numeratorMetric, denominatorMetric);
+        this.fraction = fraction;
+    }
+
+    ExtendedFracturedFlowMetric(final LongSupplier nanoTimeSupplier,
+                                final String name,
+                                final Metric<? extends Number> numeratorMetric,
+                                final Metric<? extends Number> denominatorMetric,
+                                final Number fraction) {
+        super(nanoTimeSupplier, name, numeratorMetric, denominatorMetric);
         this.fraction = fraction;
     }
 
@@ -49,7 +60,7 @@ public class ExtendedFracturedFlowMetric extends ExtendedFlowMetric {
         Map<String, Double> rates = super.getValue();
 
         // falling back to super class rates if fraction is N.A or ZERO
-        if (MetricsUtil.isValueUndefined(this.fraction.doubleValue())) {
+        if (Objects.isNull(this.fraction) || MetricsUtil.isValueUndefined(this.fraction.doubleValue())) {
             return rates;
         }
 

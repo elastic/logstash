@@ -19,6 +19,8 @@
 
 package org.logstash.instrument.metrics;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -42,7 +44,7 @@ public class MetricsUtil {
         return rates.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        e -> toPercentage(multiply(fraction.doubleValue(), e.getValue()))));
+                        e -> toPercentage(fraction, multiply(fraction.doubleValue(), e.getValue()))));
     }
 
     /**
@@ -61,8 +63,10 @@ public class MetricsUtil {
         return nominator * denominator;
     }
 
-    private static Double toPercentage(Double number) {
+    @VisibleForTesting
+    static Double toPercentage(Number fraction, Double number) {
         double percentage = number / HUNDRED;
-        return Math.round(percentage * 100) / HUNDRED;
+        double roundedPercentage = Math.round(percentage * 100) / HUNDRED;
+        return Math.min(roundedPercentage, fraction.doubleValue() * HUNDRED);
     }
 }
