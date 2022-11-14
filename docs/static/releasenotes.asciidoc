@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-5-1,Logstash 8.5.1>>
 * <<logstash-8-5-0,Logstash 8.5.0>>
 * <<logstash-8-4-2,Logstash 8.4.2>>
 * <<logstash-8-4-1,Logstash 8.4.1>>
@@ -26,6 +27,58 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-5-1]]
+=== Logstash 8.5.1 Release Notes
+
+[[notable-8.5.1]]
+==== Notable issues fixed
+
+* Fixes the reporting of configuration errors when using multiple-pipelines to make them more actionable https://github.com/elastic/logstash/pull/14713[#14713]
+
+[[dependencies-8.5.1]]
+==== Updates to dependencies
+
+* The bundled JDK has been updated to 17.0.5+8 https://github.com/elastic/logstash/pull/14728[#14728]
+
+[[plugins-8-5-1]]
+==== Plugins
+
+*Cef Codec - 6.2.6*
+
+* Fix: when decoding, escaped newlines and carriage returns in extension values are now correctly decoded into literal newlines and carriage returns respectively https://github.com/logstash-plugins/logstash-codec-cef/pull/98[#98]
+* Fix: when decoding, non-CEF payloads are identified and intercepted to prevent data-loss and corruption. They now cause a descriptive log message to be emitted, and are emitted as their own `_cefparsefailure`-tagged event containing the original bytes in its `message` field https://github.com/logstash-plugins/logstash-codec-cef/issues/99[#99]
+* Fix: when decoding while configured with a `delimiter`, flushing this codec now correctly consumes the remainder of its internal buffer. This resolves an issue where bytes that are written without a trailing delimiter could be lost https://github.com/logstash-plugins/logstash-codec-cef/issues/100[#100] 
+
+*Json Codec - 3.1.1*
+
+* Fix: when decoded JSON includes an `[event][original]` field, having `ecs_compatibility` enabled will no longer overwrite the decoded field https://github.com/logstash-plugins/logstash-codec-json/pull/43[#43]
+
+*Grok Filter - 4.4.3*
+
+* Minor typos in docs examples https://github.com/logstash-plugins/logstash-filter-grok/pull/176[#176]
+
+*Tcp Input - 6.3.1*
+
+* Fixes a regression in which the ssl_subject was missing for SSL-secured connections in server mode https://github.com/logstash-plugins/logstash-input-tcp/pull/199[#199]
+
+*Unix Input - 3.1.2*
+
+* Fix: eliminate high CPU usage when data timeout is disabled and no data is available on the socket https://github.com/logstash-plugins/logstash-input-unix/pull/30[#30]
+
+*Rabbitmq Integration - 7.3.1*
+
+* DOCS: clarify the availability and cost of using the `metadata_enabled` option https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/52[#52]
+
+*Elasticsearch Output - 11.9.3*
+
+* DOC: clarify that `http_compression` option only affects _requests_; compressed _responses_ have always been read independent of this setting https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1030[#1030]
+
+* Fix broken link to Logstash Reference https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1085[#1085]
+
+* Fixes a possible infinite-retry-loop that could occur when this plugin is configured with an `action` whose value contains a <<sprintf,sprintf-style placeholder>> that fails to be resolved for an individual event. 
+Events in this state are routed to the pipeline's <<dead-letter-queues,dead letter queue (DLQ)>> if the DLQ is enabled.
+Otherwise, these events are logged-and-dropped so that the remaining events in the batch can be processed. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1080[#1080]
 
 [[logstash-8-5-0]]
 === Logstash 8.5.0 Release Notes
