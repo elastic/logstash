@@ -37,6 +37,7 @@ describe "Test Monitoring API" do
   
   let(:number_of_events) { 5 }
   let(:max_retry) { 120 }
+  let(:plugins_config) { "input { stdin {} } filter { mutate { add_tag => 'integration test adding tag' } } output { stdout {} }" }
 
   it "can retrieve event stats" do
     logstash_service = @fixture.get_service("logstash")
@@ -283,6 +284,46 @@ describe "Test Monitoring API" do
         expect(flow_status).to_not include('queue_persisted_growth_bytes')
         expect(flow_status).to_not include('queue_persisted_growth_events')
       end
+    end
+  end
+
+  it "should retrieve plugin level flow metrics" do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin(plugins_config)
+    logstash_service.wait_for_logstash
+    number_of_events.times {
+      logstash_service.write_to_stdin("Testing plugin-level flow metrics")
+      sleep(1)
+    }
+
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # node_stats can fail if the stats subsystem isn't ready
+      result = logstash_service.monitoring_api.node_stats rescue nil
+      expect(result).not_to be_nil
+      # we use fetch here since we want failed fetches to raise an exception
+      # and trigger the retry block
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('inputs'))))
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('filters'))))
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('outputs'))))
+
+      input_plugins = result.dig("pipelines", "main", "plugins", "inputs")
+      filter_plugins = result.dig("pipelines", "main", "plugins", "filters")
+      output_plugins = result.dig("pipelines", "main", "plugins", "outputs")
+      expect(input_plugins[0]).to_not be_nil
+
+      input_plugin_flow_status = input_plugins[0].dig("flow")
+      filter_plugin_flow_status = filter_plugins[0].dig("flow")
+      output_plugin_flow_status = output_plugins[0].dig("flow")
+
+      expect(input_plugin_flow_status).to include('throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0))
+      expect(filter_plugin_flow_status).to include(
+                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                           )
+      expect(output_plugin_flow_status).to include(
+                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                           )
     end
   end
 
