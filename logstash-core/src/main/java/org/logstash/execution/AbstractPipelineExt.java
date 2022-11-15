@@ -84,6 +84,7 @@ import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.UpScaledMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
@@ -542,13 +543,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private static FlowMetric createFlowMetric(final RubySymbol name,
-                                               final Metric<? extends Number> numeratorMetric,
-                                               final Metric<? extends Number> denominatorMetric,
-                                               final Number fraction) {
-        return FlowMetric.create(name.asJavaString(), numeratorMetric, denominatorMetric, fraction);
-    }
-
-    private static FlowMetric createFlowMetric(final RubySymbol name,
                                                final Supplier<? extends Metric<? extends Number>> numeratorMetricSupplier,
                                                final Supplier<? extends Metric<? extends Number>> denominatorMetricSupplier) {
         return FlowMetric.create(name.asJavaString(), numeratorMetricSupplier, denominatorMetricSupplier);
@@ -639,13 +633,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final Metric<Number> uptimeInPreciseMillis, final RubySymbol key, final String id) {
         final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
-        final LongCounter counterDuration = initOrGetCounterMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
+        final LongCounter durationInMillis = initOrGetCounterMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
-
-        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, counterDuration, counterEvents);
+        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, durationInMillis, counterEvents);
         this.flowMetrics.add(workerCostPerEvent);
 
-        final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, counterDuration, uptimeInPreciseMillis, workerCount);
+        final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
+        final UpScaledMetric availableWorkerTimeInMillis = new UpScaledMetric(uptimeInPreciseMillis, workerCount);
+        final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
         this.flowMetrics.add(workerUtilization);
 
         final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
