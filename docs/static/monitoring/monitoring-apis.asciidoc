@@ -632,6 +632,15 @@ Example response:
             "out" : 216485,
             "queue_push_duration_in_millis" : 342466
           },
+          "flow": {
+            "throughput": {
+              "current": 1.223,
+              "last_1_minute": 0.2532,
+              "last_5_minute": 0.3264,
+              "last_15_minute": 0.4721,
+              "lifetime": 0.06579
+            }
+          },
           "name" : "beats"
         } ],
         "filters" : [ {
@@ -645,6 +654,22 @@ Example response:
           "patterns_per_field" : {
             "message" : 1
           },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
+          },
           "name" : "grok"
         }, {
           "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-3",
@@ -652,6 +677,22 @@ Example response:
             "duration_in_millis" : 3326,
             "in" : 216485,
             "out" : 216485
+          },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
           },
           "name" : "geoip"
         } ],
@@ -661,6 +702,22 @@ Example response:
             "duration_in_millis" : 278557,
             "in" : 216485,
             "out" : 216485
+          },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
           },
           "name" : "elasticsearch"
         } ]
@@ -713,6 +770,15 @@ Example response:
             "out" : 87247,
             "queue_push_duration_in_millis" : 1532
           },
+          "flow": {
+            "throughput": {
+              "current": 1.223,
+              "last_1_minute": 0.2532,
+              "last_5_minute": 0.3264,
+              "last_15_minute": 0.4721,
+              "lifetime": 0.06579
+            }
+          },
           "name" : "twitter"
         } ],
         "filters" : [ ],
@@ -722,6 +788,22 @@ Example response:
             "duration_in_millis" : 139545,
             "in" : 87247,
             "out" : 87247
+          },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
           },
           "name" : "elasticsearch"
         } ]
@@ -798,6 +880,15 @@ Example response:
             "out" : 216485,
             "queue_push_duration_in_millis" : 342466
           },
+          "flow": {
+            "throughput": {
+              "current": 1.223,
+              "last_1_minute": 0.2532,
+              "last_5_minute": 0.3264,
+              "last_15_minute": 0.4721,
+              "lifetime": 0.06579
+            }
+          },
           "name" : "beats"
         } ],
         "filters" : [ {
@@ -810,6 +901,22 @@ Example response:
           "failures" : 216485,
           "patterns_per_field" : {
             "message" : 1
+          },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
           },
           "name" : "grok"
         }, {
@@ -827,6 +934,22 @@ Example response:
             "duration_in_millis" : 278557,
             "in" : 216485,
             "out" : 216485
+          },
+          "flow": {
+            "worker_utilization": {
+              "current": 8.368,
+              "last_1_minute": 3.224,
+              "last_5_minutes": 3.091,
+              "last_15_minutes": 3.539,
+              "lifetime": 6.706
+            },
+            "worker_cost_per_event": {
+              "current": 0.1,
+              "last_1_minute": 0.03333,
+              "last_5_minutes": 0.03115,
+              "last_15_minutes": 0.03552,
+              "lifetime": 0.06773
+            }
           },
           "name" : "elasticsearch"
         } ]
@@ -884,6 +1007,14 @@ A positive number indicates that the queue size-on-disk is growing, and a negati
 NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events.
       This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: <<garbage-collection, PQ disk garbage collection>>).
 |===
+
+[discrete]
+[[plugin-flow-rates]]
+===== Plugin flow rates
+
+Input plugin entry of pipeline in the API response includes `throughput` to provide visibility into the flow of events through the input plugin.
+
+Filter and output plugin entries of pipeline in the API response include `worker_utilization` metric, indicates how many percentage of work the workers spent when proceeding event processing through the plugin and `worker_cost_per_event` metric, indicates how much time the workers spent on each event while processing through the plugin.
 
 [discrete]
 [[reload-stats]]
