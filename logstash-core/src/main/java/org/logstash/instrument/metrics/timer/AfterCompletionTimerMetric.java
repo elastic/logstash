@@ -1,4 +1,7 @@
-package org.logstash.instrument.metrics;
+package org.logstash.instrument.metrics.timer;
+
+import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.MetricType;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;

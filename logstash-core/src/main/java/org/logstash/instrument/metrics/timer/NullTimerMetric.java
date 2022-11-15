@@ -1,4 +1,4 @@
-package org.logstash.instrument.metrics;
+package org.logstash.instrument.metrics.timer;
 
 /**
  * This {@code NullTimerMetric} is adheres to our internal {@link TimerMetric}

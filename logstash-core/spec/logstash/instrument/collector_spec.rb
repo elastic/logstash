@@ -65,7 +65,7 @@ describe LogStash::Instrument::Collector do
       counter: LogStash::Instrument::MetricType::Counter,
       gauge:   LogStash::Instrument::MetricType::Gauge,
       uptime:  org.logstash.instrument.metrics.UptimeMetric,
-      timer:   org.logstash.instrument.metrics.TimerMetric,
+      timer:   org.logstash.instrument.metrics.timer.TimerMetric,
     }.each do |type, type_specific_implementation|
       context "with (type: `#{type}`)" do
         it "gets an instance of #{type_specific_implementation}" do

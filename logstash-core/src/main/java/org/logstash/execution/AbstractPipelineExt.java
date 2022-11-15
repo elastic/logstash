@@ -82,7 +82,7 @@ import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
-import org.logstash.instrument.metrics.TimerMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;

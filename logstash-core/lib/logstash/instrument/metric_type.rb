@@ -31,7 +31,7 @@ module LogStash module Instrument
       when :counter then return LogStash::Instrument::MetricType::Counter.new(namespaces, key)
       when :gauge   then return LogStash::Instrument::MetricType::Gauge.new(namespaces, key)
       when :uptime  then return org.logstash.instrument.metrics.UptimeMetric.new(key.to_s)
-      when :timer   then return org.logstash.instrument.metrics.TimerMetric::create(key.to_s)
+      when :timer   then return org.logstash.instrument.metrics.timer.TimerMetric::create(key.to_s)
       else fail NameError, "Unknown Metric Type `#{type}`"
       end
     end

@@ -575,7 +575,7 @@ class LogStash::Agent
   private :get_counter
 
   def get_timer(namespace, key)
-    org.logstash.instrument.metrics.TimerMetric.fromRubyBase(namespace, key)
+    org.logstash.instrument.metrics.timer.TimerMetric.fromRubyBase(namespace, key)
   end
   private :get_timer
 

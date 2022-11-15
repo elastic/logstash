@@ -30,7 +30,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Rubyfier;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.TimerMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.ArrayList;
 import java.util.List;

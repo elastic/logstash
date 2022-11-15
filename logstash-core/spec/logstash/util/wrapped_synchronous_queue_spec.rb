@@ -60,10 +60,10 @@ describe LogStash::WrappedSynchronousQueue do
             expect(store.get_shallow(:events, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
 
             expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.TimerMetric)
+            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.timer.TimerMetric)
 
             expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.TimerMetric)
+            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.timer.TimerMetric)
 
             expect(store.get_shallow(:pipeline, :out).value).to eq(0)
             expect(store.get_shallow(:pipeline, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)

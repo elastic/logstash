@@ -37,7 +37,7 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
-import org.logstash.instrument.metrics.TimerMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import static org.logstash.instrument.metrics.MetricKeys.*;
 

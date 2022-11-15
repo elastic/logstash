@@ -21,7 +21,7 @@
 package org.logstash.config.ir.compiler;
 
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
+
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -36,7 +36,7 @@ import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
-import org.logstash.instrument.metrics.TimerMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 @JRubyClass(name = "AbstractOutputDelegator")

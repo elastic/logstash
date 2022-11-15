@@ -27,11 +27,11 @@ import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.javasupport.JavaObject;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.timer.NullTimerMetric;
 
 @JRubyClass(name = "NullMetric")
 public final class NullMetricExt extends AbstractSimpleMetricExt {

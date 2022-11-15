@@ -34,11 +34,10 @@ import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
-import org.logstash.instrument.metrics.TimerMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.util.Collection;
-import java.util.concurrent.TimeUnit;
 
 @JRubyClass(name = "AbstractFilterDelegator")
 public abstract class AbstractFilterDelegatorExt extends RubyObject {

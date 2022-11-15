@@ -33,7 +33,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.NullTimerMetric;
+import org.logstash.instrument.metrics.timer.NullTimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.util.UUID;
