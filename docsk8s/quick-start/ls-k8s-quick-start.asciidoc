@@ -122,8 +122,7 @@ Now that your environment and certificates are set up, it's time to add the {sta
 * {kib} - for data visualization
 * {filebeat} - to monitor container logs
 * {metricbeat} - to monitor {ls} and send stack monitoring data to the monitoring cluster.
-
-as well as the secret definition containing the keys and certificates we generated earlier.
+* Secret definitions containing the keys and certificates we generated earlier.
 
 Run this command to deploy the example using the sample resources provided:
 
