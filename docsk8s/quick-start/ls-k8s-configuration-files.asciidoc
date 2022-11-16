@@ -148,6 +148,8 @@ data:
     }
 --
 
+[float]
+[[expose-pipelines]]
 ===== Make pipelines available to Logstash
 
 Create the volume(s) in your `Deployment`/`StatefulSet`
