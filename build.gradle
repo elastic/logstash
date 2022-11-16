@@ -142,24 +142,19 @@ String artifactVersionsApi = "https://artifacts-api.elastic.co/v1/versions"
 
 tasks.register("configureArchitecture") {
     String arch = System.properties['os.arch']
-    String osName = System.properties['os.name']
     String beatsArch = arch
     String esArch = arch
+    String osName = (System.properties['os.name'] ==~ /Mac OS X/) ? "darwin" : "linux"
 
     // For aarch64 architectures, beats and elasticsearch name their artifacts differently
     if (arch == "aarch64") {
-        beatsArch="arm64"
+        beatsArch=(osName == "darwin") ? "aarch64" : "arm64"
         esArch="aarch64"
     } else if (arch == "amd64") {
         beatsArch="x86_64"
         esArch="x86_64"
     }
 
-    if (osName ==~ /Mac OS X/) {
-        osName = "darwin"
-    } else {
-        osName = "linux"
-    }
     project.ext.set("beatsArchitecture", "${osName}-${beatsArch}")
     project.ext.set("esArchitecture", "${osName}-${esArch}")
 }
