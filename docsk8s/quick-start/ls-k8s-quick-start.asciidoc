@@ -295,7 +295,8 @@ You can send data to Elastic cloud, for example.
 [[qs-send-to-elastic-cloud]]
 ===== Sending to Elastic Cloud
 
-To connect to Elastic cloud, we will only need the logstash based components - no need to include the `elasticsearch` or `kibana` components from the walkthrough
+We need only the {ls}-based components to connect to Elastic cloud. 
+You won't need to include the {es} or {kib} components from the earlier examples.
 
 Let's amend the `Deployment`/`StatefulSet` to set `CLOUD_ID` and `API_KEY` environment variables with the appropriate value for your cloud instance.
 
