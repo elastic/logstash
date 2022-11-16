@@ -78,7 +78,9 @@ public final class DeadLetterQueueReader implements Closeable {
             return id.apply(p1).compareTo(id.apply(p2));
         });
 
-        segments.addAll(getSegmentPaths(queuePath).collect(Collectors.toList()));
+        segments.addAll(getSegmentPaths(queuePath)
+                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
+                .collect(Collectors.toList()));
     }
 
     public void seekToNextEvent(Timestamp timestamp) throws IOException {
@@ -95,8 +97,10 @@ public final class DeadLetterQueueReader implements Closeable {
                 return;
             }
         }
-        currentReader.close();
-        currentReader = null;
+        if (currentReader != null) {
+            currentReader.close();
+            currentReader = null;
+        }
     }
 
     private long pollNewSegments(long timeout) throws IOException, InterruptedException {

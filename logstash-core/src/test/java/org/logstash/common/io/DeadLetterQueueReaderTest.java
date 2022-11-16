@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -51,6 +52,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
@@ -420,6 +422,22 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
+    @Test
+    public void testSeekByTimestampWhenSegmentIs1Byte() throws IOException, InterruptedException {
+        final long startTime = System.currentTimeMillis();
+        Files.write(dir.resolve("1.log"), "1".getBytes());
+
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir)) {
+
+            //Exercise
+            final Timestamp seekTarget = new Timestamp(startTime);
+            reader.seekToNextEvent(seekTarget);
+
+            // Verify, no entry is available, reader should seek without exception
+            DLQEntry readEntry = reader.pollEntry(100);
+            assertNull("No entry is available after all segments are deleted", readEntry);
+        }
+    }
     @Test
     public void testWriteReadRandomEventSize() throws Exception {
         Event event = new Event(Collections.emptyMap());
