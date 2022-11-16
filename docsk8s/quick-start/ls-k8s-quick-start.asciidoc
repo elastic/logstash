@@ -367,7 +367,8 @@ Apply the autoscaler:
 kubectl apply -f "004-hpa.yaml"
 --
 
-NOTE: When using more than one logstash pod, use the link:https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-autodiscover.html#_kubernetes[autodiscover] features of beats to monitor the different logstash pods, otherwise only one logstash pod will be monitored.
+NOTE: If you are using more than one {ls} pod, use the https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-autodiscover.html#_kubernetes[beats autodiscover] features to monitor them. Otherwise, only one {ls} pod is monitored.
+See the <<stack monitoring with ECK,monitor-with-ECK>> docs for details on how to use autodiscover with {metricbeat} and {ls}.
 
 [float]
 [[qs-learn-more]]
