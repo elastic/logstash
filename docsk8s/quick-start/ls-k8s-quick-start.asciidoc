@@ -27,7 +27,7 @@ You'll need:
 
 * *A running {k8s} cluster.*  For local/single node testing we recommend using https://minikube.sigs.k8s.io[Minikube], which allows you to easily run a single node {k8s} cluster on your system. 
 Check the minikube https://minikube.sigs.k8s.io/docs/start/[Get Started!] section for install and set up instructions.
-* *A https://github.com/elastic/logstash/blob/feature/kubernetes/k8s/recipes/logstash-k8s-quickstart.zip[small zip file] of config files.* Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
+* *A link:https://github.com/elastic/logstash/blob/main/docsk8s/sample-files/logstash-k8s-qs.zip[small zip file] of config files.* Download and expand this archive into an empty directory on your local system. The files are described in <<sample-configuration-files,Sample configuration files>>.
 
 [float]
 [[qs-set-up]]
