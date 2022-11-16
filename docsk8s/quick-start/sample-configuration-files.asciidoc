@@ -199,19 +199,19 @@ spec:
 <2> Set non-default JVM settings, such as memory allocation, here in the `LS_JAVA_OPTS` env variable to avoid the need to add a whole `jvm.options` file in a `ConfigMap`
 <3> Resource/memory limits for the pod. Refer to Kubernetes documentation to set resources appropriately for each pod. Ensure that each pod has sufficient memory to handle the
 heap specified in <2>, allowing enough memory to deal with direct memory. Check out {logstash-ref}/jvm-settings.html#heap-size[Logstash JVM settings] for details.
-<4> Expose the necessary ports on the container. Here we are exposing port `5044` for the beats input, and `9600` for the metricbeat instance to query the logstash metrics API for stack monitoring purposes
-<5> Liveness probe to determine whether Logstash is running. Here we point to the Logstash Metrics API, an HTTP based API that will be ready shortly after logstash starts. Note that the endpoint shows no indication that Logstash is active, only that the API is available
+<4> Expose the necessary ports on the container. Here we are exposing port `5044` for the beats input, and `9600` for the metricbeat instance to query the logstash metrics API for stack monitoring purposes.
+<5> Liveness probe to determine whether Logstash is running. Here we point to the Logstash Metrics API, an HTTP based API that will be ready shortly after logstash starts. Note that the endpoint shows no indication that Logstash is active, only that the API is available.
 <6> Readiness probe to determine whether Logstash is running. Here we point to the {ls} Metrics API, an HTTP based API that will be ready shortly after {ls} starts. Note that the endpoint shows no indication that {ls} is active, only that the API is available.
 <7> The pipeline configuration that we created in <<qs-configmap,the ConfigMap declaration>> needs a `volume` and a `volumeMount`. The `volume` refers to the created <<qs-configmap,config map>> and the `volumeMount` refers to the created `volume` and mounts in a location that logstash will read. Unless a separate `pipeline.yml` file is created by a further `ConfigMap` definition, the expected location of pipeline configurations is `/usr/share/logstash/pipelines` and the `mountPath` should be set accordingly.
 <8> Name of the <<qs-configmap,Logstash configuration>> we created earlier. This file should contain key/value pairs intended to override the default values in {logstash-ref}/logstash-settings-file.html[logstash.yml], using the `flat key syntax` described in that document. To setup, this needs a `volume` and a `volumeMount`. The `volume` refers to the created <<qs-configmap,config map>> and the `volumeMount` refers to the created `volume` and mounts in a location that {ls} will read. The `mountPath` should be set to ` `/usr/share/logstash/logstash.yml`.
 <9> `Volume` and `VolumeMount` definitions for certificates to use with Elasticsearch. This contains the CA certificate to output data to {es}. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-tls-certificates.html[TLS certificates] in the {eck} Guide for details.
-<10> `Volume` and `VolumeMount` definitions for certificates to use with Beats
+<10> `Volume` and `VolumeMount` definitions for certificates to use with Beats.
 <11> The {es} password is taken from `demo-es-elastic-user` and passed to the Logstash pipeline as an `ELASTICSEARCH_PASSWORD` environment variable. Refer to link:https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-request-elasticsearch-endpoint.html[Access the {es} endpoint] in the {eck} Guide for details.
 
 [[qs-service]]
 `003-service.yaml`::
 +
-This file contains the Service definition, opening up ports on the logstash pods to the internal metricbeat (for stack monitoring) and filebeat in this instance
+This file contains the Service definition, opening up ports on the logstash pods to the internal metricbeat (for stack monitoring) and filebeat in this instance.
 
 [source,yaml]
 --
@@ -230,8 +230,8 @@ spec:
     app: logstash-demo
 --
 
-<1> Opens port `9600` for {metricbeat} to connect to the {ls} metrics API
-<2> Opens port `5044` for {filebeat} to connect to the {beats} input defined in the <<qs-configmap,ConfigMap>>
+<1> Opens port `9600` for {metricbeat} to connect to the {ls} metrics API.
+<2> Opens port `5044` for {filebeat} to connect to the {beats} input defined in the <<qs-configmap,ConfigMap>>.
 
 [[qs-additional-logstash-configuration]]
 
@@ -277,7 +277,7 @@ spec:
 --
 <1> Requires {k8s} `1.23` and higher.
 <2> Specifies the maximum and minimum number of Logstashes desired for the cluster.
-<3> Specifies stabilization windows to avoid "flapping" the replica count, using a rolling
+<3> Specifies stabilization windows to avoid rapidly scaling nodes up and down unnecessarily.
 <4> `Deployment` created <<qs-deployment, earlier>>
 
 
@@ -313,7 +313,7 @@ volumes: <1>
     secret:
       secretName: logstash-beats-tls
 --
-<1> Volume definition for certs/keys defined under `deployment.podTemplate.spec`
+<1> Volume definition for certs/keys defined under `deployment.podTemplate.spec`.
 +
 [source,yaml]
 --
@@ -328,7 +328,7 @@ volumeMounts: <1>
     mountPath: /usr/share/filebeat/client.crt
     subPath: client.crt
 --
-<1> Volume mount definition for certs/keys defined under `deployment.podTemplate.spec.containers`
+<1> Volume mount definition for certs/keys defined under `deployment.podTemplate.spec.containers`.
 +
 [source,yaml]
 --
@@ -339,7 +339,7 @@ output.logstash: <1>
   ssl.certificate: "/usr/share/filebeat/client.crt"
   ssl.key: "/usr/share/filebeat/client.key"
 --
-<1> Logstash output definition defined under `spec.config`
+<1> Logstash output definition defined under `spec.config`.
 
 
 [[qs-stack-configuration-files]]
