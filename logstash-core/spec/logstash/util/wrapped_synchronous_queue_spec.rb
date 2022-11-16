@@ -39,7 +39,7 @@ describe LogStash::WrappedSynchronousQueue do
       let(:write_client) { subject.write_client }
       let(:read_client)  { subject.read_client }
 
-      context "when reading from the queue" do
+      context "when reading from the queue", skip: "ownership of read-end metrics moved to WorkerObserver" do
         let(:collector) { LogStash::Instrument::Collector.new }
 
         before do

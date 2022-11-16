@@ -277,6 +277,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return context.nil;
     }
 
+    @JRubyMethod(name = "process_events_namespace_metric")
+    public final IRubyObject processEventsNamespaceMetric(final ThreadContext context) {
+        return metric.namespace(context, EVENTS_METRIC_NAMESPACE);
+    }
+
+    @JRubyMethod(name = "pipeline_events_namespace_metric")
+    public final IRubyObject pipelineEventsNamespaceMetric(final ThreadContext context) {
+        return metric.namespace(context, pipelineNamespacedPath(EVENTS_KEY));
+    }
+
     @JRubyMethod(name = "filter_queue_client")
     public final QueueReadClientBase filterQueueClient() {
         return filterQueueClient;

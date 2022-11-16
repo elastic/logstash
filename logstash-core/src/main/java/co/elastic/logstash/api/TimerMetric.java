@@ -1,5 +1,6 @@
 package co.elastic.logstash.api;
 
+import java.io.IOException;
 import java.util.function.Supplier;
 
 /**
