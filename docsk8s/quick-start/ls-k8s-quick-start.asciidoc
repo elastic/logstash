@@ -284,7 +284,7 @@ kubectl delete service,pods,deployment,configmap,secret,beat,elasticsearch,kiban
 
 [float]
 [[qs-external-elasticsearch]]
-==== Send logs to an External Elasticsearch
+==== Send logs to an external {es} instance
 
 
 You aren't limited to sending data to an {es} cluster that is located in the same {k8s} cluster as {ls}. 
