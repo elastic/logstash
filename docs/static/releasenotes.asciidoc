@@ -32,23 +32,12 @@ This section summarizes the changes in the following releases:
 [[logstash-8-5-2]]
 === Logstash 8.5.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.5.2
+No user-facing changes in Logstash core.
 
-=== Logstash Commits between 8.5 and 8.5.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.5.1..8.5"
-
-3e9c94ab1 - (HEAD -> 8.5, origin/8.5) Bump version to 8.5.2 (#14751) (2 days ago) <Rob Bavey>
-3d80019b8 - Backport PR #14738 to 8.5: [Doc] Document the usage of LS_JAVA_OPTS environment variable #14749 (2 days ago) <github-actions[bot]>
-230d3e355 - Release notes for 8.5.1 (#14745) (2 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.5.1..8.5 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-5-2]]
 ==== Plugins
+
+No user-facing changes in Logstash plugins.
 
 [[logstash-8-5-1]]
 === Logstash 8.5.1 Release Notes
