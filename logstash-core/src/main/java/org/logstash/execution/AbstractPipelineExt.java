@@ -604,8 +604,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private void initializePluginFlowMetrics(final ThreadContext context, final Metric<Number> uptimeInPreciseMillis) {
         for (IRubyObject rubyObject: lirExecution.inputs()) {
-            IRubyObject config = rubyObject.callMethod(context, "config");
-            String id = config.convertToHash().get("id").toString();
+            IRubyObject rubyfiedId = rubyObject.callMethod(context, "id");
+            String id = rubyfiedId.toString();
             initializePluginThroughputFlowMetric(context, uptimeInPreciseMillis, id);
         }
 

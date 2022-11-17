@@ -299,12 +299,11 @@ describe "Test Monitoring API" do
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # node_stats can fail if the stats subsystem isn't ready
       result = logstash_service.monitoring_api.node_stats rescue nil
+      # if the result is nil, we probably aren't ready yet
+      # our assertion failure will cause Stud to retry
       expect(result).not_to be_nil
-      # we use fetch here since we want failed fetches to raise an exception
-      # and trigger the retry block
-      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('inputs'))))
-      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('filters'))))
-      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('outputs'))))
+
+      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('inputs', 'filters', 'outputs'))))
 
       input_plugins = result.dig("pipelines", "main", "plugins", "inputs")
       filter_plugins = result.dig("pipelines", "main", "plugins", "filters")

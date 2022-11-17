@@ -64,13 +64,13 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public NamespacedMetric namespace(final String... key) {
-        final IRubyObject[] rubyFieldKeys = Stream.of(key)
+        final IRubyObject[] rubyfiedKeys = Stream.of(key)
             .map(this::getSymbol)
             .toArray(IRubyObject[]::new);
 
         return new NamespacedMetricImpl(
             this.threadContext,
-            this.metrics.namespace(this.threadContext, RubyArray.newArray(this.threadContext.getRuntime(), rubyFieldKeys))
+            this.metrics.namespace(this.threadContext, RubyArray.newArray(this.threadContext.getRuntime(), rubyfiedKeys))
         );
     }
 
