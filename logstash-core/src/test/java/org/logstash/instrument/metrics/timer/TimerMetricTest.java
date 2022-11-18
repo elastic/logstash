@@ -150,6 +150,16 @@ public abstract class TimerMetricTest {
         fail("Checked exception not caught!");
     }
 
+    @Test
+    public void testAccumulatesExcessNanos() {
+        final TimerMetric timerMetric = initTimerMetric("precisely");
+
+        for (int i = 0; i < 1000; i++) {
+            timerMetric.time(() -> manualAdvanceClock.advance(Duration.ofNanos(999_999L)));
+        }
+
+        assertThat(timerMetric.getValue(), is(equalTo(999L)));
+    }
 
     private BlockingTask<Void> timedBlockingTask(final TimerMetric timerMetric) {
         return blockingTaskFactory.wrapping((controlChannel) -> {

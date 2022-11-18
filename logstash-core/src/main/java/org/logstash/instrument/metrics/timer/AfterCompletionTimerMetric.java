@@ -6,12 +6,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.LongSupplier;
 
+import static org.logstash.instrument.metrics.timer.Util.subMilliExcessNanos;
+import static org.logstash.instrument.metrics.timer.Util.wholeMillisFromNanos;
+
 /**
  * This {@code AfterCompletionTimerMetric} is based on a counter,
  * which is incremented after tracked execution is complete.
  */
 public class AfterCompletionTimerMetric extends AbstractMetric<Long> implements TimerMetric {
-    private final LongAdder longAdder = new LongAdder();
+    private final LongAdder millis = new LongAdder();
+    private final LongAdder excessNanos = new LongAdder();
 
     private final LongSupplier nanoTimeSupplier;
 
@@ -32,23 +36,27 @@ public class AfterCompletionTimerMetric extends AbstractMetric<Long> implements 
             return exceptionalSupplier.get();
         } finally {
             final long durationNanos = this.nanoTimeSupplier.getAsLong() - startNanos;
-            final long durationMillis = TimeUnit.NANOSECONDS.toMillis(durationNanos);
-
-            this.reportMillisElapsed(durationMillis);
+            this.reportNanosElapsed(durationNanos);
         }
     }
 
     @Override
     public void reportUntrackedMillis(final long untrackedMillis) {
-        reportMillisElapsed(untrackedMillis);
+        this.millis.add(untrackedMillis);
     }
 
-    private void reportMillisElapsed(final long millisElapsed) {
-        this.longAdder.add(millisElapsed);
+    private void reportNanosElapsed(final long nanosElapsed) {
+        long wholeMillis = wholeMillisFromNanos(nanosElapsed);
+        long excessNanos = subMilliExcessNanos(nanosElapsed);
+
+        this.millis.add(wholeMillis);
+        this.excessNanos.add(excessNanos);
     }
 
     @Override
     public Long getValue() {
-        return this.longAdder.sum();
+        final long wholeMillis = this.millis.sum();
+        final long millisFromNanos = wholeMillisFromNanos(this.excessNanos.sum());
+        return Math.addExact(wholeMillis, millisFromNanos);
     }
 }
