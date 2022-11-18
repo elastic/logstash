@@ -80,10 +80,18 @@ No user-facing changes in Logstash plugins.
 === Logstash Pull Requests with label v8.6.0
 
 * fix PipelineIR.getPostQueue by accounting for vertex copies https://github.com/elastic/logstash/pull/13621[#13621]
+00a7ae8a7 - fix PipelineIR.getPostQueue by accounting for vertex copies (#13621) (5 weeks ago) <João Duarte>
 * Adds method and pass the invokation through Java's filter delegator https://github.com/elastic/logstash/pull/14485[#14485]
+d07eb01e2 - Adds new close method to Java's Filter API to be used to clean shutdown resources allocated by the filter during registration phase. (#14485) (5 weeks ago) <Andrea Selva>
 * Collect queue growth events and bytes metrics when PQ is enabled. https://github.com/elastic/logstash/pull/14554[#14554]
+f19e9cb64 - Collect queue growth events and bytes metrics when PQ is enabled. (#14554) (5 weeks ago) <Mashhur>
 * DRA: Improve shell scripts for debuggability https://github.com/elastic/logstash/pull/14654[#14654]
 * Logstash Getting started with Kubernetes Guide https://github.com/elastic/logstash/pull/14655[#14655]
+228030c49 - Simplify Pipeline class Hierarchy (#14551) (7 weeks ago) <Ry Biesemeyer>
+74e72fb9b - Perf: use JRuby JIT defaults (improves startup) (#14284) (7 weeks ago) <Karol Bucek>
+bd3451270 - Dev instructions improvement (#14219) (7 weeks ago) <Mashhur>
+46babd604 - Extended Flow Metrics (#14571) (6 weeks ago) <Ry Biesemeyer>
+86a18e6e3 - (origin/feature/plugin-flow-metrics-integration) Exclude jruby's bundler from artifacts (#14667) (4 weeks ago) <Andres Rodriguez>
 
 === Logstash Commits between 8.6 and 8.5.1
 
@@ -92,63 +100,22 @@ Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit -
 744e59a11 - (HEAD -> 8.6, origin/8.6) Update minor plugin versions in gemfile lock (#14757) (17 hours ago) <github-actions[bot]>
 d027d485d - Copy exisisting gems lock from 8.5 (#14756) (17 hours ago) <Andrea Selva>
 9242105c3 - [Doc] Document the usage of LS_JAVA_OPTS environment variable (#14738) (2 days ago) <Andrea Selva>
-05bfaff79 - Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory2Adapter (#14727) (8 days ago) <Andrea Selva>
 90aae6a6f - [doc] Logstash Kubernetes - Persistent Storage Docs (#14714) (13 days ago) <kaisecheng>
 6847ad80e - [doc] Logstash Kubernetes - Stack Monitoring docs (#14696) (13 days ago) <kaisecheng>
 7cc0646a2 - [doc] Logstash Kubernetes - Securing Logstash   (#14737) (13 days ago) <kaisecheng>
-c6880f226 - Update bundled JDK to 17.0.5+8 (#14728) (2 weeks ago) <Andrea Selva>
-77009b253 - Add missing step (#14735) (2 weeks ago) <Andres Rodriguez>
-531a4fa07 - Add GitHub action to add issues to another project board. (#14733) (2 weeks ago) <Andres Rodriguez>
-1dead06cd - DRA: Build dockerfiles for release (#14730) (2 weeks ago) <Andres Rodriguez>
-ef6852b68 - DRA: uploading missing docker-build-context files (#14722) (2 weeks ago) <Andres Rodriguez>
-372a61219 - Fix pipelines yaml loading (#14713) (2 weeks ago) <Ry Biesemeyer>
-9460d4d7f - specs: assert presence of logging without risking NoMethodError (#14633) (2 weeks ago) <Ry Biesemeyer>
 0c1dcc233 - [Doc] k8s troubleshooting (#14606) (3 weeks ago) <kaisecheng>
-dd399b62b - Update add-docs-preview-link.yml (#14710) (3 weeks ago) <Andres Rodriguez>
-cf54386d0 - update release version (#14709) (3 weeks ago) <kaisecheng>
-08072aae0 - update release file 7.17.8 (#14692) (3 weeks ago) <kaisecheng>
-2e8bd20cf - DRA - Fix docker image build (#14706) (3 weeks ago) <Andres Rodriguez>
-6ad5690a8 - Adds upload of missed docker docker-build-context.tar.gz artifacts (#14703) (3 weeks ago) <Andrea Selva>
-17d0bb5ff - DRA - Fix error reporting (#14698) (3 weeks ago) <Andres Rodriguez>
-6ba5cc112 - DRA - generalize docker image building (#14670) (3 weeks ago) <Andres Rodriguez>
-9584d1332 - DRA - fix dra_upload syntax, breaking builds (#14685) (4 weeks ago) <Andres Rodriguez>
-9c7b7b745 - [DRA] Don't download Darwin arrch64 for 7.17  (#14677) (4 weeks ago) <Andrea Selva>
-86a18e6e3 - (origin/feature/plugin-flow-metrics-integration) Exclude jruby's bundler from artifacts (#14667) (4 weeks ago) <Andres Rodriguez>
-393460025 - Fix sourcing on dra_upload (#14659) (4 weeks ago) <Andres Rodriguez>
-8bfc7ef16 - Fix dra_common sourcing (#14657) (4 weeks ago) <Andres Rodriguez>
-5b1d53622 - DRA: Improve shell scripts for debuggability (#14654) (4 weeks ago) <Andres Rodriguez>
-f19e9cb64 - Collect queue growth events and bytes metrics when PQ is enabled. (#14554) (5 weeks ago) <Mashhur>
-db6a7bc61 - DRA: Handle env variables better (#14644) (5 weeks ago) <Andres Rodriguez>
-cb76c685b - Follow up PR of #14645, adds version qualifier to the plain version variable (#14646) (5 weeks ago) <Andrea Selva>
-b8792107a - Avoid to pass SNAPSHOT particle to the version passed to release-manager (#14645) (5 weeks ago) <Andrea Selva>
-ad71ff24c - Disable -x in dra build scripts (#14643) (5 weeks ago) <Andres Rodriguez>
-bfaa06328 - Enable debug for DRA shells scripts (#14642) (5 weeks ago) <Andres Rodriguez>
-363adad3b - dra_upload.sh: Leave artifacts under build/ (#14639) (5 weeks ago) <Andres Rodriguez>
-00a7ae8a7 - fix PipelineIR.getPostQueue by accounting for vertex copies (#13621) (5 weeks ago) <João Duarte>
-11ecaaea5 - Fix/dra use another technique to extract branch name (#14636) (5 weeks ago) <Andrea Selva>
-63d565801 - Re-added execution rights to dra_upload.sh (#14626) (5 weeks ago) <Andrea Selva>
-bab2e1c03 - timestamp: respect locale's decimal-style when parsing (#14628) (5 weeks ago) <Ry Biesemeyer>
-ff8afb229 - Switch branch selector from major.minor to read the current branch name (#14619) (5 weeks ago) <Andrea Selva>
-de49eba22 - api: source pipelines that are fully-loaded (#14595) (5 weeks ago) <Ry Biesemeyer>
-d8d690079 - Updates DRA scripts to build snapshot artifacts (#14600) (5 weeks ago) <Andrea Selva>
-3075029b2 - DRA - Update scripts to use the version qualifier in stack_version (#14589) (5 weeks ago) <Andrea Selva>
-d07eb01e2 - Adds new close method to Java's Filter API to be used to clean shutdown resources allocated by the filter during registration phase. (#14485) (5 weeks ago) <Andrea Selva>
-8a8a03689 - Fix DLQ fails to start due to read 1 byte file (#14605) (5 weeks ago) <kaisecheng>
-d3b92ec20 - Extract the branch name passed to release-manager from version file (#14592) (5 weeks ago) <Andrea Selva>
-46babd604 - Extended Flow Metrics (#14571) (6 weeks ago) <Ry Biesemeyer>
-b40863808 - update ci release version (#14598) (6 weeks ago) <kaisecheng>
 6dc5c5648 - [DOC] Add a short guide for using Logstash with K8s (#14532) (6 weeks ago) <David Kilfoyle>
-8ddd3ae6f - Collect all artifacts created and upload to GCP with release-manager (#14584) (6 weeks ago) <Andrea Selva>
-4fbb57a52 - Upload DRA artifacts to collector GCS bucket  (#14568) (7 weeks ago) <Andrea Selva>
-214d2bed6 - Split ci scripts into ARM and x86 ones (#14567) (7 weeks ago) <Andrea Selva>
-184fb1075 - Update add_to_projects_beta.yml (7 weeks ago) <Andres Rodriguez>
-bd3451270 - Dev instructions improvement (#14219) (7 weeks ago) <Mashhur>
-74e72fb9b - Perf: use JRuby JIT defaults (improves startup) (#14284) (7 weeks ago) <Karol Bucek>
-228030c49 - Simplify Pipeline class Hierarchy (#14551) (7 weeks ago) <Ry Biesemeyer>
-cd03c8610 - (origin/feature/flow-metrics-integration-pq) Document JDK17 by default (#14511) (7 weeks ago) <Andres Rodriguez>
-7e95f6eca - DRA fixes: (#14552) (8 weeks ago) <Andrea Selva>
-9bc2496e7 - Release notes for 8.4.2 (#14531) (8 weeks ago) <github-actions[bot]>
-05785e9a0 - bump to 8.6.0 (#14545) (8 weeks ago) <João Duarte>
+
+
+8.5.1
+05bfaff79 - Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory2Adapter (#14727) (8 days ago) <Andrea Selva>
+372a61219 - Fix pipelines yaml loading (#14713) (2 weeks ago) <Ry Biesemeyer>
+
+8.5.0? TODO review
+bab2e1c03 - timestamp: respect locale's decimal-style when parsing (#14628) (5 weeks ago) <Ry Biesemeyer>
+de49eba22 - api: source pipelines that are fully-loaded (#14595) (5 weeks ago) <Ry Biesemeyer>
+8a8a03689 - Fix DLQ fails to start due to read 1 byte file (#14605) (5 weeks ago) <kaisecheng>
+
 
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff v8.5.1..8.6 *.release"
