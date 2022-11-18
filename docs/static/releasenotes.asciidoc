@@ -76,53 +76,38 @@ No user-facing changes in Logstash plugins.
 [[logstash-8-6-0]]
 === Logstash 8.6.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.6.0
-
-* fix PipelineIR.getPostQueue by accounting for vertex copies https://github.com/elastic/logstash/pull/13621[#13621]
-00a7ae8a7 - fix PipelineIR.getPostQueue by accounting for vertex copies (#13621) (5 weeks ago) <João Duarte>
-* Adds method and pass the invokation through Java's filter delegator https://github.com/elastic/logstash/pull/14485[#14485]
-d07eb01e2 - Adds new close method to Java's Filter API to be used to clean shutdown resources allocated by the filter during registration phase. (#14485) (5 weeks ago) <Andrea Selva>
-* Collect queue growth events and bytes metrics when PQ is enabled. https://github.com/elastic/logstash/pull/14554[#14554]
-f19e9cb64 - Collect queue growth events and bytes metrics when PQ is enabled. (#14554) (5 weeks ago) <Mashhur>
-* DRA: Improve shell scripts for debuggability https://github.com/elastic/logstash/pull/14654[#14654]
-* Logstash Getting started with Kubernetes Guide https://github.com/elastic/logstash/pull/14655[#14655]
-228030c49 - Simplify Pipeline class Hierarchy (#14551) (7 weeks ago) <Ry Biesemeyer>
-74e72fb9b - Perf: use JRuby JIT defaults (improves startup) (#14284) (7 weeks ago) <Karol Bucek>
-bd3451270 - Dev instructions improvement (#14219) (7 weeks ago) <Mashhur>
-46babd604 - Extended Flow Metrics (#14571) (6 weeks ago) <Ry Biesemeyer>
-86a18e6e3 - (origin/feature/plugin-flow-metrics-integration) Exclude jruby's bundler from artifacts (#14667) (4 weeks ago) <Andres Rodriguez>
-
-=== Logstash Commits between 8.6 and 8.5.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.5.1..8.6"
-
-744e59a11 - (HEAD -> 8.6, origin/8.6) Update minor plugin versions in gemfile lock (#14757) (17 hours ago) <github-actions[bot]>
-d027d485d - Copy exisisting gems lock from 8.5 (#14756) (17 hours ago) <Andrea Selva>
-9242105c3 - [Doc] Document the usage of LS_JAVA_OPTS environment variable (#14738) (2 days ago) <Andrea Selva>
-90aae6a6f - [doc] Logstash Kubernetes - Persistent Storage Docs (#14714) (13 days ago) <kaisecheng>
-6847ad80e - [doc] Logstash Kubernetes - Stack Monitoring docs (#14696) (13 days ago) <kaisecheng>
-7cc0646a2 - [doc] Logstash Kubernetes - Securing Logstash   (#14737) (13 days ago) <kaisecheng>
-0c1dcc233 - [Doc] k8s troubleshooting (#14606) (3 weeks ago) <kaisecheng>
-6dc5c5648 - [DOC] Add a short guide for using Logstash with K8s (#14532) (6 weeks ago) <David Kilfoyle>
+[[known-issues-8.6.0]]
+==== Known issues
 
 
-8.5.1
-05bfaff79 - Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory2Adapter (#14727) (8 days ago) <Andrea Selva>
-372a61219 - Fix pipelines yaml loading (#14713) (2 weeks ago) <Ry Biesemeyer>
+[[features-8.6.0]]
+==== New features and enhancements
 
-8.5.0? TODO review
-bab2e1c03 - timestamp: respect locale's decimal-style when parsing (#14628) (5 weeks ago) <Ry Biesemeyer>
-de49eba22 - api: source pipelines that are fully-loaded (#14595) (5 weeks ago) <Ry Biesemeyer>
-8a8a03689 - Fix DLQ fails to start due to read 1 byte file (#14605) (5 weeks ago) <kaisecheng>
+* Extends the flow rates introduced to the Node Stats API in 8.5.0 (which included windows for `current` and `lifetime`)
+  to include a Technology Preview of several additional windows such as `last_15_minutes`, `last_24_hours`, etc..
+  https://github.com/elastic/logstash/pull/14571[#14571]
+* Logstash introduced instance and pipeline level flow metrics, growth_bytes and growth_events for persisted queue
+  to provide a better visibility about how fast pipeline queue is growing each single seconds.
+  https://github.com/elastic/logstash/pull/14554[#14554]
 
+[[notable-8.6.0]]
+==== Notable issues fixed
+* Adds new `close` method to Java's Filter API to be used to clean shutdown resources allocated by the filter during registration phase. https://github.com/elastic/logstash/pull/14485[#14485]
+* Improved JRuby runtime startup avoiding to compile ahead each Ruby code encountered. https://github.com/elastic/logstash/pull/14284[#14284]
+* Fixed issue in pipeline compilation. https://github.com/elastic/logstash/pull/13621[#13621]
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.5.1..8.6 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+[[docs-8.6.0]]
+==== Documentation Improvements and Fixes
+* Crafted a guide on how to configure and troubleshooting Logstash on Kubernetes.
+ ** Getting started https://github.com/elastic/logstash/pull/14655[#14655]
+ ** Persistent Storage https://github.com/elastic/logstash/pull/14714[#14714]
+ ** Stack Monitoring https://github.com/elastic/logstash/pull/14696[#14696]
+ **  Securing Logstash https://github.com/elastic/logstash/pull/14737[#14737]
 
+[[plugins-8-6-0]]
 ==== Plugins
+
+No user-facing changes in Logstash plugins.
 
 [[logstash-8-5-1]]
 === Logstash 8.5.1 Release Notes
