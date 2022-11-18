@@ -27,6 +27,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.RubyThread;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
@@ -160,6 +161,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         final RubyArray result = context.runtime.newArray();
         ((Iterable<IRubyObject>) pipeline.callMethod(context, "worker_threads"))
             .forEach(thread -> {
+                final long nativeThreadId = ((RubyThread) thread).getNativeThread().getId();
                 final RubyHash hash = RubyHash.newHash(context.runtime);
                 IRubyObject status = thread.callMethod(context, "status");
                 if (status.isNil()) {
@@ -168,15 +170,33 @@ public final class PipelineReporterExt extends RubyBasicObject {
                 hash.op_aset(context, STATUS_KEY, status);
                 hash.op_aset(context, ALIVE_KEY, thread.callMethod(context, "alive?"));
                 hash.op_aset(context, INDEX_KEY, context.runtime.newFixnum(result.size()));
-                final IRubyObject batch = batchMap.op_aref(context, thread);
-                hash.op_aset(
-                    context, INFLIGHT_COUNT_KEY,
-                    batch.isNil() ?
-                        context.runtime.newFixnum(0) : batch.callMethod(context, "size")
-                );
+                final IRubyObject batch = batchMap.op_aref(context, context.runtime.newFixnum(nativeThreadId));
+                hash.op_aset(context, INFLIGHT_COUNT_KEY, extractBatchSize(context, batch));
                 result.add(hash);
             });
         return result;
+    }
+
+    /**
+     * Attempts to safely extract the batch size from a wrapped {@link QueueBatch} or
+     * a ruby object responding to {@code size}
+     *
+     * @param context The Ruby {@code ThreadContext}
+     * @param batch a batch, which may be a wrapped {@link QueueBatch} or a ruby
+     *              object that responds to `#size`
+     * @return the detected size, or zero.
+     */
+    private IRubyObject extractBatchSize(final ThreadContext context, final IRubyObject batch) {
+        if (!batch.isNil()) {
+            if (QueueBatch.class.isAssignableFrom(batch.getJavaClass())) {
+                final int filteredSize = batch.toJava(QueueBatch.class).filteredSize();
+                return getRuntime().newFixnum(filteredSize);
+            }
+            if (batch.respondsTo("size")) {
+                return batch.callMethod(context, "size");
+            }
+        }
+        return context.runtime.newFixnum(0L);
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
@@ -265,6 +285,11 @@ public final class PipelineReporterExt extends RubyBasicObject {
         @JRubyMethod(name = "method_missing")
         public IRubyObject methodMissing(final ThreadContext context, final IRubyObject method) {
             return data.op_aref(context, method);
+        }
+
+        @JRubyMethod(name = "respond_to_missing?")
+        public IRubyObject isRespondToMissing(final ThreadContext context, final IRubyObject method, final IRubyObject includePrivate) {
+            return context.tru;
         }
 
         @JRubyMethod(name = "format_threads_by_plugin")

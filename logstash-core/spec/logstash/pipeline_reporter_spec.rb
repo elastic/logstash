@@ -30,10 +30,14 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
   let(:pipeline) { Kernel.send(pipeline_setup, config)}
   let(:reporter) { pipeline.reporter }
 
-  before do
+  let(:do_setup_plugin_registry) do
     allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     allow(LogStash::Plugin).to receive(:lookup).with("input", "generator").and_call_original
     allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_call_original
+  end
+
+  before do
+    do_setup_plugin_registry
 
     @pre_snapshot = reporter.snapshot
 
@@ -50,7 +54,7 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
     end
 
     it "should end with no stalled threads" do
-      expect(@pre_snapshot.stalling_threads_info).to eql([])
+      expect(@post_snapshot.stalling_threads_info).to eql([])
     end
   end
 
@@ -81,6 +85,40 @@ shared_examples "a pipeline reporter" do |pipeline_setup|
 
     it "should be zero after running" do
       expect(@post_snapshot.inflight_count).to eql(0)
+    end
+
+    # We provide a hooked filter that captures a new reporter snapshot with each event.
+    # Since the event being processed is by-definition part of a batch that is in-flight,
+    # we expect all of the resulting reporter snapshots to have non-zero inflight_event-s
+    context "while running" do
+      let!(:report_queue) { Queue.new }
+      let(:hooked_dummy_filter_class) do
+        ::LogStash::Filters::DummyFilter.with_hook do |event|
+          report_queue << reporter.snapshot
+        end
+      end
+      let(:hooked_dummy_filter_name) { hooked_dummy_filter_class.config_name }
+
+      let(:config) do
+        <<~EOCONFIG
+          input  { generator { count => #{generator_count} } }
+          filter { #{hooked_dummy_filter_name} {} }
+          output { dummyoutput {} }
+        EOCONFIG
+      end
+
+      let(:do_setup_plugin_registry) do
+        super()
+        allow(LogStash::Plugin).to receive(:lookup).with("filter", hooked_dummy_filter_name)
+                                                   .and_return(hooked_dummy_filter_class)
+      end
+
+      it 'captures inflight counts that are non-zero ' do
+        inflight_reports = Array.new(report_queue.size) { report_queue.pop }
+
+        expect(inflight_reports).to_not be_empty
+        expect(inflight_reports).to all(have_attributes(inflight_count: (a_value > 0)))
+      end
     end
   end
 end
