@@ -30,8 +30,11 @@ public interface TimerMetric {
     void reportUntrackedMillis(final long untrackedMillis);
 
 
-    default <E extends Throwable> void time(ExceptionalRunnable<E> exceptionalRunnable) throws E {
-        this.time(() -> { exceptionalRunnable.run(); return null; });
+    default <E extends Throwable> void time(final ExceptionalRunnable<E> exceptionalRunnable) throws E {
+        this.<Void, E>time(() -> {
+            exceptionalRunnable.run();
+            return null;
+        });
     }
 
     @FunctionalInterface
