@@ -52,7 +52,7 @@ module LogStash
            Setting::Boolean.new("config.support_escapes", false),
             Setting::String.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::Boolean.new("metric.collect", true),
-            Setting::String.new("metric.timers", "delayed", true, %w(delayed)),
+            Setting::String.new("metric.timers", "delayed", true, %w(delayed live)),
             Setting::String.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),

@@ -20,4 +20,8 @@ public class TimerMetricFactory {
     public AfterCompletionTimerMetric newAfterCompletionTimerMetric(final String name) {
         return new AfterCompletionTimerMetric(name, this.testClock::nanoTime);
     }
+
+    public ConcurrentLiveTimerMetric newConcurrentLiveTimerMetric(final String name) {
+        return new ConcurrentLiveTimerMetric(name, this.testClock::nanoTime);
+    }
 }
