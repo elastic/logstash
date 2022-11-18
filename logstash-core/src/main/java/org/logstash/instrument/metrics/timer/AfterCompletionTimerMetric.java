@@ -1,7 +1,6 @@
 package org.logstash.instrument.metrics.timer;
 
 import org.logstash.instrument.metrics.AbstractMetric;
-import org.logstash.instrument.metrics.MetricType;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
@@ -46,11 +45,6 @@ public class AfterCompletionTimerMetric extends AbstractMetric<Long> implements 
 
     private void reportMillisElapsed(final long millisElapsed) {
         this.longAdder.add(millisElapsed);
-    }
-
-    @Override
-    public MetricType getType() {
-        return MetricType.TIMER_LONG;
     }
 
     @Override
