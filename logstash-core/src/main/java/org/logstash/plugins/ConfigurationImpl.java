@@ -24,8 +24,6 @@ import co.elastic.logstash.api.Configuration;
 import co.elastic.logstash.api.Password;
 import co.elastic.logstash.api.PluginConfigSpec;
 import co.elastic.logstash.api.Codec;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jruby.RubyObject;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.plugins.factory.RubyCodecDelegator;
@@ -39,7 +37,6 @@ import java.util.Map;
  * Configuration for Logstash Java plugins.
  */
 public final class ConfigurationImpl implements Configuration {
-    private static final Logger LOGGER = LogManager.getLogger(ConfigurationImpl.class);
 
     private final RubyIntegration.PluginFactory pluginFactory;
     private final Map<String, Object> rawSettings;
