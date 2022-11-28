@@ -11,7 +11,7 @@ function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
     for image in logstash logstash-oss logstash-ubi8; do
-        docker save "docker.elastic.co/logstash/${image}:${version}" | gzip -c > "build/${image}-${version}-docker-image-${arch}.tar.gz"
+        docker save -o "build/${image}-${version}-docker-image-${arch}.tar.gz" "docker.elastic.co/logstash/${image}:${version}"
     done
 }
 
