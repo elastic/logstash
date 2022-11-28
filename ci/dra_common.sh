@@ -11,10 +11,12 @@ function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
     for image in logstash logstash-oss logstash-ubi8; do
-        docker save -o "build/${image}-${version}-docker-image-${arch}.tar.gz" "docker.elastic.co/logstash/${image}:${version}"
+        docker save -o "build/${image}-${version}-docker-image-${arch}.tar" "docker.elastic.co/logstash/${image}:${version}"
         if [ $? != 0 ]
             error "Hit a problem in saving the Docker image for ${image}"
         end
+        # NOTE: if docker save exited with non-zero the error log already exited the script
+        gzip "build/${image}-${version}-docker-image-${arch}.tar"
     done
 }
 
