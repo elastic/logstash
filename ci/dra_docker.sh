@@ -68,7 +68,12 @@ for file in build/logstash-*; do shasum $file;done
 
 info "UPLOADING TO INTERMEDIATE BUCKET"
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
-for image in logstash logstash-oss logstash-ubi8; do
+images="logstash logstash-oss"
+if [ "$ARCH" != "aarch64" ]; then
+    # No logstash-ubi8 for AARCH64
+    images="logstash logstash-oss logstash-ubi8"
+fi
+for image in ${images}; do
     upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz" ${STACK_VERSION}
 done
 

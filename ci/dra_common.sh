@@ -10,12 +10,19 @@ function error {
 function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
-    for image in logstash logstash-oss logstash-ubi8; do
-        docker save -o "build/${image}-${version}-docker-image-${arch}.tar" \
+    local images="logstash logstash-oss"
+    if [ "${arch}" != "aarch64" ]; then
+        # No logstash-ubi8 for AARCH64
+        images="logstash logstash-oss logstash-ubi8"
+    fi
+
+    for image in ${images}; do
+        tar_file="${image}-${version}-docker-image-${arch}.tar"
+        docker save -o "build/${tar_file}" \
             "docker.elastic.co/logstash/${image}:${version}" || \
-            error "Hit a problem in saving the Docker image for ${image}"
+            error "Unable to save tar file ${tar_file} for ${image} image."
         # NOTE: if docker save exited with non-zero the error log already exited the script
-        gzip "build/${image}-${version}-docker-image-${arch}.tar"
+        gzip "build/${tar_file}"
     done
 }
 
