@@ -66,6 +66,13 @@ See the following links:
 
 Or go directly here for an exhaustive list: https://github.com/elastic/logstash/contribute
 
+Sometimes during the development, configuration for sensitive data such as password, api key or SSL keyphrase need to be included in the configuration.
+From the best practice point of view, follow the principles below to better protect the sensitive information leaking in the logs:
+- Logstash core and plugin should flag any settings that may contain secrets, to avoid leaking into logs. If your source changes are in ruby, apply `:password` validation or wrap the object with `Logstash::Util::Password` object.
+- A setting marked as secret should not disclose its value unless retrieved in a non-obvious way. If you are introducing a new class for sensitive object (check `Password.java` and `SecretVariable.java` classes before doing so), make sure to mask the sensitive info by overriding get value (or `toString()` of Java class) default methods.
+- Logstash should not log secrets on any log level by default. Make sure you double-check the loggers if they are touching the objects carrying sensitive info.
+- Logstash should have a dedicated flag, disabled by default, that allows secrets to be logged for debugging purposes only. If it is an intention to log/display sensitive info in the debug logs, use the `config.debug` configuration which protects the data under its umbrella.
+
 Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
 
 ## Breaking Changes
@@ -89,6 +96,8 @@ After a pull request is marked as a "breaking change," it becomes necessary to e
 ## Contributing to plugins
 
 Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own!
+
+Check the _Contributing Documentation and Code Changes_ section to prevent plugin sensitive info from leaking in the debug logs.
 
 ### Logstash Plugin Changelog Guidelines
 
