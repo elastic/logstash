@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-5-3,Logstash 8.5.3>>
 * <<logstash-8-5-2,Logstash 8.5.2>>
 * <<logstash-8-5-1,Logstash 8.5.1>>
 * <<logstash-8-5-0,Logstash 8.5.0>>
@@ -28,6 +29,37 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-5-3]]
+=== Logstash 8.5.3 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.5.3
+
+* [DRA] Avoid to loose err code on docker save https://github.com/elastic/logstash/pull/14780[#14780]
+* Backport PR #14694 to 8.5: bump jruby to 9.3.9.0 https://github.com/elastic/logstash/pull/14781[#14781]
+* Cover all #system invokation with exit code checking, eventually failing the execution of Rake task https://github.com/elastic/logstash/pull/14782[#14782]
+* Backport PR #14780 to 8.5: [DRA] Avoid to loose err code on docker save https://github.com/elastic/logstash/pull/14784[#14784]
+* Avoid to create and upload AARCH64 Docker images for UBI8 https://github.com/elastic/logstash/pull/14786[#14786]
+* Backport PR #14786 to 8.5: Avoid to create and upload AARCH64 Docker images for UBI8 https://github.com/elastic/logstash/pull/14789[#14789]
+
+=== Logstash Commits between 8.5 and 8.5.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.5.2..8.5"
+
+06074da68 - (HEAD -> 8.5, origin/8.5) Backport PR #14786 to 8.5: Avoid to create and upload AARCH64 Docker images for UBI8 #14789 (26 hours ago) <github-actions[bot]>
+abdf37341 - Update patch plugin versions in gemfile lock (#14787) (27 hours ago) <github-actions[bot]>
+4e94393af - Backport PR #14780 to 8.5: [DRA] Avoid to loose err code on docker save #14784 (28 hours ago) <github-actions[bot]>
+01faa3502 - bump jruby to 9.3.9.0 (#14694) (#14781) (2 days ago) <github-actions[bot]>
+c0ee3e630 - Bump version 8.5.3 (#14771) (8 days ago) <Andrea Selva>
+77b2cd2c0 - Release notes for 8.5.2 (#14761) (9 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.5.2..8.5 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-5-2]]
 === Logstash 8.5.2 Release Notes
