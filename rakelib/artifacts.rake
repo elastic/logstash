@@ -171,9 +171,13 @@ namespace "artifact" do
   # Create an archive pack using settings appropriate for the running machine
   def create_local_archive_pack(bundle_jdk)
     @bundles_jdk = bundle_jdk
-    raise "Gradle failed to execute copyJdk" unless system("./gradlew copyJdk") if bundle_jdk
+    if bundle_jdk
+      raise "Gradle failed to execute copyJdk" unless system("./gradlew copyJdk")
+    end
     build_tar('ELASTIC-LICENSE')
-    raise "Gradle failed to execute deleteLocalJdk" unless system("./gradlew deleteLocalJdk") if bundle_jdk
+    if bundle_jdk
+      raise "Gradle failed to execute deleteLocalJdk" unless system("./gradlew deleteLocalJdk")
+    end
   end
 
 
