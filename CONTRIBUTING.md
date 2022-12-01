@@ -73,6 +73,15 @@ From the best practice point of view, follow the principles below to better prot
 - Logstash should not log secrets on any log level by default. Make sure you double-check the loggers if they are touching the objects carrying sensitive info.
 - Logstash should have a dedicated flag, disabled by default, that allows secrets to be logged for debugging purposes only. If it is an intention to log/display sensitive info in the debug logs, use the `config.debug` configuration which protects the data under its umbrella.
 
+As an example, suppose you have `my_auth` config which carries the sensitive key. Defining with `:password` validated protects `my_auth` being leaked in Logstash core logics. 
+```
+:my_auth => { :validate => :password },
+```
+In the plugin level, make sure to wrap `my_auth` with `Password` object.
+```
+::LogStash::Util::Password.new(my_auth)
+```
+
 Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
 
 ## Breaking Changes
