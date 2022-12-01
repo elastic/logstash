@@ -112,6 +112,14 @@ namespace "artifact" do
     result
   end
 
+  # execute Kernel#system call,checking the exist status of the executed command and eventually reporting as exception
+  def safe_system(*args)
+    if !system(*args)
+      status = $?
+      raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
+    end
+  end
+
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
   task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8"]
@@ -124,7 +132,7 @@ namespace "artifact" do
     create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
   end
@@ -137,7 +145,7 @@ namespace "artifact" do
   end
 
   def create_single_archive_pack(os_name, arch, license_details)
-    system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
+    safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
     if arch == 'arm64'
       arch = 'aarch64'
     end
@@ -149,7 +157,7 @@ namespace "artifact" do
     when "darwin"
       build_tar(*license_details, platform: "-darwin-#{arch}")
     end
-    system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
+    safe_system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
@@ -165,7 +173,7 @@ namespace "artifact" do
     create_archive_pack(license_details, "arm64", "linux")
 
     #without JDK
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
   end
@@ -180,7 +188,7 @@ namespace "artifact" do
     package_with_jdk("centos", "arm64")
 
     #without JDKs
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos")
   end
 
@@ -194,7 +202,7 @@ namespace "artifact" do
     package_with_jdk("centos", "arm64", :oss)
 
     #without JDKs
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", :oss)
   end
 
@@ -209,7 +217,7 @@ namespace "artifact" do
     package_with_jdk("ubuntu", "arm64")
 
     #without JDKs
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu")
   end
 
@@ -223,7 +231,7 @@ namespace "artifact" do
     package_with_jdk("ubuntu", "arm64", :oss)
 
     #without JDKs
-    system("./gradlew bootstrap") #force the build of Logstash jars
+    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", :oss)
   end
 
@@ -486,9 +494,9 @@ namespace "artifact" do
   end
 
   def package_with_jdk(platform, jdk_arch, variant=:standard)
-    system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
+    safe_system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
     package(platform, variant, true, jdk_arch)
-    system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
+    safe_system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
   end
 
   def package(platform, variant=:standard, bundle_jdk=false, jdk_arch='x86_64')
@@ -689,7 +697,7 @@ namespace "artifact" do
       "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
-        system(env, "make build-from-local-#{flavor}-artifacts")
+      safe_system(env, "make build-from-local-#{flavor}-artifacts")
     end
   end
 
@@ -701,7 +709,7 @@ namespace "artifact" do
       "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
-      system(env, "make public-dockerfiles_#{flavor}")
+      safe_system(env, "make public-dockerfiles_#{flavor}")
       puts "Dockerfiles created in #{env['ARTIFACTS_DIR']}"
     end
   end
