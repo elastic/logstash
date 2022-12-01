@@ -71,64 +71,15 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-8]]
 === Logstash 7.17.8 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.8
+* Avoid warning log from status log4j logger when new codecs are created by clone. https://github.com/elastic/logstash/pull/14727[#14727]
+* Fixes an issue during process shutdown in which the stalled shutdown watcher incorrectly reports inflight_count as 0 even when there are events in-flight. https://github.com/elastic/logstash/pull/14760[#14760]
 
-* specs: assert presence of logging without risking NoMethodError https://github.com/elastic/logstash/pull/14633[#14633]
-* DRA - Fix error reporting https://github.com/elastic/logstash/pull/14698[#14698]
-* Backport PR #14698 to 7.17: DRA - Fix error reporting https://github.com/elastic/logstash/pull/14700[#14700]
-* Adds upload of missed docker docker-build-context.tar.gz artifacts https://github.com/elastic/logstash/pull/14703[#14703]
-* Backport PR #14703 to 7.17: Adds upload of missed docker docker-build-context.tar.gz artifacts https://github.com/elastic/logstash/pull/14704[#14704]
-* DRA - Fix docker image build https://github.com/elastic/logstash/pull/14706[#14706]
-* Backport PR #14706 to 7.17: DRA - Fix docker image build https://github.com/elastic/logstash/pull/14707[#14707]
-* DRA: uploading missing docker-build-context files https://github.com/elastic/logstash/pull/14722[#14722]
-* Backport PR #14722 to 7.17: DRA: uploading missing docker-build-context files https://github.com/elastic/logstash/pull/14725[#14725]
-* Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter https://github.com/elastic/logstash/pull/14727[#14727]
-* 7.17 - Update bundled JDK to 11.0.17+8 https://github.com/elastic/logstash/pull/14729[#14729]
-* Backport PR #14730 to 7.17: DRA: Build dockerfiles for release https://github.com/elastic/logstash/pull/14732[#14732]
-* [Doc] Document the usage of LS_JAVA_OPTS environment variable https://github.com/elastic/logstash/pull/14738[#14738]
-* Backport PR #14727 to 7.17: Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter https://github.com/elastic/logstash/pull/14742[#14742]
-* Backport PR #14738 to 7.17: [Doc] Document the usage of LS_JAVA_OPTS environment variable https://github.com/elastic/logstash/pull/14750[#14750]
-* fix: calculated inflight_count from in-flight batches https://github.com/elastic/logstash/pull/14760[#14760]
-* Backport PR #14760 to 7.17: fix: calculated inflight_count from in-flight batches https://github.com/elastic/logstash/pull/14766[#14766]
-* [DRA] Avoid to loose err code on docker save https://github.com/elastic/logstash/pull/14780[#14780]
-* Backport PR #14780 to 7.17: [DRA] Avoid to loose err code on docker save https://github.com/elastic/logstash/pull/14785[#14785]
-* Avoid to create and upload AARCH64 Docker images for UBI8 https://github.com/elastic/logstash/pull/14786[#14786]
-* Backport PR #14786 to 7.17: Avoid to create and upload AARCH64 Docker images for UBI8 https://github.com/elastic/logstash/pull/14790[#14790]
+[[dependencies-7-17-8]]
+==== Updates to dependencies
 
-=== Logstash Commits between 7.17 and 7.17.7
+* Update bundled JDK to 11.0.17+8 https://github.com/elastic/logstash/pull/14729[#14729]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.7..7.17"
-
-4366546d2 - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#14796) (76 minutes ago) <github-actions[bot]>
-fd3ffc154 - Backport PR #14786 to 7.17: Avoid to create and upload AARCH64 Docker images for UBI8 #14790 (27 hours ago) <github-actions[bot]>
-dac65a439 - Backport PR #14780 to 7.17: [DRA] Avoid to loose err code on docker save #14785 (28 hours ago) <github-actions[bot]>
-3822b6089 - fix: calculated inflight_count from in-flight batches (#14760) (#14766) (12 days ago) <github-actions[bot]>
-69ce6ebdb - Backport PR#14605 to 7.17: Fix DLQ fails to start due to read 1 byte file (#14752) (2 weeks ago) <Rob Bavey>
-a6db1b0db - Backport PR #14738 to 7.17: [Doc] Document the usage of LS_JAVA_OPTS environment variable #14750 (2 weeks ago) <github-actions[bot]>
-810e005aa - Backport PR #14727 to 7.17: Avoid the wrapping of LogstashMessageFactory with log4j's MessageFactory adapter #14742 (3 weeks ago) <github-actions[bot]>
-3a8076b06 - Update bundled JDK to 11.0.17+8 (#14729) (4 weeks ago) <Andrea Selva>
-4e49539f0 - DRA: Build dockerfiles for release (#14730) (#14732) (4 weeks ago) <github-actions[bot]>
-38642484d - DRA: uploading missing docker-build-context files (#14722) (#14725) (4 weeks ago) <github-actions[bot]>
-a2d0da3f5 - DRA - Fix docker image build (#14706) (#14707) (5 weeks ago) <github-actions[bot]>
-2fa7c0d7f - Backport PR #14703 to 7.17: Adds upload of missed docker docker-build-context.tar.gz artifacts #14704 (5 weeks ago) <github-actions[bot]>
-e2735bd29 - DRA - Fix error reporting (#14698) (#14700) (5 weeks ago) <github-actions[bot]>
-b884ffbc7 - bump core (#14691) (5 weeks ago) <kaisecheng>
-53da85976 - DRA - generalize docker image building (#14670) (#14689) (5 weeks ago) <github-actions[bot]>
-6a8b52551 - DRA - fix dra_upload syntax, breaking builds (#14685) (#14686) (6 weeks ago) <github-actions[bot]>
-50a050051 - Backport PR #14677 to 7.17: [DRA] Don't download Darwin arrch64 for 7.17 #14678 (6 weeks ago) <github-actions[bot]>
-b7f596207 - Release notes for 7.17.7 (#14623) (6 weeks ago) <github-actions[bot]>
-5c30a394a - Manually backport #14654, #14657, #14659 (#14665) (6 weeks ago) <Andres Rodriguez>
-a44163847 - DRA: Handle env variables better (#14644) (#14653) (7 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.7..7.17 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.5 -> 6.2.6
-logstash-filter-grok: 4.4.2 -> 4.4.3
-logstash-output-tcp: 6.0.2 -> 6.0.3
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-7-17-8]]
 ==== Plugins
 
 *Cef Codec - 6.2.6*
