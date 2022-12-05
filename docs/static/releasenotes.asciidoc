@@ -84,9 +84,9 @@ This section summarizes the changes in the following releases:
 
 *Cef Codec - 6.2.6*
 
-* Fix: when decoding, escaped newlines and carriage returns in extension values are now correctly decoded into literal newlines and carriage returns respectively https://github.com/logstash-plugins/logstash-codec-cef/pull/98[#98]
-* Fix: when decoding, non-CEF payloads are identified and intercepted to prevent data-loss and corruption. They now cause a descriptive log message to be emitted, and are emitted as their own `_cefparsefailure`-tagged event containing the original bytes in its `message` field https://github.com/logstash-plugins/logstash-codec-cef/issues/99[#99]
-* Fix: when decoding while configured with a `delimiter`, flushing this codec now correctly consumes the remainder of its internal buffer. This resolves an issue where bytes that are written without a trailing delimiter could be lost https://github.com/logstash-plugins/logstash-codec-cef/issues/100[#100] 
+* Fix: When decoding, escaped newlines and carriage returns in extension values are now correctly decoded into literal newlines and carriage returns respectively https://github.com/logstash-plugins/logstash-codec-cef/pull/98[#98]
+* Fix: When decoding, non-CEF payloads are identified and intercepted to prevent data-loss and corruption. They now cause a descriptive log message to be emitted, and are emitted as their own `_cefparsefailure`-tagged event containing the original bytes in its `message` field https://github.com/logstash-plugins/logstash-codec-cef/issues/99[#99]
+* Fix: When decoding while configured with a `delimiter`, flushing this codec now correctly consumes the remainder of its internal buffer. This resolves an issue where bytes that are written without a trailing delimiter could be lost https://github.com/logstash-plugins/logstash-codec-cef/issues/100[#100] 
 
 *Grok Filter - 4.4.3*
 
