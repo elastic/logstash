@@ -72,7 +72,7 @@ This section summarizes the changes in the following releases:
 === Logstash 7.17.8 Release Notes
 
 * Eliminated unnecessary warning log from status log4j logger when new codecs are created by clone. https://github.com/elastic/logstash/pull/14727[#14727]
-* Fixes an issue during process shutdown in which the stalled shutdown watcher incorrectly reports inflight_count as 0 even when there are events in-flight. https://github.com/elastic/logstash/pull/14760[#14760]
+* Fixed an issue that occurred during process shutdown in which the stalled shutdown watcher incorrectly reported inflight_count as 0 even when there are events in-flight. https://github.com/elastic/logstash/pull/14760[#14760]
 
 [[dependencies-7-17-8]]
 ==== Updates to dependencies
