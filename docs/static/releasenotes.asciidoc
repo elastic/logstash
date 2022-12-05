@@ -77,7 +77,7 @@ This section summarizes the changes in the following releases:
 [[dependencies-7-17-8]]
 ==== Updates to dependencies
 
-* Update bundled JDK to 11.0.17+8 https://github.com/elastic/logstash/pull/14729[#14729]
+* Updated bundled JDK to 11.0.17+8 https://github.com/elastic/logstash/pull/14729[#14729]
 
 [[plugins-7-17-8]]
 ==== Plugins
