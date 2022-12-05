@@ -90,7 +90,7 @@ This section summarizes the changes in the following releases:
 
 *Grok Filter - 4.4.3*
 
-* Minor typos in docs examples https://github.com/logstash-plugins/logstash-filter-grok/pull/176[#176]
+* [DOC] Fixed minor typos in docs examples https://github.com/logstash-plugins/logstash-filter-grok/pull/176[#176]
 
 *Tcp Output - 6.0.3*
 
