@@ -188,6 +188,9 @@ en:
           Duplicate keys found in your configuration: [%{keys}]
           At line: %{line}, column %{column} (byte %{byte})
           after %{after}
+        invalid_plugin_settings_multiple_codecs: |-
+          Multiple codecs found in the %{plugin} %{type} plugin configuration:
+          At line: %{line}, column %{column}
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
           The error reported is:

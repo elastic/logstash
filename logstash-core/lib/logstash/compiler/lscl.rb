@@ -89,7 +89,11 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   class Plugins < Node; end
   class Plugin < Node
     def expr
-      jdsl.iPlugin(source_meta, plugin_type_enum, self.plugin_name, self.expr_attributes)
+      expr_attributes = self.map_expr_attributes
+
+      validate(expr_attributes)
+
+      jdsl.iPlugin(source_meta, plugin_type_enum, self.plugin_name, expr_attributes)
     end
 
     def plugin_type_enum
@@ -109,7 +113,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       return name.text_value
     end
 
-    def expr_attributes
+    def map_expr_attributes
       # Turn attributes into a hash map
       self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
         if v.kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
@@ -135,6 +139,24 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
           hash[k] = [existing, v] unless v == existing
         end
         hash
+      end
+    end
+
+    def validate(expr_attributes)
+      if section_type == "input" || section_type == "output"
+        codec_attribute = expr_attributes["codec"]
+        # If the `codec` attribute value is an Array, it means that multiple codec blocks were found on the plugin
+        # configuration section, which causes an object serialization error
+        if !codec_attribute.nil? && codec_attribute.kind_of?(::Array)
+          raise ::LogStash::ConfigurationError.new(
+            I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
+                   :plugin => plugin_name,
+                   :type => section_type,
+                   :line => input.line_of(interval.first),
+                   :column => input.column_of(interval.first)
+            )
+          )
+        end
       end
     end
   end
