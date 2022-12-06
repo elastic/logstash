@@ -10,6 +10,6 @@ public class Util {
     }
 
     static int subMilliExcessNanos(final long excessNanos) {
-        return (int)Math.floorMod(excessNanos, NANOS_PER_MILLI);
+        return Math.toIntExact(Math.floorMod(excessNanos, NANOS_PER_MILLI));
     }
 }
