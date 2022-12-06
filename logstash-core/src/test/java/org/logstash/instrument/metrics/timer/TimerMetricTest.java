@@ -2,6 +2,7 @@ package org.logstash.instrument.metrics.timer;
 
 import org.junit.Test;
 import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.instrument.metrics.MetricType;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -16,14 +17,18 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
- * This {@code TimerMetricTest} is meant to be inherited by tests covering the implementations of {@link TimerMetric},
- * and includes baseline tests for guaranteeing that the value of the metric includes the duration of
- * execution before control is given back to the caller.
+ * This {@code TimerMetricTest} is meant to be inherited by tests covering the
+ * implementations of {@link TimerMetric}, and includes baseline tests for guaranteeing
+ * that the value of the metric includes the duration of execution before control is
+ * given back to the caller.
  *
- * <p>At an <em>interface</em>-level, we make no guarantees that tracked executions will be committed into the
- * value <em>until</em> control is returned, which means that the value may or may not include "uncommitted" or
- * currently-executing tracked timings. As a result, our assertions can only place upper-bounds on tracked time
- * when there are no concurrent executions happening.
+ * <p>At an <em>interface</em>-level, we only guarantee that tracked executions will
+ * be committed into the value <em>before</em> control is returned to the caller, which
+ * means that the value may or may not include "uncommitted" or mid-execution
+ * tracked timings. As a result, these shared tests can only validate the cumulative
+ * value when there are zero currently-tracked executions in-flight. Implementations
+ * that report live-tracking will need to validate mid-execution behaviour on their
+ * own.</p>
  */
 public abstract class TimerMetricTest {
 
@@ -62,6 +67,17 @@ public abstract class TimerMetricTest {
 
     @Test
     public void testValueAfterConcurrentTrackedExecutions() throws Exception {
+        sharedTestWithConcurrentTrackedExecutions(false);
+    }
+
+    /**
+     * This shared test optionally validates the value of the timer metric after
+     * each state change, enabling additional validations for live timers.
+     *
+     * @param validateLiveTracking whether to validate the value of the timer after each clock change.
+     * @throws Exception
+     */
+    void sharedTestWithConcurrentTrackedExecutions(final boolean validateLiveTracking) throws Exception {
         final TimerMetric timerMetric = initTimerMetric("duration_in_millis");
 
         // assert baseline timer is not incrementing when time is passing
@@ -77,42 +93,52 @@ public abstract class TimerMetricTest {
         final BlockingTask<Void> taskOne = timedBlockingTask(timerMetric);
         manualAdvanceClock.advance(Duration.ofMillis(1L));
         expectedAdvance += Math.multiplyExact(1L, 1);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         final BlockingTask<Void> taskTwo = timedBlockingTask(timerMetric);
         manualAdvanceClock.advance(Duration.ofMillis(10L));
         expectedAdvance += Math.multiplyExact(10L, 2);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         taskOne.complete();
         manualAdvanceClock.advance(Duration.ofMillis(100L));
         expectedAdvance += Math.multiplyExact(100L, 1);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         final BlockingTask<Void> taskThree = timedBlockingTask(timerMetric);
         manualAdvanceClock.advance(Duration.ofMillis(1_000L));
         expectedAdvance += Math.multiplyExact(1_000L, 2);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         final BlockingTask<Void> taskFour = timedBlockingTask(timerMetric);
         manualAdvanceClock.advance(Duration.ofMillis(10_000L));
         expectedAdvance += Math.multiplyExact(10_000L, 3);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         taskThree.complete();
         manualAdvanceClock.advance(Duration.ofMillis(100_000L));
         expectedAdvance += Math.multiplyExact(100_000L, 2);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         taskTwo.complete();
         manualAdvanceClock.advance(Duration.ofMillis(1_000_000L));
         expectedAdvance += Math.multiplyExact(1_000_000L, 1);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         taskFour.complete();
         manualAdvanceClock.advance(Duration.ofMillis(10_000_000L));
         expectedAdvance += Math.multiplyExact(10_000_000L, 0);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         final BlockingTask<Void> taskFive = timedBlockingTask(timerMetric);
         manualAdvanceClock.advance(Duration.ofMillis(100_000_000L));
         expectedAdvance += Math.multiplyExact(100_000_000L, 1);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         taskFive.complete();
         manualAdvanceClock.advance(Duration.ofMillis(1_000_000_000L));
         expectedAdvance += Math.multiplyExact(1_000_000_000L, 0);
+        if (validateLiveTracking) { assertThat(timerMetric.getValue(), is(equalTo(expectedAdvance))); }
 
         // note: we assert both
         assertThat(timerMetric.getValue(), is(equalTo(101_232_121L)));
@@ -128,6 +154,18 @@ public abstract class TimerMetricTest {
         final Optional<String> result = timerMetric.time(() -> original);
 
         assertSame(original, result);
+    }
+
+    @Test
+    public void testName() {
+        final TimerMetric timerMetric = initTimerMetric("testing-timer-metric");
+        assertThat(timerMetric.getName(), equalTo("testing-timer-metric"));
+    }
+
+    @Test
+    public void testType() {
+        final TimerMetric timerMetric = initTimerMetric("testing-timer-metric-2");
+        assertThat(timerMetric.getType(), equalTo(MetricType.TIMER_LONG));
     }
 
     private static class ACheckedException extends Exception {
