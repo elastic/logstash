@@ -6,14 +6,7 @@
   "optionsJSON": "{\"darkTheme\":false}",
   "uiStateJSON": "{\"P-11\":{\"vis\":{\"colors\":{\"/Attempt\":\"#0A50A1\",\"/Failure\":\"#BF1B00\",\"/Success\":\"#629E51\"}}},\"P-13\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-15\":{\"vis\":{\"defaultColors\":{\"0% - 17%\":\"rgb(255,255,204)\",\"17% - 34%\":\"rgb(255,230,146)\",\"34% - 50%\":\"rgb(254,191,90)\",\"50% - 67%\":\"rgb(253,141,60)\",\"67% - 84%\":\"rgb(244,61,37)\",\"84% - 100%\":\"rgb(202,8,35)\"},\"legendOpen\":false}},\"P-16\":{\"vis\":{\"colors\":{\"Anti-Virus\":\"#EF843C\",\"Content Security\":\"#7EB26D\",\"Firewall\":\"#E24D42\",\"Integrated Security\":\"#962D82\",\"Network-based IDS/IPS\":\"#1F78C1\",\"Operating System\":\"#1F78C1\",\"VPN\":\"#EAB839\"}}},\"P-18\":{\"vis\":{\"params\":{\"sort\":{\"columnIndex\":null,\"direction\":null}}}},\"P-7\":{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\"},\"legendOpen\":false}},\"P-8\":{\"vis\":{\"defaultColors\":{\"0 - 100\":\"rgb(0,104,55)\"}}},\"P-9\":{\"vis\":{\"colors\":{\"/Attempt\":\"#0A50A1\",\"/Failure\":\"#BF1B00\",\"/Success\":\"#629E51\"}}},\"P-25\":{\"mapZoom\":1,\"mapCenter\":[-0.3515602939922709,0]},\"P-24\":{\"mapZoom\":1,\"mapCenter\":[-0.3515602939922709,0]}}",
   "version": 1,
-  "timeRestore": true,
-  "timeTo": "now",
-  "timeFrom": "now-24h",
-  "refreshInterval": {
-    "display": "Off",
-    "pause": false,
-    "value": 0
-  },
+  "timeRestore": false,
   "kibanaSavedObjectMeta": {
     "searchSourceJSON": "{\"filter\":[{\"query\":{\"query_string\":{\"analyze_wildcard\":true,\"query\":\"*\"}}}],\"highlightAll\":true,\"version\":true}"
   }
