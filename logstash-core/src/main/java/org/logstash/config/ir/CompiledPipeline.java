@@ -19,8 +19,6 @@
 
 package org.logstash.config.ir;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -36,7 +34,6 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
-import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -47,9 +44,14 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,8 +65,6 @@ import static org.logstash.config.ir.compiler.Utils.copyNonCancelledEvents;
  * {@code filter}, {@code output} or an {@code if} condition.
  */
 public final class CompiledPipeline {
-
-    private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
@@ -433,7 +433,6 @@ public final class CompiledPipeline {
                         flatten(datasets, vertex),
                         filters.get(vertexId)
                     );
-                LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
             }
@@ -458,7 +457,6 @@ public final class CompiledPipeline {
                         outputs.get(vertexId),
                         outputs.size() == 1
                     );
-                LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
             }
@@ -489,7 +487,6 @@ public final class CompiledPipeline {
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
                         DatasetCompiler.splitDataset(dependencies, condition);
-                    LOGGER.debug("Compiled conditional\n {} \n into \n {}", vertex, prepared);
 
                     conditional = prepared.instantiate();
                     iffs.put(vertexId, conditional);
