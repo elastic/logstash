@@ -584,11 +584,14 @@ module LogStash; class JavaPipeline < AbstractPipeline
         filter_queue_client,   # QueueReadClient
         lir_execution,         # CompiledPipeline
         @worker_observer,      # WorkerObserver
+        # pipeline reporter counters
         @events_consumed,      # LongAdder
         @events_filtered,      # LongAdder
+        # signaling channels
         @flushRequested,       # AtomicBoolean
         @flushing,             # AtomicBoolean
         @shutdownRequested,    # AtomicBoolean
+        # behaviour config pass-through
         @drain_queue,          # boolean
         @preserve_event_order) # boolean
     rescue => e

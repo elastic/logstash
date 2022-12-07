@@ -66,8 +66,13 @@ module LogStash module Instrument
 
     def get(namespaces_path, key, type)
       @metric_store.fetch_or_store(namespaces_path, key) do
-        LogStash::Instrument::MetricType.create(type, namespaces_path, key)
+        initialize_metric(type, namespaces_path, key)
       end
+    end
+
+    # test injection, see MetricExtFactory
+    def initialize_metric(type, namespaces_path, key)
+      MetricType.create(type, namespaces_path, key)
     end
 
     ##

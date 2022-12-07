@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
 public abstract class TimerMetricTest {
 
     protected final ManualAdvanceClock manualAdvanceClock = new ManualAdvanceClock(Instant.now());
-    protected final TimerMetricFactory timerMetricFactory = new TimerMetricFactory(manualAdvanceClock);
+    protected final TestTimerMetricFactory testTimerMetricFactory = new TestTimerMetricFactory(manualAdvanceClock);
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
     private final BlockingTask.Factory blockingTaskFactory = new BlockingTask.Factory(executorService);

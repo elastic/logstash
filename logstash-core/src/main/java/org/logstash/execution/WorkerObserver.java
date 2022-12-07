@@ -6,8 +6,6 @@ import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
-import java.util.concurrent.atomic.LongAdder;
-
 public class WorkerObserver {
     private final transient LongCounter processEventsFilteredMetric;
     private final transient LongCounter processEventsOutMetric;
@@ -32,8 +30,8 @@ public class WorkerObserver {
         }
     }
 
-    public ObservedExecution ofExecution(final CompiledPipeline.Execution execution) {
-        return new ObservedExecution(this, execution);
+    public <QB extends QueueBatch> ObservedExecution<QB> ofExecution(final CompiledPipeline.Execution<QB> execution) {
+        return new ObservedExecution<>(this, execution);
     }
 
     <E extends Exception> int observeExecutionComputation(final QueueBatch batch, final co.elastic.logstash.api.TimerMetric.ExceptionalSupplier<Integer,E> supplier) throws E {

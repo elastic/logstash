@@ -34,7 +34,7 @@ public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
 
-    private final CompiledPipeline.Execution execution;
+    private final ObservedExecution<QueueBatch> execution;
 
     private final QueueReadClient readClient;
 

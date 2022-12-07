@@ -353,12 +353,12 @@ public final class CompiledPipeline {
         }
     }
 
-    public interface Execution {
+    public interface Execution <QB extends QueueBatch> {
         /**
          * @return the number of events that was processed, could be less o greater than batch.size(), depending if
          *  the pipeline drops or clones events during the filter stage.
          * */
-        int compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
+        int compute(final QB batch, final boolean flush, final boolean shutdown);
     }
 
     /**
@@ -366,7 +366,7 @@ public final class CompiledPipeline {
      * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread)
      * state and thus needs to be instantiated once per thread.
      */
-    public abstract class CompiledExecution implements Execution {
+    public abstract class CompiledExecution implements Execution<QueueBatch> {
 
         /**
          * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.

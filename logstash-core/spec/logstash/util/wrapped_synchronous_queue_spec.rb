@@ -39,67 +39,6 @@ describe LogStash::WrappedSynchronousQueue do
       let(:write_client) { subject.write_client }
       let(:read_client)  { subject.read_client }
 
-      context "when reading from the queue", skip: "ownership of read-end metrics moved to WorkerObserver" do
-        let(:collector) { LogStash::Instrument::Collector.new }
-
-        before do
-          read_client.set_events_metric(LogStash::Instrument::Metric.new(collector).namespace(:events))
-          read_client.set_pipeline_metric(LogStash::Instrument::Metric.new(collector).namespace(:pipeline))
-        end
-
-        context "when the queue is empty" do
-          it "doesnt record the `duration_in_millis`" do
-            batch = read_client.read_batch
-            read_client.close_batch(batch)
-            store = collector.snapshot_metric.metric_store
-
-            expect(store.get_shallow(:events, :out).value).to eq(0)
-            expect(store.get_shallow(:events, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:events, :filtered).value).to eq(0)
-            expect(store.get_shallow(:events, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:events, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:events, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.timer.TimerMetric)
-
-            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :duration_in_millis)).to be_kind_of(org.logstash.instrument.metrics.timer.TimerMetric)
-
-            expect(store.get_shallow(:pipeline, :out).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :out)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-
-            expect(store.get_shallow(:pipeline, :filtered).value).to eq(0)
-            expect(store.get_shallow(:pipeline, :filtered)).to be_kind_of(LogStash::Instrument::MetricType::Counter)
-          end
-        end
-
-        context "when we have item in the queue" do
-          it "records the `duration_in_millis`" do
-            batch = []
-            5.times {|i| batch.push(LogStash::Event.new({"message" => "value-#{i}"}))}
-            write_client.push_batch(batch)
-
-            read_batch = read_client.read_batch.to_java
-            read_client.execute_with_timers do
-              sleep(0.1) # simulate some work for the `duration_in_millis`
-              # TODO: this interaction should be cleaned in an upcoming PR,
-              # This is what the current pipeline does.
-              read_client.add_filtered_metrics(read_batch.filteredSize)
-              read_client.add_output_metrics(read_batch.filteredSize)
-              read_client.close_batch(read_batch)
-            end
-            store = collector.snapshot_metric.metric_store
-
-            expect(store.get_shallow(:events, :out).value).to eq(5)
-            expect(store.get_shallow(:events, :filtered).value).to eq(5)
-            expect(store.get_shallow(:events, :duration_in_millis).value).to be > 0
-            expect(store.get_shallow(:pipeline, :duration_in_millis).value).to be > 0
-            expect(store.get_shallow(:pipeline, :out).value).to eq(5)
-            expect(store.get_shallow(:pipeline, :filtered).value).to eq(5)
-          end
-        end
-      end
-
       context "when writing to the queue" do
         before :each do
           read_client.set_events_metric(LogStash::Instrument::NamespacedNullMetric.new(nil, :null))

@@ -22,13 +22,7 @@ public interface TimerMetric extends co.elastic.logstash.api.TimerMetric, Metric
     }
 
     static TimerMetric create(final String name) {
-        // INTERNAL-ONLY system property escape hatch, set with `metric.timers` config in logstash.yml
-        final String timerType = System.getProperty("ls.metric.timers", "delayed");
-        switch (timerType) {
-            case "live"   : return new ConcurrentLiveTimerMetric(name);
-            case "delayed": return new AfterCompletionTimerMetric(name);
-            default       : throw new IllegalStateException(String.format("Unknown timer type `%s`", timerType));
-        }
+        return TimerMetricFactory.INSTANCE.create(name);
     }
 
     static TimerMetric fromRubyBase(final AbstractNamespacedMetricExt metric,
