@@ -66,12 +66,12 @@ See the following links:
 
 Or go directly here for an exhaustive list: https://github.com/elastic/logstash/contribute
 
-Sometimes during the development, configuration for sensitive data such as password, api key or SSL keyphrase need to be included in the configuration.
-From the best practice point of view, follow the principles below to better protect the sensitive information leaking in the logs:
-- Logstash core and plugin should flag any settings that may contain secrets, to avoid leaking into logs. If your source changes are in ruby, apply `:password` validation or wrap the object with `Logstash::Util::Password` object.
+Sometimes during the development of Logstash core or plugins, configuration parameters for sensitive data such as password, API keys or SSL keyphrases need to be provided to the user.
+To protect sensitive information leaking into the logs, follow the best practices below:
+- Logstash core and plugin should flag any settings that may contain secrets. If your source changes are in Ruby, apply `:password` validation or wrap the object with `Logstash::Util::Password` object.
 - A setting marked as secret should not disclose its value unless retrieved in a non-obvious way. If you are introducing a new class for sensitive object (check `Password.java` and `SecretVariable.java` classes before doing so), make sure to mask the sensitive info by overriding get value (or `toString()` of Java class) default methods.
 - Logstash should not log secrets on any log level by default. Make sure you double-check the loggers if they are touching the objects carrying sensitive info.
-- Logstash should have a dedicated flag, disabled by default, that allows secrets to be logged for debugging purposes only. If it is an intention to log/display sensitive info in the debug logs, use the `config.debug` configuration which protects the data under its umbrella.
+- Logstash has a dedicated flag, disabled by default, that the raw configuration text be logged for debugging purposes only. Use of `config.debug` will log/display sensitive info in the debug logs, so beware of using it in Produciton.
 
 As an example, suppose you have `my_auth` config which carries the sensitive key. Defining with `:password` validated protects `my_auth` being leaked in Logstash core logics. 
 ```
