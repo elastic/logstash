@@ -106,3 +106,9 @@ You can also use a mounted drive to make this workflow easier.
 Keep in mind that only one Logstash instance can write to `path.queue`. You
 cannot have the original instance and the new instance writing to the queue at
 the same time.
+
+[float]
+[role="exclude",id="glossary"]
+==== Glossary of Terms
+
+This content has moved. Refer to {glossary}/terms.html[Terminology].
