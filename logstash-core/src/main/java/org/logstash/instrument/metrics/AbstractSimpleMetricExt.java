@@ -50,7 +50,14 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
     @JRubyMethod
     public IRubyObject gauge(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject value) {
-        return getGauge(context, namespace, key, value);
+        return getGauge(context, normalizeNamespace(namespace), key, value);
+    }
+
+    @JRubyMethod
+    public IRubyObject timer(final ThreadContext context,
+                             final IRubyObject namespace,
+                             final IRubyObject key) {
+        return getTimer(context, namespace, key);
     }
 
     @JRubyMethod(name = "report_time")
@@ -60,8 +67,10 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
     }
 
     @JRubyMethod
-    public IRubyObject time(final ThreadContext context, final IRubyObject namespace,
-        final IRubyObject key, final Block block) {
+    public IRubyObject time(final ThreadContext context,
+                            final IRubyObject namespace,
+                            final IRubyObject key,
+                            final Block block) {
         return doTime(context, namespace, key, block);
     }
 
@@ -71,6 +80,8 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
 
     protected abstract IRubyObject getGauge(ThreadContext context, IRubyObject namespace,
         IRubyObject key, IRubyObject value);
+
+    protected abstract IRubyObject getTimer(ThreadContext context, IRubyObject namespace, IRubyObject key);
 
     protected abstract IRubyObject doReportTime(ThreadContext context, IRubyObject namespace,
         IRubyObject key, IRubyObject duration);

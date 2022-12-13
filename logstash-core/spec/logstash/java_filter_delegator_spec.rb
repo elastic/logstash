@@ -50,9 +50,9 @@ describe LogStash::FilterDelegator do
     counter
   }
   let(:counter_time) {
-    counter = metric.counter(:duration_in_millis)
-    counter.increment(0)
-    counter
+    timer = metric.timer(:duration_in_millis)
+    timer.report_untracked_millis(0)
+    timer
   }
   let(:events) { [LogStash::Event.new, LogStash::Event.new] }
 

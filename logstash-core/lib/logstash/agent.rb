@@ -554,8 +554,8 @@ class LogStash::Agent
       flow_metrics << create_flow_metric("input_throughput", get_counter(events_namespace, :in), uptime_precise_seconds)
       flow_metrics << create_flow_metric("filter_throughput", get_counter(events_namespace, :out), uptime_precise_seconds)
       flow_metrics << create_flow_metric("output_throughput", get_counter(events_namespace, :filtered), uptime_precise_seconds)
-      flow_metrics << create_flow_metric("queue_backpressure", get_counter(events_namespace, :queue_push_duration_in_millis), uptime_precise_millis)
-      flow_metrics << create_flow_metric("worker_concurrency", get_counter(events_namespace, :duration_in_millis), uptime_precise_millis)
+      flow_metrics << create_flow_metric("queue_backpressure", get_timer(events_namespace, :queue_push_duration_in_millis), uptime_precise_millis)
+      flow_metrics << create_flow_metric("worker_concurrency", get_timer(events_namespace, :duration_in_millis), uptime_precise_millis)
 
       registered, unregistered = flow_metrics.partition do |flow_metric|
         @metric.collector.register?([:stats,:flow], flow_metric.name.to_sym, flow_metric)
@@ -573,6 +573,11 @@ class LogStash::Agent
     org.logstash.instrument.metrics.counter.LongCounter.fromRubyBase(namespace, key)
   end
   private :get_counter
+
+  def get_timer(namespace, key)
+    org.logstash.instrument.metrics.timer.TimerMetric.fromRubyBase(namespace, key)
+  end
+  private :get_timer
 
   def create_flow_metric(name, numerator_metric, denominator_metric)
     org.logstash.instrument.metrics.FlowMetric.create(name, numerator_metric, denominator_metric)

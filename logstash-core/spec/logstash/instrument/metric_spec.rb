@@ -20,20 +20,22 @@ require_relative "../../support/matchers"
 require "spec_helper"
 
 describe LogStash::Instrument::Metric do
-  let(:collector) { [] }
+  let(:collector) { LogStash::Instrument::Collector.new }
   let(:namespace) { :root }
 
   subject { LogStash::Instrument::Metric.new(collector) }
 
+  before(:each) { allow(collector).to receive(:push).and_call_original }
+
   context "#increment" do
     it "a counter by 1" do
-      metric = subject.increment(:root, :error_rate)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :increment, 1)
+      subject.increment(:root, :error_rate)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :increment, 1)
     end
 
     it "a counter by a provided value" do
-      metric = subject.increment(:root, :error_rate, 20)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :increment, 20)
+      subject.increment(:root, :error_rate, 20)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :increment, 20)
     end
 
     it "raises an exception if the key is an empty string" do
@@ -45,15 +47,15 @@ describe LogStash::Instrument::Metric do
     end
   end
 
-  context "#decrement" do
+  context "#decrement", skip: "LongCounter impl does not support decrement" do
     it "a counter by 1" do
-      metric = subject.decrement(:root, :error_rate)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :decrement, 1)
+      subject.decrement(:root, :error_rate)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :decrement, 1)
     end
 
     it "a counter by a provided value" do
-      metric = subject.decrement(:root, :error_rate, 20)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :decrement, 20)
+      subject.decrement(:root, :error_rate, 20)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :decrement, 20)
     end
 
     it "raises an exception if the key is an empty string" do
@@ -67,8 +69,8 @@ describe LogStash::Instrument::Metric do
 
   context "#gauge" do
     it "set the value of a key" do
-      metric = subject.gauge(:root, :size_queue, 20)
-      expect(collector).to be_a_metric_event([:root, :size_queue], :gauge, :set, 20)
+      subject.gauge(:root, :size_queue, 20)
+      expect(collector).to have_received(:push).with([:root], :size_queue, :gauge, :set, 20)
     end
 
     it "raises an exception if the key is an empty string" do
@@ -87,10 +89,8 @@ describe LogStash::Instrument::Metric do
     it "records the duration" do
       subject.time(:root, :duration_ms) { sleep(sleep_time) }
 
-      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 5)
-      expect(collector[0]).to match(:root)
-      expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:counter)
+      timer = subject.timer(:root, :duration_ms)
+      expect(timer.value).to be_within(50).of(sleep_time_ms)
     end
 
     it "returns the value of the executed block" do
@@ -100,13 +100,14 @@ describe LogStash::Instrument::Metric do
     it "return a TimedExecution" do
       execution = subject.time(:root, :duration_ms)
       sleep(sleep_time)
+
+      timer = subject.timer(:root, :duration_ms)
+      expect(timer.value).to eq(0) # no live tracking without a block
+
       execution_time = execution.stop
 
-      expect(execution_time).to eq(collector.last)
-      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 0.1)
-      expect(collector[0]).to match(:root)
-      expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:counter)
+      expect(execution_time).to be_within(50).of(sleep_time_ms)
+      expect(timer.value).to be_within(50).of(sleep_time_ms)
     end
   end
 
@@ -119,8 +120,8 @@ describe LogStash::Instrument::Metric do
 
     it "uses the same collector as the creator class" do
       child = subject.namespace(sub_key)
-      metric = child.increment(:error_rate)
-      expect(collector).to be_a_metric_event([sub_key, :error_rate], :counter, :increment, 1)
+      child.increment(:error_rate)
+      expect(collector).to have_received(:push).with([:my_sub_key], :error_rate, :counter, :increment, 1)
     end
   end
 end

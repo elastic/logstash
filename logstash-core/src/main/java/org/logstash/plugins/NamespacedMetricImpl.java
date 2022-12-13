@@ -30,10 +30,10 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Rubyfier;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -58,6 +58,11 @@ public class NamespacedMetricImpl implements NamespacedMetric {
     @Override
     public CounterMetric counter(final String metric) {
         return new CounterMetricImpl(this.threadContext, this.metrics, metric);
+    }
+
+    @Override
+    public co.elastic.logstash.api.TimerMetric timer(final String metric) {
+        return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newSymbol(metric));
     }
 
     @Override
@@ -87,16 +92,12 @@ public class NamespacedMetricImpl implements NamespacedMetric {
 
     @Override
     public <T> T time(final String key, final Supplier<T> callable) {
-        final long start = System.nanoTime();
-        final T ret = callable.get();
-        final long end = System.nanoTime();
-        this.reportTime(key, TimeUnit.NANOSECONDS.toMillis(end - start));
-        return ret;
+        return timer(key).time(callable::get);
     }
 
     @Override
     public void reportTime(final String key, final long duration) {
-        this.metrics.reportTime(this.threadContext, this.getSymbol(key), this.convert(duration));
+        timer(key).reportUntrackedMillis(duration);
     }
 
     @Override

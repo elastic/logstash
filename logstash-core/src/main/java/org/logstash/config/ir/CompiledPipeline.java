@@ -353,12 +353,20 @@ public final class CompiledPipeline {
         }
     }
 
+    public interface Execution <QB extends QueueBatch> {
+        /**
+         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
+         *  the pipeline drops or clones events during the filter stage.
+         * */
+        int compute(final QB batch, final boolean flush, final boolean shutdown);
+    }
+
     /**
      * Instances of this class represent a fully compiled pipeline execution. Note that this class
      * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread)
      * state and thus needs to be instantiated once per thread.
      */
-    public abstract class CompiledExecution {
+    public abstract class CompiledExecution implements Execution<QueueBatch> {
 
         /**
          * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
@@ -378,12 +386,6 @@ public final class CompiledPipeline {
             compiledFilters = compileFilters();
             compiledOutputs = compileOutputs();
         }
-
-        /**
-         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
-         *  the pipeline drops or clones events during the filter stage.
-         * */
-        public abstract int compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
 
         public abstract int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
 
