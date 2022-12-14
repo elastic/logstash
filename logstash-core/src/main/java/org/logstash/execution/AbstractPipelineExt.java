@@ -536,8 +536,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
-        initializePqFlowMetrics(context, flowNamespace, uptimeInPreciseSeconds);
-        initializePluginFlowMetrics(context, uptimeInPreciseSeconds);
+        initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
+        initializePluginFlowMetrics(context, uptimeMetric);
         return context.nil;
     }
 
@@ -604,7 +604,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return retrievedMetric.toJava(UptimeMetric.class);
     }
 
-    private void initializePqFlowMetrics(final ThreadContext context, final RubySymbol[] flowNamespace, final Metric<Number> uptimeInPreciseSeconds) {
+    private void initializePqFlowMetrics(final ThreadContext context, final RubySymbol[] flowNamespace, final UptimeMetric uptime) {
+        final Metric<Number> uptimeInPreciseSeconds = uptime.withUnitsPrecise(SECONDS);
         final IRubyObject queueContext = getSetting(context, QueueFactoryExt.QUEUE_TYPE_CONTEXT_NAME);
         if (!queueContext.isNil() && queueContext.asJavaString().equals(QueueFactoryExt.PERSISTED_TYPE)) {
 
@@ -623,40 +624,44 @@ public class AbstractPipelineExt extends RubyBasicObject {
         }
     }
 
-    private void initializePluginFlowMetrics(final ThreadContext context, final Metric<Number> uptimeInPreciseMillis) {
+    private void initializePluginFlowMetrics(final ThreadContext context, final UptimeMetric uptime) {
         for (IRubyObject rubyObject: lirExecution.inputs()) {
             IRubyObject rubyfiedId = rubyObject.callMethod(context, "id");
             String id = rubyfiedId.toString();
-            initializePluginThroughputFlowMetric(context, uptimeInPreciseMillis, id);
+            initializePluginThroughputFlowMetric(context, uptime, id);
         }
 
         final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
 
         for (AbstractFilterDelegatorExt delegator: lirExecution.filters()) {
-            initializePluginWorkerFlowMetrics(context, workerCount, uptimeInPreciseMillis, FILTERS_KEY, delegator.getId().asJavaString());
+            initializePluginWorkerFlowMetrics(context, workerCount, uptime, FILTERS_KEY, delegator.getId().asJavaString());
         }
 
         for (AbstractOutputDelegatorExt delegator: lirExecution.outputs()) {
-            initializePluginWorkerFlowMetrics(context, workerCount, uptimeInPreciseMillis, OUTPUTS_KEY, delegator.getId().asJavaString());
+            initializePluginWorkerFlowMetrics(context, workerCount, uptime, OUTPUTS_KEY, delegator.getId().asJavaString());
         }
     }
 
-    private void initializePluginThroughputFlowMetric(final ThreadContext context, final Metric<Number> uptimeInPreciseMillis, final String id) {
+    private void initializePluginThroughputFlowMetric(final ThreadContext context, final UptimeMetric uptime, final String id) {
+        final Metric<Number> uptimeInPreciseSeconds = uptime.withUnitsPrecise(SECONDS);
         final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
-        final LongCounter counter = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
+        final LongCounter eventsOut = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
 
-        final FlowMetric throughputFlow = createFlowMetric(PLUGIN_THROUGHPUT_KEY, counter, uptimeInPreciseMillis);
+        final FlowMetric throughputFlow = createFlowMetric(PLUGIN_THROUGHPUT_KEY, eventsOut, uptimeInPreciseSeconds);
         this.flowMetrics.add(throughputFlow);
 
         final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
         storeMetric(context, flowNamespace, throughputFlow);
     }
 
-    private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final Metric<Number> uptimeInPreciseMillis, final RubySymbol key, final String id) {
+    private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final UptimeMetric uptime, final RubySymbol key, final String id) {
+        final Metric<Number> uptimeInPreciseMillis = uptime.withUnitsPrecise(MILLISECONDS);
+
         final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
-        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, durationInMillis, counterEvents);
+        final UpScaledMetric kiloEvents = new UpScaledMetric(counterEvents, 1_000);
+        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, durationInMillis, kiloEvents);
         this.flowMetrics.add(workerCostPerEvent);
 
         final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
