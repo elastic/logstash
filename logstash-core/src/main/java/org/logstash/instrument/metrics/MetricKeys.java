@@ -98,7 +98,7 @@ public final class MetricKeys {
 
     public static final RubySymbol WORKER_CONCURRENCY_KEY = RubyUtil.RUBY.newSymbol("worker_concurrency");
 
-    public static final RubySymbol WORKER_COST_PER_EVENT_KEY = RubyUtil.RUBY.newSymbol("worker_cost_per_event");
+    public static final RubySymbol WORKER_MILLIS_PER_EVENT_KEY = RubyUtil.RUBY.newSymbol("worker_millis_per_event");
 
     public static final RubySymbol WORKER_UTILIZATION_KEY = RubyUtil.RUBY.newSymbol("worker_utilization");
 

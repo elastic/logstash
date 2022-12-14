@@ -317,11 +317,11 @@ describe "Test Monitoring API" do
       expect(input_plugin_flow_status).to include('throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0))
       expect(filter_plugin_flow_status).to include(
                                              'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
       expect(output_plugin_flow_status).to include(
                                              'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
     end
   end

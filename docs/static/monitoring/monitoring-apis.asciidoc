@@ -662,7 +662,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -686,7 +686,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -711,7 +711,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -797,7 +797,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -910,7 +910,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -943,7 +943,7 @@ Example response:
               "last_15_minutes": 3.539,
               "lifetime": 6.706
             },
-            "worker_cost_per_event": {
+            "worker_millis_per_event": {
               "current": 0.1,
               "last_1_minute": 0.03333,
               "last_5_minutes": 0.03115,
@@ -1014,7 +1014,7 @@ NOTE: The size of a PQ on disk includes both unacknowledged events and previousl
 
 Input plugin entry of pipeline in the API response includes `throughput` <<flow-stats,_flow_ rate>> to provide visibility into the flow of event rates through the input plugin.
 
-Filter and output plugin entries of pipeline in the API response include `worker_utilization` and `worker_cost_per_event` <<flow-stats,_flow_ rates>>, where `worker_utilization` indicates the rate of percentage of work the workers are spending when proceeding event processing through the plugin. `worker_cost_per_event` indicates the rate how much time the workers are spending on each event while processing through the plugin.
+Filter and output plugin entries of pipeline in the API response include `worker_utilization` and `worker_millis_per_event` <<flow-stats,_flow_ rates>>, where `worker_utilization` indicates the rate of percentage of work the workers are spending when proceeding event processing through the plugin. `worker_millis_per_event` indicates the rate how much time the workers are spending on each event while processing through the plugin.
 
 [discrete]
 [[reload-stats]]

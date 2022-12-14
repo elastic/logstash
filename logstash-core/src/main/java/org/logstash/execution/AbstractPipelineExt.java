@@ -660,8 +660,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
-        final UpScaledMetric kiloEvents = new UpScaledMetric(counterEvents, 1_000);
-        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_COST_PER_EVENT_KEY, durationInMillis, kiloEvents);
+        final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_MILLIS_PER_EVENT_KEY, durationInMillis, counterEvents);
         this.flowMetrics.add(workerCostPerEvent);
 
         final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
