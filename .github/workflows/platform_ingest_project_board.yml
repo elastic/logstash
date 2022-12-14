@@ -14,7 +14,7 @@ env:
   # ID values for the Area property + its options
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgEgZSo'
   DATA_PROCESSING_OPTION_ID: 'c9917758'
-  INGEST_DOCS_OPTION_ID: '1fc8ea38'
+  INGEST_DOCS_OPTION_ID: 'def2f8e6'
   
 jobs:
   add_to_ingest_project:
@@ -57,9 +57,6 @@ jobs:
           area_id: ${{ env.DATA_PROCESSING_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-          #GITHUB_TOKEN: ${{ secrets.PROJECT_ASSIGNER_TOKEN }}
-      # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
-      # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
       # GH actions to make this a lot more DRY
       - uses: octokit/graphql-action@v2.x
         id: set_ingest_docs_area
