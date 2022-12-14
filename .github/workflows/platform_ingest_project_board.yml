@@ -9,10 +9,12 @@ env:
   
   # GitHub labels for each team/area
   LOGSTASH_LABEL: 'Team:Logstash'
+  DOCS_LABEL: 'Team:Docs'
   
   # ID values for the Area property + its options
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgEgZSo'
   DATA_PROCESSING_OPTION_ID: 'c9917758'
+  INGEST_DOCS_OPTION_ID: '1fc8ea38'
   
 jobs:
   add_to_ingest_project:
@@ -56,3 +58,41 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           #GITHUB_TOKEN: ${{ secrets.PROJECT_ASSIGNER_TOKEN }}
+      # Adds 'Team:Docs' label to Platform Ingest Docs
+      - uses: octokit/graphql-action@v2.x
+        id: add_to_ingest_docs_project
+        if: github.event.label.name == env.DOCS_LABEL
+        with:
+          query: |
+            # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
+            mutation AddToIngestProject($project_id: ID!, $content_id: ID!) {
+              addProjectV2ItemById(input: { projectId: $project_id, contentId: $content_id }) {
+                  item {
+                    id
+                  }
+                }
+              }
+          project_id: ${{ env.INGEST_PROJECT_ID }}
+          content_id: ${{ github.event.issue.node_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
+      # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
+      # GH actions to make this a lot more DRY
+      - uses: octokit/graphql-action@v2.x
+        id: set_ingest_docs_area
+        if: github.event.label.name == env.DOCS_LABEL
+        with:
+          query: |
+            mutation updateIngestArea($item_id: ID!, $project_id: ID!, $area_field_id: ID!, $area_id: String) {
+              updateProjectV2ItemFieldValue(
+                input: { itemId: $item_id, projectId: $project_id, fieldId: $area_field_id, value: { singleSelectOptionId: $area_id } }) {
+                  clientMutationId
+                }
+              }
+          item_id: ${{ fromJSON(steps.add_to_project.outputs.data).addProjectV2ItemById.item.id }}
+          project_id: ${{ env.INGEST_PROJECT_ID }}
+          area_field_id: ${{ env.AREA_FIELD_ID }}
+          area_id: ${{ env.INGEST_DOCS_OPTION_ID }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
