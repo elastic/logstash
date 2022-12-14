@@ -207,8 +207,7 @@ describe LogStash::Compiler do
           I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
                  :plugin => "generator",
                  :type => "input",
-                 :line => "1",
-                 :column => "9"
+                 :line => "1"
           )
         }
 
@@ -237,8 +236,7 @@ describe LogStash::Compiler do
           I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
                  :plugin => "stdout",
                  :type => "output",
-                 :line => "1",
-                 :column => "33"
+                 :line => "1"
           )
         }
 

@@ -189,8 +189,7 @@ en:
           At line: %{line}, column %{column} (byte %{byte})
           after %{after}
         invalid_plugin_settings_multiple_codecs: |-
-          Multiple codecs found in the %{plugin} %{type} plugin configuration:
-          At line: %{line}, column %{column}
+          The %{type} plugin %{plugin} at line %{line} has multiple codecs configured - this is not a valid configuration, only one codec per plugin is supported.
         invalid_plugin_register: >-
           Cannot register %{plugin} %{type} plugin.
           The error reported is:

@@ -146,14 +146,13 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       if section_type == "input" || section_type == "output"
         codec_attribute = expr_attributes["codec"]
         # If the `codec` attribute value is an Array, it means that multiple codec blocks were found on the plugin
-        # configuration section, which causes an object serialization error
+        # configuration section, which is not a valid configuration and would cause an object serialization error
         if !codec_attribute.nil? && codec_attribute.kind_of?(::Array)
           raise ::LogStash::ConfigurationError.new(
             I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
                    :plugin => plugin_name,
                    :type => section_type,
-                   :line => input.line_of(interval.first),
-                   :column => input.column_of(interval.first)
+                   :line => input.line_of(interval.first)
             )
           )
         end
