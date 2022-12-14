@@ -59,6 +59,18 @@ module LogStash
       def filter(event)
         # noop
       end
+
+      ##
+      # Returns a one-off subclass of the DummyFilter that
+      # executes the provided hook with each event it receives
+      def self.with_hook(&block)
+        Class.new(self) do
+          config_name "dummyfilter_#{__id__}"
+          define_method(:filter) do |event|
+            block.call(event)
+          end
+        end
+      end
     end
   end
 

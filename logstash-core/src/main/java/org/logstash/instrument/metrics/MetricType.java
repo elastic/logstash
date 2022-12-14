@@ -37,6 +37,12 @@ public enum MetricType {
      * A counter backed by a {@link Number} type that includes decimal precision
      */
     COUNTER_DECIMAL("counter/decimal"),
+
+    /**
+     * A timer backed by a {@link Long} type
+     */
+    TIMER_LONG("timer/long"),
+
     /**
      * A gauge backed by a {@link String} type
      */

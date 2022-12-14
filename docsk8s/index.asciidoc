@@ -21,8 +21,8 @@ include::quick-start/ls-k8s-quick-start.asciidoc[]
 // List of sample configuration files and what they're used for
 include::quick-start/sample-configuration-files.asciidoc[]
 
-// Ship to an external resource
-include::quick-start/ls-k8s-external-resource.asciidoc[]
+// Logstash and Kubernetes Quick start
+include::quick-start/ls-k8s-configuration-files.asciidoc[]
 
 // Setting up
 include::setting-up/ls-k8s-setting-up.asciidoc[]
@@ -42,8 +42,14 @@ include::setting-up/ls-k8s-secure.asciidoc[]
 // Administering
 include::administering/ls-k8s-administering.asciidoc[]
 
-// Set up stack monitoring
+// Stack Monitoring
 include::administering/ls-k8s-stack-monitoring.asciidoc[]
+
+// Stack Monitoring external
+include::administering/ls-k8s-stack-monitoring-external.asciidoc[]
+
+// Stack Monitoring Elastic Cloud
+include::administering/ls-k8s-stack-monitoring-cloud.asciidoc[]
 
 // Upgrade Logstash
 include::administering/ls-k8s-upgrade.asciidoc[]

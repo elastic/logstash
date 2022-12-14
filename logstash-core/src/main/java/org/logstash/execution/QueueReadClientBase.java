@@ -28,11 +28,13 @@ import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
@@ -52,14 +54,12 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     protected long waitForMillis = 50;
 
     private final ConcurrentHashMap<Long, QueueBatch> inflightBatches = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Long, Long> inflightClocks = new ConcurrentHashMap<>();
-
     private transient LongCounter eventMetricOut;
     private transient LongCounter eventMetricFiltered;
-    private transient LongCounter eventMetricTime;
+    private transient TimerMetric eventMetricTime;
     private transient LongCounter pipelineMetricOut;
     private transient LongCounter pipelineMetricFiltered;
-    private transient LongCounter pipelineMetricTime;
+    private transient TimerMetric pipelineMetricTime;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -78,7 +78,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         synchronized(namespacedMetric.getMetric()) {
             eventMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
             eventMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            eventMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            eventMetricTime = TimerMetric.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
         }
         return this;
     }
@@ -89,7 +89,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         synchronized(namespacedMetric.getMetric()) {
             pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
             pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            pipelineMetricTime = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricTime = TimerMetric.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
         }
         return this;
     }
@@ -131,13 +131,6 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     public void closeBatch(QueueBatch batch) throws IOException {
         batch.close();
         inflightBatches.remove(Thread.currentThread().getId());
-        Long startTime = inflightClocks.remove(Thread.currentThread().getId());
-        if (startTime != null && batch.filteredSize() > 0) {
-            // stop timer and record metrics iff the batch is non-empty.
-            long elapsedTimeMillis = (System.nanoTime() - startTime) / 1_000_000;
-            eventMetricTime.increment(elapsedTimeMillis);
-            pipelineMetricTime.increment(elapsedTimeMillis);
-        }
     }
 
     /**
@@ -196,7 +189,6 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     public void startMetrics(QueueBatch batch) {
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
-        inflightClocks.put(threadId, System.nanoTime());
     }
 
     @Override
@@ -209,6 +201,22 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     public void addOutputMetrics(int filteredSize) {
         eventMetricOut.increment(filteredSize);
         pipelineMetricOut.increment(filteredSize);
+    }
+
+    @Override
+    public <V, E extends Exception> V executeWithTimers(final co.elastic.logstash.api.TimerMetric.ExceptionalSupplier<V,E> supplier) throws E {
+        return eventMetricTime.time(() -> pipelineMetricTime.time(supplier));
+    }
+
+    @Override
+    public <E extends Exception> void executeWithTimers(co.elastic.logstash.api.TimerMetric.ExceptionalRunnable<E> runnable) throws E {
+        eventMetricTime.time(() -> pipelineMetricTime.time(runnable));
+    }
+
+    @JRubyMethod(name = "execute_with_timers")
+    public IRubyObject executeWithTimersRuby(final ThreadContext context,
+                                             final Block block) {
+        return executeWithTimers(() -> block.call(context));
     }
 
     public abstract void close() throws IOException;

@@ -204,10 +204,6 @@ include::static/contribute-core.asciidoc[]
 :edit_url:
 include::static/contributing-java-plugin.asciidoc[]
 
-// Glossary of Terms
-:edit_url!:
-include::static/glossary.asciidoc[]
-
 // Breaking Changes
 include::static/breaking-changes.asciidoc[]
 

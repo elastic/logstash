@@ -51,6 +51,8 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String, Double>> implem
     final LongSupplier nanoTimeSupplier;
 
     static final MathContext LIMITED_PRECISION = new MathContext(4, RoundingMode.HALF_UP);
+    private static final OptionalDouble NEGATIVE_INFINITY_OPTIONAL_DOUBLE = OptionalDouble.of(Double.NEGATIVE_INFINITY);
+    private static final OptionalDouble POSITIVE_INFINITY_OPTIONAL_DOUBLE = OptionalDouble.of(Double.POSITIVE_INFINITY);
 
     BaseFlowMetric(final LongSupplier nanoTimeSupplier,
                    final String name,
@@ -118,7 +120,11 @@ abstract class BaseFlowMetric extends AbstractMetric<Map<String, Double>> implem
         final BigDecimal deltaDenominator = current.denominator().subtract(baseline.denominator());
 
         if (deltaDenominator.signum() == 0) {
-            return OptionalDouble.empty();
+            switch (deltaNumerator.signum()) {
+                case -1: return NEGATIVE_INFINITY_OPTIONAL_DOUBLE;
+                case  0: return OptionalDouble.empty();
+                case +1: return POSITIVE_INFINITY_OPTIONAL_DOUBLE;
+            }
         }
 
         final BigDecimal rate = deltaNumerator.divide(deltaDenominator, LIMITED_PRECISION);

@@ -66,6 +66,22 @@ See the following links:
 
 Or go directly here for an exhaustive list: https://github.com/elastic/logstash/contribute
 
+Sometimes during the development of Logstash core or plugins, configuration parameters for sensitive data such as password, API keys or SSL keyphrases need to be provided to the user.
+To protect sensitive information leaking into the logs, follow the best practices below:
+- Logstash core and plugin should flag any settings that may contain secrets. If your source changes are in Ruby, apply `:password` validation or wrap the object with `Logstash::Util::Password` object.
+- A setting marked as secret should not disclose its value unless retrieved in a non-obvious way. If you are introducing a new class for sensitive object (check `Password.java` and `SecretVariable.java` classes before doing so), make sure to mask the sensitive info by overriding get value (or `toString()` of Java class) default methods.
+- Logstash should not log secrets on any log level by default. Make sure you double-check the loggers if they are touching the objects carrying sensitive info.
+- Logstash has a dedicated flag, disabled by default, that the raw configuration text be logged for debugging purposes only. Use of `config.debug` will log/display sensitive info in the debug logs, so beware of using it in Produciton.
+
+As an example, suppose you have `my_auth` config which carries the sensitive key. Defining with `:password` validated protects `my_auth` being leaked in Logstash core logics. 
+```
+:my_auth => { :validate => :password },
+```
+In the plugin level, make sure to wrap `my_auth` with `Password` object.
+```
+::LogStash::Util::Password.new(my_auth)
+```
+
 Using IntelliJ? See a detailed getting started guide [here](https://docs.google.com/document/d/1kqunARvYMrlfTEOgMpYHig0U-ZqCcMJfhvTtGt09iZg/pub).
 
 ## Breaking Changes
@@ -89,6 +105,8 @@ After a pull request is marked as a "breaking change," it becomes necessary to e
 ## Contributing to plugins
 
 Check our [documentation](https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html) on how to contribute to plugins or write your own!
+
+Check the _Contributing Documentation and Code Changes_ section to prevent plugin sensitive info from leaking in the debug logs.
 
 ### Logstash Plugin Changelog Guidelines
 

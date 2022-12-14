@@ -56,8 +56,11 @@ describe "Test Logstash service when multiple pipelines are used" do
 
   let(:retry_attempts) { 40 }
 
+  let(:pipelines_yaml_file_permissions) { 0644 }
+
   before(:each) do
     IO.write(pipelines_yaml_file, pipelines_yaml)
+    File.chmod(pipelines_yaml_file_permissions, pipelines_yaml_file)
   end
 
   it "executes the multiple pipelines" do
@@ -71,6 +74,53 @@ describe "Test Logstash service when multiple pipelines are used" do
     expect(IO.readlines(temporary_out_file_1).size).to eq(1)
     expect(File.exist?(temporary_out_file_2)).to be(true)
     expect(IO.readlines(temporary_out_file_2).size).to eq(1)
+  end
+
+  context 'effectively-empty pipelines.yml file' do
+    let!(:pipelines_yaml) do
+      <<~EOYAML
+        # this yaml file contains
+        # only comments and
+        # is effectively empty
+      EOYAML
+    end
+
+    it 'exits with helpful guidance' do
+      logstash_service = @fixture.get_service("logstash")
+      status = logstash_service.run('--path.settings', settings_dir, '--log.level=debug')
+      expect(status.exit_code).to_not be_zero
+      expect(status.stderr_and_stdout).to include('Pipelines YAML file is empty')
+    end
+  end
+
+  context 'unreadable pipelines.yml file' do
+    let(:pipelines_yaml_file_permissions) { 000 }
+
+    it 'exits with helpful guidance' do
+      logstash_service = @fixture.get_service("logstash")
+      status = logstash_service.run('--path.settings', settings_dir, '--log.level=debug')
+      expect(status.exit_code).to_not be_zero
+      expect(status.stderr_and_stdout).to include('Failed to read pipelines yaml file', 'Permission denied')
+    end
+  end
+
+  context 'readable pipelines.yml with invalid YAML contents' do
+
+    let!(:pipelines_yaml) do
+      <<~EOYAML
+         - pipeline.id: my_id
+           pipeline.workers: 1
+         # note: indentation not aligned will cause YAML parse error
+         pipeline.ordered: true
+      EOYAML
+    end
+
+    it 'exits with helpful guidance' do
+      logstash_service = @fixture.get_service("logstash")
+      status = logstash_service.run('--path.settings', settings_dir, '--log.level=debug')
+      expect(status.exit_code).to_not be_zero
+      expect(status.stderr_and_stdout).to include('Failed to parse contents of pipelines yaml file', 'SyntaxError:')
+    end
   end
 
   describe "inter-pipeline communication" do

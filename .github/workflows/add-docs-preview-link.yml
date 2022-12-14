@@ -3,7 +3,9 @@ name: Docs Preview Link
 on:
   pull_request_target:
     types: [opened, synchronize]
-    paths: docs/**
+    paths:
+      - docs/**
+      - docsk8s/**
 jobs:
   docs-preview-link:
     runs-on: ubuntu-latest
