@@ -57,13 +57,10 @@ jobs:
           area_id: ${{ env.DATA_PROCESSING_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-          #GITHUB_TOKEN: ${{ secrets.PROJECT_ASSIGNER_TOKEN }}
-      # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
-      # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
       # GH actions to make this a lot more DRY
       - uses: octokit/graphql-action@v2.x
         id: set_ingest_docs_area
-        if: github.event.label.name == env.DOCS_LABEL
+        if: github.event.label.name == env.LOGSTASH_LABEL
         with:
           query: |
             mutation updateIngestArea($item_id: ID!, $project_id: ID!, $area_field_id: ID!, $area_id: String) {
