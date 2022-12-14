@@ -86,6 +86,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
+        return this.metric.getTimer(context, namespaceName, key);
+    }
+
+    @Override
     protected IRubyObject doIncrement(final ThreadContext context, final IRubyObject[] args) {
         return context.nil;
     }

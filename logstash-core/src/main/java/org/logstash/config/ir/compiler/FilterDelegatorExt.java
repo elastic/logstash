@@ -33,6 +33,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.timer.NullTimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.util.UUID;
@@ -70,7 +71,7 @@ public final class FilterDelegatorExt extends AbstractFilterDelegatorExt {
     public FilterDelegatorExt initForTesting(final IRubyObject filter, RubyObject configNameDouble) {
         eventMetricOut = LongCounter.DUMMY_COUNTER;
         eventMetricIn = LongCounter.DUMMY_COUNTER;
-        eventMetricTime = LongCounter.DUMMY_COUNTER;
+        eventMetricTime = NullTimerMetric.getInstance();
         this.filter = filter;
         filterMethod = filter.getMetaClass().searchMethod(FILTER_METHOD_NAME);
         flushes = filter.respondsTo("flush");

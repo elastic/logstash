@@ -31,11 +31,14 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.instrument.metrics.timer.NullTimerMetric;
 
 @JRubyClass(name = "NullMetric")
 public final class NullMetricExt extends AbstractSimpleMetricExt {
 
     private static final long serialVersionUID = 1L;
+
+    private static final IRubyObject NULL_TIMER_METRIC = RubyUtil.toRubyObject(NullTimerMetric.getInstance());
 
     private transient IRubyObject collector;
 
@@ -81,6 +84,14 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
         final IRubyObject key, final IRubyObject value) {
         MetricExt.validateKey(context, null, key);
         return context.nil;
+    }
+
+    @Override
+    protected IRubyObject getTimer(final ThreadContext context,
+                                   final IRubyObject namespace,
+                                   final IRubyObject key) {
+        MetricExt.validateKey(context, null, key);
+        return NULL_TIMER_METRIC;
     }
 
     @Override

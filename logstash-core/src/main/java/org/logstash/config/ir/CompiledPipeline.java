@@ -19,8 +19,6 @@
 
 package org.logstash.config.ir;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -36,7 +34,6 @@ import org.logstash.config.ir.compiler.DatasetCompiler;
 import org.logstash.config.ir.compiler.EventCondition;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.config.ir.compiler.SplitDataset;
-import org.logstash.config.ir.expression.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -47,9 +44,14 @@ import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,8 +65,6 @@ import static org.logstash.config.ir.compiler.Utils.copyNonCancelledEvents;
  * {@code filter}, {@code output} or an {@code if} condition.
  */
 public final class CompiledPipeline {
-
-    private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
@@ -353,12 +353,20 @@ public final class CompiledPipeline {
         }
     }
 
+    public interface Execution <QB extends QueueBatch> {
+        /**
+         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
+         *  the pipeline drops or clones events during the filter stage.
+         * */
+        int compute(final QB batch, final boolean flush, final boolean shutdown);
+    }
+
     /**
      * Instances of this class represent a fully compiled pipeline execution. Note that this class
      * has a separate lifecycle from {@link CompiledPipeline} because it holds per (worker-thread)
      * state and thus needs to be instantiated once per thread.
      */
-    public abstract class CompiledExecution {
+    public abstract class CompiledExecution implements Execution<QueueBatch> {
 
         /**
          * Compiled {@link IfVertex, indexed by their ID as returned by {@link Vertex#getId()}.
@@ -378,12 +386,6 @@ public final class CompiledPipeline {
             compiledFilters = compileFilters();
             compiledOutputs = compileOutputs();
         }
-
-        /**
-         * @return the number of events that was processed, could be less o greater than batch.size(), depending if
-         *  the pipeline drops or clones events during the filter stage.
-         * */
-        public abstract int compute(final QueueBatch batch, final boolean flush, final boolean shutdown);
 
         public abstract int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown);
 
@@ -433,7 +435,6 @@ public final class CompiledPipeline {
                         flatten(datasets, vertex),
                         filters.get(vertexId)
                     );
-                LOGGER.debug("Compiled filter\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
             }
@@ -458,7 +459,6 @@ public final class CompiledPipeline {
                         outputs.get(vertexId),
                         outputs.size() == 1
                     );
-                LOGGER.debug("Compiled output\n {} \n into \n {}", vertex, prepared);
 
                 plugins.put(vertexId, prepared.instantiate());
             }
@@ -489,7 +489,6 @@ public final class CompiledPipeline {
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
                         DatasetCompiler.splitDataset(dependencies, condition);
-                    LOGGER.debug("Compiled conditional\n {} \n into \n {}", vertex, prepared);
 
                     conditional = prepared.instantiate();
                     iffs.put(vertexId, conditional);

@@ -57,11 +57,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     public NamespacedMetricExt initialize(final ThreadContext context, final IRubyObject metric,
         final IRubyObject namespaceName) {
         this.metric = (MetricExt) metric;
-        if (namespaceName instanceof RubyArray) {
-            this.namespaceName = (RubyArray) namespaceName;
-        } else {
-            this.namespaceName = RubyArray.newArray(context.runtime, namespaceName);
-        }
+        this.namespaceName = normalizeNamespace(namespaceName);
         return this;
     }
 
@@ -81,6 +77,11 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     protected IRubyObject getGauge(final ThreadContext context, final IRubyObject key,
         final IRubyObject value) {
         return metric.gauge(context, namespaceName, key, value);
+    }
+
+    @Override
+    protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
+        return metric.timer(context, namespaceName, key);
     }
 
     @Override
@@ -122,9 +123,7 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     protected NamespacedMetricExt createNamespaced(final ThreadContext context,
         final IRubyObject name) {
         MetricExt.validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
-        return create(this.metric, (RubyArray) namespaceName.op_plus(
-            name instanceof RubyArray ? name : RubyArray.newArray(context.runtime, name)
-        ));
+        return create(this.metric, (RubyArray) namespaceName.op_plus(normalizeNamespace(name)));
     }
 
     @Override

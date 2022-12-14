@@ -488,7 +488,7 @@ module LogStash
 
       def validate(value)
         unless valid?(value)
-          raise ArgumentError.new("Invalid value \"#{value}, valid options are within the range of #{Port::VALID_PORT_RANGE.first}-#{Port::VALID_PORT_RANGE.last}")
+          raise ArgumentError.new("Invalid value \"#{name}: #{value}\", valid options are within the range of #{Port::VALID_PORT_RANGE.first}-#{Port::VALID_PORT_RANGE.last}")
         end
       end
     end
@@ -513,7 +513,7 @@ module LogStash
       def validate(value)
         super(value)
         unless @possible_strings.empty? || @possible_strings.include?(value)
-          raise ArgumentError.new("Invalid value \"#{value}\". Options are: #{@possible_strings.inspect}")
+          raise ArgumentError.new("Invalid value \"#{name}: #{value}\". Options are: #{@possible_strings.inspect}")
         end
       end
     end

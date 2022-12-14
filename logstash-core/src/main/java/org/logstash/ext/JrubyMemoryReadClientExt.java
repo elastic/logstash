@@ -84,6 +84,4 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
         startMetrics(batch);
         return batch;
     }
-
-
 }
