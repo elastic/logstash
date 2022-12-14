@@ -58,9 +58,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           #GITHUB_TOKEN: ${{ secrets.PROJECT_ASSIGNER_TOKEN }}
-      # Adds 'Team:Docs' label to Platform Ingest Docs
       - uses: octokit/graphql-action@v2.x
-        id: add_to_ingest_docs_project
+        id: add_to_project
         if: github.event.label.name == env.DOCS_LABEL
         with:
           query: |
