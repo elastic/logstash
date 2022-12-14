@@ -57,7 +57,6 @@ jobs:
           area_id: ${{ env.DATA_PROCESSING_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-      # GH actions to make this a lot more DRY
       - uses: octokit/graphql-action@v2.x
         id: set_ingest_docs_area
         if: github.event.label.name == env.DOCS_LABEL
