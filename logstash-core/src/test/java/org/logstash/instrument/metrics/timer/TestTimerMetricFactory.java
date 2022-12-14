@@ -23,10 +23,6 @@ public class TestTimerMetricFactory {
         this.nanoTimeSupplier = nanoTimeSupplier;
     }
 
-    public AfterCompletionTimerMetric newAfterCompletionTimerMetric(final String name) {
-        return new AfterCompletionTimerMetric(name, this.nanoTimeSupplier);
-    }
-
     public ConcurrentLiveTimerMetric newConcurrentLiveTimerMetric(final String name) {
         return new ConcurrentLiveTimerMetric(name, this.nanoTimeSupplier);
     }
