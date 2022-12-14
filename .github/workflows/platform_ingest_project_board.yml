@@ -58,24 +58,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
           #GITHUB_TOKEN: ${{ secrets.PROJECT_ASSIGNER_TOKEN }}
-      # Adds 'Team:Docs' label to Platform Ingest Docs
-      - uses: octokit/graphql-action@v2.x
-        id: add_to_ingest_docs_project
-        if: github.event.label.name == env.DOCS_LABEL
-        with:
-          query: |
-            # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
-            mutation AddToIngestProject($project_id: ID!, $content_id: ID!) {
-              addProjectV2ItemById(input: { projectId: $project_id, contentId: $content_id }) {
-                  item {
-                    id
-                  }
-                }
-              }
-          project_id: ${{ env.INGEST_PROJECT_ID }}
-          content_id: ${{ github.event.issue.node_id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
       # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
       # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
       # GH actions to make this a lot more DRY
