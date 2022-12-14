@@ -6,7 +6,6 @@ on:
       - labeled
 env:
   INGEST_PROJECT_ID: 'PVT_kwDOAGc3Zs4AEzn4'
-  INGEST_DOCS_PROJECT_ID: 'PVT_kwDOAGc3Zs4AGP96'
   
   # GitHub labels for each team/area
   LOGSTASH_LABEL: 'Team:Logstash'
@@ -15,6 +14,7 @@ env:
   # ID values for the Area property + its options
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgEgZSo'
   DATA_PROCESSING_OPTION_ID: 'c9917758'
+  INGEST_DOCS_OPTION_ID: '1fc8ea38'
   
 jobs:
   add_to_ingest_project:
@@ -72,7 +72,7 @@ jobs:
                   }
                 }
               }
-          project_id: ${{ env.INGEST_DOCS_PROJECT_ID }}
+          project_id: ${{ env.INGEST_PROJECT_ID }}
           content_id: ${{ github.event.issue.node_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
