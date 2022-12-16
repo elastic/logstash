@@ -16,6 +16,11 @@ env:
   DATA_PROCESSING_OPTION_ID: 'c9917758'
   INGEST_DOCS_OPTION_ID: 'def2f8e6'
   
+  # ID values for the Team property + its options
+  TEAM_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgD4Pm0'
+  DATA_PROCESSING_TEAM_OPTION_ID: '28847a20'
+  INGEST_DOCS_TEAM_OPTION_ID: 'e13d244f'
+  
 jobs:
   add_to_ingest_project:
     runs-on: ubuntu-latest
@@ -57,8 +62,9 @@ jobs:
           area_id: ${{ env.DATA_PROCESSING_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      # Sets the 'Team' field for Team:Docs.
       - uses: octokit/graphql-action@v2.x
-        id: set_ingest_docs_area
+        id: set_ingest_docs_team
         if: github.event.label.name == env.DOCS_LABEL
         with:
           query: |
@@ -70,7 +76,7 @@ jobs:
               }
           item_id: ${{ fromJSON(steps.add_to_project.outputs.data).addProjectV2ItemById.item.id }}
           project_id: ${{ env.INGEST_PROJECT_ID }}
-          area_field_id: ${{ env.AREA_FIELD_ID }}
-          area_id: ${{ env.INGEST_DOCS_OPTION_ID }}
+          area_field_id: ${{ env.TEAM_FIELD_ID }}
+          area_id: ${{ env.INGEST_DOCS_TEAM_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
