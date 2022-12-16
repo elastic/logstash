@@ -42,7 +42,9 @@ import java.util.stream.Stream;
  * metrics and other namespaces to it.
  */
 public class NamespacedMetricImpl implements NamespacedMetric {
+
     private final ThreadContext threadContext;
+
     private final AbstractNamespacedMetricExt metrics;
 
     public NamespacedMetricImpl(final ThreadContext threadContext, final AbstractNamespacedMetricExt metrics) {

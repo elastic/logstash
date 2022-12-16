@@ -11,7 +11,7 @@ import org.logstash.plugins.PluginLookup;
 
 import java.util.Map;
 
-class CodecPluginCreator extends  AbstractPluginCreator<Codec> {
+class CodecPluginCreator extends AbstractPluginCreator<Codec> {
 
     @Override
     public IRubyObject createDelegator(String name, Map<String, Object> pluginArgs, String id,

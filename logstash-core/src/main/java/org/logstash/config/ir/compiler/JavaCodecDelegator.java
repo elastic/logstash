@@ -38,10 +38,6 @@ import java.util.function.Consumer;
 
 public class JavaCodecDelegator implements Codec {
 
-    public static final String ENCODE_KEY = "encode";
-    public static final String DECODE_KEY = "decode";
-    public static final String IN_KEY = "writes_in";
-
     private final Codec codec;
 
     protected final CounterMetric encodeMetricIn;
@@ -54,7 +50,6 @@ public class JavaCodecDelegator implements Codec {
 
     protected final TimerMetric decodeMetricTime;
 
-
     public JavaCodecDelegator(final Context context, final Codec codec) {
         this.codec = codec;
 
@@ -63,12 +58,12 @@ public class JavaCodecDelegator implements Codec {
         synchronized(metric.root()) {
             metric.gauge(MetricKeys.NAME_KEY.asJavaString(), codec.getName());
 
-            final NamespacedMetric encodeMetric = metric.namespace(ENCODE_KEY);
-            encodeMetricIn = encodeMetric.counter(IN_KEY);
+            final NamespacedMetric encodeMetric = metric.namespace(MetricKeys.ENCODE_KEY.asJavaString());
+            encodeMetricIn = encodeMetric.counter(MetricKeys.WRITES_IN_KEY.asJavaString());
             encodeMetricTime = encodeMetric.timer(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
 
-            final NamespacedMetric decodeMetric = metric.namespace(DECODE_KEY);
-            decodeMetricIn = decodeMetric.counter(IN_KEY);
+            final NamespacedMetric decodeMetric = metric.namespace(MetricKeys.DECODE_KEY.asJavaString());
+            decodeMetricIn = decodeMetric.counter(MetricKeys.WRITES_IN_KEY.asJavaString());
             decodeMetricOut = decodeMetric.counter(MetricKeys.OUT_KEY.asJavaString());
             decodeMetricTime = decodeMetric.timer(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
         }

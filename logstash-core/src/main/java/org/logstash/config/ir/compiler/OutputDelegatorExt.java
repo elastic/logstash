@@ -38,8 +38,7 @@ import org.logstash.instrument.metrics.AbstractMetricExt;
 import static org.logstash.RubyUtil.RUBY;
 
 @JRubyClass(name = "OutputDelegator")
-public final class
-OutputDelegatorExt extends AbstractOutputDelegatorExt {
+public final class OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,17 +48,27 @@ OutputDelegatorExt extends AbstractOutputDelegatorExt {
 
     @JRubyMethod(required = 5)
     public OutputDelegatorExt initialize(final ThreadContext context, final IRubyObject[] arguments) {
+        ExecutionContextExt executionContext = (ExecutionContextExt) arguments[2];
+        RubyClass klass = (RubyClass) arguments[0];
+        AbstractMetricExt metric = (AbstractMetricExt) arguments[1];
+        OutputStrategyExt.OutputStrategyRegistryExt strategyRegistry = (OutputStrategyExt.OutputStrategyRegistryExt) arguments[3];
+        RubyHash args = (RubyHash) arguments[4];
         return initialize(
-            context, (RubyHash) arguments[4], (RubyClass) arguments[0], (AbstractMetricExt) arguments[1],
-            (ExecutionContextExt) arguments[2],
-            (OutputStrategyExt.OutputStrategyRegistryExt) arguments[3]
+            context,
+            args,
+            klass,
+            metric,
+            executionContext,
+            strategyRegistry
         );
     }
 
-    public OutputDelegatorExt initialize(final ThreadContext context, final RubyHash args,
-        final RubyClass outputClass, final AbstractMetricExt metric,
-        final ExecutionContextExt executionContext,
-        final OutputStrategyExt.OutputStrategyRegistryExt strategyRegistry) {
+    public OutputDelegatorExt initialize(final ThreadContext context,
+                                         final RubyHash args,
+                                         final RubyClass outputClass,
+                                         final AbstractMetricExt metric,
+                                         final ExecutionContextExt executionContext,
+                                         final OutputStrategyExt.OutputStrategyRegistryExt strategyRegistry) {
         this.outputClass = outputClass;
         initMetrics(
             args.op_aref(context, RubyString.newString(context.runtime, "id")).asJavaString(),

@@ -33,6 +33,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
+import org.logstash.common.SettingKeyDefinitions;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 
@@ -55,7 +56,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
     /**
      * A contextual name to expose the queue type.
      */
-    public static String CONTEXT_NAME = "queue.type";
+    public static String QUEUE_TYPE_CONTEXT_NAME = "queue.type";
 
     private static final long serialVersionUID = 1L;
 
@@ -66,11 +67,11 @@ public final class QueueFactoryExt extends RubyBasicObject {
     @JRubyMethod(meta = true)
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
-        final String type = getSetting(context, settings, CONTEXT_NAME).asJavaString();
+        final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
         if (PERSISTED_TYPE.equals(type)) {
             final Path queuePath = Paths.get(
-                getSetting(context, settings, "path.queue").asJavaString(),
-                getSetting(context, settings, "pipeline.id").asJavaString()
+                getSetting(context, settings, SettingKeyDefinitions.PATH_QUEUE).asJavaString(),
+                getSetting(context, settings, SettingKeyDefinitions.PIPELINE_ID).asJavaString()
             );
 
             // Files.createDirectories raises a FileAlreadyExistsException
@@ -83,13 +84,13 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .initialize(
                     context, new IRubyObject[]{
                         context.runtime.newString(queuePath.toString()),
-                        getSetting(context, settings, "queue.page_capacity"),
-                        getSetting(context, settings, "queue.max_events"),
-                        getSetting(context, settings, "queue.checkpoint.writes"),
-                        getSetting(context, settings, "queue.checkpoint.acks"),
-                        getSetting(context, settings, "queue.checkpoint.interval"),
-                        getSetting(context, settings, "queue.checkpoint.retry"),
-                        getSetting(context, settings, "queue.max_bytes")
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_PAGE_CAPACITY),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_EVENTS),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_WRITES),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_ACKS),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_INTERVAL),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_RETRY),
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_BYTES)
                     }
                 );
         } else if (MEMORY_TYPE.equals(type)) {
@@ -97,9 +98,9 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
                 context, context.runtime.newFixnum(
-                    getSetting(context, settings, "pipeline.batch.size")
+                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
                         .convertToInteger().getIntValue()
-                        * getSetting(context, settings, "pipeline.workers")
+                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
                         .convertToInteger().getIntValue()
                 )
             );
