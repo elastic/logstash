@@ -44,6 +44,14 @@ public interface NamespacedMetric extends Metric {
     CounterMetric counter(String metric);
 
     /**
+     * Creates a timer with the name {@code metric}.
+     *
+     * @param metric name of the counter
+     * @return an instance tracking a counter metric allowing easy incrementing and resetting
+     */
+    TimerMetric timer(String metric);
+
+    /**
      * Increment the {@code metric} metric by 1.
      *
      * @param metric metric to increment

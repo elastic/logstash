@@ -21,6 +21,8 @@
 package org.logstash.instrument.metrics;
 
 import java.util.concurrent.TimeUnit;
+
+import co.elastic.logstash.api.TimerMetric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -51,8 +53,9 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     private static final RubySymbol DECREMENT = RubyUtil.RUBY.newSymbol("decrement");
 
     private static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
-
+    private static final RubySymbol TIMER = RubyUtil.RUBY.newSymbol("timer");
     private static final RubySymbol SET = RubyUtil.RUBY.newSymbol("set");
+    private static final RubySymbol GET = RubyUtil.RUBY.newSymbol("get");
 
     private transient IRubyObject collector;
 
@@ -91,7 +94,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         final IRubyObject key, final IRubyObject value) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
-            context, "push", new IRubyObject[]{namespace, key, COUNTER, INCREMENT, value}
+            context, "push", new IRubyObject[]{normalizeNamespace(namespace), key, COUNTER, INCREMENT, value}
         );
     }
 
@@ -104,7 +107,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         final IRubyObject key, final IRubyObject value) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
-            context, "push", new IRubyObject[]{namespace, key, COUNTER, DECREMENT, value}
+            context, "push", new IRubyObject[]{normalizeNamespace(namespace), key, COUNTER, DECREMENT, value}
         );
     }
 
@@ -136,34 +139,41 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         final IRubyObject key, final IRubyObject value) {
         MetricExt.validateKey(context, null, key);
         return collector.callMethod(
-            context, "push", new IRubyObject[]{namespace, key, GAUGE, SET, value}
+            context, "push", new IRubyObject[]{normalizeNamespace(namespace), key, GAUGE, SET, value}
         );
+    }
+
+    @Override
+    protected IRubyObject getTimer(final ThreadContext context,
+                                   final IRubyObject namespace,
+                                   final IRubyObject key) {
+        MetricExt.validateKey(context, null, key);
+        return collector.callMethod(context,
+                "get", new IRubyObject[]{normalizeNamespace(namespace), key, TIMER}
+                );
     }
 
     @Override
     protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject duration) {
         MetricExt.validateKey(context, null, key);
-        return collector.callMethod(
-            context, "push", new IRubyObject[]{namespace, key, COUNTER, INCREMENT, duration}
-        );
+
+        final TimerMetric timer = timer(context, namespace, key).toJava(TimerMetric.class);
+        timer.reportUntrackedMillis(duration.convertToInteger().getLongValue());
+        return context.nil;
     }
 
     @Override
-    protected IRubyObject doTime(final ThreadContext context, final IRubyObject namespace,
-        final IRubyObject key, final Block block) {
+    protected IRubyObject doTime(final ThreadContext context,
+                                 final IRubyObject namespace,
+                                 final IRubyObject key,
+                                 final Block block) {
         MetricExt.validateKey(context, null, key);
         if (!block.isGiven()) {
             return MetricExt.TimedExecution.create(this, namespace, key);
         }
-        final long startTime = System.nanoTime();
-        final IRubyObject res = block.call(context);
-        this.reportTime(context, namespace, key, RubyFixnum.newFixnum(
-            context.runtime, TimeUnit.MILLISECONDS.convert(
-                System.nanoTime() - startTime, TimeUnit.NANOSECONDS
-            )
-        ));
-        return res;
+        final TimerMetric timer = timer(context, namespace, key).toJava(TimerMetric.class);
+        return timer.time(() -> block.call(context));
     }
 
     @Override
@@ -172,7 +182,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
         return NamespacedMetricExt.create(
             this,
-            name instanceof RubyArray ? (RubyArray) name : RubyArray.newArray(context.runtime, name)
+            normalizeNamespace(name)
         );
     }
 

@@ -21,10 +21,12 @@ require "spec_helper"
 
 describe LogStash::Instrument::NamespacedMetric do
   let(:namespace) { :root }
-  let(:collector) { [] }
+  let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
 
   subject { described_class.new(metric, namespace) }
+
+  before(:each) { allow(collector).to receive(:push).and_call_original }
 
   it "defines the same interface as `Metric`" do
     expect(described_class).to implement_interface_of(LogStash::Instrument::Metric)
@@ -47,32 +49,32 @@ describe LogStash::Instrument::NamespacedMetric do
 
   context "#increment" do
     it "a counter by 1" do
-      metric = subject.increment(:error_rate)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :increment, 1)
+      subject.increment(:error_rate)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :increment, 1)
     end
 
     it "a counter by a provided value" do
-      metric = subject.increment(:error_rate, 20)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :increment, 20)
+      subject.increment(:error_rate, 20)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :increment, 20)
     end
   end
 
-  context "#decrement" do
+  context "#decrement", skip: "LongCounter impl does not support decrement" do
     it "a counter by 1" do
-      metric = subject.decrement(:error_rate)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :decrement, 1)
+      subject.decrement(:error_rate)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :decrement, 1)
     end
 
     it "a counter by a provided value" do
-      metric = subject.decrement(:error_rate, 20)
-      expect(collector).to be_a_metric_event([:root, :error_rate], :counter, :decrement, 20)
+      subject.decrement(:error_rate, 20)
+      expect(collector).to have_received(:push).with([:root], :error_rate, :counter, :decrement, 20)
     end
   end
 
   context "#gauge" do
     it "set the value of a key" do
-      metric = subject.gauge(:size_queue, 20)
-      expect(collector).to be_a_metric_event([:root, :size_queue], :gauge, :set, 20)
+      subject.gauge(:size_queue, 20)
+      expect(collector).to have_received(:push).with([:root], :size_queue, :gauge, :set, 20)
     end
   end
 
@@ -83,22 +85,36 @@ describe LogStash::Instrument::NamespacedMetric do
     it "records the duration" do
       subject.time(:duration_ms) { sleep(sleep_time) }
 
-      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 5)
-      expect(collector[0]).to match([:root])
-      expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:counter)
+      timer = metric.timer(namespace, :duration_ms)
+      expect(timer.value).to be_within(50).of(sleep_time_ms)
     end
 
     it "return a TimedExecution" do
       execution = subject.time(:duration_ms)
       sleep(sleep_time)
+
+      timer = metric.timer(namespace, :duration_ms)
+      expect(timer.value).to eq(0) # no live tracking without a block
+
       execution_time = execution.stop
 
-      expect(execution_time).to eq(collector.last)
-      expect(collector.last).to be_within(sleep_time_ms).of(sleep_time_ms + 0.1)
-      expect(collector[0]).to match([:root])
-      expect(collector[1]).to be(:duration_ms)
-      expect(collector[2]).to be(:counter)
+      expect(execution_time).to be_within(50).of(sleep_time_ms)
+      expect(timer.value).to be_within(50).of(sleep_time_ms)
+    end
+  end
+
+  context "#namespace" do
+    let(:namespace) { [:deeply, :nested] }
+    let(:sub_key) { [:even, :deeper] }
+
+    it "creates a new metric object and append the `sub_key` to the `base_key`" do
+      expect(subject.namespace(sub_key).namespace_name).to eq(namespace + sub_key)
+    end
+
+    it "uses the same collector as the creator class" do
+      child = subject.namespace(sub_key)
+      child.increment(:error_rate)
+      expect(collector).to have_received(:push).with((namespace + sub_key), :error_rate, :counter, :increment, 1)
     end
   end
 

@@ -19,14 +19,6 @@ require "rspec"
 require "rspec/expectations"
 require "stud/try"
 
-RSpec::Matchers.define :be_a_metric_event do |namespace, type, *args|
-  match do
-    namespace == Array(actual[0]).concat(Array(actual[1])) &&
-      type == actual[2] &&
-      args == actual[3..-1]
-  end
-end
-
 # Match to test `NullObject` pattern
 RSpec::Matchers.define :implement_interface_of do |type, key, value|
   match do |actual|

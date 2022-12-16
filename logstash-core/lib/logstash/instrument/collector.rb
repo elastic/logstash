@@ -47,7 +47,10 @@ module LogStash module Instrument
     #
     def push(namespaces_path, key, type, *metric_type_params)
       begin
-        get(namespaces_path, key, type).execute(*metric_type_params)
+        metric_proxy = get(namespaces_path, key, type)
+        return metric_proxy.execute(*metric_type_params) if metric_proxy.respond_to?(:execute)
+
+        logger.error("Collector: Cannot record metric action #{type}@#{metric_type_params.join('/')} on <#{metric_proxy}> at path #{namespaces_path.join('/')}/#{key}")
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e
@@ -63,8 +66,13 @@ module LogStash module Instrument
 
     def get(namespaces_path, key, type)
       @metric_store.fetch_or_store(namespaces_path, key) do
-        LogStash::Instrument::MetricType.create(type, namespaces_path, key)
+        initialize_metric(type, namespaces_path, key)
       end
+    end
+
+    # test injection, see MetricExtFactory
+    def initialize_metric(type, namespaces_path, key)
+      MetricType.create(type, namespaces_path, key)
     end
 
     ##

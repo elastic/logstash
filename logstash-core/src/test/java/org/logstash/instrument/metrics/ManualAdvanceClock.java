@@ -1,6 +1,5 @@
 package org.logstash.instrument.metrics;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -8,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
-class ManualAdvanceClock extends Clock {
+public class ManualAdvanceClock extends TestClock {
     private final ZoneId zoneId;
     private final AtomicReference<Instant> currentInstant;
     private final Instant zeroInstant;
@@ -33,7 +32,7 @@ class ManualAdvanceClock extends Clock {
     }
 
     @Override
-    public Clock withZone(ZoneId zone) {
+    public TestClock withZone(ZoneId zone) {
         return new ManualAdvanceClock(this.zeroInstant, this.currentInstant, zone);
     }
 

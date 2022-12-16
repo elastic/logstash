@@ -94,6 +94,8 @@ func normalizeSetting(setting string) (string, error) {
 		"log.level",
 		"log.format",
 		"modules",
+		"metric.collect",
+		"metric.timers",
 		"path.logs",
 		"path.plugins",
 		"api.auth.type",

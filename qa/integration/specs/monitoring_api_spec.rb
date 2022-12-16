@@ -205,8 +205,8 @@ describe "Test Monitoring API" do
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       # monitoring api can fail if the subsystem isn't ready
       result = logstash_service.monitoring_api.logging_get rescue nil
-      expect(result).not_to be_nil
-      expect(result["loggers"].size).to be > 0
+      expect(result).to_not be_nil
+      expect(result).to include("loggers" => an_object_having_attributes(:size => a_value > 0))
     end
 
     #default
@@ -317,11 +317,11 @@ describe "Test Monitoring API" do
       expect(input_plugin_flow_status).to include('throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0))
       expect(filter_plugin_flow_status).to include(
                                              'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
       expect(output_plugin_flow_status).to include(
                                              'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_cost_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
     end
   end

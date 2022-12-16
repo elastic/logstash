@@ -1,0 +1,19 @@
+[[ls-k8s-monitor-elastic-cloud]]
+==== Ship metrics to Elastic Cloud
+
+TIP: Be sure that you have the Elastic CustomResourceDefinitions (CRDs) installed so that you can follow the example. Check out <<qs-set-up>> for set up info.
+
+You can configure {metricbeat} to send monitoring data to a hosted {ess} on https://cloud.elastic.co/[Elastic Cloud]. To send to Elastic Cloud, remove the `elasticsearchRef` from the `spec` and set the `cloud.id` and `cloud.auth` for your https://cloud.elastic.co/[Elastic Cloud] monitoring cluster in the `spec.config` section of the {metricbeat} configuration.
+
+[source,yaml]
+--
+apiVersion: beat.k8s.elastic.co/v1beta1
+kind: Beat
+metadata:
+  name: metricbeat
+spec:
+  config:
+    cloud.id: CLOUD_ID
+    cloud.auth: CLOUD_AUTH
+...
+--

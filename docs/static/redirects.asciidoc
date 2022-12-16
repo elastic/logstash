@@ -47,7 +47,6 @@ You can still install the Apache-licensed OSS distribution with homebrew using t
 As of Logstash 8.0, Elastic no longer maintains a Homebrew cask containing formulae for installing the Elastic-licensed distribution of Logstash.
 If you want to run the full distribution of Logstash on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
 
-
 // UPGRADE FROM OLDER VERSIONS
 
 [role="exclude",id="upgrading-logstash-pqs"]
@@ -106,3 +105,8 @@ You can also use a mounted drive to make this workflow easier.
 Keep in mind that only one Logstash instance can write to `path.queue`. You
 cannot have the original instance and the new instance writing to the queue at
 the same time.
+
+[role="exclude",id="glossary"]
+=== Glossary of Terms
+
+This content has moved. Refer to {glossary}/terms.html[Terminology].

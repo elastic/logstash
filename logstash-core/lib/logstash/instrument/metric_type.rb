@@ -17,16 +17,9 @@
 
 require "logstash/instrument/metric_type/counter"
 require "logstash/instrument/metric_type/gauge"
-require "logstash/instrument/metric_type/uptime"
 
 module LogStash module Instrument
   module MetricType
-    METRIC_TYPE_LIST = {
-      :counter => LogStash::Instrument::MetricType::Counter,
-      :gauge   => LogStash::Instrument::MetricType::Gauge,
-      :uptime  => LogStash::Instrument::MetricType::Uptime,
-    }.freeze
-
     # Use the string to generate a concrete class for this metrics
     #
     # @param [String] The name of the class
@@ -34,7 +27,13 @@ module LogStash module Instrument
     # @param [String] The metric key
     # @raise [NameError] If the class is not found
     def self.create(type, namespaces, key)
-      METRIC_TYPE_LIST[type].new(namespaces, key)
+      case type
+      when :counter then return LogStash::Instrument::MetricType::Counter.new(namespaces, key)
+      when :gauge   then return LogStash::Instrument::MetricType::Gauge.new(namespaces, key)
+      when :uptime  then return org.logstash.instrument.metrics.UptimeMetric.new(key.to_s)
+      when :timer   then return org.logstash.instrument.metrics.timer.TimerMetric::create(key.to_s)
+      else fail NameError, "Unknown Metric Type `#{type}`"
+      end
     end
   end
 end; end

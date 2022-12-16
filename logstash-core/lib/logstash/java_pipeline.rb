@@ -50,6 +50,9 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
     @worker_threads = []
 
+    @worker_observer = org.logstash.execution.WorkerObserver.new(process_events_namespace_metric,
+                                                                 pipeline_events_namespace_metric)
+
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
@@ -578,15 +581,19 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def init_worker_loop
     begin
       org.logstash.execution.WorkerLoop.new(
-        lir_execution,
-        filter_queue_client,
-        @events_filtered,
-        @events_consumed,
-        @flushRequested,
-        @flushing,
-        @shutdownRequested,
-        @drain_queue,
-        @preserve_event_order)
+        filter_queue_client,   # QueueReadClient
+        lir_execution,         # CompiledPipeline
+        @worker_observer,      # WorkerObserver
+        # pipeline reporter counters
+        @events_consumed,      # LongAdder
+        @events_filtered,      # LongAdder
+        # signaling channels
+        @flushRequested,       # AtomicBoolean
+        @flushing,             # AtomicBoolean
+        @shutdownRequested,    # AtomicBoolean
+        # behaviour config pass-through
+        @drain_queue,          # boolean
+        @preserve_event_order) # boolean
     rescue => e
       @logger.error(
         "Worker loop initialization error",
