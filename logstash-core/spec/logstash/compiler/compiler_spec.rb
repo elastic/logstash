@@ -188,6 +188,63 @@ describe LogStash::Compiler do
         end
       end
 
+      describe "an input plugin with a single codec" do
+        let(:plugin_source) { "generator { codec => plain }" }
+        let(:expected_plugin_args) do
+          {
+            "codec" => "plain"
+          }
+        end
+
+        it 'should add the plugin codec' do
+          expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, INPUT, "generator", expected_plugin_args))
+        end
+      end
+
+      describe "an input plugin with multiple codecs" do
+        let(:plugin_source) { "generator { codec => plain codec => json }" }
+        let(:expected_error_message) {
+          I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
+                 :plugin => "generator",
+                 :type => "input",
+                 :line => "1"
+          )
+        }
+
+        it 'should raise a configuration error' do
+          expect {compiled}.to raise_error(LogStash::ConfigurationError, expected_error_message)
+        end
+      end
+
+      describe "an output plugin with a single codec" do
+        let(:source) { "input { generator {} } output { stdout { codec => json } }" }
+        subject(:output) { compiled[:output] }
+        let(:expected_plugin_args) do
+          {
+            "codec" => "json"
+          }
+        end
+
+        it 'should add the plugin codec' do
+          expect(output).to ir_eql(j.iPlugin(rand_meta, OUTPUT, "stdout", expected_plugin_args))
+        end
+      end
+
+      describe "an output plugin with multiple codecs" do
+        let(:source) { "input { generator {} } output { stdout { codec => plain codec => json } }" }
+        let(:expected_error_message) {
+          I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
+                 :plugin => "stdout",
+                 :type => "output",
+                 :line => "1"
+          )
+        }
+
+        it 'should raise a configuration error' do
+          expect {compiled}.to raise_error(LogStash::ConfigurationError, expected_error_message)
+        end
+      end
+
       describe "a filter plugin that repeats a Hash directive" do
         let(:source) { "input { } filter { #{plugin_source} } output { } " }
         subject(:c_plugin) { compiled[:filter] }
