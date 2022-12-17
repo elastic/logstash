@@ -595,39 +595,31 @@ Example response:
     "test" : {
       "events" : {
         "duration_in_millis" : 365495,
-        "in" : 216485,
+        "in" : 216610,
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 603.1,
+          "lifetime" : 575.4
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 604.2,
+          "lifetime" : 575.1
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 604.8,
+          "lifetime" : 575.1
         },
         "queue_backpressure" : {
-          "current": 0.277,
-          "lifetime": 0.031
+          "current" : 0.214,
+          "lifetime" : 0.937
         },
         "worker_concurrency" : {
-          "current": 1.973,
-          "lifetime": 1.721
-        },
-        "queue_persisted_growth_bytes" : {
-          "current": 783100,
-          "lifetime": 17
-        },
-        "queue_persisted_growth_events" : {
-          "current": 11,
-          "lifetime": 0.003
+          "current" : 0.941,
+          "lifetime" : 0.9709
         }
       },
       "plugins" : {
@@ -637,13 +629,10 @@ Example response:
             "out" : 216485,
             "queue_push_duration_in_millis" : 342466
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 603.1,
+              "lifetime" : 590.7
             }
           },
           "name" : "beats"
@@ -659,20 +648,14 @@ Example response:
           "patterns_per_field" : {
             "message" : 1
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 16.71,
+              "lifetime" : 15.27
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 2829,
+              "lifetime" : 0.2585
             }
           },
           "name" : "grok"
@@ -683,20 +666,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 1.042,
+              "lifetime" : 0.9076
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 0.01763,
+              "lifetime" : 0.01536
             }
           },
           "name" : "geoip"
@@ -708,20 +685,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 75.34,
+              "lifetime" : 76.01
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 1.276,
+              "lifetime" : 1.287
             }
           },
           "name" : "elasticsearch"
@@ -748,24 +719,24 @@ Example response:
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 301.7,
+          "lifetime" : 231.8
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 207.2,
+          "lifetime" : 231.8
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 207.2,
+          "lifetime" : 231.8
         },
         "queue_backpressure" : {
-          "current": 0.871,
-          "lifetime": 0.031
+          "current" : 0.735,
+          "lifetime" : 0.0006894
         },
         "worker_concurrency" : {
-          "current": 4.71,
-          "lifetime": 1.201
+          "current" : 8.0,
+          "lifetime" : 5.903
         }
       },
       "plugins" : {
@@ -775,13 +746,10 @@ Example response:
             "out" : 87247,
             "queue_push_duration_in_millis" : 1532
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 301.7,
+              "lifetime" : 238.1
             }
           },
           "name" : "twitter"
@@ -790,24 +758,18 @@ Example response:
         "outputs" : [ {
           "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-2",
           "events" : {
-            "duration_in_millis" : 139545,
+            "duration_in_millis" : 2222229,
             "in" : 87247,
             "out" : 87247
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 100,
+              "lifetime" : 75.8
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 33.6,
+              "lifetime" : 25.47
             }
           },
           "name" : "elasticsearch"
@@ -848,36 +810,36 @@ Example response:
         "in" : 216485,
         "filtered" : 216485,
         "out" : 216485,
-        "queue_push_duration_in_millis" : 342466
+        "queue_push_duration_in_millis" : 2283
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 871.3,
+          "lifetime" : 575.1
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 874.8,
+          "lifetime" : 575.1
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 874.8,
+          "lifetime" : 575.1
         },
         "queue_backpressure" : {
-          "current": 0.277,
-          "lifetime": 0.031
+          "current" : 0,
+          "lifetime" : 0.006246
         },
         "worker_concurrency" : {
-          "current": 1.973,
-          "lifetime": 1.721
+          "current" : 1.471,
+          "lifetime" : 0.9709
         },
         "queue_persisted_growth_bytes" : {
-          "current": 783100,
-          "lifetime": 17
+          "current" : 8731,
+          "lifetime" : 0.0106
         },
         "queue_persisted_growth_events" : {
-          "current": 11,
-          "lifetime": 0.003
+          "current" : 0.0,
+          "lifetime" : 0.0
         }
       },
       "plugins" : {
@@ -885,15 +847,12 @@ Example response:
           "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-1",
           "events" : {
             "out" : 216485,
-            "queue_push_duration_in_millis" : 342466
+            "queue_push_duration_in_millis" : 2283
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 871.3,
+              "lifetime" : 590.7
             }
           },
           "name" : "beats"
@@ -909,20 +868,14 @@ Example response:
           "patterns_per_field" : {
             "message" : 1
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 10.53,
+              "lifetime" : 7.636
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 0.3565,
+              "lifetime" : 0.2585
             }
           },
           "name" : "grok"
@@ -933,7 +886,17 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "name" : "geoip"
+          "name" : "geoip",
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 1.743,
+              "lifetime" : 0.4538
+            },
+            "worker_millis_per_event" : {
+              "current" : 0.0590,
+              "lifetime" : 0.01536
+            }
+          }
         } ],
         "outputs" : [ {
           "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-4",
@@ -942,20 +905,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 62.27,
+              "lifetime" : 38.01
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 2.109,
+              "lifetime" : 1.287
             }
           },
           "name" : "elasticsearch"
