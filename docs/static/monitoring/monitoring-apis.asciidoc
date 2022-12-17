@@ -511,21 +511,21 @@ The following flow rates are available for the logstash process as a whole and f
 In addition, pipelines may have <<pipeline-flow-rates, additional flow rates>> depending on their configuration.
 
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1l,4"]
 |===
 |Flow Rate | Definition
 
-| `input_throughput` |
+| input_throughput |
 This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second).
 It includes events that are blocked by the queue and have not yet been accepted.
 
-| `filter_throughput` |
+| filter_throughput |
 This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
 
-| `output_throughput` |
+| output_throughput |
 This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
 
-| `worker_concurrency` |
+| worker_concurrency |
 This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (`duration_in_millis` / millisecond).
 
 A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric approaches its available `pipeline.workers`, because it indicates that all of its available workers are being kept busy.
@@ -533,7 +533,7 @@ Tuning a saturated pipeline to have more workers can often work to increase that
 
 A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
 
-| `queue_backpressure` |
+| queue_backpressure |
 This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
 It is typically most useful when looking at the stats for an <<pipeline-stats,individual pipeline>>.
 
@@ -550,17 +550,17 @@ Each flow stat includes rates for one or more recent windows of time:
 :flow-stable: pass:quotes[*Stable*]
 :flow-preview: pass:quotes[_Technology Preview_]
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1l,2,4"]
 |===
-| Flow Window       | Availability   | Definition
+| Flow Window     | Availability   | Definition
 
-| `current`         | {flow-stable}  | the most recent ~10s
-| `lifetime`        | {flow-stable}  | the lifetime of the relevant pipeline or process
-| `last_1_minute`   | {flow-preview} | the most recent ~1 minute
-| `last_5_minutes`  | {flow-preview} | the most recent ~5 minutes
-| `last_15_minutes` | {flow-preview} | the most recent ~15 minutes
-| `last_1_hour`     | {flow-preview} | the most recent ~1 hour
-| `last_24_hours`   | {flow-preview} | the most recent ~24 hours
+| current         | {flow-stable}  | the most recent ~10s
+| lifetime        | {flow-stable}  | the lifetime of the relevant pipeline or process
+| last_1_minute   | {flow-preview} | the most recent ~1 minute
+| last_5_minutes  | {flow-preview} | the most recent ~5 minutes
+| last_15_minutes | {flow-preview} | the most recent ~15 minutes
+| last_1_hour     | {flow-preview} | the most recent ~1 hour
+| last_24_hours   | {flow-preview} | the most recent ~24 hours
 
 |===
 
@@ -999,15 +999,15 @@ Each pipeline's entry in the API response includes a number of pipeline-scoped <
 
 When configured with a <<persistent-queues,persistent queue>>, the pipeline's `flow` will include additional rates to provide visibility into the health of the pipeline's persistent queue:
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1l,4"]
 |===
 |Flow Rate | Definition
 
-| `queue_persisted_growth_events` |
+| queue_persisted_growth_events |
 This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (`queue.events_count` / second).
 A positive number indicates that the queue's event-count is growing, and a negative number indicates that the queue is shrinking.
 
-| `queue_persisted_growth_bytes` |
+| queue_persisted_growth_bytes |
 This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second).
 A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
 
@@ -1021,18 +1021,19 @@ NOTE: The size of a PQ on disk includes both unacknowledged events and previousl
 
 Several additional plugin-level flow rates are available, and can be helpful for identifying problems with individual plugins:
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1,2l,4"]
 |===
 | Plugin Types | Flow Rate | Definition
 
-| Inputs | `throughput` | This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline's queue relative to wall-clock time (`events.in` / `second`).
+| Inputs | throughput |
+This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline's queue relative to wall-clock time (`events.in` / `second`).
 It includes events that are blocked by the queue and have not yet been accepted.
 
-| Filters, Outputs | `worker_utilization` |
+| Filters, Outputs | worker_utilization |
 This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
 It is useful for identifying which plugins in a pipeline are using the available worker resources.
 
-| Filters, Outputs | `worker_millis_per_event` |
+| Filters, Outputs | worker_millis_per_event |
 This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event.
 It is especially useful for identifying issues with plugins that operate on a small subset of events.
 An `"Infinity"` value for a given flow window indicates that worker millis have been spent without any events completing processing, and can indicate a plugin that is stuck.
