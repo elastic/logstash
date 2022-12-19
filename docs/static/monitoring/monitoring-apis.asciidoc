@@ -511,7 +511,7 @@ The following flow rates are available for the logstash process as a whole and f
 In addition, pipelines may have <<pipeline-flow-rates, additional flow rates>> depending on their configuration.
 
 
-[%autowidth.stretch, cols="1l,4"]
+[%autowidth.stretch, cols="1m,4"]
 |===
 |Flow Rate | Definition
 
@@ -550,7 +550,7 @@ Each flow stat includes rates for one or more recent windows of time:
 :flow-stable: pass:quotes[*Stable*]
 :flow-preview: pass:quotes[_Technology Preview_]
 
-[%autowidth.stretch, cols="1l,2,4"]
+[%autowidth.stretch, cols="1m,2,4"]
 |===
 | Flow Window     | Availability   | Definition
 
@@ -956,7 +956,7 @@ Each pipeline's entry in the API response includes a number of pipeline-scoped <
 
 When configured with a <<persistent-queues,persistent queue>>, the pipeline's `flow` will include additional rates to provide visibility into the health of the pipeline's persistent queue:
 
-[%autowidth.stretch, cols="1l,4"]
+[%autowidth.stretch, cols="1m,4"]
 |===
 |Flow Rate | Definition
 
@@ -978,7 +978,7 @@ NOTE: The size of a PQ on disk includes both unacknowledged events and previousl
 
 Several additional plugin-level flow rates are available, and can be helpful for identifying problems with individual plugins:
 
-[%autowidth.stretch, cols="1,2l,4"]
+[%autowidth.stretch, cols="1,2m,4"]
 |===
 | Plugin Types | Flow Rate | Definition
 
