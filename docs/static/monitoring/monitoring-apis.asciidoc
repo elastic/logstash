@@ -978,19 +978,19 @@ NOTE: The size of a PQ on disk includes both unacknowledged events and previousl
 
 Several additional plugin-level flow rates are available, and can be helpful for identifying problems with individual plugins:
 
-[%autowidth.stretch, cols="1,2m,4"]
+[%autowidth.stretch, cols="2m,1,4"]
 |===
-| Plugin Types | Flow Rate | Definition
+| Flow Rate | Plugin Types | Definition
 
-| Inputs | throughput |
+| throughput | Inputs |
 This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline's queue relative to wall-clock time (`events.in` / `second`).
 It includes events that are blocked by the queue and have not yet been accepted.
 
-| Filters, Outputs | worker_utilization |
+| worker_utilization | Filters, Outputs |
 This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
 It is useful for identifying which plugins in a pipeline are using the available worker resources.
 
-| Filters, Outputs | worker_millis_per_event |
+| worker_millis_per_event | Filters, Outputs |
 This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event.
 It is especially useful for identifying issues with plugins that operate on a small subset of events.
 An `"Infinity"` value for a given flow window indicates that worker millis have been spent without any events completing processing, and can indicate a plugin that is stuck.
