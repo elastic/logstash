@@ -219,7 +219,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
-                // Setting a key/value map to tags field though add_field is not a valid action
+                // Setting a key/value map to tags field through add_field is not a valid action
                 // move the key/value map to _tags field and add _tagsparsefailure to tags field
                 if (field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
                     field.getPath()[0] = TAGS_FAILURE_FIELD;
