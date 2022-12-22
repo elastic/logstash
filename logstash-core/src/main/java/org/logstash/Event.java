@@ -62,6 +62,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public static final String VERSION_ONE = "1";
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
+    public static final String TAGS_FAILURE_TAG = "_tagsparsefailure";
+    public static final String TAGS_FAILURE_FIELD = "_tags";
 
     private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
     
@@ -114,6 +116,12 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
             this.setField(TIMESTAMP_FAILURE_FIELD, providedTimestamp);
+        }
+
+        final Object tags = Accessors.get(data, TAGS_FIELD);
+        if (tags != null) {
+            initTag(TAGS_FAILURE_TAG);
+            this.setField(TAGS_FAILURE_FIELD, tags);
         }
     }
 
