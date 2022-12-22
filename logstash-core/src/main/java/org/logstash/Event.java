@@ -62,10 +62,11 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public static final String VERSION_ONE = "1";
     private static final String DATA_MAP_KEY = "DATA";
     private static final String META_MAP_KEY = "META";
+    public static final String TAGS = "tags";
     public static final String TAGS_FAILURE_TAG = "_tagsparsefailure";
     public static final String TAGS_FAILURE_FIELD = "_tags";
 
-    private static final FieldReference TAGS_FIELD = FieldReference.from("tags");
+    private static final FieldReference TAGS_FIELD = FieldReference.from(TAGS);
     
     private static final Logger logger = LogManager.getLogger(Event.class);
 
@@ -118,8 +119,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             this.setField(TIMESTAMP_FAILURE_FIELD, providedTimestamp);
         }
 
+        // guard tags field from key/value map, only string or list is allowed
         final Object tags = Accessors.get(data, TAGS_FIELD);
-        if (tags != null) {
+        if (tags instanceof ConvertedMap) {
             initTag(TAGS_FAILURE_TAG);
             this.setField(TAGS_FAILURE_FIELD, tags);
         }
@@ -217,7 +219,14 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
-                Accessors.set(data, field, Valuefier.convert(value));
+                // Setting a key/value map to tags field though add_field is not a valid action
+                // move the key/value map to _tags field and add _tagsparsefailure to tags field
+                if (field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
+                    field.getPath()[0] = TAGS_FAILURE_FIELD;
+                    Accessors.set(data, field, Valuefier.convert(value));
+                    tag(TAGS_FAILURE_TAG);
+                }
+                else {  Accessors.set(data, field, Valuefier.convert(value)); }
         }
     }
 

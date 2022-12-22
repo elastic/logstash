@@ -516,4 +516,23 @@ public final class EventTest extends RubyTestBase {
         assertTrue(event.getMetadata().isEmpty());
         assertFalse(event.includes("[@metadata][foo]"));
     }
+
+    @Test
+    public void setTopLevelTagsWithMap() {
+        final Event event = new Event();
+        event.setField("[tags][foo]", "bar");
+        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
+        assertEquals(event.getField("[_tags][foo]"), "bar");
+    }
+
+    @Test
+    public void createEventWithTopLevelTagsWithMap() {
+        Map<String, Object> inner = new HashMap<>();
+        inner.put("poison", "true");
+        Map<String, Object> data = new HashMap<>();
+        data.put("tags", inner);
+        final Event event = new Event(data);
+        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
+        assertEquals(event.getField("[_tags][poison]"), "true");
+    }
 }
