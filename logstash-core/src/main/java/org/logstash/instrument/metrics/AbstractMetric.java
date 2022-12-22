@@ -42,9 +42,6 @@ public abstract class AbstractMetric<T> implements Metric<T> {
         this.name = name;
     }
 
-    @Override
-    public abstract MetricType getType();
-
     @JsonValue
     public abstract T getValue();
 

@@ -2,10 +2,13 @@ package org.logstash.instrument.metrics;
 
 import org.junit.Test;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.AbstractGaugeMetric;
+import org.logstash.instrument.metrics.gauge.NumberGauge;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
@@ -109,6 +112,74 @@ public class ExtendedFlowMetricTest {
         assertThat(flowMetricValue, is(not(anEmptyMap())));
         assertThat(flowMetricValue, hasEntry("current",         17.0));
         assertThat(flowMetricValue, hasEntry("lifetime",        17.0));
+    }
+
+    // NOTE: in this test neither numerator nor denominator is tied to our clock,
+    // so our clock is ONLY used for retention and NOT factored in to the math for
+    // the rate of change of our numerator relative to our denominator.
+    // This is useful for clock-invert rates like time-per-event or for ratio
+    // rates like events-out-per-events-in where the denominator is not guaranteed
+    // to be constantly incrementing.
+    @Test
+    public void testNonMovingDenominator() {
+        final ManualAdvanceClock clock = new ManualAdvanceClock(Instant.now());
+        final NumberGauge numeratorMetric = new NumberGauge("numerator", 0);
+        final NumberGauge denominatorMetric = new NumberGauge("denominator", 0);
+
+        final ExtendedFlowMetric flowMetric = new ExtendedFlowMetric(clock::nanoTime, "flow", numeratorMetric, denominatorMetric);
+
+        assertThat(flowMetric.getValue(), is(anEmptyMap()));
+
+        clock.advance(Duration.ofSeconds(1));
+        numeratorMetric.set(17);
+        flowMetric.capture();
+
+        // our numerator has advanced, but our denominator has not.
+        // now: (17/0); baseline: (0/0); (17-0)/(0-0) -> (17/0)
+        // numerator has infinite growth relative to denominator
+        validateMetricValue(flowMetric, (flowMetricValue) -> {
+            assertThat(flowMetricValue, is(not(anEmptyMap())));
+            assertThat(flowMetricValue, hasEntry("current", Double.POSITIVE_INFINITY));
+            assertThat(flowMetricValue, hasEntry("lifetime", Double.POSITIVE_INFINITY));
+        });
+
+        // change denominator, advance clock, capture
+        clock.advance(Duration.ofSeconds(1));
+        denominatorMetric.set(13);
+        flowMetric.capture();
+
+        // both numerator and denominator have changed since baselines
+        // now: (17/13); baseline: (0/0); (17-0)/(13-0) -> 1.308 numerators per denominator
+        validateMetricValue(flowMetric, (flowMetricValue) -> {
+            assertThat(flowMetricValue, is(not(anEmptyMap())));
+            assertThat(flowMetricValue, hasEntry("current", 1.308));
+            assertThat(flowMetricValue, hasEntry("lifetime", 1.308));
+        });
+
+        // our denominator moves and we do a series of captures
+        denominatorMetric.set(12);
+        for (int i = 0; i < 20; i++) {
+            clock.advance(Duration.ofSeconds(1));
+            flowMetric.capture();
+        }
+
+        // our numerator moves _negative_ relative to the capture from 10s ago.
+        clock.advance(Duration.ofSeconds(1));
+        numeratorMetric.set(10);
+        flowMetric.capture();
+
+        // now: (10/12)
+        validateMetricValue(flowMetric, (flowMetricValue) -> {
+            assertThat(flowMetricValue, is(not(anEmptyMap())));
+            // current window baseline: (17/12); (17-10)/(12-12) -> (-7/0)
+            assertThat(flowMetricValue, hasEntry("current", Double.NEGATIVE_INFINITY));
+            // lifetime baseline: (0/0); (10-0)/(12-0) -> (10/12)
+            assertThat(flowMetricValue, hasEntry("lifetime", 0.8333));
+        });
+    }
+
+    private <T> void validateMetricValue(final Metric<T> metric, final Consumer<T> validator) {
+        validator.accept(metric.getValue());
     }
 
 

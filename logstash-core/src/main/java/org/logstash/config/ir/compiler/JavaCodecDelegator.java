@@ -24,42 +24,31 @@ import co.elastic.logstash.api.Codec;
 import co.elastic.logstash.api.Context;
 import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Event;
-import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import co.elastic.logstash.api.PluginConfigSpec;
-import org.jruby.RubySymbol;
-import org.jruby.runtime.ThreadContext;
-import org.logstash.RubyUtil;
-import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import co.elastic.logstash.api.TimerMetric;
 import org.logstash.instrument.metrics.MetricKeys;
-import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class JavaCodecDelegator implements Codec {
-
-    public static final String ENCODE_KEY = "encode";
-    public static final String DECODE_KEY = "decode";
-    public static final String IN_KEY = "writes_in";
 
     private final Codec codec;
 
     protected final CounterMetric encodeMetricIn;
 
-    protected final CounterMetric encodeMetricTime;
+    protected final TimerMetric encodeMetricTime;
 
     protected final CounterMetric decodeMetricIn;
 
     protected final CounterMetric decodeMetricOut;
 
-    protected final CounterMetric decodeMetricTime;
-
+    protected final TimerMetric decodeMetricTime;
 
     public JavaCodecDelegator(final Context context, final Codec codec) {
         this.codec = codec;
@@ -69,14 +58,14 @@ public class JavaCodecDelegator implements Codec {
         synchronized(metric.root()) {
             metric.gauge(MetricKeys.NAME_KEY.asJavaString(), codec.getName());
 
-            final NamespacedMetric encodeMetric = metric.namespace(ENCODE_KEY);
-            encodeMetricIn = encodeMetric.counter(IN_KEY);
-            encodeMetricTime = encodeMetric.counter(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
+            final NamespacedMetric encodeMetric = metric.namespace(MetricKeys.ENCODE_KEY.asJavaString());
+            encodeMetricIn = encodeMetric.counter(MetricKeys.WRITES_IN_KEY.asJavaString());
+            encodeMetricTime = encodeMetric.timer(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
 
-            final NamespacedMetric decodeMetric = metric.namespace(DECODE_KEY);
-            decodeMetricIn = decodeMetric.counter(IN_KEY);
+            final NamespacedMetric decodeMetric = metric.namespace(MetricKeys.DECODE_KEY.asJavaString());
+            decodeMetricIn = decodeMetric.counter(MetricKeys.WRITES_IN_KEY.asJavaString());
             decodeMetricOut = decodeMetric.counter(MetricKeys.OUT_KEY.asJavaString());
-            decodeMetricTime = decodeMetric.counter(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
+            decodeMetricTime = decodeMetric.timer(MetricKeys.DURATION_IN_MILLIS_KEY.asJavaString());
         }
     }
 
@@ -84,39 +73,27 @@ public class JavaCodecDelegator implements Codec {
     public void decode(final ByteBuffer buffer, final Consumer<Map<String, Object>> eventConsumer) {
         decodeMetricIn.increment();
 
-        final long start = System.nanoTime();
-
-        codec.decode(buffer, (event) -> {
+        decodeMetricTime.time(() -> codec.decode(buffer, (event) -> {
             decodeMetricOut.increment();
             eventConsumer.accept(event);
-        });
-
-        decodeMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        }));
     }
 
     @Override
     public void flush(final ByteBuffer buffer, final Consumer<Map<String, Object>> eventConsumer) {
         decodeMetricIn.increment();
 
-        final long start = System.nanoTime();
-
-        codec.flush(buffer, (event) -> {
+        decodeMetricTime.time(() -> codec.flush(buffer, (event) -> {
             decodeMetricOut.increment();
             eventConsumer.accept(event);
-        });
-
-        decodeMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        }));
     }
 
     @Override
     public void encode(final Event event, final OutputStream out) throws IOException {
         encodeMetricIn.increment();
 
-        final long start = System.nanoTime();
-
-        codec.encode(event, out);
-
-        decodeMetricTime.increment(TimeUnit.MILLISECONDS.convert(System.nanoTime() - start, TimeUnit.NANOSECONDS));
+        encodeMetricTime.time(() -> codec.encode(event, out));
     }
 
     @Override

@@ -34,12 +34,12 @@ module LogStash::Codecs
 
       @encode_metric = __getobj__.metric.namespace(:encode)
       @encode_metric.counter(:writes_in)
-      @encode_metric.report_time(:duration_in_millis, 0)
+      @encode_metric.timer(:duration_in_millis)
 
       @decode_metric = __getobj__.metric.namespace(:decode)
       @decode_metric.counter(:writes_in)
       @decode_metric.counter(:out)
-      @decode_metric.report_time(:duration_in_millis, 0)
+      @decode_metric.timer(:duration_in_millis)
     end
 
     def encode(event)

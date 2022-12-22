@@ -21,6 +21,7 @@ package org.logstash.execution;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.LongAdder;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.config.ir.CompiledPipeline;
@@ -33,7 +34,7 @@ public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
 
-    private final CompiledPipeline.CompiledExecution execution;
+    private final ObservedExecution<QueueBatch> execution;
 
     private final QueueReadClient readClient;
 
@@ -49,28 +50,26 @@ public final class WorkerLoop implements Runnable {
 
     private final boolean drainQueue;
 
-    private final boolean preserveEventOrder;
-
     public WorkerLoop(
-        final CompiledPipeline pipeline,
-        final QueueReadClient readClient,
-        final LongAdder filteredCounter,
-        final LongAdder consumedCounter,
-        final AtomicBoolean flushRequested,
-        final AtomicBoolean flushing,
-        final AtomicBoolean shutdownRequested,
-        final boolean drainQueue,
-        final boolean preserveEventOrder)
+            final QueueReadClient readClient,
+            final CompiledPipeline compiledPipeline,
+            final WorkerObserver workerObserver,
+            final LongAdder consumedCounter,
+            final LongAdder filteredCounter,
+            final AtomicBoolean flushRequested,
+            final AtomicBoolean flushing,
+            final AtomicBoolean shutdownRequested,
+            final boolean drainQueue,
+            final boolean preserveEventOrder)
     {
+        this.execution = workerObserver.ofExecution(compiledPipeline.buildExecution(preserveEventOrder));
+        this.readClient = readClient;
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
-        this.execution = pipeline.buildExecution(preserveEventOrder);
         this.drainQueue = drainQueue;
-        this.readClient = readClient;
         this.flushRequested = flushRequested;
         this.flushing = flushing;
         this.shutdownRequested = shutdownRequested;
-        this.preserveEventOrder = preserveEventOrder;
     }
 
     @Override
@@ -83,13 +82,10 @@ public final class WorkerLoop implements Runnable {
                 final boolean isFlush = flushRequested.compareAndSet(true, false);
                 if (batch.filteredSize() > 0 || isFlush) {
                     consumedCounter.add(batch.filteredSize());
-                    readClient.startMetrics(batch);
-                    final int outputCount = execution.compute(batch, isFlush, false);
-                    int filteredCount = batch.filteredSize();
-                    filteredCounter.add(filteredCount);
-                    readClient.addOutputMetrics(outputCount);
-                    readClient.addFilteredMetrics(filteredCount);
+                    execution.compute(batch, isFlush, false);
+                    filteredCounter.add(batch.filteredSize());
                     readClient.closeBatch(batch);
+
                     if (isFlush) {
                         flushing.set(false);
                     }
@@ -98,7 +94,6 @@ public final class WorkerLoop implements Runnable {
             //we are shutting down, queue is drained if it was required, now  perform a final flush.
             //for this we need to create a new empty batch to contain the final flushed events
             final QueueBatch batch = readClient.newBatch();
-            readClient.startMetrics(batch);
             execution.compute(batch, true, true);
             readClient.closeBatch(batch);
         } catch (final Exception ex) {
