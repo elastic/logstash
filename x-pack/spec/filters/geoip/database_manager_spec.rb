@@ -368,6 +368,22 @@ describe LogStash::Filters::Geoip do
           expect(path).to be_nil
         end
       end
+
+      context "auto update setting" do
+        it "should raise a configuration error if database is nil" do
+          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+          expect { db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin) }.to raise_error(LogStash::ConfigurationError)
+        end
+
+        it "should be enabled by default" do
+          expect { db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin) }.to_not raise_error
+        end
+
+        it "should not raise an error when value is `false` and database is set" do
+          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+          expect { db_manager.subscribe_database_path(CITY, "/foo/bar/", mock_geoip_plugin) }.to_not raise_error
+        end
+      end
     end
 
     context "unsubscribe" do

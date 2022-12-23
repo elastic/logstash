@@ -214,6 +214,18 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
+  def check_auto_update_config(database_path)
+    if database_path.nil? && !database_auto_update?
+      raise LogStash::ConfigurationError,
+            "By setting `xpack.geoip.db.auto_update` in logstash.yml to `false` you must manually " \
+            "configure a valid database path with `database =>` for all geoip filter plugin usages."
+    end
+  end
+
+  def database_auto_update?
+    LogStash::SETTINGS.get("xpack.geoip.db.auto_update")
+  end
+
   public
 
   # @note this method is expected to execute on a separate thread
@@ -225,6 +237,8 @@ module LogStash module Filters module Geoip class DatabaseManager
   private :database_update_check
 
   def subscribe_database_path(database_type, database_path, geoip_plugin)
+    check_auto_update_config(database_path)
+
     if database_path.nil?
       trigger_download
 
