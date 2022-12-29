@@ -97,7 +97,7 @@ No user-facing changes in Logstash plugins.
 * Fixed issue in pipeline compilation. https://github.com/elastic/logstash/pull/13621[#13621]
 
 [[docs-8.6.0]]
-==== Documentation Improvements and Fixes
+==== Documentation enhancements
 * Crafted a guide on how to configure and troubleshooting Logstash on Kubernetes.
  ** Getting started https://github.com/elastic/logstash/pull/14655[#14655]
  ** Persistent Storage https://github.com/elastic/logstash/pull/14714[#14714]
