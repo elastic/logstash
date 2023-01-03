@@ -370,18 +370,51 @@ describe LogStash::Filters::Geoip do
       end
 
       context "auto update setting" do
-        it "should raise a configuration error if database is nil" do
-          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
-          expect { db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin) }.to raise_error(LogStash::ConfigurationError)
+        context "enabled" do
+          it "should trigger database download" do
+            allow(db_manager).to receive(:trigger_download)
+            db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
+            expect(db_manager).to have_received(:trigger_download)
+          end
         end
 
-        it "should be enabled by default" do
-          expect { db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin) }.to_not raise_error
-        end
+        context "disabled" do
+          it "should return cc database when database path is nil" do
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
 
-        it "should not raise an error when value is `false` and database is set" do
-          allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
-          expect { db_manager.subscribe_database_path(CITY, "/foo/bar/", mock_geoip_plugin) }.to_not raise_error
+            path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
+
+            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
+            expect(path).to eq(default_city_db_path)
+          end
+
+          it "should delete eula databases when database path is nil" do
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+
+            eula_db_dirname = get_dir_path("foo")
+            FileUtils.mkdir_p(eula_db_dirname)
+            rewrite_temp_metadata(metadata_path, [ ["City","1620246514","","foo",true],
+                                                   ["ASN","1620246514","","foo",true]])
+
+            path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
+
+            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
+            expect(path).to eq(default_city_db_path)
+            expect(File).not_to exist(eula_db_dirname)
+          end
+
+          it "should return user input database path" do
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+            allow(db_manager).to receive(:trigger_download)
+            allow(db_manager).to receive(:trigger_cc_database_fallback)
+
+            path = db_manager.subscribe_database_path(CITY, "path/to/db", mock_geoip_plugin)
+
+            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
+            expect(db_manager).not_to have_received(:trigger_download)
+            expect(db_manager).not_to have_received(:trigger_cc_database_fallback)
+            expect(path).to eq("path/to/db")
+          end
         end
       end
     end
