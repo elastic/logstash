@@ -76,10 +76,6 @@ No user-facing changes in Logstash plugins.
 [[logstash-8-6-0]]
 === Logstash 8.6.0 Release Notes
 
-[[known-issues-8.6.0]]
-==== Known issues
-
-
 [[features-8.6.0]]
 ==== New features and enhancements
 
