@@ -30,48 +30,7 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
- 
 
-[[logstash-8-6-0]]
-=== Logstash 8.6.0 Release Notes
-
-coming[8.6.0]
-
-[[features-8.6.0]]
-==== New features and enhancements
-
-
-[[notable-8.6.0]]
-==== Performance improvements and notable issues fixed
-
-
-[[core-8.6.0]]
-==== Other changes to Logstash core
-
-
-[[plugins-8.6.0]]
-==== Plugin releases
-
-
-[[logstash-8-5-3]]
-=== Logstash 8.5.3 Release Notes
-
-No user-facing changes in Logstash core.
-
-[[plugins-8-5-3]]
-==== Plugins
-
-No user-facing changes in Logstash plugins.
-
-[[logstash-8-5-2]]
-=== Logstash 8.5.2 Release Notes
-
-No user-facing changes in Logstash core.
-
-[[plugins-8-5-2]]
-==== Plugins
-
-No user-facing changes in Logstash plugins.
 
 [[logstash-8-6-0]]
 === Logstash 8.6.0 Release Notes
@@ -128,6 +87,16 @@ No user-facing changes in Logstash plugins.
 * When using an `api_key` along with either `cloud_id` or https `hosts`, you no longer need to also specify `ssl => true` https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1065[#1065]
 
 * Feature: expose `dlq_routed` document metric to track the documents routed into DLQ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1090[#1090]
+
+[[logstash-8-5-3]]
+=== Logstash 8.5.3 Release Notes
+
+No user-facing changes in Logstash core.
+
+[[plugins-8-5-3]]
+==== Plugins
+
+No user-facing changes in Logstash plugins.
 
 [[logstash-8-5-2]]
 === Logstash 8.5.2 Release Notes
