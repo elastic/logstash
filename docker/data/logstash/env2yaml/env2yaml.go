@@ -3,16 +3,15 @@
 // Merge environment variables into logstash.yml.
 // For example, running Docker with:
 //
-//   docker run -e pipeline.workers=6
+//	docker run -e pipeline.workers=6
 //
 // or
 //
-//   docker run -e PIPELINE_WORKERS=6
+//	docker run -e PIPELINE_WORKERS=6
 //
 // will cause logstash.yml to contain the line:
 //
-//   pipeline.workers: 6
-//
+//	pipeline.workers: 6
 package main
 
 import (
@@ -72,6 +71,7 @@ func normalizeSetting(setting string) (string, error) {
 		"config.debug",
 		"config.support_escapes",
 		"config.field_reference.escape_style",
+		"event_api.tags.illegal",
 		"queue.type",
 		"path.queue",
 		"queue.page_capacity",

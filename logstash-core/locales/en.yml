@@ -147,6 +147,9 @@ en:
       configtest-flag-information: |-
         You may be interested in the '--configtest' flag which you can use to validate
         logstash's configuration before you choose to restart a running system.
+      tags-illegal-warning: >-
+        Setting `event_api.tags.illegal` to `warn` allows illegal values in the reserved `tags` field, which may crash pipeline unexpectedly.
+        This flag will be deprecated in the next major release and `tags` field will only allow a string or an array of string.
       # YAML named reference to the logstash.runner.configuration
       # so we can later alias it from logstash.agent.configuration
       configuration: &runner_configuration
@@ -252,6 +255,19 @@ en:
              HTML-style ampersand-hash encoding notation
              representing decimal unicode codepoints
              (`[` is `&#91;`; `]` is `&#93;`).
+        event_api:
+          tags:
+            illegal: |+
+              The reserved field `tags` allow string and string[] since v7.9.
+              Assigning other types could crash the pipeline. This allows you to
+              change the behavior when `tags` get assigned with illegal type, eg. map.
+              
+              Available options are:
+               - `rename`: illegal value in `tags` will be moved to `_tags`.
+                 A tag `_tagsparsefailure` is added to `tags` field to 
+                 indicate the illegal assignment. This is the default option.
+               - `warn`: allow illegal value assignment and print warning
+                 at startup.
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances

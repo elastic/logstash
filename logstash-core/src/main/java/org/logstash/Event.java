@@ -66,6 +66,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public static final String TAGS_FAILURE_TAG = "_tagsparsefailure";
     public static final String TAGS_FAILURE_FIELD = "_tags";
 
+    enum IllegalTagsAction { RENAME, WARN }
+    private static IllegalTagsAction ILLEGAL_TAGS_ACTION = IllegalTagsAction.RENAME;
+
     private static final FieldReference TAGS_FIELD = FieldReference.from(TAGS);
     
     private static final Logger logger = LogManager.getLogger(Event.class);
@@ -109,6 +112,15 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         }
         this.cancelled = false;
 
+        // guard tags field from key/value map, only string or list is allowed
+        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
+            final Object tags = Accessors.get(data, TAGS_FIELD);
+            if (tags instanceof ConvertedMap) {
+                this.setField(TAGS_FAILURE_FIELD, tags);
+                initTag(TAGS_FAILURE_TAG);
+            }
+        }
+
         Object providedTimestamp = data.get(TIMESTAMP);
         // keep reference to the parsedTimestamp for tagging below
         Timestamp parsedTimestamp = initTimestamp(providedTimestamp);
@@ -117,13 +129,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         if (parsedTimestamp == null) {
             tag(TIMESTAMP_FAILURE_TAG);
             this.setField(TIMESTAMP_FAILURE_FIELD, providedTimestamp);
-        }
-
-        // guard tags field from key/value map, only string or list is allowed
-        final Object tags = Accessors.get(data, TAGS_FIELD);
-        if (tags instanceof ConvertedMap) {
-            initTag(TAGS_FAILURE_TAG);
-            this.setField(TAGS_FAILURE_FIELD, tags);
         }
     }
 
@@ -221,7 +226,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             default:
                 // Setting a key/value map to tags field through add_field is not a valid action
                 // move the key/value map to _tags field and add _tagsparsefailure to tags field
-                if (field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
+                if ((ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) &&
+                        field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
                     field.getPath()[0] = TAGS_FAILURE_FIELD;
                     Accessors.set(data, field, Valuefier.convert(value));
                     tag(TAGS_FAILURE_TAG);
@@ -510,6 +516,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final List<String> tags = new ArrayList<>(2);
         tags.add(existing);
         appendTag(tags, tag);
+    }
+
+    public static void setIllegalTagsAction(final String action) {
+        ILLEGAL_TAGS_ACTION = IllegalTagsAction.valueOf(action);
     }
 
     @Override

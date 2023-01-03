@@ -91,6 +91,11 @@ class LogStash::Runner < Clamp::StrictCommand
          :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
          :attribute_name => "config.field_reference.escape_style"
 
+  option ["--event_api.tags.illegal"], "STRING",
+         I18n.t("logstash.runner.flag.event_api.tags.illegal"),
+         :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
+         :attribute_name => "event_api.tags.illegal"
+
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
@@ -336,6 +341,12 @@ class LogStash::Runner < Clamp::StrictCommand
     field_reference_escape_style = field_reference_escape_style_setting.value
     logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
     org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
+
+    tags_illegal_setting = settings.get_setting('event_api.tags.illegal').value
+    if tags_illegal_setting == 'warn'
+      logger.warn(I18n.t("logstash.runner.tags-illegal-warning"))
+      org.logstash.Event::set_illegal_tags_action(tags_illegal_setting.upcase)
+    end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
