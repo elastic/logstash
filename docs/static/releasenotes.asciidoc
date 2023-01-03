@@ -118,6 +118,7 @@ No user-facing changes in Logstash plugins.
 *Jdbc Integration - 5.4.1*
 
 * Bugfix leak which happened in creating a new Database pool for every query. The pool is now crated on registration and closed on plugin's `stop` https://github.com/logstash-plugins/logstash-integration-jdbc/pull/119[#119]
+
 * Ambiguous Timestamp Support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/92[#92]
 * FIX: when encountering an ambiguous timestamp, the JDBC Input no longer crashes
 * Added support for disambiguating timestamps in daylight saving time (DST) overlap periods
@@ -125,8 +126,11 @@ No user-facing changes in Logstash plugins.
 *Elasticsearch Output - 11.12.1*
 
 * Log bulk request response body on error, not just when debug logging is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1096[#1096]
+
 * Add legacy template API support for Elasticsearch 8 https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1092[#1092]
+
 * When using an `api_key` along with either `cloud_id` or https `hosts`, you no longer need to also specify `ssl => true` https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1065[#1065]
+
 * Feature: expose `dlq_routed` document metric to track the documents routed into DLQ https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1090[#1090]
 
 [[logstash-8-5-2]]
