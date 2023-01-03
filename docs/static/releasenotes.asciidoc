@@ -104,8 +104,8 @@ No user-facing changes in Logstash plugins.
  ** Stack Monitoring https://github.com/elastic/logstash/pull/14696[#14696]
  **  Securing Logstash https://github.com/elastic/logstash/pull/14737[#14737]
 
-[[plugins-8-6-0]]
-==== Plugins
+[[plugins-8.6.0]]
+==== Plugin releases
 
 *Netflow Codec - 4.3.0*
 
