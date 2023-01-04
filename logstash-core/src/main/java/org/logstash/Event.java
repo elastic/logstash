@@ -210,7 +210,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     @Override
     public void setField(final String reference, final Object value) {
-        setField(FieldReference.from(reference), value);
+        FieldReference field = FieldReference.from(reference);
+        field = renameIllegalTags(reference, field);
+        setField(field, value);
     }
 
     @SuppressWarnings("unchecked")
@@ -224,16 +226,35 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
-                // Setting a key/value map to tags field through add_field is not a valid action
-                // move the key/value map to _tags field and add _tagsparsefailure to tags field
-                if ((ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) &&
-                        field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
-                    field.getPath()[0] = TAGS_FAILURE_FIELD;
-                    Accessors.set(data, field, Valuefier.convert(value));
-                    tag(TAGS_FAILURE_TAG);
-                }
-                else {  Accessors.set(data, field, Valuefier.convert(value)); }
+                Accessors.set(data, field, Valuefier.convert(value));
         }
+    }
+
+    /**
+     * Construct a FieldReference pointing to `_tag` field if the field is a reserved `tags` field with map structure,
+     * otherwise return the original field.
+     * Add _tagsparsefailure to `tags` field
+     * @param reference
+     * @param field
+     * @return
+     */
+    private FieldReference renameIllegalTags(final String reference, final FieldReference field) {
+        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
+            switch (field.type()) {
+                case FieldReference.META_PARENT:
+                case FieldReference.META_CHILD:
+                    break;
+                default:
+                    if (field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
+                        tag(TAGS_FAILURE_TAG);
+                        String failTagRef = reference.replaceFirst(TAGS, TAGS_FAILURE_FIELD);
+                        return FieldReference.from(failTagRef);
+                    }
+                    break;
+            }
+        }
+
+        return field;
     }
 
     @Override
