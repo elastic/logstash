@@ -42,23 +42,25 @@ module LogStash module Filters module Geoip class DatabaseManager
 
   def setup
     prepare_cc_db
+    cc_city_database_path = get_db_path(CITY, CC)
+    cc_asn_database_path = get_db_path(ASN, CC)
+
     prepare_metadata
-    set_initial_state
+    city_database_path = @metadata.database_path(CITY)
+    asn_database_path = @metadata.database_path(ASN)
+
+    @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
+                                               Concurrent::Array.new,
+                                               city_database_path,
+                                               cc_city_database_path),
+                "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
+                                              Concurrent::Array.new,
+                                              asn_database_path,
+                                              cc_asn_database_path) }
 
     @download_manager = DownloadManager.new(@metadata)
 
     database_metric.initialize_metrics(@metadata.get_all, @states)
-  end
-
-  def set_initial_state
-    @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
-                                               Concurrent::Array.new,
-                                               @metadata.database_path(CITY),
-                                               get_db_path(CITY, CC)),
-                "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
-                                              Concurrent::Array.new,
-                                              @metadata.database_path(ASN),
-                                              get_db_path(ASN, CC)) }
   end
 
   protected
@@ -126,7 +128,7 @@ module LogStash module Filters module Geoip class DatabaseManager
       logger.error(e.message, error_details(e, logger))
     ensure
       check_age
-      clean_up_database
+      clean_up_database(@metadata.dirnames)
       database_metric.update_download_stats(success_cnt)
 
       ThreadContext.put("pipeline.id", pipeline_id)
@@ -183,21 +185,17 @@ module LogStash module Filters module Geoip class DatabaseManager
     end
   end
 
-  # Clean up directories which are not mentioned in metadata and not CC database
-  def clean_up_database
-    databases_to_cleanup.each do |dirname|
+  # Clean up directories which are not mentioned in the excluded_dirnames and not CC database
+  def clean_up_database(excluded_dirnames = [])
+    protected_dirnames = (excluded_dirnames + [CC]).uniq
+    existing_dirnames = ::Dir.children(get_data_dir_path)
+                             .select { |f| ::File.directory? ::File.join(get_data_dir_path, f) }
+
+    (existing_dirnames - protected_dirnames).each do |dirname|
       dir_path = get_dir_path(dirname)
       FileUtils.rm_r(dir_path)
       logger.info("#{dir_path} is deleted")
     end
-  end
-
-  def databases_to_cleanup
-    protected_dirnames = (@metadata.dirnames + [CC]).uniq
-    existing_dirnames = ::Dir.children(get_data_dir_path)
-                        .select { |f| ::File.directory? ::File.join(get_data_dir_path, f) }
-
-    existing_dirnames - protected_dirnames
   end
 
   def trigger_download
@@ -223,35 +221,33 @@ module LogStash module Filters module Geoip class DatabaseManager
       return if @triggered
 
       logger.info "The MaxMind EULA requires users to update the GeoIP databases within 30 days following the release of the update. " \
-                  "By setting `xpack.geoip.db.auto_update` value in logstash.yml to `false`, any previously downloaded version of the database " \
+                  "By setting `xpack.geoip.downloader.enabled` value in logstash.yml to `false`, any previously downloaded version of the database " \
                   "are destroyed and replaced by the MaxMind Creative Commons license database."
 
-      setup
-      remove_eula_databases
+      setup_cc_database
       @triggered = true
     end
   end
 
-  def remove_eula_databases
-    @metadata.remove_rows{ |row| row[DatabaseMetadata::Column::IS_EULA].eql?("true") }
+  def setup_cc_database
+    prepare_cc_db
+    delete_eula_databases
+    DatabaseMetadata.new.delete
+  end
 
-    @metadata.save_metadata(CITY, CC, false)
-    @metadata.save_metadata(ASN, CC, false)
-    set_initial_state
-
+  def delete_eula_databases
     begin
       clean_up_database
     rescue => e
       details = error_details(e, logger)
-      details[:database_paths] = databases_to_cleanup.map { |dir| get_dir_path(dir) }
-
+      details[:databases_path] = get_data_dir_path
       logger.error "Failed to delete existing MaxMind EULA databases. To be compliant with the MaxMind EULA, you must "\
                    "manually destroy any downloaded version of the EULA databases.", details
     end
   end
 
   def database_auto_update?
-    LogStash::SETTINGS.get("xpack.geoip.db.auto_update")
+    LogStash::SETTINGS.get("xpack.geoip.downloader.enabled")
   end
 
   public
@@ -271,13 +267,14 @@ module LogStash module Filters module Geoip class DatabaseManager
 
         logger.info "By not manually configuring a database path with `database =>`, you accepted and agreed MaxMind EULA. "\
                     "For more details please visit https://www.maxmind.com/en/geolite2/eula" if @states[database_type].is_eula
+
+        @states[database_type].plugins.push(geoip_plugin) unless @states[database_type].plugins.member?(geoip_plugin)
+        @trigger_lock.synchronize do
+          @states[database_type].database_path
+        end
       else
         trigger_cc_database_fallback
-      end
-
-      @states[database_type].plugins.push(geoip_plugin) unless @states[database_type].plugins.member?(geoip_plugin)
-      @trigger_lock.synchronize do
-        @states[database_type].database_path
+        get_db_path(database_type, CC)
       end
     else
       logger.info "GeoIP database path is configured manually so the plugin will not check for update. "\

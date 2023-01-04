@@ -46,12 +46,6 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     update(metadata)
   end
 
-  def remove_rows(&block)
-    all_rows = get_all
-    removed = all_rows.select{ |row| block.call(row) }
-    update(all_rows - removed) unless removed.empty?
-  end
-
   def update(metadata)
     metadata = metadata.sort_by { |row| row[Column::DATABASE_TYPE] }
     ::CSV.open @metadata_path, 'w' do |csv|
@@ -98,6 +92,10 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   
   def exist?
     file_exist?(@metadata_path)
+  end
+
+  def delete
+    ::File.delete(@metadata_path) if exist?
   end
 
   class Column

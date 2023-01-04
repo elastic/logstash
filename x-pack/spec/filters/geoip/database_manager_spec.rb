@@ -131,6 +131,7 @@ describe LogStash::Filters::Geoip do
           allow(mock_geoip_plugin).to receive_message_chain('execution_context.pipeline_id').and_return('pipeline_1', 'pipeline_2')
           expect(mock_geoip_plugin).to receive(:update_filter).with(:update, instance_of(String)).at_least(:twice)
           expect(mock_metadata).to receive(:update_timestamp).never
+          expect(mock_metadata).to receive(:dirnames)
           expect(db_manager).to receive(:check_age)
           expect(db_manager).to receive(:clean_up_database)
 
@@ -147,6 +148,7 @@ describe LogStash::Filters::Geoip do
         expect(mock_download_manager).to receive(:fetch_database).and_return([invalid_city_fetch, valid_asn_fetch])
         expect(mock_metadata).to receive(:save_metadata).with(ASN, second_dirname, true).at_least(:once)
         expect(mock_metadata).to receive(:update_timestamp).never
+        expect(mock_metadata).to receive(:dirnames)
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
 
@@ -162,6 +164,7 @@ describe LogStash::Filters::Geoip do
         expect(mock_download_manager).to receive(:fetch_database).and_return([valid_asn_fetch])
         expect(mock_metadata).to receive(:save_metadata).with(ASN, second_dirname, true).at_least(:once)
         expect(mock_metadata).to receive(:update_timestamp).with(CITY).at_least(:once)
+        expect(mock_metadata).to receive(:dirnames)
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
 
@@ -177,6 +180,7 @@ describe LogStash::Filters::Geoip do
         expect(mock_download_manager).to receive(:fetch_database).and_return([])
         expect(mock_metadata).to receive(:save_metadata).never
         expect(mock_metadata).to receive(:update_timestamp).at_least(:twice)
+        expect(mock_metadata).to receive(:dirnames)
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
 
@@ -193,6 +197,7 @@ describe LogStash::Filters::Geoip do
         expect(db_manager).to receive(:check_age)
         expect(db_manager).to receive(:clean_up_database)
         expect(mock_metadata).to receive(:save_metadata).never
+        expect(mock_metadata).to receive(:dirnames)
 
         db_manager.send(:execute_download_job)
 
@@ -331,9 +336,8 @@ describe LogStash::Filters::Geoip do
 
       it "should delete file which is not in metadata" do
         FileUtils.touch [asn00, city00, asn02, city02]
-        expect(mock_metadata).to receive(:dirnames).and_return([dirname])
 
-        db_manager.send(:clean_up_database)
+        db_manager.send(:clean_up_database, [dirname])
 
         [asn02, city02].each { |file_path| expect(::File.exist?(file_path)).to be_falsey }
         [get_dir_path(CC), asn00, city00].each { |file_path| expect(::File.exist?(file_path)).to be_truthy }
@@ -369,7 +373,7 @@ describe LogStash::Filters::Geoip do
         end
       end
 
-      context "auto update setting" do
+      context "downloader setting" do
         context "enabled" do
           it "should trigger database download" do
             allow(db_manager).to receive(:trigger_download)
@@ -380,16 +384,17 @@ describe LogStash::Filters::Geoip do
 
         context "disabled" do
           it "should return cc database when database path is nil" do
-            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.downloader.enabled").and_return(false)
+            allow(mock_metadata).to receive(:delete).once
 
             path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
 
-            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
             expect(path).to eq(default_city_db_path)
           end
 
-          it "should delete eula databases when database path is nil" do
-            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+          it "should delete eula databases and metadata when database path is nil" do
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.downloader.enabled").and_return(false)
+            allow(mock_metadata).to receive(:delete).once
 
             eula_db_dirname = get_dir_path("foo")
             FileUtils.mkdir_p(eula_db_dirname)
@@ -398,19 +403,17 @@ describe LogStash::Filters::Geoip do
 
             path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
 
-            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(1)
             expect(path).to eq(default_city_db_path)
             expect(File).not_to exist(eula_db_dirname)
           end
 
           it "should return user input database path" do
-            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.db.auto_update").and_return(false)
+            allow(LogStash::SETTINGS).to receive(:get).with("xpack.geoip.downloader.enabled").and_return(false)
             allow(db_manager).to receive(:trigger_download)
             allow(db_manager).to receive(:trigger_cc_database_fallback)
 
             path = db_manager.subscribe_database_path(CITY, "path/to/db", mock_geoip_plugin)
 
-            expect(db_manager.instance_variable_get(:@states)[CITY].plugins.size).to eq(0)
             expect(db_manager).not_to have_received(:trigger_download)
             expect(db_manager).not_to have_received(:trigger_cc_database_fallback)
             expect(path).to eq("path/to/db")
