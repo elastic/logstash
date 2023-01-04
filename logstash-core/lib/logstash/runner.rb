@@ -345,7 +345,7 @@ class LogStash::Runner < Clamp::StrictCommand
     tags_illegal_setting = settings.get_setting('event_api.tags.illegal').value
     if tags_illegal_setting == 'warn'
       logger.warn(I18n.t("logstash.runner.tags-illegal-warning"))
-      org.logstash.Event::set_illegal_tags_action(tags_illegal_setting.upcase)
+      org.logstash.Event::set_illegal_tags_action(tags_illegal_setting)
     end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")

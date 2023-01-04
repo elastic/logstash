@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -210,9 +211,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     @Override
     public void setField(final String reference, final Object value) {
-        FieldReference field = FieldReference.from(reference);
-        field = renameIllegalTags(reference, field);
-        setField(field, value);
+        setField(FieldReference.from(reference), value);
     }
 
     @SuppressWarnings("unchecked")
@@ -226,32 +225,25 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
-                Accessors.set(data, field, Valuefier.convert(value));
+                final FieldReference renamedField = renameIllegalTags(field);
+                Accessors.set(data, renamedField, Valuefier.convert(value));
         }
     }
 
     /**
-     * Construct a FieldReference pointing to `_tag` field if the field is a reserved `tags` field with map structure,
+     * if the field is a reserved `tags` field with map structure,
+     * construct a FieldReference pointing to `_tag` field and add _tagsparsefailure to `tags` field,
      * otherwise return the original field.
-     * Add _tagsparsefailure to `tags` field
-     * @param reference
      * @param field
-     * @return
+     * @return Renamed {@link FieldReference} or original field
      */
-    private FieldReference renameIllegalTags(final String reference, final FieldReference field) {
-        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
-            switch (field.type()) {
-                case FieldReference.META_PARENT:
-                case FieldReference.META_CHILD:
-                    break;
-                default:
-                    if (field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
-                        tag(TAGS_FAILURE_TAG);
-                        String failTagRef = reference.replaceFirst(TAGS, TAGS_FAILURE_FIELD);
-                        return FieldReference.from(failTagRef);
-                    }
-                    break;
-            }
+    private FieldReference renameIllegalTags(final FieldReference field) {
+        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME &&
+                field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
+            tag(TAGS_FAILURE_TAG);
+            String[] failTagsPath = Arrays.copyOf(field.getPath(), field.getPath().length);
+            failTagsPath[0] = TAGS_FAILURE_FIELD;
+            return new FieldReference(failTagsPath, field.getKey(), field.type());
         }
 
         return field;
@@ -540,7 +532,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     }
 
     public static void setIllegalTagsAction(final String action) {
-        ILLEGAL_TAGS_ACTION = IllegalTagsAction.valueOf(action);
+        ILLEGAL_TAGS_ACTION = IllegalTagsAction.valueOf(action.toUpperCase());
     }
 
     @Override

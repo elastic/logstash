@@ -522,6 +522,7 @@ public final class EventTest extends RubyTestBase {
         Event.setIllegalTagsAction(Event.IllegalTagsAction.RENAME.toString());
         final Event event = new Event();
         event.setField("[tags][foo]", "bar");
+
         assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
         assertEquals(event.getField("[_tags][foo]"), "bar");
     }
@@ -534,6 +535,7 @@ public final class EventTest extends RubyTestBase {
         Map<String, Object> data = new HashMap<>();
         data.put("tags", inner);
         final Event event = new Event(data);
+
         assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
         assertEquals(event.getField("[_tags][poison]"), "true");
     }
@@ -544,6 +546,8 @@ public final class EventTest extends RubyTestBase {
         Event.setIllegalTagsAction(Event.IllegalTagsAction.WARN.toString());
         final Event event = new Event();
         event.setField("[tags][foo]", "bar");
+        Event.setIllegalTagsAction(Event.IllegalTagsAction.RENAME.toString());
+
         assertNull(event.getField(Event.TAGS_FAILURE_FIELD));
         assertEquals(event.getField("[tags][foo]"), "bar");
     }
@@ -556,6 +560,8 @@ public final class EventTest extends RubyTestBase {
         Map<String, Object> data = new HashMap<>();
         data.put("tags", inner);
         final Event event = new Event(data);
+        Event.setIllegalTagsAction(Event.IllegalTagsAction.RENAME.toString());
+
         assertNull(event.getField(Event.TAGS_FAILURE_FIELD));
         assertEquals(event.getField("[tags][poison]"), "true");
     }

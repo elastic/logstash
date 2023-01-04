@@ -126,7 +126,7 @@ public final class FieldReference {
      */
     private final int type;
 
-    private FieldReference(final String[] path, final String key, final int type) {
+    public FieldReference(final String[] path, final String key, final int type) {
         this.key = ConvertedMap.internStringForUseAsKey(key);
         ConvertedMap.internStringsForUseAsKeys(path);
         this.path = path;
