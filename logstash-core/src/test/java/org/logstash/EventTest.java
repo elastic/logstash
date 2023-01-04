@@ -519,6 +519,7 @@ public final class EventTest extends RubyTestBase {
 
     @Test
     public void setTopLevelTagsWithMap() {
+        Event.setIllegalTagsAction(Event.IllegalTagsAction.RENAME.toString());
         final Event event = new Event();
         event.setField("[tags][foo]", "bar");
         assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
@@ -527,6 +528,7 @@ public final class EventTest extends RubyTestBase {
 
     @Test
     public void createEventWithTopLevelTagsWithMap() {
+        Event.setIllegalTagsAction(Event.IllegalTagsAction.RENAME.toString());
         Map<String, Object> inner = new HashMap<>();
         inner.put("poison", "true");
         Map<String, Object> data = new HashMap<>();
