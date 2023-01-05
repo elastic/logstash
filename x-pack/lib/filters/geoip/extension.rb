@@ -12,6 +12,7 @@ module LogStash module Filters module Geoip
       require "logstash/runner"
       logger.trace("Registering additional geoip settings")
       settings.register(LogStash::Setting::NullableString.new("xpack.geoip.download.endpoint"))
+      settings.register(LogStash::Setting::Boolean.new("xpack.geoip.downloader.enabled", true))
     rescue => e
       logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
       raise e

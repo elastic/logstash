@@ -375,3 +375,4 @@
 # X-Pack GeoIP plugin
 # https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html#plugins-filters-geoip-manage_update
 #xpack.geoip.download.endpoint: "https://geoip.elastic.co/v1/database"
+#xpack.geoip.downloader.enabled: true
