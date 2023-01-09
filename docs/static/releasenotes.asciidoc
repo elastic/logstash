@@ -75,8 +75,8 @@ This section summarizes the changes in the following releases:
 * Bugfix leak which happened in creating a new Database pool for every query. The pool is now crated on registration and closed on plugin's `stop` https://github.com/logstash-plugins/logstash-integration-jdbc/pull/119[#119]
 
 * Ambiguous Timestamp Support https://github.com/logstash-plugins/logstash-integration-jdbc/pull/92[#92]
-* FIX: when encountering an ambiguous timestamp, the JDBC Input no longer crashes
-* Added support for disambiguating timestamps in daylight saving time (DST) overlap periods
+** FIX: when encountering an ambiguous timestamp, the JDBC Input no longer crashes
+** Added support for disambiguating timestamps in daylight saving time (DST) overlap periods
 
 *Elasticsearch Output - 11.12.1*
 
