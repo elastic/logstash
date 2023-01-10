@@ -40,8 +40,8 @@ This section summarizes the changes in the following releases:
 * Extends the flow rates introduced to the Node Stats API in 8.5.0 (which included windows for `current` and `lifetime`)
 to include a Technology Preview of several additional windows such as `last_15_minutes`, `last_24_hours`, etc..
 https://github.com/elastic/logstash/pull/14571[#14571]
-* Logstash introduced instance and pipeline level flow metrics, growth_bytes and growth_events for persisted queue
-to provide a better visibility about how fast pipeline queue is growing each single seconds.
+* Logstash introduced instance and pipeline level flow metrics, `growth_bytes` and `growth_events` for persisted queue
+to provide a better visibility about how fast pipeline queue is growing.
 https://github.com/elastic/logstash/pull/14554[#14554]
 
 [[notable-8.6.0]]
