@@ -553,6 +553,25 @@ public final class EventTest extends RubyTestBase {
     }
 
     @Test
+    public void allowTopLevelTagsString() {
+        final Event event = new Event();
+        event.setField("[tags]", "bar");
+
+        assertNull(event.getField(Event.TAGS_FAILURE_FIELD));
+        assertEquals(event.getField("[tags]"), "bar");
+        
+        event.setField("[tags]", "foo");
+        assertEquals(event.getField("[tags]"), "bar");    }
+    
+    @Test
+    public void allowTopLevelTagsListOfStrings() {
+        final Event event = new Event();
+        event.setField("[tags]", List.of("foo", "bar"));
+
+        assertNull(event.getField(Event.TAGS_FAILURE_FIELD));
+        assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
+    }
+    @Test
     public void allowCreatingEventWithTopLevelTagsWithMap() {
         Event.setIllegalTagsAction(Event.IllegalTagsAction.WARN.toString());
         Map<String, Object> inner = new HashMap<>();
