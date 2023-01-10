@@ -584,4 +584,15 @@ public final class EventTest extends RubyTestBase {
         assertNull(event.getField(Event.TAGS_FAILURE_FIELD));
         assertEquals(event.getField("[tags][poison]"), "true");
     }
+    
+    public void withIllegalTagsAction(final Event.IllegalTagsAction temporaryIllegalTagsAction, final Runnable runnable) {
+        try {
+            final IllegalTagsAction previous = Event.ILLEGAL_TAGS_ACTION;
+            Event.setIllegalTagsAction(temporaryIllegalTagsAction.toString());
+            
+            runnable.run();
+        } finally {
+            Event.setIllegalTagsAction(temporaryIllegalTagsAction.toString());
+        }
+    }
 }
