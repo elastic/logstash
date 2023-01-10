@@ -149,7 +149,7 @@ en:
         logstash's configuration before you choose to restart a running system.
       tags-illegal-warning: >-
         Setting `event_api.tags.illegal` to `warn` allows illegal values in the reserved `tags` field, which may crash pipeline unexpectedly.
-        This flag will be deprecated in the next major release and `tags` field will only allow a string or an array of string.
+        This flag value is deprecated and may be removed in a future release.
       # YAML named reference to the logstash.runner.configuration
       # so we can later alias it from logstash.agent.configuration
       configuration: &runner_configuration
