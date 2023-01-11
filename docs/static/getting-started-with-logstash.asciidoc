@@ -125,7 +125,7 @@ Save the repository definition to  +/etc/apt/sources.list.d/elastic-{major-versi
 
 ["source","sh",subs="attributes"]
 --------------------------------------------------
-echo "deb https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}-prerelease.list
+echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/{major-version}-prerelease/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{major-version}-prerelease.list
 --------------------------------------------------
 
 endif::[]
