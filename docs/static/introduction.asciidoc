@@ -1,6 +1,20 @@
+[[introduction]]
+== Logstash introduction
+
+Logstash is an open source data collection engine with real-time pipelining capabilities. Logstash can dynamically
+unify data from disparate sources and normalize the data into destinations of your choice. Cleanse and democratize all
+your data for diverse advanced downstream analytics and visualization use cases.
+
+While Logstash originally drove innovation in log collection, its capabilities extend well beyond that use case. Any
+type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many
+native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
+volume and variety of data.
+
+// The pass blocks here point to the correct repository for the edit links in the guide.
+
 [float]
 [[power-of-logstash]]
-== The Power of Logstash
+== The power of Logstash
 
 *The ingestion workhorse for Elasticsearch and more*
 
@@ -17,12 +31,12 @@ Over 200 plugins available, plus the flexibility of creating and contributing yo
 image:static/images/logstash.png[]
 
 [float]
-== Logstash Loves Data
+== Logstash loves data
 
 Collect more, so you can know more. Logstash welcomes data of all shapes and sizes.
 
 [float]
-=== Logs and Metrics
+=== Logs and metrics
 
 Where it all started.
 
@@ -49,7 +63,7 @@ Unlock the World Wide Web.
 ** Perfect for scenarios where the control of polling is preferred over receiving
 
 [float]
-=== Data Stores and Streams
+=== Data stores and streams
 
 Discover more value from the data you already own.
 
