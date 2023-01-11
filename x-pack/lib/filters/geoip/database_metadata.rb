@@ -94,6 +94,10 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     file_exist?(@metadata_path)
   end
 
+  def delete
+    ::File.delete(@metadata_path) if exist?
+  end
+
   class Column
     DATABASE_TYPE = 0
     CHECK_AT      = 1
