@@ -240,7 +240,7 @@ class LogStash::Agent
     return @id if @id
 
     uuid = nil
-    if ::File.exists?(id_path)
+    if ::File.exist?(id_path)
       begin
         uuid = ::File.open(id_path) {|f| f.each_line.first.chomp }
       rescue => e

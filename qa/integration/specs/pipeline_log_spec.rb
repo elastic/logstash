@@ -59,7 +59,7 @@ describe "Test Logstash Pipeline id" do
     @ls.spawn_logstash("-w", "1" , "-e", config)
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /\[logstash.javapipeline\s*\]\[#{pipeline_name}\]/).to be > 0
   end
 
@@ -73,7 +73,7 @@ describe "Test Logstash Pipeline id" do
     @ls.spawn_logstash("-w", "1" , "-e", config)
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["config string"\]/).to be > 0
   end
 
@@ -87,7 +87,7 @@ describe "Test Logstash Pipeline id" do
     @ls.spawn_logstash("-w", "1", "-f", "#{initial_config_file}")
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
   end
 
@@ -103,12 +103,12 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
-    expect(File.exists?(pipeline_log_file)).to be true
+    expect(File.exist?(pipeline_log_file)).to be true
     content = IO.read(pipeline_log_file)
     expect(content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
 
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     plainlog_content = IO.read(plainlog_file)
     expect(plainlog_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be_nil
   end
@@ -177,10 +177,10 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
-    expect(File.exists?(pipeline_log_file)).to be false
+    expect(File.exist?(pipeline_log_file)).to be false
 
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     plaing_log_content = IO.read(plainlog_file)
     expect(plaing_log_content =~ /Pipeline started {"pipeline.id"=>"#{pipeline_name}"}/).to be > 0
   end

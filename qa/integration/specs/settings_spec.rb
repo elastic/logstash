@@ -34,7 +34,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   }
 
   before(:each) {
-    FileUtils.rm(@logstash_default_logs) if File.exists?(@logstash_default_logs)
+    FileUtils.rm(@logstash_default_logs) if File.exist?(@logstash_default_logs)
     # backup the application settings file -- logstash.yml
     FileUtils.cp(@logstash_service.application_settings_file, "#{@logstash_service.application_settings_file}.original")
   }
@@ -78,14 +78,14 @@ describe "Test Logstash instance whose default settings are overridden" do
     try(num_retries) do
       expect(is_port_open?(test_port)).to be true
     end
-    expect(File.exists?("#{temp_dir}/logstash-plain.log")).to be true
+    expect(File.exist?("#{temp_dir}/logstash-plain.log")).to be true
   end
 
   it "should read config from the specified dir in logstash.yml" do
     change_setting("path.config", temp_dir)
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, tcp_config)
-    expect(File.exists?(test_config_path)).to be true
+    expect(File.exist?(test_config_path)).to be true
     @logstash_service.spawn_logstash
     @logstash_service.wait_for_logstash
     # check LS is up and running with new data path
@@ -97,7 +97,7 @@ describe "Test Logstash instance whose default settings are overridden" do
   it "should exit when config test_and_exit is set" do
     test_config_path = File.join(temp_dir, "test.config")
     IO.write(test_config_path, "#{tcp_config}")
-    expect(File.exists?(test_config_path)).to be true
+    expect(File.exist?(test_config_path)).to be true
     s = {}
     s["path.config"] = test_config_path
     s["config.test_and_exit"] = true
@@ -111,7 +111,7 @@ describe "Test Logstash instance whose default settings are overridden" do
 
     # now with bad config
     IO.write(test_config_path, "#{tcp_config} filters {} ")
-    expect(File.exists?(test_config_path)).to be true
+    expect(File.exist?(test_config_path)).to be true
     @logstash_service.spawn_logstash
     try(num_retries) do
       expect(@logstash_service.exited?).to be true
@@ -151,7 +151,7 @@ describe "Test Logstash instance whose default settings are overridden" do
       expect(is_port_open?(test_port)).to be true
     end
 
-    expect(File.exists?(@logstash_default_logs)).to be true
+    expect(File.exist?(@logstash_default_logs)).to be true
 
     resp = Manticore.get("http://localhost:#{http_port}/_node").body
     node_info = JSON.parse(resp)
@@ -176,6 +176,6 @@ describe "Test Logstash instance whose default settings are overridden" do
     expect(node_info["http_address"]).to eq("127.0.0.1:#{http_port}")
 
     # make sure we log to console and not to any file
-    expect(File.exists?(@logstash_default_logs)).to be false
+    expect(File.exist?(@logstash_default_logs)).to be false
   end
 end

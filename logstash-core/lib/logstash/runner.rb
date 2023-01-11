@@ -22,7 +22,7 @@ $DEBUGLIST = (ENV["DEBUG"] || "").split(",")
 require 'pathname'
 LogStash::ROOT = Pathname.new(File.join(File.expand_path(File.dirname(__FILE__)), "..", "..", "..")).cleanpath.to_s
 LogStash::XPACK_PATH = File.join(LogStash::ROOT, "x-pack")
-LogStash::OSS = ENV["OSS"] == "true" || !File.exists?(LogStash::XPACK_PATH)
+LogStash::OSS = ENV["OSS"] == "true" || !File.exist?(LogStash::XPACK_PATH)
 
 if !LogStash::OSS
   xpack_dir = File.join(LogStash::XPACK_PATH, "lib")

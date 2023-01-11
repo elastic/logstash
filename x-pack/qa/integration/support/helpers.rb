@@ -12,7 +12,7 @@ require "time"
 
 VERSIONS_YML_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "..", "versions.yml")
 VERSION_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "VERSION")
-VERSION = File.exists?(VERSIONS_YML_PATH) ? YAML.load_file(VERSIONS_YML_PATH)['logstash'] : File.read(VERSION_PATH).strip
+VERSION = File.exist?(VERSIONS_YML_PATH) ? YAML.load_file(VERSIONS_YML_PATH)['logstash'] : File.read(VERSION_PATH).strip
 
 def get_logstash_path
   ENV["LOGSTASH_PATH"] || File.join(File.dirname(__FILE__), "../../../../")

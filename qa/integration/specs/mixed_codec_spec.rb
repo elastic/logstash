@@ -68,7 +68,7 @@ describe "Ruby codec when used in" do
       logstash_service.teardown
 
       plainlog_file = "#{temp_dir}/logstash-plain.log"
-      expect(File.exists?(plainlog_file)).to be true
+      expect(File.exist?(plainlog_file)).to be true
       logs = IO.read(plainlog_file)
       expect(logs).to_not include("ERROR")
 
@@ -92,7 +92,7 @@ describe "Ruby codec when used in" do
       logstash_service.teardown
 
       plainlog_file = "#{temp_dir}/logstash-plain.log"
-      expect(File.exists?(plainlog_file)).to be true
+      expect(File.exist?(plainlog_file)).to be true
       logs = IO.read(plainlog_file)
       expect(logs).to_not include("ERROR")
 
@@ -112,7 +112,7 @@ describe "Ruby codec when used in" do
       logstash_service.teardown
 
       plainlog_file = "#{temp_dir}/logstash-plain.log"
-      expect(File.exists?(plainlog_file)).to be true
+      expect(File.exist?(plainlog_file)).to be true
       logs = IO.read(plainlog_file)
       expect(logs).to_not include("ERROR")
     end

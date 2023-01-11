@@ -52,7 +52,7 @@ describe "uncaught exception" do
     expect(@logstash.exit_code).to be 120
 
     log_file = "#{logs_dir}/logstash-plain.log"
-    expect( File.exists?(log_file) ).to be true
+    expect( File.exist?(log_file) ).to be true
     expect( File.read(log_file) ).to match /\[FATAL\]\[org.logstash.Logstash.*?java.lang.AssertionError: a fatal error/m
   end
 
@@ -65,7 +65,7 @@ describe "uncaught exception" do
     expect(@logstash.exit_code).to be 0 # normal exit
 
     log_file = "#{logs_dir}/logstash-plain.log"
-    expect( File.exists?(log_file) ).to be true
+    expect( File.exist?(log_file) ).to be true
     expect( File.read(log_file) ).to match /\[ERROR\]\[org.logstash.Logstash.*?uncaught exception \(in thread .*?java.io.EOFException: unexpected/m
   end
 

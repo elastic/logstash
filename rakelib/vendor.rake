@@ -17,7 +17,7 @@
 
 namespace "vendor" do
   task "jruby" do |task, args|
-    system('./gradlew bootstrap') unless File.exists?(File.join("vendor", "jruby"))
+    system('./gradlew bootstrap') unless File.exist?(File.join("vendor", "jruby"))
   end # jruby
 
   namespace "force" do
@@ -27,7 +27,7 @@ namespace "vendor" do
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
-    if File.exists?(LogStash::Environment::LOCKFILE) # gradlew already bootstrap-ed
+    if File.exist?(LogStash::Environment::LOCKFILE) # gradlew already bootstrap-ed
       puts("Skipping bundler install...")
     else
       puts("Invoking bundler install...")
