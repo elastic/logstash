@@ -36,11 +36,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -65,13 +65,14 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final String META_MAP_KEY = "META";
     public static final String TAGS = "tags";
     public static final String TAGS_FAILURE_TAG = "_tagsparsefailure";
-    public static final String TAGS_FAILURE_FIELD = "_tags";
+    public static final String TAGS_FAILURE = "_tags";
 
     enum IllegalTagsAction { RENAME, WARN }
     private static IllegalTagsAction ILLEGAL_TAGS_ACTION = IllegalTagsAction.RENAME;
 
     private static final FieldReference TAGS_FIELD = FieldReference.from(TAGS);
-    
+    private static final FieldReference TAGS_FAILURE_FIELD = FieldReference.from(TAGS_FAILURE);
+
     private static final Logger logger = LogManager.getLogger(Event.class);
 
     public Event()
@@ -116,8 +117,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         // guard tags field from key/value map, only string or list is allowed
         if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
             final Object tags = Accessors.get(data, TAGS_FIELD);
-            if (tags instanceof ConvertedMap) {
-                this.setField(TAGS_FAILURE_FIELD, tags);
+            if (!isLegalTagValue(tags)) {
+                tagFailTags(tags);
                 initTag(TAGS_FAILURE_TAG);
             }
         }
@@ -216,6 +217,16 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     @SuppressWarnings("unchecked")
     public void setField(final FieldReference field, final Object value) {
+        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
+            if (field.equals(TAGS_FIELD) && !isLegalTagValue(value)) {
+                setTagsAndFailTags(value);
+                return;
+            } else if (isTagsWithMap(field)) {
+                setTagsAndFailTagsWithMap(field, value);
+                return;
+            }
+        }
+
         switch (field.type()) {
             case FieldReference.META_PARENT:
                 // ConvertedMap.newFromMap already does valuefication
@@ -225,28 +236,64 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 Accessors.set(metadata, field, Valuefier.convert(value));
                 break;
             default:
-                final FieldReference renamedField = renameIllegalTags(field);
-                Accessors.set(data, renamedField, Valuefier.convert(value));
+                Accessors.set(data, field, Valuefier.convert(value));
         }
     }
 
-    /**
-     * if the field is a reserved `tags` field with map structure,
-     * construct a FieldReference pointing to `_tag` field and add _tagsparsefailure to `tags` field,
-     * otherwise return the original field.
-     * @param field
-     * @return Renamed {@link FieldReference} or original field
-     */
-    private FieldReference renameIllegalTags(final FieldReference field) {
-        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME &&
-                field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS)) {
-            tag(TAGS_FAILURE_TAG);
-            String[] failTagsPath = Arrays.copyOf(field.getPath(), field.getPath().length);
-            failTagsPath[0] = TAGS_FAILURE_FIELD;
-            return new FieldReference(failTagsPath, field.getKey(), field.type());
+    private boolean isTagsWithMap(final FieldReference field) {
+        return field.getPath() != null && field.getPath().length > 0 && field.getPath()[0].equals(TAGS);
+    }
+
+    private boolean isLegalTagValue(final Object value) {
+        if (value instanceof String || value instanceof RubyString || value == null) {
+            return true;
+        } else if (value instanceof List) {
+            for (Object item: (List) value) {
+                if (!(item instanceof String) && !(item instanceof RubyString)) {
+                    return false;
+                }
+            }
+            return true;
         }
 
-        return field;
+        return false;
+    }
+
+
+    private void setTagsAndFailTags(final Object value) {
+        tag(TAGS_FAILURE_TAG);
+        tagFailTags(Valuefier.convert(value));
+    }
+
+    /**
+     * handle key/val pair in `tags`, add _tagsparsefailure to `tags`.
+     * rename FieldReference from `tags` to `_tags`. If existing `_tags` is a list, append value to `_tags`,
+     * eg. [tags][key] -> [_tags][list_index][key]
+     * @param field FieldReference of `tags` with map path
+     * @param value
+     */
+    private void setTagsAndFailTagsWithMap(final FieldReference field, final Object value) {
+        tag(TAGS_FAILURE_TAG);
+
+        List<String> paths = new ArrayList<>();
+        paths.add(TAGS_FAILURE);
+
+        // take list size of _tags as index
+        final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
+        int index = (failTags instanceof List)? ((List) failTags).size() : 0;
+        paths.add(Integer.toString(index));
+
+        // rebuild path & key
+        for(int i = 1; i < field.getPath().length; i++) {
+            paths.add(field.getPath()[i]);
+        }
+        if (field.getKey() != null) {
+            paths.add(field.getKey());
+        }
+
+        String renamedFieldRef = paths.stream().collect(Collectors.joining("][", "[", "]"));
+        final FieldReference renamedField = FieldReference.from(renamedFieldRef);
+        Accessors.set(data, renamedField, Valuefier.convert(value));
     }
 
     @Override
@@ -519,6 +566,28 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private void tagFailTags(final Object tag) {
+        final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
+        if (failTags == null) {
+            final List<Object> list = new ArrayList<>(1);
+            appendFailTags(list, tag);
+        } else {
+            if (failTags instanceof List) {
+                appendFailTags((List<Object>) failTags, tag);
+            } else {
+                final List<Object> list = new ArrayList<>(2);
+                list.add(failTags);
+                appendFailTags(list, tag);
+            }
+        }
+    }
+
+    private void appendFailTags(final List<Object> failTags, final Object failTag) {
+        failTags.add(failTag);
+        Accessors.set(data, TAGS_FAILURE_FIELD, ConvertedList.newFromList(failTags));
+    }
+
     /**
      * Fallback for {@link Event#tag(String)} in case "tags" was populated by just a String value
      * and needs to be converted to a list before appending to it.
@@ -533,6 +602,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     public static void setIllegalTagsAction(final String action) {
         ILLEGAL_TAGS_ACTION = IllegalTagsAction.valueOf(action.toUpperCase());
+    }
+
+    public static IllegalTagsAction getIllegalTagsAction() {
+        return ILLEGAL_TAGS_ACTION;
     }
 
     @Override
