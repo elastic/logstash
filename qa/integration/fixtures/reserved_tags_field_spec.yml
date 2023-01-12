@@ -1,0 +1,54 @@
+---
+services:
+  - logstash
+config:
+  create_tags_map: |-
+    input {
+      generator {
+        message => '{"tags": {"poison":true} }'
+        codec => json
+        count => 1
+      }
+    }
+    output {
+      file {
+        path => "${TEMP_PATH}/create_tags_map.log"
+        flush_interval => 0
+        codec => json
+      }
+    }
+  create_tags_number: |-
+    input {
+      generator {
+        message => '{"tags": [1,2,3] }'
+        codec => json
+        count => 1
+      }
+    }
+    output {
+      file {
+        path => "${TEMP_PATH}/create_tags_number.log"
+        flush_interval => 0
+        codec => json
+      }
+    }
+  set_illegal_tags: |-
+    input {
+      generator {
+        message => '{"greeting": "hello"}'
+        codec => json
+        count => 1
+      }
+    }
+    filter {
+      ruby { code => "event.set('[tags]' , 123);" }
+      ruby { code => "event.set('[tags][poison]' , 'true');" }
+    }
+    output {
+      file {
+        path => "${TEMP_PATH}/set_illegal_tags.log"
+        flush_interval => 0
+        codec => json
+      }
+    }
+teardown_script:
