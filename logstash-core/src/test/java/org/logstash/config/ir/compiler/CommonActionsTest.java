@@ -248,8 +248,8 @@ public class CommonActionsTest {
         e.setField(TAGS, nonTagValue);
         CommonActions.removeTag(e, Collections.singletonList(testTag));
         o = e.getField(TAGS);
-        Assert.assertFalse(o instanceof List);
-        Assert.assertEquals(nonTagValue, o);
+        Assert.assertTrue(o instanceof List);
+        Assert.assertEquals(List.of(Event.TAGS_FAILURE_TAG), o);
 
         // remove dynamically-named tag
         e = new Event();
