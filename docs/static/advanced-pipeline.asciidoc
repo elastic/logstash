@@ -339,11 +339,12 @@ of the `first-pipeline.conf` file:
 [source,json]
 --------------------------------------------------------------------------------
     geoip {
-        source => "clientip"
+        source => "[source][address]"
+        target => "[source]"
     }
 --------------------------------------------------------------------------------
 
-The `geoip` plugin configuration requires you to specify the name of the source field that contains the IP address to look up. In this example, the `clientip` field contains the IP address.
+The `geoip` plugin configuration requires you to specify the name of the source field that contains the IP address to look up. In this example, the `[source][address]` field contains the IP address.
 
 Since filters are evaluated in sequence, make sure that the `geoip` section is after the `grok` section of
 the configuration file and that both the `grok` and `geoip` sections are nested within the `filter` section.
