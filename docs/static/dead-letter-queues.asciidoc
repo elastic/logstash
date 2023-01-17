@@ -11,6 +11,11 @@ You can <<es-proc-dlq,process events from the DLQ>> with the <<plugins-inputs-de
 Processing events does not delete items from the queue, and the DLQ sometimes needs attention.
 See <<dlq-size>> and <<dlq-clear>> for more info. 
 
+[[dlq-settings]]
+==== DLQ settings
+
+include::settings/settings-dlq.asciidoc[]
+
 [[dead-letter-how]]
 ==== How the dead letter queue works
 

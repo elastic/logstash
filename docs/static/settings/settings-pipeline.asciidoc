@@ -1,0 +1,43 @@
+`pipeline.id`::
+The ID of the pipeline. Default: `main`.
+
+`pipeline.workers`::
+Set the number of workers that will, in parallel, execute the filters+outputs stage of the pipeline. Defaults to the number of the host's CPU cores. 
+If you have modified this setting and see that events are backing up, or that the CPU is not saturated, consider increasing this number to better utilize machine processing power. 
+
+`pipeline.batch.size`::
+The maximum number of events an individual worker thread should collect from inputs before attempting to execute its filters and outputs. 
+Larger batch sizes are generally more efficient, but come at the cost of increased memory overhead. 
+You may need to increase JVM heap space in the `jvm.options` config file. 
+See <<config-setting-files>> for more info. Default is 125.
+
+`pipeline.batch.delay`::
+How long to wait in milliseconds while polling for the next event before dispatching an undersized batch to filters+outputs. Default is 50. 
+
+`pipeline.unsafe_shutdown`::
+When set to `true`, forces Logstash to exit during shutdown, even if there are still inflight events in memory. 
+By default, Logstash refuses to quit until all received events have been pushed to the outputs. 
+Default is `false`.
+WARNING: Enabling this setting can lead to data loss during shutdown. 
+
+`pipeline.plugin_classloaders`::
+(Beta) Load Java plugins in independent classloaders to isolate their dependencies. Default is `false`. 
+
+`pipeline.ordered`::
+Set the pipeline event ordering. Options are "auto" (default), "true", "false". 
+Setting this value to "auto" automatically enables ordering if the 'pipeline.workers' setting is also set to '1', and disables otherwise. 
+Setting this value to "true" enforces ordering on the pipeline and prevent logstash from starting if there are multiple workers. 
+Setting this value to "false" disables any extra processing necessary for preserving ordering.
+
+`pipeline.separate_logs`::
+Flag to output log lines of each pipeline to a separate log file. If enabled, Logstash creates a different log file for each pipeline, using the pipeline.id as name of the file. 
+When you have many Logstash pipelines, separating each log by pipeline could be helpful when you need to troubleshoot a single pipeline.
+Default is `false`.
+
+`pipeline.ecs_compatibility`::
+Sets the pipeline's default value for `ecs_compatibility`, a setting that is available to plugins that implement an ECS Compatibility mode for use with the Elastic Common Schema. 
+Possible values are `disabled`, `v1`, `v8` (default). 
+Pipelines defined before Logstash 8 operate without ECS in mind. 
+To ensure a migrated pipeline continues to operate as it did before your upgrade, opt-OUT of ECS for the individual pipeline in its `pipelines.yml` definition. 
+Setting this value sets the default for _all_ pipelines, including new ones.
+

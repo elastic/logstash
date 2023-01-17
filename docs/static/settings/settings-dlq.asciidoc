@@ -1,0 +1,30 @@
+These settings apply when `dead_letter_queue.enable: true`. 
+
+`dead_letter_queue.enable`::
+Flag to turn on dead letter queue (DLQ) supported by plugins. Default is `false`. 
+
+`dead_letter_queue.max_bytes`::
+The maximum size of each dead letter queue (DLQ). 
+Entries will be dropped if they would increase the size of the dead letter queue beyond this value. Default is `1024mb`.
+
+`dead_letter_queue.flush_interval`::
+The interval in milliseconds a dead letter queue file will be written if no additional DLQ events have been created. 
+A low value means that more, smaller queue files may be written. 
+A larger value introduces more latency between items being "written" to the dead letter queue and available to be read by the dead_letter_queue input.
+Default is 5000. 
+
+`dead_letter_queue.storage_policy`::
+Defines the action to take when the dead_letter_queue.max_bytes is reached.
+Options are "drop_newer" (default) or "drop_older". 
+With drop_newer, messages that were inserted most recently are dropped, logging an error line. With drop_older setting, the oldest messages are dropped as new ones are inserted. 
+Default value is "drop_newer". 
+
+`path.dead_letter_queue`::
+Sets the directory path where the data files will be stored. 
+Default is `path.data/dead_letter_queue`.
+
+`dead_letter_queue.retain.age`::
+Sets the retention period for events in the DLQ. 
+Use this setting to have {ls} remove events that are older than a value you define.
+Available time units are `d`, `h`, `m`, `s` respectively for days, hours, minutes and seconds.
+
