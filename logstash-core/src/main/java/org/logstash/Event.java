@@ -275,23 +275,13 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private void setTagsAndFailTagsWithMap(final FieldReference field, final Object value) {
         tag(TAGS_FAILURE_TAG);
 
-        List<String> paths = new ArrayList<>();
-        paths.add(TAGS_FAILURE);
-
         // take list size of _tags as index
         final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
         int index = (failTags instanceof List)? ((List) failTags).size() : 0;
-        paths.add(Integer.toString(index));
 
-        // rebuild path & key
-        for(int i = 1; i < field.getPath().length; i++) {
-            paths.add(field.getPath()[i]);
-        }
-        paths.add(field.getKey());
+        FieldReference rebasedField = field.rebaseOnto(1, List.of(TAGS_FAILURE, Integer.toString(index)));
 
-        String renamedFieldRef = paths.stream().collect(Collectors.joining("][", "[", "]"));
-        final FieldReference renamedField = FieldReference.from(renamedFieldRef);
-        Accessors.set(data, renamedField, Valuefier.convert(value));
+        Accessors.set(data, rebasedField, Valuefier.convert(value));
     }
 
     @Override

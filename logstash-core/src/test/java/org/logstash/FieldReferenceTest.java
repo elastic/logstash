@@ -21,6 +21,7 @@
 package org.logstash;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.jruby.RubyString;
@@ -139,6 +140,51 @@ public final class FieldReferenceTest {
             FieldReference f = FieldReference.from("[[foo][bar]][baz]");
             assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
             assertEquals("baz", f.getKey());
+        }
+
+        @Test
+        public void testParseMetadataParent() throws Exception {
+            FieldReference f = FieldReference.from("[@metadata]");
+            assertEquals(0, f.getPath().length);
+            assertEquals("@metadata", f.getKey());
+        }
+
+        @Test
+        public void testParseMetadataChild() throws Exception {
+            FieldReference f = FieldReference.from("[@metadata][nested][field]");
+            assertEquals(1, f.getPath().length);
+            assertEquals("field", f.getKey());
+        }
+
+        @Test
+        public void testRebaseShift1Field() throws Exception {
+            FieldReference f = FieldReference.from("[tags][path][key]");
+            FieldReference rebased = f.rebaseOnto(1, List.of("_tags", "0"));
+            assertArrayEquals(new String[]{"_tags", "0", "path"}, rebased.getPath());
+            assertEquals("key", rebased.getKey());
+        }
+
+        @Test
+        public void testRebaseShift0Field() throws Exception {
+            FieldReference f = FieldReference.from("[p][pp][key]");
+            FieldReference rebased = f.rebaseOnto(0, List.of("_tags"));
+            assertArrayEquals(new String[]{"_tags", "p", "pp"}, rebased.getPath());
+            assertEquals("key", rebased.getKey());
+        }
+
+        @Test
+        public void testRebaseToMetadata() throws Exception {
+            FieldReference f = FieldReference.from("[nested][field]");
+            FieldReference rebased = f.rebaseOnto(0, List.of("@metadata"));
+            assertArrayEquals(new String[]{"nested"}, rebased.getPath());
+            assertEquals("field", rebased.getKey());
+            assertEquals(FieldReference.META_CHILD, rebased.type());
+        }
+
+        @Test(expected = IndexOutOfBoundsException.class)
+        public void testRebaseShiftTooManyField() throws Exception {
+            FieldReference f = FieldReference.from("[path]");
+            FieldReference rebased = f.rebaseOnto(2, List.of("boom"));
         }
 
         @Test(expected = FieldReference.IllegalSyntaxException.class)
