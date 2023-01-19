@@ -287,9 +287,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         for(int i = 1; i < field.getPath().length; i++) {
             paths.add(field.getPath()[i]);
         }
-        if (field.getKey() != null) {
-            paths.add(field.getKey());
-        }
+        paths.add(field.getKey());
 
         String renamedFieldRef = paths.stream().collect(Collectors.joining("][", "[", "]"));
         final FieldReference renamedField = FieldReference.from(renamedFieldRef);
