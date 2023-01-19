@@ -269,7 +269,8 @@ en:
                  A tag `_tagsparsefailure` is added to `tags` field to 
                  indicate the illegal assignment. This is the default option.
                - `warn`: allow illegal value assignment and print warning
-                 at startup.
+                 at startup. This option is deprecated and slated
+                 for removal.
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances
