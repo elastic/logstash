@@ -171,8 +171,8 @@ public final class FieldReference {
 
     /**
      * Rebase the path of FieldReference to a new base.
-     *  [tags][key] -> [_tags][key], rebaseOnto(1, List.of("_tags"))
-     *  [tags][path][key] -> [_tags][key], rebaseOnto(2, List.of("_tags"))
+     *  [tags][key] to [_tags][key], rebaseOnto(1, List.of("_tags"))
+     *  [tags][path][key] to [_tags][key], rebaseOnto(2, List.of("_tags"))
      * @param shiftLevel the number of levels to shift off of this {@code FieldReference}.
      *                   A value of {@code 0} will _move_ the entire nesting onto the new base
      *                   A value of {@code 1} will remove 1 top-level nesting before moving the remainder
