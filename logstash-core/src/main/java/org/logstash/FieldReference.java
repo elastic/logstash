@@ -170,12 +170,15 @@ public final class FieldReference {
     }
 
     /**
+     * Rebase the path of FieldReference to a new base.
+     *  [tags][key] -> [_tags][key], rebaseOnto(1, List.of("_tags"))
+     *  [tags][path][key] -> [_tags][key], rebaseOnto(2, List.of("_tags"))
      * @param shiftLevel the number of levels to shift off of this {@code FieldReference}.
      *                   A value of {@code 0} will _move_ the entire nesting onto the new base
      *                   A value of {@code 1} will remove 1 top-level nesting before moving the remainder
      *                   Specifying more levels than available nestings is an error condition.
-     * @param newBase a sequence of zero or more field nestings to prepend
-     * @return
+     * @param newBase a sequence of zero or more field nesting to prepend
+     * @return FieldReference
      */
     public FieldReference rebaseOnto(@Nonnegative int shiftLevel, final List<String> newBase) {
         if (shiftLevel == 0 && newBase.isEmpty()) { return this; }

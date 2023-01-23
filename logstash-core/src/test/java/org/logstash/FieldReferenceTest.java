@@ -147,6 +147,7 @@ public final class FieldReferenceTest {
             FieldReference f = FieldReference.from("[@metadata]");
             assertEquals(0, f.getPath().length);
             assertEquals("@metadata", f.getKey());
+            assertEquals(FieldReference.META_PARENT, f.type());
         }
 
         @Test
@@ -154,6 +155,7 @@ public final class FieldReferenceTest {
             FieldReference f = FieldReference.from("[@metadata][nested][field]");
             assertEquals(1, f.getPath().length);
             assertEquals("field", f.getKey());
+            assertEquals(FieldReference.META_CHILD, f.type());
         }
 
         @Test
