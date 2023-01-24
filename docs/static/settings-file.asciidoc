@@ -349,7 +349,7 @@ separating each log lines per pipeline could be helpful in case you need to trou
 
 | `event_api.tags.illegal`
 | When set to `warn`, allow illegal value assignment to the reserved `tags` field.
-When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation.
+When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
 Setting this flag to `warn` is deprecated and will be removed in a future release.
 | `rename`
 |=======================================================================
