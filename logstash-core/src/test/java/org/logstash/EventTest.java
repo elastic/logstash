@@ -518,20 +518,10 @@ public final class EventTest extends RubyTestBase {
         assertFalse(event.includes("[@metadata][foo]"));
     }
 
-    @Test
-    public void setTagsWithMapShouldRename() {
+    @Test(expected = Event.InvalidTypeException.class)
+    public void setTagsWithMapShouldThrow() {
         final Event event = new Event();
         event.setField("[tags][foo]", "bar");
-        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
-        assertEquals(event.getField("[_tags][0][foo]"), "bar");
-
-        event.setField("[tags]", Map.of("key", "val"));
-        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
-        assertEquals(event.getField("[_tags][1][key]"), "val");
-
-        event.setField("[tags]", Map.of("key", Map.of("inner", "val")));
-        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
-        assertEquals(event.getField("[_tags][2][key][inner]"), "val");
     }
 
     @Test
@@ -542,28 +532,10 @@ public final class EventTest extends RubyTestBase {
         assertEquals(event.getField("[_tags][0][poison]"), "true");
     }
 
-    @Test
-    public void setTagsWithNumberShouldRename() {
+    @Test(expected = Event.InvalidTypeException.class)
+    public void setTagsWithNumberShouldThrow() {
         final Event event = new Event();
         event.setField("[tags]", 123L);
-        assertEquals(event.getField(Event.TAGS), List.of(Event.TAGS_FAILURE_TAG));
-        assertEquals(event.getField("[_tags][0]"), 123L);
-    }
-
-    @Test
-    public void setTagsWithListOfIllegalValShouldRename() {
-        final Event event = new Event();
-        List<Object> list = new ArrayList<>();
-        list.add("valid");
-        list.add(List.of(1L));
-
-        event.setField("[tags]", list);
-        assertEquals(event.getField(Event.TAGS), List.of(Event.TAGS_FAILURE_TAG));
-        assertEquals(event.getField("[_tags][0][0]"), "valid");
-
-        Object val = event.getField("[_tags][0][1]");
-        assertTrue(val instanceof List);
-        assertEquals(((List<?>) val).get(0), 1L);
     }
 
     @Test

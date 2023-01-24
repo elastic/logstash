@@ -36,11 +36,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -118,7 +120,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
             final Object tags = Accessors.get(data, TAGS_FIELD);
             if (!isLegalTagValue(tags)) {
-                tagFailTags(tags);
+                initFailTag(tags);
                 initTag(TAGS_FAILURE_TAG);
             }
         }
@@ -218,12 +220,9 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     @SuppressWarnings("unchecked")
     public void setField(final FieldReference field, final Object value) {
         if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
-            if (field.equals(TAGS_FIELD) && !isLegalTagValue(value)) {
-                setTagsAndFailTags(value);
-                return;
-            } else if (isTagsWithMap(field)) {
-                setTagsAndFailTagsWithMap(field, value);
-                return;
+            if ((field.equals(TAGS_FIELD) && !isLegalTagValue(value)) ||
+                    isTagsWithMap(field)) {
+                throw new InvalidTypeException(field, value);
             }
         }
 
@@ -257,31 +256,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         }
 
         return false;
-    }
-
-
-    private void setTagsAndFailTags(final Object value) {
-        tag(TAGS_FAILURE_TAG);
-        tagFailTags(Valuefier.convert(value));
-    }
-
-    /**
-     * handle key/val pair in `tags`, add _tagsparsefailure to `tags`.
-     * rename FieldReference from `tags` to `_tags`. If existing `_tags` is a list, append value to `_tags`,
-     * eg. [tags][key] -> [_tags][list_index][key]
-     * @param field FieldReference of `tags` with map path
-     * @param value
-     */
-    private void setTagsAndFailTagsWithMap(final FieldReference field, final Object value) {
-        tag(TAGS_FAILURE_TAG);
-
-        // take list size of _tags as index
-        final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
-        int index = (failTags instanceof List)? ((List) failTags).size() : 0;
-
-        FieldReference rebasedField = field.rebaseOnto(1, List.of(TAGS_FAILURE, Integer.toString(index)));
-
-        Accessors.set(data, rebasedField, Valuefier.convert(value));
     }
 
     @Override
@@ -554,6 +528,12 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         }
     }
 
+    private void initFailTag(final Object tag) {
+        final ConvertedList list = new ConvertedList(1);
+        list.add(tag);
+        Accessors.set(data, TAGS_FAILURE_FIELD, list);
+    }
+
     @SuppressWarnings("unchecked")
     private void tagFailTags(final Object tag) {
         final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
@@ -609,5 +589,26 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             return new Event();
         }
         return fromSerializableMap(data);
+    }
+
+    public static class InvalidTypeException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        public InvalidTypeException(final FieldReference field, final Object value) {
+            super(String.format("Could not set the reserved tags field '%s' to value '%s'. " +
+                            "The tags field only accepts string or array of string.",
+                    getCanonicalFieldReference(field), value
+            ));
+        }
+
+        private static String getCanonicalFieldReference(final FieldReference field) {
+            List<String> path = new ArrayList<>();
+            if (field.type() == FieldReference.META_CHILD) {
+                path.add(METADATA);
+            }
+            path.addAll(List.of(field.getPath()));
+            path.add(field.getKey());
+            return path.stream().collect(Collectors.joining("][", "[", "]"));
+        }
     }
 }
