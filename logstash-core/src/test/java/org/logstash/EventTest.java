@@ -518,7 +518,7 @@ public final class EventTest extends RubyTestBase {
         assertFalse(event.includes("[@metadata][foo]"));
     }
 
-    @Test(expected = Event.InvalidTypeException.class)
+    @Test(expected = Event.InvalidTagsTypeException.class)
     public void setTagsWithMapShouldThrow() {
         final Event event = new Event();
         event.setField("[tags][foo]", "bar");
@@ -532,7 +532,7 @@ public final class EventTest extends RubyTestBase {
         assertEquals(event.getField("[_tags][0][poison]"), "true");
     }
 
-    @Test(expected = Event.InvalidTypeException.class)
+    @Test(expected = Event.InvalidTagsTypeException.class)
     public void setTagsWithNumberShouldThrow() {
         final Event event = new Event();
         event.setField("[tags]", 123L);

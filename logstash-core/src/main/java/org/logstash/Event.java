@@ -36,13 +36,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -222,7 +220,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
             if ((field.equals(TAGS_FIELD) && !isLegalTagValue(value)) ||
                     isTagsWithMap(field)) {
-                throw new InvalidTypeException(field, value);
+                throw new InvalidTagsTypeException(field, value);
             }
         }
 
@@ -534,28 +532,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         Accessors.set(data, TAGS_FAILURE_FIELD, list);
     }
 
-    @SuppressWarnings("unchecked")
-    private void tagFailTags(final Object tag) {
-        final Object failTags = Accessors.get(data, TAGS_FAILURE_FIELD);
-        if (failTags == null) {
-            final List<Object> list = new ArrayList<>(1);
-            appendFailTags(list, tag);
-        } else {
-            if (failTags instanceof List) {
-                appendFailTags((List<Object>) failTags, tag);
-            } else {
-                final List<Object> list = new ArrayList<>(2);
-                list.add(failTags);
-                appendFailTags(list, tag);
-            }
-        }
-    }
-
-    private void appendFailTags(final List<Object> failTags, final Object failTag) {
-        failTags.add(failTag);
-        Accessors.set(data, TAGS_FAILURE_FIELD, ConvertedList.newFromList(failTags));
-    }
-
     /**
      * Fallback for {@link Event#tag(String)} in case "tags" was populated by just a String value
      * and needs to be converted to a list before appending to it.
@@ -591,10 +567,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return fromSerializableMap(data);
     }
 
-    public static class InvalidTypeException extends RuntimeException {
+    public static class InvalidTagsTypeException extends RuntimeException {
         private static final long serialVersionUID = 1L;
 
-        public InvalidTypeException(final FieldReference field, final Object value) {
+        public InvalidTagsTypeException(final FieldReference field, final Object value) {
             super(String.format("Could not set the reserved tags field '%s' to value '%s'. " +
                             "The tags field only accepts string or array of string.",
                     getCanonicalFieldReference(field), value
@@ -602,11 +578,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         }
 
         private static String getCanonicalFieldReference(final FieldReference field) {
-            List<String> path = new ArrayList<>();
-            if (field.type() == FieldReference.META_CHILD) {
-                path.add(METADATA);
-            }
-            path.addAll(List.of(field.getPath()));
+            List<String> path = new ArrayList<>(List.of(field.getPath()));
             path.add(field.getKey());
             return path.stream().collect(Collectors.joining("][", "[", "]"));
         }

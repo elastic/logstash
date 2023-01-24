@@ -247,7 +247,7 @@ public class CommonActionsTest {
         Long nonTagValue = 42L;
         try {
             e.setField(TAGS, nonTagValue);
-        } catch (Event.InvalidTypeException ex) {
+        } catch (Event.InvalidTagsTypeException ex) {
 
         }
 
