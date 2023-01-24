@@ -100,7 +100,7 @@ GEM
       faraday (~> 1)
       multi_json
     equalizer (0.0.11)
-    faraday (1.10.2)
+    faraday (1.10.3)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
@@ -678,7 +678,7 @@ GEM
     msgpack (1.4.5-java)
     multi_json (1.15.0)
     multipart-post (2.1.1)
-    murmurhash3 (0.1.6-java)
+    murmurhash3 (0.1.7)
     mustache (0.99.8)
     mustermann (1.0.3)
     naught (1.1.0)
@@ -699,7 +699,7 @@ GEM
       mustache (= 0.99.8)
       stud
     polyglot (0.3.5)
-    pry (0.14.1-java)
+    pry (0.14.2-java)
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
@@ -707,7 +707,7 @@ GEM
     puma (5.6.5-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
-    rack (2.2.4)
+    rack (2.2.6.2)
     rack-protection (2.2.1)
       rack
     rack-test (1.1.0)
