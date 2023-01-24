@@ -678,7 +678,7 @@ GEM
     msgpack (1.4.5-java)
     multi_json (1.15.0)
     multipart-post (2.1.1)
-    murmurhash3 (0.1.6)
+    murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     mustermann (1.0.3)
     naught (1.1.0)
