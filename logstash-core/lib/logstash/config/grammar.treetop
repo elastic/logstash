@@ -3,14 +3,14 @@ require "logstash/config/config_ast"
 
 grammar LogStashConfig
   rule config
-    _ plugin_section _ (_ plugin_section)* _ <LogStash::Config::AST::Config>
+    cs plugin_section cs (cs plugin_section)* cs <LogStash::Config::AST::Config>
   end
 
   rule comment
     (whitespace? "#" [^\r\n]* "\r"? "\n")+ <LogStash::Config::AST::Comment>
   end
 
-  rule _
+  rule cs
     (comment / whitespace)* <LogStash::Config::AST::Whitespace>
   end
 
@@ -19,8 +19,8 @@ grammar LogStashConfig
   end
 
   rule plugin_section
-    plugin_type _ "{"
-      _ (branch_or_plugin _)*
+    plugin_type cs "{"
+      cs (branch_or_plugin cs)*
     "}"
     <LogStash::Config::AST::PluginSection>
   end
@@ -34,15 +34,15 @@ grammar LogStashConfig
   end
 
   rule plugins
-    (plugin (_ plugin)*)?
+    (plugin (cs plugin)*)?
     <LogStash::Config::AST::Plugins>
   end
 
   rule plugin
-    name _ "{"
-      _
-      attributes:( attribute (whitespace _ attribute)*)?
-      _
+    name cs "{"
+      cs
+      attributes:( attribute (whitespace cs attribute)*)?
+      cs
     "}"
     <LogStash::Config::AST::Plugin>
   end
@@ -55,7 +55,7 @@ grammar LogStashConfig
   end
 
   rule attribute
-    name _ "=>" _ value
+    name cs "=>" cs value
     <LogStash::Config::AST::Attribute>
   end
 
@@ -95,20 +95,20 @@ grammar LogStashConfig
 
   rule array
     "["
-    _
+    cs
     (
-      value (_ "," _ value)*
+      value (cs "," cs value)*
     )?
-    _
+    cs
     "]"
     <LogStash::Config::AST::Array>
   end
 
   rule hash
     "{"
-      _
+      cs
       hashentries?
-      _
+      cs
     "}"
     <LogStash::Config::AST::Hash>
   end
@@ -119,39 +119,39 @@ grammar LogStashConfig
   end
 
   rule hashentry
-    name:(number / bareword / string) _ "=>" _ value
+    name:(number / bareword / string) cs "=>" cs value
     <LogStash::Config::AST::HashEntry>
   end
 
   # Conditions
   rule branch
-    if (_ else_if)* (_ else)?
+    if (cs else_if)* (cs else)?
     <LogStash::Config::AST::Branch>
   end
 
   rule if
-    "if" _ condition _ "{" _ (branch_or_plugin _)* "}"
+    "if" cs condition cs "{" cs (branch_or_plugin cs)* "}"
     <LogStash::Config::AST::If>
   end
 
   rule else_if
-    "else" _ "if" _ condition _ "{" _ ( branch_or_plugin _)* "}"
+    "else" cs "if" cs condition cs "{" cs ( branch_or_plugin cs)* "}"
     <LogStash::Config::AST::Elsif>
   end
 
   rule else
-    "else" _ "{" _ (branch_or_plugin _)* "}"
+    "else" cs "{" cs (branch_or_plugin cs)* "}"
     <LogStash::Config::AST::Else>
   end
 
   rule condition
-    expression (_ boolean_operator _ expression)*
+    expression (cs boolean_operator cs expression)*
     <LogStash::Config::AST::Condition>
   end
 
   rule expression
     (
-        ("(" _ condition _ ")")
+        ("(" cs condition cs ")")
       / negative_expression
       / in_expression
       / not_in_expression
@@ -163,18 +163,18 @@ grammar LogStashConfig
 
   rule negative_expression
     (
-        ("!" _ "(" _ condition _ ")")
-      / ("!" _ selector)
+        ("!" cs "(" cs condition cs ")")
+      / ("!" cs selector)
     ) <LogStash::Config::AST::NegativeExpression>
   end
 
   rule in_expression
-    rvalue _ in_operator _ rvalue
+    rvalue cs in_operator cs rvalue
     <LogStash::Config::AST::InExpression>
   end
 
   rule not_in_expression
-    rvalue _ not_in_operator _ rvalue
+    rvalue cs not_in_operator cs rvalue
     <LogStash::Config::AST::NotInExpression>
   end
 
@@ -183,7 +183,7 @@ grammar LogStashConfig
   end
 
   rule not_in_operator
-    "not " _ "in"
+    "not " cs "in"
   end
 
   rule rvalue
@@ -191,11 +191,11 @@ grammar LogStashConfig
   end
 
   rule method_call
-      method _ "(" _
+      method cs "(" cs
         (
-          rvalue ( _ "," _ rvalue )*
+          rvalue ( cs "," cs rvalue )*
         )?
-      _ ")"
+      cs ")"
     <LogStash::Config::AST::MethodCall>
   end
 
@@ -204,7 +204,7 @@ grammar LogStashConfig
   end
 
   rule compare_expression
-    rvalue _ compare_operator _ rvalue
+    rvalue cs compare_operator cs rvalue
     <LogStash::Config::AST::ComparisonExpression>
   end
   
@@ -214,7 +214,7 @@ grammar LogStashConfig
   end
 
   rule regexp_expression
-    rvalue _  regexp_operator _ (string / regexp)
+    rvalue cs  regexp_operator cs (string / regexp)
     <LogStash::Config::AST::RegexpExpression>
   end
 
