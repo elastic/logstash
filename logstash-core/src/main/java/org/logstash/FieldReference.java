@@ -170,32 +170,6 @@ public final class FieldReference {
     }
 
     /**
-     * Rebase the path of FieldReference to a new base.
-     *  [tags][key] to [_tags][key], rebaseOnto(1, List.of("_tags"))
-     *  [tags][path][key] to [_tags][key], rebaseOnto(2, List.of("_tags"))
-     * @param shiftLevel the number of levels to shift off of this {@code FieldReference}.
-     *                   A value of {@code 0} will _move_ the entire nesting onto the new base
-     *                   A value of {@code 1} will remove 1 top-level nesting before moving the remainder
-     *                   Specifying more levels than available nestings is an error condition.
-     * @param newBase a sequence of zero or more field nesting to prepend
-     * @return FieldReference
-     */
-    public FieldReference rebaseOnto(@Nonnegative int shiftLevel, final List<String> newBase) {
-        if (shiftLevel == 0 && newBase.isEmpty()) { return this; }
-
-        List<String> tokens = toTokens();
-        if (tokens.size() <= shiftLevel) {
-            throw new IndexOutOfBoundsException(String.format("cannot shift %s levels from field reference with %s tokens", shiftLevel, tokens.size()));
-        }
-
-        final List<String> modifiedPath = new ArrayList<>(newBase.size() + tokens.size() - shiftLevel);
-        modifiedPath.addAll(newBase);
-        modifiedPath.addAll(tokens.subList(shiftLevel, tokens.size()));
-
-        return FieldReference.fromTokens(modifiedPath);
-    }
-
-    /**
      * Returns the type of this instance to allow for fast switch operations in
      * {@link Event#getUnconvertedField(FieldReference)} and
      * {@link Event#setField(FieldReference, Object)}.
@@ -288,21 +262,6 @@ public final class FieldReference {
         } else {
             return new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD);
         }
-    }
-
-    /**
-     * @return a list of tokens that can round-trip through {@link FieldReference#fromTokens}
-     *         to produce an identical {@code FieldReference}.
-     */
-    private List<String> toTokens() {
-        // min size to avoid resizing: maybe_meta + path + key
-        final List<String> tokens = new ArrayList<>(path.length + 2);
-
-        if (type == META_CHILD) { tokens.add(Event.METADATA); }
-        tokens.addAll(Arrays.asList(path));
-        tokens.add(key);
-
-        return tokens;
     }
 
     /**
