@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 import org.jruby.RubyString;
 import org.logstash.util.EscapeHandler;
 
-import javax.annotation.Nonnegative;
-
 /**
  * Represents a reference to another field of the event {@link Event}
  * */
