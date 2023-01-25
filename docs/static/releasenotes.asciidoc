@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-9,Logstash 7.17.9>>
 * <<logstash-7-17-8,Logstash 7.17.8>>
 * <<logstash-7-17-7,Logstash 7.17.7>>
 * <<logstash-7-17-6,Logstash 7.17.6>>
@@ -67,6 +68,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-9]]
+=== Logstash 7.17.9 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.9
+
+* Updates bundled JDK to 11.0.18+10 https://github.com/elastic/logstash/pull/14850[#14850]
+* Fix version lock for Murmurhash3 to the gem for Java runtime https://github.com/elastic/logstash/pull/14857[#14857]
+
+=== Logstash Commits between 7.17 and 7.17.8
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.8..7.17"
+
+1f111758b - (HEAD -> 7.17, origin/7.17) Fix version lock for Murmurhash3 to the gem for Java runtime (#14857) (12 hours ago) <Andrea Selva>
+d2192f2d0 - [Backport 7.17] Pin Murmursh3 to 0.1.6 #14832 (#14856) (16 hours ago) <Andrea Selva>
+35e7901bf - Updates bundled JDK to 11.0.18+10 (#14850) (17 hours ago) <Andrea Selva>
+62f5dbffa - Update patch plugin versions in gemfile lock for 7.17.9 (#14854) (17 hours ago) <github-actions[bot]>
+cb52164cd - bump core version (#14804) (7 weeks ago) <kaisecheng>
+6180be5a4 - Release notes for 7.17.8 (#14798) (7 weeks ago) <github-actions[bot]>
+12c22f7c2 - Backport PR #14782 to 7.17: Cover all #system invokation with exit code checking, eventually failing the execution of Rake task #14799 (8 weeks ago) <Andrea Selva>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.8..7.17 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-17-8]]
 === Logstash 7.17.8 Release Notes
