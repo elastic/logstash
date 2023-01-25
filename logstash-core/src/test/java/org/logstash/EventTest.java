@@ -43,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.logstash.Event.getIllegalTagsAction;
 
 public final class EventTest extends RubyTestBase {
 
@@ -515,5 +516,88 @@ public final class EventTest extends RubyTestBase {
 
         assertTrue(event.getMetadata().isEmpty());
         assertFalse(event.includes("[@metadata][foo]"));
+    }
+
+    @Test(expected = Event.InvalidTagsTypeException.class)
+    public void setTagsWithMapShouldThrow() {
+        final Event event = new Event();
+        event.setField("[tags][foo]", "bar");
+    }
+
+    @Test
+    public void createEventWithTagsWithMapShouldRename() {
+        final Event event = new Event(Map.of("tags", Map.of("poison", "true")));
+
+        assertEquals(event.getField(Event.TAGS), Collections.singletonList(Event.TAGS_FAILURE_TAG));
+        assertEquals(event.getField("[_tags][0][poison]"), "true");
+    }
+
+    @Test(expected = Event.InvalidTagsTypeException.class)
+    public void setTagsWithNumberShouldThrow() {
+        final Event event = new Event();
+        event.setField("[tags]", 123L);
+    }
+
+    @Test
+    public void allowTopLevelTagsString() {
+        final Event event = new Event();
+        event.setField("[tags]", "bar");
+
+        assertNull(event.getField(Event.TAGS_FAILURE));
+        assertEquals(event.getField("[tags]"), "bar");
+        
+        event.setField("[tags]", "foo");
+        assertEquals(event.getField("[tags]"), "foo");
+    }
+
+    @Test
+    public void createEventWithoutTagShouldHaveEmptyTags() {
+        final Event event = new Event(Map.of("world", "cup"));
+        assertNull(event.getField(Event.TAGS));
+        assertNull(event.getField(Event.TAGS_FAILURE));
+    }
+    
+    @Test
+    public void allowTopLevelTagsListOfStrings() {
+        final Event event = new Event();
+        event.setField("[tags]", List.of("foo", "bar"));
+
+        assertNull(event.getField(Event.TAGS_FAILURE));
+        assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
+    }
+
+    @Test
+    public void allowTopLevelTagsWithMap() {
+        withIllegalTagsAction(Event.IllegalTagsAction.WARN, () -> {
+            final Event event = new Event();
+            event.setField("[tags][foo]", "bar");
+
+            assertNull(event.getField(Event.TAGS_FAILURE));
+            assertEquals(event.getField("[tags][foo]"), "bar");
+        });
+    }
+
+    @Test
+    public void allowCreatingEventWithTopLevelTagsWithMap() {
+        withIllegalTagsAction(Event.IllegalTagsAction.WARN, () -> {
+            Map<String, Object> inner = new HashMap<>();
+            inner.put("poison", "true");
+            Map<String, Object> data = new HashMap<>();
+            data.put("tags", inner);
+            final Event event = new Event(data);
+
+            assertNull(event.getField(Event.TAGS_FAILURE));
+            assertEquals(event.getField("[tags][poison]"), "true");
+        });
+    }
+    
+    private void withIllegalTagsAction(final Event.IllegalTagsAction temporaryIllegalTagsAction, final Runnable runnable) {
+        final Event.IllegalTagsAction previous = getIllegalTagsAction();
+        try {
+            Event.setIllegalTagsAction(temporaryIllegalTagsAction.toString());
+            runnable.run();
+        } finally {
+            Event.setIllegalTagsAction(previous.toString());
+        }
     }
 }

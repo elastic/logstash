@@ -21,6 +21,7 @@
 package org.logstash;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.jruby.RubyString;
@@ -139,6 +140,22 @@ public final class FieldReferenceTest {
             FieldReference f = FieldReference.from("[[foo][bar]][baz]");
             assertArrayEquals(new String[]{"foo", "bar"}, f.getPath());
             assertEquals("baz", f.getKey());
+        }
+
+        @Test
+        public void testParseMetadataParent() throws Exception {
+            FieldReference f = FieldReference.from("[@metadata]");
+            assertEquals(0, f.getPath().length);
+            assertEquals("@metadata", f.getKey());
+            assertEquals(FieldReference.META_PARENT, f.type());
+        }
+
+        @Test
+        public void testParseMetadataChild() throws Exception {
+            FieldReference f = FieldReference.from("[@metadata][nested][field]");
+            assertEquals(1, f.getPath().length);
+            assertEquals("field", f.getKey());
+            assertEquals(FieldReference.META_CHILD, f.type());
         }
 
         @Test(expected = FieldReference.IllegalSyntaxException.class)

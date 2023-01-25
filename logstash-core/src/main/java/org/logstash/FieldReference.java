@@ -245,13 +245,17 @@ public final class FieldReference {
                 .map(ESCAPE_HANDLER::unescape)
                 .collect(Collectors.toList());
 
+        return fromTokens(path);
+    }
+
+    private static FieldReference fromTokens(final List<String> path) {
         final String key = path.remove(path.size() - 1);
         final boolean empty = path.isEmpty();
         if (empty && key.equals(Event.METADATA)) {
             return new FieldReference(EMPTY_STRING_ARRAY, key, META_PARENT);
         } else if (!empty && path.get(0).equals(Event.METADATA)) {
             return new FieldReference(
-                path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD
+                    path.subList(1, path.size()).toArray(EMPTY_STRING_ARRAY), key, META_CHILD
             );
         } else {
             return new FieldReference(path.toArray(EMPTY_STRING_ARRAY), key, DATA_CHILD);

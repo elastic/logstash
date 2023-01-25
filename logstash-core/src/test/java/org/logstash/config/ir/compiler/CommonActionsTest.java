@@ -245,11 +245,16 @@ public class CommonActionsTest {
         // remove tags when "tags" fields isn't tags
         e = new Event();
         Long nonTagValue = 42L;
-        e.setField(TAGS, nonTagValue);
+        try {
+            e.setField(TAGS, nonTagValue);
+        } catch (Event.InvalidTagsTypeException ex) {
+
+        }
+
         CommonActions.removeTag(e, Collections.singletonList(testTag));
         o = e.getField(TAGS);
         Assert.assertFalse(o instanceof List);
-        Assert.assertEquals(nonTagValue, o);
+        Assert.assertNull(o);
 
         // remove dynamically-named tag
         e = new Event();
