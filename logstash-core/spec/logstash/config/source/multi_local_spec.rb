@@ -67,7 +67,7 @@ describe LogStash::Config::Source::MultiLocal do
 
     context "when `pipelines.yml` is only comments" do
       before(:each) do
-        allow(subject).to receive(:read_pipelines_from_yaml).and_return(::YAML.load("# blah\n# blah\n# blah\n"))
+        allow(subject).to receive(:read_pipelines_from_yaml).and_return(::YAML.load("# blah\n# blah\n# blah\n", fallback: false))
       end
       it "returns true with messages" do
         expect(subject.config_conflict?).to be_truthy
