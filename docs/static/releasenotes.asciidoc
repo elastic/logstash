@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-6-1,Logstash 8.6.1>>
 * <<logstash-8-6-0,Logstash 8.6.0>>
 * <<logstash-8-5-3,Logstash 8.5.3>>
 * <<logstash-8-5-2,Logstash 8.5.2>>
@@ -31,6 +32,13 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-6-1]]
+=== Logstash 8.6.1 Release Notes
+
+[[dependencies-8.6.1]]
+==== Updates to dependencies
+* Updated snakeyaml to 1.33 https://github.com/elastic/logstash/pull/14848[#14848]
 
 [[logstash-8-6-0]]
 === Logstash 8.6.0 Release Notes
