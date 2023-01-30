@@ -126,7 +126,7 @@ describe LogStash::WebServer do
         expect(port_range).to cover(port)
         expect(blocked_range).to_not cover(port)
 
-        response = open("http://#{address}").read
+        response = ::URI.open("http://#{address}").read
         expect { LogStash::Json.load(response) }.not_to raise_error
 
         subject.stop
