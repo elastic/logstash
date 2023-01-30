@@ -43,6 +43,8 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "dalli:",https://github.com/petergoldstein/dalli,MIT
 "domain_name:",https://github.com/knu/ruby-domain_name,BSD-2-Clause
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
+"down",https://github.com/janko/down,MIT
+"e2mmap:",https://github.com/ruby/thwait,BSD-2-Clause
 "edn:",https://github.com/relevance/edn-ruby,MIT
 "elastic-app-search:",https://github.com/elastic/app-search-ruby,Apache-2.0
 "elastic-enterprise-search:",https://github.com/elastic/enterprise-search-ruby,Apache-2.0
@@ -167,6 +169,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "spoon:",https://github.com/headius/spoon,Apache-2.0
 "stud:",https://github.com/jordansissel/ruby-stud,Apache-2.0
 "thread_safe:",https://github.com/ruby-concurrency/thread_safe,Apache-2.0
+"thwait:",https://github.com/ruby/thwait,BSD-2-Clause
 "tilt:",https://github.com/rtomayko/tilt,MIT
 "treetop:",https://github.com/cjheath/treetop,MIT
 "twitter:",https://github.com/sferik/twitter,MIT
@@ -175,4 +178,3 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "unf:",https://github.com/knu/ruby-unf,BSD-2-Clause
 "webhdfs:",https://github.com/kzk/webhdfs,Apache-2.0
 "xml-simple:",https://github.com/maik/xml-simple,BSD-2-Clause
-"down",https://github.com/janko/down,MIT
