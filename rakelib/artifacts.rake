@@ -640,6 +640,7 @@ namespace "artifact" do
         out.attributes[:rpm_user] = "root"
         out.attributes[:rpm_group] = "root"
         out.attributes[:rpm_os] = "linux"
+        out.attributes[:rpm_digest] = "sha256"
         out.config_files << "/etc/logstash/startup.options"
         out.config_files << "/etc/logstash/jvm.options"
         out.config_files << "/etc/logstash/log4j2.properties"
