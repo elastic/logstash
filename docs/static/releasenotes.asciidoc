@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-9,Logstash 7.17.9>>
 * <<logstash-7-17-8,Logstash 7.17.8>>
 * <<logstash-7-17-7,Logstash 7.17.7>>
 * <<logstash-7-17-6,Logstash 7.17.6>>
@@ -67,6 +68,13 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-9]]
+=== Logstash 7.17.9 Release Notes
+
+[[dependencies-7-17-9]]
+==== Updates to dependencies
+* Updates bundled JDK to 11.0.18+10 https://github.com/elastic/logstash/pull/14850[#14850]
 
 [[logstash-7-17-8]]
 === Logstash 7.17.8 Release Notes
