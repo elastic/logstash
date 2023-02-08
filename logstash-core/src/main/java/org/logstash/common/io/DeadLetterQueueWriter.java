@@ -114,15 +114,21 @@ public final class DeadLetterQueueWriter implements Closeable {
         private final long maxSegmentSize;
         private final long maxQueueSize;
         private final Duration flushInterval;
+        private boolean startScheduledFlusher;
         private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
         private Duration retentionTime = null;
         private Clock clock = Clock.systemDefaultZone();
 
         private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval) {
+            this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, true);
+        }
+
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval, boolean startScheduledFlusher) {
             this.queuePath = queuePath;
             this.maxSegmentSize = maxSegmentSize;
             this.maxQueueSize = maxQueueSize;
             this.flushInterval = flushInterval;
+            this.startScheduledFlusher = startScheduledFlusher;
         }
 
         public Builder storageType(QueueStorageType storageType) {
@@ -142,7 +148,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
 
         public DeadLetterQueueWriter build() throws IOException {
-            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock);
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock, startScheduledFlusher);
         }
     }
 
@@ -151,9 +157,15 @@ public final class DeadLetterQueueWriter implements Closeable {
         return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval);
     }
 
+    @VisibleForTesting
+    static Builder newBuilderWithoutFlusher(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                              final Duration flushInterval) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval, false);
+    }
+
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                          final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
-                          final Clock clock) throws IOException {
+                                  final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
+                                  final Clock clock, boolean startScheduledFlusher) throws IOException {
         this.clock = clock;
 
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
@@ -173,7 +185,15 @@ public final class DeadLetterQueueWriter implements Closeable {
                 .max().orElse(0);
         nextWriter();
         this.lastEntryTimestamp = Timestamp.now();
-        createFlushScheduler();
+        if (startScheduledFlusher) {
+            createFlushScheduler();
+        }
+    }
+
+    private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
+                          final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
+                          final Clock clock) throws IOException {
+        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock, true);
     }
 
     public boolean isOpen() {
