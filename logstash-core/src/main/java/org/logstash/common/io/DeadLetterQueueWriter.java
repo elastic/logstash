@@ -158,9 +158,8 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     @VisibleForTesting
-    static Builder newBuilderWithoutFlusher(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                              final Duration flushInterval) {
-        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval, false);
+    static Builder newBuilderWithoutFlusher(final Path queuePath, final long maxSegmentSize, final long maxQueueSize) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, Duration.ZERO, false);
     }
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,

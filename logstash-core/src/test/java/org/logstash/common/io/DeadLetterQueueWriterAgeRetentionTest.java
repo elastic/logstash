@@ -218,7 +218,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testRemoveExpiredSegmentOnCloseWhenTheCurrentWriterIsUntouched() throws IOException {
+    public void testDLQWriterCloseRemovesExpiredSegmentWhenCurrentWriterIsUntouched() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", "Not so important content");
 
@@ -229,7 +229,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         Duration retainedPeriod = Duration.ofDays(1);
         long startTime = fakeClock.instant().toEpochMilli();
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {
@@ -244,7 +244,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
         fakeClock.forward(Duration.ofDays(3));
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {
