@@ -693,7 +693,7 @@ GEM
     msgpack (1.6.0-java)
     multi_json (1.15.0)
     multipart-post (2.2.3)
-    murmurhash3 (0.1.7)
+    murmurhash3 (0.1.6-java)
     mustache (0.99.8)
     mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
