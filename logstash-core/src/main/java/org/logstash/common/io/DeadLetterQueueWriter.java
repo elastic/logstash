@@ -190,12 +190,6 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                          final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
-                          final Clock clock) throws IOException {
-        this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock, true);
-    }
-
     public boolean isOpen() {
         return open.get();
     }
