@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,12 +19,18 @@ import org.logstash.DLQEntry;
 import org.logstash.Event;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.FULL_SEGMENT_FILE_SIZE;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.GB;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
-import static org.logstash.common.io.RecordIOWriter.*;
+import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
+import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
+import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
 public class DeadLetterQueueWriterAgeRetentionTest {
 
@@ -124,7 +129,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 messageSize += serializationLength;
                 writeManager.writeEntry(entry);
             }
-            assertThat(messageSize, Matchers.is(Matchers.greaterThan(BLOCK_SIZE)));
+            assertThat(messageSize, is(greaterThan(BLOCK_SIZE)));
         }
     }
 
@@ -151,7 +156,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 messageSize += serializationLength;
                 writeManager.writeEntry(entry);
             }
-            assertThat(messageSize, Matchers.is(Matchers.greaterThan(BLOCK_SIZE)));
+            assertThat(messageSize, is(greaterThan(BLOCK_SIZE)));
 
             // Exercise
             // write an event that goes in second segment
@@ -195,7 +200,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 messageSize += serializationLength;
                 writeManager.writeEntry(entry);
             }
-            assertThat(messageSize, Matchers.is(Matchers.greaterThan(BLOCK_SIZE)));
+            assertThat(messageSize, is(greaterThan(BLOCK_SIZE)));
 
             // when the age expires the retention and a write is done
             // make the retention age to pass for the first 2 full segments
@@ -219,8 +224,8 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
     @Test
     public void testDLQWriterCloseRemovesExpiredSegmentWhenCurrentWriterIsUntouched() throws IOException {
-        final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", "Not so important content");
+        final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
+                Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
@@ -251,11 +256,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             // leave it untouched
             assertTrue(writeManager.isOpen());
 
-            // close so that it should clean the expired segments
+            // close so that it should clean the expired segments, close in implicitly invoked by try-with-resource statement
         }
 
         Set<String> actual = listFileNames(dir);
-        assertThat("Age expired is segment is removed", actual, Matchers.not(Matchers.hasItem("1.log")));
+        assertThat("Age expired segment is removed", actual, not(hasItem("1.log")));
     }
 
     private Set<String> listFileNames(Path path) throws IOException {
@@ -263,5 +268,51 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 .map(Path::getFileName)
                 .map(Path::toString)
                 .collect(Collectors.toSet());
+    }
+
+    @Test
+    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentWriterIsStale() throws IOException, InterruptedException {
+        final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
+                Collections.singletonMap("message", "Not so important content"));
+
+        // write some data in the new segment
+        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
+        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+
+        Duration retainedPeriod = Duration.ofDays(1);
+        Duration flushInterval = Duration.ofSeconds(1);
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+                .retentionTime(retainedPeriod)
+                .clock(fakeClock)
+                .build()) {
+
+            DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
+            writeManager.writeEntry(entry);
+        }
+
+        Set<String> segments = listFileNames(dir);
+        assertEquals("Once closed the just written segment, only 1 file must be present", Set.of("1.log"), segments);
+
+        // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
+        fakeClock.forward(Duration.ofDays(3));
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+                .retentionTime(retainedPeriod)
+                .clock(fakeClock)
+                .build()) {
+            // write an element to make head segment stale
+            final Event anotherEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
+                    Collections.singletonMap("message", "Another not so important content"));
+            DLQEntry entry = new DLQEntry(anotherEvent, "", "", "00002", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
+            writeManager.writeEntry(entry);
+
+            // wait a cycle of flusher schedule
+            Thread.sleep(flushInterval.toMillis());
+
+            // flusher should clean the expired segments
+            Set<String> actual = listFileNames(dir);
+            assertThat("Age expired segment is removed by flusher", actual, not(hasItem("1.log")));
+        }
     }
 }
