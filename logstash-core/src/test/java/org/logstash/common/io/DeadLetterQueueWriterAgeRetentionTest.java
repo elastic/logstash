@@ -74,55 +74,6 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testRemoveExpiredSegmentOnCloseWhenTheCurrentWriterIsUntouched() throws IOException {
-        final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", "Not so important content");
-
-        // write some data in the new segment
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
-        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
-
-        Duration retainedPeriod = Duration.ofDays(1);
-        long startTime = fakeClock.instant().toEpochMilli();
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
-                .retentionTime(retainedPeriod)
-                .clock(fakeClock)
-                .build()) {
-
-            DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
-            writeManager.writeEntry(entry);
-        }
-
-        Set<String> segments = listFileNames(dir);
-        assertEquals("Once closed the just written segment, only 1 file must be present", Set.of("1.log"), segments);
-
-        // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
-        fakeClock.forward(Duration.ofDays(3));
-        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
-                .retentionTime(retainedPeriod)
-                .clock(fakeClock)
-                .build()) {
-            // leave it untouched
-            assertTrue(writeManager.isOpen());
-
-            // close so that it should clean the expired segments
-        }
-
-        Set<String> actual = listFileNames(dir);
-        assertThat("Age expired is segment is removed", actual, Matchers.not(Matchers.hasItem("1.log")));
-    }
-
-    private Set<String> listFileNames(Path path) throws IOException {
-        return Files.list(path)
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .collect(Collectors.toSet());
-    }
-
-
-    @Test
     public void testRemovesOlderSegmentsWhenWriteOnReopenedDLQContainingExpiredSegments() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
@@ -264,5 +215,53 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             assertEquals("Write should push off the age expired segments",VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
             assertEquals("The number of events removed should count as expired", EVENTS_TO_FILL_A_SEGMENT * 2, writeManager.getExpiredEvents());
         }
+    }
+
+    @Test
+    public void testRemoveExpiredSegmentOnCloseWhenTheCurrentWriterIsUntouched() throws IOException {
+        final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        event.setField("message", "Not so important content");
+
+        // write some data in the new segment
+        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
+        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+
+        Duration retainedPeriod = Duration.ofDays(1);
+        long startTime = fakeClock.instant().toEpochMilli();
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(retainedPeriod)
+                .clock(fakeClock)
+                .build()) {
+
+            DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(startTime));
+            writeManager.writeEntry(entry);
+        }
+
+        Set<String> segments = listFileNames(dir);
+        assertEquals("Once closed the just written segment, only 1 file must be present", Set.of("1.log"), segments);
+
+        // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
+        fakeClock.forward(Duration.ofDays(3));
+        try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .retentionTime(retainedPeriod)
+                .clock(fakeClock)
+                .build()) {
+            // leave it untouched
+            assertTrue(writeManager.isOpen());
+
+            // close so that it should clean the expired segments
+        }
+
+        Set<String> actual = listFileNames(dir);
+        assertThat("Age expired is segment is removed", actual, Matchers.not(Matchers.hasItem("1.log")));
+    }
+
+    private Set<String> listFileNames(Path path) throws IOException {
+        return Files.list(path)
+                .map(Path::getFileName)
+                .map(Path::toString)
+                .collect(Collectors.toSet());
     }
 }

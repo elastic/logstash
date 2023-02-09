@@ -484,20 +484,27 @@ public final class DeadLetterQueueWriter implements Closeable {
             if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE)
                 return;
 
-            if (currentWriter != null && currentWriter.hasWritten()) {
-                currentWriter.close();
-                Files.move(queuePath.resolve(String.format(TEMP_FILE_PATTERN, currentSegmentIndex)),
-                        queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, currentSegmentIndex)),
-                        StandardCopyOption.ATOMIC_MOVE);
+            if (currentWriter != null) {
+                if (currentWriter.hasWritten()) {
+                    currentWriter.close();
+                    sealSegment(currentSegmentIndex);
+                }
                 updateOldestSegmentReference();
                 executeAgeRetentionPolicy();
-                if (isOpen()) {
+                if (isOpen() && currentWriter.hasWritten()) {
                     nextWriter();
                 }
             }
         } finally {
             lock.unlock();
         }
+    }
+
+    private void sealSegment(int segmentIndex) throws IOException {
+        Files.move(queuePath.resolve(String.format(TEMP_FILE_PATTERN, segmentIndex)),
+                queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, segmentIndex)),
+                StandardCopyOption.ATOMIC_MOVE);
+        logger.debug("Sealed segment with index {}", segmentIndex);
     }
 
     private void createFlushScheduler() {
