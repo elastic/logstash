@@ -70,3 +70,4 @@
 
 # Copy the logging context from parent threads to children
 -Dlog4j2.isThreadContextMapInheritable=true
+-Djruby.native.verbose=true
