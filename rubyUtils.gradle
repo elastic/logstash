@@ -212,15 +212,6 @@ def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
 
-tasks.register("downloadPreviousJRuby", Download) {
-    description "Download previous JRuby artifact from this specific URL: ${previousJRubyURL}"
-    src previousJRubyURL
-    onlyIfNewer true
-    inputs.file(versionsPath)
-    outputs.file(jrubyTarPath)
-    dest new File("${projectDir}/vendor/_", "jruby-dist-${previousJRubyVersion}-bin.tar.gz")
-}
-
 tasks.register("downloadJRuby", Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
@@ -228,6 +219,15 @@ tasks.register("downloadJRuby", Download) {
     inputs.file(versionsPath)
     outputs.file(jrubyTarPath)
     dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
+}
+
+tasks.register("downloadPreviousJRuby", Download) {
+    description "Download previous JRuby artifact from this specific URL: ${previousJRubyURL}"
+    src previousJRubyURL
+    onlyIfNewer true
+    inputs.file(versionsPath)
+    outputs.file(previousJrubyTarPath)
+    dest new File("${projectDir}/vendor/_", "jruby-dist-${previousJRubyVersion}-bin.tar.gz")
 }
 
 downloadJRuby.onlyIf { customJRubyDir == "" }
@@ -297,7 +297,10 @@ tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
     dependsOn=[downloadPreviousJRuby]
     description "Install previous JRuby FFI files in the new JRuby directory"
     inputs.file(previousJrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby")
+    outputs.dir("${projectDir}/vendor/jruby/lib/jni/aarch64-Linux")
+    outputs.dir("${projectDir}/vendor/jruby/lib/jni/arm-Linux")
+    outputs.dir("${projectDir}/vendor/jruby/lib/jni/i386-Linux")
+    outputs.dir("${projectDir}/vendor/jruby/lib/jni/x86_64-Linux")
     from tarTree(downloadPreviousJRuby.dest)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${previousJRubyVersion}", '')
