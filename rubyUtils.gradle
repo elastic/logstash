@@ -286,6 +286,10 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     }
     exclude "**/stdlib/rdoc/**"
     exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
+    exclude "**/lib/jni/aarch64-Linux/**"
+    exclude "**/lib/jni/arm-Linux/**"
+    exclude "**/lib/jni/i386-Linux/**"
+    exclude "**/lib/jni/x86_64-Linux/**"
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
