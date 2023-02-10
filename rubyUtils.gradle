@@ -189,6 +189,8 @@ def versionsPath = project.hasProperty("LOGSTASH_CORE_PATH") ? LOGSTASH_CORE_PAT
 versionMap = (Map) (new Yaml()).load(new File("${versionsPath}").text)
 
 String jRubyURL
+String previousJRubyVersion = "9.3.9.0"
+String previousJRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${previousJRubyVersion}/jruby-dist-${previousJRubyVersion}-bin.tar.gz"
 String jRubyVersion
 String jRubySha1
 Boolean doChecksum
@@ -204,10 +206,20 @@ if (versionMap["jruby-runtime-override"]) {
     doChecksum = true
 }
 def jrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz"
+def previousJrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${previousJRubyVersion}-bin.tar.gz"
 
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
+
+tasks.register("downloadPreviousJRuby", Download) {
+    description "Download previous JRuby artifact from this specific URL: ${previousJRubyURL}"
+    src previousJRubyURL
+    onlyIfNewer true
+    inputs.file(versionsPath)
+    outputs.file(jrubyTarPath)
+    dest new File("${projectDir}/vendor/_", "jruby-dist-${previousJRubyVersion}-bin.tar.gz")
+}
 
 tasks.register("downloadJRuby", Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
@@ -280,6 +292,25 @@ tasks.register("downloadAndInstallJRuby", Copy) {
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
+
+tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
+    dependsOn=[downloadPreviousJRuby]
+    description "Install previous JRuby FFI files in the new JRuby directory"
+    inputs.file(previousJrubyTarPath)
+    outputs.dir("${projectDir}/vendor/jruby")
+    from tarTree(downloadPreviousJRuby.dest)
+    eachFile { f ->
+        f.path = f.path.replaceFirst("^jruby-${previousJRubyVersion}", '')
+    }
+    // Copy only the previous builds of libjffi that changed from JRuby 9.3.9.0 to 9.3.10.0
+    include "**/lib/jni/aarch64-Linux/libjffi-1.2.so"
+    include "**/lib/jni/arm-Linux/libjffi-1.2.so"
+    include "**/lib/jni/i386-Linux/libjffi-1.2.so"
+    include "**/lib/jni/x86_64-Linux/libjffi-1.2.so"
+
+    includeEmptyDirs = false
+    into "${projectDir}/vendor/jruby"
+}
 
 //===============================================================================
 // Ruby auto-gen utilities for Java plugins
