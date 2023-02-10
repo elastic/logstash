@@ -286,6 +286,7 @@ clean {
   delete "${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml"
 }
 
+// TODO remove downloadAndInstallPreviousJRubyFFI after https://github.com/elastic/logstash/issues/14873 is fixed
 def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
