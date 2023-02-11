@@ -88,8 +88,8 @@ describe LogStash::Bundler do
 
     context 'abort with an exception' do
       it 'gem conflict' do
-        allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Gem::Resolver::Molinillo::VersionConflict.new('conflict') }
-        expect { subject }.to raise_error(::Gem::Resolver::Molinillo::VersionConflict)
+        allow(::Bundler::CLI).to receive(:start).with(bundler_args) { raise ::Bundler::SolveFailure.new('conflict') }
+        expect { subject }.to raise_error(::Bundler::SolveFailure)
       end
 
       it 'gem is not found' do
