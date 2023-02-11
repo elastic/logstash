@@ -292,6 +292,7 @@ tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
 
 
 tasks.register("downloadAndInstallJRuby", Copy) {
+    // TODO remove downloadAndInstallPreviousJRubyFFI after https://github.com/elastic/logstash/issues/14873 is fixed
     dependsOn=[verifyFile, downloadAndInstallPreviousJRubyFFI, installCustomJRuby]
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
