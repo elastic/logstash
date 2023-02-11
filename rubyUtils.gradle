@@ -286,10 +286,7 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     }
     exclude "**/stdlib/rdoc/**"
     exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
-    exclude "**/lib/jni/aarch64-Linux/**"
-    exclude "**/lib/jni/arm-Linux/**"
-    exclude "**/lib/jni/i386-Linux/**"
-    exclude "**/lib/jni/x86_64-Linux/**"
+    exclude "**/lib/jni/**/**"
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
@@ -301,22 +298,23 @@ tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
     dependsOn=[downloadPreviousJRuby]
     description "Install previous JRuby FFI files in the new JRuby directory"
     inputs.file(previousJrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby/lib/jni/aarch64-Linux")
-    outputs.dir("${projectDir}/vendor/jruby/lib/jni/arm-Linux")
-    outputs.dir("${projectDir}/vendor/jruby/lib/jni/i386-Linux")
-    outputs.dir("${projectDir}/vendor/jruby/lib/jni/x86_64-Linux")
+    outputs.dir("${projectDir}/vendor/jruby/lib/jni")
+    outputs.file("${projectDir}/vendor/jruby/lib/jruby.jar")
     from tarTree(downloadPreviousJRuby.dest)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${previousJRubyVersion}", '')
     }
     // Copy only the previous builds of libjffi that changed from JRuby 9.3.9.0 to 9.3.10.0
-    include "**/lib/jni/aarch64-Linux/libjffi-1.2.so"
-    include "**/lib/jni/arm-Linux/libjffi-1.2.so"
-    include "**/lib/jni/i386-Linux/libjffi-1.2.so"
-    include "**/lib/jni/x86_64-Linux/libjffi-1.2.so"
+    include "**/lib/jni/**/*"
 
     includeEmptyDirs = false
-    into "${projectDir}/vendor/jruby"
+    into "${projectDir}/vendor/jruby/tmp"
+    doLast {
+        ant.jar(destfile: "${projectDir}/vendor/jruby/lib/jruby.jar", update: true) {
+            fileset(dir: "${projectDir}/vendor/jruby/tmp/lib")
+        }
+        delete files("${projectDir}/vendor/jruby/tmp")
+    }
 }
 
 //===============================================================================
