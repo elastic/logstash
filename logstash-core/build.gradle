@@ -157,7 +157,6 @@ idea {
 dependencies {
     api(files("../vendor/jruby/lib/jruby.jar") { // jruby-core.jar
         builtBy ':downloadAndInstallJRuby'
-        builtBy ':downloadAndInstallPreviousJRubyFFI'
     }) { because "DEPENDENCY: org.jruby:jruby-core:${jrubyVersion}" } // meta-data for generateLicenseReport
     implementation project(':jvm-options-parser')
     implementation "org.apache.logging.log4j:log4j-api:${log4jVersion}"

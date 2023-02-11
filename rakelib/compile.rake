@@ -32,10 +32,7 @@ namespace "compile" do
 
   task "logstash-core-java" do
     puts("Building logstash-core using gradle")
-    # this expansion is necessary to use the path separators of the hosting OS
-    io = IO.popen([::File.join(".", "gradlew"), "assemble", "--stacktrace"].join(" "))
-    puts io.readlines
-    #sh(File.join(".", "gradlew"), "assemble", "--stacktrace")
+    sh(File.join(".", "gradlew"), "assemble")
   end
 
   desc "Build everything"
