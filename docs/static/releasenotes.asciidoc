@@ -37,96 +37,10 @@ This section summarizes the changes in the following releases:
 [[logstash-8-6-2]]
 === Logstash 8.6.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.6.2
-
-* bump jruby to 9.3.9.0 https://github.com/elastic/logstash/pull/14694[#14694]
-* Backport PR #14849 to 8.6: Update bundeld JDK to 17.0.6+10 https://github.com/elastic/logstash/pull/14855[#14855]
-* Backport PR #14694 to 8.6: bump jruby to 9.3.9.0 https://github.com/elastic/logstash/pull/14862[#14862]
-* set rpm_digest to sha256 instead of default md5 https://github.com/elastic/logstash/pull/14864[#14864]
-* update jruby to 9.3.10.0 https://github.com/elastic/logstash/pull/14865[#14865]
-* Backport PR #14865 to 8.6: update jruby to 9.3.10.0 https://github.com/elastic/logstash/pull/14867[#14867]
-* Backport PR #14864 to 8.6: set rpm_digest to sha256 instead of default md5 https://github.com/elastic/logstash/pull/14868[#14868]
-* bump snakeyaml to 1.33 in logstash-core https://github.com/elastic/logstash/pull/14881[#14881]
-* Backport PR #14881 to 8.6: bump snakeyaml to 1.33 in logstash-core https://github.com/elastic/logstash/pull/14885[#14885]
-* add license information for snakeyaml https://github.com/elastic/logstash/pull/14886[#14886]
-* Backport PR #14886 to 8.6: add license information for snakeyaml https://github.com/elastic/logstash/pull/14889[#14889]
-* Workaround for #14873 https://github.com/elastic/logstash/pull/14890[#14890]
-* Backport PR #14890 to 8.6: Workaround for #14873 https://github.com/elastic/logstash/pull/14893[#14893]
-
-=== Logstash Commits between 8.6 and 8.6.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.6.1..8.6"
-
-4f0229a28 - (HEAD -> 8.6, origin/8.6) Workaround for #14873 (#14890) (#14893) (23 hours ago) <github-actions[bot]>
-cbd66d22d - add license information for snakeyaml (#14886) (#14889) (3 days ago) <github-actions[bot]>
-586241cb7 - bump snakeyaml to 1.33 (#14881) (#14885) (3 days ago) <github-actions[bot]>
-96b6265b4 - bump lock file for 8.6 (#14880) (3 days ago) <github-actions[bot]>
-88dd1d111 - Revert "Bump to 8.6.2 (#14879)" (#14887) (3 days ago) <João Duarte>
-53e43442e - Bump to 8.6.2 (#14879) (4 days ago) <Mashhur>
-b070cc3b5 - set rpm_digest to sha256 instead of default md5 (#14864) (#14868) (11 days ago) <github-actions[bot]>
-6a8ec22d8 - update jruby to 9.3.10.0 (#14865) (#14867) (11 days ago) <github-actions[bot]>
-49d725cf8 - [doc] update Debian/Ubuntu instructions following apt-key deprecation (#14835) (#14844) (12 days ago) <github-actions[bot]>
-0ec0ccfa5 - bump jruby to 9.3.9.0 (#14694) (#14862) (12 days ago) <github-actions[bot]>
-8593ebd14 - Update bundeld JDK to 17.0.6+10 (#14849) (#14855) (2 weeks ago) <github-actions[bot]>
-d679ec171 - bump logstash to 8.6.2 (#14860) (3 weeks ago) <João Duarte>
-e8d59747c - Release notes for 8.6.1 (#14853) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.6.1..8.6 *.release"
-Changed plugin versions:
-logstash-filter-fingerprint: 3.4.1 -> 3.4.2
-logstash-filter-geoip: 7.2.12 -> 7.2.13
-logstash-input-beats: 6.4.1 -> 6.4.4
-logstash-input-http: 3.6.0 -> 3.6.1
-logstash-input-tcp: 6.3.1 -> 6.3.2
-logstash-integration-aws: 7.0.0 -> 7.0.1
-logstash-output-elasticsearch: 11.12.1 -> 11.12.4
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
-
-*Fingerprint Filter - 3.4.2*
-
-* Key config type changed to `Password` type for better protection from leaks. https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/71[#71]
-
-*Geoip Filter - 7.2.13*
-
-* [DOC] Add documentation for database auto-update configuration https://github.com/logstash-plugins/logstash-filter-geoip/pull/210[#210]
-
-*Beats Input - 6.4.4*
-
-* Updates Netty dependency to 4.1.87 https://github.com/logstash-plugins/logstash-input-beats/pull/466[#466]
-
-* [DOC] `executor_threads` default value explanation updated. https://github.com/logstash-plugins/logstash-input-beats/pull/461[#461]
-
-* Build: do not package jackson dependencies https://github.com/logstash-plugins/logstash-input-beats/pull/455[#455]
-
-*Http Input - 3.6.1*
-
-* Update Netty dependency to 4.1.87 https://github.com/logstash-plugins/logstash-input-http/pull/162[#162]
-
-*Tcp Input - 6.3.2*
-
-* Update Netty dependency to 4.1.87 https://github.com/logstash-plugins/logstash-input-tcp/pull/209[#209]
-
-*Aws Integration - 7.0.1*
-
-* resolves two closely-related race conditions in the S3 Output plugin's handling of stale temporary files that could cause plugin crashes or data-loss https://github.com/logstash-plugins/logstash-integration-aws/pull/19[#19]
-* prevents a `No such file or directory` crash that could occur when a temporary file is accessed after it has been detected as stale (empty+old) and deleted.
-* prevents a possible deletion of a non-empty temporary file that could occur if bytes were written to it _after_ it was detected as stale (empty+old) and _before_ the deletion completed.
-
-*Elasticsearch Output - 11.12.4*
-
-* Changed the `manage_template` default value to `false` when data streams is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1111[#1111]
-* Added the `manage_template => false` as a valid data stream option
-
-* Changed the log messages for data stream checks https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1109[#1109]
-* Added more details about incompatible data streams supplied configurations
-* Changed the data stream auto-configuration log levels from `debug` to `info`
-
-* [Doc] Fixes the broken apache http client link https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1101[#1101]
-
+[[dependencies-8.6.2]]
+==== Updates to dependencies
+* Updated JRuby to 9.3.10.0 https://github.com/elastic/logstash/pull/14865[#14865]
+* Updated bundeld JDK to 17.0.6+10 https://github.com/elastic/logstash/pull/14855[#14855]
 
 [[logstash-8-6-1]]
 === Logstash 8.6.1 Release Notes
