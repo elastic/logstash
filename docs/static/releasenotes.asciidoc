@@ -42,6 +42,20 @@ This section summarizes the changes in the following releases:
 * Updated JRuby to 9.3.10.0 https://github.com/elastic/logstash/pull/14865[#14865]
 * Updated bundeld JDK to 17.0.6+10 https://github.com/elastic/logstash/pull/14855[#14855]
 
+==== Plugins
+
+*Fingerprint Filter - 3.4.2*
+
+* Key config type changed to `Password` type for better protection from leaks. https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/71[#71]
+
+*Aws Integration - 7.0.1*
+
+* Resolved race conditions in the S3 Output plugin when handling temporary files https://github.com/logstash-plugins/logstash-integration-aws/pull/19[#19]
+
+*Elasticsearch Output - 11.12.4*
+
+* Changed `manage_template` default value to `false` when data streams is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1111[#1111]
+
 [[logstash-8-6-1]]
 === Logstash 8.6.1 Release Notes
 
