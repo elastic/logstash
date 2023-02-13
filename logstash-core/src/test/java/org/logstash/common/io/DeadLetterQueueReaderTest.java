@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -846,6 +847,10 @@ public class DeadLetterQueueReaderTest {
         assertThat(String.format("pre-validation: expected timestamp to serialize to exactly 24 bytes, got `%s`", timestamp),
                    timestamp.serialize().length, is(24));
         return new Timestamp(millis);
+    }
+
+    static Timestamp constantSerializationLengthTimestamp(Clock clock) {
+        return constantSerializationLengthTimestamp(clock.instant().toEpochMilli());
     }
 
     private Timestamp constantSerializationLengthTimestamp() {
