@@ -95,8 +95,9 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/*/test/**/*'
     @exclude_paths << 'vendor/**/gems/*/spec/**/*'
 
-    # dependency vulnerability scanners may pick unnecessary Gemfile.lock files
-    @exclude_paths << 'vendor/**/gems/*/Gemfile.lock'
+    # vulnerability scanners shouldn't pick dependency Gemfile(s)
+    @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
+    @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
     # jruby's bundler artifacts
     @exclude_paths << 'vendor/jruby/bin/bundle*'
