@@ -30,7 +30,7 @@ public class AbstractDeadLetterQueueWriterExtTest extends RubyTestBase {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
-    public void writeToDeadLetterQueue() throws IOException, InterruptedException {
+    public void testDLQWriterDoesntInvertPluginIdAndPluginTypeAttributes() throws IOException, InterruptedException {
         final Path dlqPath = tmpFolder.newFolder("dead_letter_queue").toPath();
         final String pluginId = "id_value";
         final String pluginType = "elasticsearch";
