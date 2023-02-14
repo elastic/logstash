@@ -198,7 +198,7 @@ public abstract class AbstractDeadLetterQueueWriterExt extends RubyObject {
                 try {
                     innerWriter.writeEntry(
                         ((JrubyEventExtLibrary.RubyEvent) event).getEvent(),
-                        pluginIdString, pluginTypeString, reason.asJavaString()
+                            pluginTypeString, pluginIdString, reason.asJavaString()
                     );
                 } catch (final IOException ex) {
                     throw new IllegalStateException(ex);
