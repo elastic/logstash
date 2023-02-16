@@ -166,7 +166,9 @@ module LogStash
         if type_name_repeating
           type_name_repeating_pairs = type_name_repeating.split("/")
           grouped_parts["resource_name"] = type_name_repeating_pairs.last
-          grouped_parts["resource_type"] = type_name_repeating_pairs.each_slice(2).map(&:first).join("/")
+          data = []
+          type_name_repeating_pairs.each_slice(2) {|first, second| data << first}
+          grouped_parts["resource_type"] = data.join("/")
         end
         grouped_parts
       end
