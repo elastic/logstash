@@ -18,7 +18,7 @@ module LogStash
 
       attr_reader :last_updated
 
-      def initialize (reader, feature, refresh_period=30, refresh_unit=TimeUnit::SECONDS)
+      def initialize(reader, feature, refresh_period=30, refresh_unit=TimeUnit::SECONDS)
         @license_reader = reader
         @feature = feature
 
