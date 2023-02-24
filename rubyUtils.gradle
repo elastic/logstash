@@ -268,7 +268,6 @@ tasks.register("installCustomJRuby", Copy) {
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${customJRubyVersion}", '')
     }
-    exclude "**/stdlib/rdoc/**"
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
 }
@@ -302,7 +301,6 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
-    exclude "**/stdlib/rdoc/**"
     exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
     exclude "**/lib/jni/**/**"
 
