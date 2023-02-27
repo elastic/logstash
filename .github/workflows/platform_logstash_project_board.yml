@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: octokit/graphql-action@v2.x
         id: add_to_logstash_project
-        if: github.event.label.name == env.LOGSTASH_LABEL || github.event.label.name == env.DOCS_LABEL
+        if: github.event.label.name == env.LOGSTASH_LABEL
         with:
           query: |
             # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
