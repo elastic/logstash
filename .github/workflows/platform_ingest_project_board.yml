@@ -5,7 +5,6 @@ on:
     types:
       - labeled
 env:
-  INGEST_PROJECT_ID: 'PVT_kwDOAGc3Zs4AEzn4'
   LOGSTASH_PROJECT_ID: 'PVT_kwDOAGc3Zs4AMlnl'
   
   # GitHub labels for each team/area
@@ -13,14 +12,9 @@ env:
   DOCS_LABEL: 'Team:Docs'
   
   # ID values for the Area property + its options
-  ## IDs for Logstash Project
-  LS_AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AMlnlzgIB8yM'
-  LS_DATA_PROCESSING_OPTION_ID: '1968ca97'
-
-  ## IDs for Ingest Project
-  INGEST_AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgEgZSo'
-  INGEST_DATA_PROCESSING_OPTION_ID: 'c9917758'
-  INGEST_DOCS_OPTION_ID: 'def2f8e6'
+  AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AMlnlzgIB8yM'
+  DATA_PROCESSING_OPTION_ID: '1968ca97'
+  INGEST_DOCS_OPTION_ID: '67c637dd'
   
   # ID values for the Team property + its options
   #TEAM_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgD4Pm0'
@@ -32,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: octokit/graphql-action@v2.x
-        id: add_to_logstash_project
-        if: github.event.label.name == env.LOGSTASH_LABEL
+        id: add_to_project
+        if: github.event.label.name == env.LOGSTASH_LABEL || github.event.label.name == env.DOCS_LABEL
         with:
           query: |
             # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
@@ -64,7 +58,24 @@ jobs:
               }
           item_id: ${{ fromJSON(steps.add_to_project.outputs.data).addProjectV2ItemById.item.id }}
           project_id: ${{ env.LOGSTASH_PROJECT_ID }}
-          area_field_id: ${{ env.LS_AREA_FIELD_ID }}
-          area_id: ${{ env.LS_DATA_PROCESSING_OPTION_ID }}
+          area_field_id: ${{ env.AREA_FIELD_ID }}
+          area_id: ${{ env.DATA_PROCESSING_OPTION_ID }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      - uses: octokit/graphql-action@v2.x
+        id: set_ingest_docs_area
+        if: github.event.label.name == env.DOCS_LABEL
+        with:
+          query: |
+            mutation updateIngestArea($item_id: ID!, $project_id: ID!, $area_field_id: ID!, $area_id: String) {
+              updateProjectV2ItemFieldValue(
+                input: { itemId: $item_id, projectId: $project_id, fieldId: $area_field_id, value: { singleSelectOptionId: $area_id } }) {
+                  clientMutationId
+                }
+              }
+          item_id: ${{ fromJSON(steps.add_to_project.outputs.data).addProjectV2ItemById.item.id }}
+          project_id: ${{ env.LOGSTASH_PROJECT_ID }}
+          area_field_id: ${{ env.AREA_FIELD_ID }}
+          area_id: ${{ env.INGEST_DOCS_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
