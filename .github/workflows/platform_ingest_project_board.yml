@@ -48,23 +48,6 @@ jobs:
           content_id: ${{ github.event.issue.node_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-      - uses: octokit/graphql-action@v2.x
-        id: add_to_ingest_project
-        if: github.event.label.name == env.DOCS_LABEL
-        with:
-          query: |
-            # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
-            mutation AddToIngestProject($project_id: ID!, $content_id: ID!) {
-              addProjectV2ItemById(input: { projectId: $project_id, contentId: $content_id }) {
-                  item {
-                    id
-                  }
-                }
-              }
-          project_id: ${{ env.INGEST_PROJECT_ID }}
-          content_id: ${{ github.event.issue.node_id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
       # `if` conditions can only be assigned as the "step" level, so there's no way to conditionally pass differing
       # `areaId` values to our GraphQL mutation. Would be nice if there was support for dictionaries or something in
       # GH actions to make this a lot more DRY
@@ -83,22 +66,5 @@ jobs:
           project_id: ${{ env.LOGSTASH_PROJECT_ID }}
           area_field_id: ${{ env.LS_AREA_FIELD_ID }}
           area_id: ${{ env.LS_DATA_PROCESSING_OPTION_ID }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
-      - uses: octokit/graphql-action@v2.x
-        id: set_ingest_docs_area
-        if: github.event.label.name == env.DOCS_LABEL
-        with:
-          query: |
-            mutation updateIngestArea($item_id: ID!, $project_id: ID!, $area_field_id: ID!, $area_id: String) {
-              updateProjectV2ItemFieldValue(
-                input: { itemId: $item_id, projectId: $project_id, fieldId: $area_field_id, value: { singleSelectOptionId: $area_id } }) {
-                  clientMutationId
-                }
-              }
-          item_id: ${{ fromJSON(steps.add_to_project.outputs.data).addProjectV2ItemById.item.id }}
-          project_id: ${{ env.INGEST_PROJECT_ID }}
-          area_field_id: ${{ env.INGEST_AREA_FIELD_ID }}
-          area_id: ${{ env.INGEST_DOCS_OPTION_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
