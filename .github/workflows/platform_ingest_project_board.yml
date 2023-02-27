@@ -6,6 +6,7 @@ on:
       - labeled
 env:
   LOGSTASH_PROJECT_ID: 'PVT_kwDOAGc3Zs4AMlnl'
+  INGEST_PROJECT_ID: 'PVT_kwDOAGc3Zs4AEzn4'
   
   # GitHub labels for each team/area
   LOGSTASH_LABEL: 'Team:Logstash'
@@ -16,17 +17,12 @@ env:
   DATA_PROCESSING_OPTION_ID: '1968ca97'
   INGEST_DOCS_OPTION_ID: '67c637dd'
   
-  # ID values for the Team property + its options
-  #TEAM_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AEzn4zgD4Pm0'
-  #DATA_PROCESSING_TEAM_OPTION_ID: '28847a20'
-  #INGEST_DOCS_TEAM_OPTION_ID: 'e13d244f'
-  
 jobs:
   add_to_ingest_project:
     runs-on: ubuntu-latest
     steps:
       - uses: octokit/graphql-action@v2.x
-        id: add_to_project
+        id: add_to_logstash_project
         if: github.event.label.name == env.LOGSTASH_LABEL || github.event.label.name == env.DOCS_LABEL
         with:
           query: |
@@ -39,6 +35,23 @@ jobs:
                 }
               }
           project_id: ${{ env.LOGSTASH_PROJECT_ID }}
+          content_id: ${{ github.event.issue.node_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+      - uses: octokit/graphql-action@v2.x
+        id: add_to_ingest_project
+        if: github.event.label.name == env.DOCS_LABEL
+        with:
+          query: |
+            # Variables have to be snake cased because of https://github.com/octokit/graphql-action/issues/164
+            mutation AddToIngestProject($project_id: ID!, $content_id: ID!) {
+              addProjectV2ItemById(input: { projectId: $project_id, contentId: $content_id }) {
+                  item {
+                    id
+                  }
+                }
+              }
+          project_id: ${{ env.INGEST_PROJECT_ID }}
           content_id: ${{ github.event.issue.node_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
