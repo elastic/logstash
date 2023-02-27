@@ -49,7 +49,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PROJECT_TOKEN }}
       - uses: octokit/graphql-action@v2.x
-        id: add_to_logstash_project
+        id: add_to_ingest_project
         if: github.event.label.name == env.DOCS_LABEL
         with:
           query: |
