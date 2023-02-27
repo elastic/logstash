@@ -12,7 +12,7 @@ env:
   
   # ID values for the Area property + its options
   AREA_FIELD_ID: 'PVTSSF_lADOAGc3Zs4AMlnlzgIB8yM'
-  DATA_PROCESSING_OPTION_ID: '1968ca97'
+  DATA_PROCESSING_OPTION_ID: '41c049c0'
   
 jobs:
   add_to_ingest_project:
