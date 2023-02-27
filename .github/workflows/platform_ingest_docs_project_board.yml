@@ -1,4 +1,4 @@
-name: Add issue to Ingest project
+name: Add Docs issue to Ingest project
 
 on:
   issues:
