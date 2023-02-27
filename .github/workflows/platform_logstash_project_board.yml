@@ -1,4 +1,4 @@
-name: Add issue to Platform Ingest Logstash project
+name: Add Logstash issue to Logstash Ingest Project
 
 on:
   issues:
