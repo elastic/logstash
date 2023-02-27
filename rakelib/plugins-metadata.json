@@ -372,7 +372,7 @@
   },
   "logstash-input-snmptrap": {
     "default-plugins": false,
-    "skip-list": true
+    "skip-list": false
   },
   "logstash-input-sqs": {
     "default-plugins": false,
