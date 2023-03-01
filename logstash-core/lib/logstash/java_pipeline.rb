@@ -604,7 +604,9 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
   def maybe_setup_out_plugins
     if @outputs_registered.make_true
+#       outputs.each { |plugin| puts "DNADBG>> before register output plugin #{plugin.config_name} context: #{plugin.execution_context}" }
       register_plugins(outputs)
+#       outputs.each { |plugin| puts "DNADBG>> registered output plugin #{plugin.config_name} context: #{plugin.execution_context}" }
       register_plugins(filters)
     end
   end
