@@ -21,6 +21,8 @@ If you have several Cloud IDs, you can add a label, which is ignored
 internally, to help you tell them apart. To add a label you should prefix your
 Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
 
+IMPORTANT: Do not explicitly use `ssl => true` when using Cloud ID while all communication to Cloud should use HTTPS protocol and it is already included.
+
 [[cloud-auth]]
 ==== Cloud Auth
 Cloud Auth is optional. Construct this value by following this format "<username>:<password>".
