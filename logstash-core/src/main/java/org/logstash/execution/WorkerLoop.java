@@ -103,7 +103,7 @@ public final class WorkerLoop implements Runnable {
                         }
                     }
                 }
-            } while (!isShutdown || isDraining() || !isNackBatch);
+            } while ((!isShutdown || isDraining()) && !isNackBatch);
 
             if (!isNackBatch) {
                 //we are shutting down, queue is drained if it was required, now  perform a final flush.
