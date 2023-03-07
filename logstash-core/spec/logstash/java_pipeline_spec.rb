@@ -322,9 +322,6 @@ describe LogStash::JavaPipeline do
       # wait for inputs to terminate
       wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
 
-      survivors = subject.worker_threads.select(&:alive?)
-      puts "DNADBG>> survivor workers: #{survivors.map(&:name)}"
-
       # the exception raised by the aborting output should have stopped the pipeline
       wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
 

@@ -83,17 +83,7 @@ public final class WorkerLoop implements Runnable {
                 final boolean isFlush = flushRequested.compareAndSet(true, false);
                 if (batch.filteredSize() > 0 || isFlush) {
                     consumedCounter.add(batch.filteredSize());
-                    try {
-                        execution.compute(batch, isFlush, false);
-                    } catch (Exception ex) {
-                        if (ex instanceof AbortedBatchException) {
-                            isNackBatch = true;
-                            LOGGER.info("Worker loop notified of aborting a batch, isNackBatch: {}", isNackBatch);
-                        } else {
-                            // if not an abort batch, continue propagating in
-                            throw ex;
-                        }
-                    }
+                    isNackBatch = abortableCompute(batch, isFlush, false);
                     if (!isNackBatch) {
                         filteredCounter.add(batch.filteredSize());
                         readClient.closeBatch(batch);
@@ -109,12 +99,28 @@ public final class WorkerLoop implements Runnable {
                 //we are shutting down, queue is drained if it was required, now  perform a final flush.
                 //for this we need to create a new empty batch to contain the final flushed events
                 final QueueBatch batch = readClient.newBatch();
-                execution.compute(batch, true, true);
+                abortableCompute(batch, true, true);
                 readClient.closeBatch(batch);
             }
         } catch (final Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    private boolean abortableCompute(QueueBatch batch, boolean flush, boolean shutdown) {
+        boolean isNackBatch = false;
+        try {
+            execution.compute(batch, flush, shutdown);
+        } catch (Exception ex) {
+            if (ex instanceof AbortedBatchException) {
+                isNackBatch = true;
+                LOGGER.info("Worker loop notified of aborting a batch");
+            } else {
+                // if not an abort batch, continue propagating
+                throw ex;
+            }
+        }
+        return isNackBatch;
     }
 
     public boolean isDraining() {
