@@ -57,16 +57,12 @@ class DummyManualInputGenerator < LogStash::Inputs::Base
 
   def run(queue)
     @queue = queue
-    puts "DNADBG>> iteration is: #{@iterations}"
     if @iterations
       @iterations.times do |i|
-        puts "dummymanualinputgenerator> iteration #{i}"
         queue << LogStash::Event.new
         sleep(0.5)
       end
-      puts "dummymanualinputgenerator> exiting run"
     else
-      puts "dummymanualinputgenerator> using flag loop"
       while !stop? || @keep_running.true?
         queue << LogStash::Event.new
         sleep(0.5)
