@@ -41,6 +41,7 @@ end
 
 class DummyManualInputGenerator < LogStash::Inputs::Base
   config_name "dummymanualinputgenerator"
+  config :iterations, :validate => :number
   milestone 2
 
   attr_accessor :keep_running
@@ -56,9 +57,20 @@ class DummyManualInputGenerator < LogStash::Inputs::Base
 
   def run(queue)
     @queue = queue
-    while !stop? || @keep_running.true?
-      queue << LogStash::Event.new
-      sleep(0.5)
+    puts "DNADBG>> iteration is: #{@iterations}"
+    if @iterations
+      @iterations.times do |i|
+        puts "dummymanualinputgenerator> iteration #{i}"
+        queue << LogStash::Event.new
+        sleep(0.5)
+      end
+      puts "dummymanualinputgenerator> exiting run"
+    else
+      puts "dummymanualinputgenerator> using flag loop"
+      while !stop? || @keep_running.true?
+        queue << LogStash::Event.new
+        sleep(0.5)
+      end
     end
   end
 
@@ -93,10 +105,8 @@ class DummyAbortingOutput < ::LogStash::Outputs::DummyOutput
   config_name "dummyabortingoutput"
 
   def multi_receive(batch)
-#     puts "DNADBG>> output plugin: entering the loop, execution_context: #{execution_context}"
     while !execution_context&.pipeline&.shutdown_requested?
       # wait for shutdown simulating a not consumed batch
-#       puts "DNADBG>> output plugin: loop ping. execution_context: #{execution_context} pipeline: #{execution_context.pipeline}"
       sleep 1
     end
 
@@ -278,29 +288,29 @@ describe LogStash::JavaPipeline do
   end
 
   context "when the output plugin raises an abort batch exception" do
-    subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
+    let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+    subject { mock_java_pipeline_from_string(config, pipeline_settings_obj, metric) }
+    let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
     let(:config) do
       <<-EOS
-      input { dummymanualinputgenerator {} }
+      input { dummymanualinputgenerator {iterations => 2} }
       output { dummyabortingoutput {} }
       EOS
     end
     let(:dummyabortingoutput) { DummyAbortingOutput.new }
-    let(:dummyinput) { DummyManualInputGenerator.new }
+    let(:pipeline_settings) { { "pipeline.batch.size" => 2, "queue.type" => "persisted"} }
+
+    let(:collected_metric) { metric_store.get_with_path("stats/events") }
 
     before :each do
       # warn: use a real DummyAbortingOutput plugin instantiated by PluginFactory because it needs
       # a properly initialized ExecutionContext, so DONT' mock the constructor of DummyAbortingOutput
-      allow(DummyManualInputGenerator).to receive(:new).with(any_args).and_return(dummyinput)
-
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummymanualinputgenerator").and_return(DummyManualInputGenerator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyabortingoutput").and_return(DummyAbortingOutput)
     end
 
     it "should not acknowledge the batch" do
-      dummyinput.keep_running.make_true
-
       expect { subject.start }.to_not raise_error
 
       # make sure all the workers are started
@@ -309,8 +319,19 @@ describe LogStash::JavaPipeline do
       # command a shutdown while the output is processing a batch and not completing it
       thread = Thread.new { subject.shutdown_workers }
 
+      # wait for inputs to terminate
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      survivors = subject.worker_threads.select(&:alive?)
+      puts "DNADBG>> survivor workers: #{survivors.map(&:name)}"
+
       # the exception raised by the aborting output should have stopped the pipeline
       wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # verify the not completed batch by checking output stats
+      expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
+      expect(collected_metric[:stats][:events][:in].value).to eq(2)
+      expect(collected_metric[:stats][:events][:out].value).to eq(0)
     end
   end
 
