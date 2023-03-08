@@ -599,6 +599,9 @@ namespace "artifact" do
     File.join(basedir, "config", "log4j2.properties").tap do |path|
       dir.input("#{path}=/etc/logstash")
     end
+    File.join(basedir, "config", "log4j2.file.properties").tap do |path|
+      dir.input("#{path}=/etc/logstash")
+    end
 
     arch_suffix = bundle_jdk ? map_architecture_for_package_type(platform, jdk_arch) : "no-jdk"
 

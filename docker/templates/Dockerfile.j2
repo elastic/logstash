@@ -144,6 +144,7 @@ COPY config/logstash-oss.yml config/logstash.yml
 COPY config/logstash-full.yml config/logstash.yml
 {% endif -%}
 COPY config/log4j2.properties config/
+COPY config/log4j2.file.properties config/
 COPY pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
@@ -155,6 +156,7 @@ COPY bin/docker-entrypoint /usr/local/bin/
 COPY scripts/config/pipelines.yml config/pipelines.yml
 COPY scripts/config/logstash.yml config/logstash.yml
 COPY scripts/config/log4j2.properties config/
+COPY scripts/config/log4j2.file.properties config/
 COPY scripts/pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 # Place the startup wrapper script.
