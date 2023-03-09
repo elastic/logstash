@@ -37,8 +37,8 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath 'org.yaml:snakeyaml:1.33'
-    classpath 'gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0'
+    classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
+    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
   }
 }
 
