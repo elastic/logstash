@@ -1,12 +1,12 @@
 [role="xpack"]
 [[monitoring-with-metricbeat]]
-=== Collect {ls} monitoring data with {metricbeat}
+=== Collect {ls} monitoring data with {agent}
 [subs="attributes"]
 ++++
-<titleabbrev>{metricbeat} collection</titleabbrev>
+<titleabbrev>{agent} collection</titleabbrev>
 ++++
 
-You can use {metricbeat} to collect data about {ls} and ship it to the
+You can use {agent} to collect data about {ls} and ship it to the
 monitoring cluster. The benefit of Metricbeat collection is that the monitoring
 agent remains active even if the {ls} instance does not. 
 
@@ -14,7 +14,7 @@ To collect and ship monitoring data:
 
 . <<disable-default,Disable default collection of monitoring metrics>>
 . <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
-. <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
+. <<configure-metricbeat,Install and configure {agent} to collect monitoring data>>
 
 [float]
 [[disable-default]]
@@ -46,9 +46,9 @@ monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 
 [float]
 [[configure-metricbeat]]
-==== Install and configure {metricbeat}
+==== Install and configure {agent}
 
-. {metricbeat-ref}/metricbeat-installation-configuration.html[Install {metricbeat}] on the
+. {metricbeat-ref}/metricbeat-installation-configuration.html[Install {agent}] on the
 same server as {ls}. 
 
 . Enable the `logstash-xpack` module in {metricbeat}. +
@@ -116,7 +116,7 @@ hosts: ["http://localhost:9601","http://localhost:9602","http://localhost:9603"]
 
 
 *Elastic security.* If the Elastic {security-features} are enabled, provide a user 
-ID and password so that {metricbeat} can collect metrics successfully: 
+ID and password so that {agent} can collect metrics successfully: 
 
 .. Create a user on the production cluster that has the 
 `remote_monitoring_collector` {ref}/built-in-roles.html[built-in role]. 
@@ -148,7 +148,7 @@ monitoring cluster prevents production cluster outages from impacting your
 ability to access your monitoring data. It also prevents monitoring activities 
 from impacting the performance of your production cluster.
 
-For example, specify the {es} output information in the {metricbeat} 
+For example, specify the {es} output information in the {agent} 
 configuration file (`metricbeat.yml`):
 
 [source,yaml]
@@ -173,7 +173,7 @@ IMPORTANT: The {es} {monitor-features} use ingest pipelines, therefore the
 cluster that stores the monitoring data must have at least one ingest node.
 
 If the {es} {security-features} are enabled on the monitoring cluster, you 
-must provide a valid user ID and password so that {metricbeat} can send metrics 
+must provide a valid user ID and password so that {agent} can send metrics 
 successfully: 
 
 .. Create a user on the monitoring cluster that has the 
@@ -186,13 +186,13 @@ requires additional privileges to create and read indices. For more
 information, see `<<feature-roles>>`.
 
 .. Add the `username` and `password` settings to the {es} output information in 
-the {metricbeat} configuration file.
+the {agent} configuration file.
 
 For more information about these configuration options, see 
 {metricbeat-ref}/elasticsearch-output.html[Configure the {es} output].
 --
 
-. {metricbeat-ref}/metricbeat-starting.html[Start {metricbeat}] to begin
+. {metricbeat-ref}/metricbeat-starting.html[Start {agent}] to begin
 collecting monitoring data. 
 
 . {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}]. 
