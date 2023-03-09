@@ -180,6 +180,7 @@ describe LogStash::Config::Source::MultiLocal do
       it "should not raise an error" do
         expect { subject.pipeline_configs }.not_to raise_error(ArgumentError)
       end
+    end
 
     context 'using dead letter queue settings with storage and retention policies' do
       let(:retrieved_pipelines) do [
@@ -190,7 +191,6 @@ describe LogStash::Config::Source::MultiLocal do
       it "should not raise an error" do
         expect { subject.pipeline_configs }.not_to raise_error(ArgumentError)
       end
-
     end
   end
 end
