@@ -16,8 +16,11 @@ To collect and ship monitoring data:
 . <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
+Want to use {agent} instead? Refer to <<monitoring-with-elastic-agent>>.
+
 [float]
 [[disable-default]]
+//tag::disable-default-collection[]
 ==== Disable default collection of {ls} monitoring metrics
 
 --
@@ -32,9 +35,11 @@ monitoring.enabled: false
 Remove the `#` at the beginning of the line to enable the setting.
 
 --
+//end::disable-default-collection[]
 
 [float]
 [[define-cluster__uuid]]
+//tag::define-cluster-uuid[]
 ==== Define `cluster_uuid` (Optional)
 To bind the metrics of {ls} to a specific cluster, optionally define the `monitoring.cluster_uuid`
 in the configuration file (logstash.yml):
@@ -43,6 +48,7 @@ in the configuration file (logstash.yml):
 ----------------------------------
 monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ----------------------------------
+//end::define-cluster-uuid[]
 
 [float]
 [[configure-metricbeat]]
