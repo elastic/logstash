@@ -41,7 +41,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.yaml:snakeyaml:1.29'
+        classpath 'org.yaml:snakeyaml:1.33'
     }
 }
 
@@ -182,6 +182,8 @@ dependencies {
     } else {
         api files(customJRubyDir + "/maven/jruby-complete/target/jruby-complete-${customJRubyVersion}.jar")
     }
+    // pin version of jackson-dataformat-yaml's transitive dependency "snakeyaml"
+    implementation "org.yaml:snakeyaml:1.33"
     implementation group: 'com.google.guava', name: 'guava', version: '24.1.1-jre'
     // WARNING: DO NOT UPGRADE "google-java-format"
     // later versions require GPL licensed code in javac-shaded that is
