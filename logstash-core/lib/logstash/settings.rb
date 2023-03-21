@@ -52,6 +52,7 @@ module LogStash
       "dead_letter_queue.flush_interval",
       "dead_letter_queue.max_bytes",
       "dead_letter_queue.storage_policy",
+      "dead_letter_queue.retain.age",
       "metric.collect",
       "pipeline.plugin_classloaders",
       "path.config",
