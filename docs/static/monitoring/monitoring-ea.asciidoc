@@ -7,7 +7,7 @@
 
 You can use {agent} to collect data about {ls} and ship it to the monitoring
 cluster. The benefit of {agent} collection is that the monitoring agent remains
-active even if the {ls} instance does not. Plus you can mange all your
+active even if the {ls} instance does not. Plus you can manage all your
 monitoring agents from a central location in {fleet}.
 
 To collect and ship monitoring data:
@@ -45,7 +45,7 @@ I will update the role shown here after finalizing https://github.com/elastic/el
 ****
 
 To collect {ls} monitoring data, add a {ls} integration to an {agent} and
-deploy it to the host where {kib} is running.
+deploy it to the host where {ls} is running.
 
 ****
 **Question for reviewers:**
