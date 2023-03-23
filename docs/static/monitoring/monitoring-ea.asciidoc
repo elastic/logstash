@@ -66,8 +66,8 @@ communications, you must access it via HTTPS. For example, use a `hosts` setting
 like
 `https://localhost:9600`.
 +
-**Elastic security.** If the Elastic {security-features} are enabled, expand
-**Advanced options** and enter the username and password of a user that has
+**Elastic security.** The Elastic {security-features} are enabled by default. 
+Expand **Advanced options** and enter the username and password of a user that has
 the `remote_monitoring_collector` role.
 . Choose where to add the integration policy. Click **New hosts** to add it to
 new agent policy or **Existing hosts** to add it to an existing agent policy.
