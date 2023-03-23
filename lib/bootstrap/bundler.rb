@@ -163,7 +163,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::SolveFailure => e
+          rescue ::Bundler::VersionConflict => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
