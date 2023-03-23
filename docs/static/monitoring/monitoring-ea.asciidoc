@@ -1,0 +1,85 @@
+[[monitoring-with-elastic-agent]]
+=== Collect {ls} monitoring data with {agent}
+[subs="attributes"]
+++++
+<titleabbrev>{agent} collection</titleabbrev>
+++++
+
+You can use {agent} to collect data about {ls} and ship it to the monitoring
+cluster. The benefit of {agent} collection is that the monitoring agent remains
+active even if the {ls} instance does not. Plus you can manage all your
+monitoring agents from a central location in {fleet}.
+
+To collect and ship monitoring data:
+
+. <<disable-default-include,Disable default collection of monitoring metrics>>
+. <<define-cluster__uuid-include,Specify the target `cluster_uuid` (optional)>>
+. <<configure-metricbeat,Install and configure {agent} to collect monitoring data>>
+
+[float]
+[[disable-default-include]]
+//include section about disabling default collection from the metricbeat topic
+include::monitoring-mb.asciidoc[tag=disable-default-collection]
+
+[float]
+[[define-cluster__uuid-include]]
+//include section about defining cluster_uuid from the metricbeat topic
+include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
+
+[float]
+[[configure-elastic-agent]]
+==== Install and configure {agent}
+
+Prerequisites:
+
+* Set up {es} monitoring and optionally create a monitoring cluster as described
+in the {ref}/monitoring-production.html[{es} monitoring documentation].
+* Create a user on the production cluster that has the
+`remote_monitoring_collector` {ref}/built-in-roles.html[built-in role].
+
+To collect {ls} monitoring data, add a {ls} integration to an {agent} and
+deploy it to the host where {ls} is running.
+
+. Go to the {kib} home page and click **Add integrations**.
++
+NOTE: If you're using a monitoring cluster, use the {kib} instance connected to
+the monitoring cluster.
+
+. In the query bar, search for and select the **Logstash** integration for
+{agent}.
+. Read the overview to make sure you understand integration requirements and
+other considerations.
+. Click **Add Logstash**.
++
+TIP: If you're installing an integration for the first time, you may be prompted
+to install {agent}. Click **Add integration only (skip agent installation)**.
+
+. Configure the integration name and optionally add a description. Make sure you
+configure all required settings:
+* Under **Collect Logstash application and slowlog logs**, modify the log paths
+to match your {ls} environment.
+* Under **Collect Logstash node metrics and stats**, make sure the hosts setting
+points to your {ls} host URLs. By default, the integration collects {ls}
+monitoring metrics from `localhost:9600`. If that host and port number are not
+correct, update the `hosts` setting. If you configured {ls} to use encrypted
+communications, you must access it via HTTPS. For example, use a `hosts` setting
+like
+`https://localhost:9600`.
++
+**Elastic security.** The Elastic {security-features} are enabled by default. 
+Expand **Advanced options** and enter the username and password of a user that has
+the `remote_monitoring_collector` role.
+. Choose where to add the integration policy. Click **New hosts** to add it to
+new agent policy or **Existing hosts** to add it to an existing agent policy.
+. Click **Save and continue**. This step takes a minute or two to complete. When
+it's done, you'll have an agent policy that contains an integration for
+collecting monitoring data from {kib}.
+. If an {agent} is already assigned to the policy and deployed to the host where
+{kib} is running, you're done. Otherwise, you need to deploy an {agent}. To
+deploy an {agent}:
+.. Go to **{fleet} -> Agents**, then click **Add agent**.
+.. Follow the steps in the **Add agent** flyout to download, install,
+and enroll the {agent}. Make sure you choose the agent policy you created
+earlier.
+. Wait a minute or two until incoming data is confirmed.
+. {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}].
