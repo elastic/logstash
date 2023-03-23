@@ -16,8 +16,11 @@ To collect and ship monitoring data:
 . <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
+Want to use {agent} instead? Refer to <<monitoring-with-elastic-agent>>.
+
 [float]
 [[disable-default]]
+//tag::disable-default-collection[]
 ==== Disable default collection of {ls} monitoring metrics
 
 --
@@ -32,9 +35,11 @@ monitoring.enabled: false
 Remove the `#` at the beginning of the line to enable the setting.
 
 --
+//end::disable-default-collection[]
 
 [float]
 [[define-cluster__uuid]]
+//tag::define-cluster-uuid[]
 ==== Define `cluster_uuid` (Optional)
 To bind the metrics of {ls} to a specific cluster, optionally define the `monitoring.cluster_uuid`
 in the configuration file (logstash.yml):
@@ -43,6 +48,7 @@ in the configuration file (logstash.yml):
 ----------------------------------
 monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ----------------------------------
+//end::define-cluster-uuid[]
 
 [float]
 [[configure-metricbeat]]
@@ -114,9 +120,9 @@ To monitor multiple {ls} instances, specify a list of hosts, for example:
 hosts: ["http://localhost:9601","http://localhost:9602","http://localhost:9603"]
 ----------------------------------
 
-
-*Elastic security.* If the Elastic {security-features} are enabled, provide a user 
-ID and password so that {metricbeat} can collect metrics successfully: 
+**Elastic security.** The Elastic {security-features} are enabled by default. 
+You must provide a user ID and password so that {metricbeat} can collect metrics
+successfully:
 
 .. Create a user on the production cluster that has the 
 `remote_monitoring_collector` {ref}/built-in-roles.html[built-in role]. 
@@ -172,8 +178,8 @@ must access it via HTTPS. For example, use a `hosts` setting like
 IMPORTANT: The {es} {monitor-features} use ingest pipelines, therefore the
 cluster that stores the monitoring data must have at least one ingest node.
 
-If the {es} {security-features} are enabled on the monitoring cluster, you 
-must provide a valid user ID and password so that {metricbeat} can send metrics 
+**Elastic security.** The Elastic {security-features} are enabled by default.
+You must provide a user ID and password so that {metricbeat} can send metrics
 successfully: 
 
 .. Create a user on the monitoring cluster that has the 
