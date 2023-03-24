@@ -38,126 +38,64 @@ This section summarizes the changes in the following releases:
 [[logstash-8-7-0]]
 === Logstash 8.7.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.7.0
+[[features-8.7.0]]
+==== New features and enhancements
 
-* Cover all #system invokation with exit code checking, eventually failing the execution of Rake task https://github.com/elastic/logstash/pull/14782[#14782]
-* Retrive JVM_VERSION from Logstash's home directory https://github.com/elastic/logstash/pull/14797[#14797]
-* [DOCS] Remove glossary from Logstash Reference https://github.com/elastic/logstash/pull/14808[#14808]
-* Add setting to disable the GeoIP database downloader https://github.com/elastic/logstash/pull/14823[#14823]
-* Pins murmurhash3 to last version with java library https://github.com/elastic/logstash/pull/14832[#14832]
-* Forward port of 8.6 and 8.5.3 release notes to main https://github.com/elastic/logstash/pull/14833[#14833]
-* Update bundeld JDK to 17.0.6+10 https://github.com/elastic/logstash/pull/14849[#14849]
-* Fix DLQ age retention policy to be applied also in case head segment is untouched https://github.com/elastic/logstash/pull/14878[#14878]
-* bump snakeyaml to 1.33 in logstash-core https://github.com/elastic/logstash/pull/14881[#14881]
-* Backport PR #14881 to 8.7: bump snakeyaml to 1.33 in logstash-core https://github.com/elastic/logstash/pull/14884[#14884]
-* add license information for snakeyaml https://github.com/elastic/logstash/pull/14886[#14886]
-* Backport PR #14886 to 8.7: add license information for snakeyaml https://github.com/elastic/logstash/pull/14888[#14888]
-* Workaround for #14873 https://github.com/elastic/logstash/pull/14890[#14890]
-* Backport PR #14890 to 8.7: Workaround for #14873 https://github.com/elastic/logstash/pull/14892[#14892]
-* Backport PR #14878 to 8.7: Fix DLQ age retention policy to be applied also in case head segment is untouched https://github.com/elastic/logstash/pull/14897[#14897]
-* Fix inversion of pluginId and pluginType parameteres in DLQ entry creation https://github.com/elastic/logstash/pull/14900[#14900]
-* Add env LOG_STYLE to control the log behavior https://github.com/elastic/logstash/pull/14949[#14949]
-* Backport PR #14949 to 8.7: Add env LOG_STYLE to control the log behavior https://github.com/elastic/logstash/pull/14953[#14953]
-* Allow usage of dead_letter_queue.retain.age in pipeline settings https://github.com/elastic/logstash/pull/14954[#14954]
-* Revert partial change in c99a7b2f4 that broke packaging builds https://github.com/elastic/logstash/pull/14955[#14955]
-* Backport PR #14955 to 8.7: Revert partial change in c99a7b2f4 that broke packaging builds https://github.com/elastic/logstash/pull/14956[#14956]
-* [DOCS] Describe how to use Elastic Agent to monitor Logstash https://github.com/elastic/logstash/pull/14959[#14959]
-* Backport PR #14954 to 8.7: Allow usage of dead_letter_queue.retain.age in pipeline settings https://github.com/elastic/logstash/pull/14968[#14968]
+* Added `xpack.geoip.downloader.enabled` setting to manage auto-update GeoIP database https://github.com/elastic/logstash/pull/14823[#14823]
+* Flow metrics improvements: `throughput` for input plugins, `worker_utilization` and `worker_millis_per_event` (worker cost per event) for filter and output plugin metrics are implemented https://github.com/elastic/logstash/pull/14743[#14743]
 
-=== Logstash Commits between 8.7 and 8.6.2
+[[notable-8.7.0]]
+==== Performance improvements and notable issues fixed
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.6.2..8.7"
+* Fix: DLQ writer isn't properly created due to inversion of parameteres https://github.com/elastic/logstash/pull/14900[#14900]
+* Logstash fails to start on OracleLinux7 https://github.com/elastic/logstash/pull/14890[#14890]
+* Fix: DLQ age policy isn't executed if the current head segment haven't receives any write https://github.com/elastic/logstash/pull/14878[#14878]
+* Fixes an issue during process shutdown in which the stalled shutdown watcher incorrectly reports `inflight_count` as `0` even when there are events in-flight https://github.com/elastic/logstash/pull/14760[#14760]
 
-cbd01aee2 - (HEAD -> 8.7, origin/8.7) Allow usage of dead_letter_queue.retain.age in pipeline settings (#14954) (#14968) (3 days ago) <github-actions[bot]>
-2cb836534 - Revert partial change in c99a7b2f4 that broke packaging builds (#14955) (#14956) (2 weeks ago) <github-actions[bot]>
-9ecf0de48 - Add env LOG_STYLE to control the log behavior (#14949) (#14953) (2 weeks ago) <github-actions[bot]>
-fd384646b - Release notes for 8.6.2 (#14896) (#14912) (4 weeks ago) <Mashhur>
-f84356de6 - Fix DLQ age retention policy to be applied also in case head segment is untouched (#14878) (#14897) (6 weeks ago) <github-actions[bot]>
-c98ab6105 - Workaround for #14873 (#14890) (#14892) (6 weeks ago) <github-actions[bot]>
-585c92a76 - add license information for snakeyaml (#14886) (#14888) (6 weeks ago) <github-actions[bot]>
-6452abbab - bump snakeyaml to 1.33 (#14881) (#14884) (6 weeks ago) <github-actions[bot]>
-2b95bb186 - Update minor plugin versions in gemfile lock (#14876) (6 weeks ago) <github-actions[bot]>
-65dc1af4f - Copy gem lock file from latest (8.6.1) to 8.7 branch. (#14875) (6 weeks ago) <Mashhur>
-fb8cfb2f1 - set rpm_digest to sha256 instead of default md5 (#14864) (7 weeks ago) <João Duarte>
-1b7820a7a - update jruby to 9.3.10.0 (#14865) (7 weeks ago) <João Duarte>
-d2858ffd6 - Update releases list to include 8.6.1 (8 weeks ago) <João Duarte>
-46443e460 - Guard reserved tags field against incorrect use (#14822) (8 weeks ago) <kaisecheng>
-3516986a3 - Update bundeld JDK to 17.0.6+10 (#14849) (8 weeks ago) <Andrea Selva>
-50c395a44 - Update snakeyaml to 1.33 (9 weeks ago) <Pamir>
-d1f3415d8 - jrjackson and jackson versions bump. (#14845) (9 weeks ago) <Mashhur>
-518665ea5 - [doc] update Debian/Ubuntu instructions following apt-key deprecation (#14835) (9 weeks ago) <Andres Rodriguez>
-42ce9fc3e - metrics: remove delayed implementation of timers interface (#14815) (2 months ago) <Ry Biesemeyer>
-6bbe0700d - Retrive JVM_VERSION from Logstash's home directory (#14797) (2 months ago) <Andrea Selva>
-a7027dc54 - Update CI configured versions after 8.6.0 release (#14830) (2 months ago) <Andrea Selva>
-775a71860 - Forward port of 8.6 and 8.5.3 release notes to main (#14833) (2 months ago) <Andrea Selva>
-01876d2ca - Pins murmurhash3 to last version with java library (#14832) (2 months ago) <Andrea Selva>
-e4dc82a9b - Add setting to disable the GeoIP database downloader (#14823) (3 months ago) <Edmo Vamerlatti Costa>
-cfafce23c - Plugin throughput, worker utilization and worker cost per event flow metrics. (#14743) (3 months ago) <Mashhur>
-7e25a0d76 - Update Ironbank base image to 8.7 (#14812) (3 months ago) <Rob Bavey>
-21a298635 - Fix pipeline compilation to make it fail when multiple top-level codec per plugin are specified #14810 (3 months ago) <Edmo Vamerlatti Costa>
-3fee1429c - Update platform_ingest_project_board.yml (3 months ago) <Andres Rodriguez>
-115a310f2 - Update platform_ingest_project_board.yml (3 months ago) <Andres Rodriguez>
-284ff2795 - Update platform_ingest_project_board.yml (3 months ago) <Andres Rodriguez>
-e81019c89 - Update platform_ingest_project_board.yml (3 months ago) <Andres Rodriguez>
-d2080b879 - Update platform_ingest_project_board.yml (#14814) (3 months ago) <Andres Rodriguez>
-58b22a391 - Update platform_ingest_project_board.yml (#14813) (3 months ago) <Andres Rodriguez>
-59c693a7b - Update platform_ingest_project_board.yml (#14801) (3 months ago) <Andres Rodriguez>
-e121650e5 - live timers: API boundary, implementation, opt-in (#14748) (3 months ago) <Ry Biesemeyer>
-f21edfb7e - [DOCS] Remove glossary from Logstash Reference (#14808) (3 months ago) <Lisa Cawley>
-52d2d2e57 - update ci release file (#14807) (3 months ago) <kaisecheng>
-43d1c8cdf - Logstash is logging unnecessary pipeline configuration. (#14779) (4 months ago) <Mashhur>
-720996fa7 - Cover all #system invokation with exit code checking, eventually failing the execution of Rake task (#14782) (4 months ago) <Andrea Selva>
-7a39d9705 - Avoid to create and upload AARCH64 Docker images for UBI8 (#14786) (4 months ago) <Andrea Selva>
-2e5e49d10 - [DRA] Avoid to loose err code on docker save (#14780) (4 months ago) <Andrea Selva>
-394abbd4b - bump jruby to 9.3.9.0 (#14694) (4 months ago) <João Duarte>
-10d6530f8 - Forward port 8.5.2 release notes (#14775) (4 months ago) <Andrea Selva>
-aa73187d9 - Update CI used versions after 8.5.2 release (#14772) (4 months ago) <Andrea Selva>
-4941c25f3 - fix: calculated inflight_count from in-flight batches (#14760) (4 months ago) <Ry Biesemeyer>
-dd06ec53e - Use `aarch64` artifact arch for integration tests on Mac M1 (darwin) OS. (#14754) (4 months ago) <Mashhur>
-25b418739 - Forward port releasenotes from 8.5.0 and 8.5.1 (#14763) (4 months ago) <Andrea Selva>
-1f8ee249b - Logstash Getting started with Kubernetes Guide (#14655) (4 months ago) <Rob Bavey>
-b40136c76 - Bump to 8.7.0 (#14755) (4 months ago) <Andrea Selva>
+[[core-8.7.0]]
+==== Other changes to Logstash core
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.6.2..8.7 *.release"
-Changed plugin versions:
-logstash-filter-dns: 3.1.5 -> 3.2.0
-logstash-filter-syslog_pri: 3.1.1 -> 3.2.0
-logstash-input-beats: 6.4.4 -> 6.5.0
-logstash-integration-aws: 7.0.1 -> 7.1.0
-logstash-mixin-plugin_factory_support: 1.0.0 -> 1.0.0
-logstash-output-elasticsearch: 11.12.4 -> 11.13.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Allow `dead_letter_queue.retain.age` usage in pipeline settings https://github.com/elastic/logstash/pull/14954[#14954]
+* Improved logging behavior in a docker container https://github.com/elastic/logstash/pull/14949[#14949]
+* `snakeyaml` upgraded to `1.33` version https://github.com/elastic/logstash/pull/14881[#14881]
+* Update bundeld JDK to `17.0.6+10` https://github.com/elastic/logstash/pull/14849[#14849]
+* `jrjackson` to `0.4.17` and `jackson` to `2.14.1` versions upgraded https://github.com/elastic/logstash/pull/14845[#14845]
+* Pins `murmurhash3` to `0.1.6` version https://github.com/elastic/logstash/pull/14832[#14832]
+* Guard reserved tags field against incorrect use https://github.com/elastic/logstash/pull/14822[#14822]
+* Remove unnecessary pipeline configuration logging https://github.com/elastic/logstash/pull/14779[#14779]
+* Developers using the Ruby- or Java-based Plugin APIs will have access to a new API boundary for acquiring a timer object to track execution time https://github.com/elastic/logstash/pull/14748[#14748]
 
-==== Plugins
+[[docs-8.7.0]]
+==== Documentation enhancements
+
+* Remove glossary from Logstash Reference https://github.com/elastic/logstash/pull/14808[#14808]
+* Describe how to use Elastic Agent to monitor Logstash https://github.com/elastic/logstash/pull/14959[#14959]
+* Update Debian/Ubuntu instructions following apt-key deprecation https://github.com/elastic/logstash/pull/14835[#14835]
+
+[[plugins-8.7.0]]
+==== Plugin releases
 
 *Dns Filter - 3.2.0*
 
-* Support adding tag(s) on DNS lookup times out, defaults to `["_dnstimeout"]` https://github.com/logstash-plugins/logstash-filter-dns/pull/67[#67]
-* As timeouts can be received through tags now, DNS lookup timeouts are logged in debug logs only. https://github.com/logstash-plugins/logstash-filter-dns/pull/67[#67]
+* Add tag(s) on DNS lookup times outs, defaults to `["_dnstimeout"]` https://github.com/logstash-plugins/logstash-filter-dns/pull/67[#67]
 
 *Syslog_pri Filter - 3.2.0*
 
-* Feat: add tagging on unrecognized `facility_label` code https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/11[#11]
-* Change: refactored test code to be streamlined when checking ECS fields https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/14[#14]
+* Add tag on unrecognized `facility_label` code https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/11[#11]
 
 *Beats Input - 6.5.0*
 
-* An enrichment `enrich` option added to control ECS passthrough. `ssl_peer_metadata` and `include_codec_tag` configurations are deprecated and can be managed through the `enrich`  https://github.com/logstash-plugins/logstash-input-beats/pull/464[#464]
+* Added `enrich` enrichment option to control ECS passthrough. `ssl_peer_metadata` and `include_codec_tag` configurations are deprecated and can be managed through the `enrich`  https://github.com/logstash-plugins/logstash-input-beats/pull/464[#464]
 
 *Aws Integration - 7.1.0*
 
-* Plugin restores and uploads corrupted GZIP files (caused by abnormal termination) to AWS S3 https://github.com/logstash-plugins/logstash-integration-aws/pull/20[#20]
-
-*Plugin_factory_support Mixin - 1.0.0*
+* Restore and upload corrupted GZIP files to AWS S3 after abnormal termination https://github.com/logstash-plugins/logstash-integration-aws/pull/20[#20]
 
 *Elasticsearch Output - 11.13.1*
 
-* Avoid crash by ensuring ILM settings are injected in the correct location depending on the default (or custom) template format, template_api setting and ES version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1102[#1102]
+* Avoid a crash by ensuring ILM settings are injected in the correct location depending on the default (or custom) template format, `template_api` setting and ES version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1102[#1102]
 
-* add technology preview support for allowing events to individually encode a default pipeline with `[@metadata][target_ingest_pipeline]` (as part of a technology preview, this feature may change without notice) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1113[#1113]
-
+* Technology preview support for allowing events to individually encode a default pipeline with `[@metadata][target_ingest_pipeline]` (as part of a technology preview, this feature may change without notice) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1113[#1113]
 
 [[logstash-8-6-2]]
 === Logstash 8.6.2 Release Notes
