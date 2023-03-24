@@ -388,7 +388,10 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void updateOldestSegmentReference() throws IOException {
-        oldestSegmentPath = listSegmentPaths(this.queuePath).sorted().findFirst();
+        oldestSegmentPath = listSegmentPaths(this.queuePath)
+                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
+                .sorted()
+                .findFirst();
         if (!oldestSegmentPath.isPresent()) {
             oldestSegmentTimestamp = Optional.empty();
             return;
