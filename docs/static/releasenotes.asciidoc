@@ -68,7 +68,6 @@ This section summarizes the changes in the following releases:
 [[docs-8.7.0]]
 ==== Documentation enhancements
 
-* Remove glossary from Logstash Reference https://github.com/elastic/logstash/pull/14808[#14808]
 * Describe how to use Elastic Agent to monitor Logstash https://github.com/elastic/logstash/pull/14959[#14959]
 * Update Debian/Ubuntu instructions following apt-key deprecation https://github.com/elastic/logstash/pull/14835[#14835]
 
