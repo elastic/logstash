@@ -297,6 +297,8 @@ describe LogStash::JavaPipeline do
     let(:pipeline_settings) { { "pipeline.batch.size" => 2, "queue.type" => "persisted"} }
 
     let(:collected_metric) { metric_store.get_with_path("stats/events") }
+    let (:queue_client_batch) { double("Acked queue client Mock") }
+    let(:logger) { double("pipeline logger").as_null_object }
 
     before :each do
       # warn: use a real DummyAbortingOutput plugin instantiated by PluginFactory because it needs
@@ -304,10 +306,14 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("input", "dummymanualinputgenerator").and_return(DummyManualInputGenerator)
       allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyabortingoutput").and_return(DummyAbortingOutput)
+      allow(LogStash::JavaPipeline).to receive(:filter_queue_client).and_return(queue_client_batch)
+      allow(LogStash::JavaPipeline).to receive(:logger).twice.and_return(logger)
     end
 
     it "should not acknowledge the batch" do
       expect { subject.start }.to_not raise_error
+      expect(queue_client_batch).to_not receive(:close_batch)
+      expect(logger).not_to receive(:error).with(/Pipeline worker error, the pipeline will be stopped/, anything)
 
       # make sure all the workers are started
       wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_truthy
@@ -318,8 +324,12 @@ describe LogStash::JavaPipeline do
       # wait for inputs to terminate
       wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
 
-      # the exception raised by the aborting output should have stopped the pipeline
+      # the exception raised by the aborting output should have stopped the workers
       wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # need to wait that the pipeline thread stops completely, else the logger mock could be
+      # used outside of this context
+      subject.wait_for_shutdown
 
       # verify the not completed batch by checking output stats
       expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
