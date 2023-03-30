@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-7-0,Logstash 8.7.0>>
 * <<logstash-8-6-2,Logstash 8.6.2>>
 * <<logstash-8-6-1,Logstash 8.6.1>>
 * <<logstash-8-6-0,Logstash 8.6.0>>
@@ -33,6 +34,67 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-7-0]]
+=== Logstash 8.7.0 Release Notes
+
+[[features-8.7.0]]
+==== New features and enhancements
+
+* Added `xpack.geoip.downloader.enabled` setting to manage auto-update GeoIP database https://github.com/elastic/logstash/pull/14823[#14823]
+* Flow metrics improvements: `throughput` for input plugins, `worker_utilization` and `worker_millis_per_event` (worker cost per event) for filter and output plugin metrics are implemented https://github.com/elastic/logstash/pull/14743[#14743]
+
+[[notable-8.7.0]]
+==== Performance improvements and notable issues fixed
+
+* Fix: DLQ writer isn't properly created due to inversion of parameteres https://github.com/elastic/logstash/pull/14900[#14900]
+* Logstash fails to start on OracleLinux7 https://github.com/elastic/logstash/pull/14890[#14890]
+* Fix: DLQ age policy isn't executed if the current head segment haven't receives any write https://github.com/elastic/logstash/pull/14878[#14878]
+* Fixes an issue during process shutdown in which the stalled shutdown watcher incorrectly reports `inflight_count` as `0` even when there are events in-flight https://github.com/elastic/logstash/pull/14760[#14760]
+
+[[core-8.7.0]]
+==== Other changes to Logstash core
+
+* Allow `dead_letter_queue.retain.age` usage in pipeline settings https://github.com/elastic/logstash/pull/14954[#14954]
+* Improved logging behavior in a docker container https://github.com/elastic/logstash/pull/14949[#14949]
+* `snakeyaml` upgraded to `1.33` version https://github.com/elastic/logstash/pull/14881[#14881]
+* Update bundeld JDK to `17.0.6+10` https://github.com/elastic/logstash/pull/14849[#14849]
+* `jrjackson` to `0.4.17` and `jackson` to `2.14.1` versions upgraded https://github.com/elastic/logstash/pull/14845[#14845]
+* Pins `murmurhash3` to `0.1.6` version https://github.com/elastic/logstash/pull/14832[#14832]
+* Guard reserved tags field against incorrect use https://github.com/elastic/logstash/pull/14822[#14822]
+* Remove unnecessary pipeline configuration logging https://github.com/elastic/logstash/pull/14779[#14779]
+* Developers using the Ruby- or Java-based Plugin APIs will have access to a new API boundary for acquiring a timer object to track execution time https://github.com/elastic/logstash/pull/14748[#14748]
+
+[[docs-8.7.0]]
+==== Documentation enhancements
+
+* Describe how to use Elastic Agent to monitor Logstash https://github.com/elastic/logstash/pull/14959[#14959]
+* Update Debian/Ubuntu instructions following apt-key deprecation https://github.com/elastic/logstash/pull/14835[#14835]
+
+[[plugins-8.7.0]]
+==== Plugin releases
+
+*Dns Filter - 3.2.0*
+
+* Add tag(s) on DNS lookup times outs, defaults to `["_dnstimeout"]` https://github.com/logstash-plugins/logstash-filter-dns/pull/67[#67]
+
+*Syslog_pri Filter - 3.2.0*
+
+* Add tag on unrecognized `facility_label` code https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/11[#11]
+
+*Beats Input - 6.5.0*
+
+* Added `enrich` enrichment option to control ECS passthrough. `ssl_peer_metadata` and `include_codec_tag` configurations are deprecated and can be managed through the `enrich`  https://github.com/logstash-plugins/logstash-input-beats/pull/464[#464]
+
+*Aws Integration - 7.1.0*
+
+* Restore and upload corrupted GZIP files to AWS S3 after abnormal termination https://github.com/logstash-plugins/logstash-integration-aws/pull/20[#20]
+
+*Elasticsearch Output - 11.13.1*
+
+* Avoid a crash by ensuring ILM settings are injected in the correct location depending on the default (or custom) template format, `template_api` setting and ES version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1102[#1102]
+
+* Technology preview support for allowing events to individually encode a default pipeline with `[@metadata][target_ingest_pipeline]` (as part of a technology preview, this feature may change without notice) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1113[#1113]
 
 [[logstash-8-6-2]]
 === Logstash 8.6.2 Release Notes
