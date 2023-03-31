@@ -19,4 +19,10 @@ if  [ -n $systemd_version ] && dpkg --compare-versions "$systemd_version" lt 229
     sed -i \
       -e "s/^TimeoutStopSec=infinity/TimeoutStopSec=0/" \
       /lib/systemd/system/logstash.service || true
+else
+    # Ensure's an upgraded system has the right setting, if it
+    # wasn't automatically replaced by the OS.
+    sed -i \
+      -e "s/^TimeoutStopSec=0/TimeoutStopSec=infinity/" \
+      /lib/systemd/system/logstash.service || true
 fi
