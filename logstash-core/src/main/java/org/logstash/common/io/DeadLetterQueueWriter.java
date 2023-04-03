@@ -388,7 +388,10 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void updateOldestSegmentReference() throws IOException {
-        oldestSegmentPath = listSegmentPaths(this.queuePath).sorted().findFirst();
+        oldestSegmentPath = listSegmentPaths(this.queuePath)
+                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
+                .sorted()
+                .findFirst();
         if (!oldestSegmentPath.isPresent()) {
             oldestSegmentTimestamp = Optional.empty();
             return;
@@ -409,14 +412,14 @@ public final class DeadLetterQueueWriter implements Closeable {
      * */
     private static Optional<Timestamp> readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
         final int lastBlockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;
-        byte[] eventBytes;
+        byte[] eventBytes = null;
         try (RecordIOReader recordReader = new RecordIOReader(segmentPath)) {
             int blockId = lastBlockId;
-            do {
+            while (eventBytes == null && blockId >= 0) { // no event present in last block, try with the one before
                 recordReader.seekToBlock(blockId);
                 eventBytes = recordReader.readEvent();
                 blockId--;
-            } while (eventBytes == null && blockId >= 0); // no event present in last block, try with the one before
+            }
         } catch (NoSuchFileException nsfex) {
             // the segment file may have been removed by the clean consumed feature on the reader side
             return Optional.empty();

@@ -398,4 +398,14 @@ public class DeadLetterQueueWriterTest {
             assertEquals(2, writeManager.getDroppedEvents());
         }
     }
+
+    @Test(expected = Test.None.class)
+    public void testInitializeWriterWith1ByteEntry() throws Exception {
+        Files.write(dir.resolve("1.log"), "1".getBytes());
+
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(1))
+                .build();
+        writer.close();
+    }
 }
