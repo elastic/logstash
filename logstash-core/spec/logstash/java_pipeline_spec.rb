@@ -310,14 +310,14 @@ describe LogStash::JavaPipeline do
       allow(LogStash::JavaPipeline).to receive(:logger).twice.and_return(logger)
     end
 
-    it "should not acknowledge the batch" do
+   before(:each) do
       expect { subject.start }.to_not raise_error
       expect(queue_client_batch).to_not receive(:close_batch)
-      expect(logger).not_to receive(:error).with(/Pipeline worker error, the pipeline will be stopped/, anything)
 
       # make sure all the workers are started
       wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_truthy
-
+    end
+    it "should not acknowledge the batch" do
       # command a shutdown while the output is processing a batch and not completing it
       thread = Thread.new { subject.shutdown_workers }
 
@@ -335,6 +335,23 @@ describe LogStash::JavaPipeline do
       expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
       expect(collected_metric[:stats][:events][:in].value).to eq(2)
       expect(collected_metric[:stats][:events][:out].value).to eq(0)
+    end
+
+    it "should not throw a generic error" do
+      expect(logger).not_to receive(:error).with(/Pipeline worker error, the pipeline will be stopped/, anything)
+
+      # command a shutdown while the output is processing a batch and not completing it
+      thread = Thread.new { subject.shutdown_workers }
+
+      # wait for inputs to terminate
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      # the exception raised by the aborting output should have stopped the workers
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # need to wait that the pipeline thread stops completely, else the logger mock could be
+      # used outside of this context
+      subject.wait_for_shutdown
     end
   end
 
