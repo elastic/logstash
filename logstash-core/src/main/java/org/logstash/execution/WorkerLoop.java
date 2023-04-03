@@ -114,7 +114,7 @@ public final class WorkerLoop implements Runnable {
         } catch (Exception ex) {
             if (ex instanceof AbortedBatchException) {
                 isNackBatch = true;
-                LOGGER.info("Signal to abort an exception received. Terminating pipeline worker {}", Thread.currentThread().getName());
+                LOGGER.info("Received signal to abort processing current batch. Terminating pipeline worker {}", Thread.currentThread().getName());
             } else {
                 // if not an abort batch, continue propagating
                 throw ex;
