@@ -41,6 +41,7 @@ end
 
 class DummyManualInputGenerator < LogStash::Inputs::Base
   config_name "dummymanualinputgenerator"
+  config :iterations, :validate => :number
   milestone 2
 
   attr_accessor :keep_running
@@ -56,9 +57,16 @@ class DummyManualInputGenerator < LogStash::Inputs::Base
 
   def run(queue)
     @queue = queue
-    while !stop? || @keep_running.true?
-      queue << LogStash::Event.new
-      sleep(0.5)
+    if @iterations
+      @iterations.times do |i|
+        queue << LogStash::Event.new
+        sleep(0.5)
+      end
+    else
+      while !stop? || @keep_running.true?
+        queue << LogStash::Event.new
+        sleep(0.5)
+      end
     end
   end
 
@@ -87,6 +95,21 @@ end
 
 class DummyOutputMore < ::LogStash::Outputs::DummyOutput
   config_name "dummyoutputmore"
+end
+
+class DummyAbortingOutput < ::LogStash::Outputs::DummyOutput
+  config_name "dummyabortingoutput"
+
+  def multi_receive(batch)
+    while !execution_context&.pipeline&.shutdown_requested?
+      # wait for shutdown simulating a not consumed batch
+      sleep 1
+    end
+
+    # raise the exception
+    java_import org.logstash.execution.AbortedBatchException
+    raise AbortedBatchException.new
+  end
 end
 
 class DummyFilter < LogStash::Filters::Base
@@ -260,6 +283,78 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when the output plugin raises an abort batch exception" do
+    let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+    subject { mock_java_pipeline_from_string(config, pipeline_settings_obj, metric) }
+    let(:metric_store) { subject.metric.collector.snapshot_metric.metric_store }
+    let(:config) do
+      <<-EOS
+      input { dummymanualinputgenerator {iterations => 2} }
+      output { dummyabortingoutput {} }
+      EOS
+    end
+    let(:dummyabortingoutput) { DummyAbortingOutput.new }
+    let(:pipeline_settings) { { "pipeline.batch.size" => 2, "queue.type" => "persisted"} }
+
+    let(:collected_metric) { metric_store.get_with_path("stats/events") }
+    let (:queue_client_batch) { double("Acked queue client Mock") }
+    let(:logger) { double("pipeline logger").as_null_object }
+
+    before :each do
+      # warn: use a real DummyAbortingOutput plugin instantiated by PluginFactory because it needs
+      # a properly initialized ExecutionContext, so DONT' mock the constructor of DummyAbortingOutput
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummymanualinputgenerator").and_return(DummyManualInputGenerator)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyabortingoutput").and_return(DummyAbortingOutput)
+      allow(LogStash::JavaPipeline).to receive(:filter_queue_client).and_return(queue_client_batch)
+      allow(LogStash::JavaPipeline).to receive(:logger).twice.and_return(logger)
+    end
+
+   before(:each) do
+      expect { subject.start }.to_not raise_error
+      expect(queue_client_batch).to_not receive(:close_batch)
+
+      # make sure all the workers are started
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_truthy
+    end
+    it "should not acknowledge the batch" do
+      # command a shutdown while the output is processing a batch and not completing it
+      thread = Thread.new { subject.shutdown_workers }
+
+      # wait for inputs to terminate
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      # the exception raised by the aborting output should have stopped the workers
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # need to wait that the pipeline thread stops completely, else the logger mock could be
+      # used outside of this context
+      subject.wait_for_shutdown
+
+      # verify the not completed batch by checking output stats
+      expect(collected_metric[:stats][:events][:duration_in_millis].value).not_to be_nil
+      expect(collected_metric[:stats][:events][:in].value).to eq(2)
+      expect(collected_metric[:stats][:events][:out].value).to eq(0)
+    end
+
+    it "should not throw a generic error" do
+      expect(logger).not_to receive(:error).with(/Pipeline worker error, the pipeline will be stopped/, anything)
+
+      # command a shutdown while the output is processing a batch and not completing it
+      thread = Thread.new { subject.shutdown_workers }
+
+      # wait for inputs to terminate
+      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+
+      # the exception raised by the aborting output should have stopped the workers
+      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+
+      # need to wait that the pipeline thread stops completely, else the logger mock could be
+      # used outside of this context
+      subject.wait_for_shutdown
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do
@@ -282,61 +377,61 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-  context "a crashing worker using memory queue" do
-    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
+    context "a crashing worker using memory queue" do
+      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
 
-    it "does not raise in the main thread, terminates the run thread and finishes execution" do
-      # first make sure we keep the input plugin in the run method for now
-      dummyinput.keep_running.make_true
+      it "does not raise in the main thread, terminates the run thread and finishes execution" do
+        # first make sure we keep the input plugin in the run method for now
+        dummyinput.keep_running.make_true
 
-      expect { subject.start }.to_not raise_error
+        expect { subject.start }.to_not raise_error
 
-      # wait until there is no more worker thread since we have a single worker that should have died
-      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+        # wait until there is no more worker thread since we have a single worker that should have died
+        wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
 
-      # at this point the input plugin should have been asked to stop
-      wait(5).for {dummyinput.stop?}.to be_truthy
+        # at this point the input plugin should have been asked to stop
+        wait(5).for {dummyinput.stop?}.to be_truthy
 
-      # allow the input plugin to exit the run method now
-      dummyinput.keep_running.make_false
+        # allow the input plugin to exit the run method now
+        dummyinput.keep_running.make_false
 
-      # the pipeline thread should terminate normally
-      expect { subject.thread.join }.to_not raise_error
-      expect(subject.finished_execution?).to be_truthy
+        # the pipeline thread should terminate normally
+        expect { subject.thread.join }.to_not raise_error
+        expect(subject.finished_execution?).to be_truthy
 
-      # when the pipeline has exited, no input threads should be alive
-      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+        # when the pipeline has exited, no input threads should be alive
+        wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+      end
     end
-  end
 
-  context "a crashing worker using persisted queue" do
-    let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
+    context "a crashing worker using persisted queue" do
+      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
 
-    it "does not raise in the main thread, terminates the run thread and finishes execution" do
-      # first make sure we keep the input plugin in the run method for now
-      dummyinput.keep_running.make_true
+      it "does not raise in the main thread, terminates the run thread and finishes execution" do
+        # first make sure we keep the input plugin in the run method for now
+        dummyinput.keep_running.make_true
 
-      expect { subject.start }.to_not raise_error
+        expect { subject.start }.to_not raise_error
 
-      # wait until there is no more worker thread since we have a single worker that should have died
-      wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+        # wait until there is no more worker thread since we have a single worker that should have died
+        wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
 
-      # at this point the input plugin should have been asked to stop
-      wait(5).for {dummyinput.stop?}.to be_truthy
+        # at this point the input plugin should have been asked to stop
+        wait(5).for {dummyinput.stop?}.to be_truthy
 
-      # allow the input plugin to exit the run method now
-      dummyinput.keep_running.make_false
+        # allow the input plugin to exit the run method now
+        dummyinput.keep_running.make_false
 
-      # the pipeline thread should terminate normally
-      expect { subject.thread.join }.to_not raise_error
-      expect(subject.finished_execution?).to be_truthy
+        # the pipeline thread should terminate normally
+        expect { subject.thread.join }.to_not raise_error
+        expect(subject.finished_execution?).to be_truthy
 
-      # when the pipeline has exited, no input threads should be alive
-      wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
+        # when the pipeline has exited, no input threads should be alive
+        wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
 
-      expect{dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
+        expect{dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
+      end
     end
-  end
   end
 
   describe "defaulting the pipeline workers based on thread safety" do
