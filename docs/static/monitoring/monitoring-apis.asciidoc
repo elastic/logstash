@@ -499,6 +499,9 @@ Example response:
 }
 --------------------------------------------------
 
+NOTE: When the rate for a given flow metric window is infinite, it is presented as a string (either `"Infinity"` or  `"-Infinity"`).
+      This occurs when the numerator metric has changed during the window without a change in the rate's denominator metric.
+
 Flow rates provide visibility into how a Logstash instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
 This allows us to attach _meaning_ to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
 
@@ -1028,7 +1031,7 @@ It is useful for identifying which plugins in a pipeline are using the available
 | Filters, Outputs | `worker_millis_per_event` |
 This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event.
 It is especially useful for identifying issues with plugins that operate on a small subset of events.
-An `"Infinity"` value for a given flow window indicates that worker millis have been spent without any events completing processing, and can indicate a plugin that is stuck.
+An `"Infinity"` value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
 
 |===
 [discrete]
