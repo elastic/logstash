@@ -424,6 +424,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-input-cloudwatch": {
+    "default-plugins": false,
+    "skip-list": true
+  },
   "logstash-output-cloudwatch": {
     "default-plugins": false,
     "skip-list": true
