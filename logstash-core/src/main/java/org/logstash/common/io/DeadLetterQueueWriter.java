@@ -378,7 +378,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         try {
             long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
-            logger.debug("Removed segment file {} due to {}", motivation, segment);
+            logger.debug("Removed segment file {} due to {}", segment, motivation);
             return eventsInSegment;
         } catch (NoSuchFileException nsfex) {
             // the last segment was deleted by another process, maybe the reader that's cleaning consumed segments
@@ -457,8 +457,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         return event.includes(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
-    private void flushCheck() {
-        try{
+    private void scheduledFlushCheck() {
+        try {
             finalizeSegment(FinalizeWhen.ONLY_IF_STALE);
         } catch (Exception e){
             logger.warn("unable to finalize segment", e);
@@ -512,7 +512,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             t.setName("dlq-flush-check");
             return t;
         });
-        flushScheduler.scheduleAtFixedRate(this::flushCheck, 1L, 1L, TimeUnit.SECONDS);
+        flushScheduler.scheduleAtFixedRate(this::scheduledFlushCheck, 1L, 1L, TimeUnit.SECONDS);
     }
 
 
