@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -338,19 +339,20 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             writeManager.writeEntry(entry);
 
             // wait the flush interval so that the current head segment is sealed
-            Thread.sleep(flushInterval.toMillis() * 5);
-            Set<String> segments = listFileNames(dir);
-            assertEquals("After the flush interval head segment is sealed and a fresh empty head is created", Set.of("1.log", "2.log.tmp", ".lock"), segments);
+            Awaitility.await("After the flush interval head segment is sealed and a fresh empty head is created")
+                    .atLeast(flushInterval)
+                    .atMost(Duration.ofMinutes(1))
+                    .until(()  -> Set.of("1.log", "2.log.tmp", ".lock").equals(listFileNames(dir)));
 
             // move forward the time so that the age policy is kicked in when the current head segment is empty
             fakeClock.forward(retainedPeriod.plusMinutes(2));
 
             // wait the flush period
-            Thread.sleep(flushInterval.toMillis() * 5);
-
-            // check the expired sealed segment is removed
-            segments = listFileNames(dir);
-            assertEquals("Remains the untouched head segment while the expired is removed", Set.of("2.log.tmp", ".lock"), segments);
+            Awaitility.await("Remains the untouched head segment while the expired is removed")
+                    // wait at least the flush period
+                    .atMost(Duration.ofMinutes(1))
+                    // check the expired sealed segment is removed
+                    .until(()  -> Set.of("2.log.tmp", ".lock").equals(listFileNames(dir)));
         }
     }
 }
