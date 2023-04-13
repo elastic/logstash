@@ -406,6 +406,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void updateOldestSegmentReference() throws IOException {
+        final Optional<Path> previousOldestSegmentPath = oldestSegmentPath;
         oldestSegmentPath = listSegmentPaths(this.queuePath)
                 .filter(p -> p.toFile().length() > 1) // take the files that have content to process
                 .sorted()
@@ -414,7 +415,15 @@ public final class DeadLetterQueueWriter implements Closeable {
             oldestSegmentTimestamp = Optional.empty();
             return;
         }
-        logger.debug("Oldest segment is {}", oldestSegmentPath.get());
+
+        boolean previousPathEqualsToCurrent = previousOldestSegmentPath != null && // optional is present
+                previousOldestSegmentPath.isPresent() && // and contains a value
+                previousOldestSegmentPath.get().equals(oldestSegmentPath.get()); // and the value is the same as the current
+        if (!previousPathEqualsToCurrent) {
+            // oldest segment path has changed
+            logger.debug("Oldest segment is {}", oldestSegmentPath.get());
+        }
+
         // extract the newest timestamp from the oldest segment
         Optional<Timestamp> foundTimestamp = readTimestampOfLastEventInSegment(oldestSegmentPath.get());
         if (!foundTimestamp.isPresent()) {
@@ -477,11 +486,17 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private void scheduledFlushCheck() {
+        logger.trace("Running scheduled check");
+        lock.lock();
         try {
-            logger.trace("Running scheduled check");
             finalizeSegment(FinalizeWhen.ONLY_IF_STALE, SealMotivation.SCHEDULED_FLUSH);
+
+            updateOldestSegmentReference();
+            executeAgeRetentionPolicy();
         } catch (Exception e) {
-            logger.warn("unable to finalize segment", e);
+            logger.warn("Unable to finalize segment", e);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -595,7 +610,7 @@ public final class DeadLetterQueueWriter implements Closeable {
                         Files.move(tempFile, segmentFile, StandardCopyOption.ATOMIC_MOVE);
                         break;
                     case EMPTY:
-                        deleteTemporaryFile(tempFile, segmentName);
+                        deleteTemporaryEmptyFile(tempFile, segmentName);
                         break;
                     case INVALID:
                         Path errorFile = queuePath.resolve(String.format("%s.err", segmentName));
@@ -615,7 +630,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // methods, and not to others, and actively prevents a new file being created with the same file name,
     // throwing AccessDeniedException. This method moves the temporary file to a .del file before
     // deletion, enabling a new temp file to be created in its place.
-    private void deleteTemporaryFile(Path tempFile, String segmentName) throws IOException {
+    private void deleteTemporaryEmptyFile(Path tempFile, String segmentName) throws IOException {
         Path deleteTarget;
         if (isWindows()) {
             Path deletedFile = queuePath.resolve(String.format("%s.del", segmentName));
@@ -626,7 +641,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             deleteTarget = tempFile;
         }
         Files.delete(deleteTarget);
-        logger.debug("Deleted temporary file {}", deleteTarget);
+        logger.debug("Deleted temporary empty file {}", deleteTarget);
     }
 
     private static boolean isWindows() {

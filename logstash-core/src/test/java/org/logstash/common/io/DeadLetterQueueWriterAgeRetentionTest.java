@@ -338,7 +338,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             writeManager.writeEntry(entry);
 
             // wait the flush interval so that the current head segment is sealed
-            Thread.sleep(flushInterval.toMillis() * 2); // TODO rework with awaitatility
+            Thread.sleep(flushInterval.toMillis() * 2);
             Set<String> segments = listFileNames(dir);
             assertEquals("After the flush interval head segment is sealed and a fresh empty head is created", Set.of("1.log", "2.log.tmp", ".lock"), segments);
 
