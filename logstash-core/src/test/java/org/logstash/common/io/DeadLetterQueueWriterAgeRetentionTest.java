@@ -338,15 +338,15 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             writeManager.writeEntry(entry);
 
             // wait the flush interval so that the current head segment is sealed
-            Thread.sleep(flushInterval.toMillis() * 2);
+            Thread.sleep(flushInterval.toMillis() * 5);
             Set<String> segments = listFileNames(dir);
             assertEquals("After the flush interval head segment is sealed and a fresh empty head is created", Set.of("1.log", "2.log.tmp", ".lock"), segments);
 
             // move forward the time so that the age policy is kicked in when the current head segment is empty
-            fakeClock.forward(Duration.ofDays(3));
+            fakeClock.forward(retainedPeriod.plusMinutes(2));
 
             // wait the flush period
-            Thread.sleep(flushInterval.toMillis() * 2);
+            Thread.sleep(flushInterval.toMillis() * 5);
 
             // check the expired sealed segment is removed
             segments = listFileNames(dir);
