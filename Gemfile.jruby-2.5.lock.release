@@ -36,7 +36,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.8.1)
+    addressable (2.8.4)
       public_suffix (>= 2.0.2, < 6.0)
     amazing_print (1.4.0)
     arr-pm (0.0.12)
@@ -63,7 +63,7 @@ GEM
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.10.0)
-    bindata (2.4.14)
+    bindata (2.4.15)
     buftok (0.2.0)
     builder (3.2.4)
     cabin (0.9.0)
@@ -208,7 +208,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-codec-fluent (3.4.1-java)
+    logstash-codec-fluent (3.4.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
@@ -299,7 +299,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3
-    logstash-filter-geoip (7.2.12-java)
+    logstash-filter-geoip (7.2.13-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -357,7 +357,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-urldecode (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-useragent (3.3.3-java)
+    logstash-filter-useragent (3.3.4-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
     logstash-filter-uuid (3.0.5)
@@ -682,7 +682,7 @@ GEM
     mustache (0.99.8)
     mustermann (1.0.3)
     naught (1.1.0)
-    nio4r (2.5.8-java)
+    nio4r (2.5.9-java)
     nokogiri (1.12.5-java)
       racc (~> 1.4)
     numerizer (0.1.1)
@@ -707,7 +707,7 @@ GEM
     puma (5.6.5-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
-    rack (2.2.6.2)
+    rack (2.2.6.4)
     rack-protection (2.2.1)
       rack
     rack-test (1.1.0)
@@ -770,7 +770,7 @@ GEM
       multipart-post (~> 2.0)
       naught (~> 1.0)
       simple_oauth (~> 0.3.0)
-    tzinfo (2.0.5)
+    tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2021.5)
       tzinfo (>= 1.0.0)
@@ -903,6 +903,7 @@ DEPENDENCIES
   logstash-output-tcp
   logstash-output-udp
   logstash-output-webhdfs
+  murmurhash3 (= 0.1.6)
   octokit (~> 4)
   paquet (~> 0.2)
   pleaserun (~> 0.0.28)
