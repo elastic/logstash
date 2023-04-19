@@ -80,14 +80,14 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     private enum FinalizeWhen { ALWAYS, ONLY_IF_STALE }
 
-    private enum SealMotivation {
+    private enum SealReason {
         DLQ_CLOSE("Dead letter queue is closing"),
-        SCHEDULED_FLUSH("the segment has expired its 'dead_letter_queue.flush_interval'"),
+        SCHEDULED_FLUSH("the segment has expired 'flush_interval'"),
         SEGMENT_FULL("the segment has reached its maximum size");
 
         final String motivation;
 
-        SealMotivation(String motivation) {
+        SealReason(String motivation) {
             this.motivation = motivation;
         }
 
@@ -123,7 +123,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private String lastError = "no errors";
     private final Clock clock;
     private Optional<Timestamp> oldestSegmentTimestamp;
-    private Optional<Path> oldestSegmentPath;
+    private Optional<Path> oldestSegmentPath = Optional.empty();
     private final TemporalAmount retentionTime;
 
     public static final class Builder {
@@ -243,7 +243,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     public void close() {
         if (open.compareAndSet(true, false)) {
             try {
-                finalizeSegment(FinalizeWhen.ALWAYS, SealMotivation.DLQ_CLOSE);
+                finalizeSegment(FinalizeWhen.ALWAYS, SealReason.DLQ_CLOSE);
             } catch (Exception e) {
                 logger.warn("Unable to close dlq writer, ignoring", e);
             }
@@ -292,7 +292,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
 
         if (exceedSegmentSize(eventPayloadSize)) {
-            finalizeSegment(FinalizeWhen.ALWAYS, SealMotivation.SEGMENT_FULL);
+            finalizeSegment(FinalizeWhen.ALWAYS, SealReason.SEGMENT_FULL);
         }
         long writtenBytes = currentWriter.writeEvent(record);
         currentQueueSize.getAndAdd(writtenBytes);
@@ -416,8 +416,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             return;
         }
 
-        boolean previousPathEqualsToCurrent = previousOldestSegmentPath != null && // optional is present
-                previousOldestSegmentPath.isPresent() && // and contains a value
+        boolean previousPathEqualsToCurrent = previousOldestSegmentPath.isPresent() && // contains a value
                 previousOldestSegmentPath.get().equals(oldestSegmentPath.get()); // and the value is the same as the current
         if (!previousPathEqualsToCurrent) {
             // oldest segment path has changed
@@ -489,7 +488,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         logger.trace("Running scheduled check");
         lock.lock();
         try {
-            finalizeSegment(FinalizeWhen.ONLY_IF_STALE, SealMotivation.SCHEDULED_FLUSH);
+            finalizeSegment(FinalizeWhen.ONLY_IF_STALE, SealReason.SCHEDULED_FLUSH);
 
             updateOldestSegmentReference();
             executeAgeRetentionPolicy();
@@ -509,7 +508,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return currentWriter.isStale(flushInterval);
     }
 
-    private void finalizeSegment(final FinalizeWhen finalizeWhen, SealMotivation sealMotivation) throws IOException {
+    private void finalizeSegment(final FinalizeWhen finalizeWhen, SealReason sealReason) throws IOException {
         lock.lock();
         try {
             if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE)
@@ -518,7 +517,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             if (currentWriter != null) {
                 if (currentWriter.hasWritten()) {
                     currentWriter.close();
-                    sealSegment(currentSegmentIndex, sealMotivation);
+                    sealSegment(currentSegmentIndex, sealReason);
                 }
                 updateOldestSegmentReference();
                 executeAgeRetentionPolicy();
@@ -531,7 +530,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    private void sealSegment(int segmentIndex, SealMotivation motivation) throws IOException {
+    private void sealSegment(int segmentIndex, SealReason motivation) throws IOException {
         Files.move(queuePath.resolve(String.format(TEMP_FILE_PATTERN, segmentIndex)),
                 queuePath.resolve(String.format(SEGMENT_FILE_PATTERN, segmentIndex)),
                 StandardCopyOption.ATOMIC_MOVE);
