@@ -659,6 +659,13 @@ module LogStash; class Pipeline < BasePipeline
     }
   end
 
+  # This is for backward compatibility of ruby engine. ShutdownWatcherExt.start() requires this method
+  # In java pipeline, the return boolean indicates if PQ is draining
+  # By giving false, log msg works in the same way prior to queue drain log msg improvement #13934
+  def worker_threads_draining?
+    false
+  end
+
   private
 
   def close_plugin_and_ignore(plugin)
