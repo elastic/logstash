@@ -287,13 +287,6 @@
 #
 # dead_letter_queue.retain.age: 1d
 
-# If using dead_letter_queue.enable: true, defines the action to take when the dead_letter_queue.max_bytes is reached,
-# could be "drop_newer" or "drop_older".
-# With drop_newer, messages that were inserted most recently are dropped, logging an error line.
-# With drop_older setting, the oldest messages are dropped as new ones are inserted.
-# Default value is "drop_newer".
-# dead_letter_queue.storage_policy: drop_newer
-
 # If using dead_letter_queue.enable: true, the directory path where the data files will be stored.
 # Default is path.data/dead_letter_queue
 #
