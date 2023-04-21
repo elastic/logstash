@@ -9,7 +9,7 @@
 require "open3"
 require "set"
 
-ENV['LOGSTASH_PATH'] = "/home/andrea/workspace/logstash_andsel"
+ENV['LOGSTASH_PATH'] = Dir.pwd
 ENV['LOGSTASH_SOURCE'] = '1'
 
 logstash_plugin_cli = ENV['LOGSTASH_PATH'] + "/bin/logstash-plugin"
@@ -17,13 +17,10 @@ logstash_plugin_cli = ENV['LOGSTASH_PATH'] + "/bin/logstash-plugin"
 # it has to be out of logstash local close else plugins' Gradle script
 # would interfere with Logstash's one
 base_folder = "/tmp"
-# base_folder = ENV['LOGSTASH_PATH']
 plugins_folder = File.join(base_folder, "plugin_clones")
 unless File.directory?(plugins_folder)
   Dir.mkdir(plugins_folder)
 end
-
-failed_plugins = [].to_set
 
 class Plugin
   attr_reader :plugins_folder, :plugin_name, :plugin_base_folder
@@ -94,6 +91,14 @@ class Plugin
   end
 end
 
+
+# reason could be a symbol, describing the phase that broke:
+# :unit_test, :gem_build, :gem_install
+FailureDetail = Struct.new(:plugin_name, :reason)
+
+# contains set of FailureDetail
+failed_plugins = [].to_set
+
 Dir.chdir(plugins_folder) do
   tier1_integrations = ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
                         "logstash-integration-elastic_enterprise_search"]
@@ -101,7 +106,7 @@ Dir.chdir(plugins_folder) do
                   "logstash-inputs-generator", "logstash-inputs-heartbeat", "logstash-inputs-http", "logstash-inputs-http_poller",
                   "logstash-inputs-redis", "logstash-inputs-s3", "logstash-inputs-stdin", "logstash-inputs-syslog", "logstash-inputs-udp",
                   "logstash-inputs-elastic_agent"]
-  tier1_codecs = [#"logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
+  tier1_codecs = ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
                   "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
                   "logstash-codec-rubydebug"]
   tier1_filters = ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
@@ -122,26 +127,31 @@ Dir.chdir(plugins_folder) do
   tier2_outputs = ["logstash-output-csv", "logstash-output-graphite"]
 
 #   plugins = tier1_integrations
-  plugins = tier1_codecs
+  plugins = ["logstash-filter-cidr"]
 
   plugins.each do |plugin_name|
     plugin = Plugin.new(plugins_folder, plugin_name)
     plugin.git_clone
 
     Dir.chdir(plugin_name) do
-      failed_plugins << plugin_name unless plugin.execute_rspec
+      unless plugin.execute_rspec
+        failed_plugins << FailureDetail.new(plugin_name, :unit_test)
+        next
+      end  
 
       # build the gem and install into Logstash
       gem_file = plugin.build_gem
       unless gem_file
-        puts "inserted into failed, because no gem file exists"
-        failed_plugins << plugin_name
+        #puts "inserted into failed, because no gem file exists"
+        failed_plugins << FailureDetail.new(plugin_name, :gem_build)
+        next
       end
 
       # install the plugin
       unless plugin.install_gem(gem_file)
-        puts "inserted into failed, because the gem can't be installed"
-        failed_plugins << plugin_name
+        #puts "inserted into failed, because the gem can't be installed"
+        failed_plugins << FailureDetail.new(plugin_name, :gem_install)
+        next
       end
     end
   end
@@ -150,7 +160,7 @@ end
 puts "########################################"
 puts " Failed plugins:"
 puts "----------------------------------------"
-failed_plugins.each {|name| puts "- #{name}"}
+failed_plugins.each {|failure| puts "- #{failure}"}
 puts "########################################"
 
 
