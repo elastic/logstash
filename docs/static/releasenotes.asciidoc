@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-10,Logstash 7.17.10>>
 * <<logstash-7-17-9,Logstash 7.17.9>>
 * <<logstash-7-17-8,Logstash 7.17.8>>
 * <<logstash-7-17-7,Logstash 7.17.7>>
@@ -67,6 +68,53 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-10]]
+=== Logstash 7.17.10 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.10
+
+* bump to 7.17.10 https://github.com/elastic/logstash/pull/14866[#14866]
+* pin snakeyaml to 1.33 https://github.com/elastic/logstash/pull/14960[#14960]
+* pin murmurhash3 to 0.1.6 until 0.1.7-java is out https://github.com/elastic/logstash/pull/15004[#15004]
+* fix missing method in ruby pipeline https://github.com/elastic/logstash/pull/15013[#15013]
+* Updated JDK to  11.0.19 https://github.com/elastic/logstash/pull/15016[#15016]
+
+=== Logstash Commits between 7.17 and 7.17.9
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.9..7.17"
+
+ccfbe0f1c - (HEAD -> 7.17, origin/7.17) Updated JDK to  11.0.19 (#15016) (6 days ago) <Andrea Selva>
+71d64a96a - fix missing method `worker_threads_draining?` in ruby pipeline (#15013) (6 days ago) <kaisecheng>
+0e5d0a9eb - Update patch plugin versions in gemfile lock (#15005) (8 days ago) <github-actions[bot]>
+e22404b9f - pin murmurhash3 to 0.1.6 until 0.1.7-java is out (#15004) (8 days ago) <João Duarte>
+1a5ef6ad1 - pin snakeyaml to 1.33 (#14960) (6 weeks ago) <kaisecheng>
+a8bca85b7 - Release notes for 7.17.9 (#14858) (3 months ago) <github-actions[bot]>
+bbe9f80cd - bump to 7.17.10 (#14866) (3 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.9..7.17 *.release"
+Changed plugin versions:
+logstash-codec-fluent: 3.4.1 -> 3.4.2
+logstash-filter-geoip: 7.2.12 -> 7.2.13
+logstash-filter-useragent: 3.3.3 -> 3.3.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Fluent Codec - 3.4.2*
+
+* Fix: Convert LogStash::Timestamp values to iso-8601 to resolve crash issue with `msgpack` serialization https://github.com/logstash-plugins/logstash-codec-fluent/pull/30[#30]
+
+*Geoip Filter - 7.2.13*
+
+* [DOC] Add documentation for database auto-update configuration https://github.com/logstash-plugins/logstash-filter-geoip/pull/210[#210]
+
+*Useragent Filter - 3.3.4*
+
+* Upgrade `snakeyaml` dependency https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
 
 
 [[logstash-7-17-9]]
