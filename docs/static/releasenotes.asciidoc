@@ -39,40 +39,22 @@ This section summarizes the changes in the following releases:
 [[logstash-8-7-1]]
 === Logstash 8.7.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.7.1
+[[notable-8.7.1]]
+==== Performance improvements and notable issues fixed
 
-* Backport PR #14900 to 8.7: Fix inversion of pluginId and pluginType parameteres in DLQ entry creation https://github.com/elastic/logstash/pull/14906[#14906]
-* Fix system unit TimeoutStopSec on older version.  https://github.com/elastic/logstash/pull/14947[#14947]
-* Fixed the DLQ writer to bypass 1 byte entry https://github.com/elastic/logstash/pull/14970[#14970]
-* document infinite flow metric rates https://github.com/elastic/logstash/pull/14975[#14975]
-* Backport PR #14970 to 8.7: Fixed the DLQ writer to bypass 1 byte entry https://github.com/elastic/logstash/pull/14981[#14981]
-* Backport PR #14947 to 8.7: Fix system unit TimeoutStopSec on older version.  https://github.com/elastic/logstash/pull/14984[#14984]
-* Backport PR #14975 to 8.7: document infinite flow metric rates https://github.com/elastic/logstash/pull/14999[#14999]
-* Update JDK to 17.0.7+7 https://github.com/elastic/logstash/pull/15007[#15007]
-* Backport PR #15007 to 8.7: Update JDK to 17.0.7+7 https://github.com/elastic/logstash/pull/15015[#15015]
+* Fix inversion of pluginId and pluginType parameteres in DLQ entry creation https://github.com/elastic/logstash/pull/14906[#14906]
+* Fix pipeline crash when reopening empty DLQ for writing https://github.com/elastic/logstash/pull/14981[#14981]
+* Fix value of TimeoutStopSec on older systemd versions https://github.com/elastic/logstash/pull/14984[#14984]
 
-=== Logstash Commits between 8.7 and 8.7.0
+[[docs-8.7.1]]
+==== Documentation enhancements
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.7.0..8.7"
+* Document meaning of infinite flow metric rates https://github.com/elastic/logstash/pull/14999[#14999]
 
-ddd00672d - (HEAD -> 8.7, origin/8.7) Update JDK to 17.0.7+7 (#15007) (#15015) (6 days ago) <github-actions[bot]>
-e2e16adbc - document infinite flow metric rates (#14975) (#14999) (2 weeks ago) <github-actions[bot]>
-5f8a60017 - Update patch plugin versions in gemfile lock for 8.7.1 (#14997) (2 weeks ago) <github-actions[bot]>
-6a015594c - Fix system unit TimeoutStopSec on older version.  (#14947) (#14984) (3 weeks ago) <github-actions[bot]>
-bc2e93ee5 - Fixed the DLQ writer to bypass 1 byte entry (#14970) (#14981) (3 weeks ago) <github-actions[bot]>
-4a49583bd -  Backport PR #14900 to 8.7: Fix inversion of pluginId and pluginType parameteres in DLQ entry creation #14906 (4 weeks ago) <github-actions[bot]>
-b7b714e66 - Version bump from 8.7.0 to 8.7.1 (#14978) (4 weeks ago) <Mashhur>
-6ab14e4e8 - Release notes for 8.7.0 (#14972) (4 weeks ago) <github-actions[bot]>
+[[dependencies-8.7.1]]
+==== Updates to dependencies
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.7.0..8.7 *.release"
-Changed plugin versions:
-logstash-codec-fluent: 3.4.1 -> 3.4.2
-logstash-filter-http: 1.4.1 -> 1.4.3
-logstash-filter-useragent: 3.3.3 -> 3.3.4
-logstash-integration-aws: 7.1.0 -> 7.1.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Update JDK to 17.0.7+7 https://github.com/elastic/logstash/pull/15015[#15015]
 
 ==== Plugins
 
@@ -83,17 +65,15 @@ logstash-integration-aws: 7.1.0 -> 7.1.1
 *Http Filter - 1.4.3*
 
 * DOC: add clarification on sending data as json https://github.com/logstash-plugins/logstash-filter-http/pull/48[#48]
-
 * Fix: resolve content type when a content-type header contains an array https://github.com/logstash-plugins/logstash-filter-http/pull/46[#46]
 
 *Useragent Filter - 3.3.4*
 
-* Upgrade `snakeyaml` dependency https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
+* Upgrade `snakeyaml` dependency to 1.33 https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
 
 *Aws Integration - 7.1.1*
 
-* Fix: Plugin cannot load Java dependencies https://github.com/logstash-plugins/logstash-integration-aws/pull/24[#24]
-
+* Fix failure to load Java dependencies making v7.1.0 unusable https://github.com/logstash-plugins/logstash-integration-aws/pull/24[#24]
 
 [[logstash-8-7-0]]
 === Logstash 8.7.0 Release Notes
