@@ -94,7 +94,7 @@ GEM
     concurrent-ruby (1.1.9)
     crack (0.4.5)
       rexml
-    dalli (2.7.11)
+    dalli (3.2.4)
     diff-lcs (1.5.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
@@ -343,8 +343,8 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-filter-memcached (1.1.0)
-      dalli (~> 2.7)
+    logstash-filter-memcached (1.2.0)
+      dalli (~> 3)
       logstash-core-plugin-api (~> 2.0)
     logstash-filter-metrics (4.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -588,10 +588,10 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (10.12.0-java)
+    logstash-integration-kafka (11.2.1-java)
       logstash-codec-json
       logstash-codec-plain
-      logstash-core (>= 6.5.0)
+      logstash-core (>= 8.3.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       manticore (>= 0.5.4, < 1.0.0)
