@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-7-1,Logstash 8.7.1>>
 * <<logstash-8-7-0,Logstash 8.7.0>>
 * <<logstash-8-6-2,Logstash 8.6.2>>
 * <<logstash-8-6-1,Logstash 8.6.1>>
@@ -34,6 +35,45 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-7-1]]
+=== Logstash 8.7.1 Release Notes
+
+[[notable-8.7.1]]
+==== Performance improvements and notable issues fixed
+
+* Fix inversion of pluginId and pluginType parameteres in DLQ entry creation https://github.com/elastic/logstash/pull/14906[#14906]
+* Fix pipeline crash when reopening empty DLQ for writing https://github.com/elastic/logstash/pull/14981[#14981]
+* Fix value of TimeoutStopSec on older systemd versions https://github.com/elastic/logstash/pull/14984[#14984]
+
+[[docs-8.7.1]]
+==== Documentation enhancements
+
+* Document meaning of infinite flow metric rates https://github.com/elastic/logstash/pull/14999[#14999]
+
+[[dependencies-8.7.1]]
+==== Updates to dependencies
+
+* Update JDK to 17.0.7+7 https://github.com/elastic/logstash/pull/15015[#15015]
+
+==== Plugins
+
+*Fluent Codec - 3.4.2*
+
+* Fix: Convert LogStash::Timestamp values to iso-8601 to resolve crash issue with `msgpack` serialization https://github.com/logstash-plugins/logstash-codec-fluent/pull/30[#30]
+
+*Http Filter - 1.4.3*
+
+* DOC: add clarification on sending data as json https://github.com/logstash-plugins/logstash-filter-http/pull/48[#48]
+* Fix: resolve content type when a content-type header contains an array https://github.com/logstash-plugins/logstash-filter-http/pull/46[#46]
+
+*Useragent Filter - 3.3.4*
+
+* Upgrade `snakeyaml` dependency to 1.33 https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
+
+*Aws Integration - 7.1.1*
+
+* Fix failure to load Java dependencies making v7.1.0 unusable https://github.com/logstash-plugins/logstash-integration-aws/pull/24[#24]
 
 [[logstash-8-7-0]]
 === Logstash 8.7.0 Release Notes
