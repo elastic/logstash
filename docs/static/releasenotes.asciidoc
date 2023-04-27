@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-10,Logstash 7.17.10>>
 * <<logstash-7-17-9,Logstash 7.17.9>>
 * <<logstash-7-17-8,Logstash 7.17.8>>
 * <<logstash-7-17-7,Logstash 7.17.7>>
@@ -68,6 +69,33 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-10]]
+=== Logstash 7.17.10 Release Notes
+
+[[notable-7-17-10]]
+==== Notable issues fixed
+* Fix missing method `worker_threads_draining?` in deprecated Ruby pipeline https://github.com/elastic/logstash/pull/15013[#15013]
+
+[[dependencies-7-17-10]]
+==== Updates to dependencies
+* Pin snakeyaml to 1.33 https://github.com/elastic/logstash/pull/14960[#14960]
+* Pin murmurhash3 to 0.1.6 until 0.1.7-java is out https://github.com/elastic/logstash/pull/15004[#15004]
+* Updated JDK to 11.0.19 https://github.com/elastic/logstash/pull/15016[#15016]
+
+==== Plugins
+
+*Fluent Codec - 3.4.2*
+
+* Fix: Convert LogStash::Timestamp values to iso-8601 to resolve crash issue with `msgpack` serialization https://github.com/logstash-plugins/logstash-codec-fluent/pull/30[#30]
+
+*Geoip Filter - 7.2.13*
+
+* [DOC] Add documentation for database auto-update configuration https://github.com/logstash-plugins/logstash-filter-geoip/pull/210[#210]
+
+*Useragent Filter - 3.3.4*
+
+* Upgrade `snakeyaml` dependency to 1.33 https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
 
 [[logstash-7-17-9]]
 === Logstash 7.17.9 Release Notes
