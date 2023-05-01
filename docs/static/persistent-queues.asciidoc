@@ -90,7 +90,21 @@ If both settings are specified, Logstash uses whichever criteria is reached
 first. 
 See <<backpressure-persistent-queue>> for behavior when queue limits are
 reached.
++
+TIP: Calculating the queue size will vary depending on the use-case. As a general guiding
+principle, you should consider the following formula to size your Persistent Queue
 
+Total Event Size per second = Input EPS * Size of each Event
+Total Received Per Hour = Total Event Size per Second * 3600s
+Tolerated Downtime = (Total Received Per Hour * X hours) * 1.10
+
+-----
+EXAMPLE
+For example, if Logstash receives 1000 EPS, and each event is 1kb, then Logstash receives about 3.6gb every hour.
+So if Logstash needs to tolerate one of the downstream components being down for 12h, they need a Persistent Queue
+of about 50GB in size.
+-----
++
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
 If you are using persistent queues to protect against data loss, but don't
