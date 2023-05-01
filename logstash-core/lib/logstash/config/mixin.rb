@@ -257,7 +257,6 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
-      @@version_notice_given = false
     end # def inherited
 
     def validate(params)
