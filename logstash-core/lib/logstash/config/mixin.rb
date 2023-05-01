@@ -54,9 +54,6 @@ module LogStash::Config::Mixin
   attr_accessor :config
   attr_accessor :original_params
 
-  PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
-  PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
-
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     # Add the DSL methods to the 'base' given.
