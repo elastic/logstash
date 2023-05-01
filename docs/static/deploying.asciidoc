@@ -75,7 +75,7 @@ streaming even through variable throughput loads. If the Logstash layer becomes
 an ingestion bottleneck, simply add more nodes to scale out. Here are a few
 general recommendations:
 
-* Beats should {filebeat-ref}/load-balancing.html[load balance] across a group of
+* Beats should {filebeat-ref}/elasticsearch-output.html#_loadbalance[load balance] across a group of
 Logstash nodes.
 * A minimum of two Logstash nodes are recommended for high availability.
 * It’s common to deploy just one Beats input per Logstash node, but multiple
