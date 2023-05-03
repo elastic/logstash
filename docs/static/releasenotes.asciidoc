@@ -51,39 +51,6 @@ This section summarizes the changes in the following releases:
 
 * Updates Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.8.0
-
-=== Logstash Commits between 8.8 and 8.7.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.7.1..8.8"
-DLQ
-c0a5665f5 - Fix duplicate description for storage_policy in yaml config files (#15014) (12 days ago) <Andrea Selva>
-
-Bundler 2.4
-* Reintroduce bundler 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
-0df07d3f1 - Reintroduce bundler 2.4 (#14995) (3 weeks ago) <João Duarte>
-5e3038a3d - Revert "Unpin bundler to allow 2.4 (#14894)" (#14942) (6 weeks ago) <João Duarte>
-6d08a7c1c - Unpin bundler to allow 2.4 (#14894) (10 weeks ago) <João Duarte>
-
-Negative ACK  of batches
-* Negative ack of batch aborted by plugin https://github.com/elastic/logstash/pull/14940[#14940]
-137168d1c - Negative ack of batch aborted by plugin (#14940) (4 weeks ago) <Andrea Selva>
-
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.7.1..8.8 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 3.13.0 -> 3.15.0
-logstash-filter-memcached: 1.1.0 -> 1.2.0
-logstash-input-beats: 6.5.0 -> 6.6.0
-logstash-input-elasticsearch: 4.16.0 -> 4.17.0
-logstash-input-http: 3.6.1 -> 3.7.0
-logstash-integration-kafka: 10.12.0 -> 11.2.1
-logstash-mixin-normalize_config_support: 1.0.0 -> 1.0.0
-logstash-output-elasticsearch: 11.13.1 -> 11.15.1
----------- GENERATED CONTENT ENDS HERE ------------
-
 ==== Plugins
 
 *Elasticsearch Filter - 3.15.0*
