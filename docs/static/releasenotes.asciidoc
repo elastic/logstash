@@ -51,17 +51,9 @@ c0a5665f5 - Fix duplicate description for storage_policy in yaml config files (#
 * Fix DLQscheduled checks removes expired age segments https://github.com/elastic/logstash/pull/15000[#15000]
 1016c5929 - Fix DLQ scheduled checks removes expired age segments (#15000) (13 days ago) <Andrea Selva>
 f6d4550ff - Fixed the DLQ writer to bypass 1 byte entry (#14970) (5 weeks ago) <kaisecheng>
-* Fix DLQ age retention policy to be applied also in case head segment is untouched https://github.com/elastic/logstash/pull/14878[#14878]
-02b83e384 - Fix DLQ age retention policy to be applied also in case head segment is untouched (#14878) (3 months ago) <Andrea Selva>
-* Fix inversion of pluginId and pluginType parameteres in DLQ entry creation https://github.com/elastic/logstash/pull/14900[#14900]
-3d84b82e1 - Fix inversion of pluginId and pluginType parameteres in DLQ entry creation (#14900) (3 months ago) <Andrea Selva>
-* Allow usage of dead_letter_queue.retain.age in pipeline settings https://github.com/elastic/logstash/pull/14954[#14954]
-56e626afc - Allow usage of dead_letter_queue.retain.age in pipeline settings (#14954) (6 weeks ago) <Andres Rodriguez>
 
 Lib & JDK updates
 d7c81dfec - Update JDK to 17.0.7+7 (#15007) (12 days ago) <João Duarte>
-6911a7117 - add license information for snakeyaml (#14886) (3 months ago) <João Duarte>
-15b2d8864 - bump snakeyaml to 1.33 (#14881) (3 months ago) <João Duarte>
 
 Bundler 2.4
 * Reintroduce bundler 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
@@ -75,20 +67,15 @@ Negative ACK  of batches
 
 Docs
 cb9316b48 - document infinite flow metric rates (#14975) (3 weeks ago) <Ry Biesemeyer>
-58abffce3 - [DOCS] Describe how to use Elastic Agent to monitor Logstash (#14959) (6 weeks ago) <DeDe Morton>
-
-Docker log output
-2f5745382 - Revert partial change in c99a7b2f4 that broke packaging builds (#14955) (8 weeks ago) <Andres Rodriguez>
-c99a7b2f4 - Add env LOG_STYLE to control the log behavior (#14949) (8 weeks ago) <kaisecheng>
 
 Uncategorized
 a1166cc9b - Fix system unit TimeoutStopSec on older version.  (#14947) (5 weeks ago) <Andres Rodriguez>
-281ce70d8 - Workaround for #14873 (#14890) (3 months ago) <João Duarte>
 
 Householding
 * Centralized version definition for snakeyaml and shadow plugin used in buildscripts https://github.com/elastic/logstash/pull/14952[#14952]
 - a12636410 - Centralized version definition for snakeyaml and shadow plugin used in buildscripts (#14952) (8 weeks ago) <Andrea Selva>
 - 3875a24cd - Skip dependency `Gemfile.lock` during the artifact creation. (#14899) (3 months ago) <Mashhur>
+- 2f5745382 - Revert partial change in c99a7b2f4 that broke packaging builds (#14955) (8 weeks ago) <Andres Rodriguez>
 
 
 === Logstash Plugin Release Changelogs ===
