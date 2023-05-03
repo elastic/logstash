@@ -57,19 +57,13 @@ This section summarizes the changes in the following releases:
 
 Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.7.1..8.8"
 
-547335fa5 - (HEAD -> 8.8, origin/8.8) Release notes for 8.7.1 (#15024) (#15028) (5 days ago) <github-actions[bot]>
-0f92e0365 - Update major plugin versions in gemfile lock (#15027) (6 days ago) <github-actions[bot]>
-10a5e062d - Update minor plugin versions in gemfile lock (#15023) (6 days ago) <github-actions[bot]>
-d6a83f8ba - Copied Gemfile lock from 8.7 (6 days ago) <andsel>
 c0a5665f5 - Fix duplicate description for storage_policy in yaml config files (#15014) (12 days ago) <Andrea Selva>
 d7c81dfec - Update JDK to 17.0.7+7 (#15007) (12 days ago) <João Duarte>
 1016c5929 - Fix DLQ scheduled checks removes expired age segments (#15000) (13 days ago) <Andrea Selva>
 0df07d3f1 - Reintroduce bundler 2.4 (#14995) (3 weeks ago) <João Duarte>
 cb9316b48 - document infinite flow metric rates (#14975) (3 weeks ago) <Ry Biesemeyer>
 137168d1c - Negative ack of batch aborted by plugin (#14940) (4 weeks ago) <Andrea Selva>
-f6b14b9a2 - Update ci release version 8.7.0 (#14983) (4 weeks ago) <kaisecheng>
 a1166cc9b - Fix system unit TimeoutStopSec on older version.  (#14947) (5 weeks ago) <Andres Rodriguez>
-311d4dc30 - [Forwardport] Release notes for 8.7.0 (#14972) (#14982) (5 weeks ago) <kaisecheng>
 f6d4550ff - Fixed the DLQ writer to bypass 1 byte entry (#14970) (5 weeks ago) <kaisecheng>
 58abffce3 - [DOCS] Describe how to use Elastic Agent to monitor Logstash (#14959) (6 weeks ago) <DeDe Morton>
 5e3038a3d - Revert "Unpin bundler to allow 2.4 (#14894)" (#14942) (6 weeks ago) <João Duarte>
@@ -77,30 +71,14 @@ f6d4550ff - Fixed the DLQ writer to bypass 1 byte entry (#14970) (5 weeks ago) <
 a12636410 - Centralized version definition for snakeyaml and shadow plugin used in buildscripts (#14952) (8 weeks ago) <Andrea Selva>
 2f5745382 - Revert partial change in c99a7b2f4 that broke packaging builds (#14955) (8 weeks ago) <Andres Rodriguez>
 c99a7b2f4 - Add env LOG_STYLE to control the log behavior (#14949) (8 weeks ago) <kaisecheng>
-445a15489 - Update project-board-assigner.yml (9 weeks ago) <Andres Rodriguez>
-3f1762019 - Create project-board-assigner.yml (9 weeks ago) <Andres Rodriguez>
-fdcaa5dbf - Update platform_logstash_project_board.yml (9 weeks ago) <Andres Rodriguez>
-5ecbbf8c5 - Update platform_logstash_project_board.yml (9 weeks ago) <Andres Rodriguez>
-6d0ab9536 - Update platform_logstash_project_board.yml (9 weeks ago) <Andres Rodriguez>
-c1ecd3879 - Update platform_ingest_docs_project_board.yml (9 weeks ago) <Andres Rodriguez>
-fbb747ad8 - Create platform_ingest_docs_project_board.yml (9 weeks ago) <Andres Rodriguez>
-0759ddfa1 - Rename platform_ingest_project_board.yml to platform_logstash_project_board.yml (9 weeks ago) <Andres Rodriguez>
-a8b6315f1 - Update platform_ingest_project_board.yml (9 weeks ago) <Andres Rodriguez>
-6524a1944 - Update platform_ingest_project_board.yml (9 weeks ago) <Andres Rodriguez>
-16f4ba84a - Update platform_ingest_project_board.yml (9 weeks ago) <Andres Rodriguez>
-57c1ca4ac - Update platform_ingest_project_board.yml (9 weeks ago) <Andres Rodriguez>
-7d30dc68c - Rework project actions (#14917) (9 weeks ago) <Andres Rodriguez>
-836a36e93 - Update platform_ingest_project_board.yml (9 weeks ago) <Andres Rodriguez>
 6d08a7c1c - Unpin bundler to allow 2.4 (#14894) (10 weeks ago) <João Duarte>
-5f3f18c9b - Release notes for 8.6.2 (#14896) (#14914) (10 weeks ago) <Mashhur>
-34dcdad62 - CI LS version bump, 8.6.2 (#14911) (2 months ago) <Mashhur>
 3d84b82e1 - Fix inversion of pluginId and pluginType parameteres in DLQ entry creation (#14900) (3 months ago) <Andrea Selva>
-3875a24cd - Skip dependency `Gemfile.lock` during the artifact creation. (#14899) (3 months ago) <Mashhur>
+#  3875a24cd - Skip dependency `Gemfile.lock` during the artifact creation. (#14899) (3 months ago) <Mashhur>
 02b83e384 - Fix DLQ age retention policy to be applied also in case head segment is untouched (#14878) (3 months ago) <Andrea Selva>
 281ce70d8 - Workaround for #14873 (#14890) (3 months ago) <João Duarte>
 6911a7117 - add license information for snakeyaml (#14886) (3 months ago) <João Duarte>
 15b2d8864 - bump snakeyaml to 1.33 (#14881) (3 months ago) <João Duarte>
-0600ff98b - Bump to 8.8.0 (#14874) (3 months ago) <Mashhur>
+
 
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff v8.7.1..8.8 *.release"
