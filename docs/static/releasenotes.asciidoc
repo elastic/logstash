@@ -88,24 +88,7 @@ logstash-output-elasticsearch: 11.13.1 -> 11.15.1
 
 *Elasticsearch Filter - 3.15.0*
 
-* Added SSL settings for: https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/168[#168]
-* `ssl_enabled`: Enable/disable the SSL settings. If not provided, the value is inferred from the hosts scheme
-* `ssl_certificate`: OpenSSL-style X.509 certificate file to authenticate the client
-* `ssl_key`: OpenSSL-style RSA private key that corresponds to the `ssl_certificate`
-* `ssl_truststore_path`: The JKS truststore to validate the server's certificate
-* `ssl_truststore_type`: The format of the truststore file
-* `ssl_truststore_password`: The truststore password
-* `ssl_keystore_path`: The keystore used to present a certificate to the server
-* `ssl_keystore_type`: The format of the keystore file
-* `ssl_keystore_password`: The keystore password
-* `ssl_cipher_suites`: The list of cipher suites to use
-* `ssl_supported_protocols`: Supported protocols with versions
-* `ssl_verification_mode`: Defines how to verify the certificates presented by another party in the TLS connection
-* Reviewed and deprecated SSL settings to comply with Logstash's naming convention
-* Deprecated `ssl` in favor of `ssl_enabled`
-* Deprecated `ca_file` in favor of `ssl_certificate_authorities`
-* Deprecated `keystore` in favor of `ssl_keystore_path`
-* Deprecated `keystore_password` in favor of `ssl_keystore_password`
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/168[#168]
 
 * Added support for configurable retries with new `retry_on_failure` and `retry_on_status` options https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/160[#160]
 
@@ -115,36 +98,15 @@ logstash-output-elasticsearch: 11.13.1 -> 11.15.1
 
 *Beats Input - 6.6.0*
 
-* Reviewed and deprecated SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-beats/pull/470[#470]
-* Deprecated `ssl` in favor of `ssl_enabled`
-* Deprecated `ssl_verify_mode` in favor of `ssl_client_authentication`
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-beats/pull/470[#470]
 
 *Elasticsearch Input - 4.17.0*
 
-* Added SSL settings for: https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/185[#185]
-* `ssl_enabled`: Enable/disable the SSL settings. If not provided, the value is inferred from the hosts scheme
-* `ssl_certificate`: OpenSSL-style X.509 certificate file to authenticate the client
-* `ssl_key`: OpenSSL-style RSA private key that corresponds to the `ssl_certificate`
-* `ssl_truststore_path`: The JKS truststore to validate the server's certificate
-* `ssl_truststore_type`: The format of the truststore file
-* `ssl_truststore_password`: The truststore password
-* `ssl_keystore_path`: The keystore used to present a certificate to the server
-* `ssl_keystore_type`: The format of the keystore file
-* `ssl_keystore_password`: The keystore password
-* `ssl_cipher_suites`: The list of cipher suites to use
-* `ssl_supported_protocols`: Supported protocols with versions
-* Reviewed and deprecated SSL settings to comply with Logstash's naming convention
-* Deprecated `ssl` in favor of `ssl_enabled`
-* Deprecated `ca_file` in favor of `ssl_certificate_authorities`
-* Deprecated `ssl_certificate_verification` in favor of `ssl_verification_mode`
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/185[#185]
 
 *Http Input - 3.7.0*
 
-* Reviewed and deprecated SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-http/pull/165[#165]
-* Deprecated `ssl` in favor of `ssl_enabled`
-* Deprecated `ssl_verify_mode` in favor of `ssl_client_authentication`
-* Deprecated `keystore` in favor of `ssl_keystore_path`
-* Deprecated `keystore_password` in favor of `ssl_keystore_password`
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-http/pull/165[#165]
 
 *Kafka Integration - 11.2.1*
 
@@ -162,27 +124,11 @@ logstash-output-elasticsearch: 11.13.1 -> 11.15.1
 
 *Elasticsearch Output - 11.15.1*
 
-* Move async finish_register to bottom of register to avoid race condition https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1125[#1125]
+* Fixed race condition during plugin registration phase https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1125[#1125]
 
 * Added the ability to negatively acknowledge the batch under processing if the plugin is blocked in a retry-error-loop and a shutdown is requested. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1119[#1119]
 
-* [DOC] Fixed incorrect pull request link on the CHANGELOG `11.14.0` entry https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1122[#1122]
-
-* Added SSL settings for: https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1118[#1118]
-* `ssl_truststore_type`: The format of the truststore file
-* `ssl_keystore_type`: The format of the keystore file
-* `ssl_certificate`: OpenSSL-style X.509 certificate file to authenticate the client
-* `ssl_key`: OpenSSL-style RSA private key that corresponds to the `ssl_certificate`
-* `ssl_cipher_suites`: The list of cipher suites
-* Reviewed and deprecated SSL settings to comply with Logstash's naming convention
-* Deprecated `ssl` in favor of `ssl_enabled`
-* Deprecated `cacert` in favor of `ssl_certificate_authorities`
-* Deprecated `keystore` in favor of `ssl_keystore_path`
-* Deprecated `keystore_password` in favor of `ssl_keystore_password`
-* Deprecated `truststore` in favor of `ssl_truststore_path`
-* Deprecated `truststore_password` in favor of `ssl_truststore_password`
-* Deprecated `ssl_certificate_verification` in favor of `ssl_verification_mode`
-
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1118[#1118]
 
 [[logstash-8-7-1]]
 === Logstash 8.7.1 Release Notes
