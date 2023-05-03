@@ -48,12 +48,6 @@ This section summarizes the changes in the following releases:
 Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.7.1..8.8"
 DLQ
 c0a5665f5 - Fix duplicate description for storage_policy in yaml config files (#15014) (12 days ago) <Andrea Selva>
-* Fix DLQscheduled checks removes expired age segments https://github.com/elastic/logstash/pull/15000[#15000]
-1016c5929 - Fix DLQ scheduled checks removes expired age segments (#15000) (13 days ago) <Andrea Selva>
-f6d4550ff - Fixed the DLQ writer to bypass 1 byte entry (#14970) (5 weeks ago) <kaisecheng>
-
-Lib & JDK updates
-d7c81dfec - Update JDK to 17.0.7+7 (#15007) (12 days ago) <João Duarte>
 
 Bundler 2.4
 * Reintroduce bundler 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
@@ -65,11 +59,6 @@ Negative ACK  of batches
 * Negative ack of batch aborted by plugin https://github.com/elastic/logstash/pull/14940[#14940]
 137168d1c - Negative ack of batch aborted by plugin (#14940) (4 weeks ago) <Andrea Selva>
 
-Docs
-cb9316b48 - document infinite flow metric rates (#14975) (3 weeks ago) <Ry Biesemeyer>
-
-Uncategorized
-a1166cc9b - Fix system unit TimeoutStopSec on older version.  (#14947) (5 weeks ago) <Andres Rodriguez>
 
 === Logstash Plugin Release Changelogs ===
 Computed from "git diff v8.7.1..8.8 *.release"
