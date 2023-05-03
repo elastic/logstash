@@ -40,6 +40,17 @@ This section summarizes the changes in the following releases:
 [[logstash-8-8-0]]
 === Logstash 8.8.0 Release Notes
 
+[[features-8.8.0]]
+==== New features and enhancements
+
+* Negative acknowledgment of a batch. With this functionality a plugin can request the abortion a batch of event.
+  When used in combination with persisted queue it enables the reprocessing on Logstash restart https://github.com/elastic/logstash/pull/14940[#14940]
+
+[[dependencies-8.9.0]]
+==== Updates to dependencies
+
+* Updates Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
+
 ---------- GENERATED CONTENT STARTS HERE ------------
 === Logstash Pull Requests with label v8.8.0
 
