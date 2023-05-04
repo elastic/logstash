@@ -46,7 +46,7 @@ This section summarizes the changes in the following releases:
 * Negative acknowledgment of a batch. With this functionality a plugin can request the abortion a batch of event.
   When used in combination with persisted queue it enables the reprocessing on Logstash restart https://github.com/elastic/logstash/pull/14940[#14940]
 
-[[dependencies-8.9.0]]
+[[dependencies-8.8.0]]
 ==== Updates to dependencies
 
 * Updates Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
