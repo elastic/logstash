@@ -78,11 +78,8 @@ This section summarizes the changes in the following releases:
 *Kafka Integration - 11.2.1*
 
 * Fix nil exception to empty headers of record during event metadata assignment https://github.com/logstash-plugins/logstash-integration-kafka/pull/140[#140]
-
 * Added TLS truststore and keystore settings specifically to access the schema registry https://github.com/logstash-plugins/logstash-integration-kafka/pull/137[#137]
-
 * Added config `group_instance_id` to use the Kafka's consumer static membership feature https://github.com/logstash-plugins/logstash-integration-kafka/pull/135[#135]
-
 * Changed Kafka client to 3.3.1, requires Logstash >= 8.3.0. 
 * Deprecated `default` value for setting `client_dns_lookup` forcing to `use_all_dns_ips` when explicitly used https://github.com/logstash-plugins/logstash-integration-kafka/pull/130[#130]
 * Changed the consumer's poll from using the one that blocks on metadata retrieval to the one that doesn't https://github.com/logstash-plugins/logstash-integration-kafka/pull/133[#136]
@@ -92,9 +89,7 @@ This section summarizes the changes in the following releases:
 *Elasticsearch Output - 11.15.1*
 
 * Fixed race condition during plugin registration phase https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1125[#1125]
-
 * Added the ability to negatively acknowledge the batch under processing if the plugin is blocked in a retry-error-loop and a shutdown is requested. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1119[#1119]
-
 * Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1118[#1118]
 
 [[logstash-8-7-1]]
