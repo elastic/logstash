@@ -39,11 +39,11 @@ describe "Test Elasticsearch output" do
     es_client = es_service.get_client
     # now we test if all data was indexed by ES, but first refresh manually
     es_client.indices.refresh
-    result = es_client.search(index: '.ds-logs-generic-default-*', size: 0, q: '*')
+    result = es_client.search(index: '.ds-logs-*', size: 0, q: '*')
     expect(result).to have_hits(37)
 
     # randomly checked for results and structured fields
-    result = es_client.search(index: '.ds-logs-generic-default-*', size: 1, q: 'dynamic')
+    result = es_client.search(index: '.ds-logs-*', size: 1, q: 'dynamic')
     expect(result).to have_hits(1)
     s = result["hits"]["hits"][0]["_source"]
     expect(s["bytes"]).to eq(18848)
