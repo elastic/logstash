@@ -9,7 +9,7 @@ gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28", require: false
 gem "rake", "~> 12", require: false
 gem "ruby-progressbar", "~> 1", require: false
-gem "logstash-output-elasticsearch", ">= 11.6.0"
+gem "logstash-output-elasticsearch", "= 11.14.1"
 gem "polyglot", require: false
 gem "treetop", require: false
 gem "faraday", "~> 1", :require => false # due elasticsearch-transport (elastic-transport) depending faraday '~> 1'
