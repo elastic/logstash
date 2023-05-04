@@ -20,5 +20,5 @@ start_es() {
   return 0
 }
 
-export ES_JAVA_OPTS="-Xms512m -Xmx768m"
+export ES_JAVA_OPTS="-Xms512m -Xmx512m"
 start_es
