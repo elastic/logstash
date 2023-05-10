@@ -101,9 +101,9 @@ module LogStash module Modules class LogStashConfig
     lines.push(user ? "user => \"#{user}\"" : nil)
     lines.push(password ? "password => \"#{password.value}\"" : nil)
     lines.push(type_string ? "document_type => #{type_string}" : nil)
-    lines.push("ssl => #{@settings.fetch('var.elasticsearch.ssl.enabled', false)}")
+    lines.push("ssl_enabled => #{@settings.fetch('var.elasticsearch.ssl.enabled', false)}")
     if cacert = @settings["var.elasticsearch.ssl.certificate_authority"]
-      lines.push("cacert => \"#{cacert}\"") if cacert
+      lines.push("ssl_certificate_authorities => \"#{cacert}\"") if cacert
     end
     # NOTE: the first line should be indented in the conf.erb
     <<-CONF

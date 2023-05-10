@@ -33,20 +33,24 @@ module LogStash
         @cloud_auth = es_settings['cloud_auth']
         @api_key = es_settings['api_key']
         @proxy = es_settings['proxy']
-        @ssl = es_settings['ssl']
-        @ca_path = es_settings['cacert']
+        @ssl_enabled = es_settings['ssl_enabled']
+        @ssl_certificate_authorities = es_settings['ssl_certificate_authorities']
         @ca_trusted_fingerprint = es_settings['ca_trusted_fingerprint']
-        @truststore_path = es_settings['truststore']
-        @truststore_password = es_settings['truststore_password']
-        @keystore_path = es_settings['keystore']
-        @keystore_password = es_settings['keystore_password']
+        @ssl_truststore_path = es_settings['ssl_truststore_path']
+        @ssl_truststore_password = es_settings['ssl_truststore_password']
+        @ssl_keystore_path = es_settings['ssl_keystore_path']
+        @ssl_keystore_password = es_settings['ssl_keystore_password']
+        @ssl_verification_mode = es_settings.fetch('ssl_verification_mode', 'full')
+        @ssl_certificate = es_settings['ssl_certificate']
+        @ssl_key = es_settings['ssl_key']
+        @ssl_cipher_suites = es_settings['ssl_cipher_suites']
         @sniffing = es_settings['sniffing']
-        @ssl_certificate_verification = es_settings.fetch('ssl_certificate_verification', true)
+
       end
 
       attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth, :api_key
-      attr_accessor :proxy, :ssl, :ca_path, :ca_trusted_fingerprint, :truststore_path, :truststore_password
-      attr_accessor :keystore_path, :keystore_password, :sniffing, :ssl_certificate_verification
+      attr_accessor :proxy, :ssl_enabled, :ssl_certificate_authorities, :ca_trusted_fingerprint, :ssl_truststore_path, :ssl_truststore_password
+      attr_accessor :ssl_keystore_path, :ssl_keystore_password, :sniffing, :ssl_verification_mode, :ssl_cipher_suites, :ssl_certificate, :ssl_key
 
       def collection_interval
         TimeUnit::SECONDS.convert(@collection_interval, TimeUnit::NANOSECONDS)
@@ -76,16 +80,20 @@ module LogStash
         api_key
       end
 
-      def ssl?
-        ssl || ca_path || ca_trusted_fingerprint || truststore? || keystore?
+      def ssl_enabled?
+        ssl_enabled || ssl_certificate_authorities || ca_trusted_fingerprint || ssl_truststore_path? || ssl_keystore_path? || ssl_certificate?
       end
 
-      def truststore?
-        truststore_path && truststore_password
+      def ssl_truststore_path?
+        ssl_truststore_path && ssl_truststore_password
       end
 
-      def keystore?
-        keystore_path && keystore_password
+      def ssl_keystore_path?
+        ssl_keystore_path && ssl_keystore_password
+      end
+
+      def ssl_certificate?
+        ssl_certificate && ssl_key
       end
 
       def extended_performance_collection?
@@ -269,7 +277,10 @@ module LogStash
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.password"))
-      settings.register(LogStash::Setting::String.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
+      settings.register(LogStash::Setting::String.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "full", true, ["none", "certificate", "full"]))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate"))
+      settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.key"))
+      settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.ssl.cipher_suites", String, []))
       settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.elasticsearch.sniffing", false))
       settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
       settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.config.enabled", true))

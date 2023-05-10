@@ -29,12 +29,15 @@ module LogStash module Helpers
       "api_key" => "api_key",
       "proxy" => "proxy",
       "sniffing" => "sniffing",
-      "ssl.certificate_authority" => "cacert",
+      "ssl.certificate_authority" => "ssl_certificate_authorities",
+      "ssl.cipher_suites" => "ssl_cipher_suites",
       "ssl.ca_trusted_fingerprint" => "ca_trusted_fingerprint",
-      "ssl.truststore.path" => "truststore",
-      "ssl.truststore.password" => "truststore_password",
-      "ssl.keystore.path" => "keystore",
-      "ssl.keystore.password" => "keystore_password",
+      "ssl.truststore.path" => "ssl_truststore_path",
+      "ssl.truststore.password" => "ssl_truststore_password",
+      "ssl.keystore.path" => "ssl_keystore_path",
+      "ssl.keystore.password" => "ssl_keystore_password",
+      "ssl.certificate" => "ssl_certificate",
+      "ssl.key" => "ssl_key",
     }
 
     # Retrieve elasticsearch options from either specific settings, or modules if the setting is not there and the
@@ -57,16 +60,29 @@ module LogStash module Helpers
         opts[es_setting] = v unless v.nil?
       end
 
+      # avoid passing an empty array to the plugin configuration
+      if opts['ssl_cipher_suites']&.empty?
+        opts.delete('ssl_cipher_suites')
+      end
+
       # process remaining settings
 
       unless settings.get("#{prefix}#{feature}.elasticsearch.cloud_id")
         opts['hosts'] = settings.get("#{prefix}#{feature}.elasticsearch.hosts")
       end
-      opts['ssl_certificate_verification'] = settings.get("#{prefix}#{feature}.elasticsearch.ssl.verification_mode") == 'certificate'
+
+      # The `certificate` mode is currently not supported by the ES output plugin. This value was used by Logstash to set the
+      # deprecated `ssl_certificate_verification` boolean option. To keep it backward compatible with the x-pack settings,
+      # it fallbacks any value different of `none` to `full` so the behaviour stills the same.
+      if settings.get("#{prefix}#{feature}.elasticsearch.ssl.verification_mode") == "none"
+        opts['ssl_verification_mode'] = "none"
+      else
+        opts['ssl_verification_mode'] = "full"
+      end
 
       # if all hosts are using https or any of the ssl related settings are set
       if ssl?(feature, settings, prefix)
-        opts['ssl'] = true
+        opts['ssl_enabled'] = true
       end
 
       # the username setting has a default value and should not be included when using another authentication such as cloud_auth or api_key.
@@ -96,8 +112,10 @@ module LogStash module Helpers
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.cloud_id") # cloud_id always resolves to https hosts
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.certificate_authority")
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.ca_trusted_fingerprint")
+      return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.cipher_suites") && settings.get("#{prefix}#{feature}.elasticsearch.ssl.cipher_suites")&.any?
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.truststore.path") && settings.set?("#{prefix}#{feature}.elasticsearch.ssl.truststore.password")
       return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.keystore.path") && settings.set?("#{prefix}#{feature}.elasticsearch.ssl.keystore.password")
+      return true if settings.set?("#{prefix}#{feature}.elasticsearch.ssl.certificate") && settings.set?("#{prefix}#{feature}.elasticsearch.ssl.key")
 
       return false
     end
@@ -131,8 +149,8 @@ module LogStash module Helpers
       # Sniffing is not supported for modules.
       opts['sniffing'] = false
       if cacert = module_settings["var.elasticsearch.ssl.certificate_authority"]
-        opts['cacert'] = cacert
-        opts['ssl'] = true
+        opts['ssl_certificate_authorities'] = cacert
+        opts['ssl_enabled'] = true
       end
       opts
     end

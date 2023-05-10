@@ -39,7 +39,10 @@ describe LogStash::ConfigManagement::Extension do
         "xpack.management.elasticsearch.ssl.truststore.path" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.truststore.password" => [LogStash::Setting::NullableString, nil],
         "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableString, nil],
-        "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil]
+        "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableString, nil],
+        "xpack.management.elasticsearch.ssl.certificate" => [LogStash::Setting::NullableString, nil],
+        "xpack.management.elasticsearch.ssl.key" => [LogStash::Setting::NullableString, nil],
+        "xpack.management.elasticsearch.ssl.cipher_suites" => [LogStash::Setting::ArrayCoercible, []],
       )
 
       it "has a cloud_id setting" do

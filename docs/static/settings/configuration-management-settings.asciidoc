@@ -90,6 +90,8 @@ certificate authority for your {es} instance.
 Optional setting that provides the path to the Java keystore (JKS) to validate
 the server’s certificate.
 
+NOTE: You cannot use this setting and `xpack.management.elasticsearch.ssl.certificate_authority` at the same time.
+
 `xpack.management.elasticsearch.ssl.truststore.password`::
 
 Optional setting that provides the password to the truststore.
@@ -99,9 +101,34 @@ Optional setting that provides the password to the truststore.
 Optional setting that provides the path to the Java keystore (JKS) to validate
 the client’s certificate.
 
+NOTE: You cannot use this setting and `xpack.management.elasticsearch.ssl.keystore.certificate` at the same time.
+
 `xpack.management.elasticsearch.ssl.keystore.password`::
 
 Optional setting that provides the password to the keystore.
+
+`xpack.management.elasticsearch.ssl.certificate`::
+
+Optional setting that provides the path to an SSL certificate to use to authenticate the client.
+This certificate should be an OpenSSL-style X.509 certificate file.
+
+NOTE: This setting can be used only if `xpack.management.elasticsearch.ssl.key` is set.
+
+`xpack.management.elasticsearch.ssl.key`::
+
+Optional setting that provides the path to an OpenSSL-style RSA private key that corresponds to the `xpack.management.elasticsearch.ssl.certificate`.
+
+NOTE: This setting can be used only if `xpack.management.elasticsearch.ssl.certificate` is set.
+
+`xpack.management.elasticsearch.ssl.verification_mode`::
+
+Option to validate the server’s certificate. Defaults to `full`. To
+disable, set to `none`. Disabling this severely compromises security.
+
+`xpack.management.elasticsearch.ssl.cipher_suites`::
+
+Optional setting that provides the list of cipher suites to use, listed by priorities.
+Supported cipher suites vary depending on the Java and protocol versions.
 
 `xpack.management.elasticsearch.cloud_id`::
 

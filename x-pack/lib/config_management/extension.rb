@@ -37,7 +37,10 @@ module LogStash
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.truststore.password"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.keystore.path"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.keystore.password"))
-        settings.register(LogStash::Setting::String.new("xpack.management.elasticsearch.ssl.verification_mode", "certificate", true, ["none", "certificate"]))
+        settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.certificate"))
+        settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.key"))
+        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.ssl.cipher_suites", String, []))
+        settings.register(LogStash::Setting::String.new("xpack.management.elasticsearch.ssl.verification_mode", "full", true, %w[none certificate full]))
         settings.register(LogStash::Setting::Boolean.new("xpack.management.elasticsearch.sniffing", false))
       rescue => e
         logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)

@@ -128,12 +128,18 @@ xpack.monitoring.elasticsearch.ssl.truststore.password: password
 --------------------------------------------------
 
 Also, optionally, you can set up client certificate using a keystore
-(a Java Keystore file that contains the certificate):
+(a Java Keystore file that contains the certificate) or using a certificate and key file pair:
 
 [source,yaml]
 --------------------------------------------------
 xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
 xpack.monitoring.elasticsearch.ssl.keystore.password: password
+--------------------------------------------------
+
+[source,yaml]
+--------------------------------------------------
+xpack.monitoring.elasticsearch.ssl.certificate: /path/to/certificate
+xpack.monitoring.elasticsearch.ssl.key: /path/to/key
 --------------------------------------------------
 
 Set sniffing to `true` to enable discovery of other nodes of the {es} cluster.

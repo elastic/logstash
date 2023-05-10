@@ -104,10 +104,28 @@ the client’s certificate.
 
 Optional settings that provide the password to the keystore.
 
+`xpack.monitoring.elasticsearch.ssl.certificate`::
+
+Optional setting that provides the path to an SSL certificate to use to authenticate the client.
+This certificate should be an OpenSSL-style X.509 certificate file.
+
+NOTE: This setting can be used only if `xpack.monitoring.elasticsearch.ssl.key` is set.
+
+`xpack.monitoring.elasticsearch.ssl.key`::
+
+Optional setting that provides the path to an OpenSSL-style RSA private key that corresponds to the `xpack.monitoring.elasticsearch.ssl.certificate`.
+
+NOTE: This setting can be used only if `xpack.monitoring.elasticsearch.ssl.certificate` is set.
+
 `xpack.monitoring.elasticsearch.ssl.verification_mode`::
 
-Option to validate the server’s certificate. Defaults to `certificate`. To
+Option to validate the server’s certificate. Defaults to `full`. To
 disable, set to `none`. Disabling this severely compromises security.
+
+`xpack.monitoring.elasticsearch.ssl.cipher_suites`::
+
+Optional setting that provides the list of cipher suites to use, listed by priorities.
+Supported cipher suites vary depending on the Java and protocol versions.
 
 [[monitoring-additional-settings-legacy]]
 ===== Additional settings
