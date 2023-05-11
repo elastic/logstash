@@ -21,7 +21,7 @@ curl -XGET 'localhost:9600/?pretty'
 
 Example response:
 
-["source","js",subs="attributes"]
+[source,json,subs="attributes"]
 --------------------------------------------------
 {
    "host": "skywalker",
@@ -135,7 +135,7 @@ or output stage, see the <<pipeline-stats>> section under the <<node-stats-api>>
 
 Example response:
 
-["source","js",subs="attributes"]
+[source,json,subs="attributes"]
 --------------------------------------------------
 {
   "pipelines" : {
@@ -154,6 +154,7 @@ Example response:
       "config_reload_interval" : 3
     }
   }
+}
 --------------------------------------------------
 
 You can see the info for a specific pipeline by including the pipeline ID. In
@@ -166,7 +167,7 @@ curl -XGET 'localhost:9600/_node/pipelines/test?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 ----------
 {
   "pipelines" : {
@@ -178,6 +179,7 @@ Example response:
       "config_reload_interval" : 3
     }
   }
+}
 ----------
 
 If you specify an invalid pipeline ID, the request returns a 404 Not Found error.
@@ -196,7 +198,7 @@ curl -XGET 'localhost:9600/_node/os?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "os": {
@@ -205,6 +207,7 @@ Example response:
     "version": "10.12.4",
     "available_processors": 8
   }
+}
 --------------------------------------------------
 
 [discrete]
@@ -221,7 +224,7 @@ curl -XGET 'localhost:9600/_node/jvm?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "jvm": {
@@ -343,7 +346,7 @@ curl -XGET 'localhost:9600/_node/stats/jvm?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "jvm" : {
@@ -396,6 +399,7 @@ Example response:
     },
     "uptime_in_millis" : 1809643
   }
+}
 --------------------------------------------------
 
 [discrete]
@@ -411,7 +415,7 @@ curl -XGET 'localhost:9600/_node/stats/process?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "process" : {
@@ -429,6 +433,7 @@ Example response:
       }
     }
   }
+}
 --------------------------------------------------
 
 [discrete]
@@ -445,7 +450,7 @@ curl -XGET 'localhost:9600/_node/stats/events?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "events" : {
@@ -471,7 +476,7 @@ curl -XGET 'localhost:9600/_node/stats/flow?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "flow" : {
@@ -509,21 +514,21 @@ The following flow rates are available for the logstash process as a whole and f
 In addition, pipelines may have <<pipeline-flow-rates, additional flow rates>> depending on their configuration.
 
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1m,4"]
 |===
 |Flow Rate | Definition
 
-| `input_throughput` |
+| input_throughput |
 This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second).
 It includes events that are blocked by the queue and have not yet been accepted.
 
-| `filter_throughput` |
+| filter_throughput |
 This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
 
-| `output_throughput` |
+| output_throughput |
 This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
 
-| `worker_concurrency` |
+| worker_concurrency |
 This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (`duration_in_millis` / millisecond).
 
 A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric approaches its available `pipeline.workers`, because it indicates that all of its available workers are being kept busy.
@@ -531,7 +536,7 @@ Tuning a saturated pipeline to have more workers can often work to increase that
 
 A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
 
-| `queue_backpressure` |
+| queue_backpressure |
 This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
 It is typically most useful when looking at the stats for an <<pipeline-stats,individual pipeline>>.
 
@@ -548,17 +553,17 @@ Each flow stat includes rates for one or more recent windows of time:
 :flow-stable: pass:quotes[*Stable*]
 :flow-preview: pass:quotes[_Technology Preview_]
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1m,2,4"]
 |===
-| Flow Window       | Availability   | Definition
+| Flow Window     | Availability   | Definition
 
-| `current`         | {flow-stable}  | the most recent ~10s
-| `lifetime`        | {flow-stable}  | the lifetime of the relevant pipeline or process
-| `last_1_minute`   | {flow-preview} | the most recent ~1 minute
-| `last_5_minutes`  | {flow-preview} | the most recent ~5 minutes
-| `last_15_minutes` | {flow-preview} | the most recent ~15 minutes
-| `last_1_hour`     | {flow-preview} | the most recent ~1 hour
-| `last_24_hours`   | {flow-preview} | the most recent ~24 hours
+| current         | {flow-stable}  | the most recent ~10s
+| lifetime        | {flow-stable}  | the lifetime of the relevant pipeline or process
+| last_1_minute   | {flow-preview} | the most recent ~1 minute
+| last_5_minutes  | {flow-preview} | the most recent ~5 minutes
+| last_15_minutes | {flow-preview} | the most recent ~15 minutes
+| last_1_hour     | {flow-preview} | the most recent ~1 hour
+| last_24_hours   | {flow-preview} | the most recent ~24 hours
 
 |===
 
@@ -586,46 +591,38 @@ curl -XGET 'localhost:9600/_node/stats/pipelines?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "pipelines" : {
     "test" : {
       "events" : {
         "duration_in_millis" : 365495,
-        "in" : 216485,
+        "in" : 216610,
         "filtered" : 216485,
         "out" : 216485,
         "queue_push_duration_in_millis" : 342466
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 603.1,
+          "lifetime" : 575.4
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 604.2,
+          "lifetime" : 575.1
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 604.8,
+          "lifetime" : 575.1
         },
         "queue_backpressure" : {
-          "current": 0.277,
-          "lifetime": 0.031
+          "current" : 0.214,
+          "lifetime" : 0.937
         },
         "worker_concurrency" : {
-          "current": 1.973,
-          "lifetime": 1.721
-        },
-        "queue_persisted_growth_bytes" : {
-          "current": 783100,
-          "lifetime": 17
-        },
-        "queue_persisted_growth_events" : {
-          "current": 11,
-          "lifetime": 0.003
+          "current" : 0.941,
+          "lifetime" : 0.9709
         }
       },
       "plugins" : {
@@ -635,13 +632,10 @@ Example response:
             "out" : 216485,
             "queue_push_duration_in_millis" : 342466
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 603.1,
+              "lifetime" : 590.7
             }
           },
           "name" : "beats"
@@ -657,20 +651,14 @@ Example response:
           "patterns_per_field" : {
             "message" : 1
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 16.71,
+              "lifetime" : 15.27
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 2829,
+              "lifetime" : 0.2585
             }
           },
           "name" : "grok"
@@ -681,20 +669,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 1.042,
+              "lifetime" : 0.9076
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 0.01763,
+              "lifetime" : 0.01536
             }
           },
           "name" : "geoip"
@@ -706,20 +688,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 75.34,
+              "lifetime" : 76.01
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 1.276,
+              "lifetime" : 1.287
             }
           },
           "name" : "elasticsearch"
@@ -746,24 +722,24 @@ Example response:
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 301.7,
+          "lifetime" : 231.8
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 207.2,
+          "lifetime" : 231.8
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 207.2,
+          "lifetime" : 231.8
         },
         "queue_backpressure" : {
-          "current": 0.871,
-          "lifetime": 0.031
+          "current" : 0.735,
+          "lifetime" : 0.0006894
         },
         "worker_concurrency" : {
-          "current": 4.71,
-          "lifetime": 1.201
+          "current" : 8.0,
+          "lifetime" : 5.903
         }
       },
       "plugins" : {
@@ -773,13 +749,10 @@ Example response:
             "out" : 87247,
             "queue_push_duration_in_millis" : 1532
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 301.7,
+              "lifetime" : 238.1
             }
           },
           "name" : "twitter"
@@ -788,24 +761,18 @@ Example response:
         "outputs" : [ {
           "id" : "d7ea8941c0fc48ac58f89c84a9da482107472b82-2",
           "events" : {
-            "duration_in_millis" : 139545,
+            "duration_in_millis" : 2222229,
             "in" : 87247,
             "out" : 87247
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 100,
+              "lifetime" : 75.8
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 33.6,
+              "lifetime" : 25.47
             }
           },
           "name" : "elasticsearch"
@@ -823,6 +790,7 @@ Example response:
       }
     }
   }
+}
 --------------------------------------------------
 
 You can see the stats for a specific pipeline by including the pipeline ID. In
@@ -835,45 +803,46 @@ curl -XGET 'localhost:9600/_node/stats/pipelines/test?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
+  "pipelines" : {
     "test" : {
       "events" : {
         "duration_in_millis" : 365495,
         "in" : 216485,
         "filtered" : 216485,
         "out" : 216485,
-        "queue_push_duration_in_millis" : 342466
+        "queue_push_duration_in_millis" : 2283
       },
       "flow" : {
         "input_throughput" : {
-          "current": 189.720,
-          "lifetime": 201.841
+          "current" : 871.3,
+          "lifetime" : 575.1
         },
         "filter_throughput" : {
-          "current": 187.810,
-          "lifetime": 201.799
+          "current" : 874.8,
+          "lifetime" : 575.1
         },
         "output_throughput" : {
-          "current": 191.087,
-          "lifetime": 201.761
+          "current" : 874.8,
+          "lifetime" : 575.1
         },
         "queue_backpressure" : {
-          "current": 0.277,
-          "lifetime": 0.031
+          "current" : 0,
+          "lifetime" : 0.006246
         },
         "worker_concurrency" : {
-          "current": 1.973,
-          "lifetime": 1.721
+          "current" : 1.471,
+          "lifetime" : 0.9709
         },
         "queue_persisted_growth_bytes" : {
-          "current": 783100,
-          "lifetime": 17
+          "current" : 8731,
+          "lifetime" : 0.0106
         },
         "queue_persisted_growth_events" : {
-          "current": 11,
-          "lifetime": 0.003
+          "current" : 0.0,
+          "lifetime" : 0.0
         }
       },
       "plugins" : {
@@ -881,15 +850,12 @@ Example response:
           "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-1",
           "events" : {
             "out" : 216485,
-            "queue_push_duration_in_millis" : 342466
+            "queue_push_duration_in_millis" : 2283
           },
-          "flow": {
-            "throughput": {
-              "current": 1.223,
-              "last_1_minute": 0.2532,
-              "last_5_minute": 0.3264,
-              "last_15_minute": 0.4721,
-              "lifetime": 0.06579
+          "flow" : {
+            "throughput" : {
+              "current" : 871.3,
+              "lifetime" : 590.7
             }
           },
           "name" : "beats"
@@ -905,20 +871,14 @@ Example response:
           "patterns_per_field" : {
             "message" : 1
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 10.53,
+              "lifetime" : 7.636
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 0.3565,
+              "lifetime" : 0.2585
             }
           },
           "name" : "grok"
@@ -929,7 +889,17 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "name" : "geoip"
+          "name" : "geoip",
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 1.743,
+              "lifetime" : 0.4538
+            },
+            "worker_millis_per_event" : {
+              "current" : 0.0590,
+              "lifetime" : 0.01536
+            }
+          }
         } ],
         "outputs" : [ {
           "id" : "35131f351e2dc5ed13ee04265a8a5a1f95292165-4",
@@ -938,20 +908,14 @@ Example response:
             "in" : 216485,
             "out" : 216485
           },
-          "flow": {
-            "worker_utilization": {
-              "current": 8.368,
-              "last_1_minute": 3.224,
-              "last_5_minutes": 3.091,
-              "last_15_minutes": 3.539,
-              "lifetime": 6.706
+          "flow" : {
+            "worker_utilization" : {
+              "current" : 62.27,
+              "lifetime" : 38.01
             },
-            "worker_millis_per_event": {
-              "current": 0.1,
-              "last_1_minute": 0.03333,
-              "last_5_minutes": 0.03115,
-              "last_15_minutes": 0.03552,
-              "lifetime": 0.06773
+            "worker_millis_per_event" : {
+              "current" : 2.109,
+              "lifetime" : 1.287
             }
           },
           "name" : "elasticsearch"
@@ -995,15 +959,15 @@ Each pipeline's entry in the API response includes a number of pipeline-scoped <
 
 When configured with a <<persistent-queues,persistent queue>>, the pipeline's `flow` will include additional rates to provide visibility into the health of the pipeline's persistent queue:
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="1m,4"]
 |===
 |Flow Rate | Definition
 
-| `queue_persisted_growth_events` |
+| queue_persisted_growth_events |
 This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (`queue.events_count` / second).
 A positive number indicates that the queue's event-count is growing, and a negative number indicates that the queue is shrinking.
 
-| `queue_persisted_growth_bytes` |
+| queue_persisted_growth_bytes |
 This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second).
 A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
 
@@ -1017,18 +981,19 @@ NOTE: The size of a PQ on disk includes both unacknowledged events and previousl
 
 Several additional plugin-level flow rates are available, and can be helpful for identifying problems with individual plugins:
 
-[%autowidth.stretch]
+[%autowidth.stretch, cols="2m,1,4"]
 |===
-| Plugin Types | Flow Rate | Definition
+| Flow Rate | Plugin Types | Definition
 
-| Inputs | `throughput` | This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline's queue relative to wall-clock time (`events.in` / `second`).
+| throughput | Inputs |
+This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline's queue relative to wall-clock time (`events.in` / `second`).
 It includes events that are blocked by the queue and have not yet been accepted.
 
-| Filters, Outputs | `worker_utilization` |
+| worker_utilization | Filters, Outputs |
 This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
 It is useful for identifying which plugins in a pipeline are using the available worker resources.
 
-| Filters, Outputs | `worker_millis_per_event` |
+| worker_millis_per_event | Filters, Outputs |
 This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event.
 It is especially useful for identifying issues with plugins that operate on a small subset of events.
 An `"Infinity"` value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
@@ -1072,7 +1037,7 @@ curl -XGET 'localhost:9600/_node/stats/os?pretty'
 
 Example response:
 
-[source,js]
+[source,json]
 --------------------------------------------------
 {
   "os" : {
@@ -1093,6 +1058,7 @@ Example response:
       }
     }
   }
+}
 --------------------------------------------------
 
 [discrete]
@@ -1125,7 +1091,7 @@ Logstash.
 
 Example response:
 
-["source","sh",subs="attributes"]
+[source,json,subs="attributes"]
 --------------------------------------------------
 {
   "hot_threads" : {
@@ -1172,7 +1138,7 @@ curl -XGET 'localhost:9600/_node/hot_threads?human=true'
 
 Example of a human-readable response:
 
-["source","js",subs="attributes"]
+[source%nowrap,text,subs="attributes"]
 --------------------------------------------------
  ::: {}
  Hot threads at 2017-06-06T18:31:17-07:00, busiestThreads=3:
