@@ -335,9 +335,13 @@
 #xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: xxxxxxxxxx
 #xpack.monitoring.elasticsearch.ssl.truststore.path: path/to/file
 #xpack.monitoring.elasticsearch.ssl.truststore.password: password
+# use either keystore.path/keystore.password or certificate/key configurations
 #xpack.monitoring.elasticsearch.ssl.keystore.path: /path/to/file
 #xpack.monitoring.elasticsearch.ssl.keystore.password: password
-#xpack.monitoring.elasticsearch.ssl.verification_mode: certificate
+#xpack.monitoring.elasticsearch.ssl.certificate: /path/to/file
+#xpack.monitoring.elasticsearch.ssl.key: /path/to/key
+#xpack.monitoring.elasticsearch.ssl.verification_mode: full
+#xpack.monitoring.elasticsearch.ssl.cipher_suites: []
 #xpack.monitoring.elasticsearch.sniffing: false
 #xpack.monitoring.collection.interval: 10s
 #xpack.monitoring.collection.pipeline.details.enabled: true
@@ -359,9 +363,13 @@
 #xpack.management.elasticsearch.ssl.certificate_authority: "/path/to/ca.crt"
 #xpack.management.elasticsearch.ssl.truststore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.truststore.password: password
+# use either keystore.path/keystore.password or certificate/key configurations
 #xpack.management.elasticsearch.ssl.keystore.path: /path/to/file
 #xpack.management.elasticsearch.ssl.keystore.password: password
-#xpack.management.elasticsearch.ssl.verification_mode: certificate
+#xpack.management.elasticsearch.ssl.certificate: /path/to/file
+#xpack.management.elasticsearch.ssl.key: /path/to/certificate_key_file
+#xpack.management.elasticsearch.ssl.cipher_suites: []
+#xpack.management.elasticsearch.ssl.verification_mode: full
 #xpack.management.elasticsearch.sniffing: false
 #xpack.management.logstash.poll_interval: 5s
 

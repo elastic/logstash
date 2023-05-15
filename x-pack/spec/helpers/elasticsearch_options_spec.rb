@@ -29,8 +29,8 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
                                                                                         "hosts" => elasticsearch_url,
                                                                                         "user" => elasticsearch_username,
                                                                                         "password" => elasticsearch_password,
-                                                                                        "ssl" => true,
-                                                                                        "cacert" => elasticsearch_ca
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_certificate_authorities" => elasticsearch_ca
                                                                                     )
     end
   end
@@ -44,7 +44,7 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
                                                                                       "hosts" => elasticsearch_url,
                                                                                       "user" => elasticsearch_username,
                                                                                       "password" => elasticsearch_password,
-                                                                                      "ssl" => true,
+                                                                                      "ssl_enabled" => true,
                                                                                       "ca_trusted_fingerprint" => ca_trusted_fingerprint
                                                                                     )
     end
@@ -65,9 +65,9 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
                                                                                         "hosts" => elasticsearch_url,
                                                                                         "user" => elasticsearch_username,
                                                                                         "password" => elasticsearch_password,
-                                                                                        "ssl" => true,
-                                                                                        "truststore" => elasticsearch_truststore_path,
-                                                                                        "truststore_password" => elasticsearch_truststore_password
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_truststore_path" => elasticsearch_truststore_path,
+                                                                                        "ssl_truststore_password" => elasticsearch_truststore_password
                                                                                     )
     end
   end
@@ -88,10 +88,65 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
                                                                                         "hosts" => elasticsearch_url,
                                                                                         "user" => elasticsearch_username,
                                                                                         "password" => elasticsearch_password,
-                                                                                        "ssl" => true,
-                                                                                        "keystore" => elasticsearch_keystore_path,
-                                                                                        "keystore_password" => elasticsearch_keystore_password
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_keystore_path" => elasticsearch_keystore_path,
+                                                                                        "ssl_keystore_password" => elasticsearch_keystore_password
                                                                                     )
+    end
+  end
+
+  context "with certificate and key" do
+    let(:elasticsearch_certificate_path) { Stud::Temporary.file.path }
+    let(:elasticsearch_key_path) { Stud::Temporary.file.path }
+
+    let(:settings) do
+      super().merge({
+        "xpack.monitoring.elasticsearch.ssl.certificate" => elasticsearch_certificate_path,
+        "xpack.monitoring.elasticsearch.ssl.key" => elasticsearch_key_path,
+      })
+    end
+
+    it "creates the elasticsearch output options hash" do
+      expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
+                                                                                        "hosts" => elasticsearch_url,
+                                                                                        "user" => elasticsearch_username,
+                                                                                        "password" => elasticsearch_password,
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_certificate" => elasticsearch_certificate_path,
+                                                                                        "ssl_key" => elasticsearch_key_path
+                                                                                      )
+    end
+  end
+
+  context "with cipher suites" do
+    context "provided" do
+      let(:settings) do
+        super().merge({
+          "xpack.monitoring.elasticsearch.ssl.cipher_suites" => ["FOO", "BAR"],
+        })
+      end
+
+      it "creates the elasticsearch output options hash" do
+        expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
+                                                                                          "hosts" => elasticsearch_url,
+                                                                                          "user" => elasticsearch_username,
+                                                                                          "password" => elasticsearch_password,
+                                                                                          "ssl_enabled" => true,
+                                                                                          "ssl_cipher_suites" => ["FOO", "BAR"],
+                                                                                        )
+      end
+    end
+
+    context "empty" do
+      let(:settings) do
+        super().merge({
+          "xpack.monitoring.elasticsearch.ssl.cipher_suites" => [],
+        })
+      end
+
+      it "creates the elasticsearch output options hash" do
+        expect(test_class.es_options_from_settings('monitoring', system_settings)).to_not have_key("ssl_cipher_suites")
+      end
     end
   end
 end
