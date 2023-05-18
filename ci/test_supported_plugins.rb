@@ -150,7 +150,7 @@ def select_by_tiers_and_kinds(tiers, kinds)
   selected = []
   tiers.each do |tier|
     kinds.each do |kind|
-      selected = selected + PLUGIN_DEFINITIONS[tier][kind]
+      selected = selected + PLUGIN_DEFINITIONS[tier].fetch(kind, [])
     end
   end
   selected
