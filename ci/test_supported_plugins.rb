@@ -58,6 +58,7 @@ class Plugin
     end
     system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec")
+    puts "DNDBG>> spec_result #{spec_result}"
     unless spec_result
       return false
     else
@@ -172,6 +173,7 @@ option_parser = OptionParser.new do |opts|
   opts.on '-t', '--tiers tier1, tier2', Array, 'Use to select which tier to test. If no provided mean "all"'
   opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
   opts.on '-pPLUGIN', '--plugin=PLUGIN', 'Use to select a specific plugin, conflict with either -t and -k'
+  opts.on '-h', '--halt', 'Halt immediately on first error'
 end
 options = {}
 option_parser.parse!(into: options)
@@ -185,26 +187,33 @@ Dir.chdir(plugins_folder) do
     plugin = Plugin.new(plugins_folder, plugin_name)
     plugin.git_clone
 
-    Dir.chdir(plugin_name) do
+    status = Dir.chdir(plugin_name) do
       unless plugin.execute_rspec
         failed_plugins << FailureDetail.new(plugin_name, :unit_test)
-        next
-      end  
+        break :error
+      end
 
       # build the gem and install into Logstash
       gem_file = plugin.build_gem
       unless gem_file
         #puts "inserted into failed, because no gem file exists"
         failed_plugins << FailureDetail.new(plugin_name, :gem_build)
-        next
+        break :error
       end
 
       # install the plugin
       unless plugin.install_gem(gem_file)
         #puts "inserted into failed, because the gem can't be installed"
         failed_plugins << FailureDetail.new(plugin_name, :gem_install)
-        next
+        break :error
       end
+      :success
+    end
+
+    # any of the verification subtask terminated with error
+    if status == :error
+      # break looping on plugins if immediate halt
+      break if options[:halt]
     end
   end
 end
