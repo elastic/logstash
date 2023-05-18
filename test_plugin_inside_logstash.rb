@@ -5,9 +5,13 @@
 # - packaging (gem build)
 # - and deploy (bin/logstash-plugin install)
 # of a plugins inside the current Logstash, using its JRuby
+# Usage example:
+# bin/ruby test_plugin_inside_logstash.rb -p logstash-integration-jdbc
+# bin/ruby test_plugin_inside_logstash.rb -t tier1 -k input,codec,integration
 
 require "open3"
 require "set"
+require 'optparse'
 
 ENV['LOGSTASH_PATH'] = Dir.pwd
 ENV['LOGSTASH_SOURCE'] = '1'
@@ -99,36 +103,84 @@ FailureDetail = Struct.new(:plugin_name, :reason)
 # contains set of FailureDetail
 failed_plugins = [].to_set
 
+PLUGIN_DEFINITIONS = {
+  :tier1 => {
+    :input => ["logstash-inputs-azure_event_hubs", "logstash-inputs-beats", "logstash-inputs-elasticsearch", "logstash-inputs-file",
+               "logstash-inputs-generator", "logstash-inputs-heartbeat", "logstash-inputs-http", "logstash-inputs-http_poller",
+               "logstash-inputs-redis", "logstash-inputs-s3", "logstash-inputs-stdin", "logstash-inputs-syslog", "logstash-inputs-udp",
+               "logstash-inputs-elastic_agent"],
+    :codec => ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
+               "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
+               "logstash-codec-rubydebug"],
+    :filter => ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
+                "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
+                "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", "logstash-filter-json", "logstash-filter-kv",
+                "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
+                "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
+                "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
+                "logstash-filter-xml"],
+    :output => ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
+                "logstash-output-redis", "logstash-output-s3", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
+    :integration => ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
+                     "logstash-integration-elastic_enterprise_search"]
+  },
+  :tier2 => {
+    :input => ["logstash-input-couchdb_changes", "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
+                  "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
+    :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
+                  "logstash-codec-msgpack", "logstash-codec-netflow"],
+    :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
+    :output => ["logstash-output-csv", "logstash-output-graphite"]
+  }
+}
+
+def validate_options!(options)
+  raise "plugin and tiers or kinds can't be specified at the same time" if (options[:tiers] || options[:kinds]) && options[:plugin]
+
+  options[:tiers].map! { |v| v.to_sym } if options[:tiers]
+  options[:kinds].map! { |v| v.to_sym } if options[:kinds]
+
+  raise "Invalid tier name expected tier1 or tier2" if options[:tiers] && !(options[:tiers] - [:tier1, :tier2]).empty?
+  raise "Invalid kind name expected input, codec, filter, output, integration" if options[:kinds] && !(options[:kinds] - [:input, :codec, :filter, :output, :integration]).empty?
+end
+
+# @param tiers array of labels
+# @param kinds array of labels
+def select_by_tiers_and_kinds(tiers, kinds)
+  selected = []
+  tiers.each do |tier|
+    kinds.each do |kind|
+      selected = selected + PLUGIN_DEFINITIONS[tier][kind]
+    end
+  end
+  selected
+end
+
+def select_plugins_by_opts(options)
+  select_plugins = []
+  if options[:plugin]
+    select_plugins << options[:plugin]
+  else
+    selected_tiers = options.fetch(:tiers, [:tier1, :tier2])
+    selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
+    select_plugins = select_plugins + select_by_tiers_and_kinds(selected_tiers, selected_kinds)
+  end
+  select_plugins
+end
+
+option_parser = OptionParser.new do |opts|
+  opts.on '-t', '--tiers tier1, tier2', Array, 'Use to select which tier to test. If no provided mean "all"'
+  opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
+  opts.on '-pPLUGIN', '--plugin=PLUGIN', 'Use to select a specific plugin, conflict with either -t and -k'
+end
+options = {}
+option_parser.parse!(into: options)
+
+validate_options!(options)
+
+plugins = select_plugins_by_opts(options)
+
 Dir.chdir(plugins_folder) do
-  tier1_integrations = ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
-                        "logstash-integration-elastic_enterprise_search"]
-  tier1_inputs = ["logstash-inputs-azure_event_hubs", "logstash-inputs-beats", "logstash-inputs-elasticsearch", "logstash-inputs-file",
-                  "logstash-inputs-generator", "logstash-inputs-heartbeat", "logstash-inputs-http", "logstash-inputs-http_poller",
-                  "logstash-inputs-redis", "logstash-inputs-s3", "logstash-inputs-stdin", "logstash-inputs-syslog", "logstash-inputs-udp",
-                  "logstash-inputs-elastic_agent"]
-  tier1_codecs = ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
-                  "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
-                  "logstash-codec-rubydebug"]
-  tier1_filters = ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
-                   "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
-                   "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", "logstash-filter-json", "logstash-filter-kv",
-                   "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
-                   "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
-                   "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
-                   "logstash-filter-xml"]
-  tier1_outputs = ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
-                   "logstash-output-redis", "logstash-output-s3", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"]
-
-  tier2_inputs = ["logstash-input-couchdb_changes", "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
-                  "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"]
-  tier2_codecs = ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
-                  "logstash-codec-msgpack", "logstash-codec-netflow" ]
-  tier2_filters = ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"]
-  tier2_outputs = ["logstash-output-csv", "logstash-output-graphite"]
-
-#   plugins = tier1_integrations
-  plugins = ["logstash-filter-cidr"]
-
   plugins.each do |plugin_name|
     plugin = Plugin.new(plugins_folder, plugin_name)
     plugin.git_clone
