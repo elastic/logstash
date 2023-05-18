@@ -105,10 +105,10 @@ failed_plugins = [].to_set
 
 PLUGIN_DEFINITIONS = {
   :tier1 => {
-    :input => ["logstash-inputs-azure_event_hubs", "logstash-inputs-beats", "logstash-inputs-elasticsearch", "logstash-inputs-file",
-               "logstash-inputs-generator", "logstash-inputs-heartbeat", "logstash-inputs-http", "logstash-inputs-http_poller",
-               "logstash-inputs-redis", "logstash-inputs-s3", "logstash-inputs-stdin", "logstash-inputs-syslog", "logstash-inputs-udp",
-               "logstash-inputs-elastic_agent"],
+    :input => ["logstash-input-azure_event_hubs", "logstash-input-beats", "logstash-input-elasticsearch", "logstash-input-file",
+               "logstash-input-generator", "logstash-input-heartbeat", "logstash-input-http", "logstash-input-http_poller",
+               "logstash-input-redis", "logstash-input-s3", "logstash-input-stdin", "logstash-input-syslog", "logstash-input-udp",
+               "logstash-input-elastic_agent"],
     :codec => ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
                "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
                "logstash-codec-rubydebug"],
