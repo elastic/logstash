@@ -59,11 +59,7 @@ class Plugin
     system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec")
     puts "DNDBG>> spec_result #{spec_result}"
-    unless spec_result
-      return false
-    else
-      return true
-    end
+    return spec_result ? true : false
   end
 
   # Return nil in case of error or the file name of the generated gem file
