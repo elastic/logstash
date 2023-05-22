@@ -20,22 +20,21 @@
 
 package org.logstash.execution;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
-import org.jruby.RubyThread;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.RubyUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * JRuby extension, used by pipelines to execute the shutdown flow of a pipeline.
@@ -105,29 +104,30 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
         if (reports.size() != reportEvery) {
             return context.fals;
         }
-        final int[] inflightCounts = reports.stream().mapToInt(
-            obj -> obj.callMethod(context, "inflight_count").convertToInteger().getIntValue()
-        ).toArray();
-        boolean stalled = true;
+
+        final int[] inflightCounts = reports.stream()
+                .mapToInt(obj -> obj.callMethod(context, "inflight_count").convertToInteger().getIntValue())
+                .toArray();
+
         for (int i = 0; i < inflightCounts.length - 1; ++i) {
             if (inflightCounts[i] > inflightCounts[i + 1]) {
-                stalled = false;
-                break;
+                return context.fals;
             }
         }
-        if (stalled) {
-            final IRubyObject[] stallingThreads = reports.stream().map(
-                obj -> obj.callMethod(context, "stalling_threads")
-            ).toArray(IRubyObject[]::new);
-            for (int i = 0; i < stallingThreads.length - 1; ++i) {
-                if (!stallingThreads[i].op_equal(context, stallingThreads[i + 1]).isTrue()) {
-                    stalled = false;
-                    break;
-                }
+
+        final IRubyObject[] stallingThreads = reports.stream()
+                .map(obj -> obj.callMethod(context, "stalling_threads"))
+                .toArray(IRubyObject[]::new);
+
+        for (int i = 0; i < stallingThreads.length - 1; ++i) {
+            if (!stallingThreads[i].op_equal(context, stallingThreads[i + 1]).isTrue()) {
+                return context.fals;
             }
-            return stalled ? context.tru : context.fals;
         }
-        return context.fals;
+
+        return inflightCounts.length > 0 || stallingThreads.length > 0
+                ? context.tru
+                : context.fals;
     }
 
     @JRubyMethod(name = "stop!")
