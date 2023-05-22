@@ -82,7 +82,7 @@ class Plugin
     stdout, stderr, status = Open3.capture3("#{logstash_plugin_cli} install #{gem_file}")
     reg_exp = /Installing .*\nInstallation successful$/
     if status != 0 && !reg_exp.match(stdout)
-      puts "Failed to install plugins:\n #{stdout}"
+      puts "Failed to install plugins:\n stdout:\n #{stdout} \nstderr:\n #{stderr}"
       return false
     else
       puts "plugin #{plugin_name} successfully installed"
