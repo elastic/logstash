@@ -40,11 +40,17 @@ This section summarizes the changes in the following releases:
 [[logstash-8-8-0]]
 === Logstash 8.8.0 Release Notes
 
-[[features-8.8.0]]
-==== New features and enhancements
+[[notable-8.8.0]]
+==== Notable issues fixed
 
-* Negative acknowledgment of a batch. With this functionality a plugin can request the abortion a batch of event.
-  When used in combination with persisted queue it enables the reprocessing on Logstash restart https://github.com/elastic/logstash/pull/14940[#14940]
+* In previous Logstash versions, when a pipeline used Elasticsearch output and the credentials expired, it ended in the
+  pipeline remained stuck in disconnecting from an invalidated Elasticsearch endpoint also when the pipeline definition
+  was updated with the new connection credentials.
+  The issue https://github.com/elastic/logstash/issues/14739[14739] describe how to reach such condition in terms of Central Pipeline Management.
+  To fix this problem, Logstash core has been modified so that a plugin can request a termination of the inflight batch
+  during the shutdown of itself.
+  The bugfix https://github.com/elastic/logstash/pull/14940[#14940] solves the original issue,
+  avoiding any data loss when used in combination with persistent queues.
 
 [[dependencies-8.8.0]]
 ==== Updates to dependencies
