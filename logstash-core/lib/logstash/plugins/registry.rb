@@ -165,15 +165,22 @@ module LogStash module Plugins
         return jar_files[0]
       end
 
-      # plugin with multiple jars, check the Manifest of the main jar is correct
-      java_import 'java.util.jar.JarFile'
       jar_pathname = Pathname.new(spec.base_dir) + spec.full_name
 
+      # plugin with multiple jars, check the Manifest of the main jar is correct
+      target_jar = find_plugin_jar_by_manifest(jar_pathname, jar_files)
+
+      return nil if !target_jar
+      target_jar.relative_path
+    end
+
+    # return an instance of JarSearchResult if found, nil else.
+    def find_plugin_jar_by_manifest(jar_pathname, jar_files)
+      java_import 'java.util.jar.JarFile'
       jar_files.map { |f| JarSearchResult.new(JarFile.new(jar_pathname.join(f).to_s), f) }
         .select { |tuple| tuple.jar_file.manifest != nil }
         .select { |tuple| tuple.jar_file.manifest.main_attributes != nil }
         .find { |tuple| tuple.jar_file.manifest.main_attributes.get_value("Logstash-plugin") == spec.full_name }
-        .relative_path
     end
 
     def load_available_plugins
@@ -183,7 +190,7 @@ module LogStash module Plugins
         if plugin_context.spec.metadata.key?('java_plugin')
           jar_file = find_plugin_jar(plugin_context.spec)
           if !jar_file
-            raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain a any jar file with the plugin's definition"
+            raise LoadError, "Java plugin '#{plugin_context.spec.name}' does not contain any jar file with valid plugin's definition"
           end
           @java_plugins[plugin_context.spec.name] = jar_file
         end
