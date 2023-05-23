@@ -44,7 +44,7 @@ This section summarizes the changes in the following releases:
 ==== Notable issues fixed
 
 * Fix a race condition that prevents Logstash from updating a pipeline's configuration with in-flight events
-  experiencing connection errors. https://github.com/elastic/logstash/issues/14739[14739]
+  experiencing connection errors. https://github.com/elastic/logstash/issues/14739[#14739]
   This issue primarily manifests following the update of Elasticsearch credentials through Central Management,
   after credentials expired while events were in-flight. It causes the Elasticsearch Output to get stuck attempting
   to send events with the expired credentials instead of using the updated ones.
