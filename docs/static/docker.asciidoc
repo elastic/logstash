@@ -78,14 +78,6 @@ The following checks were performed on each of these signatures:
 
 endif::[]
 
-
-
-
-
-
-
-
-
 [[docker-config]]
 === Configuring Logstash for Docker
 
