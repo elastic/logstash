@@ -46,7 +46,7 @@ Although it's optional, we highly recommend verifying the signatures included wi
 Elastic images are signed with https://docs.sigstore.dev/cosign/overview/[Cosign] which is part of the https://www.sigstore.dev/[Sigstore] project. Cosign supports container signing, verification, and storage in an OCI registry. Install the appropriate https://docs.sigstore.dev/cosign/installation/[Cosign application]
 for your operating system.
 
-Run the following commands to verify the *elastic-agent* container image signature for {ls} v{version}:
+Run the following commands to verify the container image signature for {ls} v{version}:
 
 ifeval::["{release-state}"=="unreleased"]
 
