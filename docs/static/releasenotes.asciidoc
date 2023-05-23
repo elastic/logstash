@@ -43,14 +43,16 @@ This section summarizes the changes in the following releases:
 [[notable-8.8.0]]
 ==== Notable issues fixed
 
-* In previous Logstash versions, when a pipeline used Elasticsearch output and the credentials expired, it ended in the
-  pipeline remained stuck in disconnecting from an invalidated Elasticsearch endpoint also when the pipeline definition
-  was updated with the new connection credentials.
-  The issue https://github.com/elastic/logstash/issues/14739[14739] describe how to reach such condition in terms of Central Pipeline Management.
-  To fix this problem, Logstash core has been modified so that a plugin can request a termination of the inflight batch
-  during the shutdown of itself.
-  The bugfix https://github.com/elastic/logstash/pull/14940[#14940] solves the original issue,
-  avoiding any data loss when used in combination with persistent queues.
+* Fix a race condition that prevents Logstash from updating a pipeline's configuration with in-flight events
+  experiencing connection errors. https://github.com/elastic/logstash/issues/14739[14739]
+  This issue primarily manifests following the update of Elasticsearch credentials through Central Management,
+  after credentials expired while events were in-flight. It causes the Elasticsearch Output to get stuck attempting
+  to send events with the expired credentials instead of using the updated ones.
+  To address this problem, Logstash has improved the pipeline shutdown phase functionality to allow an output plugin
+  to request the termination of the in-flight batch of events; hence preventing the need for administrators
+  to manually restart Logstash. Furthermore, when used in combination with a persistent queue to prevent data loss,
+  the batch is eligible for reprocessing on pipeline restart.
+  Plugin developers can now decide whether to make use of such functionality on output plugins. https://github.com/elastic/logstash/pull/14940[#14940]
 
 [[dependencies-8.8.0]]
 ==== Updates to dependencies
