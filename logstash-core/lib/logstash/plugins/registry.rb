@@ -165,18 +165,18 @@ module LogStash module Plugins
         return jar_files[0]
       end
 
-      jar_pathname = Pathname.new(spec.base_dir) + spec.full_name
-
       # plugin with multiple jars, check the Manifest of the main jar is correct
-      target_jar = find_plugin_jar_by_manifest(jar_pathname, jar_files)
+      target_jar = find_plugin_jar_by_manifest(jar_files, spec)
 
       return nil if !target_jar
       target_jar.relative_path
     end
 
     # return an instance of JarSearchResult if found, nil else.
-    def find_plugin_jar_by_manifest(jar_pathname, jar_files)
+    def find_plugin_jar_by_manifest(jar_files, spec)
       java_import 'java.util.jar.JarFile'
+
+      jar_pathname = Pathname.new(spec.base_dir) + spec.full_name
       jar_files.map { |f| JarSearchResult.new(JarFile.new(jar_pathname.join(f).to_s), f) }
         .select { |tuple| tuple.jar_file.manifest != nil }
         .select { |tuple| tuple.jar_file.manifest.main_attributes != nil }
