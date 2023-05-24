@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-complete:9.3.9.0"
+        classpath "org.jruby:jruby-core:9.3.10.0"
     }
 }
 
@@ -169,6 +169,7 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
     def jruby = new ScriptingContainer()
     def env = jruby.environment
     def gemDir = "${projectDir}/vendor/bundle/jruby/2.6.0".toString()
+    jruby.setLoadPaths(["${projectDir}/vendor/bundle/jruby/2.6.0/gems/bundler-2.4.13/lib".toString(), "${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
