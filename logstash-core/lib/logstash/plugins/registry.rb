@@ -159,11 +159,11 @@ module LogStash module Plugins
       if spec.kind_of? Gem::Specification
         # installed from local gem, so consider "files" as valid
         # search for jars in files attribute of the Specification provided by the plugin
-        logger.debug("Gem #{spec.name} installed from local")
+        logger.debug("Plugin #{spec.name} installed from local")
         jar_files = spec.files.select {|f| f =~ /.*\.jar/}
       else
         # spec is a Bundler::StubSpecification, so installed from rubygems, check the glob
-        logger.debug("Gem #{spec.name} installed from rubygems")
+        logger.debug("Plugin #{spec.name} installed from remote")
         jar_files = spec.matches_for_glob("**/*.jar")
       end
       logger.debug("jar files examined", :jar_files => jar_files)
