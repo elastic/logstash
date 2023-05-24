@@ -156,7 +156,17 @@ module LogStash module Plugins
     #
     # @return [String] relative path to the matching jar or nil
     def find_plugin_jar(spec)
-      jar_files = spec.files.select {|f| f =~ /.*\.jar/}
+      if spec.kind_of? Gem::Specification
+        # installed from local gem, so consider "files" as valid
+        # search for jars in files attribute of the Specification provided by the plugin
+        logger.debug("Gem #{spec.name} installed from local")
+        jar_files = spec.files.select {|f| f =~ /.*\.jar/}
+      else
+        # spec is a Bundler::StubSpecification, so installed from rubygems, check the glob
+        logger.debug("Gem #{spec.name} installed from rubygems")
+        jar_files = spec.matches_for_glob("**/*.jar")
+      end
+      logger.debug("jar files examined", :jar_files => jar_files)
       expected_jar_name = spec.name + "-" + spec.version.to_s + ".jar"
       if jar_files.length == 1
         if !jar_files[0].end_with?(expected_jar_name)
