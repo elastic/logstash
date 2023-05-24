@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-8-0,Logstash 8.8.0>>
 * <<logstash-8-7-1,Logstash 8.7.1>>
 * <<logstash-8-7-0,Logstash 8.7.0>>
 * <<logstash-8-6-2,Logstash 8.6.2>>
@@ -35,6 +36,69 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-8-0]]
+=== Logstash 8.8.0 Release Notes
+
+[[notable-8.8.0]]
+==== Notable issues fixed
+
+* Fix a race condition that prevents Logstash from updating a pipeline's configuration with in-flight events
+  experiencing connection errors. https://github.com/elastic/logstash/issues/14739[#14739]
+  This issue primarily manifests following the update of Elasticsearch credentials through Central Management,
+  after credentials expired while events were in-flight. It causes the Elasticsearch Output to get stuck attempting
+  to send events with the expired credentials instead of using the updated ones.
+  To address this problem, Logstash has improved the pipeline shutdown phase functionality to allow an output plugin
+  to request the termination of the in-flight batch of events; hence preventing the need for administrators
+  to manually restart Logstash. Furthermore, when used in combination with a persistent queue to prevent data loss,
+  the batch is eligible for reprocessing on pipeline restart.
+  Plugin developers can now decide whether to make use of such functionality on output plugins. https://github.com/elastic/logstash/pull/14940[#14940]
+
+[[dependencies-8.8.0]]
+==== Updates to dependencies
+
+* Updates Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
+
+==== Plugins
+
+*Elasticsearch Filter - 3.15.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/168[#168]
+
+* Added support for configurable retries with new `retry_on_failure` and `retry_on_status` options https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/160[#160]
+
+*Memcached Filter - 1.2.0*
+
+* Upgrade Dalli to 3.x https://github.com/logstash-plugins/logstash-filter-memcached/pull/33[#33]
+
+*Beats Input - 6.6.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-beats/pull/470[#470]
+
+*Elasticsearch Input - 4.17.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/185[#185]
+
+*Http Input - 3.7.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-http/pull/165[#165]
+
+*Kafka Integration - 11.2.1*
+
+* Fix nil exception to empty headers of record during event metadata assignment https://github.com/logstash-plugins/logstash-integration-kafka/pull/140[#140]
+* Added TLS truststore and keystore settings specifically to access the schema registry https://github.com/logstash-plugins/logstash-integration-kafka/pull/137[#137]
+* Added config `group_instance_id` to use the Kafka's consumer static membership feature https://github.com/logstash-plugins/logstash-integration-kafka/pull/135[#135]
+* Changed Kafka client to 3.3.1, requires Logstash >= 8.3.0. 
+* Deprecated `default` value for setting `client_dns_lookup` forcing to `use_all_dns_ips` when explicitly used https://github.com/logstash-plugins/logstash-integration-kafka/pull/130[#130]
+* Changed the consumer's poll from using the one that blocks on metadata retrieval to the one that doesn't https://github.com/logstash-plugins/logstash-integration-kafka/pull/133[#136]
+
+*Normalize_config_support Mixin - 1.0.0*
+
+*Elasticsearch Output - 11.15.1*
+
+* Fixed race condition during plugin registration phase https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1125[#1125]
+* Added the ability to negatively acknowledge the batch under processing if the plugin is blocked in a retry-error-loop and a shutdown is requested. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1119[#1119]
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1118[#1118]
 
 [[logstash-8-7-1]]
 === Logstash 8.7.1 Release Notes
