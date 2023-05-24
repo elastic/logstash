@@ -389,7 +389,7 @@ void generateRubySupportFilesForPlugin(String projectDescription, String project
     gemspecFile.append("\n")
     gemspecFile.append("  # Gem dependencies\n")
     // native Java plugins with multiple jars requires a Logstash version which exposes such functionality
-    gemspecFile.append("  s.add_runtime_dependency 'logstash-core', '>= 8.5.0'\n")
+    gemspecFile.append("  s.add_runtime_dependency 'logstash-core', '>= 8.9.0'\n") // TODO this has to match the version of LS that ships this feature
     gemspecFile.append("  s.add_runtime_dependency \"logstash-core-plugin-api\", \">= 1.60\", \"<= 2.99\"\n")
     gemspecFile.append("  s.add_runtime_dependency 'jar-dependencies'\n")
     gemspecFile.append("  s.add_development_dependency 'logstash-devutils'\n")
