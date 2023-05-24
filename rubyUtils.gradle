@@ -169,11 +169,11 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
     def jruby = new ScriptingContainer()
     def env = jruby.environment
     def gemDir = "${projectDir}/vendor/bundle/jruby/2.6.0".toString()
+    jruby.setLoadPaths(["${projectDir}/vendor/bundle/jruby/2.6.0/gems/bundler-2.4.13/lib".toString(), "${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
     env.put "GEM_PATH", gemDir
-    env.put "RUBYLIB", "${projectDir}/vendor/bundle/jruby/2.6.0/gems/bundler-2.4.13/lib:${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()
     try {
         block(jruby)
     } finally {
