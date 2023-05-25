@@ -126,6 +126,7 @@ class PluginVersionWorking
   end
 
   def try_plugin(plugin, successful_dependencies)
+    Bundler::DepProxy.__clear!
     builder = Bundler::Dsl.new
     gemfile = LogStash::Gemfile.new(File.new(LogStash::Environment::GEMFILE_PATH, "r+")).load
     gemfile.update(plugin)
@@ -135,8 +136,6 @@ class PluginVersionWorking
     definition.resolve_remotely!
     from = PLUGIN_METADATA.fetch(plugin, {}).fetch("default-plugins", false) ? :default : :missing
     extract_versions(definition, successful_dependencies, from)
-    builder.instance_eval { @sources = [] }
-    builder.instance_eval { @dependencies = [] }
   end
 
   def extract_versions(definition, dependencies, from)
@@ -203,6 +202,14 @@ task :generate_plugins_version do
         Signal.trap(signal) do
           block.call
         end
+      end
+    end
+    DepProxy.class_eval do
+      # Bundler caches it's dep-proxy objects (which contain Gem::Dependency objects) from all resolutions.
+      # The Hash itself continues to grow between dependency resolutions and hold up a lot of memory, to avoid
+      # the issue we expose a way of clear-ing the cached objects before each plugin resolution.
+      def self.__clear!
+        @proxies.clear
       end
     end
 
