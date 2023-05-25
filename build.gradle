@@ -290,18 +290,8 @@ def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
   it.tasks.findByName("assemble")
 }
 
-def bundlerVersion = "~> 2"
-
-tasks.register("installBundler") {
-    dependsOn assemblyDeps
-    outputs.files file("${projectDir}/vendor/bundle/jruby/2.6.0/bin/bundle")
-    doLast {
-      gem(projectDir, buildDir, "bundler", bundlerVersion, "${projectDir}/vendor/bundle/jruby/2.6.0")
-  }
-}
-
 tasks.register("bootstrap") {
-    dependsOn installBundler
+    dependsOn assemblyDeps
     doLast {
       setupJruby(projectDir, buildDir)
   }
@@ -420,16 +410,8 @@ def qaVendorPath = "${qaBuildPath}/vendor"
 def qaBundledGemPath = "${qaVendorPath}/jruby/2.6.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
-tasks.register("installIntegrationTestBundler"){
-    dependsOn unpackTarDistribution
-    outputs.files file("${qaBundleBin}")
-  doLast {
-      gem(projectDir, buildDir, "bundler", bundlerVersion, qaBundledGemPath)
-  }
-}
-
 tasks.register("installIntegrationTestGems") {
-  dependsOn installIntegrationTestBundler
+  dependsOn unpackTarDistribution
   def gemfilePath = file("${projectDir}/qa/integration/Gemfile")
   inputs.files gemfilePath
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
