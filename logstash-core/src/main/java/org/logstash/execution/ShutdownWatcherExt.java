@@ -119,13 +119,18 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
                 .map(obj -> obj.callMethod(context, "stalling_threads"))
                 .toArray(IRubyObject[]::new);
 
+        if (inflightCounts.length == 0 && stallingThreads.length == 0) {
+            return context.fals;
+        }
+
         for (int i = 0; i < stallingThreads.length - 1; ++i) {
             if (!stallingThreads[i].op_equal(context, stallingThreads[i + 1]).isTrue()) {
                 return context.fals;
             }
         }
 
-        return inflightCounts.length > 0 || stallingThreads.length > 0
+        final int lastInflightCount = inflightCounts.length > 0 ? inflightCounts[inflightCounts.length - 1] : 0;
+        return lastInflightCount > 0 || stallingThreads.length > 0
                 ? context.tru
                 : context.fals;
     }
