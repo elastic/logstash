@@ -6,8 +6,8 @@
 # - and deploy (bin/logstash-plugin install)
 # of a plugins inside the current Logstash, using its JRuby
 # Usage example:
-# bin/ruby test_plugin_inside_logstash.rb -p logstash-integration-jdbc
-# bin/ruby test_plugin_inside_logstash.rb -t tier1 -k input,codec,integration
+# bin/ruby ci/test_supported_plugins.rb -p logstash-integration-jdbc
+# bin/ruby ci/test_supported_plugins.rb -t tier1 -k input,codec,integration
 
 require "open3"
 require "set"
@@ -58,7 +58,7 @@ class Plugin
     end
     system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec")
-    puts "DNDBG>> spec_result #{spec_result}"
+    #puts "DNABG>> spec_result #{spec_result}"
     return spec_result ? true : false
   end
 
@@ -165,6 +165,24 @@ def select_plugins_by_opts(options)
   select_plugins
 end
 
+def snapshot_logstash_artifacts!
+  stdout, stderr, status = Open3.capture3("git add --force -- Gemfile Gemfile.lock vendor/bundle")
+  if status != 0
+    puts "Error snapshotting Logstash on path: #{Dir.pwd}"
+    puts stderr
+    exit 1
+  end
+end
+
+def cleanup_logstash_snapshot
+  system("git restore --staged -- Gemfile Gemfile.lock vendor/bundle")
+end
+
+def restore_logstash_from_snapshot
+  system("git restore -- Gemfile Gemfile.lock vendor/bundle")
+  system("git clean -Xf -- Gemfile Gemfile.lock vendor/bundle")
+end
+
 option_parser = OptionParser.new do |opts|
   opts.on '-t', '--tiers tier1, tier2', Array, 'Use to select which tier to test. If no provided mean "all"'
   opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
@@ -178,8 +196,13 @@ validate_options!(options)
 
 plugins = select_plugins_by_opts(options)
 
-Dir.chdir(plugins_folder) do
-  plugins.each do |plugin_name|
+# save to local git for test isolation
+snapshot_logstash_artifacts!
+
+plugins.each do |plugin_name|
+   restore_logstash_from_snapshot
+
+   Dir.chdir(plugins_folder) do
     plugin = Plugin.new(plugins_folder, plugin_name)
     plugin.git_clone
 
@@ -214,11 +237,17 @@ Dir.chdir(plugins_folder) do
   end
 end
 
-puts "########################################"
-puts " Failed plugins:"
-puts "----------------------------------------"
-failed_plugins.each {|failure| puts "- #{failure}"}
-puts "########################################"
+# restore original git status to avoid to accidentally commit build artifacts
+cleanup_logstash_snapshot
 
+if failed_plugins
+  puts "########################################"
+  puts " Failed plugins:"
+  puts "----------------------------------------"
+  failed_plugins.each {|failure| puts "- #{failure}"}
+  puts "########################################"
+else
+  puts "NO ERROR ON PLUGINS!"
+end
 
 
