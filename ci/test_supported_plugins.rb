@@ -35,9 +35,17 @@ class Plugin
     @plugin_base_folder = "#{plugins_folder}/#{plugin_name}"
   end
 
-  def git_clone
+  def git_retrieve
     if File.directory?(plugin_name)
-      puts "#{plugin_name} already cloned locally"
+      puts "#{plugin_name} already cloned locally, proceed with updating..."
+      Dir.chdir(plugin_name) do
+        system("git restore -- .")
+        puts "Cleaning following files"
+        system("git clean -n ")
+        puts "Proceed with cleaning"
+        system("git clean -Xf")
+      end
+      puts "#{plugin_name} updated"
       return
     end
 
@@ -204,7 +212,7 @@ plugins.each do |plugin_name|
 
    Dir.chdir(plugins_folder) do
     plugin = Plugin.new(plugins_folder, plugin_name)
-    plugin.git_clone
+    plugin.git_retrieve
 
     status = Dir.chdir(plugin_name) do
       unless plugin.execute_rspec
