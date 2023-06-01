@@ -8,6 +8,9 @@
 # Usage example:
 # bin/ruby ci/test_supported_plugins.rb -p logstash-integration-jdbc
 # bin/ruby ci/test_supported_plugins.rb -t tier1 -k input,codec,integration
+#
+# The script uses OS's temp folder unless the environment variable LOGSTASH_PLUGINS_TMP is specified.
+# The path of such variable should be absolute.
 
 require "open3"
 require "set"
@@ -20,7 +23,8 @@ logstash_plugin_cli = ENV['LOGSTASH_PATH'] + "/bin/logstash-plugin"
 
 # it has to be out of logstash local close else plugins' Gradle script
 # would interfere with Logstash's one
-base_folder = "/tmp"
+base_folder =  ENV['LOGSTASH_PLUGINS_TMP'] || (require 'tmpdir'; Dir.tmpdir)
+puts "Using #{base_folder} as temporary clone folder"
 plugins_folder = File.join(base_folder, "plugin_clones")
 unless File.directory?(plugins_folder)
   Dir.mkdir(plugins_folder)
