@@ -13,7 +13,7 @@ require "open3"
 require "set"
 require 'optparse'
 
-ENV['LOGSTASH_PATH'] = Dir.pwd
+ENV['LOGSTASH_PATH'] = File.expand_path('..', __dir__)
 ENV['LOGSTASH_SOURCE'] = '1'
 
 logstash_plugin_cli = ENV['LOGSTASH_PATH'] + "/bin/logstash-plugin"
