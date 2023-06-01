@@ -195,6 +195,10 @@ def restore_logstash_from_snapshot
   system("git clean -Xf -- Gemfile Gemfile.lock vendor/bundle")
 end
 
+def setup_logstash_for_development
+  system("./gradlew installDevelopmentGems")
+end
+
 option_parser = OptionParser.new do |opts|
   opts.on '-t', '--tiers tier1, tier2', Array, 'Use to select which tier to test. If no provided mean "all"'
   opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
@@ -207,6 +211,8 @@ option_parser.parse!(into: options)
 validate_options!(options)
 
 plugins = select_plugins_by_opts(options)
+
+setup_logstash_for_development
 
 # save to local git for test isolation
 snapshot_logstash_artifacts!
