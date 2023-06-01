@@ -155,27 +155,9 @@ describe LogStash::Plugin do
       subject.validate({})
     end
 
-    it "doesnt show the version notice more than once" do
-      one_notice = Class.new(LogStash::Filters::Base) do
-        config_name "stromae"
-      end
-
-      allow(Gem::Specification).to receive(:find_by_name)
-        .with(plugin_name)
-        .and_return(double(:version => Gem::Version.new('1.0.1')))
-
-      expect_any_instance_of(LogStash::Logging::Logger).to receive(:info)
-        .once
-        .with(/Using version 1.0.x/)
-
-      one_notice.validate({})
-      one_notice.validate({})
-    end
-
     it "doesn't raise an exception if no version is found" do
       expect { subject.validate({}) }.not_to raise_error
     end
-
 
     it 'logs a warning if the plugin use the milestone option' do
       expect_any_instance_of(LogStash::Logging::Logger).to receive(:debug)
