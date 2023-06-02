@@ -309,7 +309,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elasticsearch (3.15.0)
+    logstash-filter-elasticsearch (3.15.1)
       elasticsearch (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
@@ -413,7 +413,7 @@ GEM
       logstash-codec-plain
       logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-elasticsearch (4.17.1)
+    logstash-input-elasticsearch (4.17.2)
       elasticsearch (>= 7.17.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
