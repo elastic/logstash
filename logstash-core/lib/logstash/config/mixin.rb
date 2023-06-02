@@ -54,9 +54,6 @@ module LogStash::Config::Mixin
   attr_accessor :config
   attr_accessor :original_params
 
-  PLUGIN_VERSION_1_0_0 = LogStash::Util::PluginVersion.new(1, 0, 0)
-  PLUGIN_VERSION_0_9_0 = LogStash::Util::PluginVersion.new(0, 9, 0)
-
   # This method is called when someone does 'include LogStash::Config'
   def self.included(base)
     # Add the DSL methods to the 'base' given.
@@ -257,7 +254,6 @@ module LogStash::Config::Mixin
         end
       end
       subclass.instance_variable_set("@config", subconfig)
-      @@version_notice_given = false
     end # def inherited
 
     def validate(params)
@@ -265,43 +261,12 @@ module LogStash::Config::Mixin
       @plugin_type = ancestors.find { |a| a.name =~ /::Base$/ }.config_name
       is_valid = true
 
-      print_version_notice
-
       is_valid &&= validate_check_invalid_parameter_names(params)
       is_valid &&= validate_check_required_parameter_names(params)
       is_valid &&= validate_check_parameter_values(params)
 
       return is_valid
     end # def validate
-
-    # TODO: Remove in 6.0
-    def print_version_notice
-      return if @@version_notice_given
-
-      begin
-        plugin_version = LogStash::Util::PluginVersion.find_plugin_version!(@plugin_type, @config_name)
-
-        if plugin_version < PLUGIN_VERSION_1_0_0
-          if plugin_version < PLUGIN_VERSION_0_9_0
-            self.logger.info(I18n.t("logstash.plugin.version.0-1-x",
-                                :type => @plugin_type,
-                                :name => @config_name,
-                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
-          else
-            self.logger.info(I18n.t("logstash.plugin.version.0-9-x",
-                                :type => @plugin_type,
-                                :name => @config_name,
-                                :LOGSTASH_VERSION => LOGSTASH_VERSION))
-          end
-        end
-      rescue LogStash::PluginNoVersionError
-        # This can happen because of one of the following:
-        # - The plugin is loaded from the plugins.path and contains no gemspec.
-        # - The plugin is defined in a universal plugin, so the loaded plugin doesn't correspond to an actual gemspec.
-      ensure
-        @@version_notice_given = true
-      end
-    end
 
     def validate_check_invalid_parameter_names(params)
       invalid_params = params.keys
