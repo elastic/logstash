@@ -95,51 +95,73 @@ describe LogStash::ShutdownWatcher do
     end
   end
 
-  context "when pipeline inflight events are stalled but threads are not" do
-    let(:increasing_count) { (1..5000).to_a }
+  context "when pipeline inflight events are stalled" do
+    let(:inflight_counters) { (1..5000).to_a }
 
     before :each do
-      allow(reporter_snapshot).to receive(:inflight_count).and_return(*increasing_count)
-      allow(reporter_snapshot).to receive(:stalling_threads) {{ id: rand(100)}}
+      allow(reporter_snapshot).to receive(:inflight_count).and_return(*inflight_counters)
     end
 
-    describe ".unsafe_shutdown = false" do
+    context "and threads are stalled" do
       before :each do
-        subject.class.unsafe_shutdown = false
+        allow(reporter_snapshot).to receive(:stalling_threads) {{}}
       end
 
-      it "shouldn't force the shutdown" do
-        expect(subject).to_not receive(:force_exit)
-        thread = Thread.new(subject) {|subject| subject.start }
-        sleep 0.1 until subject.attempts_count > check_threshold
-        subject.stop!
-        thread.join
-        expect(thread.join(60)).to_not be_nil
+      describe ".unsafe_shutdown = false" do
+        before :each do
+          subject.class.unsafe_shutdown = false
+        end
+
+        it "shouldn't force the shutdown" do
+          expect(subject).to_not receive(:force_exit)
+          thread = Thread.new(subject) {|subject| subject.start }
+          sleep 0.1 until subject.attempts_count > check_threshold
+          subject.stop!
+          expect(thread.join(60)).to_not be_nil
+        end
       end
     end
-  end
 
-  context "when pipeline has no more inflight events but threads are stalled" do
-    let(:increasing_count) { Array.new(5000, 0) }
-    let(:single_thread) { {} }
-
-    before :each do
-      allow(reporter_snapshot).to receive(:inflight_count).and_return(*increasing_count)
-      allow(reporter_snapshot).to receive(:stalling_threads) {single_thread}
-    end
-
-    describe ".unsafe_shutdown = true" do
+    context "and threads are not stalled" do
       before :each do
-        subject.class.unsafe_shutdown = false
+        allow(reporter_snapshot).to receive(:stalling_threads) {{ id: rand(100)}}
       end
 
-      it "shouldn't force the shutdown" do
-        expect(subject).to_not receive(:force_exit)
-        thread = Thread.new(subject) {|subject| subject.start }
-        sleep 0.1 until subject.attempts_count > check_threshold
-        subject.stop!
-        thread.join
-        expect(thread.join(60)).to_not be_nil
+      describe ".unsafe_shutdown = false" do
+        before :each do
+          subject.class.unsafe_shutdown = false
+        end
+
+        it "shouldn't force the shutdown" do
+          expect(subject).to_not receive(:force_exit)
+          thread = Thread.new(subject) {|subject| subject.start }
+          sleep 0.1 until subject.attempts_count > check_threshold
+          subject.stop!
+          expect(thread.join(60)).to_not be_nil
+        end
+      end
+    end
+
+    context "and all reported inflight_count are zeros" do
+      let(:inflight_counters) { Array.new(5000, 0) }
+
+      before :each do
+        subject.class.unsafe_shutdown = true
+        allow(reporter_snapshot).to receive(:stalling_threads) {{ id: rand(100)}}
+      end
+
+      describe ".unsafe_shutdown = false" do
+        before :each do
+          subject.class.unsafe_shutdown = false
+        end
+
+        it "shouldn't force the shutdown" do
+          expect(subject).to_not receive(:force_exit)
+          thread = Thread.new(subject) {|subject| subject.start }
+          sleep 0.1 until subject.attempts_count > check_threshold
+          subject.stop!
+          expect(thread.join(60)).to_not be_nil
+        end
       end
     end
   end
