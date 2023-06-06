@@ -25,14 +25,21 @@ require "pathname"
 class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   TYPES = [ "input", "filter", "output", "codec" ]
+  LANGUAGES = ["ruby", "java"]
 
   option "--type", "TYPE", "Type of the plugin {input, filter, codec, output}s", :required => true
+  option "--language", "LANGUAGE", "Implementation language of the plugin (Ruby, Java)", :default => "ruby"
   option "--name", "PLUGIN", "Name of the new plugin", :required => true
   option "--path", "PATH", "Location where the plugin skeleton will be created", :default => Dir.pwd
 
   def execute
     validate_params
-    source = File.join(File.dirname(__FILE__), "templates", "#{type}-plugin")
+    source = File.join(File.dirname(__FILE__), "templates", "#{language.downcase}", "#{type}-plugin")
+    unless Dir.exist?(source)
+      puts "ERROR: Template project for #{language.downcase} #{type} plugin is not yet available"
+      return
+    end
+
     @target_path = File.join(path, full_plugin_name)
     FileUtils.mkdir(@target_path)
     puts " Creating #{@target_path}"
@@ -50,6 +57,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   def validate_params
     raise(ArgumentError, "should be one of: input, filter, codec or output") unless TYPES.include?(type)
+    raise(ArgumentError, "should be one of: Ruby or Java") unless LANGUAGES.include?(language.downcase)
   end
 
   def create_scaffold(source, target)
@@ -68,7 +76,16 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       else
         # copy the new file, in case of being an .erb file should render first
         if source_entry.end_with?("erb")
-          target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
+          context = LogStash::PluginManager::RenderContext.new(options)
+          if language.downcase == "ruby"
+            target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
+          elsif language.downcase == "java"
+            example_filename = "Java#{type.capitalize}Example"
+            target_entry = target_entry.gsub(/.erb$/,"").gsub(example_filename, context.classify(name))
+          else
+            raise(ArgumentError, "Can't recognize language #{language}")
+          end
+
           File.open(target_entry, "w") { |f| f.write(render(source_entry)) }
         else
           FileUtils.cp(source_entry, target_entry)
@@ -89,6 +106,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
     git_data = get_git_info
     @options ||= {
       :plugin_name => name,
+      :plugin_type => type,
       :author => git_data.author,
       :email  => git_data.email,
       :min_version => "2.0",
