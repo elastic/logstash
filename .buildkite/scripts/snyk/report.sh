@@ -34,10 +34,20 @@ download_snyk() {
 # Reports vulnerabilities to the Snyk
 report() {
   echo "Reporting to Snyk..."
+  REMOTE_REPO_URL=$TARGET_BRANCH
+  if [ "$REMOTE_REPO_URL" != "$MAIN_BRANCH" ]; then
+    MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
+    REMOTE_REPO_URL="$MAJOR_VERSION".latest
+    echo "Using '$REMOTE_REPO_URL' remote repo url."
+  fi
+
+  # adding git add to Snyk tag to improve visibility
+  GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/\1/")
+
   vault_path=secret/ci/elastic-logstash-filter-elastic-integration/snyk-creds
   SNYK_TOKEN=$(vault read -field=token "${vault_path}")
   ./snyk auth "$SNYK_TOKEN"
-  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$TARGET_BRANCH" --target-reference="$TARGET_BRANCH" --detection-depth=6
+  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD"
 }
 
 resolve_latest_branch
