@@ -43,6 +43,7 @@ This section summarizes the changes in the following releases:
 
 * Remove obsolete notice when using plugins with version < 1.0.0 https://github.com/elastic/logstash/pull/15077[#15077]
 * Docs: Add instructions to verify Docker install images (#15058) (#15064) https://github.com/elastic/logstash/pull/15064[#15064]
+ * Fixes a regression introduced in 8.8.0 which could prevent Monitoring or Central Management from establishing a connection to Elasticsearch in some SSL configurations https://github.com/elastic/logstash/issues/15068[#15068]
 
 ==== Plugins
 
