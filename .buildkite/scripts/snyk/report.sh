@@ -2,52 +2,45 @@
 
 set -e
 
-MAIN_BRANCH="main"
+TARGET_BRANCH="main"
 cd .buildkite/scripts
 
 # Resolves the branch based on ELASTIC_STACK_VERSION
-# Clones the Logstash repo and builds
-clone_and_build_logstash() {
-  BRANCH="$MAIN_BRANCH"
-  if [ "$ELASTIC_STACK_VERSION" == "$MAIN_BRANCH" ]; then
-    echo "Using $ELASTIC_STACK_VERSION branch."
-  else
+resolve_latest_branch() {
+  if [ "$ELASTIC_STACK_VERSION" != "main" ]; then
     source snyk/resolve_stack_version.sh
-  fi
-
-  if [ "$ELASTIC_STACK_VERSION" != "$MAIN_BRANCH" ]; then
     # parse major and minor versions
     IFS='.'
     read -a VERSIONS <<< "$ELASTIC_STACK_VERSION"
-
-    BRANCH="${VERSIONS[0]}.${VERSIONS[1]}"
-    echo "Using $BRANCH branch."
+    TARGET_BRANCH="${VERSIONS[0]}.${VERSIONS[1]}"
   fi
+  echo "Using $TARGET_BRANCH branch."
+}
 
-  git clone --depth 1 --branch "$BRANCH" https://github.com/elastic/logstash.git
+# Clones the Logstash repo and builds to generate Gemlock file where Snyk scans
+clone_and_build_logstash() {
+  echo "Cloning logstash repo..."
+  git clone --depth 1 --branch "$TARGET_BRANCH" https://github.com/elastic/logstash.git
   cd logstash && ./gradlew installDefaultGems && cd ..
 }
 
 # Downloads snyk distribution
 download_snyk() {
+  echo "Downloading snyk..."
   curl https://static.snyk.io/cli/latest/snyk-linux -o snyk
   chmod +x ./snyk
 }
 
 # Reports vulnerabilities to the Snyk
 report() {
-  REMOTE_REPO_URL=$MAIN_BRANCH
-  if [ "$ELASTIC_STACK_VERSION" != "$MAIN_BRANCH" ]; then
-    MAJOR_VERSION=$(echo "$ELASTIC_STACK_VERSION"| cut -d'.' -f 1)
-    REMOTE_REPO_URL="$MAJOR_VERSION".latest
-    echo "Using '$REMOTE_REPO_URL' remote repo url."
-  fi
-
-  # TODO: get logstash machine TOKEN from VAULT
-  # ./snyk auth "TOKEN"
-  # ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=10
+  echo "Reporting to Snyk..."
+  vault_path=secret/ci/elastic-logstash-filter-elastic-integration/snyk-creds
+  SNYK_TOKEN=$(vault read -field=token "${vault_path}")
+  ./snyk auth "$SNYK_TOKEN"
+  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$TARGET_BRANCH" --target-reference="$TARGET_BRANCH" --detection-depth=6
 }
 
+resolve_latest_branch
 clone_and_build_logstash
 cd logstash
 download_snyk

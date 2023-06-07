@@ -3,13 +3,13 @@ steps:
     command:
       - .buildkite/scripts/snyk/report.sh
     env:
-      ELASTIC_STACK_VERSION: "8.latest"
+      ELASTIC_STACK_VERSION: "8.x"
 
   - label: ":hammer: Snyk 7.latest branch report"
     command:
       - .buildkite/scripts/snyk/report.sh
     env:
-      ELASTIC_STACK_VERSION: "7.latest"
+      ELASTIC_STACK_VERSION: "7.x"
 
   - label: ":hammer: Snyk main branch report"
     command:
