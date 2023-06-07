@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-8-1,Logstash 8.8.1>>
 * <<logstash-8-8-0,Logstash 8.8.0>>
 * <<logstash-8-7-1,Logstash 8.7.1>>
 * <<logstash-8-7-0,Logstash 8.7.0>>
@@ -35,6 +36,134 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-8-1]]
+=== Logstash 8.8.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.8.1
+
+* Remove obsolete plugin version notice https://github.com/elastic/logstash/pull/15032[#15032]
+* added psych to dependency list and updated NOTICE.txt https://github.com/elastic/logstash/pull/15050[#15050]
+* use setLoadPaths instead of RUBYLIB https://github.com/elastic/logstash/pull/15059[#15059]
+* Backport PR #15032 to 8.8: Remove obsolete plugin version notice https://github.com/elastic/logstash/pull/15077[#15077]
+* Backport PR #15050 to 8.8: added psych to dependency list and updated NOTICE.txt https://github.com/elastic/logstash/pull/15079[#15079]
+* Backport PR #15059 to 8.8: use setLoadPaths instead of RUBYLIB https://github.com/elastic/logstash/pull/15080[#15080]
+
+=== Logstash Commits between 8.8 and 8.8.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.8.0..8.8"
+
+f1a41e558 - (HEAD -> 8.8, origin/8.8) Update patch plugin versions in gemfile lock (#15082) (5 days ago) <github-actions[bot]>
+6405304ba - Update patch plugin versions in gemfile lock for 8.8.1 (#15081) (5 days ago) <github-actions[bot]>
+7624fb1ef - use setLoadPaths instead of RUBYLIB (#15059) (#15080) (5 days ago) <github-actions[bot]>
+0d28859b1 - added psych to dependency list and updated NOTICE.txt (#15050) (#15079) (5 days ago) <github-actions[bot]>
+76492d8e4 - Remove obsolete plugin version notice (#15032) (#15077) (5 days ago) <github-actions[bot]>
+7c519ef32 - Bump 8.8.1 (#15060) (13 days ago) <Andrea Selva>
+d890ebed0 - [Docs] Add instructions to verify Docker install images (#15058) (#15064) (2 weeks ago) <David Kilfoyle>
+9aee71574 - Release notes for 8.8.0 (#15038) (2 weeks ago) <github-actions[bot]>
+547335fa5 - Release notes for 8.7.1 (#15024) (#15028) (6 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.8.0..8.8 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.6 -> 6.2.7
+logstash-filter-anonymize: 3.0.6 -> 3.0.7
+logstash-filter-elasticsearch: 3.15.0 -> 3.15.1
+logstash-filter-fingerprint: 3.4.2 -> 3.4.3
+logstash-filter-mutate: 3.5.6 -> 3.5.7
+logstash-filter-translate: 3.4.0 -> 3.4.1
+logstash-filter-truncate: 1.0.5 -> 1.0.6
+logstash-input-beats: 6.6.0 -> 6.6.1
+logstash-input-elasticsearch: 4.17.0 -> 4.17.2
+logstash-input-http: 3.7.0 -> 3.7.1
+logstash-input-tcp: 6.3.2 -> 6.3.3
+logstash-integration-jdbc: 5.4.1 -> 5.4.3
+logstash-integration-rabbitmq: 7.3.1 -> 7.3.2
+logstash-output-elasticsearch: 11.15.1 -> 11.15.7
+logstash-output-email: 4.1.1 -> 4.1.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.7*
+
+* Fix: when decoding in an ecs_compatibility mode, timestamp-normalized fields now handle provided-but-empty values https://github.com/logstash-plugins/logstash-codec-cef/issues/102[#102]
+
+*Anonymize Filter - 3.0.7*
+
+* pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
+
+*Elasticsearch Filter - 3.15.1*
+
+* Fixes a regression introduced in 3.15.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations
+
+*Fingerprint Filter - 3.4.3*
+
+* pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/74[#74]
+
+*Mutate Filter - 3.5.7*
+
+* Clarify that `split` and `join` also support strings https://github.com/logstash-plugins/logstash-filter-mutate/pull/164[#164]
+
+*Translate Filter - 3.4.1*
+
+* Fix the limitation of the size of yaml file that exceeds 3MB https://github.com/logstash-plugins/logstash-filter-translate/pull/97[#97]
+
+*Truncate Filter - 1.0.6*
+
+* Make 0.0.8 the lower bound for flores dependency https://github.com/logstash-plugins/logstash-filter-truncate/pull/9[#9]
+
+*Beats Input - 6.6.1*
+
+* update netty to 4.1.93 and jackson to 2.13.5 https://github.com/logstash-plugins/logstash-input-beats/pull/472[#472]
+
+*Elasticsearch Input - 4.17.2*
+
+* Fixes a regression introduced in 4.17.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/193[#193]
+
+* Fix: scroll slice high memory consumption https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/189[#189]
+
+*Http Input - 3.7.1*
+
+* bump netty to 4.1.93 https://github.com/logstash-plugins/logstash-input-http/pull/166[#166]
+
+*Tcp Input - 6.3.3*
+
+* bump netty to 4.1.93 https://github.com/logstash-plugins/logstash-input-tcp/pull/212[#212]
+
+*Jdbc Integration - 5.4.3*
+
+* Fix crash when metadata file can't be deleted after moving under path.data https://github.com/logstash-plugins/logstash-integration-jdbc/pull/136[#136]
+
+* Doc: described default_hash and tag_on_default_use interaction filter plugin https://github.com/logstash-plugins/logstash-integration-jdbc/pull/122[#122]
+* Added new settings `statement_retry_attempts` and `statement_retry_attempts_wait_time` for retry of failed sql statement execution https://github.com/logstash-plugins/logstash-integration-jdbc/pull/123[#123]
+
+*Rabbitmq Integration - 7.3.2*
+
+* Change `tls_certificate_password` type to `password` to protect from leaks in the logs https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/54[#54]
+
+*Elasticsearch Output - 11.15.7*
+
+* Fixes a regression introduced in 11.14.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1138[#1138]
+
+* Fix: avoid to reject a batch when the Elasticsearch connection is alive and the processing should continue https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1132[#1132].
+
+* Fixes `undefined 'shutdown_requested' method` error when plugin checks if shutdown request is received https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1134[#1134]
+
+* Improved connection handling under several partial-failure scenarios https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1130[#1130]
+* Ensures an HTTP connection can be established before adding the connection to the pool
+* Ensures that the version of the connected Elasticsearch is retrieved _successfully_ before the connection is added to the pool.
+* Fixes a crash that could occur when the plugin is configured to connect to a live HTTP resource that is _not_ Elasticsearch
+
+*  Removes the ECS v8 unreleased preview warning https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1131[#1131]
+
+* Restores DLQ logging behavior from 11.8.x to include the action-tuple as structured https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1105[#1105]
+
+*Email Output - 4.1.2*
+
+* Change `password` config type to `Password` to prevent leaks in debug logs https://github.com/logstash-plugins/logstash-output-email/pull/65[#65]
 
 
 [[logstash-8-8-0]]
