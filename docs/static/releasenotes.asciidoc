@@ -57,7 +57,7 @@ This section summarizes the changes in the following releases:
 
 *Elasticsearch Filter - 3.15.1*
 
-* Fixes a regression introduced in 3.15.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations
+* Fixes a regression introduced in 3.15.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/169[#169]
 
 *Fingerprint Filter - 3.4.3*
 
