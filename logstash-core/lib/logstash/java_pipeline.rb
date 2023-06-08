@@ -519,7 +519,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   def stalling_threads_info
-    (plugin_threads_info << Util.thread_info(@thread))
+    all_threads = plugin_threads_info
+    if @thread
+      all_threads << Util.thread_info(@thread)
+    end
+
+    all_threads
       .reject {|t| t["blocked_on"] } # known benign blocking statuses
       .each {|t| t.delete("backtrace") }
       .each {|t| t.delete("blocked_on") }
