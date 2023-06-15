@@ -1,18 +1,5 @@
 steps:
-  - label: ":hammer: Snyk 8.latest branch report"
+  # reports main, previous (ex: 7.latest) and current (ex: 8.latest) release branches to Snyk
+  - label: ":hammer: Report to Snyk"
     command:
       - .buildkite/scripts/snyk/report.sh
-    env:
-      ELASTIC_STACK_VERSION: "8.x"
-
-  - label: ":hammer: Snyk 7.latest branch report"
-    command:
-      - .buildkite/scripts/snyk/report.sh
-    env:
-      ELASTIC_STACK_VERSION: "7.x"
-
-  - label: ":hammer: Snyk main branch report"
-    command:
-      - .buildkite/scripts/snyk/report.sh
-    env:
-      ELASTIC_STACK_VERSION: "main" # current

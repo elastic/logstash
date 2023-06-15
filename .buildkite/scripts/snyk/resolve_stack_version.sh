@@ -8,22 +8,18 @@ set -e
 
 VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/logstash_releases.json"
 
-if [ "$ELASTIC_STACK_VERSION" ]; then
-    echo "Fetching versions from $VERSION_URL"
-    VERSIONS=$(curl --silent $VERSION_URL)
-    ELASTIC_STACK_RETRIEVED_VERSION=$(echo $VERSIONS | jq '.snapshots."'"$ELASTIC_STACK_VERSION"'"')
-    if [[ "$ELASTIC_STACK_RETRIEVED_VERSION" != "null" ]]; then
-      # remove starting and trailing double quotes
-      ELASTIC_STACK_RETRIEVED_VERSION="${ELASTIC_STACK_RETRIEVED_VERSION%\"}"
-      ELASTIC_STACK_RETRIEVED_VERSION="${ELASTIC_STACK_RETRIEVED_VERSION#\"}"
-      echo "Translated $ELASTIC_STACK_VERSION to ${ELASTIC_STACK_RETRIEVED_VERSION}"
-      export ELASTIC_STACK_VERSION=$ELASTIC_STACK_RETRIEVED_VERSION
-    fi
+echo "Fetching versions from $VERSION_URL"
+VERSIONS=$(curl --silent $VERSION_URL)
+SNAPSHOTS=$(echo $VERSIONS | jq '.snapshots' | jq 'keys | .[]')
+IFS=$'\n' read -d "\034" -r -a SNAPSHOT_KEYS <<<"${SNAPSHOTS}\034"
 
-    echo "Using $ELASTIC_STACK_VERSION version."
-else
-    echo "Please set the ELASTIC_STACK_VERSION environment variable"
-    echo "For example: export ELASTIC_STACK_VERSION=8.x"
-    echo "OR export ELASTIC_STACK_VERSION=main"
-    exit 1
-fi
+SNAPSHOT_VERSIONS=()
+for KEY in "${SNAPSHOT_KEYS[@]}"
+do
+  # remove starting and trailing double quotes
+  KEY="${KEY%\"}"
+  KEY="${KEY#\"}"
+  SNAPSHOT_VERSION=$(echo $VERSIONS | jq '.snapshots."'"$KEY"'"')
+  echo "Resolved snapshot version: $SNAPSHOT_VERSION"
+  SNAPSHOT_VERSIONS+=("$SNAPSHOT_VERSION")
+done
