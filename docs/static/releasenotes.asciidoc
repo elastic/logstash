@@ -120,6 +120,42 @@ This section summarizes the changes in the following releases:
 [[logstash-8-8-0]]
 === Logstash 8.8.0 Release Notes
 
+[[known-issues-8.8.0]]
+==== Known issues
+
+Due to a recent change in the `logstash-output-elasticserach` plugin,
+this and any other version of Logstash using the Elasticsearch output plugin version `>= 11.14.0` and `< 11.15.8`,
+may fail to start due to a monitoring and central management SSL/TLS settings regression.
+When impacted by this issue, Logstash fails to start and log an error similar to the following:
+```
+[logstash.licensechecker.licensereader] Failed to perform request {:message=>"PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target", :exception=>Manticore::ClientProtocolException, :cause=>#<Java::JavaxNetSsl::SSLHandshakeException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target>}
+```
+
+**Resolution**
+
+A successful Elasticsearch output plugin update to version `11.15.8` or higher will
+resolve this issue:
+
+```
+bin/logstash-plugin update logstash-output-elasticsearch
+```
+
+OR
+
+Specify the `ca_trusted_fingerprint` setting in the `logstash.yml`.
+The certificate fingerprint can be extract with:
+
+```
+cat your_ca.cert | openssl x509 -outform der | sha256sum | awk '{print $1}'
+```
+
+Then set the following on `logstash.yml` using the output from the previous command:
+
+```
+xpack.monitoring.elasticsearch.ssl.ca_trusted_fingerprint: "<value>"
+xpack.management.elasticsearch.ssl.ca_trusted_fingerprint: "<value>"
+```
+
 [[notable-8.8.0]]
 ==== Notable issues fixed
 
