@@ -34,7 +34,7 @@ module LogStash
             else
               [key, level]
             end
-          end.select {|value| !value.nil?} # skip nil which result in ArgumentError since JRuby 9.4
+          end.reject {|value| value.nil?} # skip nil which result in ArgumentError since JRuby 9.4
           Hash[couplesList]
         end
 
