@@ -3,6 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-8-1,Logstash 8.8.1>>
+* <<logstash-8-8-0,Logstash 8.8.0>>
 * <<logstash-8-7-1,Logstash 8.7.1>>
 * <<logstash-8-7-0,Logstash 8.7.0>>
 * <<logstash-8-6-2,Logstash 8.6.2>>
@@ -35,6 +37,148 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+[[logstash-8-8-1]]
+=== Logstash 8.8.1 Release Notes
+
+* Remove obsolete notice when using plugins with version < 1.0.0 https://github.com/elastic/logstash/pull/15077[#15077]
+* Docs: Add instructions to verify Docker install images https://github.com/elastic/logstash/pull/15064[#15064]
+* Fixes a regression introduced in 8.8.0 which could prevent Monitoring or Central Management from establishing a connection to Elasticsearch in some SSL configurations https://github.com/elastic/logstash/issues/15068[#15068]
+
+==== Plugins
+
+*Cef Codec - 6.2.7*
+
+* Fix: when decoding in an ecs_compatibility mode, timestamp-normalized fields now handle provided-but-empty values https://github.com/logstash-plugins/logstash-codec-cef/issues/102[#102]
+
+*Anonymize Filter - 3.0.7*
+
+* Pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
+
+*Elasticsearch Filter - 3.15.1*
+
+* Fixes a regression introduced in 3.15.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/169[#169]
+
+*Fingerprint Filter - 3.4.3*
+
+* Pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/74[#74]
+
+*Mutate Filter - 3.5.7*
+
+* Docs: Clarify that `split` and `join` also support strings https://github.com/logstash-plugins/logstash-filter-mutate/pull/164[#164]
+
+*Translate Filter - 3.4.1*
+
+* Fix the limitation of the size of yaml file that exceeds 3MB https://github.com/logstash-plugins/logstash-filter-translate/pull/97[#97]
+
+*Truncate Filter - 1.0.6*
+
+* Make 0.0.8 the lower bound for flores dependency https://github.com/logstash-plugins/logstash-filter-truncate/pull/9[#9]
+
+*Beats Input - 6.6.1*
+
+* Update netty to 4.1.93 and jackson to 2.13.5 https://github.com/logstash-plugins/logstash-input-beats/pull/472[#472]
+
+*Elasticsearch Input - 4.17.2*
+
+* Fixes a regression introduced in 4.17.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/193[#193]
+* Fixes scroll slice high memory consumption https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/189[#189]
+
+*Http Input - 3.7.1*
+
+* Update netty to 4.1.93 https://github.com/logstash-plugins/logstash-input-http/pull/166[#166]
+
+*Tcp Input - 6.3.3*
+
+* Update netty to 4.1.93 https://github.com/logstash-plugins/logstash-input-tcp/pull/212[#212]
+
+*Jdbc Integration - 5.4.3*
+
+* Fix: crash when metadata file can't be deleted after moving under path.data https://github.com/logstash-plugins/logstash-integration-jdbc/pull/136[#136]
+* Add new settings `statement_retry_attempts` and `statement_retry_attempts_wait_time` for retry of failed sql statement execution https://github.com/logstash-plugins/logstash-integration-jdbc/pull/123[#123]
+* Doc: described default_hash and tag_on_default_use interaction filter plugin https://github.com/logstash-plugins/logstash-integration-jdbc/pull/122[#122]
+
+*Rabbitmq Integration - 7.3.2*
+
+* Change `tls_certificate_password` type to `password` to protect from leaks in the logs https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/54[#54]
+
+*Elasticsearch Output - 11.15.7*
+
+* Fixes a regression introduced in 11.14.0 which could prevent a connection from being established to Elasticsearch in some SSL configurations https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1138[#1138]
+* Fixes possiblity of data loss when pipeline terminates very quickly after startup https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1132[#1132].
+* Fixes `undefined 'shutdown_requested' method` error when plugin checks if shutdown request is received https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1134[#1134]
+* Improves connection handling under several partial-failure scenarios https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1130[#1130]
+** Ensures an HTTP connection can be established before adding the connection to the pool
+** Ensures that the version of the connected Elasticsearch is retrieved _successfully_ before the connection is added to the pool.
+** Fixes a crash that could occur when the plugin is configured to connect to a live HTTP resource that is _not_ Elasticsearch
+* Removes the ECS v8 unreleased preview warning https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1131[#1131]
+* Restores DLQ logging behavior from 11.8.x to include the action-tuple as structured https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1105[#1105]
+
+*Email Output - 4.1.2*
+
+* Change `password` config type to `Password` to prevent leaks in debug logs https://github.com/logstash-plugins/logstash-output-email/pull/65[#65]
+
+[[logstash-8-8-0]]
+=== Logstash 8.8.0 Release Notes
+
+[[notable-8.8.0]]
+==== Notable issues fixed
+
+* Fix a race condition that prevents Logstash from updating a pipeline's configuration with in-flight events
+  experiencing connection errors. https://github.com/elastic/logstash/issues/14739[#14739]
+  This issue primarily manifests following the update of Elasticsearch credentials through Central Management,
+  after credentials expired while events were in-flight. It causes the Elasticsearch Output to get stuck attempting
+  to send events with the expired credentials instead of using the updated ones.
+  To address this problem, Logstash has improved the pipeline shutdown phase functionality to allow an output plugin
+  to request the termination of the in-flight batch of events; hence preventing the need for administrators
+  to manually restart Logstash. Furthermore, when used in combination with a persistent queue to prevent data loss,
+  the batch is eligible for reprocessing on pipeline restart.
+  Plugin developers can now decide whether to make use of such functionality on output plugins. https://github.com/elastic/logstash/pull/14940[#14940]
+
+[[dependencies-8.8.0]]
+==== Updates to dependencies
+
+* Updates Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
+
+==== Plugins
+
+*Elasticsearch Filter - 3.15.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/168[#168]
+
+* Added support for configurable retries with new `retry_on_failure` and `retry_on_status` options https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/160[#160]
+
+*Memcached Filter - 1.2.0*
+
+* Upgrade Dalli to 3.x https://github.com/logstash-plugins/logstash-filter-memcached/pull/33[#33]
+
+*Beats Input - 6.6.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-beats/pull/470[#470]
+
+*Elasticsearch Input - 4.17.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/185[#185]
+
+*Http Input - 3.7.0*
+
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-input-http/pull/165[#165]
+
+*Kafka Integration - 11.2.1*
+
+* Fix nil exception to empty headers of record during event metadata assignment https://github.com/logstash-plugins/logstash-integration-kafka/pull/140[#140]
+* Added TLS truststore and keystore settings specifically to access the schema registry https://github.com/logstash-plugins/logstash-integration-kafka/pull/137[#137]
+* Added config `group_instance_id` to use the Kafka's consumer static membership feature https://github.com/logstash-plugins/logstash-integration-kafka/pull/135[#135]
+* Changed Kafka client to 3.3.1, requires Logstash >= 8.3.0. 
+* Deprecated `default` value for setting `client_dns_lookup` forcing to `use_all_dns_ips` when explicitly used https://github.com/logstash-plugins/logstash-integration-kafka/pull/130[#130]
+* Changed the consumer's poll from using the one that blocks on metadata retrieval to the one that doesn't https://github.com/logstash-plugins/logstash-integration-kafka/pull/133[#136]
+
+*Normalize_config_support Mixin - 1.0.0*
+
+*Elasticsearch Output - 11.15.1*
+
+* Fixed race condition during plugin registration phase https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1125[#1125]
+* Added the ability to negatively acknowledge the batch under processing if the plugin is blocked in a retry-error-loop and a shutdown is requested. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1119[#1119]
+* Standardize SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1118[#1118]
 
 [[logstash-8-7-1]]
 === Logstash 8.7.1 Release Notes
