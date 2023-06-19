@@ -57,7 +57,7 @@ report() {
     echo "Using '$REMOTE_REPO_URL' remote repo url."
   fi
 
-  # adding git add to Snyk tag to improve visibility
+  # adding git commit hash to Snyk tag to improve visibility
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/\1/")
   ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
   cd ..
