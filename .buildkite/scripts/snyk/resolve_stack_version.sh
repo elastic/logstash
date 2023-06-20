@@ -10,16 +10,10 @@ VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/logstash
 
 echo "Fetching versions from $VERSION_URL"
 VERSIONS=$(curl --silent $VERSION_URL)
-SNAPSHOTS=$(echo $VERSIONS | jq '.snapshots' | jq 'keys | .[]')
-IFS=$'\n' read -d "\034" -r -a SNAPSHOT_KEYS <<<"${SNAPSHOTS}\034"
+SNAPSHOT_VERSIONS_STR=$(echo $VERSIONS | jq -r '.snapshots | .[]')
 
 SNAPSHOT_VERSIONS=()
-for KEY in "${SNAPSHOT_KEYS[@]}"
-do
-  # remove starting and trailing double quotes
-  KEY="${KEY%\"}"
-  KEY="${KEY#\"}"
-  SNAPSHOT_VERSION=$(echo $VERSIONS | jq '.snapshots."'"$KEY"'"')
-  echo "Resolved snapshot version: $SNAPSHOT_VERSION"
-  SNAPSHOT_VERSIONS+=("$SNAPSHOT_VERSION")
-done
+while IFS= read -r line; do
+  SNAPSHOT_VERSIONS+=("$line")
+  echo "Resolved snapshot version: $line"
+done <<< "$SNAPSHOT_VERSIONS_STR"
