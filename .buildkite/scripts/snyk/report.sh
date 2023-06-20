@@ -5,6 +5,11 @@ set -e
 TARGET_BRANCHES=("main")
 cd .buildkite/scripts
 
+install_java() {
+  # TODO: let's think about regularly creating a custom image for Logstash which may align on version.yml definitions
+  sudo apt update && sudo apt install -y openjdk-17-jdk && sudo apt install -y openjdk-17-jre
+}
+
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source snyk/resolve_stack_version.sh
@@ -58,11 +63,12 @@ report() {
   fi
 
   # adding git commit hash to Snyk tag to improve visibility
-  GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null | sed "s/\(.*\)/\1/")
+  GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
   ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
   cd ..
 }
 
+install_java
 resolve_latest_branches
 clone_logstash_repo
 download_auth_snyk
