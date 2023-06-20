@@ -40,7 +40,7 @@ download_auth_snyk() {
   curl https://static.snyk.io/cli/latest/snyk-linux -o snyk
   chmod +x ./snyk
 
-  vault_path=secret/ci/elastic-logstash-filter-elastic-integration/snyk-creds
+  vault_path=secret/ci/elastic-logstash/snyk-creds
   SNYK_TOKEN=$(vault read -field=token "${vault_path}")
   ./snyk auth "$SNYK_TOKEN"
   cd ..
