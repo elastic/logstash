@@ -1,0 +1,5 @@
+steps:
+  # reports main, previous (ex: 7.latest) and current (ex: 8.latest) release branches to Snyk
+  - label: ":hammer: Report to Snyk"
+    command:
+      - .buildkite/scripts/snyk/report.sh
