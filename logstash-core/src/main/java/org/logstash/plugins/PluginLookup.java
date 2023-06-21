@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.jruby.RubyClass;
 import org.jruby.RubyString;
 import org.jruby.java.proxies.JavaProxy;
-import org.jruby.javasupport.JavaClass;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.plugins.discovery.PluginRegistry;
@@ -94,9 +93,11 @@ public final class PluginLookup implements PluginFactoryExt.PluginResolver {
 
             klass = (klass instanceof JavaProxy) ? ((JavaProxy) klass).getObject() : klass;
 
-            Object resolvedClass = klass instanceof JavaClass
-                    ? ((JavaClass) klass).javaClass()
-                    : klass;
+            // Object resolvedClass = klass instanceof Class
+            //         ? ((Class) klass).javaClass()
+            //         : klass;
+
+            Object resolvedClass = klass;
 
             if (language == PluginLanguage.JAVA && !PluginValidator.validatePlugin(type, (Class) resolvedClass)) {
                 throw new IllegalStateException("Java plugin '" + name + "' is incompatible with the current Logstash plugin API");

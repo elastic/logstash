@@ -48,7 +48,7 @@ public final class SnapshotExt extends RubyBasicObject {
         if (args.length == 2) {
             createdAt = (RubyTime) args[1];
         } else {
-            createdAt = RubyTime.newInstance(context, context.runtime.getTime());
+            createdAt = (RubyTime)RubyTime.at(context, context.runtime.getTime(),  args[0]);
         }
         return this;
     }

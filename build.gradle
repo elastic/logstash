@@ -19,7 +19,7 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '1.33'
+        snakeYamlVersion ='2.0'
         shadowGradlePluginVersion = '7.0.0'
     }
 
@@ -294,9 +294,9 @@ def bundlerVersion = "~> 2"
 
 tasks.register("installBundler") {
     dependsOn assemblyDeps
-    outputs.files file("${projectDir}/vendor/bundle/jruby/2.6.0/bin/bundle")
+    outputs.files file("${projectDir}/vendor/bundle/jruby/3.1.0/bin/bundle")
     doLast {
-      gem(projectDir, buildDir, "bundler", bundlerVersion, "${projectDir}/vendor/bundle/jruby/2.6.0")
+      gem(projectDir, buildDir, "bundler", bundlerVersion, "${projectDir}/vendor/bundle/jruby/3.1.0")
   }
 }
 
@@ -417,7 +417,7 @@ tasks.register("unpackTarDistribution", Copy) {
 
 def qaBuildPath = "${buildDir}/qa/integration"
 def qaVendorPath = "${qaBuildPath}/vendor"
-def qaBundledGemPath = "${qaVendorPath}/jruby/2.6.0".toString()
+def qaBundledGemPath = "${qaVendorPath}/jruby/3.1.0".toString()
 def qaBundleBin = "${qaBundledGemPath}/bin/bundle"
 
 tasks.register("installIntegrationTestBundler"){
