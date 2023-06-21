@@ -181,7 +181,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-codec-cef (6.2.6-java)
+    logstash-codec-cef (6.2.7-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
@@ -267,9 +267,9 @@ GEM
       stud (>= 0.0.20)
     logstash-filter-aggregate (2.10.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-anonymize (3.0.6)
+    logstash-filter-anonymize (3.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      murmurhash3
+      murmurhash3 (= 0.1.6)
     logstash-filter-cidr (3.1.3-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-clone (4.2.0)
@@ -330,7 +330,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
-    logstash-filter-mutate (3.5.6)
+    logstash-filter-mutate (3.5.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-prune (3.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -353,7 +353,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-validator_support (~> 1.0)
       rufus-scheduler
-    logstash-filter-truncate (1.0.5)
+    logstash-filter-truncate (1.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-urldecode (3.0.6)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -563,7 +563,7 @@ GEM
       logstash-mixin-deprecation_logger_support (~> 1.0)
       manticore (>= 0.5.4, < 1.0.0)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-integration-rabbitmq (7.3.1-java)
+    logstash-integration-rabbitmq (7.3.3-java)
       back_pressure (~> 1.0)
       logstash-codec-json
       logstash-core (>= 6.5.0)
@@ -591,7 +591,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-aws (>= 1.0.0)
       rufus-scheduler (>= 3.0.9)
-    logstash-output-csv (3.0.8)
+    logstash-output-csv (3.0.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-filter-json
       logstash-input-generator
@@ -602,7 +602,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.0)
       manticore (>= 0.8.0, < 1.0.0)
       stud (~> 0.0, >= 0.0.17)
-    logstash-output-email (4.1.1)
+    logstash-output-email (4.1.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       mail (~> 2.6.3)
       mime-types (< 3)
@@ -704,10 +704,10 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (5.6.5-java)
+    puma (5.6.6-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
-    rack (2.2.6.4)
+    rack (2.2.7)
     rack-protection (2.2.1)
       rack
     rack-test (1.1.0)
