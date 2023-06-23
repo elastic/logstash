@@ -74,28 +74,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-11]]
 === Logstash 7.17.11 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.11
-
-=== Logstash Commits between 7.17 and 7.17.10
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.10..7.17"
-
-9c4c3c10a - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#15101) (40 minutes ago) <github-actions[bot]>
-edade46bc - bump to 7.17.11 (#15036) (7 weeks ago) <João Duarte>
-06ae8240b - Release notes for 7.17.10 (#15026) (8 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.10..7.17 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.6 -> 6.2.7
-logstash-filter-anonymize: 3.0.6 -> 3.0.7
-logstash-filter-mutate: 3.5.6 -> 3.5.7
-logstash-filter-truncate: 1.0.5 -> 1.0.6
-logstash-integration-rabbitmq: 7.3.1 -> 7.3.3
-logstash-output-csv: 3.0.8 -> 3.0.9
-logstash-output-email: 4.1.1 -> 4.1.2
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
@@ -105,7 +84,7 @@ logstash-output-email: 4.1.1 -> 4.1.2
 
 *Anonymize Filter - 3.0.7*
 
-* pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
+* Pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
 
 *Mutate Filter - 3.5.7*
 
