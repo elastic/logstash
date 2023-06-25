@@ -18,8 +18,6 @@ resolve_latest_branches() {
     IFS='.'
     read -a versions <<< "$SNAPSHOT_VERSION"
     version=${versions[0]}.${versions[1]}
-    version="${version%\"}"
-    version="${version#\"}"
     TARGET_BRANCHES+=("$version")
   done
 }
@@ -79,4 +77,77 @@ do
   echo "Using $TARGET_BRANCH branch."
   build_logstash "$TARGET_BRANCH"
   report "$TARGET_BRANCH"
+done
+
+report_docker_image() {
+  image=$1
+  project_name=$2
+  platform=$3
+  echo "Reporting $image to Snyk started..."
+  docker pull "$image"
+  if [[ $platform != null ]]; then
+    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" && true
+  else
+    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" && true
+  fi
+}
+
+report_docker_images() {
+  version=$1
+  echo "Version value: $version"
+
+  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT"
+  snyk_project_name="logstash-$version-SNAPSHOT"
+  report_docker_image "$image" "$snyk_project_name"
+
+  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT"
+  snyk_project_name="logstash-oss-$version-SNAPSHOT"
+  report_docker_image "$image" "$snyk_project_name"
+
+  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT-arm64"
+  snyk_project_name="logstash-$version-SNAPSHOT-arm64"
+  report_docker_image "$image" "$snyk_project_name" "linux/arm64"
+
+  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT-amd64"
+  snyk_project_name="logstash-$version-SNAPSHOT-amd64"
+  report_docker_image "$image" "$snyk_project_name" "linux/amd64"
+
+  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT-arm64"
+  snyk_project_name="logstash-oss-$version-SNAPSHOT-arm64"
+  report_docker_image "$image" "$snyk_project_name" "linux/arm64"
+
+  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT-amd64"
+  snyk_project_name="logstash-oss-$version-SNAPSHOT-amd64"
+  report_docker_image "$image" "$snyk_project_name" "linux/amd64"
+}
+
+resolve_version_and_report_docker_images() {
+  cd logstash
+  git reset --hard HEAD # reset if any generated files appeared
+  git checkout "$1"
+
+  # parse version (ex: 8.8.2 from 8.8 branch, or 8.9.0 from main branch)
+  versions_file="$PWD/versions.yml"
+  while IFS= read -r line
+  do
+    if [[ $line =~ ^logstash:.* ]]; then
+      line_split_parts=("${line//logstash:/}")
+      version=$(echo "${line_split_parts[0]}" | xargs)
+
+      if [[ $version != null ]]; then
+        report_docker_images "$version"
+        break
+      fi
+    fi
+  done < "$versions_file"
+  cd ..
+}
+
+REPOSITORY_BASE_URL="docker.elastic.co/logstash/"
+
+# resolve docker artifact and report
+for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
+do
+  echo "Using $TARGET_BRANCH branch for docker images."
+  resolve_version_and_report_docker_images "$TARGET_BRANCH"
 done
