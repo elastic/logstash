@@ -1,7 +1,3 @@
-agents:
-  provider: "gcp"
-  machineType: "n1-standard-16"
-  image: family/elasticsearch-ubuntu-2022
 
 steps:
   - label: "Dummy E2E Test pipeline"
