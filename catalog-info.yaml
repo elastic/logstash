@@ -26,7 +26,7 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
-        schedules:
-          Daily Benchmark on main Branch:
-            cronline: "@hourly"
-            message: "Run the quick benchmark every day."
+      schedules:
+        Daily Benchmark on main Branch:
+          cronline: "@hourly"
+          message: "Run the quick benchmark every day."
