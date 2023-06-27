@@ -27,6 +27,11 @@ config:
     }
   }
   output {
-    elasticsearch { index => "test-index" }
+    elasticsearch {
+      index => "test-index"
+      hosts => "${ES_ENDPOINT}"
+      user => "${ES_USER}"
+      password => "${ES_PW}"
+    }
   }
 teardown_script:
