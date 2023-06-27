@@ -11,7 +11,8 @@ export ES_ENDPOINT=$(vault read -field=host "${vault_path}")
 export ES_USER=$(vault read -field=super_user "${vault_path}")
 export ES_PW=$(vault read -field=super_user_pw "${vault_path}")
 
-./gradlew clean bootstrap assemble installDefaultGems unpackTarDistribution :logstash-core:copyGemjar
+./gradlew clean bootstrap assemble installDefaultGems unpackTarDistribution
+./gradlew :logstash-core:copyGemjar
 
 jruby -rbundler/setup -S rspec -fd qa/integration/specs/es_output_how_spec.rb
 jruby -rbundler/setup -S rspec -fd qa/integration/specs/dlq_spec.rb
