@@ -16,6 +16,7 @@
 # under the License.
 
 require 'elasticsearch'
+require_relative '../specs/spec_helper'
 
 class ElasticsearchService < Service
   def initialize(settings)
@@ -23,6 +24,10 @@ class ElasticsearchService < Service
   end
 
   def get_client
+    @client ||= Elasticsearch::Client.new(
+      :hosts => ENV["ES_ENDPOINT"],
+      :user => ENV["ES_USER"], :password => ENV["ES_PW"]) if serverless?
+
     @client ||= Elasticsearch::Client.new(:hosts => "localhost:9200")
   end
 end

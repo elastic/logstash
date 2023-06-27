@@ -64,6 +64,13 @@ describe "Test Dead Letter Queue" do
   let!(:config_yaml_file) { ::File.join(settings_dir, "logstash.yml") }
 
   let!(:settings_dir) { Stud::Temporary.directory }
+  let(:serverless_es_config) do
+    if serverless?
+      " hosts => '${ES_ENDPOINT}' user => '${ES_USER}' password => '${ES_PW}' "
+    else
+      ""
+    end
+  end
 
   shared_examples_for "it can send 1000 documents to and index from the dlq" do
     it 'should index all documents' do
@@ -108,14 +115,14 @@ describe "Test Dead Letter Queue" do
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => true,
               "pipeline.batch.size" => 100,
-              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } output { elasticsearch { index => \"test-index\" } }"
+              "config.string" => "input { generator { message => '#{message}' codec => \"json\" count => 1000 } } output { elasticsearch { index => \"test-index\" #{serverless_es_config} } }"
           },
           {
               "pipeline.id" => "test2",
               "pipeline.workers" => 1,
               "dead_letter_queue.enable" => false,
               "pipeline.batch.size" => 100,
-              "config.string" => "input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"ip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch { index => \"test-index\" } }"
+              "config.string" => "input { dead_letter_queue { pipeline_id => 'test' path => \"#{dlq_dir}\" commit_offsets => true } } filter { mutate { remove_field => [\"ip\"] add_field => {\"mutated\" => \"true\" } } } output { elasticsearch { index => \"test-index\" #{serverless_es_config} } }"
           }
       ]}
 
@@ -136,7 +143,7 @@ describe "Test Dead Letter Queue" do
                 filter {
                   if ([ip]) { mutate { remove_field => [\"ip\"] add_field => { \"mutated\" => \"true\" } } }
                 }
-                output { elasticsearch { index => \"test-index\" } }"
+                output { elasticsearch { index => \"test-index\" #{serverless_es_config} } }"
         }
       ]}
 
