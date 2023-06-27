@@ -33,11 +33,6 @@ grammar LogStashConfig
     ("input" / "filter" / "output")
   end
 
-  rule plugins
-    (plugin (_ plugin)*)?
-    <LogStash::Config::AST::Plugins>
-  end
-
   rule plugin
     name _ "{"
       _
