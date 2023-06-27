@@ -20,7 +20,7 @@ spec:
       name: logstash
     spec:
       repository: elastic/logstash
-      pipeline_file: ".buildkite/pipeline.yml"
+      pipeline_file: ".buildkite/serverless_integration_pipeline.yml"
       teams:
         logstash:
           access_level: MANAGE_BUILD_AND_READ
