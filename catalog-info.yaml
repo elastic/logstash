@@ -20,7 +20,7 @@ kind: Pipeline
 metadata:
   name: logstash-serverless-integration-testing
 spec:
-  repository: elastic/my-repository
+  repository: elastic/logstash
   pipeline_file: ".buildkite/serverless_integration_pipeline.yml"
   teams:
     ingest-fp:
