@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-11,Logstash 7.17.11>>
 * <<logstash-7-17-10,Logstash 7.17.10>>
 * <<logstash-7-17-9,Logstash 7.17.9>>
 * <<logstash-7-17-8,Logstash 7.17.8>>
@@ -68,6 +69,44 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-11]]
+=== Logstash 7.17.11 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Cef Codec - 6.2.7*
+
+* Fix: when decoding in an ecs_compatibility mode, timestamp-normalized fields now handle provided-but-empty values https://github.com/logstash-plugins/logstash-codec-cef/issues/102[#102]
+
+*Anonymize Filter - 3.0.7*
+
+* Pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
+
+*Mutate Filter - 3.5.7*
+
+* Clarify that `split` and `join` also support strings https://github.com/logstash-plugins/logstash-filter-mutate/pull/164[#164]
+
+*Truncate Filter - 1.0.6*
+
+* Make 0.0.8 the lower bound for flores dependency https://github.com/logstash-plugins/logstash-filter-truncate/pull/9[#9]
+
+*Rabbitmq Integration - 7.3.3*
+
+* Fixed the cancellation flow to avoid multiple invocations of basic.cancel https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/55[#55]
+
+* Change `tls_certificate_password` type to `password` to protect from leaks in the logs https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/54[#54]
+
+*Csv Output - 3.0.9*
+
+* Fix: updates syntax to JRuby 9.4 https://github.com/logstash-plugins/logstash-output-csv/pull/25[#25]
+
+*Email Output - 4.1.2*
+
+* Change `password` config type to `Password` to prevent leaks in debug logs https://github.com/logstash-plugins/logstash-output-email/pull/65[#65]
 
 
 [[logstash-7-17-10]]
