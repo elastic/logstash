@@ -72,7 +72,7 @@ xpack.monitoring.elasticsearch.password: ${ES_PW}
 xpack.monitoring.elasticsearch.hosts: ["${ES_ENDPOINT}"]
 EOF
 
-  $CURRENT_DIR/../../bin/logstash --path.settings $CURRENT_DIR --path.logs $CURRENT_DIR 2>/dev/null &
+  $CURRENT_DIR/../../bin/logstash --path.settings $CURRENT_DIR 2>/dev/null &
 
   export LS_PID=$!
 }
@@ -82,7 +82,7 @@ check_logstash_readiness() {
   echo "Waiting Logstash to respond..."
   while ! curl --silent localhost:9600 && [[ $count -ne -1 ]]; do
       count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && cat "/$CURRENT_DIR/logstash-plain.log" && return 1
+      [[ $count -eq 0 ]] && cat "$CURRENT_DIR/logstash-plain.log" && return 1
       sleep 1
   done
   echo "Logstash is Up !"
