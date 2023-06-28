@@ -54,8 +54,12 @@ index_pipeline() {
 }
 
 run_logstash() {
+  # copy log4j
+  cp  "$CURRENT_DIR/../../config/log4j2.properties" "$CURRENT_DIR/log4j2.properties"
+
   # create logstash.yml
   cat <<EOF > "$CURRENT_DIR/logstash.yml"
+path.logs: $CURRENT_DIR
 xpack.management.enabled: true
 xpack.management.pipeline.id: ["*"]
 xpack.management.elasticsearch.username: $ES_USER
