@@ -1,3 +1,3 @@
 steps:
-  - label: "Dummy E2E Test pipeline"
-    command: echo "Hello!"
+  - label: "Elasticsearch output test"
+    command: ./ci/serverless/serverless_core_rspec_tests.sh
