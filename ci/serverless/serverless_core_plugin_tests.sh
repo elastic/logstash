@@ -27,7 +27,7 @@ prepare_cpm_pipelines() {
 
   # es-input
   index_pipeline 'es_stdout' '{
-    "pipeline": "input { elasticsearch { hosts => \"${ES_ENDPOINT}\" user => \"${ES_USER}\" password => \"${ES_PW}\" } } output { }",
+    "pipeline": "input { elasticsearch { hosts => \"${ES_ENDPOINT}\" user => \"${ES_USER}\" password => \"${ES_PW}\" index => \"logs-generic-default\" schedule => \"*/10 * * * * *\" size => 100 } } output { stdout { codec => dots } }",
     "last_modified": "2022-02-22T22:22:22.222Z",
     "pipeline_metadata": { "version": "1"},
     "username": "log.stash",
@@ -72,7 +72,7 @@ check_logstash_readiness() {
 check_logstash_api() {
   count=30
   echo "Checking Logstash API..."
-  while ! [[ `curl --silent localhost:9600/_node/stats | jq "$1"` -eq $2 ]] && [[ $count -ne -1 ]]; do
+  while ! [[ `curl --silent localhost:9600/_node/stats | jq "$1"` -ge $2 ]] && [[ $count -ne -1 ]]; do
       count=$(( $count - 1 ))
       [[ $count -eq 0 ]] && cat "$CURRENT_DIR/logstash-plain.log" && clean_up && return 1
       sleep 1
@@ -83,7 +83,8 @@ check_logstash_api() {
 
 clean_up() {
   kill $LS_PID
-  echo "Clean up data"
+  curl -u "$ES_USER:$ES_PW" -X DELETE "$ES_ENDPOINT/_data_stream/logs-generic-default"
+  echo "Cleaned up data"
 } 
 
 setup_vault
@@ -93,5 +94,9 @@ check_logstash_readiness
 
 # check es-output
 check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100'
+
+# check es-input, depend on es-output
+check_logstash_api '.pipelines.es_stdout.plugins.inputs[0].events.out' '100'
+
 
 clean_up
