@@ -67,8 +67,8 @@ describe LogStash::PluginManager::PackInstaller::Local do
       it "install the gems" do
         expect(::Bundler::LogstashInjector).to receive(:inject!).with(be_kind_of(LogStash::PluginManager::PackInstaller::Pack)).and_return([])
 
-        expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtest/, anything)
-        expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtestdep/, anything)
+        expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtest-/, anything)
+        expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtestdep-/, anything)
 
         expect { subject.execute }.not_to raise_error
       end

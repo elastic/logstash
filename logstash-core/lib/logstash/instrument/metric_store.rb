@@ -31,7 +31,7 @@ module LogStash module Instrument
 
     # Lets me a bit flexible on the coma usage in the path
     # definition
-    FILTER_KEYS_SEPARATOR = /\s?*,\s*/.freeze
+    FILTER_KEYS_SEPARATOR = /\s*,\s*/.freeze
 
     def initialize
       # We keep the structured cache to allow

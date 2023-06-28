@@ -91,7 +91,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   end
 
   public
-  def clone
+  def clone(*args)
     LogStash::Plugins::Contextualizer.initialize_plugin(execution_context, self.class, params).tap do |klone|
       klone.metric = @metric if klone.instance_variable_get(:@metric).nil?
     end

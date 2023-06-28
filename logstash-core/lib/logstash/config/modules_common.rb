@@ -64,7 +64,7 @@ module LogStash module Config
 
       if (specified_and_available_names).empty?
         i18n_opts = {:specified_modules => module_names, :available_modules => available_module_names}
-        raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-unavailable", i18n_opts)
+        raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-unavailable", **i18n_opts)
       end
 
       specified_and_available_names.each do |module_name|
@@ -121,7 +121,7 @@ module LogStash module Config
         end
 
         if !connect_fail_args.empty?
-          raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.elasticsearch_connection_failed", connect_fail_args)
+          raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.elasticsearch_connection_failed", **connect_fail_args)
         end
       end
       pipelines

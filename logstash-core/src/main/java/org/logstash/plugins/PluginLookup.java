@@ -94,8 +94,8 @@ public final class PluginLookup implements PluginFactoryExt.PluginResolver {
 
             klass = (klass instanceof JavaProxy) ? ((JavaProxy) klass).getObject() : klass;
 
-            Object resolvedClass = klass instanceof JavaClass
-                    ? ((JavaClass) klass).javaClass()
+            Object resolvedClass = klass instanceof java.lang.Class
+                    ? ((java.lang.Class) klass)
                     : klass;
 
             if (language == PluginLanguage.JAVA && !PluginValidator.validatePlugin(type, (Class) resolvedClass)) {

@@ -109,8 +109,8 @@ class LogStash::Inputs::Base < LogStash::Plugin
     @stop_called.value
   end
 
-  def clone
-    cloned = super
+  def clone(*args)
+    cloned = super(args)
     cloned.codec = @codec.clone if @codec
     cloned
   end

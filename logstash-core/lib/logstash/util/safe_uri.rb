@@ -81,7 +81,7 @@ class LogStash::Util::SafeURI
   end
   alias == eql?
 
-  def clone
+  def clone(*args)
     # No need to clone the URI, in java its immutable
     self.class.new(uri)
   end

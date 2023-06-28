@@ -3,14 +3,14 @@ require "logstash/compiler/lscl.rb"
 
 grammar LogStashCompilerLSCLGrammar
   rule config
-    (_ plugin_section)* _ <LogStash::Compiler::LSCL::AST::Config>
+    (cs plugin_section)* cs <LogStash::Compiler::LSCL::AST::Config>
   end
 
   rule comment
     (whitespace? "#" [^\r\n]* "\r"? "\n")+ <LogStash::Compiler::LSCL::AST::Comment>
   end
 
-  rule _
+  rule cs
     (comment / whitespace)* <LogStash::Compiler::LSCL::AST::Whitespace>
   end
 
@@ -19,8 +19,8 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule plugin_section
-    plugin_type _ "{"
-      _ (branch_or_plugin _)*
+    plugin_type cs "{"
+      cs (branch_or_plugin cs)*
     "}"
     <LogStash::Compiler::LSCL::AST::PluginSection>
   end
@@ -34,15 +34,15 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule plugins
-    (plugin (_ plugin)*)?
+    (plugin (cs plugin)*)?
     <LogStash::Compiler::LSCL::AST::Plugins>
   end
 
   rule plugin
-    name _ "{"
-      _
-      attributes:( attribute (whitespace _ attribute)*)?
-      _
+    name cs "{"
+      cs
+      attributes:( attribute (whitespace cs attribute)*)?
+      cs
     "}"
     <LogStash::Compiler::LSCL::AST::Plugin>
   end
@@ -55,7 +55,7 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule attribute
-    name _ "=>" _ value
+    name cs "=>" cs value
     <LogStash::Compiler::LSCL::AST::Attribute>
   end
 
@@ -95,20 +95,20 @@ grammar LogStashCompilerLSCLGrammar
 
   rule array
     "["
-    _
+    cs
     (
-      value (_ "," _ value)*
+      value (cs "," cs value)*
     )?
-    _
+    cs
     "]"
     <LogStash::Compiler::LSCL::AST::Array>
   end
 
   rule hash
     "{"
-      _
+      cs
       hashentries?
-      _
+      cs
     "}"
     <LogStash::Compiler::LSCL::AST::Hash>
   end
@@ -119,39 +119,39 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule hashentry
-    name:(number / bareword / string) _ "=>" _ value
+    name:(number / bareword / string) cs "=>" cs value
     <LogStash::Compiler::LSCL::AST::HashEntry>
   end
 
   # Conditions
   rule branch
-    if (_ else_if)* (_ else)?
+    if (cs else_if)* (cs else)?
     <LogStash::Compiler::LSCL::AST::Branch>
   end
 
   rule if
-    "if" _ condition _ "{" _ (branch_or_plugin _)* "}"
+    "if" cs condition cs "{" cs (branch_or_plugin cs)* "}"
     <LogStash::Compiler::LSCL::AST::If>
   end
 
   rule else_if
-    "else" _ "if" _ condition _ "{" _ ( branch_or_plugin _)* "}"
+    "else" cs "if" cs condition cs "{" cs ( branch_or_plugin cs)* "}"
     <LogStash::Compiler::LSCL::AST::Elsif>
   end
 
   rule else
-    "else" _ "{" _ (branch_or_plugin _)* "}"
+    "else" cs "{" cs (branch_or_plugin cs)* "}"
     <LogStash::Compiler::LSCL::AST::Else>
   end
 
   rule condition
-    expression (_ boolean_operator _ expression)*
+    expression (cs boolean_operator cs expression)*
     <LogStash::Compiler::LSCL::AST::Condition>
   end
 
   rule expression
     (
-        ("(" _ condition _ ")")
+        ("(" cs condition cs ")")
       / negative_expression
       / in_expression
       / not_in_expression
@@ -163,18 +163,18 @@ grammar LogStashCompilerLSCLGrammar
 
   rule negative_expression
     (
-        ("!" _ "(" _ condition _ ")")
-      / ("!" _ selector)
+        ("!" cs "(" cs condition cs ")")
+      / ("!" cs selector)
     ) <LogStash::Compiler::LSCL::AST::NegativeExpression>
   end
 
   rule in_expression
-    rvalue _ in_operator _ rvalue
+    rvalue cs in_operator cs rvalue
     <LogStash::Compiler::LSCL::AST::InExpression>
   end
 
   rule not_in_expression
-    rvalue _ not_in_operator _ rvalue
+    rvalue cs not_in_operator cs rvalue
     <LogStash::Compiler::LSCL::AST::NotInExpression>
   end
 
@@ -183,7 +183,7 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule not_in_operator
-    "not " _ "in"
+    "not " cs "in"
   end
 
   rule rvalue
@@ -191,11 +191,11 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule method_call
-      method _ "(" _
+      method cs "(" cs
         (
-          rvalue ( _ "," _ rvalue )*
+          rvalue ( cs "," cs rvalue )*
         )?
-      _ ")"
+      cs ")"
     <LogStash::Compiler::LSCL::AST::MethodCall>
   end
 
@@ -204,7 +204,7 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule compare_expression
-    rvalue _ compare_operator _ rvalue
+    rvalue cs compare_operator cs rvalue
     <LogStash::Compiler::LSCL::AST::ComparisonExpression>
   end
 
@@ -214,7 +214,7 @@ grammar LogStashCompilerLSCLGrammar
   end
 
   rule regexp_expression
-    rvalue _  regexp_operator _ (string / regexp)
+    rvalue cs  regexp_operator cs (string / regexp)
     <LogStash::Compiler::LSCL::AST::RegexpExpression>
   end
 

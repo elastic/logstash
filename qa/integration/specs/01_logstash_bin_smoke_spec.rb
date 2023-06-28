@@ -160,7 +160,7 @@ describe "Test Logstash instance" do
 
   def get_id
     # make sure logstash is up and running when calling this
-    JSON.parse(open("http://localhost:9600/").read)["id"]
+    JSON.parse(::URI.open("http://localhost:9600/").read)["id"]
   end
 
   it "should keep the same id between restarts" do
@@ -172,10 +172,10 @@ describe "Test Logstash instance" do
     }
     start_ls.call()
     # we use a try since logstash may have started but the webserver may not yet
-    first_id = Stud.try(num_retries.times, Errno::ECONNREFUSED) { get_id }
+    first_id = Stud.try(num_retries.times, Errno::EBADF) { get_id }
     @ls1.teardown
     start_ls.call()
-    second_id = Stud.try(num_retries.times, Errno::ECONNREFUSED) { get_id }
+    second_id = Stud.try(num_retries.times, Errno::EBADF) { get_id }
     expect(first_id).to eq(second_id)
   end
 end

@@ -12,7 +12,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Config0
-    def _
+    def cs
       elements[0]
     end
 
@@ -22,7 +22,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Config1
-    def _
+    def cs
       elements[1]
     end
   end
@@ -42,7 +42,7 @@ module LogStashCompilerLSCLGrammar
     s1, i1 = [], index
     loop do
       i2, s2 = index, []
-      r3 = _nt__
+      r3 = _nt_cs
       s2 << r3
       if r3
         r4 = _nt_plugin_section
@@ -64,7 +64,7 @@ module LogStashCompilerLSCLGrammar
     r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
     s0 << r1
     if r1
-      r5 = _nt__
+      r5 = _nt_cs
       s0 << r5
     end
     if s0.last
@@ -183,12 +183,12 @@ module LogStashCompilerLSCLGrammar
     r0
   end
 
-  def _nt__
+  def _nt_cs
     start_index = index
-    if node_cache[:_].has_key?(index)
-      cached = node_cache[:_][index]
+    if node_cache[:cs].has_key?(index)
+      cached = node_cache[:cs][index]
       if cached
-        node_cache[:_][index] = cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        node_cache[:cs][index] = cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
         @index = cached.interval.end
       end
       return cached
@@ -219,7 +219,7 @@ module LogStashCompilerLSCLGrammar
     end
     r0 = instantiate_node(LogStash::Compiler::LSCL::AST::Whitespace,input, i0...index, s0)
 
-    node_cache[:_][start_index] = r0
+    node_cache[:cs][start_index] = r0
 
     r0
   end
@@ -267,7 +267,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _
+    def cs
       elements[1]
     end
   end
@@ -277,11 +277,11 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -302,7 +302,7 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_plugin_type
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("{", false, index))
@@ -314,7 +314,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             s5, i5 = [], index
@@ -323,7 +323,7 @@ module LogStashCompilerLSCLGrammar
               r7 = _nt_branch_or_plugin
               s6 << r7
               if r7
-                r8 = _nt__
+                r8 = _nt_cs
                 s6 << r8
               end
               if s6.last
@@ -457,7 +457,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Plugins0
-    def _
+    def cs
       elements[0]
     end
 
@@ -491,7 +491,7 @@ module LogStashCompilerLSCLGrammar
       s3, i3 = [], index
       loop do
         i4, s4 = index, []
-        r5 = _nt__
+        r5 = _nt_cs
         s4 << r5
         if r5
           r6 = _nt_plugin
@@ -536,7 +536,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _
+    def cs
       elements[1]
     end
 
@@ -557,11 +557,11 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -569,7 +569,7 @@ module LogStashCompilerLSCLGrammar
       elements[4]
     end
 
-    def _3
+    def cs3
       elements[5]
     end
 
@@ -590,7 +590,7 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_name
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("{", false, index))
@@ -602,7 +602,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             i6, s6 = index, []
@@ -615,7 +615,7 @@ module LogStashCompilerLSCLGrammar
                 r10 = _nt_whitespace
                 s9 << r10
                 if r10
-                  r11 = _nt__
+                  r11 = _nt_cs
                   s9 << r11
                   if r11
                     r12 = _nt_attribute
@@ -652,7 +652,7 @@ module LogStashCompilerLSCLGrammar
             end
             s0 << r5
             if r5
-              r13 = _nt__
+              r13 = _nt_cs
               s0 << r13
               if r13
                 if (match_len = has_terminal?("}", false, index))
@@ -739,11 +739,11 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -767,7 +767,7 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_name
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("=>", false, index))
@@ -779,7 +779,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             r5 = _nt_value
@@ -1462,11 +1462,11 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Array0
-    def _1
+    def cs1
       elements[0]
     end
 
-    def _2
+    def cs2
       elements[2]
     end
 
@@ -1483,11 +1483,11 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Array2
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -1514,7 +1514,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         i4, s4 = index, []
@@ -1524,7 +1524,7 @@ module LogStashCompilerLSCLGrammar
           s6, i6 = [], index
           loop do
             i7, s7 = index, []
-            r8 = _nt__
+            r8 = _nt_cs
             s7 << r8
             if r8
               if (match_len = has_terminal?(",", false, index))
@@ -1536,7 +1536,7 @@ module LogStashCompilerLSCLGrammar
               end
               s7 << r9
               if r9
-                r10 = _nt__
+                r10 = _nt_cs
                 s7 << r10
                 if r10
                   r11 = _nt_value
@@ -1574,7 +1574,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r12 = _nt__
+          r12 = _nt_cs
           s0 << r12
           if r12
             if (match_len = has_terminal?("]", false, index))
@@ -1603,11 +1603,11 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Hash0
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -1634,7 +1634,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r4 = _nt_hashentries
@@ -1645,7 +1645,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r5 = _nt__
+          r5 = _nt_cs
           s0 << r5
           if r5
             if (match_len = has_terminal?("}", false, index))
@@ -1748,11 +1748,11 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -1796,7 +1796,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r5 = _nt__
+      r5 = _nt_cs
       s0 << r5
       if r5
         if (match_len = has_terminal?("=>", false, index))
@@ -1808,7 +1808,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r6
         if r6
-          r7 = _nt__
+          r7 = _nt_cs
           s0 << r7
           if r7
             r8 = _nt_value
@@ -1831,7 +1831,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Branch0
-    def _
+    def cs
       elements[0]
     end
 
@@ -1841,7 +1841,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Branch1
-    def _
+    def cs
       elements[0]
     end
 
@@ -1875,7 +1875,7 @@ module LogStashCompilerLSCLGrammar
       s2, i2 = [], index
       loop do
         i3, s3 = index, []
-        r4 = _nt__
+        r4 = _nt_cs
         s3 << r4
         if r4
           r5 = _nt_else_if
@@ -1898,7 +1898,7 @@ module LogStashCompilerLSCLGrammar
       s0 << r2
       if r2
         i7, s7 = index, []
-        r8 = _nt__
+        r8 = _nt_cs
         s7 << r8
         if r8
           r9 = _nt_else
@@ -1937,13 +1937,13 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _
+    def cs
       elements[1]
     end
   end
 
   module If1
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -1951,11 +1951,11 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
-    def _3
+    def cs3
       elements[5]
     end
 
@@ -1982,13 +1982,13 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r3 = _nt_condition
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             if (match_len = has_terminal?("{", false, index))
@@ -2000,7 +2000,7 @@ module LogStashCompilerLSCLGrammar
             end
             s0 << r5
             if r5
-              r6 = _nt__
+              r6 = _nt_cs
               s0 << r6
               if r6
                 s7, i7 = [], index
@@ -2009,7 +2009,7 @@ module LogStashCompilerLSCLGrammar
                   r9 = _nt_branch_or_plugin
                   s8 << r9
                   if r9
-                    r10 = _nt__
+                    r10 = _nt_cs
                     s8 << r10
                   end
                   if s8.last
@@ -2061,17 +2061,17 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _
+    def cs
       elements[1]
     end
   end
 
   module ElseIf1
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2079,11 +2079,11 @@ module LogStashCompilerLSCLGrammar
       elements[4]
     end
 
-    def _3
+    def cs3
       elements[5]
     end
 
-    def _4
+    def cs4
       elements[7]
     end
 
@@ -2110,7 +2110,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("if", false, index))
@@ -2122,13 +2122,13 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             r5 = _nt_condition
             s0 << r5
             if r5
-              r6 = _nt__
+              r6 = _nt_cs
               s0 << r6
               if r6
                 if (match_len = has_terminal?("{", false, index))
@@ -2140,7 +2140,7 @@ module LogStashCompilerLSCLGrammar
                 end
                 s0 << r7
                 if r7
-                  r8 = _nt__
+                  r8 = _nt_cs
                   s0 << r8
                   if r8
                     s9, i9 = [], index
@@ -2149,7 +2149,7 @@ module LogStashCompilerLSCLGrammar
                       r11 = _nt_branch_or_plugin
                       s10 << r11
                       if r11
-                        r12 = _nt__
+                        r12 = _nt_cs
                         s10 << r12
                       end
                       if s10.last
@@ -2203,17 +2203,17 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _
+    def cs
       elements[1]
     end
   end
 
   module Else1
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2240,7 +2240,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("{", false, index))
@@ -2252,7 +2252,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             s5, i5 = [], index
@@ -2261,7 +2261,7 @@ module LogStashCompilerLSCLGrammar
               r7 = _nt_branch_or_plugin
               s6 << r7
               if r7
-                r8 = _nt__
+                r8 = _nt_cs
                 s6 << r8
               end
               if s6.last
@@ -2307,7 +2307,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Condition0
-    def _1
+    def cs1
       elements[0]
     end
 
@@ -2315,7 +2315,7 @@ module LogStashCompilerLSCLGrammar
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[2]
     end
 
@@ -2349,13 +2349,13 @@ module LogStashCompilerLSCLGrammar
       s2, i2 = [], index
       loop do
         i3, s3 = index, []
-        r4 = _nt__
+        r4 = _nt_cs
         s3 << r4
         if r4
           r5 = _nt_boolean_operator
           s3 << r5
           if r5
-            r6 = _nt__
+            r6 = _nt_cs
             s3 << r6
             if r6
               r7 = _nt_expression
@@ -2393,7 +2393,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Expression0
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -2401,7 +2401,7 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2429,13 +2429,13 @@ module LogStashCompilerLSCLGrammar
     end
     s1 << r2
     if r2
-      r3 = _nt__
+      r3 = _nt_cs
       s1 << r3
       if r3
         r4 = _nt_condition
         s1 << r4
         if r4
-          r5 = _nt__
+          r5 = _nt_cs
           s1 << r5
           if r5
             if (match_len = has_terminal?(")", false, index))
@@ -2514,11 +2514,11 @@ module LogStashCompilerLSCLGrammar
   end
 
   module NegativeExpression0
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2526,14 +2526,14 @@ module LogStashCompilerLSCLGrammar
       elements[4]
     end
 
-    def _3
+    def cs3
       elements[5]
     end
 
   end
 
   module NegativeExpression1
-    def _
+    def cs
       elements[1]
     end
 
@@ -2564,7 +2564,7 @@ module LogStashCompilerLSCLGrammar
     end
     s1 << r2
     if r2
-      r3 = _nt__
+      r3 = _nt_cs
       s1 << r3
       if r3
         if (match_len = has_terminal?("(", false, index))
@@ -2576,13 +2576,13 @@ module LogStashCompilerLSCLGrammar
         end
         s1 << r4
         if r4
-          r5 = _nt__
+          r5 = _nt_cs
           s1 << r5
           if r5
             r6 = _nt_condition
             s1 << r6
             if r6
-              r7 = _nt__
+              r7 = _nt_cs
               s1 << r7
               if r7
                 if (match_len = has_terminal?(")", false, index))
@@ -2621,7 +2621,7 @@ module LogStashCompilerLSCLGrammar
       end
       s9 << r10
       if r10
-        r11 = _nt__
+        r11 = _nt_cs
         s9 << r11
         if r11
           r12 = _nt_selector
@@ -2655,7 +2655,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -2663,7 +2663,7 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2687,13 +2687,13 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_rvalue
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r3 = _nt_in_operator
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             r5 = _nt_rvalue
@@ -2720,7 +2720,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -2728,7 +2728,7 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -2752,13 +2752,13 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_rvalue
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r3 = _nt_not_in_operator
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             r5 = _nt_rvalue
@@ -2805,7 +2805,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module NotInOperator0
-    def _
+    def cs
       elements[1]
     end
 
@@ -2832,7 +2832,7 @@ module LogStashCompilerLSCLGrammar
     end
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("in", false, index))
@@ -2915,11 +2915,11 @@ module LogStashCompilerLSCLGrammar
   end
 
   module MethodCall0
-    def _1
+    def cs1
       elements[0]
     end
 
-    def _2
+    def cs2
       elements[2]
     end
 
@@ -2940,15 +2940,15 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
-    def _3
+    def cs3
       elements[5]
     end
 
@@ -2969,7 +2969,7 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_method
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         if (match_len = has_terminal?("(", false, index))
@@ -2981,7 +2981,7 @@ module LogStashCompilerLSCLGrammar
         end
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             i6, s6 = index, []
@@ -2991,7 +2991,7 @@ module LogStashCompilerLSCLGrammar
               s8, i8 = [], index
               loop do
                 i9, s9 = index, []
-                r10 = _nt__
+                r10 = _nt_cs
                 s9 << r10
                 if r10
                   if (match_len = has_terminal?(",", false, index))
@@ -3003,7 +3003,7 @@ module LogStashCompilerLSCLGrammar
                   end
                   s9 << r11
                   if r11
-                    r12 = _nt__
+                    r12 = _nt_cs
                     s9 << r12
                     if r12
                       r13 = _nt_rvalue
@@ -3041,7 +3041,7 @@ module LogStashCompilerLSCLGrammar
             end
             s0 << r5
             if r5
-              r14 = _nt__
+              r14 = _nt_cs
               s0 << r14
               if r14
                 if (match_len = has_terminal?(")", false, index))
@@ -3094,7 +3094,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -3102,7 +3102,7 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -3126,13 +3126,13 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_rvalue
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r3 = _nt_compare_operator
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             r5 = _nt_rvalue
@@ -3257,7 +3257,7 @@ module LogStashCompilerLSCLGrammar
       elements[0]
     end
 
-    def _1
+    def cs1
       elements[1]
     end
 
@@ -3265,7 +3265,7 @@ module LogStashCompilerLSCLGrammar
       elements[2]
     end
 
-    def _2
+    def cs2
       elements[3]
     end
 
@@ -3286,13 +3286,13 @@ module LogStashCompilerLSCLGrammar
     r1 = _nt_rvalue
     s0 << r1
     if r1
-      r2 = _nt__
+      r2 = _nt_cs
       s0 << r2
       if r2
         r3 = _nt_regexp_operator
         s0 << r3
         if r3
-          r4 = _nt__
+          r4 = _nt_cs
           s0 << r4
           if r4
             i5 = index

@@ -26,7 +26,7 @@ module LogStash
         #
         # return any unused configurations
         def handle_logging(settings)
-          Hash[settings.map do |key, level|
+          couplesList = settings.map do |key, level|
             if key.start_with?("logger.")
               _, path = key.split("logger.")
               LogStash::Logging::Logger::configure_logging(level, path)
@@ -34,7 +34,8 @@ module LogStash
             else
               [key, level]
             end
-          end]
+          end.reject {|value| value.nil?} # skip nil which result in ArgumentError since JRuby 9.4
+          Hash[couplesList]
         end
 
         put "/" do

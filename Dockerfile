@@ -35,7 +35,7 @@ COPY LICENSE.txt /opt/logstash/LICENSE.txt
 COPY NOTICE.TXT /opt/logstash/NOTICE.TXT
 COPY licenses /opt/logstash/licenses
 COPY CONTRIBUTORS /opt/logstash/CONTRIBUTORS
-COPY Gemfile.template Gemfile.jruby-2.6.lock.* /opt/logstash/
+COPY Gemfile.template Gemfile.jruby-3.1.lock.* /opt/logstash/
 COPY Rakefile /opt/logstash/Rakefile
 COPY build.gradle /opt/logstash/build.gradle
 COPY rubyUtils.gradle /opt/logstash/rubyUtils.gradle

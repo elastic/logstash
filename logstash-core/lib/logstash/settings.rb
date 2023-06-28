@@ -125,7 +125,7 @@ module LogStash
       get_setting(setting_name).set?
     end
 
-    def clone
+    def clone(*args)
       get_subset(".*")
     end
     alias_method :dup, :clone
