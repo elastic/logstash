@@ -44,6 +44,7 @@ spec:
         everyone:
           access_level: READ_ONLY
       schedules:
-        Daily Benchmark on main Branch:
+        Hourly serverless test on core_serverless_test branch:
+          branch: core_serverless_test
           cronline: "@hourly"
-          message: "Run the quick benchmark every day."
+          message: "Run the serverless integration test every hour."
