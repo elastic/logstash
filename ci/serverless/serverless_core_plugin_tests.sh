@@ -108,6 +108,7 @@ clean_up() {
 } 
 
 setup_vault
+build_logstash
 prepare_cpm_pipelines
 run_logstash
 check_logstash_readiness
