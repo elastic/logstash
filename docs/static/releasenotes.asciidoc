@@ -49,7 +49,7 @@ No user-facing changes in Logstash core.
 
 *Translate Filter - 3.4.2*
 
-* Fix JRuby 9.4 compatibility issue https://github.com/logstash-plugins/logstash-filter-translate/pull/98)[#98]
+* Fix JRuby 9.4 compatibility issue https://github.com/logstash-plugins/logstash-filter-translate/pull/98[#98]
 
 *Aws Integration - 7.1.4*
 
