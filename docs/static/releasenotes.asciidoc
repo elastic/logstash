@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-8-2,Logstash 8.8.2>>
 * <<logstash-8-8-1,Logstash 8.8.1>>
 * <<logstash-8-8-0,Logstash 8.8.0>>
 * <<logstash-8-7-1,Logstash 8.7.1>>
@@ -36,6 +37,44 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-8-2]]
+=== Logstash 8.8.2 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+
+*Translate Filter - 3.4.2*
+
+* Fix JRuby 9.4 compatibility issue https://github.com/logstash-plugins/logstash-filter-translate/pull/98[#98]
+
+*Aws Integration - 7.1.4*
+
+* Fix `use_aws_bundled_ca` to use bundled ca certs per plugin level instead of global https://github.com/logstash-plugins/logstash-integration-aws/pull/33[#33]
+
+* Add an option `use_aws_bundled_ca` to use bundled ca certs that ships with AWS SDK to verify SSL peer certificates https://github.com/logstash-plugins/logstash-integration-aws/pull/32[#32]
+
+* Fix JRuby 9.4 compatibility issue https://github.com/logstash-plugins/logstash-integration-aws/pull/29[#29]
+
+*Jdbc Integration - 5.4.4*
+
+* Fix: adaptations for JRuby 9.4 https://github.com/logstash-plugins/logstash-integration-jdbc/pull/125[#125]
+
+*Rabbitmq Integration - 7.3.3*
+
+* Fix the cancellation flow to avoid multiple invocations of basic.cancel https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/55[#55]
+
+*Csv Output - 3.0.9*
+
+* Fix JRuby 9.4 compatibility issue https://github.com/logstash-plugins/logstash-output-csv/pull/25[#25]
+
+*Elasticsearch Output - 11.15.8*
+
+* Fix a regression introduced in 11.14.0 which could prevent Logstash 8.8 from establishing a connection to Elasticsearch for Central Management and Monitoring core features https://github.com/logstash-plugins/logstash-output-elasticsearch/issues/1141[#1141]
+
 
 [[logstash-8-8-1]]
 === Logstash 8.8.1 Release Notes
@@ -116,6 +155,7 @@ This section summarizes the changes in the following releases:
 *Email Output - 4.1.2*
 
 * Change `password` config type to `Password` to prevent leaks in debug logs https://github.com/logstash-plugins/logstash-output-email/pull/65[#65]
+
 
 [[logstash-8-8-0]]
 === Logstash 8.8.0 Release Notes
