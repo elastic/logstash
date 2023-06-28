@@ -1,4 +1,0 @@
-
-steps:
-  - label: "Dummy E2E Test pipeline"
-    command: echo "Hello!"
