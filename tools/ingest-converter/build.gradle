@@ -45,7 +45,7 @@ dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:4.6'
   implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   testImplementation "junit:junit:4.12"
-  testImplementation 'commons-io:commons-io:2.5'
+  testImplementation 'commons-io:commons-io:2.13.0'
 }
 
 javadoc {
