@@ -6,9 +6,11 @@ CURRENT_DIR="$(dirname "$0")"
 
 setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
+  set +x
   export ES_ENDPOINT=$(vault read -field=host "${vault_path}")
   export ES_USER=$(vault read -field=super_user "${vault_path}")
   export ES_PW=$(vault read -field=super_user_pw "${vault_path}")
+  set -x
 }
 
 build_logstash() {
@@ -33,6 +35,15 @@ prepare_cpm_pipelines() {
     "username": "log.stash",
     "pipeline_settings": {"pipeline.batch.delay": "50"}
   }'
+
+  # es-filter
+  index_pipeline 'gen_es_stdout' '{
+    "pipeline": "input { generator { count => 100 } } filter { elasticsearch { hosts => \"${ES_ENDPOINT}\" user => \"${ES_USER}\" password => \"${ES_PW}\" index => \"logs-generic-default\" } } output { stdout { codec => dots } }",
+    "last_modified": "2022-02-22T22:22:22.222Z",
+    "pipeline_metadata": { "version": "1"},
+    "username": "log.stash",
+    "pipeline_settings": {"pipeline.batch.delay": "50"}
+  }'
 }
 
 index_pipeline() {
@@ -50,6 +61,11 @@ xpack.management.pipeline.id: ["*"]
 xpack.management.elasticsearch.username: $ES_USER
 xpack.management.elasticsearch.password: $ES_PW
 xpack.management.elasticsearch.hosts: ["$ES_ENDPOINT"]
+
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.username: ${ES_USER}
+xpack.monitoring.elasticsearch.password: ${ES_PW}
+xpack.monitoring.elasticsearch.hosts: ["${ES_ENDPOINT}"]
 EOF
 
   $CURRENT_DIR/../../bin/logstash --path.settings $CURRENT_DIR --path.logs $CURRENT_DIR 2>/dev/null &
@@ -74,11 +90,11 @@ check_logstash_api() {
   echo "Checking Logstash API..."
   while ! [[ `curl --silent localhost:9600/_node/stats | jq "$1"` -ge $2 ]] && [[ $count -ne -1 ]]; do
       count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && cat "$CURRENT_DIR/logstash-plain.log" && clean_up && return 1
+      [[ $count -eq 0 ]] && cat "$CURRENT_DIR/logstash-plain.log" && clean_up && echo "1"
       sleep 1
   done
   echo "Passed check"
-  return 0
+  echo "0"
 }
 
 clean_up() {
@@ -92,11 +108,18 @@ prepare_cpm_pipelines
 run_logstash
 check_logstash_readiness
 
-# check es-output
-check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100'
+# check es-output, implicitly 
+PLUGIN_ES_OUTPUT=$(check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100')
+export PLUGIN_ES_OUTPUT="${PLUGIN_ES_OUTPUT: -1}"
 
 # check es-input, depend on es-output
-check_logstash_api '.pipelines.es_stdout.plugins.inputs[0].events.out' '100'
+PLUGIN_ES_INPUT=$(check_logstash_api '.pipelines.es_stdout.plugins.inputs[0].events.out' '100')
+export PLUGIN_ES_INPUT="${PLUGIN_ES_INPUT: -1}"
 
+# check es-filter, depend on es-output
+PLUGIN_ES_FILTER=$(check_logstash_api '.pipelines.gen_es_stdout.plugins.filters[0].events.out' '100')
+export PLUGIN_ES_FILTER="${PLUGIN_ES_FILTER: -1}"
 
 clean_up
+
+return $PLUGIN_ES_OUTPUT && $PLUGIN_ES_INPUT && $PLUGIN_ES_FILTER
