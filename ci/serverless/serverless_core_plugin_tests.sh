@@ -129,7 +129,7 @@ clean_up
 
 return $PLUGIN_ES_OUTPUT && $PLUGIN_ES_INPUT && $PLUGIN_ES_FILTER
 
-if [[ ("$PLUGIN_ES_OUTPUT" eq 0) && ("$PLUGIN_ES_INPUT" eq 0) && ("$$PLUGIN_ES_FILTER" eq 0) ]]; then
+if [[ ("$PLUGIN_ES_OUTPUT" -eq 0) && ("$PLUGIN_ES_INPUT" -eq 0) && ("$$PLUGIN_ES_FILTER" -eq 0) ]]; then
   exit 0
 else
   exit 1
