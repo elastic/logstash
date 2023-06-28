@@ -18,7 +18,7 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: buildkite-pipeline-elastic-agent
+  name: buildkite-logstash-serverless-integration-testing
   description: Buildkite pipeline for the Serverless Integration Test
 spec:
   type: buildkite-pipeline
@@ -32,12 +32,18 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/serverless_integration_pipeline.yml"
+      provider_settings:
+        trigger_mode: none # don't trigger jobs from github activity
+      env:
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
-    schedules:
-      Daily Benchmark on main Branch:
-        cronline: "@hourly"
-        message: "Run the quick benchmark every day."
+      schedules:
+        Daily Benchmark on main Branch:
+          cronline: "@hourly"
+          message: "Run the quick benchmark every day."
