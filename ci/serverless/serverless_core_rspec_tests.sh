@@ -14,5 +14,10 @@ export ES_PW=$(vault read -field=super_user_pw "${vault_path}")
 ./gradlew clean bootstrap assemble installDefaultGems unpackTarDistribution
 ./gradlew :logstash-core:copyGemjar
 
-jruby -rbundler/setup -S rspec -fd qa/integration/specs/es_output_how_spec.rb
-jruby -rbundler/setup -S rspec -fd qa/integration/specs/dlq_spec.rb
+export GEM_PATH=vendor/bundle/jruby/2.6.0                                                 
+export GEM_HOME=vendor/bundle/jruby/2.6.0 
+
+vendor/jruby/bin/jruby -S bundle install --with development
+
+vendor/jruby/bin/jruby -S bundle exec rspec -fd qa/integration/specs/es_output_how_spec.rb
+vendor/jruby/bin/jruby -S bundle exec rspec -fd qa/integration/specs/dlq_spec.rb
