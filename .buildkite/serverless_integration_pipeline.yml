@@ -4,5 +4,7 @@ agents:
   image: family/core-ubuntu-2204
 
 steps:
+  - label: ":hammer: Install Java"
+    command: ./.buildkite/scripts/setup_java.sh
   - label: "Elasticsearch output test"
     command: ./ci/serverless/serverless_core_rspec_tests.sh
