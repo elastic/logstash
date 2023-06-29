@@ -58,7 +58,7 @@ dependencies {
   implementation "org.openjdk.jmh:jmh-core:$jmh"
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
   implementation 'com.google.guava:guava:24.1.1-jre'
-  implementation 'commons-io:commons-io:2.5'
+  implementation 'commons-io:commons-io:2.13.0'
   runtimeOnly 'joda-time:joda-time:2.8.2'
   api "org.jruby:jruby-core:$jrubyVersion"
 }
