@@ -54,7 +54,7 @@ report() {
   echo "Reporting to Snyk..."
   cd logstash
   REMOTE_REPO_URL=$1
-  if [ "$REMOTE_REPO_URL" != "$MAIN_BRANCH" ]; then
+  if [ "$REMOTE_REPO_URL" != "main" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
     echo "Using '$REMOTE_REPO_URL' remote repo url."
