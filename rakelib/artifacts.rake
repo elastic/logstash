@@ -99,11 +99,6 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
-    # jruby's bundler artifacts
-    @exclude_paths << 'vendor/jruby/bin/bundle*'
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/bundler*'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/bundler-*.gemspec'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/bundler-*'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rake-*'
 
     @exclude_paths

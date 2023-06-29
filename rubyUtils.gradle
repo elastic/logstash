@@ -46,6 +46,7 @@ import java.nio.file.Paths
 ext {
     bundle = this.&bundle
     bundleWithEnv = this.&bundleWithEnv
+    bundleQAGems = this.&bundleQAGems
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
@@ -84,6 +85,22 @@ void bundleWithEnv(File projectDir, File buildDir, String pwd, String bundleBin,
         jruby.currentDirectory = pwd
         jruby.argv = args.toList().toArray()
         jruby.runScriptlet(PathType.ABSOLUTE, bundleBin)
+    }
+}
+
+void bundleQAGems(File projectDir, String qaBuildPath) {
+    def jruby = new ScriptingContainer()
+    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
+    try {
+        jruby.currentDirectory = qaBuildPath
+        jruby.runScriptlet("""
+                require "bundler"
+                require "bundler/cli"
+                Bundler::CLI.start(['install', '--path', "${qaBuildPath}/vendor", '--gemfile', "${projectDir}/qa/integration/Gemfile"])
+                """)
+    } finally {
+        jruby.terminate()
+        Ruby.clearGlobalRuntime()
     }
 }
 
@@ -169,7 +186,7 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
     def jruby = new ScriptingContainer()
     def env = jruby.environment
     def gemDir = "${projectDir}/vendor/bundle/jruby/3.1.0".toString()
-    jruby.setLoadPaths(["${projectDir}/vendor/bundle/jruby/3.1.0/gems/bundler-2.4.14/lib".toString(), "${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
+    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
