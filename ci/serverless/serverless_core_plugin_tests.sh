@@ -115,19 +115,17 @@ check_logstash_readiness
 
 # check es-output, implicitly 
 PLUGIN_ES_OUTPUT=$(check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100')
-export PLUGIN_ES_OUTPUT="${PLUGIN_ES_OUTPUT: -1}"
+PLUGIN_ES_OUTPUT="${PLUGIN_ES_OUTPUT: -1}"
 
 # check es-input, depend on es-output
 PLUGIN_ES_INPUT=$(check_logstash_api '.pipelines.es_stdout.plugins.inputs[0].events.out' '100')
-export PLUGIN_ES_INPUT="${PLUGIN_ES_INPUT: -1}"
+PLUGIN_ES_INPUT="${PLUGIN_ES_INPUT: -1}"
 
 # check es-filter, depend on es-output
 PLUGIN_ES_FILTER=$(check_logstash_api '.pipelines.gen_es_stdout.plugins.filters[0].events.out' '100')
-export PLUGIN_ES_FILTER="${PLUGIN_ES_FILTER: -1}"
+PLUGIN_ES_FILTER="${PLUGIN_ES_FILTER: -1}"
 
 clean_up
-
-return $PLUGIN_ES_OUTPUT && $PLUGIN_ES_INPUT && $PLUGIN_ES_FILTER
 
 if [[ ("$PLUGIN_ES_OUTPUT" -eq 0) && ("$PLUGIN_ES_INPUT" -eq 0) && ("$PLUGIN_ES_FILTER" -eq 0) ]]; then
   exit 0
