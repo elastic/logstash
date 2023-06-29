@@ -181,8 +181,6 @@ dependencies {
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
-    // pin version of jackson-dataformat-yaml's transitive dependency "snakeyaml"
-    implementation "org.yaml:snakeyaml:1.33"
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
     implementation('com.google.googlejavaformat:google-java-format:1.15.0') {
         exclude group: 'com.google.guava', module: 'guava'

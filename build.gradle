@@ -19,7 +19,7 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '1.33'
+        snakeYamlVersion = '2.0'
         shadowGradlePluginVersion = '7.0.0'
     }
 
