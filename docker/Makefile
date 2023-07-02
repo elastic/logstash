@@ -109,7 +109,7 @@ ironbank_docker_paths:
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_ironbank
 
 public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
-	erb -T "-"\
+	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
@@ -123,7 +123,7 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
-	erb -T "-"\
+	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
@@ -137,7 +137,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
-	erb -T "-"\
+	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
@@ -151,10 +151,10 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
-	erb -T "-"\
+	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
-	erb -T "-"\
+	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
@@ -193,7 +193,7 @@ env2yaml: golang
 # Generate the Dockerfiles from Jinja2 templates.
 dockerfile: templates/Dockerfile.erb
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
-		erb -T "-" \
+		../vendor/jruby/bin/jruby -S erb -T "-"\
 			created_date="${BUILD_DATE}" \
 			elastic_version="${ELASTIC_VERSION}" \
 			arch="${ARCHITECTURE}" \
