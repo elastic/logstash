@@ -8,7 +8,7 @@ end
 filename = ARGV[0]
 
 # Load YAML file
-settings = YAML.load_file(filename)
+settings = YAML.load_file(filename) || {}
 
 # Define list of valid settings
 valid_settings = [
@@ -139,17 +139,13 @@ ENV.each do |key, value|
 
     # Try to parse the value as YAML
     begin
-      parsed_value = YAML.load(value)
+      parsed_value = YAML.safe_load(value)
     rescue Psych::SyntaxError
       parsed_value = value
     end
 
-    # Handle complex structures
-    keys = valid_setting_map[normalized_key].split('.')
-    last_key = keys.pop
-    current = settings
-    keys.each { |k| current = (current[k] ||= {}) }
-    current[last_key] = parsed_value
+    target_key = valid_setting_map[normalized_key]
+    settings[target_key] = parsed_value
   end
 end
 
