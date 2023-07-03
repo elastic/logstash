@@ -42,7 +42,10 @@ module LogStash
         ssl_params = {}
         ssl_params[:keystore_path] = required_setting(settings, 'api.ssl.keystore.path', "api.ssl.enabled")
         ssl_params[:keystore_password] = required_setting(settings, 'api.ssl.keystore.password', "api.ssl.enabled")
-
+        ssl_params[:truststore_path] = settings.get('api.ssl.truststore.path')
+        ssl_params[:truststore_password] = settings.get('api.ssl.truststore.password')
+        ssl_params[:supported_protocols] = settings.get('api.ssl.supported_protocols')
+        ssl_params[:verification_mode] = settings.get('api.ssl.verification_mode')
         options[:ssl_params] = ssl_params.freeze
       else
         warn_ignored(logger, settings, "api.ssl.", "api.ssl.enabled")
@@ -124,6 +127,8 @@ module LogStash
     # @option :ssl_params [Hash{Symbol=>Object}]
     #             :keystore_path [String]
     #             :keystore_password [LogStash::Util::Password]
+    #             :truststore_path [String] (optional - will use keystore if no truststore set)
+    #             :truststore_password [LogStash::Util::Password] (optional)
     # @option :auth_basic [Hash{Symbol=>Object}]
     #             :username [String]
     #             :password [LogStash::Util::Password]
@@ -137,12 +142,8 @@ module LogStash
       @running = Concurrent::AtomicBoolean.new(false)
       @mutex = Mutex.new
 
-      validate_keystore_access! if @ssl_params
-
-      # wrap any output that puma could generate into a wrapped logger
-      # use the puma namespace to override STDERR, STDOUT in that scope.
-      Puma::STDERR.logger = logger
-      Puma::STDOUT.logger = logger
+      validate_keystore_access!(@ssl_params.fetch(:keystore_path), @ssl_params.fetch(:keystore_password)) if @ssl_params
+      validate_keystore_access!(@ssl_params.fetch(:truststore_path), @ssl_params[:truststore_password]) if @ssl_params && @ssl_params[:truststore_path]
 
       app = LogStash::Api::RackApp.app(logger, agent, http_environment)
 
@@ -195,10 +196,7 @@ module LogStash
     private
 
     def _init_server
-      io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
-      events = LogStash::NonCrashingPumaEvents.new(io_wrapped_logger, io_wrapped_logger)
-
-      ::Puma::Server.new(@app, events)
+      ::Puma::Server.new(@app, nil, log_writer: LogStash::DelegatingLogWriter.new(logger))
     end
 
     def create_server_thread
@@ -228,11 +226,26 @@ module LogStash
     def bind_to_port(candidate_port)
       logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
       if @ssl_params
-        unwrapped_ssl_params = {
-            'keystore' => @ssl_params.fetch(:keystore_path),
-            'keystore-pass' => @ssl_params.fetch(:keystore_password).value
-        }
-        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
+        keystore_path = @ssl_params.fetch(:keystore_path)
+        truststore_path = @ssl_params.fetch(:truststore_path, nil)
+
+        ssl_context = ::Puma::MiniSSL::Context.new
+        ssl_context.keystore = keystore_path
+        ssl_context.keystore_type = detect_keystore_type(keystore_path)
+        ssl_context.keystore_pass = @ssl_params.fetch(:keystore_password).value
+        if truststore_path
+          ssl_context.truststore = truststore_path
+          ssl_context.truststore_type = detect_keystore_type(truststore_path)
+          truststore_password = @ssl_params.fetch(:truststore_password, nil)&.value
+          ssl_context.truststore_pass = truststore_password if truststore_password
+        end
+        supported_protocols = @ssl_params.fetch(:supported_protocols, nil)
+        ssl_context.protocols = supported_protocols if supported_protocols
+        ssl_context.verify_mode = case @ssl_params.fetch(:verification_mode, nil)
+                                  when 'none' then ::Puma::MiniSSL::VERIFY_NONE
+                                  when 'full' then ::Puma::MiniSSL::VERIFY_PEER | ::Puma::MiniSSL::VERIFY_FAIL_IF_NO_PEER_CERT
+                                  else ::Puma::MiniSSL::VERIFY_PEER # 'peer' or default (nil)
+                                  end
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
         @server.add_tcp_listener(http_host, candidate_port)
@@ -248,16 +261,17 @@ module LogStash
     # Validate access to the provided keystore.
     # Errors accessing the keystore after binding the webserver to a port are very hard to debug.
     # @api private
-    def validate_keystore_access!
-      return false unless @ssl_params
+    def validate_keystore_access!(path, password)
+      raise("Password not provided!") if password && !password&.value
 
-      raise("Password not provided!") unless @ssl_params.fetch(:keystore_password).value
-
-      java.security.KeyStore.getInstance("JKS")
-          .load(java.io.FileInputStream.new(@ssl_params.fetch(:keystore_path)),
-                @ssl_params.fetch(:keystore_password).value.chars&.to_java(:char))
+      java.security.KeyStore.getInstance(detect_keystore_type(path))
+          .load(java.io.FileInputStream.new(path), password&.value&.chars&.to_java(:char))
     rescue => e
-      raise ArgumentError.new("API Keystore could not be opened (#{e})")
+      raise ArgumentError.new("API Keystore (#{path}) could not be opened (#{e})")
+    end
+
+    def detect_keystore_type(path)
+      path.end_with?('.p12', '.pfx') ? 'pkcs12' : 'jks'
     end
   end
 end

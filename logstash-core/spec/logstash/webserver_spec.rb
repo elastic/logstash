@@ -212,21 +212,25 @@ describe LogStash::IOWrappedLogger do
   let(:logger)  { spy("logger") }
   let(:message) { "foobar" }
 
-  subject { described_class.new(logger) }
+  let(:log_writer) do
+    LogStash::DelegatingLogWriter.new(logger)
+  end
+
+  subject { log_writer.stderr } # mimick Puma's only use
 
   it "responds to puts" do
     subject.puts(message)
-    expect(logger).to have_received(:debug).with(message)
+    expect(logger).to have_received(:info).with(message)
   end
 
   it "responds to write" do
     subject.write(message)
-    expect(logger).to have_received(:debug).with(message)
+    expect(logger).to have_received(:info).with(message)
   end
 
   it "responds to <<" do
     subject << message
-    expect(logger).to have_received(:debug).with(message)
+    expect(logger).to have_received(:info).with(message)
   end
 
   it "responds to sync=(v)" do

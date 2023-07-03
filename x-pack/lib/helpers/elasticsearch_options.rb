@@ -138,7 +138,7 @@ module LogStash module Helpers
 
       opts = {}
 
-      setting = LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", String, ["localhost:9200"])
+      setting = LogStash::Setting::SplittableStringArray.new("var.elasticsearch.hosts", ["localhost:9200"])
       raw_value = module_settings[setting.name]
       setting.set(raw_value) unless raw_value.nil?
       opts['hosts'] = setting.value
