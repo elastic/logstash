@@ -31,11 +31,7 @@ config:
     }
 
     output {
-      elasticsearch {
-        hosts => "${ES_ENDPOINT}"
-        user => "${ES_USER}"
-        password => "${ES_PW}"
-      }
+      elasticsearch {}
     }
   ds_ecs_off: |-
     input {
@@ -66,10 +62,6 @@ config:
     output {
 
       elasticsearch {
-        hosts => "${ES_ENDPOINT}"
-        user => "${ES_USER}"
-        password => "${ES_PW}"
-  
         data_stream => "false"
         ecs_compatibility => disabled
         index => "logstash-integration-test"
