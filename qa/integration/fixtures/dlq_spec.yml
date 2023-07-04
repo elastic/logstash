@@ -27,8 +27,6 @@ config:
     }
   }
   output {
-    elasticsearch {
-      index => "test-index"
-    }
+    elasticsearch { index => "test-index" }
   }
 teardown_script:

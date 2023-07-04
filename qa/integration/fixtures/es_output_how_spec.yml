@@ -60,7 +60,6 @@ config:
       }
     }
     output {
-
       elasticsearch {
         data_stream => "false"
         ecs_compatibility => disabled

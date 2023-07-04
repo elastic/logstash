@@ -23,7 +23,6 @@ def clean_es(es_client)
   es_client.indices.delete_template(:name => "*")
   es_client.indices.delete(:index => "*")
   es_client.indices.refresh
-  #TODO clean up data stream
 end
 
 def serverless?
