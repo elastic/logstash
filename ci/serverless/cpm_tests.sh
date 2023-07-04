@@ -35,9 +35,10 @@ check_es_output() {
 }
 
 clean_up() {
+  exit_code=$?
   curl -u "$ES_USER:$ES_PW" -X DELETE "$ES_ENDPOINT/_logstash/pipeline/$PIPELINE_NAME"  -H 'Content-Type: application/json';
   kill $LS_PID
-  echo "Done"
+  exit $exit_code
 }
 
 prepare_cpm_pipelines
