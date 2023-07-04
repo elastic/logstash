@@ -128,18 +128,8 @@ resolve_version_and_report_docker_images() {
 
   # parse version (ex: 8.8.2 from 8.8 branch, or 8.9.0 from main branch)
   versions_file="$PWD/versions.yml"
-  while IFS= read -r line
-  do
-    if [[ $line =~ ^logstash:.* ]]; then
-      line_split_parts=("${line//logstash:/}")
-      version=$(echo "${line_split_parts[0]}" | xargs)
-
-      if [[ $version != null ]]; then
-        report_docker_images "$version"
-        break
-      fi
-    fi
-  done < "$versions_file"
+  version=$(awk '/logstash:/ { print $2 }' "$versions_file")
+  report_docker_images "$version"
   cd ..
 }
 
