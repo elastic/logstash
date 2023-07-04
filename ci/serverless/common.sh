@@ -80,14 +80,3 @@ clean_up() {
   kill $LS_PID
   echo "Done"
 }
-
-print_result() {
-  echo "es-output : es-input : es-filter : stack monitor"
-  echo "$PLUGIN_ES_OUTPUT : $PLUGIN_ES_INPUT : $PLUGIN_ES_FILTER : $MONITOR_CHECK"
-
-  if [[ ("$PLUGIN_ES_OUTPUT" -eq 0) && ("$PLUGIN_ES_INPUT" -eq 0) && ("$PLUGIN_ES_FILTER" -eq 0) && ("$MONITOR_CHECK" -eq 0) ]]; then
-    exit 0
-  else
-    exit 1
-  fi
-}
