@@ -77,6 +77,7 @@ check_logstash_api() {
 }
 
 clean_up() {
+  exit_code=$?
   kill $LS_PID
-  echo "Done"
+  exit $exit_code
 }
