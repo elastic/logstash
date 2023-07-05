@@ -4,8 +4,8 @@ agents:
   image: family/core-ubuntu-2204
 
 steps:
-  - label: "core rspec integration test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/serverless_core_rspec_tests.sh
+  - label: "DLQ rspec integration test"
+    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/dlq_rspec_tests.sh
   - label: "es-output test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_output_tests.sh
   - label: "es-input test"
