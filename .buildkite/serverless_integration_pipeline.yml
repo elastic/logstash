@@ -1,18 +1,18 @@
 agents:
   provider: "gcp"
   machineType: "n1-standard-4"
-  image: family/core-ubuntu-2204
+  image: "docker.elastic.co/ci-agent-images/elasticsearch-stateless/buildkite-agent:latest"
 
 steps:
   - label: "DLQ rspec integration test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/dlq_rspec_tests.sh
+    command: ./ci/serverless/dlq_rspec_tests.sh
   - label: "es-output test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_output_tests.sh
+    command: ./ci/serverless/es_output_tests.sh
   - label: "es-input test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_input_tests.sh
+    command: ./ci/serverless/es_input_tests.sh
   - label: "es-filter test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_filter_tests.sh
+    command: ./ci/serverless/es_filter_tests.sh
   - label: "central pipeline management test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/cpm_tests.sh
+    command: ./ci/serverless/cpm_tests.sh
   - label: "monitoring test"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/monitoring_tests.sh
+    command: ./ci/serverless/monitoring_tests.sh
