@@ -55,11 +55,13 @@ run_logstash() {
 check_logstash_readiness() {
   count=120
   echo "Waiting Logstash to respond..."
-  while ! curl --silent localhost:9600 && [[ $count -ne -1 ]]; do
-      count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && exit 1
+  while ! [[ $(curl --silent localhost:9600) ]] && [[ $count -gt 0 ]]; do
+      count=$(( count - 1 ))
       sleep 1
   done
+
+  [[ $count -eq 0 ]] && exit 1
+
   echo "Logstash is Up !"
   return 0
 }
@@ -67,12 +69,14 @@ check_logstash_readiness() {
 check_logstash_api() {
   count=60
   echo "Checking Logstash API..."
-  while ! [[ `curl --silent localhost:9600/_node/stats | jq "$1"` -ge $2 ]] && [[ $count -ne -1 ]]; do
-      count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && echo "1" && return
+  while ! [[ $(curl --silent localhost:9600/_node/stats | jq "$1") -ge $2 ]] && [[ $count -gt 0 ]]; do
+      count=$(( count - 1 ))
       sleep 1
   done
-  echo "Passed check"
+
+  [[ $count -eq 0 ]] && echo "1" && return
+
+  echo "Passed check! jq $1"
   echo "0"
 }
 

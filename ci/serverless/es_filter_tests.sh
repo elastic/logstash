@@ -8,7 +8,7 @@ build_logstash
 
 # test
 check_es_filter() {
-  PLUGIN_ES_FILTER=$(check_logstash_api '.pipelines.main.plugins.filters[1].events.out' '1')
+  PLUGIN_ES_FILTER=$(check_logstash_api '.pipelines.main.plugins.filters[] | select(.id == "ok") | .events.out' '1')
   export PLUGIN_ES_FILTER="${PLUGIN_ES_FILTER: -1}"
 }
 

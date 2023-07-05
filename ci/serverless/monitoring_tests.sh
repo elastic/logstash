@@ -13,11 +13,13 @@ get_monitor_count() {
 
 compare_monitor_count() {
   count=60
-  while ! [[ $(get_monitor_count) -gt "$INITIAL_MONITOR_CNT" ]] && [[ $count -ne -1 ]]; do
-      count=$(( $count - 1 ))
-      [[ $count -eq 0 ]] && echo "1" && return
+  while ! [[ $(get_monitor_count) -gt "$INITIAL_MONITOR_CNT" ]] && [[ $count -gt 0 ]]; do
+      count=$(( count - 1 ))
       sleep 1
   done
+
+  [[ $count -eq 0 ]] && echo "1" && return
+
   echo "Passed check"
   echo "0"
 }
