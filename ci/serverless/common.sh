@@ -3,6 +3,7 @@ set -ex
 
 export CURRENT_DIR="$(dirname "$0")"
 export INDEX_NAME="serverless_it_${BUILDKITE_BUILD_NUMBER:-`date +%s`}"
+export ERR_MSG=()
 
 setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
@@ -49,6 +50,9 @@ run_logstash() {
   check_logstash_readiness
 
   $2 # check result
+
+  print_result
+
   kill $LS_PID
 }
 
@@ -78,6 +82,12 @@ check_logstash_api() {
 
   echo "Passed check! jq $1"
   echo "0"
+}
+
+print_result() {
+  for msg in "${ERR_MSG[@]}"; do
+    echo "$msg"
+  done
 }
 
 clean_up() {

@@ -12,6 +12,8 @@ steps:
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_input_tests.sh
   - label: "es-filter test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_filter_tests.sh
+  - label: "elastic_integration filter test"
+    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/elastic_integration_filter_tests.sh
   - label: "central pipeline management test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/cpm_tests.sh
   - label: "monitoring test"
