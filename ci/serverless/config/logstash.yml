@@ -1,5 +1,5 @@
 xpack.management.enabled: true
-xpack.management.pipeline.id: ["*"]
+xpack.management.pipeline.id: ["gen_es"]
 xpack.management.elasticsearch.username: ${ES_USER}
 xpack.management.elasticsearch.password: ${ES_PW}
 xpack.management.elasticsearch.hosts: ["${ES_ENDPOINT}"]
