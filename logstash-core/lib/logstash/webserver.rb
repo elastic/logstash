@@ -195,10 +195,7 @@ module LogStash
     private
 
     def _init_server
-      io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
-      events = LogStash::NonCrashingPumaEvents.new(io_wrapped_logger, io_wrapped_logger)
-
-      ::Puma::Server.new(@app, events)
+      ::Puma::Server.new(@app, nil, log_writer: LogStash::DelegatingLogWriter.new(logger))
     end
 
     def create_server_thread
