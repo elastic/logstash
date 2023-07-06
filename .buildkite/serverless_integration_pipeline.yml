@@ -1,6 +1,6 @@
 agents:
-  provider: "gcp"
-  machineType: "n1-standard-4"
+  provider: k8s
+  memory: "4G"
   image: "docker.elastic.co/ci-agent-images/elasticsearch-stateless/buildkite-agent:0.1"
 
 steps:
