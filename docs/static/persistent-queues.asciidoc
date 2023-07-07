@@ -123,7 +123,7 @@ JSON document
 
 -----
 EXAMPLE
-If Logstash receives 1000 EPS, and each event is 1kb, then Logstash receives about 3.6gb every hour.
+If Logstash receives 1000 EPS, and each event is 1kb (with 1.10 multiplication factor), then Logstash receives about 3.6gb every hour.
 So if Logstash needs to tolerate one of the downstream components being down for 12h, they need a Persistent Queue
 of about 50GB in size.
 -----
