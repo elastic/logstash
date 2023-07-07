@@ -94,11 +94,12 @@ reached.
 Calculating the queue size will vary depending on the use-case. As a general guiding
 principle, you should consider the following formula to size your Persistent Queue.
 
--------
-Total Event Size per second = Input EPS * Original Event Size
-Total Received Per Hour = Total Event Size per Second * 3600s
-Tolerated Downtime = (Total Received Per Hour * Number of hours) * Multiplication Factor <1>
--------
+[source,txt]
+------
+Bytes Received Per Second = Incoming Events Per Second * Raw Event Byte Size
+Bytes Received Per Hour = Bytes Received per Second * 3600s
+Required Queue Capacity = (Bytes Received Per Hour * Tolerated Hours of Downtime) * Multiplication Factor <1>
+------
 <1> To start, you can set the `Multiplication Factor` to `1.10`, but for better accuracy, see below.
 
 After Logstash receives an event, and before it is stored in the queue, it gets serialized.
@@ -108,26 +109,30 @@ will change depending on your use case. The following tables show a few examples
 overhead by the type of event, and the multiplication factor.
 
 Raw string message
-| Plaintext size (bytes) | Serialized logstash event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor |
-| ---- | ---- | ---- | ---- | ---- |
-| 11 | 213 | 202 | 1836% | 1836 |
-| 1212 | 1416 | 204 | 17% | 1.17 |
+[cols="<h,<,<m,<m",options="header",]
+|=======================================================================
+| Plaintext size (bytes) | Serialized logstash event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
+| 11 | 213 | 202 | 1836% | 19.4
+| 1212 | 1416 | 204 | 17% | 1.17
+| 10240 | 10452 | 212 | 2% | 1.02
+|=======================================================================
 
 JSON document
-| JSON document size (bytes) | Serialized logstash event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor |
-| ---- | ---- | ---- | ---- | ---- |
-| 947 | 1133 | 186 | 20% | 1.20 |
-| 2707 | 3206 | 499 | 18% | 1.18 |
-| 6751 | 7388 | 637 | 9% | 1.9 |
-| 58901 | 59693 | 792 | 1% | 1.1 |
+[cols="<h,<,<m,<m",options="header",]
+|=======================================================================
+| JSON document size (bytes) | Serialized logstash event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
+| 947 | 1133 | 186 | 20% | 1.20
+| 2707 | 3206 | 499 | 18% | 1.18
+| 6751 | 7388 | 637 | 9% | 1.9
+| 58901 | 59693 | 792 | 1% | 1.1
+|=======================================================================
 
 -----
 EXAMPLE
-If Logstash receives 1000 EPS, and each event is 1kb (with 1.10 multiplication factor), then Logstash receives about 3.6gb every hour.
-So if Logstash needs to tolerate one of the downstream components being down for 12h, they need a Persistent Queue
-of about 50GB in size.
+Let's consider a Logstash instance that receives 1000 EPS and each event is 1KB, or 3.5GB every hour.
+In order to tolerate a downstream component being unavailable for 12h without Logstash exerting back-pressure upstream, the Persistent Queue's `max_bytes` would have to be set to 3.6*12*1.10 = 47.25GB, or about 50GB.
 -----
-+
+
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
 If you are using persistent queues to protect against data loss, but don't
