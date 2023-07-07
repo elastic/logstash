@@ -1,9 +1,5 @@
 # encoding: utf-8
 
-# run with: ruby exploit_beats_input.rb host port
-# where host is where Logstash is running and port is the beats input bound port
-# this will trigger a warn log entry with the jndi uri, causing a lookup to 127.0.0.1:1389 on Logstash != 6.8.21 and 7.16.1
-# open `nc -l 1389` to observe the connection
 require "socket"
 require "thread"
 require "zlib"
@@ -100,10 +96,11 @@ class Benchmark
 
   def initialize(traffic_type = :tcp)
     @client_count = 24 #cores * 2 = event loops threads
-    @total_traffic_for_connection = 256 * MB
+#     @total_traffic_for_connection = 256 * MB
+    @total_traffic_for_connection = 1024 * MB
     # keep message size above 16k, requiring two TLS records
-    @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
-    #@message_sizes = [8 * KB]
+#     @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
+    @message_sizes = [8 * KB]
     @traffic_type = traffic_type
   end
 
@@ -112,12 +109,12 @@ class Benchmark
     @message_sizes.each do |message_size|
       puts "\n\n"
       message = 'a' * message_size + "\n"
+      test_iterations = 3
       repetitions = @total_traffic_for_connection / message_size
-      puts "Repetitions #{repetitions} for #{message_size}KB messages"
+      puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
       puts "Writing approximately #{(client_count * repetitions * message.size)/1024.0/1024.0}Mib across #{@client_count} clients (message size: #{message_size} Kb)"
 
       speeds = []
-      test_iterations = 3
       test_iterations.times do
         speeds << execute_message_benchmark(message, repetitions)
       end
@@ -162,7 +159,7 @@ class Benchmark
 end
 
 option_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: ruby tcp_client.rb tcp_client.rb --test=beats|tcp"
+  opts.banner = "Usage: ruby tcp_client.rb benchmark_client.rb --test=beats|tcp"
   opts.on '-tKIND', '--test=KIND', 'Select to benchmark the TCP or Beats input'
 end
 options = {}
