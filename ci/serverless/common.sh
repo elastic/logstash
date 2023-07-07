@@ -3,7 +3,8 @@ set -ex
 
 export CURRENT_DIR="$(dirname "$0")"
 export INDEX_NAME="serverless_it_${BUILDKITE_BUILD_NUMBER:-`date +%s`}"
-export ERR_MSG=()
+export ERR_MSGS=()
+export CHECKS=()
 
 setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
@@ -15,14 +16,12 @@ setup_vault() {
 }
 
 build_logstash() {
-    ./gradlew clean bootstrap assemble installDefaultGems
+  ./gradlew clean bootstrap assemble installDefaultGems
 }
 
-bulk_index_data() {
+prepare_test_data() {
   curl -X POST -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
 }
-
-
 
 # $1: function for checking result
 # run_cpm_logstash check
@@ -37,7 +36,8 @@ run_cpm_logstash() {
   check_logstash_readiness
 
   $1 # check result
-  kill $LS_PID
+
+  kill "$LS_PID" || true
 }
 
 # $1: pipeline file
@@ -51,9 +51,7 @@ run_logstash() {
 
   $2 # check result
 
-  print_result
-
-  kill $LS_PID
+  kill "$LS_PID" || true
 }
 
 check_logstash_readiness() {
@@ -70,8 +68,11 @@ check_logstash_readiness() {
   return 0
 }
 
+# $1: jq filter
+# $2: expected value
+# check_logstash_api '.pipelines.main.plugins.outputs[0].documents.successes' '1'
 check_logstash_api() {
-  count=60
+  count=30
   echo "Checking Logstash API..."
   while ! [[ $(curl --silent localhost:9600/_node/stats | jq "$1") -ge $2 ]] && [[ $count -gt 0 ]]; do
       count=$(( count - 1 ))
@@ -80,18 +81,49 @@ check_logstash_api() {
 
   [[ $count -eq 0 ]] && echo "1" && return
 
-  echo "Passed check! jq $1"
+  echo "Passed jq check!"
   echo "0"
 }
 
+# append err msg if $1 is err
+# $1: err code 0/1
+# $2: err msg
+# append_err_msg "$PLUGIN_ES_FILTER" "Failed check."
+append_err_msg() {
+  [[ "$1" -ge '1' ]] && ERR_MSGS+=("$2") || true
+}
+
+# check log if contains [ERROR] or [FATAL]
+check_err_log() {
+  LOG_FILE="$CURRENT_DIR/../../logs/logstash-plain.log"
+  LOG_CHECK=$(grep -cE "\[ERROR\]|\[FATAL\]" "$LOG_FILE") || true
+  append_err_msg "$LOG_CHECK" "Log contains error."
+  CHECKS+=("$LOG_CHECK")
+}
+
 print_result() {
-  for msg in "${ERR_MSG[@]}"; do
+  for msg in "${ERR_MSGS[@]}"; do
     echo "$msg"
   done
 }
 
-clean_up() {
-  exit_code=$?
-  kill $LS_PID
-  exit $exit_code
+# exit 1 if one of the checks fails
+exit_with_code() {
+  for c in "${CHECKS[@]}"; do
+      [[ $c -gt 0 ]] && exit 1
+  done
+
+  exit 0
 }
+
+clean_up_and_check() {
+  [[ -n "$LS_PID" ]] && kill "$LS_PID" || true
+
+  check_err_log
+  print_result
+  exit_with_code
+}
+
+# common setup
+setup_vault
+build_logstash

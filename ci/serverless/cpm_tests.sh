@@ -3,10 +3,6 @@ set -ex
 
 source ./$(dirname "$0")/common.sh
 
-setup_vault
-build_logstash
-
-# test
 export PIPELINE_NAME='gen_es'
 
 # update pipeline and check response code
@@ -30,20 +26,23 @@ prepare_cpm_pipelines() {
 }
 
 check_es_output() {
-  PLUGIN_ES_OUTPUT=$(check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100')
-  export PLUGIN_ES_OUTPUT="${PLUGIN_ES_OUTPUT: -1}"
+  PLUGIN_CHECK=$(check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100')
+  PLUGIN_CHECK="${PLUGIN_CHECK: -1}"
+
+  append_err_msg "$PLUGIN_CHECK" "Failed central pipeline management check."
+  CHECKS+=("$PLUGIN_CHECK")
 }
 
-clean_up() {
-  exit_code=$?
+delete_pipeline() {
   curl -u "$ES_USER:$ES_PW" -X DELETE "$ES_ENDPOINT/_logstash/pipeline/$PIPELINE_NAME"  -H 'Content-Type: application/json';
-  kill $LS_PID
-  exit $exit_code
+}
+
+cpm_clean_up_and_check() {
+  delete_pipeline
+  clean_up_and_check
 }
 
 prepare_cpm_pipelines
 run_cpm_logstash check_es_output
 
-
-trap clean_up EXIT
-exit $PLUGIN_ES_OUTPUT
+trap cpm_clean_up_and_check EXIT
