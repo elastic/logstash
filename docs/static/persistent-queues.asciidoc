@@ -96,7 +96,7 @@ principle, you should consider the following formula to size your Persistent Que
 
 Total Event Size per second = Input EPS * Size of each Event
 Total Received Per Hour = Total Event Size per Second * 3600s
-Tolerated Downtime = (Total Received Per Hour * X hours) * 1.10
+Tolerated Downtime = (Total Received Per Hour * X hours) * Multiplication Factor
 
 -----
 EXAMPLE
