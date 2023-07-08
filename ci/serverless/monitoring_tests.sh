@@ -21,5 +21,3 @@ check() {
 
 export INITIAL_MONITOR_CNT=$(get_monitor_count)
 run_cpm_logstash check
-
-trap clean_up_and_get_result EXIT

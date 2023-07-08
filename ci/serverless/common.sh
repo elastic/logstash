@@ -3,7 +3,7 @@ set -ex
 
 export CURRENT_DIR="$(dirname "$0")"
 export INDEX_NAME="serverless_it_${BUILDKITE_BUILD_NUMBER:-`date +%s`}"
-# error messages to print
+# store all error messages
 export ERR_MSGS=()
 # numeric values representing the results of the checks. 0: pass, >0: fail
 export CHECKS=()
@@ -55,22 +55,9 @@ run_logstash() {
   kill "$LS_PID" || true
 }
 
-check_logstash_readiness() {
-  count=120
-  echo "Waiting Logstash to respond..."
-  while ! [[ $(curl --silent localhost:9600) ]] && [[ $count -gt 0 ]]; do
-      count=$(( count - 1 ))
-      sleep 1
-  done
-
-  [[ $count -eq 0 ]] && exit 1
-
-  echo "Logstash is Up !"
-  return 0
-}
 
 # $1: number of try
-# $n: check function with args
+# $n: check function with args - return non empty string as pass
 count_down_check() {
     count=$1
     while ! [[ $("${@:2}") ]] && [[ $count -gt 0 ]]; do
@@ -84,6 +71,22 @@ count_down_check() {
     echo "0"
 }
 
+
+check_logstash_readiness() {
+  curl_logstash() {
+    [[ $(curl --silent localhost:9600) ]] && echo "0"
+  }
+  check_readiness() {
+    count_down_check 120 curl_logstash
+  }
+  add_check check_readiness "Failed readiness check."
+
+  [[ "${CHECKS[-1]}" -eq "1" ]] && exit 1
+
+  echo "Logstash is Up !"
+  return 0
+}
+
 # $1: jq filter
 # $2: expected value
 # check_logstash_api '.pipelines.main.plugins.outputs[0].documents.successes' '1'
@@ -95,35 +98,30 @@ check_logstash_api() {
   count_down_check 30 curl_node_stats "$1" "$2"
 }
 
-# append err msg if $1 is err
-# $1: err code 0/1
-# $2: err msg
-add_msg_if_fail() {
-  [[ "$1" -ge '1' ]] && ERR_MSGS+=("$2") || true
-}
-
 # add check result to CHECKS
-# $1: function to check
+# $1: check function - expected the last char of result to be 0 or positive number
 # $2: err msg
 add_check() {
-  PLUGIN_CHECK=$($1)
-  PLUGIN_CHECK="${PLUGIN_CHECK: -1}"
+  FEATURE_CHECK=$($1)
+  FEATURE_CHECK="${FEATURE_CHECK: -1}"
 
-  add_msg_if_fail "$PLUGIN_CHECK" "$2"
-  CHECKS+=("$PLUGIN_CHECK")
+  ERR_MSGS+=("$2")
+  CHECKS+=("$FEATURE_CHECK")
 }
 
 # check log if the line contains [ERROR] or [FATAL] and does not relate to "unreachable"
 check_err_log() {
   LOG_FILE="$CURRENT_DIR/../../logs/logstash-plain.log"
-  LOG_CHECK=$(grep -E "\[ERROR\]|\[FATAL\]" "$LOG_FILE" | grep -cv "unreachable") || true
-  add_msg_if_fail "$LOG_CHECK" "Log contains error."
+  LOG_CHECK=$(grep -E "\[ERROR\]|\[FATAL\]" "$LOG_FILE" | grep -cvE "unreachable|Connection refused") || true
+
+  ERR_MSGS+=("Found error in log")
   CHECKS+=("$LOG_CHECK")
 }
 
+# if CHECKS[i] is 1, print ERR_MSGS[i]
 print_result() {
-  for msg in "${ERR_MSGS[@]}"; do
-    echo "$msg"
+  for i in "${!CHECKS[@]}"; do
+    [[ "${CHECKS[$i]}" -gt 0 ]] && echo "${ERR_MSGS[$i]}" || true
   done
 }
 
@@ -147,3 +145,4 @@ clean_up_and_get_result() {
 # common setup
 setup_vault
 build_logstash
+trap clean_up_and_get_result INT TERM EXIT

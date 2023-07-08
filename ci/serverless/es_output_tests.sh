@@ -27,5 +27,3 @@ check_plugin() {
 
 export INITIAL_DATA_STREAM_CNT=$(get_data_stream_count)
 run_logstash "$CURRENT_DIR/pipeline/001_es-output.conf" check_plugin
-
-trap clean_up_and_get_result EXIT
