@@ -8,27 +8,18 @@ get_monitor_count() {
 }
 
 compare_monitor_count() {
-  count=60
-  while ! [[ $(get_monitor_count) -gt "$INITIAL_MONITOR_CNT" ]] && [[ $count -gt 0 ]]; do
-      count=$(( count - 1 ))
-      sleep 1
-  done
-
-  [[ $count -eq 0 ]] && echo "1" && return
-
-  echo "Passed check"
-  echo "0"
+   [[ $(get_monitor_count) -gt "$INITIAL_MONITOR_CNT" ]] && echo "0"
 }
 
 check_monitor() {
-  MONITOR_CHECK=$(compare_monitor_count)
-  MONITOR_CHECK="${MONITOR_CHECK: -1}"
+  count_down_check 20 compare_monitor_count
+}
 
-  append_err_msg "$MONITOR_CHECK" "Failed monitor check."
-  CHECKS+=("$MONITOR_CHECK")
+check() {
+  add_check check_monitor "Failed monitor check."
 }
 
 export INITIAL_MONITOR_CNT=$(get_monitor_count)
-run_cpm_logstash check_monitor
+run_cpm_logstash check
 
-trap clean_up_and_check EXIT
+trap clean_up_and_get_result EXIT

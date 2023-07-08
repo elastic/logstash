@@ -16,6 +16,8 @@ prepare_ingest_pipeline() {
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/index_template.json")
 
+  # ingest pipeline is likely be there from the last run
+  # failing to update pipeline does not stop the test
   if [[ $PIPELINE_RESP_CODE -ge '400' ]]; then
     ERR_MSGS+=("Failed to update ingest pipeline. Got $PIPELINE_RESP_CODE")
   fi
@@ -24,15 +26,16 @@ prepare_ingest_pipeline() {
     ERR_MSGS+=("Failed to update index template. Got $TEMPLATE_RESP_CODE")
   fi
 }
-check_integration_filter() {
-  PLUGIN_CHECK=$(check_logstash_api '.pipelines.main.plugins.filters[] | select(.id == "check1") | .events.out' '1')
-  PLUGIN_CHECK="${PLUGIN_CHECK: -1}"
 
-  append_err_msg "$PLUGIN_CHECK" "Failed integration filter check."
-  CHECKS+=("$PLUGIN_CHECK")
+check_integration_filter() {
+  check_logstash_api '.pipelines.main.plugins.filters[] | select(.id == "mutate1") | .events.out' '1'
+}
+
+check_plugin() {
+  add_check check_integration_filter "Failed integration filter check."
 }
 
 prepare_ingest_pipeline
-run_logstash "$CURRENT_DIR/pipeline/004_integration-filter.conf" check_integration_filter
+run_logstash "$CURRENT_DIR/pipeline/004_integration-filter.conf" check_plugin
 
-trap clean_up_and_check EXIT
+trap clean_up_and_get_result EXIT

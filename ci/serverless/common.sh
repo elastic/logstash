@@ -3,7 +3,9 @@ set -ex
 
 export CURRENT_DIR="$(dirname "$0")"
 export INDEX_NAME="serverless_it_${BUILDKITE_BUILD_NUMBER:-`date +%s`}"
+# error messages to print
 export ERR_MSGS=()
+# numeric values representing the results of the checks. 0: pass, >0: fail
 export CHECKS=()
 
 setup_vault() {
@@ -23,8 +25,7 @@ prepare_test_data() {
   curl -X POST -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
 }
 
-# $1: function for checking result
-# run_cpm_logstash check
+# $1: check function
 run_cpm_logstash() {
   # copy log4j
   cp  "$CURRENT_DIR/../../config/log4j2.properties" "$CURRENT_DIR/config/log4j2.properties"
@@ -35,13 +36,13 @@ run_cpm_logstash() {
 
   check_logstash_readiness
 
-  $1 # check result
+  $1 # check function
 
   kill "$LS_PID" || true
 }
 
 # $1: pipeline file
-# $2: function for checking result
+# $2: check function
 # run_logstash 001_es-output.conf check_es_output
 run_logstash() {
   $CURRENT_DIR/../../bin/logstash -f "$1" 2>/dev/null &
@@ -49,7 +50,7 @@ run_logstash() {
 
   check_logstash_readiness
 
-  $2 # check result
+  $2 # check function
 
   kill "$LS_PID" || true
 }
@@ -68,36 +69,55 @@ check_logstash_readiness() {
   return 0
 }
 
+# $1: number of try
+# $n: check function with args
+count_down_check() {
+    count=$1
+    while ! [[ $("${@:2}") ]] && [[ $count -gt 0 ]]; do
+        count=$(( count - 1 ))
+        sleep 1
+    done
+
+    [[ $count -eq 0 ]] && echo "1" && return
+
+    echo "Passed check!"
+    echo "0"
+}
+
 # $1: jq filter
 # $2: expected value
 # check_logstash_api '.pipelines.main.plugins.outputs[0].documents.successes' '1'
 check_logstash_api() {
-  count=30
-  echo "Checking Logstash API..."
-  while ! [[ $(curl --silent localhost:9600/_node/stats | jq "$1") -ge $2 ]] && [[ $count -gt 0 ]]; do
-      count=$(( count - 1 ))
-      sleep 1
-  done
+  curl_node_stats() {
+    [[ $(curl --silent localhost:9600/_node/stats | jq "$1") -ge "$2" ]] && echo "0"
+  }
 
-  [[ $count -eq 0 ]] && echo "1" && return
-
-  echo "Passed jq check!"
-  echo "0"
+  count_down_check 30 curl_node_stats "$1" "$2"
 }
 
 # append err msg if $1 is err
 # $1: err code 0/1
 # $2: err msg
-# append_err_msg "$PLUGIN_ES_FILTER" "Failed check."
-append_err_msg() {
+add_msg_if_fail() {
   [[ "$1" -ge '1' ]] && ERR_MSGS+=("$2") || true
 }
 
-# check log if contains [ERROR] or [FATAL]
+# add check result to CHECKS
+# $1: function to check
+# $2: err msg
+add_check() {
+  PLUGIN_CHECK=$($1)
+  PLUGIN_CHECK="${PLUGIN_CHECK: -1}"
+
+  add_msg_if_fail "$PLUGIN_CHECK" "$2"
+  CHECKS+=("$PLUGIN_CHECK")
+}
+
+# check log if the line contains [ERROR] or [FATAL] and does not relate to "unreachable"
 check_err_log() {
   LOG_FILE="$CURRENT_DIR/../../logs/logstash-plain.log"
-  LOG_CHECK=$(grep -cE "\[ERROR\]|\[FATAL\]" "$LOG_FILE") || true
-  append_err_msg "$LOG_CHECK" "Log contains error."
+  LOG_CHECK=$(grep -E "\[ERROR\]|\[FATAL\]" "$LOG_FILE" | grep -cv "unreachable") || true
+  add_msg_if_fail "$LOG_CHECK" "Log contains error."
   CHECKS+=("$LOG_CHECK")
 }
 
@@ -116,7 +136,7 @@ exit_with_code() {
   exit 0
 }
 
-clean_up_and_check() {
+clean_up_and_get_result() {
   [[ -n "$LS_PID" ]] && kill "$LS_PID" || true
 
   check_err_log

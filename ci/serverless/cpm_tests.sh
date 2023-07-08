@@ -26,23 +26,23 @@ prepare_cpm_pipelines() {
 }
 
 check_es_output() {
-  PLUGIN_CHECK=$(check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100')
-  PLUGIN_CHECK="${PLUGIN_CHECK: -1}"
+  check_logstash_api '.pipelines.gen_es.plugins.outputs[0].documents.successes' '100'
+}
 
-  append_err_msg "$PLUGIN_CHECK" "Failed central pipeline management check."
-  CHECKS+=("$PLUGIN_CHECK")
+check_plugin() {
+  add_check check_es_output "Failed central pipeline management check."
 }
 
 delete_pipeline() {
   curl -u "$ES_USER:$ES_PW" -X DELETE "$ES_ENDPOINT/_logstash/pipeline/$PIPELINE_NAME"  -H 'Content-Type: application/json';
 }
 
-cpm_clean_up_and_check() {
+cpm_clean_up_and_get_result() {
   delete_pipeline
-  clean_up_and_check
+  clean_up_and_get_result
 }
 
 prepare_cpm_pipelines
-run_cpm_logstash check_es_output
+run_cpm_logstash check_plugin
 
-trap cpm_clean_up_and_check EXIT
+trap cpm_clean_up_and_get_result EXIT
