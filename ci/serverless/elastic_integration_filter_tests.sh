@@ -37,5 +37,3 @@ check_plugin() {
 
 prepare_ingest_pipeline
 run_logstash "$CURRENT_DIR/pipeline/004_integration-filter.conf" check_plugin
-
-trap clean_up_and_get_result EXIT

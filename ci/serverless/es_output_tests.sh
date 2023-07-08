@@ -21,11 +21,9 @@ check_data_stream_output() {
 }
 
 check_plugin() {
-  add_check check_named_index "Failed es-output check."
+  add_check check_named_index "Failed index check."
   add_check check_data_stream_output "Failed data stream check."
 }
 
 export INITIAL_DATA_STREAM_CNT=$(get_data_stream_count)
 run_logstash "$CURRENT_DIR/pipeline/001_es-output.conf" check_plugin
-
-trap clean_up_and_get_result EXIT
