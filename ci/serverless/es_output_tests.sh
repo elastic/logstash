@@ -5,11 +5,11 @@ source ./$(dirname "$0")/common.sh
 
 
 check_named_index() {
-  check_logstash_api '.pipelines.main.plugins.outputs[0].documents.successes' '1'
+  check_logstash_api '.pipelines.main.plugins.outputs[] | select(.id == "named_index") | .documents.successes' '1'
 }
 
 get_data_stream_count() {
-  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/logs-generic-default/_count" | jq '.count'
+  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/logs-$INDEX_NAME.001-default/_count" | jq '.count'
 }
 
 compare_data_stream_count() {
