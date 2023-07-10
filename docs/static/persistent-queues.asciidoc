@@ -128,10 +128,10 @@ overhead by the type of event, and the multiplication factor.
 |=======================================================================
 
 *Example*
------
-Let's consider a Logstash instance that receives 1000 EPS and each event is 1KB, or 3.5GB every hour.
-In order to tolerate a downstream component being unavailable for 12h without Logstash exerting back-pressure upstream, the Persistent Queue's `max_bytes` would have to be set to 3.6*12*1.10 = 47.25GB, or about 50GB.
------
+Let's consider a Logstash instance that receives 1000 EPS and each event is 1KB,
+or 3.5GB every hour. In order to tolerate a downstream component being unavailable
+for 12h without Logstash exerting back-pressure upstream, the Persistent Queue's
+`max_bytes` would have to be set to 3.6*12*1.10 = 47.25GB, or about 50GB.
 
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
