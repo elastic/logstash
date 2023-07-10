@@ -12,7 +12,7 @@ prepare_ingest_pipeline() {
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/ingest_pipeline.json")
 
-  TEMPLATE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/_index_template/logs-generic-default-pipeline" \
+  TEMPLATE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/_index_template/logs-serverless-default-template" \
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/index_template.json")
 
@@ -27,12 +27,28 @@ prepare_ingest_pipeline() {
   fi
 }
 
+# processor should append 'serverless' to message
 check_integration_filter() {
   check_logstash_api '.pipelines.main.plugins.filters[] | select(.id == "mutate1") | .events.out' '1'
 }
 
+get_doc_msg_length() {
+  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/logs-$INDEX_NAME.004-default/_search?size=1" | jq '.hits.hits[0]._source.message | length'
+}
+
+# ensure no double run of ingest pipeline
+# message = ['ok', 'serverless*']
+validate_ds_doc() {
+   [[ $(get_doc_msg_length) -eq "2" ]] && echo "0"
+}
+
+check_doc_no_duplication() {
+  count_down_check 20 validate_ds_doc
+}
+
 check_plugin() {
-  add_check check_integration_filter "Failed integration filter check."
+  add_check check_integration_filter "Failed ingest pipeline processor check."
+  add_check check_doc_no_duplication "Failed ingest pipeline duplication check."
 }
 
 prepare_ingest_pipeline

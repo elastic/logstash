@@ -1,5 +1,5 @@
 {
-  "index_patterns": ["logs-generic-*"],
+  "index_patterns": ["logs-serverless*"],
   "data_stream": { },
   "priority": 500,
   "template": {
