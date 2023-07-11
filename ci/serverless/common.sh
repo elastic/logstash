@@ -11,9 +11,10 @@ export CHECKS=()
 setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
   set +x
-  export ES_ENDPOINT=$(vault read -field=host "${vault_path}")
-  export ES_USER=$(vault read -field=super_user "${vault_path}")
-  export ES_PW=$(vault read -field=super_user_pw "${vault_path}")
+  export ES_ENDPOINT=$(vault read -field=es_host "${vault_path}")
+  export ES_USER=$(vault read -field=es_user "${vault_path}")
+  export ES_PW=$(vault read -field=es_user_pw "${vault_path}")
+  export KB_ENDPOINT=$(vault read -field=kb_host "${vault_path}")
   set -x
 }
 
