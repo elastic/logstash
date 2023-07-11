@@ -18,8 +18,6 @@ resolve_latest_branches() {
     IFS='.'
     read -a versions <<< "$SNAPSHOT_VERSION"
     version=${versions[0]}.${versions[1]}
-    version="${version%\"}"
-    version="${version#\"}"
     TARGET_BRANCHES+=("$version")
   done
 }
@@ -56,7 +54,7 @@ report() {
   echo "Reporting to Snyk..."
   cd logstash
   REMOTE_REPO_URL=$1
-  if [ "$REMOTE_REPO_URL" != "$MAIN_BRANCH" ]; then
+  if [ "$REMOTE_REPO_URL" != "main" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
     echo "Using '$REMOTE_REPO_URL' remote repo url."
@@ -64,7 +62,7 @@ report() {
 
   # adding git commit hash to Snyk tag to improve visibility
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
-  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
+  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
   cd ..
 }
 
