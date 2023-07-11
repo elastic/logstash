@@ -18,3 +18,5 @@ steps:
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/cpm_tests.sh
   - label: "monitoring test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/monitoring_tests.sh
+  - label: "kibana test"
+    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/kibana_api_tests.sh
