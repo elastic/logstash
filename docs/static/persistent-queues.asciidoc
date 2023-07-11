@@ -91,8 +91,8 @@ first.
 See <<backpressure-persistent-queue>> for behavior when queue limits are
 reached.
 
-Calculating the queue size will vary depending on the use-case. As a general guiding
-principle, you should consider the following formula to size your Persistent Queue.
+Appropriate sizing for the queue depends on the use-case. 
+As a general guiding principle, consider this formula to size your persistent queue.
 
 [source,txt]
 ------
