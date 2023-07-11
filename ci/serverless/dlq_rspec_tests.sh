@@ -8,9 +8,9 @@ vault_path=secret/ci/elastic-logstash/serverless-test
 export JRUBY_OPTS="-J-Xmx1g"
 export SERVERLESS=true
 set +x
-export ES_ENDPOINT=$(vault read -field=host "${vault_path}")
-export ES_USER=$(vault read -field=super_user "${vault_path}")
-export ES_PW=$(vault read -field=super_user_pw "${vault_path}")
+export ES_ENDPOINT=$(vault read -field=es_host "${vault_path}")
+export ES_USER=$(vault read -field=es_user "${vault_path}")
+export ES_PW=$(vault read -field=es_user_pw "${vault_path}")
 set -x
 
 ./gradlew clean bootstrap assemble installDefaultGems unpackTarDistribution
