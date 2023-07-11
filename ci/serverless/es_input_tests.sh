@@ -11,5 +11,6 @@ check_plugin() {
   add_check check_es_input "Failed es-input check."
 }
 
+setup
 prepare_test_data
 run_logstash "$CURRENT_DIR/pipeline/003_es-input.conf" check_plugin

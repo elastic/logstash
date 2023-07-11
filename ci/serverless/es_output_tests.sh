@@ -25,5 +25,6 @@ check_plugin() {
   add_check check_data_stream_output "Failed data stream check."
 }
 
+setup
 export INITIAL_DATA_STREAM_CNT=$(get_data_stream_count)
 run_logstash "$CURRENT_DIR/pipeline/001_es-output.conf" check_plugin

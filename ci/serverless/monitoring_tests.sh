@@ -19,5 +19,6 @@ check() {
   add_check check_monitor "Failed monitor check."
 }
 
+setup
 export INITIAL_MONITOR_CNT=$(get_monitor_count)
 run_cpm_logstash check

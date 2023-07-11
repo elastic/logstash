@@ -144,6 +144,8 @@ clean_up_and_get_result() {
 }
 
 # common setup
-setup_vault
-build_logstash
-trap clean_up_and_get_result INT TERM EXIT
+setup() {
+  setup_vault
+  build_logstash
+  trap clean_up_and_get_result INT TERM EXIT
+}

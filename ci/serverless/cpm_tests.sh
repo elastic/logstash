@@ -43,5 +43,6 @@ cpm_clean_up_and_get_result() {
   clean_up_and_get_result
 }
 
+setup
 prepare_cpm_pipelines
 run_cpm_logstash check_plugin

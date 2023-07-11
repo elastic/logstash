@@ -11,5 +11,6 @@ check_plugin() {
   add_check check_es_filter "Failed es-filter check."
 }
 
+setup
 prepare_test_data
 run_logstash "$CURRENT_DIR/pipeline/002_es-filter.conf" check_plugin

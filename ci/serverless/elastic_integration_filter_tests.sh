@@ -51,5 +51,6 @@ check_plugin() {
   add_check check_doc_no_duplication "Failed ingest pipeline duplication check."
 }
 
+setup
 prepare_ingest_pipeline
 run_logstash "$CURRENT_DIR/pipeline/004_integration-filter.conf" check_plugin
