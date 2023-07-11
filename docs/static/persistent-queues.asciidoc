@@ -122,7 +122,7 @@ These tables show examples of overhead by event type and how that affects the mu
 *JSON document*
 [cols="<h,<,<m,<m,<m",options="header",]
 |=======================================================================
-| JSON document size (bytes) | Serialized logstash event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
+| JSON document size (bytes) | Serialized {ls} event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
 | 947 | 1133 | 186 | 20% | 1.20
 | 2707 | 3206 | 499 | 18% | 1.18
 | 6751 | 7388 | 637 | 9% | 1.9
