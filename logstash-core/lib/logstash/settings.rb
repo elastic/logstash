@@ -744,10 +744,10 @@ module LogStash
     class SplittableStringArray < ArrayCoercible
       DEFAULT_TOKEN = ","
 
-      def initialize(name, klass, default, strict=true, tokenizer = DEFAULT_TOKEN, &validator_proc)
-        @element_class = klass
+      def initialize(name, default, strict=true, possible_strings=[], tokenizer = DEFAULT_TOKEN, &validator_proc)
+        @possible_strings = possible_strings
         @token = tokenizer
-        super(name, klass, default, strict, &validator_proc)
+        super(name, ::String, default, strict, &validator_proc)
       end
 
       def coerce(value)
@@ -758,6 +758,19 @@ module LogStash
         else
           value.split(@token).map(&:strip)
         end
+      end
+
+      protected
+
+      def validate(value)
+        super(value)
+        return unless @possible_strings&.any?
+
+        invalid_value = coerce(value).reject { |val| @possible_strings.include?(val) }
+        return unless invalid_value.any?
+
+        raise ArgumentError,
+              "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
       end
     end
 
@@ -904,7 +917,6 @@ module LogStash
       end
     end
   end
-
 
   SETTINGS = Settings.new
 end

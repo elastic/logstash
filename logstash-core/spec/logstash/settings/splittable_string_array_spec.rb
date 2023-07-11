@@ -19,10 +19,9 @@ require "spec_helper"
 require "logstash/settings"
 
 describe LogStash::Setting::SplittableStringArray do
-  let(:element_class) { String }
-  let(:default_value) { [] }
+  let(:default_value) { ['default'] }
 
-  subject { described_class.new("testing", element_class, default_value) }
+  subject { described_class.new('testing', default_value) }
 
   before do
     subject.set(candidate)
@@ -54,13 +53,43 @@ describe LogStash::Setting::SplittableStringArray do
     end
   end
 
-  context "when defining a custom tokenizer" do
-    subject { described_class.new("testing", element_class, default_value, strict=true, ";") }
+  context 'when defining a custom tokenizer' do
+    let(:default_value) { [] }
+    let(:possible_strings) { [] }
+    subject { described_class.new('testing', default_value, strict=true, possible_strings, ';') }
 
-    let(:candidate) { "hello;ninja" }
+    let(:candidate) { 'hello;ninja' }
 
-    it "returns an array of string" do
-      expect(subject.value).to match(["hello", "ninja"])
+    it 'returns an array of string' do
+      expect(subject.value).to match(%w[hello ninja])
+    end
+  end
+
+  context 'when defining allowed values' do
+    let(:default_value) { [] }
+    let(:possible_strings) { %w[foo bar] }
+    subject { described_class.new('testing', [], strict=true, possible_strings) }
+
+    let(:candidate) { 'bar, foo' }
+
+    it 'returns an array of string' do
+      expect(subject.value).to eql %w[bar foo]
+    end
+
+    it 'setting a valid array value' do
+      expect { subject.set(%w[bar foo]) }.to_not raise_error(ArgumentError)
+    end
+
+    context 'when a single given value is not a possible_strings' do
+      it 'should raise an ArgumentError' do
+        expect { subject.set('foo,baz') }.to raise_error(ArgumentError, "Failed to validate the setting \"#{subject.name}\" value(s): [\"baz\"]. Valid options are: #{possible_strings.inspect}")
+      end
+    end
+
+    context 'when multiple given values are not a possible_strings' do
+      it 'should raise an ArgumentError' do
+        expect { subject.set('foo,baz,boot') }.to raise_error(ArgumentError, "Failed to validate the setting \"#{subject.name}\" value(s): [\"baz\", \"boot\"]. Valid options are: #{possible_strings.inspect}")
+      end
     end
   end
 end

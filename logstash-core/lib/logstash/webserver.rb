@@ -42,7 +42,7 @@ module LogStash
         ssl_params = {}
         ssl_params[:keystore_path] = required_setting(settings, 'api.ssl.keystore.path', "api.ssl.enabled")
         ssl_params[:keystore_password] = required_setting(settings, 'api.ssl.keystore.password', "api.ssl.enabled")
-
+        ssl_params[:supported_protocols] = settings.get('api.ssl.supported_protocols')
         options[:ssl_params] = ssl_params.freeze
       else
         warn_ignored(logger, settings, "api.ssl.", "api.ssl.enabled")
@@ -225,11 +225,15 @@ module LogStash
     def bind_to_port(candidate_port)
       logger.debug("Trying to start API WebServer", :port => candidate_port, :ssl_enabled => ssl_enabled?)
       if @ssl_params
-        unwrapped_ssl_params = {
+        context_builder_params = {
             'keystore' => @ssl_params.fetch(:keystore_path),
-            'keystore-pass' => @ssl_params.fetch(:keystore_password).value
+            'keystore-pass' => @ssl_params.fetch(:keystore_password).value,
         }
-        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
+
+        supported_protocols = @ssl_params.fetch(:supported_protocols, nil)
+        context_builder_params['protocols'] = supported_protocols if supported_protocols&.any?
+
+        ssl_context = Puma::MiniSSL::ContextBuilder.new(context_builder_params, @server.log_writer).context
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
         @server.add_tcp_listener(http_host, candidate_port)
