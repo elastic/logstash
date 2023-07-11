@@ -100,7 +100,7 @@ Bytes Received Per Second = Incoming Events Per Second * Raw Event Byte Size
 Bytes Received Per Hour = Bytes Received per Second * 3600s
 Required Queue Capacity = (Bytes Received Per Hour * Tolerated Hours of Downtime) * Multiplication Factor <1>
 ------
-<1> To start, you can set the `Multiplication Factor` to `1.10`, but for better accuracy, see below.
+<1> To start, you can set the `Multiplication Factor` to `1.10`, and then refine it for specific data types as indicated in the tables below. 
 
 After Logstash receives an event, and before it is stored in the queue, it gets serialized.
 This process results in added overhead to the event inside Logstash. This overhead depends
