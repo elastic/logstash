@@ -104,7 +104,7 @@ Required Queue Capacity = (Bytes Received Per Hour * Tolerated Hours of Downtime
 [[sizing-by-type]]
 ====== Queue size by data type
 
-After Logstash receives an event, and before it is stored in the queue, it gets serialized.
+{ls} serializes the events it receives before they are stored in the queue.
 This process results in added overhead to the event inside Logstash. This overhead depends
 on the type and the size of the `Original Event Size`. As such, the `Multiplication Factor`
 will change depending on your use case. The following tables show a few examples of the
