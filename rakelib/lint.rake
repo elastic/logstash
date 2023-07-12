@@ -17,7 +17,7 @@
 
 namespace "lint" do
 
-  module RubocopCLI
+  module RuboCLI
     def self.run!(*args)
       require "rubocop"
       cli = RuboCop::CLI.new
@@ -28,12 +28,12 @@ namespace "lint" do
 
   # task that runs lint report
   task "report" do
-    require 'rubocop'
-    cli = RuboCop::CLI.new
+    #require 'rubocop'
+    #cli = RuboCop::CLI.new
     # cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect"])
     #cli.run(["--display-cop-names", "--force-exclusion", "--lint"])
     #cli.run(["--lint"])
-    RubocopCLI.run!("--lint")
+    RuboCLI.run!("--lint")
   end
 
   # task that automatically fixes code formatting
@@ -41,6 +41,6 @@ namespace "lint" do
     #require 'rubocop'
     #cli = RuboCop::CLI.new
     #cli.run(["--fix-layout"])
-    RubocopCLI.run!("--fix-layout")
+    RuboCLI.run!("--fix-layout")
   end
 end
