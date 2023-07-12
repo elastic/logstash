@@ -21,26 +21,20 @@ namespace "lint" do
     def self.run!(*args)
       require "rubocop"
       cli = RuboCop::CLI.new
-      result = cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect", *args])
+      #result = cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect", *args])
+      #Disabling cache ensures that execution doesn't fail after a re-run
+      result = cli.run(["--display-cop-names", "--force-exclusion", "--cache", "false", *args])
       raise "Linting failed." if result.nonzero?
     end
   end
 
   # task that runs lint report
   task "report" do
-    #require 'rubocop'
-    #cli = RuboCop::CLI.new
-    # cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect"])
-    #cli.run(["--display-cop-names", "--force-exclusion", "--lint"])
-    #cli.run(["--lint"])
     RuboCLI.run!("--lint")
   end
 
   # task that automatically fixes code formatting
   task "format" do
-    #require 'rubocop'
-    #cli = RuboCop::CLI.new
-    #cli.run(["--fix-layout"])
     RuboCLI.run!("--fix-layout")
   end
 end
