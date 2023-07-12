@@ -91,6 +91,51 @@ first.
 See <<backpressure-persistent-queue>> for behavior when queue limits are
 reached.
 
+Appropriate sizing for the queue depends on the use-case. 
+As a general guiding principle, consider this formula to size your persistent queue.
+
+[source,txt]
+------
+Bytes Received Per Second = Incoming Events Per Second * Raw Event Byte Size
+Bytes Received Per Hour = Bytes Received per Second * 3600s
+Required Queue Capacity = (Bytes Received Per Hour * Tolerated Hours of Downtime) * Multiplication Factor <1>
+------
+<1> To start, you can set the `Multiplication Factor` to `1.10`, and then refine it for specific data types as indicated in the tables below. 
+[[sizing-by-type]]
+====== Queue size by data type
+
+{ls} serializes the events it receives before they are stored in the queue.
+This process results in added overhead to the event inside {ls}. 
+This overhead depends on the type and the size of the `Original Event Size`.
+As such, the `Multiplication Factor` changes depending on your use case. 
+These tables show examples of overhead by event type and how that affects the multiplication factor.
+
+*Raw string message*
+[cols="<h,<,<m,<m,<m",options="header",]
+|=======================================================================
+| Plaintext size (bytes) | Serialized {ls} event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
+| 11 | 213 | 202 | 1836% | 19.4
+| 1212 | 1416 | 204 | 17% | 1.17
+| 10240 | 10452 | 212 | 2% | 1.02
+|=======================================================================
+
+*JSON document*
+[cols="<h,<,<m,<m,<m",options="header",]
+|=======================================================================
+| JSON document size (bytes) | Serialized {ls} event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
+| 947 | 1133 | 186 | 20% | 1.20
+| 2707 | 3206 | 499 | 18% | 1.18
+| 6751 | 7388 | 637 | 9% | 1.9
+| 58901 | 59693 | 792 | 1% | 1.1
+|=======================================================================
+
+*Example*
+
+Let's consider a {ls} instance that receives 1000 EPS and each event is 1KB,
+or 3.5GB every hour. In order to tolerate a downstream component being unavailable
+for 12h without {ls} exerting back-pressure upstream, the persistent queue's
+`max_bytes` would have to be set to 3.6*12*1.10 = 47.25GB, or about 50GB.
+
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
 If you are using persistent queues to protect against data loss, but don't
