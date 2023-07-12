@@ -283,7 +283,13 @@ Current options are:
 | _N/A_
 
 | `api.ssl.supported_protocols`
-| List of allowed SSL/TLS versions to use when establishing a secure connection. The available protocols depends on the JVM version, a few protocols are disabled by default and needs to be enabled manually by changing `jdk.tls.disabledAlgorithms` in the *$JDK_HOME/conf/security/java.security* configuration file.
+a| List of allowed SSL/TLS versions to use when establishing a secure connection. The available protocols depends on the JVM version, a few protocols are disabled by default and needs to be enabled manually by changing `jdk.tls.disabledAlgorithms` in the *$JDK_HOME/conf/security/java.security* configuration file.
+Possible values are:
+
+* `TLSv1`
+* `TLSv1.1`
+* `TLSv1.2`
+* `TLSv1.3`
 | _N/A_
 
 | `api.auth.type`
