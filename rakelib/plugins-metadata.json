@@ -408,6 +408,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-input-elastic_serverless_forwarder": {
+    "default-plugins": true,
+    "skip-list": false
+  },
   "logstash-integration-jdbc": {
     "default-plugins": true,
     "skip-list": false
