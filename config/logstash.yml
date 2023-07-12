@@ -154,7 +154,7 @@
 # disabled by default and needs to be enabled manually by changing `jdk.tls.disabledAlgorithms`
 # in the $JDK_HOME/conf/security/java.security configuration file.
 #
-# api.ssl.supported_protocols: TLSv1.w2,TLSv1.32
+# api.ssl.supported_protocols: TLSv1.2,TLSv1.3
 #
 # The HTTP API can be configured to require authentication. Acceptable values are
 #  - `none`:  no auth is required (default)
