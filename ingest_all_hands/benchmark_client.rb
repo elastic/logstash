@@ -125,36 +125,59 @@ class Benchmark
 
   private
   def execute_message_benchmark(message, repetitions)
-    clients = @client_count.times.map { Lumberjack::Client.new }
-
     start = Time.now()
     sent_messages = java.util.concurrent.atomic.AtomicLong.new(0)
+
+    if @traffic_type == :tcp
+      tcp_traffic_load(client_count, message, repetitions, sent_messages)
+    elsif @traffic_type == :beats
+      beats_traffic_load(client_count, message, repetitions, sent_messages)
+    else
+      raise "Unrecognized traffic type: #{@traffic_type}"
+    end
+
+    puts "Done in #{Time.now() - start} seconds"
+
+    sent_messages.get / (Time.now() - start)
+  end
+
+  private
+  def tcp_traffic_load(client_count, message, repetitions, sent_messages)
+    clients = @client_count.times.map { Lumberjack::Client.new }
 
     threads = client_count.times.map do |i|
       Thread.new(i) do |i|
         client = clients[i]
         # keep message size above 16k, requiring two TLS records
-        if @traffic_type == :tcp
-          repetitions.times do
-            client.send_raw(message)
-            sent_messages.incrementAndGet
-          end
-        else # should be :beats
-          data = [ { "message" => message } ]
-          repetitions.times do
-            client.write(data) # this convert JSON to bytes
-            sent_messages.incrementAndGet
-          end
+        repetitions.times do
+          client.send_raw(message)
+          sent_messages.incrementAndGet
         end
         client.close
       end
     end
 
     threads.each(&:join)
+  end
 
-    puts "Done in #{Time.now() - start} seconds"
+  private
+  def beats_traffic_load(client_count, message, repetitions, sent_messages)
+    clients = @client_count.times.map { Lumberjack::Client.new }
 
-    sent_messages.get / (Time.now() - start)
+    threads = client_count.times.map do |i|
+      Thread.new(i) do |i|
+        client = clients[i]
+        # keep message size above 16k, requiring two TLS records
+        data = [ { "message" => message } ]
+        repetitions.times do
+          client.write(data) # this convert JSON to bytes
+          sent_messages.incrementAndGet
+        end
+        client.close
+      end
+    end
+
+    threads.each(&:join)
   end
 end
 
