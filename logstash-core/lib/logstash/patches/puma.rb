@@ -23,32 +23,22 @@ module LogStash
     end
   end
 
-  # Puma uses by default the STDERR an the STDOUT for all his error
-  # handling, the server class accept custom a events object that can accept custom io object,
-  # so I just wrap the logger into an IO like object.
-  class IOWrappedLogger
+  # Puma still uses the STDERR an the STDOUT for a few error
+  # handling, the server class accept custom a log writer object that can accept custom io object,
+  # so it just wrap the logger into an IO like object.
+  class IOWrappedLogger < ::Puma::NullIO
     def initialize(new_logger)
       @logger_lock = Mutex.new
       @logger = new_logger
-    end
-
-    def sync=(v)
-      # noop
-    end
-
-    def sync
-      # noop
-    end
-
-    def flush
-      # noop
     end
 
     def logger=(logger)
       @logger_lock.synchronize { @logger = logger }
     end
 
+    # @overload
     def puts(str)
+      return unless @logger.debug?
       # The logger only accept a str as the first argument
       @logger_lock.synchronize { @logger.debug(str.to_s) }
     end
@@ -56,12 +46,85 @@ module LogStash
     alias_method :<<, :puts
   end
 
-  # ::Puma::Events#error(str) sends Kernel#exit
-  # let's raise something sensible instead.
+  # ::Puma::LogWriter#error(str) sends Kernel#exit
+  # This error will be raised instead.
   UnrecoverablePumaError = Class.new(RuntimeError)
-  class NonCrashingPumaEvents < ::Puma::Events
+
+  # Replacement for Puma's `LogWriter` to redirect all logging to a logger.
+  # @private
+  class DelegatingLogWriter
+    attr_reader :stdout, :stderr
+
+    def initialize(logger)
+      @logger = logger
+      @stdout = @stderr = IOWrappedLogger.new(self)
+    end
+
+    # @overload
+    def write(str)
+      # raw write - no formatting
+      @logger.debug(str) if @logger.debug?
+    end
+
+    # @overload
+    def debug(str)
+      @logger.debug(format(str)) if @logger.debug?
+    end
+    alias_method :log, :debug
+
+    # @overload
     def error(str)
+      @logger.error(format(str))
       raise UnrecoverablePumaError.new(str)
+    end
+
+    # @overload
+    def format(str)
+      str.to_s
+    end
+
+    # An HTTP connection error has occurred.
+    # +error+ a connection exception, +req+ the request,
+    # and +text+ additional info
+    # @version 5.0.0
+    # @overload
+    def connection_error(error, req, text="HTTP connection error")
+      @logger.debug(text, { error: error, req: req, backtrace: error&.backtrace }) if @logger.debug?
+    end
+
+    # An HTTP parse error has occurred.
+    # +error+ a parsing exception, and +req+ the request.
+    def parse_error(error, req)
+      @logger.debug('HTTP parse error, malformed request', { error: error, req: req }) if @logger.debug?
+    end
+
+    # An SSL error has occurred.
+    # @param error <Puma::MiniSSL::SSLError>
+    # @param ssl_socket <Puma::MiniSSL::Socket>
+    # @overload
+    def ssl_error(error, ssl_socket)
+      return unless @logger.debug?
+      peeraddr = ssl_socket.peeraddr.last rescue "<unknown>"
+      subject = ssl_socket.peercert&.subject
+      @logger.debug("SSL error, peer: #{peeraddr}, peer cert: #{subject}", error: error)
+    end
+
+    # An unknown error has occurred.
+    # +error+ an exception object, +req+ the request,
+    # and +text+ additional info
+    # @overload
+    def unknown_error(error, req=nil, text="Unknown error")
+      details = { error: error, req: req }
+      details[:backtrace] = error.backtrace if @logger.debug?
+      @logger.error(text, details)
+    end
+
+    # Log occurred error debug dump.
+    # +error+ an exception object, +req+ the request,
+    # and +text+ additional info
+    # @overload
+    def debug_error(error, req=nil, text="")
+      @logger.debug(text, { error: error, req: req, backtrace: error&.backtrace }) if @logger.debug?
     end
   end
 end

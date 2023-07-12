@@ -195,10 +195,7 @@ module LogStash
     private
 
     def _init_server
-      io_wrapped_logger = LogStash::IOWrappedLogger.new(logger)
-      events = LogStash::NonCrashingPumaEvents.new(io_wrapped_logger, io_wrapped_logger)
-
-      ::Puma::Server.new(@app, events)
+      ::Puma::Server.new(@app, nil, log_writer: LogStash::DelegatingLogWriter.new(logger))
     end
 
     def create_server_thread
@@ -232,7 +229,7 @@ module LogStash
             'keystore' => @ssl_params.fetch(:keystore_path),
             'keystore-pass' => @ssl_params.fetch(:keystore_password).value
         }
-        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.events).context
+        ssl_context = Puma::MiniSSL::ContextBuilder.new(unwrapped_ssl_params, @server.log_writer).context
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)
       else
         @server.add_tcp_listener(http_host, candidate_port)
