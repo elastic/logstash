@@ -743,7 +743,7 @@ tasks.register("lint") {
     // Calls rake's 'lint' task
     dependsOn installDevelopmentGems
     doLast {
-        rake(projectDir, buildDir, 'rubocop')
+        rake(projectDir, buildDir, 'lint:report')
     }
 }
 

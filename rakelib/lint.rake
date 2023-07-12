@@ -14,8 +14,20 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-task "rubocop" do
-  require 'rubocop'
-  cli = RuboCop::CLI.new
-  cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect"])
+
+namespace "lint" do
+  # task that runs lint report
+  task "report" do
+    require 'rubocop'
+    cli = RuboCop::CLI.new
+    # cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect"])
+    cli.run(["--display-cop-names", "--force-exclusion", "--lint"])
+  end
+
+  # task that automatically fixes code formatting
+  task "format" do
+    require 'rubocop'
+    cli = RuboCop::CLI.new
+    cli.run(["--fix-layout"])
+  end
 end
