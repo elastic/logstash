@@ -739,6 +739,14 @@ class JDKDetails {
     }
 }
 
+tasks.register("lint") {
+    // Calls rake's 'lint' task
+    dependsOn installDevelopmentGems
+    doLast {
+        rake(projectDir, buildDir, 'rubocop')
+    }
+}
+
 tasks.register("downloadJdk", Download) {
     // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
 
