@@ -34,5 +34,7 @@ Developing?
   `rake test:install-core`  installs any dependencies for testing Logstash core
   `rake test:core`          to run Logstash core tests
   `rake vendor:clean`       clean vendored dependencies used for Logstash development
+  `rake lint:report`        to run the Rubocop linter
+  `rake lint:format`        to automatically format the code
 HELP
 end
