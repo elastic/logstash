@@ -217,4 +217,4 @@ Layout/SpaceInsideStringInterpolation:
 Layout/TrailingEmptyLines:
   Enabled: false
 Layout/TrailingWhitespace:
-  Enabled: false
+  Enabled: true
