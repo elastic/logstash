@@ -15,26 +15,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-$: << File.join(File.dirname(__FILE__), "lib")
-$: << File.join(File.dirname(__FILE__), "logstash-core/lib")
+namespace "lint" do
 
-task "default" => "help"
+  module RuboCLI
+    def self.run!(*args)
+      require "rubocop"
+      cli = RuboCop::CLI.new
+      result = cli.run(["--force-exclusion", *args])
+      raise "Linting failed." if result.nonzero?
+    end
+  end
 
-task "help" do
-  puts <<HELP
-What do you want to do?
+  # task that runs lint report
+  task "report" do
+    RuboCLI.run!("--lint")
+  end
 
-Packaging?
-  `rake artifact:tar`  to build a deployable .tar.gz
-  `rake artifact:rpm`  to build an rpm
-  `rake artifact:deb`  to build an deb
-
-Developing?
-  `rake bootstrap`          installs any dependencies for doing Logstash development
-  `rake test:install-core`  installs any dependencies for testing Logstash core
-  `rake test:core`          to run Logstash core tests
-  `rake vendor:clean`       clean vendored dependencies used for Logstash development
-  `rake lint:report`        to run the Rubocop linter
-  `rake lint:format`        to automatically format the code
-HELP
+  # task that automatically fixes code formatting
+  task "format" do
+    RuboCLI.run!("--fix-layout")
+  end
 end
