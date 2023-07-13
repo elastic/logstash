@@ -1092,14 +1092,15 @@ describe LogStash::JavaPipeline do
 
   context "with multiple outputs" do
     let(:config) do
+      # rubocop:disable Layout/TrailingWhitespace
       <<-EOS
       input {
         generator { count => 10 }
       }
       filter {
        clone {
-          add_field => { 
-            'cloned' =>  'cloned' 
+          add_field => {
+            'cloned' =>  'cloned'
           }
           clones => ["clone1"]
         }
@@ -1110,6 +1111,7 @@ describe LogStash::JavaPipeline do
         dummy_output {}
       }
       EOS
+      # rubocop:enable Layout/TrailingWhitespace
     end
     let(:output) { ::LogStash::Outputs::DummyOutput.new }
 

@@ -7,15 +7,17 @@ require "logstash/environment"
 
 describe ::LogStash::Config::LIRSerializer do
   let(:config) do
+    # rubocop:disable Layout/TrailingWhitespace
     <<-EOC
       input { fake_input {} }
-      filter { 
+      filter {
         if ([foo] < 2) {
-          fake_filter {} 
+          fake_filter {}
         }
       }
       output { fake_output {} }
     EOC
+    # rubocop:enable Layout/TrailingWhitespace
   end
   let(:config_source_with_metadata) do
     [org.logstash.common.SourceWithMetadata.new("string", "spec", config)]
