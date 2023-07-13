@@ -218,5 +218,3 @@ Layout/TrailingEmptyLines:
   Enabled: false
 Layout/TrailingWhitespace:
   Enabled: false
-Lint/ElseLayout:
-  Enabled: false
