@@ -81,10 +81,11 @@ public class PipelineBus {
                         if (lastResponse != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
                             // when last call to internalReceive generated a fail, restart from the
                             // fail position to avoid reprocessing of some events in the downstream.
-                            lastFailedPosition = lastResponse.getSequencePosition();
+                            // we get 0~clones.length position on failure, keep tracking failed position to correctly copy from original orderedEvents
+                            lastFailedPosition += lastResponse.getSequencePosition();
 
                             logger.warn("Attempted to send event to '{}' but that address reached error condition. " +
-                                    "Will Retry. Root cause {}", address, lastResponse.getCauseMessage());
+                                    "Will Retry. Root cause {} Failed at {} position.", address, lastResponse.getCauseMessage(), lastFailedPosition);
 
                         } else {
                             logger.warn("Attempted to send event to '{}' but that address was unavailable. " +

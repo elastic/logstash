@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -100,8 +101,9 @@ public final class Queue implements Closeable {
             }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
-            throw new IllegalStateException(ex);
+            throw new QueueRuntimeException("Error creating queue directories.", ex);
         }
+
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
@@ -413,12 +415,16 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
-            if (! this.headPage.hasCapacity(data.length)) {
-                throw new IOException("data to be written is bigger than page capacity");
+            if (this.closed.get()) {
+                throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
+            }
+
+            if (!this.headPage.hasCapacity(data.length)) {
+                throw new QueueRuntimeException(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE);
             }
 
             // create a new head page if the current does not have sufficient space left for data to be written
-            if (! this.headPage.hasSpace(data.length)) {
+            if (!this.headPage.hasSpace(data.length)) {
 
                 // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
 
@@ -849,7 +855,7 @@ public final class Queue implements Closeable {
         }
     }
 
-    private boolean isClosed() {
+    public boolean isClosed() {
         return this.closed.get();
     }
 

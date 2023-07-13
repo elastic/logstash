@@ -21,17 +21,17 @@
 package org.logstash.ackedqueue;
 
 /**
- * Runtime exception specialization for persistent queue related runtime errors.
- * */
-public class QueueRuntimeException extends RuntimeException {
+ * A public class holds number of descriptive messages are used during the interaction with acked queue.
+ */
+public class QueueExceptionMessages {
 
-    private static final long serialVersionUID = 1L;
+    public final static String WHILE_INSERTING = "Received an exception while inserting to a queue.";
 
-    public QueueRuntimeException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public final static String WHILE_WRITING = "Received an exception while writing to an acked queue.";
 
-    public QueueRuntimeException(String message) {
-        super(message);
-    }
+    public final static String WHILE_READING = "Attempted to read on a closed acked queue.";
+
+    public final static String WRITE_TO_CLOSED_QUEUE = "Tried to write to a closed queue.";
+
+    public final static String BIGGER_DATA_THAN_PAGE_SIZE = "data to be written is bigger than page capacity";
 }

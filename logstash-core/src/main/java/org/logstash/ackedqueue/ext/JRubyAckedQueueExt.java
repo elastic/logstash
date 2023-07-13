@@ -161,6 +161,10 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return queue.isEmpty();
     }
 
+    public boolean isClosed() {
+        return queue.isClosed();
+    }
+
     public void close() throws IOException {
         queue.close();
     }
