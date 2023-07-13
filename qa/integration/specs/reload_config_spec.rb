@@ -35,7 +35,7 @@ describe "Test Logstash service when config reload is enabled" do
   after(:all) {
     @fixture.teardown
   }
-  
+
   let(:timeout_seconds) { 5 }
   let(:initial_port) { random_port }
   let(:reload_port) { random_port }
@@ -43,7 +43,7 @@ describe "Test Logstash service when config reload is enabled" do
   let(:output_file1) { Stud::Temporary.file.path }
   let(:output_file2) { Stud::Temporary.file.path }
   let(:sample_data) { '74.125.176.147 - - [11/Sep/2014:21:50:37 +0000] "GET /?flav=rss20 HTTP/1.1" 200 29941 "-" "FeedBurner/1.0 (http://www.FeedBurner.com)"' }
-  
+
   let(:initial_config_file) { config_to_temp_file(@fixture.config("initial", { :port => initial_port, :file => output_file1 })) }
   let(:reload_config_file) { config_to_temp_file(@fixture.config("reload", { :port => reload_port, :file => output_file2 })) }
 
@@ -54,13 +54,13 @@ describe "Test Logstash service when config reload is enabled" do
     logstash_service.spawn_logstash("-f", "#{initial_config_file}", "--config.reload.automatic", "true")
     logstash_service.wait_for_logstash
     wait_for_port(initial_port, retry_attempts)
-    
+
     # try sending events with this
     send_data(initial_port, sample_data)
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
       expect(IO.read(output_file1).gsub("\n", "")).to eq(sample_data)
     end
-    
+
     # check metrics
     result = logstash_service.monitoring_api.event_stats
     expect(result["in"]).to eq(1)
@@ -77,7 +77,7 @@ describe "Test Logstash service when config reload is enabled" do
 
     logstash_service.wait_for_logstash
     wait_for_port(reload_port, retry_attempts)
-    
+
     # make sure old socket is closed
     expect(is_port_open?(initial_port)).to be false
 
@@ -98,7 +98,7 @@ describe "Test Logstash service when config reload is enabled" do
     Stud.try(retry_attempts.times, RSpec::Expectations::ExpectationNotMetError) do
       expect(LogStash::Util.blank?(IO.read(output_file2))).to be false
     end
-    
+
     # check instance metrics. It should not be reset
     instance_event_stats = logstash_service.monitoring_api.event_stats
     expect(instance_event_stats["in"]).to eq(2)
@@ -143,7 +143,7 @@ describe "Test Logstash service when config reload is enabled" do
     expect(pipeline_reload_stats["failures"]).to eq(0)
     expect(LogStash::Util.blank?(pipeline_reload_stats["last_success_timestamp"])).to be false
     expect(pipeline_reload_stats["last_error"]).to eq(nil)
-    
+
     expect(instance_reload_stats["successes"]).to eq(1)
     expect(instance_reload_stats["failures"]).to eq(0)
     # parse the results and validate

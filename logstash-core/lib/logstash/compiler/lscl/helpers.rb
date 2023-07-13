@@ -26,7 +26,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def base_source_with_metadata=(value)
       set_meta(:base_source_with_metadata, value)
     end
-    
+
     def base_source_with_metadata
       get_meta(:base_source_with_metadata)
     end
@@ -63,7 +63,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
     def self.jdsl
       org.logstash.config.ir.DSL
     end
-    
+
     BOOLEAN_DSL_METHOD_SIGNATURE = [org.logstash.common.SourceWithMetadata, org.logstash.config.ir.expression.Expression, org.logstash.config.ir.expression.Expression]
     AND_METHOD = jdsl.java_method(:eAnd, BOOLEAN_DSL_METHOD_SIGNATURE)
     NAND_METHOD = jdsl.java_method(:eNand, BOOLEAN_DSL_METHOD_SIGNATURE)

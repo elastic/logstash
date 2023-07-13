@@ -583,28 +583,28 @@ describe "conditionals in filter" do
       filter {
         if ("foo" in [tags]) {
           mutate { id => addbar add_tag => bar }
-      
+
           if ("bar" in [tags]) {
             mutate { id => addbaz  add_tag => baz }
           }
-      
+
           if ("baz" in [tags]) {
             mutate { id => addbot add_tag => bot }
-      
+
             if ("bot" in [tags]) {
               mutate { id => addbonk add_tag => bonk }
             }
           }
         }
-      
+
         if ("bot" in [tags]) {
           mutate { id => addwat add_tag => wat }
         }
-      
+
         mutate { id => addprev add_tag => prev }
-      
+
         mutate { id => addfinal add_tag => final }
-      
+
       }
     CONFIG
 

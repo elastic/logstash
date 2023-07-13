@@ -104,7 +104,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     if update_all?
       previous_gem_specs_map.values.map{|spec| spec.name}
     else
-      # If the plugins isn't available in the gemspec or in 
+      # If the plugins isn't available in the gemspec or in
       # the gemfile defined with a local path, we assume the plugins is not
       # installed.
       not_installed = plugins_arg.select { |plugin| !previous_gem_specs_map.has_key?(plugin.downcase) && !gemfile.find(plugin) }

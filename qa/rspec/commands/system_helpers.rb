@@ -65,6 +65,6 @@ module ServiceTester
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("initctl #{action} #{service}")
       end
-    end 
+    end
   end
 end

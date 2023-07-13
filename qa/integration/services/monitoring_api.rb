@@ -39,7 +39,7 @@ class MonitoringAPI
     r = JSON.parse(response.body.read)
     r["version"]
   end
-  
+
   def node_info
     resp = Manticore.get("http://localhost:9600/_node").body
     JSON.parse(resp)

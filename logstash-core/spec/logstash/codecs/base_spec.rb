@@ -57,14 +57,14 @@ describe LogStash::Codecs::Base do
   describe "encoding" do
     shared_examples "encoder types" do |codec_class|
       let(:klass) { codec_class }
-      
+
       describe "#{codec_class}" do
         describe "multi_encode" do
           it "should return an array of [event,data] tuples" do
             expect(instance.multi_encode([event,event])).to eq([encoded_tuple, encoded_tuple])
           end
         end
-        
+
         describe "#encode" do
           before do
             @result = nil
@@ -73,7 +73,7 @@ describe LogStash::Codecs::Base do
             end
             instance.encode(event)
           end
-          
+
           it "should yield the correct result" do
             expect(@result).to eq(encoded_tuple)
           end
@@ -87,4 +87,4 @@ describe LogStash::Codecs::Base do
   end
 end
 
-                          
+

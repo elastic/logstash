@@ -48,7 +48,7 @@ describe "Support environment variable in condition" do
   after(:each) {
     @logstash.teardown
   }
-  
+
   let(:num_retries) { 50 }
   let(:test_path) { Stud::Temporary.directory }
   let(:test_env) {
@@ -95,4 +95,4 @@ describe "Support environment variable in condition" do
     expect(logstash.stderr_and_stdout).to match(/Cannot evaluate `\$\{NOT_EXIST\}`/)
     expect(logstash.exit_code).to be(1)
   end
-end  
+end

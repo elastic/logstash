@@ -58,7 +58,7 @@ module LogStash module Filters module Geoip class DownloadManager
         end
       end
   end
-  
+
   private
   # Call infra endpoint to get md5 of latest databases and verify with metadata
   # return Array of new database information [database_type, db_info]

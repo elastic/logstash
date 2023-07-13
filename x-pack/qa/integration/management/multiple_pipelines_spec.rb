@@ -110,7 +110,7 @@ describe "Read configuration from elasticsearch" do
     elasticsearch_client.indices.refresh
 
     query = {
-      "size": 0, 
+      "size": 0,
       "query": {
         "term": {
           "type": {
@@ -138,7 +138,7 @@ describe "Read configuration from elasticsearch" do
 
     begin
       res = elasticsearch_client.search(index: '.monitoring-logstash-*', body: query)
-    rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable 
+    rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable
       return nil
     end
 

@@ -131,7 +131,7 @@ describe LogStash::PluginManager::PrepareOfflinePack do
         end
 
         it "should fails" do
-          # ignore the first path part of tmp_zip_file because on Windows the long path is shrinked in the exception message 
+          # ignore the first path part of tmp_zip_file because on Windows the long path is shrinked in the exception message
           expect { subject.run(cmd_args) }.to raise_error Clamp::ExecutionError, /output file destination .+#{::File.basename(tmp_zip_file)} already exist/
         end
       end

@@ -29,7 +29,7 @@ module LogStash
 
     def self.destroy(machines=[], options={})
       debug = options.fetch(:debug, false)
-      CommandExecutor.run!("vagrant destroy --force #{machines.join(' ')}", debug) 
+      CommandExecutor.run!("vagrant destroy --force #{machines.join(' ')}", debug)
     end
 
     def self.bootstrap(machines=[], options={})

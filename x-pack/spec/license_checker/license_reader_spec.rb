@@ -74,7 +74,7 @@ describe LogStash::LicenseChecker::LicenseReader do
         # set up expectation of single failure
         expect(subject.logger).to receive(:warn).with(a_string_starting_with("Attempt to validate Elasticsearch license failed."), any_args)
         expect(mock_client).to receive(:get).with('_xpack').and_raise(host_not_reachable).once
-        
+
         # ensure subsequent success
         expect(mock_client).to receive(:get).with('_xpack').and_return(xpack_info)
       end

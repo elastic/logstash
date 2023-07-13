@@ -18,14 +18,14 @@ module LogStash module Inputs
   class Metrics < LogStash::Inputs::Base
     require "monitoring/inputs/metrics/state_event_factory"
     require "monitoring/inputs/metrics/stats_event_factory"
-    
+
     @pipelines_mutex = Mutex.new
     @pipelines = {}
 
     require "monitoring/inputs/timer_task_logger"
-    
+
     attr_reader :queue, :agent
-  
+
     config_name "metrics"
 
     # Polling frequency in seconds on the metric store

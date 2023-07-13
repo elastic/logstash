@@ -75,7 +75,7 @@ describe LogStashConfigParser do
         }
       CONFIG
       subject { LogStashConfigParser.new }
-         
+
       it "should compile successfully" do
         result = subject.parse(config)
         expect(result).not_to(be_nil)

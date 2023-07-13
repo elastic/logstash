@@ -28,7 +28,7 @@ shared_examples "record monitoring data to es" do
     end
   end
 
-  describe "state" do 
+  describe "state" do
     let(:schema_file) { File.join(schemas_path, "states_document_schema.json") }
 
     it "records state on es" do

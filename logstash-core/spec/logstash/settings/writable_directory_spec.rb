@@ -50,8 +50,8 @@ describe LogStash::Setting::WritableDirectory do
     context "when the directory is missing" do
 
       context "and the parent is writable" do
-        after { 
-          Dir.unlink(path) 
+        after {
+          Dir.unlink(path)
         }
         it "creates the directory" do
           subject.value # need to invoke `#value` to make it do the work.
@@ -104,7 +104,7 @@ describe LogStash::Setting::WritableDirectory do
         it_behaves_like "failure"
       end unless LogStash::Environment.windows?
 
-      
+
       context "but is a symlink" do
         before { FileUtils.symlink("whatever", path) }
         it_behaves_like "failure"

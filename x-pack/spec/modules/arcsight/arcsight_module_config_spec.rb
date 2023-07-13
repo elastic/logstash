@@ -5,7 +5,7 @@ require 'logstash/util/modules_setting_array'
 require 'logstash/modules/scaffold'
 require 'arcsight_module_config_helper'
 
-describe "ArcSight module" do 
+describe "ArcSight module" do
   let(:logstash_config_class) { LogStash::Modules::LogStashConfig  }
   let(:module_name) { "arcsight" }
   let(:module_path) { ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "modules", module_name, "configuration") }

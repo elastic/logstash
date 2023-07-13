@@ -20,11 +20,11 @@ require 'treetop/runtime'
 class Treetop::Runtime::SyntaxNode
   def get_meta(key)
     @ast_metadata ||= {}
-    return @ast_metadata[key] if @ast_metadata[key] 
+    return @ast_metadata[key] if @ast_metadata[key]
     return self.parent.get_meta(key) if self.parent
     nil
   end
-  
+
   def set_meta(key, value)
     @ast_metadata ||= {}
     @ast_metadata[key] = value
@@ -65,7 +65,7 @@ class Treetop::Runtime::SyntaxNode
   # and ignore the empty nodes.
   def recursive_select(*klasses)
     return recursive_inject { |e| klasses.any? {|k| e.is_a?(k)} }
-  end  
+  end
 
   def recursive_inject_parent(results=[], &block)
     if !parent.nil?
@@ -81,7 +81,7 @@ class Treetop::Runtime::SyntaxNode
   def recursive_select_parent(results=[], klass)
     return recursive_inject_parent(results) { |e| e.is_a?(klass) }
   end
-  
+
   # Monkeypatch Treetop::Runtime::SyntaxNode's inspect method to skip
   # any Whitespace or SyntaxNodes with no children.
   def _inspect(indent="")
