@@ -1,0 +1,21 @@
+AllCops:
+  RubyInterpreters:
+    - ruby
+    - rake
+    - jruby
+  Include:
+    - '**/*.rb'
+    - '**/*.gemfile'
+    - '**/*.gemspec'
+    - '**/*.rake'
+    - '**/Gemfile'
+    - '**/Rakefile'
+  Exclude:
+    - 'node_modules/**/*'
+    - 'tmp/**/*'
+    - 'vendor/**/*'
+    - '.git/**/*'
+    - 'build/**/*'
+    - 'config/**/*'
+  DisplayCopNames: true
+  UseCache: false
