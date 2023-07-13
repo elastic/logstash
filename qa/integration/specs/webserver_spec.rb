@@ -55,6 +55,37 @@ describe 'api webserver' do
     end
   end
 
+  context "when configured with api.ssl.supported_protocols" do
+    let(:ca_file) { File.join(certs_path, "root.crt") }
+    let(:certs_path) { File.expand_path("../../fixtures/webserver_certs/generated", __FILE__) }
+    let(:keystore_path) { File.join(certs_path,  "server_from_root.p12") }
+    let(:keystore_password) { "12345678" }
+    let(:supported_protocols) { %w[TLSv1.3] }
+    let(:ssl_params) { {:supported_protocols => supported_protocols, :keystore_path => keystore_path, :keystore_password => LogStash::Util::Password.new(keystore_password)} }
+    let(:webserver_options) { super().merge(:ssl_params => ssl_params) }
+
+    context "when started" do
+      include_context 'running webserver'
+
+      context 'an HTTPS request using TLSv1.3' do
+        it 'succeeds' do
+          client = Manticore::Client.new(ssl: { ca_file: ca_file, protocols: %w[TLSv1.3] })
+          response = client.get("https://127.0.0.1:#{webserver.port}")
+          expect(response.code).to eq(200)
+        end
+      end
+
+      context 'an HTTPS request using TLSv1.2' do
+        it 'fails' do
+          client = Manticore::Client.new(ssl: { ca_file: ca_file, protocols: %w[TLSv1.2] })
+          expect do
+            client.get("https://127.0.0.1:#{webserver.port}").code
+          end.to raise_error(Manticore::ClientProtocolException, a_string_including("handshake"))
+        end
+      end
+    end
+  end
+
   %w(
       server_from_root.p12
       server_from_intermediate.p12
