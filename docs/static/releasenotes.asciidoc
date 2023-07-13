@@ -43,79 +43,48 @@ This section summarizes the changes in the following releases:
 [[logstash-8-9-0]]
 === Logstash 8.9.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.9.0
+[[notable-8.9.0]]
+==== Notable issues fixed
 
-* Release notes for 8.7.1 https://github.com/elastic/logstash/pull/15024[#15024]
-* Backport PR #15024 to main: Release notes for 8.7.1 https://github.com/elastic/logstash/pull/15029[#15029]
-* 8.9 - Update bundler version in jruby load path in rubyUtils https://github.com/elastic/logstash/pull/15111[#15111]
-* update commons-io commons-compress jrjackson databind https://github.com/elastic/logstash/pull/15125[#15125]
-* Remove license header from settings.xml template https://github.com/elastic/logstash/pull/15131[#15131]
-* Backport PR #15131 to 8.9: Remove license header from settings.xml template https://github.com/elastic/logstash/pull/15138[#15138]
-* Backport PR #15125 to 8.9: update commons-io commons-compress jrjackson databind https://github.com/elastic/logstash/pull/15146[#15146]
+* Fix an issue where installs and updates of certain logstash plugins may fail behind a proxy https://github.com/elastic/logstash/pull/15131[#15131]. This issue was manifesting after a recent change to `logstash-filter-translate` updated to require the use of the `jar-dependencies` gem to retrieve artifacts from maven when installing the plugin, and could prevent the update of this plugin when a proxy is in use.
+* Improve logging when logstash is stalled on shutdown https://github.com/elastic/logstash/pull/15056[#15056]. This commit adds information about the main thread, if it is that one that is causing the shutdown to be stalled.
+* Improve SSL settings for connection to elasticsearch for central management and monitoring https://github.com/elastic/logstash/pull/15045[#15045]. This commit adds settings support for file-based certificates and cipher suites for management and monitoring settings, and removes the deprecation warnings from the logs that have been since SSL configuration settings were revamped in the Elasticsearch output.
 
-=== Logstash Commits between 8.9 and 8.8.2
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.8.2..8.9"
+[[dependencies-8.9.0]]
+==== Updates to dependencies
 
-bcb7261d8 - (HEAD -> 8.9, origin/8.9) Update rubyUtils.gradle to use bundler 2.4.15 (#15149) (6 days ago) <João Duarte>
-ed5165607 - Update patch plugin versions in gemfile lock (#15148) (6 days ago) <github-actions[bot]>
-8838760c4 - Remove license header from settings.xml template (#15131) (#15138) (6 days ago) <github-actions[bot]>
-be92fd4c6 - [8.9] Forward Port Release notes for 8.8.2 (#15116) (#15133) (11 days ago) <Rob Bavey>
-530d30f36 - Bump reference to bundler version in jruby load path (#15111) (3 weeks ago) <Rob Bavey>
-d1b6545fb - Update minor plugin versions in gemfile lock (#15104) (3 weeks ago) <github-actions[bot]>
-f1a0bfa0e - Copy Gemfile from 8.8 branch (3 weeks ago) <Rob Bavey>
-e3b932460 - Read Snyk token from logstash repo scoped vault. (#15096) (3 weeks ago) <Mashhur>
-9c080eac5 - Snyk Integration (#15083) (3 weeks ago) <Mashhur>
-52bbbaa05 - Change shutdown stalled method to also include the main/pipeline thread (#15056) (3 weeks ago) <Edmo Vamerlatti Costa>
-c187158b5 - Forward-port Release notes for 8.8.1 (#15085) (#15086) (5 weeks ago) <Ry Biesemeyer>
-0b68a36e2 - Remove obsolete plugin version notice (#15032) (5 weeks ago) <Andres Rodriguez>
-755fcf884 - Forward port release notes for 8.8.0 (#15062) (6 weeks ago) <Andrea Selva>
-e5f35df62 - Update versions used in plugins CI (#15061) (6 weeks ago) <Andrea Selva>
-b83188831 - [Docs] Add instructions to verify Docker install images (#15058) (7 weeks ago) <David Kilfoyle>
-feb3ee050 - use setLoadPaths instead of RUBYLIB (#15059) (7 weeks ago) <João Duarte>
-fd2b1ff34 - added psych to dependency list and updated NOTICE.txt (#15050) (7 weeks ago) <João Duarte>
-e76e58208 - Add missing Elasticsearch SSL settings and replace deprecated options (xpack.monitoring and xpack.management) (#15045) (8 weeks ago) <Edmo Vamerlatti Costa>
-519f3fb2e - Plugin flow docs fixes (#14820) (9 weeks ago) <Ry Biesemeyer>
-af47b7b47 - Fix link to loadbalance in Filebeat ref (#15034) (9 weeks ago) <David Kilfoyle>
-139acd105 - Update logstash_releases.json with the releases of 7.17.10 and 8.7.1 (#15037) (10 weeks ago) <João Duarte>
-28880711d - Release notes for 8.7.1 (#15024) (#15029) (2 months ago) <github-actions[bot]>
-643bb0c5c - Bumped versions.yml for 8.9 cycle (#15022) (3 months ago) <Andrea Selva>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.8.2..8.9 *.release"
-Changed plugin versions:
-logstash-input-azure_event_hubs: 1.4.4 -> 1.4.5
-logstash-input-beats: 6.6.1 -> 6.6.3
-logstash-input-http: 3.7.1 -> 3.7.2
-logstash-input-snmp: 1.3.1 -> 1.3.2
-logstash-input-tcp: 6.3.3 -> 6.3.5
-logstash-output-tcp: 6.1.1 -> 6.1.2
----------- GENERATED CONTENT ENDS HERE ------------
+* Update Bundler to version 2.4 https://github.com/elastic/logstash/pull/14995[#14995]
+* Update snakeyaml to `2.0`
+* Update commons-io to `2.13.0`
+* Update commons-compress to `1.23.0`
+* Update jrjackson to `0.4.18`
+* Update jackson to `2.15.2`
+* Update databind to `2.15.2`
 
 ==== Plugins
 
 *Azure_event_hubs Input - 1.4.5*
 
-* Upgrade multiple dependencies such as `gson`, `log4j2`, `jackson` to make the plugin stable https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/83[#83]
+* Update multiple dependencies such as `gson`, `log4j2`, `jackson` https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/83[#83]
 
 *Beats Input - 6.6.3*
 
-* [DOC] Updated the `ssl_client_authentication` and `ssl_verify_mode` documentation explaining that CN and SAN are not validated. https://github.com/logstash-plugins/logstash-input-beats/pull/473[#473]
+* Docs: Updated the `ssl_client_authentication` and `ssl_verify_mode` documentation explaining that CN and SAN are not validated. https://github.com/logstash-plugins/logstash-input-beats/pull/473[#473]
 
-* bump netty to 4.1.94 and jackson to 2.15.2 https://github.com/logstash-plugins/logstash-input-beats/pull/474[#474]
+* Update netty to 4.1.94 and jackson to 2.15.2 https://github.com/logstash-plugins/logstash-input-beats/pull/474[#474]
 
 *Http Input - 3.7.2*
 
-* bump netty to 4.1.94 https://github.com/logstash-plugins/logstash-input-http/pull/167[#167]
+* Update netty to 4.1.94 https://github.com/logstash-plugins/logstash-input-http/pull/167[#167]
 
 *Snmp Input - 1.3.2*
 
-*  Docs: add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs
+* Docs: Add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs
 
 *Tcp Input - 6.3.5*
 
-* update netty to 4.1.94 and other dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/216[#216]
+* Update netty to 4.1.94 and other dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/216[#216]
 
 * Fix: reduce error logging (to info level) on connection resets https://github.com/logstash-plugins/logstash-input-tcp/pull/214[#214]
 
