@@ -21,7 +21,6 @@ namespace "lint" do
     def self.run!(*args)
       require "rubocop"
       cli = RuboCop::CLI.new
-      #result = cli.run(["--display-cop-names", "--force-exclusion", "--fail-level", "autocorrect", *args])
       #Disabling cache ensures that execution doesn't fail after a re-run
       result = cli.run(["--display-cop-names", "--force-exclusion", "--cache", "false", *args])
       raise "Linting failed." if result.nonzero?
