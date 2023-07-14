@@ -112,6 +112,21 @@ include::static/config-management.asciidoc[]
 
 include::static/management/configuring-centralized-pipelines.asciidoc[]
 
+// Data resiliency
+include::static/resiliency.asciidoc[]
+
+include::static/mem-queue.asciidoc[]
+
+include::static/persistent-queues.asciidoc[]
+
+include::static/dead-letter-queues.asciidoc[]
+
+// Transforming Data
+include::static/transforming-data.asciidoc[]
+
+// Ingest pipeline processing in Logstash
+include::static/ls-ingest-pipeline.asciidoc[]
+
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
 
@@ -127,17 +142,6 @@ include::static/filebeat-modules.asciidoc[]
 // Working with Winlogbeat Modules
 include::static/winlogbeat-modules.asciidoc[]
 
-// Data resiliency
-include::static/resiliency.asciidoc[]
-
-include::static/mem-queue.asciidoc[]
-
-include::static/persistent-queues.asciidoc[]
-
-include::static/dead-letter-queues.asciidoc[]
-
-// Transforming Data
-include::static/transforming-data.asciidoc[]
 
 // Deploying & Scaling
 include::static/deploying.asciidoc[]
