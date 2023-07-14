@@ -46,7 +46,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.9.0]]
 ==== Notable issues fixed
 
-* Fixed an [issue ](https://github.com/elastic/logstash/issues/15130) where installs and updates of certain {ls} plugins could fail when located behind a proxy https://github.com/elastic/logstash/pull/15131[#15131]. 
+* Fixed an https://github.com/elastic/logstash/issues/15130[issue] where installs and updates of certain {ls} plugins could fail when located behind a proxy https://github.com/elastic/logstash/pull/15131[#15131]. 
 This issue surfaced after `logstash-filter-translate` was updated to require that the `jar-dependencies` gem be used to retrieve artifacts from maven when the plugin was installed. 
 This requirement could prevent the plugin update when a proxy was in use.
 * Improved logging when {ls} is stalled on shutdown https://github.com/elastic/logstash/pull/15056[#15056]. 
