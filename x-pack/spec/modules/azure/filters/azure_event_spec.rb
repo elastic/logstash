@@ -48,7 +48,6 @@ describe LogStash::Filters::AzureEvent do
 
     describe "with default" do
       let(:config) do
-        # rubocop:disable Layout/TrailingWhitespace
         <<-CONFIG
       filter {
         azure_event {
@@ -56,7 +55,6 @@ describe LogStash::Filters::AzureEvent do
         }
       }
         CONFIG
-        # rubocop:enable Layout/TrailingWhitespace
       end
       # as observed
       file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/administrative2.json'))
