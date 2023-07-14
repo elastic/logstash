@@ -27,11 +27,26 @@ namespace "lint" do
   end
 
   # task that runs lint report
+  desc "Report all Lint Cops"
   task "report" do
     RuboCLI.run!("--lint")
   end
 
+  # Tasks automatically fixes a Cop passed as a parameter (e.g. Lint/DeprecatedClassMethods)
+  # TODO: Add a way to autocorrect all cops, and not just the one passed as parameter
+  desc "Automatically fix all instances of a Cop passed as a parameter"
+  task "correct", [:cop] do |t, args|
+    if args[:cop].to_s.empty?
+      puts "No Cop has been provided, aborting..."
+      exit(0)
+    else
+      puts "Attempting to correct Lint issues for: #{args[:cop].to_s}"
+      RuboCLI.run!("--autocorrect-all", "--only", args[:cop].to_s)
+    end
+  end
+
   # task that automatically fixes code formatting
+  desc "Automatically fix Layout Cops"
   task "format" do
     RuboCLI.run!("--fix-layout")
   end
