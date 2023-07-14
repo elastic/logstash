@@ -3577,4 +3577,3 @@ end
 class LogStashConfigParser < Treetop::Runtime::CompiledParser
   include LogStashConfig
 end
-

@@ -17,5 +17,3 @@ describe "ArcSight module" do
     expect(subject.config_string).to include("index => \"arcsight-#{::LOGSTASH_VERSION}-%{+YYYY.MM.dd}\"")
   end
 end
-
-

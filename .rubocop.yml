@@ -24,6 +24,8 @@ AllCops:
 ##### Enabled Cops #####
 Layout/TrailingWhitespace:
   Enabled: true
+Layout/TrailingEmptyLines:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -219,6 +221,4 @@ Layout/SpaceInsideRangeLiteral:
 Layout/SpaceInsideReferenceBrackets:
   Enabled: false
 Layout/SpaceInsideStringInterpolation:
-  Enabled: false
-Layout/TrailingEmptyLines:
   Enabled: false

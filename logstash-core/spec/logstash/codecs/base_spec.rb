@@ -86,5 +86,3 @@ describe LogStash::Codecs::Base do
     include_examples("encoder types", LogStash::Codecs::NOOPMulti)
   end
 end
-
-
