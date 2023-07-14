@@ -32,7 +32,7 @@ namespace "lint" do
     RuboCLI.run!("--lint")
   end
 
-  # Tasks automatically fixes a Cop passed as a parameter (e.g. Lint/DeprecatedConstants)
+  # Tasks automatically fixes a Cop passed as a parameter (e.g. Lint/DeprecatedClassMethods)
   # TODO: Add a way to autocorrect all cops, and not just the one passed as parameter
   desc "Automatically fix all instances of a Cop passed as a parameter"
   task "correct", [:cop] do |t, args|
