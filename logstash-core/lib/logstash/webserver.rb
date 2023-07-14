@@ -230,8 +230,8 @@ module LogStash
             'keystore-pass' => @ssl_params.fetch(:keystore_password).value,
         }
 
-        supported_protocols = @ssl_params.fetch(:supported_protocols, nil)
-        context_builder_params['protocols'] = supported_protocols if supported_protocols&.any?
+        supported_protocols = @ssl_params.fetch(:supported_protocols, [])
+        context_builder_params['protocols'] = supported_protocols if supported_protocols.any?
 
         ssl_context = Puma::MiniSSL::ContextBuilder.new(context_builder_params, @server.log_writer).context
         @server.add_ssl_listener(http_host, candidate_port, ssl_context)

@@ -19,6 +19,8 @@ require 'openssl'
 
 require 'logstash/util'
 require 'logstash/webserver'
+require "stud/try"
+require "manticore"
 
 describe 'api webserver' do
   let!(:logger) { double("Logger").as_null_object }
@@ -63,25 +65,23 @@ describe 'api webserver' do
     let(:supported_protocols) { %w[TLSv1.3] }
     let(:ssl_params) { {:supported_protocols => supported_protocols, :keystore_path => keystore_path, :keystore_password => LogStash::Util::Password.new(keystore_password)} }
     let(:webserver_options) { super().merge(:ssl_params => ssl_params) }
+    let(:client_protocols) { nil }
+    let(:client) { Manticore::Client.new(ssl: { ca_file: ca_file, protocols: client_protocols }) }
+    let(:response) { client.get("https://127.0.0.1:#{webserver.port}") }
 
-    context "when started" do
-      include_context 'running webserver'
+    include_context 'running webserver'
 
-      context 'an HTTPS request using TLSv1.3' do
-        it 'succeeds' do
-          client = Manticore::Client.new(ssl: { ca_file: ca_file, protocols: %w[TLSv1.3] })
-          response = client.get("https://127.0.0.1:#{webserver.port}")
-          expect(response.code).to eq(200)
-        end
+    context 'an HTTPS request using TLSv1.3' do
+      let(:client_protocols) { %w[TLSv1.3] }
+      it 'succeeds' do
+        expect(response.code).to eq(200)
       end
+    end
 
-      context 'an HTTPS request using TLSv1.2' do
-        it 'fails' do
-          client = Manticore::Client.new(ssl: { ca_file: ca_file, protocols: %w[TLSv1.2] })
-          expect do
-            client.get("https://127.0.0.1:#{webserver.port}").code
-          end.to raise_error(Manticore::ClientProtocolException, a_string_including("handshake"))
-        end
+    context 'an HTTPS request using TLSv1.2' do
+      let(:client_protocols) { %w[TLSv1.2] }
+      it 'fails' do
+        expect { response.code }.to raise_error(Manticore::ClientProtocolException, a_string_including("handshake"))
       end
     end
   end
