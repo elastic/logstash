@@ -235,7 +235,7 @@ module LogStash::Config::Mixin
       # add any options from this class
       prefix = self.name.split("::").last.downcase
       @flags.each do |flag|
-        flagpart = flag[:args].first.gsub(/^--/,"")
+        flagpart = flag[:args].first.gsub(/^--/, "")
         # TODO(sissel): logger things here could help debugging.
 
         opts.on("--#{prefix}-#{flagpart}", *flag[:args][1..-1], &flag[:block])
@@ -595,7 +595,7 @@ module LogStash::Config::Mixin
 
             return [false, "Expected a hex-encoded SHA-256 fingerprint, got `#{candidate.inspect}`"] unless candidate.kind_of?(String) && candidate =~ /\A(?:[[:xdigit:]]{2}:?){32}\z/
 
-            return [true, candidate.upcase.tr('^0-9A-F','')]
+            return [true, candidate.upcase.tr('^0-9A-F', '')]
           else
             return false, "Unknown validator symbol #{validator}"
         end # case validator

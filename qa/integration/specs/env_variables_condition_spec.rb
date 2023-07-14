@@ -91,7 +91,7 @@ describe "Support environment variable in condition" do
 
   it "exits with error when env variable is undefined" do
     test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_password
-    logstash = @logstash.run_cmd(["bin/logstash","-e", "filter { if \"${NOT_EXIST}\" { mutate {add_tag => \"oh no\"} } }", "--path.settings", settings_dir], true, test_env)
+    logstash = @logstash.run_cmd(["bin/logstash", "-e", "filter { if \"${NOT_EXIST}\" { mutate {add_tag => \"oh no\"} } }", "--path.settings", settings_dir], true, test_env)
     expect(logstash.stderr_and_stdout).to match(/Cannot evaluate `\$\{NOT_EXIST\}`/)
     expect(logstash.exit_code).to be(1)
   end

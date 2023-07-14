@@ -69,7 +69,7 @@ describe LogStash::Instrument::PeriodicPoller::Os do
     end
 
     def mval(*metric_path)
-      metric_path.reduce(os_metrics) {|acc,k| acc[k]}.value
+      metric_path.reduce(os_metrics) {|acc, k| acc[k]}.value
     end
 
     it "should have a value for #{[:cgroup, :cpuacc, :control_group]} that is a String" do

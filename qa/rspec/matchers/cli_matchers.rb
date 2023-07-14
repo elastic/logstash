@@ -33,7 +33,7 @@ RSpec::Matchers.define :run_successfully_and_output do |expected_output|
   end
 end
 
-RSpec::Matchers.define :have_installed? do |name,*args|
+RSpec::Matchers.define :have_installed? do |name, *args|
   match do |actual|
     version = args.first
     actual.plugin_installed?(name, version)

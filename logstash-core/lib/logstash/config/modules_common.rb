@@ -55,7 +55,7 @@ module LogStash module Config
       end
 
       if module_names.length > module_names.uniq.length
-        duplicate_modules = module_names.group_by(&:to_s).select { |_,v| v.size > 1 }.keys
+        duplicate_modules = module_names.group_by(&:to_s).select { |_, v| v.size > 1 }.keys
         raise LogStash::ConfigLoadingError, I18n.t("logstash.modules.configuration.modules-must-be-unique", :duplicate_modules => duplicate_modules)
       end
 

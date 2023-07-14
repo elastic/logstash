@@ -46,7 +46,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   # DEPRECATED: Prefer defining encode_sync or multi_encode
   def encode(event)
     encoded = multi_encode([event])
-    encoded.each {|event,data| @on_event.call(event,data) }
+    encoded.each {|event, data| @on_event.call(event, data) }
   end # def encode
 
   public

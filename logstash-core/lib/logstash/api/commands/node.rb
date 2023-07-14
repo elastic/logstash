@@ -29,7 +29,7 @@ module LogStash
             :os => os,
             :jvm => jvm
           }
-          payload.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
+          payload.select! { |k, v| selected_fields.include?(k) } unless selected_fields.empty?
           payload
         end
 

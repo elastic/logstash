@@ -26,6 +26,12 @@ Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
   Enabled: true
+Layout/SpaceAfterColon:
+  Enabled: true
+Layout/SpaceAfterComma:
+  Enabled: true
+Layout/SpaceAfterSemicolon:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -170,15 +176,9 @@ Layout/RescueEnsureAlignment:
   Enabled: false
 Layout/SingleLineBlockChain:
   Enabled: false
-Layout/SpaceAfterColon:
-  Enabled: false
-Layout/SpaceAfterComma:
-  Enabled: false
 Layout/SpaceAfterMethodName:
   Enabled: false
 Layout/SpaceAfterNot:
-  Enabled: false
-Layout/SpaceAfterSemicolon:
   Enabled: false
 Layout/SpaceAroundBlockParameters:
   Enabled: false

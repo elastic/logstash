@@ -83,7 +83,7 @@ module LogStash
 
         def flow
           extract_metrics(
-            [:stats,:flow],
+            [:stats, :flow],
             :input_throughput, :filter_throughput, :output_throughput, :queue_backpressure, :worker_concurrency
           )
         rescue LogStash::Instrument::MetricStore::MetricNotFound

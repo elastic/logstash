@@ -398,8 +398,8 @@ describe LogStash::Filters::Geoip do
 
             eula_db_dirname = get_dir_path("foo")
             FileUtils.mkdir_p(eula_db_dirname)
-            rewrite_temp_metadata(metadata_path, [ ["City","1620246514","","foo",true],
-                                                   ["ASN","1620246514","","foo",true]])
+            rewrite_temp_metadata(metadata_path, [ ["City", "1620246514", "", "foo", true],
+                                                   ["ASN", "1620246514", "", "foo", true]])
 
             path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)
 

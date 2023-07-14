@@ -75,8 +75,8 @@ module GeoipHelper
     dirname = "CC"
 
     metadata = []
-    metadata << ["ASN",now,"",dirname,false]
-    metadata << ["City",now,"",dirname,false]
+    metadata << ["ASN", now, "", dirname, false]
+    metadata << ["City", now, "", dirname, false]
     metadata << row if row
 
     FileUtils.mkdir_p(::File.dirname(temp_file_path))
@@ -93,11 +93,11 @@ module GeoipHelper
   end
 
   def city2_metadata
-    ["City",Time.now.to_i,"",second_dirname,true]
+    ["City", Time.now.to_i, "", second_dirname, true]
   end
 
   def city_expired_metadata
-    ["City","1220227200","","1220227200",true]
+    ["City", "1220227200", "", "1220227200", true]
   end
 
   def copy_city_database(filename)

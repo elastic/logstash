@@ -47,7 +47,7 @@ module LogStash module Modules class KibanaConfig
   end
 
   def index_pattern
-    [KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"),nil, @pattern_name)]
+    [KibanaResource.new(@index_name, "index-pattern", dynamic("index-pattern"), nil, @pattern_name)]
   end
 
   def resources

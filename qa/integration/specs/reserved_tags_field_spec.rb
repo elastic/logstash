@@ -74,7 +74,7 @@ describe "Guard reserved tags field against incorrect use" do
 
   it "should throw exception when assigning two illegal values" do
     ['rename', 'warn'].each do |mode|
-      logstash = @logstash.run_cmd(["bin/logstash","-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
+      logstash = @logstash.run_cmd(["bin/logstash", "-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
                                     "--path.settings", settings_dir, "--event_api.tags.illegal", mode],
                                    true, test_env)
       expect(logstash.stderr_and_stdout).to match(/Ruby exception occurred/)

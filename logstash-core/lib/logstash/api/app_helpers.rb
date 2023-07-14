@@ -36,7 +36,7 @@ module LogStash::Api::AppHelpers
         data = generate_error_hash(data)
       else
         selected_fields = extract_fields(filter.to_s.strip)
-        data.select! { |k,v| selected_fields.include?(k) } unless selected_fields.empty?
+        data.select! { |k, v| selected_fields.include?(k) } unless selected_fields.empty?
         unless options.include?(:exclude_default_metadata)
           data = data.to_hash
           if data.values.size == 0 && selected_fields.size > 0

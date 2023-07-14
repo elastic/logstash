@@ -53,7 +53,7 @@ module LogStash
         raise CompressError.new("File #{target} exist") if ::File.exist?(target)
         ::Zip::File.open(target, ::Zip::File::CREATE) do |zipfile|
           Dir.glob("#{dir}/**/*").each do |file|
-            path_in_zip = file.gsub("#{dir}/","")
+            path_in_zip = file.gsub("#{dir}/", "")
             zipfile.add(path_in_zip, file)
           end
         end
@@ -97,14 +97,14 @@ module LogStash
         Stud::Temporary.file do |tar_file|
           ::Gem::Package::TarWriter.new(tar_file) do |tar|
             Dir.glob("#{dir}/**/*").each do |file|
-              name = file.gsub("#{dir}/","")
+              name = file.gsub("#{dir}/", "")
               stats = ::File.stat(file)
               mode  = stats.mode
 
               if ::File.directory?(file)
                 tar.mkdir(name, mode)
               else # is a file to be added
-                tar.add_file(name,mode) do |out|
+                tar.add_file(name, mode) do |out|
                   File.open(file, "rb") do |fd|
                     chunk = nil
                     size = 0

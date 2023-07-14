@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   # Files
-  s.files = Dir["lib/**/*","spec/**/*","*.gemspec","*.md","CONTRIBUTORS","Gemfile","LICENSE","NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION"]
+  s.files = Dir["lib/**/*", "spec/**/*", "*.gemspec", "*.md", "CONTRIBUTORS", "Gemfile", "LICENSE", "NOTICE.TXT", "vendor/jar-dependencies/**/*.jar", "vendor/jar-dependencies/**/*.rb", "VERSION"]
 
   # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})

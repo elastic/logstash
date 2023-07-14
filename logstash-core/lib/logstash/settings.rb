@@ -225,12 +225,12 @@ module LogStash
       YAML.safe_load(IO.read(path)) || {}
     end
 
-    def flatten_hash(h,f="",g={})
+    def flatten_hash(h, f="", g={})
       return g.update({ f => h }) unless h.is_a? Hash
       if f.empty?
-        h.each { |k,r| flatten_hash(r,k,g) }
+        h.each { |k, r| flatten_hash(r, k, g) }
       else
-        h.each { |k,r| flatten_hash(r,"#{f}.#{k}",g) }
+        h.each { |k, r| flatten_hash(r, "#{f}.#{k}", g) }
       end
       g
     end

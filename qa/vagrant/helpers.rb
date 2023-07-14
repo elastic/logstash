@@ -54,11 +54,11 @@ module LogStash
       hosts, host = [], {}
       lines.each do |line|
         if line.match(/Host\s(.*)$/)
-          host = { :host => line.gsub("Host","").strip }
+          host = { :host => line.gsub("Host", "").strip }
         elsif line.match(/HostName\s(.*)$/)
-          host[:hostname] = line.gsub("HostName","").strip
+          host[:hostname] = line.gsub("HostName", "").strip
         elsif line.match(/Port\s(.*)$/)
-          host[:port]     = line.gsub("Port","").strip
+          host[:port]     = line.gsub("Port", "").strip
         elsif line.empty?
           hosts << host
           host = {}

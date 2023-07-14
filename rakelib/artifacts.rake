@@ -198,7 +198,7 @@ namespace "artifact" do
   task "archives_oss" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    license_details = ['APACHE-LICENSE-2.0',"-oss", oss_exclude_paths]
+    license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
     create_archive_pack(license_details, "arm64", "linux", "darwin")
 
@@ -496,7 +496,7 @@ namespace "artifact" do
       tar.add_symlink(path_in_tar, File.readlink(path), stat.mode)
     else
       tar.add_file_simple(path_in_tar, stat.mode, stat.size) do |io|
-        File.open(path,'rb') do |fd|
+        File.open(path, 'rb') do |fd|
           chunk = nil
           size = 0
           size += io.write(chunk) while chunk = fd.read(16384)

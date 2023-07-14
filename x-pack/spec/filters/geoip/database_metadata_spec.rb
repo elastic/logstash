@@ -123,7 +123,7 @@ describe LogStash::Filters::Geoip do
 
     context "gz md5" do
       it "should give the last gz md5" do
-        write_temp_metadata(temp_metadata_path, ["City","","SOME_GZ_MD5","SOME_MD5",second_dirname])
+        write_temp_metadata(temp_metadata_path, ["City", "", "SOME_GZ_MD5", "SOME_MD5", second_dirname])
         expect(dbm.gz_md5(database_type)).to eq("SOME_GZ_MD5")
       end
 
@@ -134,7 +134,7 @@ describe LogStash::Filters::Geoip do
 
     context "updated at" do
       it "should give the last update timestamp" do
-        write_temp_metadata(temp_metadata_path, ["City","1611690807","SOME_GZ_MD5",second_dirname,true])
+        write_temp_metadata(temp_metadata_path, ["City", "1611690807", "SOME_GZ_MD5", second_dirname, true])
         expect(dbm.check_at(database_type)).to eq(1611690807)
       end
 
@@ -199,8 +199,8 @@ describe LogStash::Filters::Geoip do
 
     context "reset md5" do
       it "should reset md5 to empty string only" do
-        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","1620246514",true],
-                                                    ["City","1620246514","SOME MD5","1620246514",true] ])
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN", "1620246514", "SOME MD5", "1620246514", true],
+                                                    ["City", "1620246514", "SOME MD5", "1620246514", true] ])
 
         dbm.reset_md5(database_type)
         row = dbm.get_metadata(database_type).last
@@ -213,7 +213,7 @@ describe LogStash::Filters::Geoip do
     context "dirnames" do
       it "should reset md5 to empty string only" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
-        rewrite_temp_metadata(temp_metadata_path, [ ["ASN","1620246514","SOME MD5","CC",true],
+        rewrite_temp_metadata(temp_metadata_path, [ ["ASN", "1620246514", "SOME MD5", "CC", true],
                                                     city2_metadata ])
 
         dirnames = dbm.dirnames

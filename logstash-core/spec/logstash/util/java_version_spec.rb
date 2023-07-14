@@ -116,7 +116,7 @@ describe "LogStash::Util::JavaVersion" do
 
     include_examples("version parsing", "a plain version", "1.3.0", 1, 3, 0, 0, nil)
     include_examples("version parsing", "an update", "1.4.0_03", 1, 4, 0, 3, nil)
-    include_examples("version parsing", "a build", "1.4.0-beta", 1, 4, 0, 0,"beta")
+    include_examples("version parsing", "a build", "1.4.0-beta", 1, 4, 0, 0, "beta")
     include_examples("version parsing", "an update+build", "1.4.0_03-beta", 1, 4, 0, 3, "beta")
   end
 

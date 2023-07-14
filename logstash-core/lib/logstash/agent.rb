@@ -549,7 +549,7 @@ class LogStash::Agent
       uptime_precise_millis = uptime_metric.with_units_precise(ScaleUnits::MILLISECONDS)
       uptime_precise_seconds = uptime_metric.with_units_precise(ScaleUnits::SECONDS)
 
-      events_namespace = metric.namespace([:stats,:events])
+      events_namespace = metric.namespace([:stats, :events])
       flow_metrics = []
       flow_metrics << create_flow_metric("input_throughput", get_counter(events_namespace, :in), uptime_precise_seconds)
       flow_metrics << create_flow_metric("filter_throughput", get_counter(events_namespace, :out), uptime_precise_seconds)
@@ -558,7 +558,7 @@ class LogStash::Agent
       flow_metrics << create_flow_metric("worker_concurrency", get_timer(events_namespace, :duration_in_millis), uptime_precise_millis)
 
       registered, unregistered = flow_metrics.partition do |flow_metric|
-        @metric.collector.register?([:stats,:flow], flow_metric.name.to_sym, flow_metric)
+        @metric.collector.register?([:stats, :flow], flow_metric.name.to_sym, flow_metric)
       end
 
       unregistered.each do |unregistered_flow_metric|

@@ -70,7 +70,7 @@ module LogStashConfig
               s5 << r7
             end
             if s5.last
-              r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+              r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
               r5.extend(Config0)
             else
               @index = i5
@@ -82,7 +82,7 @@ module LogStashConfig
               break
             end
           end
-          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4 = instantiate_node(SyntaxNode, input, i4...index, s4)
           s0 << r4
           if r4
             r8 = _nt_cs
@@ -92,7 +92,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Config,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Config, input, i0...index, s0)
       r0.extend(Config1)
     else
       @index = i0
@@ -125,7 +125,7 @@ module LogStashConfig
       if r3
         r2 = r3
       else
-        r2 = instantiate_node(SyntaxNode,input, index...index)
+        r2 = instantiate_node(SyntaxNode, input, index...index)
       end
       s1 << r2
       if r2
@@ -153,7 +153,7 @@ module LogStashConfig
               break
             end
           end
-          r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+          r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
           s1 << r5
           if r5
             if (match_len = has_terminal?("\r", false, index))
@@ -166,7 +166,7 @@ module LogStashConfig
             if r8
               r7 = r8
             else
-              r7 = instantiate_node(SyntaxNode,input, index...index)
+              r7 = instantiate_node(SyntaxNode, input, index...index)
             end
             s1 << r7
             if r7
@@ -183,7 +183,7 @@ module LogStashConfig
         end
       end
       if s1.last
-        r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+        r1 = instantiate_node(SyntaxNode, input, i1...index, s1)
         r1.extend(Comment0)
       else
         @index = i1
@@ -199,7 +199,7 @@ module LogStashConfig
       @index = i0
       r0 = nil
     else
-      r0 = instantiate_node(LogStash::Config::AST::Comment,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Comment, input, i0...index, s0)
     end
 
     node_cache[:comment][start_index] = r0
@@ -241,7 +241,7 @@ module LogStashConfig
         break
       end
     end
-    r0 = instantiate_node(LogStash::Config::AST::Whitespace,input, i0...index, s0)
+    r0 = instantiate_node(LogStash::Config::AST::Whitespace, input, i0...index, s0)
 
     node_cache[:cs][start_index] = r0
 
@@ -278,7 +278,7 @@ module LogStashConfig
       @index = i0
       r0 = nil
     else
-      r0 = instantiate_node(LogStash::Config::AST::Whitespace,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Whitespace, input, i0...index, s0)
     end
 
     node_cache[:whitespace][start_index] = r0
@@ -351,7 +351,7 @@ module LogStashConfig
                 s6 << r8
               end
               if s6.last
-                r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+                r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
                 r6.extend(PluginSection0)
               else
                 @index = i6
@@ -363,7 +363,7 @@ module LogStashConfig
                 break
               end
             end
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
             s0 << r5
             if r5
               if (match_len = has_terminal?("}", false, index))
@@ -380,7 +380,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::PluginSection,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::PluginSection, input, i0...index, s0)
       r0.extend(PluginSection1)
     else
       @index = i0
@@ -437,7 +437,7 @@ module LogStashConfig
 
     i0 = index
     if (match_len = has_terminal?("input", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"input"')
@@ -448,7 +448,7 @@ module LogStashConfig
       r0 = r1
     else
       if (match_len = has_terminal?("filter", false, index))
-        r2 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+        r2 = instantiate_node(SyntaxNode, input, index...(index + match_len))
         @index += match_len
       else
         terminal_parse_failure('"filter"')
@@ -459,7 +459,7 @@ module LogStashConfig
         r0 = r2
       else
         if (match_len = has_terminal?("output", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"output"')
@@ -522,7 +522,7 @@ module LogStashConfig
           s4 << r6
         end
         if s4.last
-          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4 = instantiate_node(SyntaxNode, input, i4...index, s4)
           r4.extend(Plugins0)
         else
           @index = i4
@@ -534,11 +534,11 @@ module LogStashConfig
           break
         end
       end
-      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+      r3 = instantiate_node(SyntaxNode, input, i3...index, s3)
       s1 << r3
     end
     if s1.last
-      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1 = instantiate_node(SyntaxNode, input, i1...index, s1)
       r1.extend(Plugins1)
     else
       @index = i1
@@ -547,7 +547,7 @@ module LogStashConfig
     if r1
       r0 = r1
     else
-      r0 = instantiate_node(SyntaxNode,input, index...index)
+      r0 = instantiate_node(SyntaxNode, input, index...index)
     end
 
     node_cache[:plugins][start_index] = r0
@@ -647,7 +647,7 @@ module LogStashConfig
                   end
                 end
                 if s9.last
-                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9 = instantiate_node(SyntaxNode, input, i9...index, s9)
                   r9.extend(Plugin0)
                 else
                   @index = i9
@@ -659,11 +659,11 @@ module LogStashConfig
                   break
                 end
               end
-              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              r8 = instantiate_node(SyntaxNode, input, i8...index, s8)
               s6 << r8
             end
             if s6.last
-              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
               r6.extend(Plugin1)
             else
               @index = i6
@@ -672,7 +672,7 @@ module LogStashConfig
             if r6
               r5 = r6
             else
-              r5 = instantiate_node(SyntaxNode,input, index...index)
+              r5 = instantiate_node(SyntaxNode, input, index...index)
             end
             s0 << r5
             if r5
@@ -694,7 +694,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Plugin,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Plugin, input, i0...index, s0)
       r0.extend(Plugin2)
     else
       @index = i0
@@ -737,7 +737,7 @@ module LogStashConfig
       @index = i1
       r1 = nil
     else
-      r1 = instantiate_node(LogStash::Config::AST::Name,input, i1...index, s1)
+      r1 = instantiate_node(LogStash::Config::AST::Name, input, i1...index, s1)
     end
     if r1
       r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
@@ -795,7 +795,7 @@ module LogStashConfig
       s0 << r2
       if r2
         if (match_len = has_terminal?("=>", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"=>"')
@@ -813,7 +813,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Attribute,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Attribute, input, i0...index, s0)
       r0.extend(Attribute0)
     else
       @index = i0
@@ -974,12 +974,12 @@ module LogStashConfig
         @index = i2
         r2 = nil
       else
-        r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+        r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       end
       s0 << r2
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Bareword,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Bareword, input, i0...index, s0)
       r0.extend(Bareword0)
     else
       @index = i0
@@ -1022,7 +1022,7 @@ module LogStashConfig
       loop do
         i3 = index
         if (match_len = has_terminal?('\"', false, index))
-          r4 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r4 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('\'\\"\'')
@@ -1048,7 +1048,7 @@ module LogStashConfig
           else
             @terminal_failures.pop
             @index = i6
-            r6 = instantiate_node(SyntaxNode,input, index...index)
+            r6 = instantiate_node(SyntaxNode, input, index...index)
           end
           s5 << r6
           if r6
@@ -1062,7 +1062,7 @@ module LogStashConfig
             s5 << r8
           end
           if s5.last
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
             r5.extend(DoubleQuotedString0)
           else
             @index = i5
@@ -1082,7 +1082,7 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
       if r2
         if (match_len = has_terminal?('"', false, index))
@@ -1096,7 +1096,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::String,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::String, input, i0...index, s0)
       r0.extend(DoubleQuotedString1)
     else
       @index = i0
@@ -1139,7 +1139,7 @@ module LogStashConfig
       loop do
         i3 = index
         if (match_len = has_terminal?("\\'", false, index))
-          r4 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r4 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"\\\\\'"')
@@ -1165,7 +1165,7 @@ module LogStashConfig
           else
             @terminal_failures.pop
             @index = i6
-            r6 = instantiate_node(SyntaxNode,input, index...index)
+            r6 = instantiate_node(SyntaxNode, input, index...index)
           end
           s5 << r6
           if r6
@@ -1179,7 +1179,7 @@ module LogStashConfig
             s5 << r8
           end
           if s5.last
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
             r5.extend(SingleQuotedString0)
           else
             @index = i5
@@ -1199,7 +1199,7 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
       if r2
         if (match_len = has_terminal?("'", false, index))
@@ -1213,7 +1213,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::String,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::String, input, i0...index, s0)
       r0.extend(SingleQuotedString1)
     else
       @index = i0
@@ -1288,7 +1288,7 @@ module LogStashConfig
       loop do
         i3 = index
         if (match_len = has_terminal?('\/', false, index))
-          r4 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r4 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('\'\\/\'')
@@ -1314,7 +1314,7 @@ module LogStashConfig
           else
             @terminal_failures.pop
             @index = i6
-            r6 = instantiate_node(SyntaxNode,input, index...index)
+            r6 = instantiate_node(SyntaxNode, input, index...index)
           end
           s5 << r6
           if r6
@@ -1328,7 +1328,7 @@ module LogStashConfig
             s5 << r8
           end
           if s5.last
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
             r5.extend(Regexp0)
           else
             @index = i5
@@ -1348,7 +1348,7 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
       if r2
         if (match_len = has_terminal?('/', false, index))
@@ -1362,7 +1362,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::RegExp,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::RegExp, input, i0...index, s0)
       r0.extend(Regexp1)
     else
       @index = i0
@@ -1402,7 +1402,7 @@ module LogStashConfig
     if r2
       r1 = r2
     else
-      r1 = instantiate_node(SyntaxNode,input, index...index)
+      r1 = instantiate_node(SyntaxNode, input, index...index)
     end
     s0 << r1
     if r1
@@ -1425,7 +1425,7 @@ module LogStashConfig
         @index = i3
         r3 = nil
       else
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+        r3 = instantiate_node(SyntaxNode, input, i3...index, s3)
       end
       s0 << r3
       if r3
@@ -1454,11 +1454,11 @@ module LogStashConfig
               break
             end
           end
-          r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+          r8 = instantiate_node(SyntaxNode, input, i8...index, s8)
           s6 << r8
         end
         if s6.last
-          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
           r6.extend(Number0)
         else
           @index = i6
@@ -1467,13 +1467,13 @@ module LogStashConfig
         if r6
           r5 = r6
         else
-          r5 = instantiate_node(SyntaxNode,input, index...index)
+          r5 = instantiate_node(SyntaxNode, input, index...index)
         end
         s0 << r5
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Number,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Number, input, i0...index, s0)
       r0.extend(Number1)
     else
       @index = i0
@@ -1569,7 +1569,7 @@ module LogStashConfig
               end
             end
             if s7.last
-              r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+              r7 = instantiate_node(SyntaxNode, input, i7...index, s7)
               r7.extend(Array0)
             else
               @index = i7
@@ -1581,11 +1581,11 @@ module LogStashConfig
               break
             end
           end
-          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
           s4 << r6
         end
         if s4.last
-          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4 = instantiate_node(SyntaxNode, input, i4...index, s4)
           r4.extend(Array1)
         else
           @index = i4
@@ -1594,7 +1594,7 @@ module LogStashConfig
         if r4
           r3 = r4
         else
-          r3 = instantiate_node(SyntaxNode,input, index...index)
+          r3 = instantiate_node(SyntaxNode, input, index...index)
         end
         s0 << r3
         if r3
@@ -1614,7 +1614,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Array,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Array, input, i0...index, s0)
       r0.extend(Array2)
     else
       @index = i0
@@ -1665,7 +1665,7 @@ module LogStashConfig
         if r4
           r3 = r4
         else
-          r3 = instantiate_node(SyntaxNode,input, index...index)
+          r3 = instantiate_node(SyntaxNode, input, index...index)
         end
         s0 << r3
         if r3
@@ -1685,7 +1685,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Hash,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Hash, input, i0...index, s0)
       r0.extend(Hash0)
     else
       @index = i0
@@ -1739,7 +1739,7 @@ module LogStashConfig
           s3 << r5
         end
         if s3.last
-          r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+          r3 = instantiate_node(SyntaxNode, input, i3...index, s3)
           r3.extend(Hashentries0)
         else
           @index = i3
@@ -1751,11 +1751,11 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::HashEntries,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::HashEntries, input, i0...index, s0)
       r0.extend(Hashentries1)
     else
       @index = i0
@@ -1824,7 +1824,7 @@ module LogStashConfig
       s0 << r5
       if r5
         if (match_len = has_terminal?("=>", false, index))
-          r6 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r6 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"=>"')
@@ -1842,7 +1842,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::HashEntry,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::HashEntry, input, i0...index, s0)
       r0.extend(Hashentry0)
     else
       @index = i0
@@ -1906,7 +1906,7 @@ module LogStashConfig
           s3 << r5
         end
         if s3.last
-          r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+          r3 = instantiate_node(SyntaxNode, input, i3...index, s3)
           r3.extend(Branch0)
         else
           @index = i3
@@ -1918,7 +1918,7 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
       if r2
         i7, s7 = index, []
@@ -1929,7 +1929,7 @@ module LogStashConfig
           s7 << r9
         end
         if s7.last
-          r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+          r7 = instantiate_node(SyntaxNode, input, i7...index, s7)
           r7.extend(Branch1)
         else
           @index = i7
@@ -1938,13 +1938,13 @@ module LogStashConfig
         if r7
           r6 = r7
         else
-          r6 = instantiate_node(SyntaxNode,input, index...index)
+          r6 = instantiate_node(SyntaxNode, input, index...index)
         end
         s0 << r6
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Branch,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Branch, input, i0...index, s0)
       r0.extend(Branch2)
     else
       @index = i0
@@ -1998,7 +1998,7 @@ module LogStashConfig
 
     i0, s0 = index, []
     if (match_len = has_terminal?("if", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"if"')
@@ -2037,7 +2037,7 @@ module LogStashConfig
                     s8 << r10
                   end
                   if s8.last
-                    r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+                    r8 = instantiate_node(SyntaxNode, input, i8...index, s8)
                     r8.extend(If0)
                   else
                     @index = i8
@@ -2049,7 +2049,7 @@ module LogStashConfig
                     break
                   end
                 end
-                r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+                r7 = instantiate_node(SyntaxNode, input, i7...index, s7)
                 s0 << r7
                 if r7
                   if (match_len = has_terminal?("}", false, index))
@@ -2068,7 +2068,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::If,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::If, input, i0...index, s0)
       r0.extend(If1)
     else
       @index = i0
@@ -2126,7 +2126,7 @@ module LogStashConfig
 
     i0, s0 = index, []
     if (match_len = has_terminal?("else", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"else"')
@@ -2138,7 +2138,7 @@ module LogStashConfig
       s0 << r2
       if r2
         if (match_len = has_terminal?("if", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"if"')
@@ -2177,7 +2177,7 @@ module LogStashConfig
                         s10 << r12
                       end
                       if s10.last
-                        r10 = instantiate_node(SyntaxNode,input, i10...index, s10)
+                        r10 = instantiate_node(SyntaxNode, input, i10...index, s10)
                         r10.extend(ElseIf0)
                       else
                         @index = i10
@@ -2189,7 +2189,7 @@ module LogStashConfig
                         break
                       end
                     end
-                    r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                    r9 = instantiate_node(SyntaxNode, input, i9...index, s9)
                     s0 << r9
                     if r9
                       if (match_len = has_terminal?("}", false, index))
@@ -2210,7 +2210,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Elsif,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Elsif, input, i0...index, s0)
       r0.extend(ElseIf1)
     else
       @index = i0
@@ -2256,7 +2256,7 @@ module LogStashConfig
 
     i0, s0 = index, []
     if (match_len = has_terminal?("else", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"else"')
@@ -2289,7 +2289,7 @@ module LogStashConfig
                 s6 << r8
               end
               if s6.last
-                r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+                r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
                 r6.extend(Else0)
               else
                 @index = i6
@@ -2301,7 +2301,7 @@ module LogStashConfig
                 break
               end
             end
-            r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+            r5 = instantiate_node(SyntaxNode, input, i5...index, s5)
             s0 << r5
             if r5
               if (match_len = has_terminal?("}", false, index))
@@ -2318,7 +2318,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Else,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Else, input, i0...index, s0)
       r0.extend(Else1)
     else
       @index = i0
@@ -2388,7 +2388,7 @@ module LogStashConfig
           end
         end
         if s3.last
-          r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+          r3 = instantiate_node(SyntaxNode, input, i3...index, s3)
           r3.extend(Condition0)
         else
           @index = i3
@@ -2400,11 +2400,11 @@ module LogStashConfig
           break
         end
       end
-      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       s0 << r2
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::Condition,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Condition, input, i0...index, s0)
       r0.extend(Condition1)
     else
       @index = i0
@@ -2475,7 +2475,7 @@ module LogStashConfig
       end
     end
     if s1.last
-      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1 = instantiate_node(SyntaxNode, input, i1...index, s1)
       r1.extend(Expression0)
     else
       @index = i1
@@ -2624,7 +2624,7 @@ module LogStashConfig
       end
     end
     if s1.last
-      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1 = instantiate_node(SyntaxNode, input, i1...index, s1)
       r1.extend(NegativeExpression0)
     else
       @index = i1
@@ -2653,7 +2653,7 @@ module LogStashConfig
         end
       end
       if s9.last
-        r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+        r9 = instantiate_node(SyntaxNode, input, i9...index, s9)
         r9.extend(NegativeExpression1)
       else
         @index = i9
@@ -2727,7 +2727,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::InExpression,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::InExpression, input, i0...index, s0)
       r0.extend(InExpression0)
     else
       @index = i0
@@ -2792,7 +2792,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::NotInExpression,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::NotInExpression, input, i0...index, s0)
       r0.extend(NotInExpression0)
     else
       @index = i0
@@ -2816,7 +2816,7 @@ module LogStashConfig
     end
 
     if (match_len = has_terminal?("in", false, index))
-      r0 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r0 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"in"')
@@ -2848,7 +2848,7 @@ module LogStashConfig
 
     i0, s0 = index, []
     if (match_len = has_terminal?("not ", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"not "')
@@ -2860,7 +2860,7 @@ module LogStashConfig
       s0 << r2
       if r2
         if (match_len = has_terminal?("in", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"in"')
@@ -2870,7 +2870,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0 = instantiate_node(SyntaxNode, input, i0...index, s0)
       r0.extend(NotInOperator0)
     else
       @index = i0
@@ -3036,7 +3036,7 @@ module LogStashConfig
                   end
                 end
                 if s9.last
-                  r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                  r9 = instantiate_node(SyntaxNode, input, i9...index, s9)
                   r9.extend(MethodCall0)
                 else
                   @index = i9
@@ -3048,11 +3048,11 @@ module LogStashConfig
                   break
                 end
               end
-              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              r8 = instantiate_node(SyntaxNode, input, i8...index, s8)
               s6 << r8
             end
             if s6.last
-              r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+              r6 = instantiate_node(SyntaxNode, input, i6...index, s6)
               r6.extend(MethodCall1)
             else
               @index = i6
@@ -3061,7 +3061,7 @@ module LogStashConfig
             if r6
               r5 = r6
             else
-              r5 = instantiate_node(SyntaxNode,input, index...index)
+              r5 = instantiate_node(SyntaxNode, input, index...index)
             end
             s0 << r5
             if r5
@@ -3083,7 +3083,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::MethodCall,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::MethodCall, input, i0...index, s0)
       r0.extend(MethodCall2)
     else
       @index = i0
@@ -3166,7 +3166,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::ComparisonExpression,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::ComparisonExpression, input, i0...index, s0)
       r0.extend(CompareExpression0)
     else
       @index = i0
@@ -3191,7 +3191,7 @@ module LogStashConfig
 
     i0 = index
     if (match_len = has_terminal?("==", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"=="')
@@ -3203,7 +3203,7 @@ module LogStashConfig
       r0.extend(LogStash::Config::AST::ComparisonOperator)
     else
       if (match_len = has_terminal?("!=", false, index))
-        r2 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+        r2 = instantiate_node(SyntaxNode, input, index...(index + match_len))
         @index += match_len
       else
         terminal_parse_failure('"!="')
@@ -3215,7 +3215,7 @@ module LogStashConfig
         r0.extend(LogStash::Config::AST::ComparisonOperator)
       else
         if (match_len = has_terminal?("<=", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"<="')
@@ -3227,7 +3227,7 @@ module LogStashConfig
           r0.extend(LogStash::Config::AST::ComparisonOperator)
         else
           if (match_len = has_terminal?(">=", false, index))
-            r4 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+            r4 = instantiate_node(SyntaxNode, input, index...(index + match_len))
             @index += match_len
           else
             terminal_parse_failure('">="')
@@ -3340,7 +3340,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::RegexpExpression,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::RegexpExpression, input, i0...index, s0)
       r0.extend(RegexpExpression0)
     else
       @index = i0
@@ -3365,7 +3365,7 @@ module LogStashConfig
 
     i0 = index
     if (match_len = has_terminal?("=~", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"=~"')
@@ -3377,7 +3377,7 @@ module LogStashConfig
       r0.extend(LogStash::Config::AST::RegExpOperator)
     else
       if (match_len = has_terminal?("!~", false, index))
-        r2 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+        r2 = instantiate_node(SyntaxNode, input, index...(index + match_len))
         @index += match_len
       else
         terminal_parse_failure('"!~"')
@@ -3411,7 +3411,7 @@ module LogStashConfig
 
     i0 = index
     if (match_len = has_terminal?("and", false, index))
-      r1 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+      r1 = instantiate_node(SyntaxNode, input, index...(index + match_len))
       @index += match_len
     else
       terminal_parse_failure('"and"')
@@ -3423,7 +3423,7 @@ module LogStashConfig
       r0.extend(LogStash::Config::AST::BooleanOperator)
     else
       if (match_len = has_terminal?("or", false, index))
-        r2 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+        r2 = instantiate_node(SyntaxNode, input, index...(index + match_len))
         @index += match_len
       else
         terminal_parse_failure('"or"')
@@ -3435,7 +3435,7 @@ module LogStashConfig
         r0.extend(LogStash::Config::AST::BooleanOperator)
       else
         if (match_len = has_terminal?("xor", false, index))
-          r3 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+          r3 = instantiate_node(SyntaxNode, input, index...(index + match_len))
           @index += match_len
         else
           terminal_parse_failure('"xor"')
@@ -3447,7 +3447,7 @@ module LogStashConfig
           r0.extend(LogStash::Config::AST::BooleanOperator)
         else
           if (match_len = has_terminal?("nand", false, index))
-            r4 = instantiate_node(SyntaxNode,input, index...(index + match_len))
+            r4 = instantiate_node(SyntaxNode, input, index...(index + match_len))
             @index += match_len
           else
             terminal_parse_failure('"nand"')
@@ -3494,7 +3494,7 @@ module LogStashConfig
       @index = i0
       r0 = nil
     else
-      r0 = instantiate_node(LogStash::Config::AST::Selector,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::Selector, input, i0...index, s0)
     end
 
     node_cache[:selector][start_index] = r0
@@ -3545,7 +3545,7 @@ module LogStashConfig
         @index = i2
         r2 = nil
       else
-        r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+        r2 = instantiate_node(SyntaxNode, input, i2...index, s2)
       end
       s0 << r2
       if r2
@@ -3560,7 +3560,7 @@ module LogStashConfig
       end
     end
     if s0.last
-      r0 = instantiate_node(LogStash::Config::AST::SelectorElement,input, i0...index, s0)
+      r0 = instantiate_node(LogStash::Config::AST::SelectorElement, input, i0...index, s0)
       r0.extend(SelectorElement0)
     else
       @index = i0

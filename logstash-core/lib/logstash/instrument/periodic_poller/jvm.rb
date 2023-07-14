@@ -151,14 +151,14 @@ module LogStash module Instrument module PeriodicPoller
     def collect_non_heap_metrics(data)
       non_heap = aggregate_information_for(data["non_heap"].values)
       non_heap.each_pair do |key, value|
-        metric.gauge([:jvm, :memory, :non_heap],key, value.to_i)
+        metric.gauge([:jvm, :memory, :non_heap], key, value.to_i)
       end
     end
 
     def collect_pools_metrics(data)
       metrics = build_pools_metrics(data)
       metrics.each_pair do |key, hash|
-        hash.each_pair do |p,v|
+        hash.each_pair do |p, v|
           metric.gauge([:jvm, :memory, :pools, key.to_sym], p, v)
         end
       end
@@ -186,9 +186,9 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def aggregate_information_for(collection)
-      collection.reduce(default_information_accumulator) do |m,e|
+      collection.reduce(default_information_accumulator) do |m, e|
         e = { e[0] => e[1] } if e.is_a?(Array)
-        e.each_pair do |k,v|
+        e.each_pair do |k, v|
           if MEMORY_TRANSPOSE_MAP.include?(k)
             transpose_key = MEMORY_TRANSPOSE_MAP[k]
             m[transpose_key] += v

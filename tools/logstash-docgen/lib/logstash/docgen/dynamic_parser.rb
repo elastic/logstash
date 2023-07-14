@@ -18,9 +18,9 @@
 # This is needed because some of the plugins have weird declaration in their header files
 # so I make sure the basic namespaces are correctly setup.
 module LogStash
-  module Codecs;end
-  module Inputs;end
-  module Output;end
+  module Codecs; end
+  module Inputs; end
+  module Output; end
 end
 
 module LogStash module Docgen

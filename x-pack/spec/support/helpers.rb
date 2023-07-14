@@ -42,7 +42,7 @@ end
 def with_environment(overrides)
   replacement = ENV.to_hash
                    .merge(overrides)
-                   .reject { |_,v| v.nil? }
+                   .reject { |_, v| v.nil? }
 
   with_environment!(replacement) { yield }
 end

@@ -156,7 +156,7 @@ module LogStash module Instrument
     #                 }
     # }
     def extract_metrics(path, *keys)
-      keys.reduce({}) do |acc,k|
+      keys.reduce({}) do |acc, k|
         # Simplify 1-length keys
         k = k.first if k.is_a?(Array) && k.size == 1
 
@@ -175,7 +175,7 @@ module LogStash module Instrument
             # If there already is a hash at this location use that so we don't overwrite it
             np_hash = acc[next_path] || {}
 
-            acc[next_path] = next_keys.reduce(np_hash) do |a,next_key|
+            acc[next_path] = next_keys.reduce(np_hash) do |a, next_key|
               a.merge! extract_metrics(path + [next_path], [next_key, *rest])
             end
           end

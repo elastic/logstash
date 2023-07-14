@@ -35,8 +35,8 @@ module LogStash module Modules class LogStashConfig
     name = "var.inputs"
     values = get_setting(LogStash::Setting::SplittableStringArray.new(name, String, default))
 
-    aliases.each { |k,v| values << v if values.include?(k) }
-    aliases.invert.each { |k,v| values << v if values.include?(k) }
+    aliases.each { |k, v| values << v if values.include?(k) }
+    aliases.invert.each { |k, v| values << v if values.include?(k) }
     values.flatten.uniq
   end
 
