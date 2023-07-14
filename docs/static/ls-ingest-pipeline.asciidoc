@@ -1,0 +1,26 @@
+[[ls-ingest-pipeline]]
+== Enriching data using {ls} ingest pipelines
+
+Do you want to collect sensitive, important data from endpoints quickly, but you need to transform the data before it is indexed into {es}? 
+{ls} ingest pipelines can help.
+
+{ls} ingest pipelines bring the power of {ref}/ingest.html[{es} ingest pipelines] into {ls} so that you can transform data _before_ it is sent to {es}.
+Legal, regulatory, or privacy reasons are common use cases, creating the need to obfuscate or redact some data before it goes to {es} for storage.  
+ 
+[discrete]
+[[how-to-set]]
+=== Add {ls} ingest pipeline processing
+
+{ls} ingest pipeline functionality is implemented as a filter plugin, and is easy to integrate into new or existing {ls} pipeline configurations. 
+Add and configure the logstash-filter-elastic_integration filter as the _first_ filter in your {ls} pipeline. 
+
+// ToDo: Add code sample
+// ToDo: Add link to plugin doc for settings and additional instructions after those docs are published.
+// For now: https://github.com/elastic/logstash-filter-elastic_integration
+
+Can set at the logstash or pipeline level 
+
+As with other plugins, you can set up ingest pipelines at the {ls} level in {logstash-ref}/logstash-settings-file.html[`logstash.yml`], or at the pipeline level in {logstash-ref}/logstash-settings-file.html[`pipelines.yml`]. 
+
+TIP: Check out {integrations-docs}[{agent} integrations] to see the list of available integrations. 
+
