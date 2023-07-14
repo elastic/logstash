@@ -282,6 +282,16 @@ Current options are:
   This setting is ignored unless `api.ssl.enabled` is set to `true`.
 | _N/A_
 
+| `api.ssl.supported_protocols`
+a| List of allowed SSL/TLS versions to use when establishing a secure connection. The availability of protocols depends on the JVM version. Certain protocols are disabled by default and need to be enabled manually by changing `jdk.tls.disabledAlgorithms` in the *$JDK_HOME/conf/security/java.security* configuration file.
+Possible values are:
+
+* `TLSv1`
+* `TLSv1.1`
+* `TLSv1.2`
+* `TLSv1.3`
+| _N/A_
+
 | `api.auth.type`
 | Set to `basic` to require HTTP Basic auth on the API using the credentials supplied with `api.auth.basic.username` and `api.auth.basic.password`.
 | `none`

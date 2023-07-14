@@ -150,6 +150,12 @@
 # api.ssl.keystore.path: /path/to/keystore.jks
 # api.ssl.keystore.password: "y0uRp4$$w0rD"
 #
+# The availability of SSL/TLS protocols depends on the JVM version. Certain protocols are
+# disabled by default and need to be enabled manually by changing `jdk.tls.disabledAlgorithms`
+# in the $JDK_HOME/conf/security/java.security configuration file.
+#
+# api.ssl.supported_protocols: [TLSv1.2,TLSv1.3]
+#
 # The HTTP API can be configured to require authentication. Acceptable values are
 #  - `none`:  no auth is required (default)
 #  - `basic`: clients must authenticate with HTTP Basic auth, as configured

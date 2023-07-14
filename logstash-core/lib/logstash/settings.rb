@@ -761,6 +761,26 @@ module LogStash
       end
     end
 
+    class StringArray < ArrayCoercible
+      def initialize(name, default, strict=true, possible_strings=[], &validator_proc)
+        @possible_strings = possible_strings
+        super(name, ::String, default, strict, &validator_proc)
+      end
+
+      protected
+
+      def validate(value)
+        super(value)
+        return unless @possible_strings&.any?
+
+        invalid_value = coerce(value).reject { |val| @possible_strings.include?(val) }
+        return unless invalid_value.any?
+
+        raise ArgumentError,
+          "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
+      end
+    end
+
     class Modules < Coercible
       def initialize(name, klass, default = nil)
         super(name, klass, default, false)
@@ -904,7 +924,6 @@ module LogStash
       end
     end
   end
-
 
   SETTINGS = Settings.new
 end

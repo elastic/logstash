@@ -88,6 +88,7 @@ module LogStash
            Setting::Boolean.new("api.ssl.enabled", false),
   Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
+          Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::Boolean.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
