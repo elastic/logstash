@@ -3553,4 +3553,3 @@ end
 class LogStashCompilerLSCLGrammarParser < Treetop::Runtime::CompiledParser
   include LogStashCompilerLSCLGrammar
 end
-

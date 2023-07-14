@@ -36,4 +36,3 @@ shared_examples_for 'a container with xpack features' do |flavor|
     end
   end
 end
-
