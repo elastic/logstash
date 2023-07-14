@@ -46,9 +46,13 @@ This section summarizes the changes in the following releases:
 [[notable-8.9.0]]
 ==== Notable issues fixed
 
-* Fix an issue where installs and updates of certain logstash plugins may fail behind a proxy https://github.com/elastic/logstash/pull/15131[#15131]. This issue was manifesting after a recent change to `logstash-filter-translate` updated to require the use of the `jar-dependencies` gem to retrieve artifacts from maven when installing the plugin, and could prevent the update of this plugin when a proxy is in use.
-* Improve logging when logstash is stalled on shutdown https://github.com/elastic/logstash/pull/15056[#15056]. This commit adds information about the main thread, if it is that one that is causing the shutdown to be stalled.
-* Improve SSL settings for connection to elasticsearch for central management and monitoring https://github.com/elastic/logstash/pull/15045[#15045]. This commit adds settings support for file-based certificates and cipher suites for management and monitoring settings, and removes the deprecation warnings from the logs that have been since SSL configuration settings were revamped in the Elasticsearch output.
+* Fixed an [issue ](https://github.com/elastic/logstash/issues/15130) where installs and updates of certain {ls} plugins could fail when located behind a proxy https://github.com/elastic/logstash/pull/15131[#15131]. 
+This issue surfaced after `logstash-filter-translate` was updated to require that the `jar-dependencies` gem be used to retrieve artifacts from maven when the plugin was installed. 
+This requirement could prevent the plugin update when a proxy was in use.
+* Improved logging when {ls} is stalled on shutdown https://github.com/elastic/logstash/pull/15056[#15056]. 
+We now provide additional information about the main thread if it is causing the shutdown to stall.
+* Improved SSL settings for connection to {es} for central management and monitoring https://github.com/elastic/logstash/pull/15045[#15045]. 
+This commit adds settings support for file-based certificates and cipher suites for management and monitoring settings, and removes the deprecation warnings from the logs that have been in since SSL configuration settings were revamped in the {es} output.
 
 
 [[dependencies-8.9.0]]
@@ -70,7 +74,7 @@ This section summarizes the changes in the following releases:
 
 *Beats Input - 6.6.3*
 
-* Docs: Updated the `ssl_client_authentication` and `ssl_verify_mode` documentation explaining that CN and SAN are not validated. https://github.com/logstash-plugins/logstash-input-beats/pull/473[#473]
+* [DOC] Updated the `ssl_client_authentication` and `ssl_verify_mode` documentation explaining that CN and SAN are not validated. https://github.com/logstash-plugins/logstash-input-beats/pull/473[#473]
 
 * Update netty to 4.1.94 and jackson to 2.15.2 https://github.com/logstash-plugins/logstash-input-beats/pull/474[#474]
 
@@ -80,7 +84,7 @@ This section summarizes the changes in the following releases:
 
 *Snmp Input - 1.3.2*
 
-* Docs: Add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs
+* [DOC] Add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs https://github.com/logstash-plugins/logstash-input-snmp/pull/112[#112]
 
 *Tcp Input - 6.3.5*
 
