@@ -23,8 +23,8 @@ describe LogStash::Environment do
   context "when loading jars dependencies" do
 
     let(:default_jars_location)    { File.join("vendor", "jar-dependencies") }
-    let(:default_runtime_location) { File.join(default_jars_location,"runtime-jars","*.jar") }
-    let(:default_test_location)    { File.join(default_jars_location,"test-jars","*.jar") }
+    let(:default_runtime_location) { File.join(default_jars_location, "runtime-jars", "*.jar") }
+    let(:default_test_location)    { File.join(default_jars_location, "test-jars", "*.jar") }
 
     it "find runtime jars in the default location" do
       expect(subject).to receive(:find_jars).with(default_runtime_location).and_return([])
@@ -38,7 +38,7 @@ describe LogStash::Environment do
 
     context "when loading a jar file" do
 
-      let(:dummy_jar_file) { File.join(default_jars_location,"runtime-jars","elasticsearch.jar") }
+      let(:dummy_jar_file) { File.join(default_jars_location, "runtime-jars", "elasticsearch.jar") }
 
       it "requires the jar files if there are jars to load" do
         expect(subject).to receive(:find_jars).with(default_runtime_location).and_return([dummy_jar_file])

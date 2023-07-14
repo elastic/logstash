@@ -41,7 +41,7 @@ module LogStash
 
       def build(*klass_path)
         # Get a nested path with args like (:parent, :child)
-        klass = klass_path.reduce(factory) {|acc,v| acc[v]}
+        klass = klass_path.reduce(factory) {|acc, v| acc[v]}
 
         if klass
           klass.new(service)

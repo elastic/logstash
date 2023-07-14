@@ -204,7 +204,7 @@ module LogStash::Util
   def self.deep_clone(o)
     case o
     when Hash
-      o.inject({}) {|h, (k,v)| h[k] = deep_clone(v); h }
+      o.inject({}) {|h, (k, v)| h[k] = deep_clone(v); h }
     when Array
       o.map {|v| deep_clone(v) }
     when Integer, Symbol, IO, TrueClass, FalseClass, NilClass

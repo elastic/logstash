@@ -195,7 +195,7 @@ class LogStash::Filters::Base < LogStash::Plugin
   # matches the filter's conditions (right type, etc)
   protected
   def filter_matched(event)
-    LogStash::Util::Decorators.add_fields(@add_field,event,"filters/#{self.class.name}")
+    LogStash::Util::Decorators.add_fields(@add_field, event, "filters/#{self.class.name}")
 
     @remove_field.each do |field|
       field = event.sprintf(field)
@@ -204,7 +204,7 @@ class LogStash::Filters::Base < LogStash::Plugin
       event.remove(field)
     end
 
-    LogStash::Util::Decorators.add_tags(@add_tag,event,"filters/#{self.class.name}")
+    LogStash::Util::Decorators.add_tags(@add_tag, event, "filters/#{self.class.name}")
 
     # note below that the tags array field needs to be updated then reassigned to the event.
     # this is important because a construct like event["tags"].delete(tag) will not work

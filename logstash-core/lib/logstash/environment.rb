@@ -44,7 +44,7 @@ module LogStash
                     Setting.new("modules_list", Array, []),
                     Setting.new("modules_variable_list", Array, []),
            Setting::Modules.new("cloud.id", LogStash::Util::CloudSettingId),
-           Setting::Modules.new("cloud.auth",LogStash::Util::CloudSettingAuth),
+           Setting::Modules.new("cloud.auth", LogStash::Util::CloudSettingAuth),
            Setting::Boolean.new("modules_setup", false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),

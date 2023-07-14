@@ -119,7 +119,7 @@ describe LogStash::Instrument::PeriodicPoller::JVM do
       # Make looking up metric paths easy when given varargs of keys
       # e.g. mval(:parent, :child)
       def mval(*metric_path)
-        metric_path.reduce(jvm_metrics) {|acc,k| acc[k]}.value
+        metric_path.reduce(jvm_metrics) {|acc, k| acc[k]}.value
       end
 
       [

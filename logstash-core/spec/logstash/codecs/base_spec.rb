@@ -61,7 +61,7 @@ describe LogStash::Codecs::Base do
       describe "#{codec_class}" do
         describe "multi_encode" do
           it "should return an array of [event,data] tuples" do
-            expect(instance.multi_encode([event,event])).to eq([encoded_tuple, encoded_tuple])
+            expect(instance.multi_encode([event, event])).to eq([encoded_tuple, encoded_tuple])
           end
         end
 

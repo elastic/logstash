@@ -26,7 +26,7 @@ module LogStash::Util
 
     # fields is a hash of field => value
     # where both `field` and `value` can use sprintf syntax.
-    def add_fields(fields,event, pluginname)
+    def add_fields(fields, event, pluginname)
       fields.each do |field, value|
         field = event.sprintf(field)
         value = Array(value)

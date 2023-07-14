@@ -145,7 +145,7 @@ describe "Test Dead Letter Queue" do
   end
 
   context 'using logstash.yml and separate config file' do
-    let(:generator_config_file) { config_to_temp_file(@fixture.config("root",{ :dlq_dir => dlq_dir })) }
+    let(:generator_config_file) { config_to_temp_file(@fixture.config("root", { :dlq_dir => dlq_dir })) }
 
     before :each do
       logstash_service.start_background_with_config_settings(generator_config_file, settings_dir)

@@ -119,7 +119,7 @@ describe LogStash::Bundler do
       context 'with the cleaning option' do
         it 'should add the --clean arguments' do
           options.merge!(:clean => true)
-          expect(bundler_arguments).to include('install','--clean')
+          expect(bundler_arguments).to include('install', '--clean')
         end
       end
     end

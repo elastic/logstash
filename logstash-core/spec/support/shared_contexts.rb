@@ -43,7 +43,7 @@ shared_context "api setup" do |settings_overrides={}|
   # @return [false] if the condition was NOT met
   def block_until(limit_seconds, &condition)
     deadline = Time.now + limit_seconds
-    loop.with_index do |_,try|
+    loop.with_index do |_, try|
       break if Time.now >= deadline
       return true if condition.call
 

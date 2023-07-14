@@ -182,7 +182,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         other_input.register
         output.register
 
-        @input_threads = inputs_queues.map do |input_plugin,input_queue|
+        @input_threads = inputs_queues.map do |input_plugin, input_queue|
           Thread.new do
             input_plugin.run(input_queue)
           end
@@ -205,7 +205,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
         end
 
         it "should send the message to both outputs" do
-          inputs_queues.each do |i,q|
+          inputs_queues.each do |i, q|
             expect(q.pop(true).to_hash_with_metadata).to match(event.to_hash_with_metadata)
           end
         end

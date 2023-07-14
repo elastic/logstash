@@ -307,7 +307,7 @@ describe LogStash::Runner do
       end
 
       context "when defined by the user" do
-        let(:args) { ["--api.http.port", port_argument,"-e", pipeline_string] }
+        let(:args) { ["--api.http.port", port_argument, "-e", pipeline_string] }
         context "as a single-value string" do
           let(:port_argument) { "10000" }
           it "creates an Agent whose `api.http.port` is an appropriate single-element range" do

@@ -115,11 +115,11 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
 
     def map_expr_attributes
       # Turn attributes into a hash map
-      self.attributes.recursive_select(Attribute).map(&:expr).map {|k,v|
+      self.attributes.recursive_select(Attribute).map(&:expr).map {|k, v|
         if v.kind_of?(Java::OrgLogstashConfigIrExpression::ValueExpression)
           [k, v.get]
         else
-          [k,v]
+          [k, v]
         end
       }.reduce({}) do |hash, kv|
         k, v = kv
@@ -277,7 +277,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       end
 
       else_stack.reverse.each_cons(2) do |cons|
-        later,earlier = cons
+        later, earlier = cons
         earlier << later
       end
       exprs << else_stack.first

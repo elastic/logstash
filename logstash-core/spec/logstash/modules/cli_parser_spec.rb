@@ -75,14 +75,14 @@ describe LogStash::Modules::CLIParser do
       let(:expected_value) { "example" }
       let(:unparsed) { expected_key + "=" + expected_value }
       it "split it into a key value pair" do
-        expect(subject.get_kv(module_name,unparsed)).to eq([expected_key,expected_value])
+        expect(subject.get_kv(module_name, unparsed)).to eq([expected_key, expected_value])
       end
     end
 
     context "when it receives an invalid string" do
       let(:bad_example) { "var.fail" }
       it "raise a LogStash::ConfigLoadingError exception" do
-        expect { subject.get_kv(module_name,bad_example) }.to raise_error LogStash::ConfigLoadingError
+        expect { subject.get_kv(module_name, bad_example) }.to raise_error LogStash::ConfigLoadingError
       end
     end
   end
@@ -91,7 +91,7 @@ describe LogStash::Modules::CLIParser do
     context "when it receives a valid string" do
       let(:expected) { "var.input.stdin.type=example" }
       it "split the module name from the rest of the string" do
-        expect(subject.name_splitter(proto_mod_vars)).to eq([module_name,expected])
+        expect(subject.name_splitter(proto_mod_vars)).to eq([module_name, expected])
       end
     end
 

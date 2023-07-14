@@ -37,17 +37,17 @@ describe "LogStash::Inputs::Base#decorate" do
   end
 
   it "should add multiple tag" do
-    input = LogStash::Inputs::NOOP.new("tags" => ["value1","value2"])
+    input = LogStash::Inputs::NOOP.new("tags" => ["value1", "value2"])
     evt = LogStash::Event.new({"type" => "noop"})
     input.instance_eval {decorate(evt)}
-    expect(evt.get("tags")).to eq(["value1","value2"])
+    expect(evt.get("tags")).to eq(["value1", "value2"])
   end
 
   it "should allow duplicates  tag" do
-    input = LogStash::Inputs::NOOP.new("tags" => ["value","value"])
+    input = LogStash::Inputs::NOOP.new("tags" => ["value", "value"])
     evt = LogStash::Event.new({"type" => "noop"})
     input.instance_eval {decorate(evt)}
-    expect(evt.get("tags")).to eq(["value","value"])
+    expect(evt.get("tags")).to eq(["value", "value"])
   end
 
   it "should add tag with sprintf" do
@@ -75,7 +75,7 @@ describe "LogStash::Inputs::Base#decorate" do
     input = LogStash::Inputs::NOOP.new("add_field" => {"field" => ["value1", "value2"], "field2" => "value"})
     evt = LogStash::Event.new({"type" => "noop"})
     input.instance_eval {decorate(evt)}
-    expect(evt.get("field")).to eq(["value1","value2"])
+    expect(evt.get("field")).to eq(["value1", "value2"])
     expect(evt.get("field2")).to eq("value")
   end
 

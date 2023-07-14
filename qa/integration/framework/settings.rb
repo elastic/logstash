@@ -42,11 +42,11 @@ class TestSettings
       if get("config").is_a?(Hash)
         tmp = {}
         get("config").each do |k, v|
-          tmp[k] = get("config")[k].gsub('\n','').split.join(" ")
+          tmp[k] = get("config")[k].gsub('\n', '').split.join(" ")
         end
         @test_settings["config"] = tmp
       else
-        config_string = get("config").gsub('\n','').split.join(" ")
+        config_string = get("config").gsub('\n', '').split.join(" ")
         @test_settings["config"] = config_string
       end
     end

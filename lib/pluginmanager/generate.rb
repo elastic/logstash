@@ -68,7 +68,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       else
         # copy the new file, in case of being an .erb file should render first
         if source_entry.end_with?("erb")
-          target_entry = target_entry.gsub(/.erb$/,"").gsub("example", name)
+          target_entry = target_entry.gsub(/.erb$/, "").gsub("example", name)
           File.open(target_entry, "w") { |f| f.write(render(source_entry)) }
         else
           FileUtils.cp(source_entry, target_entry)

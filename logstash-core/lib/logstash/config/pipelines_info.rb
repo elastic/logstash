@@ -71,16 +71,16 @@ module LogStash; module Config;
     def self.format_pipeline_vertex_section_stats(stats, pipeline)
       return nil unless stats
 
-       (stats || {}).reduce([]) do |acc,kv|
+       (stats || {}).reduce([]) do |acc, kv|
         plugin_id, plugin_stats = kv
 
-        props = Hash.new {|h,k| h[k] = []}
+        props = Hash.new {|h, k| h[k] = []}
         next unless plugin_stats
 
         flattened = flatten_metrics(plugin_stats)
 
-        segmented = flattened.reduce(Hash.new {|h,k| h[k] = []}) do |acc,kv|
-          k,v = kv
+        segmented = flattened.reduce(Hash.new {|h, k| h[k] = []}) do |acc, kv|
+          k, v = kv
           metric_value = v.value
           root_metric_field = ROOT_METRIC_MAPPINGS[k]
 
@@ -124,8 +124,8 @@ module LogStash; module Config;
 
     def self.flatten_metrics(hash_or_value, namespaces = [])
       if hash_or_value.is_a?(Hash)
-        return hash_or_value.reduce({}) do |acc,kv|
-          k,v = kv
+        return hash_or_value.reduce({}) do |acc, kv|
+          k, v = kv
           # We must concat the arrays, creating a copy instead of mutation
           # to handle the case where there are multiple sibling metrics in a namespace
           new_namespaces = namespaces.clone

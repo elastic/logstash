@@ -67,15 +67,15 @@ def license_agreement_for_flavor(flavor)
 end
 
 def get_logstash_status(container)
-  make_request(container,'curl -s http://localhost:9600/')['status']
+  make_request(container, 'curl -s http://localhost:9600/')['status']
 end
 
 def get_node_info(container)
-  make_request(container,'curl -s http://localhost:9600/_node/')
+  make_request(container, 'curl -s http://localhost:9600/_node/')
 end
 
 def get_node_stats(container)
-  make_request(container,'curl -s http://localhost:9600/_node/stats')
+  make_request(container, 'curl -s http://localhost:9600/_node/stats')
 end
 
 def get_pipeline_setting(container, property, pipeline='main')

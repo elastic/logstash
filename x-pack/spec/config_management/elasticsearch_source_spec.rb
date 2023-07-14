@@ -221,9 +221,9 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     describe "system indices api" do
       let(:mock_client)  { double("http_client") }
       let(:config) { "input { generator { count => 100 } tcp { port => 6005 } } output { }}" }
-      let(:es_version_8_2) { { major:8, minor: 2} }
-      let(:es_version_8_3) { { major:8, minor: 3} }
-      let(:es_version_9_0) { { major:9, minor: 0} }
+      let(:es_version_8_2) { { major: 8, minor: 2} }
+      let(:es_version_8_3) { { major: 8, minor: 3} }
+      let(:es_version_9_0) { { major: 9, minor: 0} }
       let(:pipeline_id) { "super_generator" }
       let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
       let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
@@ -272,13 +272,13 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         it "should give unique pipeline with multiple wildcard patterns" do
           expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
           expect(subject).to receive(:log_pipeline_not_found).with(["*pipeline*"]).exactly(1)
-          expect(subject.fetch_config(es_version_8_2, ["host1_pipeline*", "host2_pipeline*","*pipeline*"], mock_client).keys).to eq(["host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
+          expect(subject.fetch_config(es_version_8_2, ["host1_pipeline*", "host2_pipeline*", "*pipeline*"], mock_client).keys).to eq(["host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
         end
 
         it "should accept a mix of wildcard and non wildcard pattern" do
           expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(all_pipelines.clone)
           expect(mock_logger).to receive(:warn).never
-          expect(subject.fetch_config(es_version_8_2, ["host1_pipeline*", "host2_pipeline*","super_generator"], mock_client).keys).to eq(["super_generator", "host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
+          expect(subject.fetch_config(es_version_8_2, ["host1_pipeline*", "host2_pipeline*", "super_generator"], mock_client).keys).to eq(["super_generator", "host1_pipeline1", "host1_pipeline2", "host2_pipeline1", "host2_pipeline2"])
         end
 
         it "should log unmatched pattern" do
@@ -715,15 +715,15 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
     describe "create pipeline fetcher by es version" do
       it "should give SystemIndicesFetcher in [8]" do
-        expect(subject.get_pipeline_fetcher({ major:8, minor:2 })).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
+        expect(subject.get_pipeline_fetcher({ major: 8, minor: 2 })).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
       end
 
       it "should give SystemIndicesFetcher in [7.10]" do
-        expect(subject.get_pipeline_fetcher({ major:7, minor:10 })).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
+        expect(subject.get_pipeline_fetcher({ major: 7, minor: 10 })).to be_an_instance_of LogStash::ConfigManagement::SystemIndicesFetcher
       end
 
       it "should give LegacyHiddenIndicesFetcher in [7.9]" do
-        expect(subject.get_pipeline_fetcher({ major:7, minor:9 })).to be_an_instance_of LogStash::ConfigManagement::LegacyHiddenIndicesFetcher
+        expect(subject.get_pipeline_fetcher({ major: 7, minor: 9 })).to be_an_instance_of LogStash::ConfigManagement::LegacyHiddenIndicesFetcher
       end
     end
 

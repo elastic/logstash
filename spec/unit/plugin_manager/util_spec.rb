@@ -72,7 +72,7 @@ describe LogStash::PluginManager do
     before(:each) do
       allow(gemfile).to  receive(:gemset).and_return(gemset)
       allow(gemset).to   receive(:sources).and_return(sources)
-      expect(fetcher).to receive(:spec_for_dependency).and_return([[],[]])
+      expect(fetcher).to receive(:spec_for_dependency).and_return([[], []])
     end
 
     it "should load all available sources" do
