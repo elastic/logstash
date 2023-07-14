@@ -45,7 +45,7 @@ class LogStash::PluginManager::PrepareOfflinePack < LogStash::PluginManager::Com
         signal_error("Package creation cancelled: You must specify the zip extension for the provided filename: #{output}.")
       end
 
-      if ::File.exists?(output)
+      if ::File.exist?(output)
         if overwrite?
           File.delete(output)
         else

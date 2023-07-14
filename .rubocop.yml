@@ -20,6 +20,11 @@ AllCops:
   DisplayCopNames: true
   UseCache: false
 
+#################### Lint   ###########################
+##### Enabled Cops #####
+Lint/DeprecatedClassMethods:
+  Enabled: true
+
 #################### Layout ###########################
 ##### Enabled Cops #####
 Layout/TrailingWhitespace:

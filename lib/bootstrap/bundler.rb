@@ -113,14 +113,14 @@ module LogStash
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
-      unless ::File.exists?(Environment::GEMFILE_PATH)
+      unless ::File.exist?(Environment::GEMFILE_PATH)
         FileUtils.copy(
           ::File.join(Environment::LOGSTASH_HOME, "Gemfile.template"), Environment::GEMFILE_PATH
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
       lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.1.lock.release")
-      if ::File.exists?(lock_template) && !::File.exists?(Environment::LOCKFILE)
+      if ::File.exist?(lock_template) && !::File.exist?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
 

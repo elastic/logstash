@@ -614,7 +614,7 @@ module LogStash
     class ExistingFilePath < Setting
       def initialize(name, default=nil, strict=true)
         super(name, ::String, default, strict) do |file_path|
-          if !::File.exists?(file_path)
+          if !::File.exist?(file_path)
             raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
           else
             true

@@ -56,7 +56,7 @@ describe "Test Logstash Pipeline id" do
     @ls.spawn_logstash("-w", "1" , "-e", config)
     wait_logstash_process_terminate()
     plainlog_file = "#{temp_dir}/logstash-plain.log"
-    expect(File.exists?(plainlog_file)).to be true
+    expect(File.exist?(plainlog_file)).to be true
     #We know taht sleep plugin log debug lines
     expect(IO.read(plainlog_file) =~ /\[sleep_filter_123\] Sleeping {:delay=>1}/).to be > 0
   end

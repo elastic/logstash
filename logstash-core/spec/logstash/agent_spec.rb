@@ -457,7 +457,7 @@ describe LogStash::Agent do
 
           # wait for file existence otherwise it will raise exception on Windows
           wait(timeout)
-            .for { ::File.exists?(new_config_output) && !::File.read(new_config_output).chomp.empty? }
+            .for { ::File.exist?(new_config_output) && !::File.read(new_config_output).chomp.empty? }
             .to eq(true)
           # ensure the converge_state_and_update method has updated metrics by
           # invoking the mutex
