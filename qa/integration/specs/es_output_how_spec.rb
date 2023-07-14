@@ -60,7 +60,7 @@ describe "Test Elasticsearch output" do
     es_client.indices.refresh
     result = es_client.search(index: 'logstash-*', size: 0, q: '*')
     expect(result).to have_hits(37)
-    
+
     # randomly checked for results and structured fields
     result = es_client.search(index: 'logstash-*', size: 1, q: 'dynamic')
     expect(result).to have_hits(1)

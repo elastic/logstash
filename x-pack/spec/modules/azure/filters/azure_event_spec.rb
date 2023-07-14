@@ -51,7 +51,7 @@ describe LogStash::Filters::AzureEvent do
         <<-CONFIG
       filter {
         azure_event {
-          # allow default 
+          # allow default
         }
       }
         CONFIG

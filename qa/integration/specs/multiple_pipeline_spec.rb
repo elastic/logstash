@@ -125,7 +125,7 @@ describe "Test Logstash service when multiple pipelines are used" do
 
   describe "inter-pipeline communication" do
     let(:count) { 2 }
-    let(:pipelines) do 
+    let(:pipelines) do
       [
         {
           "pipeline.id" => "test",

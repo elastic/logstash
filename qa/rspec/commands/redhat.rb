@@ -53,7 +53,7 @@ module ServiceTester
         exit_status += cmd.exit_status
         errors << cmd.stderr unless cmd.stderr.empty?
       end
-      if exit_status > 0 
+      if exit_status > 0
         raise InstallException.new("Error installing #{package}, #{errors.join('\n')}")
       end
     end

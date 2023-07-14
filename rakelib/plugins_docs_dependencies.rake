@@ -185,11 +185,11 @@ task :generate_plugins_version do
   # to this helper cause each new closures to reference the previous one. The size of each binding
   # accumulates and OOM occurs after 70-100 iterations.
   # This is easy to replicate by looping over `Bundler::SharedHelpers.trap("INT") { 1 }`.
-  # 
+  #
   # This workaround removes the capture of the previous binding. Not calling all the previous handlers
-  # may cause some threads to not be cleaned up, but this rake task has a short life so everything 
+  # may cause some threads to not be cleaned up, but this rake task has a short life so everything
   # ends up being cleaned up on exit anyway.
-  # We're confining this patch to this task only as this is the only place where we need to resolve 
+  # We're confining this patch to this task only as this is the only place where we need to resolve
   # dependencies many many times.
   #
   # You're still here? You're awesome :) Thanks for reading!

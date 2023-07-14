@@ -9,9 +9,9 @@ describe ::LogStash::Config::LIRSerializer do
   let(:config) do
     <<-EOC
       input { fake_input {} }
-      filter { 
+      filter {
         if ([foo] < 2) {
-          fake_filter {} 
+          fake_filter {}
         }
       }
       output { fake_output {} }

@@ -95,7 +95,7 @@ class LogStash::Agent
     initialize_flow_metrics
 
     initialize_geoip_database_metrics(metric)
-    
+
     @pq_config_validator = LogStash::PersistedQueueConfigValidator.new
 
     @dispatcher = LogStash::EventDispatcher.new(self)
@@ -174,7 +174,7 @@ class LogStash::Agent
   # NOTE that there is no point of calling this method before
   # Agent#execute has been called since it will itself call
   # converge_state_and_update and will result in a double
-  # convergence. 
+  # convergence.
   def converge_state_and_update
     results = @source_loader.fetch
 

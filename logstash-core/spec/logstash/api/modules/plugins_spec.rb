@@ -51,7 +51,7 @@ describe LogStash::Api::Modules::Plugins do
                 }
               ]
             },
-            "total" => { "type" => "number" } 
+            "total" => { "type" => "number" }
           },
           "required" => ["plugins", "total"]
         },
@@ -70,7 +70,7 @@ describe LogStash::Api::Modules::Plugins do
 
     it "return a list of available plugins" do
       payload["plugins"].each do |plugin|
-        expect do 
+        expect do
           Gem::Specification.find_by_name(plugin["name"])
         end.not_to raise_error
       end

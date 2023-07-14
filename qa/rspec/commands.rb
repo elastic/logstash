@@ -28,7 +28,7 @@ require "forwardable"
 module ServiceTester
 
   # An artifact is the component being tested, it's able to interact with
-  # a destination machine by holding a client and is basically provides all 
+  # a destination machine by holding a client and is basically provides all
   # necessary abstractions to make the test simple.
   class Artifact
 
@@ -103,7 +103,7 @@ module ServiceTester
     def download(from, to)
       client.download(from, to , host)
     end
-    
+
     def replace_in_gemfile(pattern, replace)
       client.replace_in_gemfile(pattern, replace, host)
     end

@@ -1098,8 +1098,8 @@ describe LogStash::JavaPipeline do
       }
       filter {
        clone {
-          add_field => { 
-            'cloned' =>  'cloned' 
+          add_field => {
+            'cloned' =>  'cloned'
           }
           clones => ["clone1"]
         }

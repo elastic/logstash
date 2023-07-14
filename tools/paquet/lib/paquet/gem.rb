@@ -111,7 +111,7 @@ module Paquet
     end
 
     def gem_full_name(gem)
-      gem.ruby? ? "#{gem.name}-#{gem.version}.gem" : "#{gem.name}-#{gem.version}-#{gem.platform}.gem" 
+      gem.ruby? ? "#{gem.name}-#{gem.version}.gem" : "#{gem.name}-#{gem.version}-#{gem.platform}.gem"
     end
 
     def download_gem(gem_name)

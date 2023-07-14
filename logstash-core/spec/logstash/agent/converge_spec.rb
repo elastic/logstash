@@ -64,7 +64,7 @@ describe LogStash::Agent do
     end
 
     context "system pipeline" do
-      
+
       let(:system_pipeline_config) { mock_pipeline_config(:system_pipeline, "input { dummyblockinginput { } } output { null {} }", { "pipeline.system" => true }) }
 
       context "when we have a finite pipeline and a system pipeline running" do

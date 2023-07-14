@@ -49,7 +49,7 @@ class OpenSSL::SSL::SSLContext
     # secure, so let's fix that here. The next few lines setting options and
     # ciphers come from jmhodges' proposed patch
     ssloptions = OpenSSL::SSL::OP_ALL
- 
+
     # TODO(sissel): JRuby doesn't have this. Maybe work on a fix?
     if defined?(OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS)
       ssloptions &= ~OpenSSL::SSL::OP_DONT_INSERT_EMPTY_FRAGMENTS

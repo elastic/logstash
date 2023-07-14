@@ -60,7 +60,7 @@ describe LogStash::Compiler do
 
       let(:processed_value)  { 'The computer says, "No"' }
 
-      let(:source) { 
+      let(:source) {
         %q(
           input {
             foo {
@@ -133,7 +133,7 @@ describe LogStash::Compiler do
       describe "a plugin with mixed parameter types" do
         let(:plugin_source) { "generator { aarg => [1] hasharg => {foo => bar} iarg => 123 farg => 123.123 sarg => 'hello'}" }
         let(:expected_plugin_args) do
-          { 
+          {
             "aarg" => [1],
             "hasharg" => {"foo" => "bar"},
             "iarg" => 123,
@@ -414,21 +414,21 @@ describe LogStash::Compiler do
           j.iComposeParallel(*statements)
         end
       end
-      
+
       describe "multiple section declarations" do
         let(:source) do
           <<-EOS
             #{section} {
               aplugin { count => 1 }
             }
-            
+
             #{section} {
               aplugin { count => 2 }
             }
           EOS
         end
-        
-        
+
+
         it "should contain both section declarations, in order" do
           expect(compiled_section).to ir_eql(compose(
                                       splugin("aplugin", {"count" => 1}),
@@ -662,11 +662,11 @@ describe LogStash::Compiler do
               it "should compile correctly" do
                 expect(c_expression).to ir_eql(j.eRegexEq(j.eEventValue("[foo]"), j.eRegex('^abc$')))
               end
-              
+
               # Believe it or not, "\.\." is a valid regexp!
               describe "when given a quoted regexp" do
                 let(:expression) { '[foo] =~ "\\.\\."' }
-              
+
                 it "should compile correctly" do
                   expect(c_expression).to ir_eql(j.eRegexEq(j.eEventValue("[foo]"), j.eRegex('\\.\\.')))
                 end

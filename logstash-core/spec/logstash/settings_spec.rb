@@ -125,10 +125,10 @@ describe LogStash::Settings do
       expect(settings.names).to contain_exactly("one.two.three", "this.that")
     end
   end
-  
+
   describe "post_process" do
     subject(:settings) { described_class.new }
-    
+
     before do
       settings.on_post_process do
         settings.set("baz", "bot")
@@ -137,11 +137,11 @@ describe LogStash::Settings do
       settings.register(LogStash::Setting::String.new("baz", "somedefault"))
       settings.post_process
     end
-    
+
     it "should run the post process callbacks" do
       expect(settings.get("baz")).to eq("bot")
     end
-    
+
     it "should preserve original settings" do
       expect(settings.get("foo")).to eq("bar")
     end
@@ -204,7 +204,7 @@ describe LogStash::Settings do
         ENV.delete('some.logstash.spec.env.var')
         ENV.delete('a')
       end
-      
+
       subject do
         settings = described_class.new
         settings.register(LogStash::Setting::String.new("interpolated_env", "missing"))

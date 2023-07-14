@@ -52,7 +52,7 @@ module LogStash
           # these are likely JVM dependent
           idle = true
         elsif thread_name.match(/Ruby-\d+-JIT-\d+/)
-          # This are internal JRuby JIT threads, 
+          # This are internal JRuby JIT threads,
           # see java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor for details.
           idle = true
         elsif thread_name.match(/pool-\d+-thread-\d+/)

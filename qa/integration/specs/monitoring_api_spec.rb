@@ -30,11 +30,11 @@ describe "Test Monitoring API" do
   after(:all) {
     @fixture.teardown
   }
-  
+
   after(:each) {
     @fixture.get_service("logstash").teardown
   }
-  
+
   let(:number_of_events) { 5 }
   let(:max_retry) { 120 }
   let(:plugins_config) { "input { stdin {} } filter { mutate { add_tag => 'integration test adding tag' } } output { stdout {} }" }

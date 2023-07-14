@@ -18,7 +18,7 @@
 require "json"
 require "ostruct"
 
-# This is a wrapper to encapsulate the logic behind the different platforms we test with, 
+# This is a wrapper to encapsulate the logic behind the different platforms we test with,
 # this is done here in order to simplify the necessary configuration for bootstrap and interactions
 # necessary later on in the tests phases.
 #

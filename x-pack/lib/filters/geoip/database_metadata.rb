@@ -89,7 +89,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   def dirnames
     get_all.map { |metadata| metadata[Column::DIRNAME] }
   end
-  
+
   def exist?
     file_exist?(@metadata_path)
   end

@@ -19,7 +19,13 @@ AllCops:
     - 'config/**/*'
   DisplayCopNames: true
   UseCache: false
+
 #################### Layout ###########################
+##### Enabled Cops #####
+Layout/TrailingWhitespace:
+  Enabled: true
+
+##### Need review #####
 Layout/AccessModifierIndentation:
   Enabled: false
 Layout/ArgumentAlignment:
@@ -215,6 +221,4 @@ Layout/SpaceInsideReferenceBrackets:
 Layout/SpaceInsideStringInterpolation:
   Enabled: false
 Layout/TrailingEmptyLines:
-  Enabled: false
-Layout/TrailingWhitespace:
   Enabled: false

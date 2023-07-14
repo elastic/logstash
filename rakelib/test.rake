@@ -39,7 +39,7 @@ namespace "test" do
 
   desc "run all core specs"
   task "core" => ["core-slow"]
-  
+
   def default_spec_command
     ["bin/rspec", "-fd", "--pattern", "spec/unit/**/*_spec.rb,logstash-core/spec/**/*_spec.rb"]
   end

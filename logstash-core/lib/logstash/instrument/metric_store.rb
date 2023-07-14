@@ -136,7 +136,7 @@ module LogStash module Instrument
 
 
     # Return a hash including the values of the keys given at the path given
-    # 
+    #
     # Example Usage:
     # extract_metrics(
     #   [:jvm, :process],
@@ -144,7 +144,7 @@ module LogStash module Instrument
     #   [:cpu, [:total_in_millis, :percent]]
     #   [:pipelines, [:one, :two], :size]
     # )
-    # 
+    #
     # Returns:
     # # From the jvm.process metrics namespace
     # {
@@ -174,7 +174,7 @@ module LogStash module Instrument
           next_paths.each do |next_path|
             # If there already is a hash at this location use that so we don't overwrite it
             np_hash = acc[next_path] || {}
-            
+
             acc[next_path] = next_keys.reduce(np_hash) do |a,next_key|
               a.merge! extract_metrics(path + [next_path], [next_key, *rest])
             end
@@ -183,10 +183,10 @@ module LogStash module Instrument
           res = get_shallow(*path)[k]
           acc[k] = res ? res.value : nil
         end
-        
+
         acc
       end
-    end    
+    end
 
     def has_metric?(*path)
       @fast_lookup[path]
