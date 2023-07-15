@@ -89,10 +89,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(ThreadContext context, IRubyObject size, IRubyObject wait) {
-        if (queue.isClosed()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
-        }
-        return queue.ruby_read_batch(context, size, wait);
+        return queue.rubyReadBatch(context, size, wait);
     }
 
     @JRubyMethod(name = "is_empty?")

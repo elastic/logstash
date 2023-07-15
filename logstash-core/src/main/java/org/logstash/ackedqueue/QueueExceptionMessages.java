@@ -25,13 +25,18 @@ package org.logstash.ackedqueue;
  */
 public class QueueExceptionMessages {
 
-    public final static String WHILE_INSERTING = "Received an exception while inserting to a queue.";
+    public final static String WHILE_INSERTING_SINGLE_ELEMENT = "Received an exception while inserting an element to an acked queue.";
 
-    public final static String WHILE_WRITING = "Received an exception while writing to an acked queue.";
+    public final static String WHILE_INSERTING_ULTIPLE_ELEMENTS = "Received an exception while writing multiple elements to an acked queue.";
 
     public final static String WHILE_READING = "Attempted to read on a closed acked queue.";
 
     public final static String WRITE_TO_CLOSED_QUEUE = "Tried to write to a closed queue.";
 
     public final static String BIGGER_DATA_THAN_PAGE_SIZE = "data to be written is bigger than page capacity";
+
+    public final static String CREATING_QUEUE_DIR_ERROR = "Error creating queue directories.";
+
+    public final static String CANNOT_DESERIALIZE = "cannot find deserialize method on class ";
+
 }

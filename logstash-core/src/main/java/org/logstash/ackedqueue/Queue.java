@@ -101,7 +101,7 @@ public final class Queue implements Closeable {
             }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
-            throw new QueueRuntimeException("Error creating queue directories.", ex);
+            throw new QueueRuntimeException(QueueExceptionMessages.CREATING_QUEUE_DIR_ERROR, ex);
         }
 
         this.pageCapacity = settings.getCapacity();
@@ -122,7 +122,7 @@ public final class Queue implements Closeable {
             cArg[0] = byte[].class;
             this.deserializeMethod = this.elementClass.getDeclaredMethod("deserialize", cArg);
         } catch (NoSuchMethodException e) {
-            throw new QueueRuntimeException("cannot find deserialize method on class " + this.elementClass.getName(), e);
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_DESERIALIZE.concat(this.elementClass.getName()), e);
         }
     }
 
@@ -404,6 +404,10 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public long write(Queueable element) throws IOException {
+        if (this.closed.get()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
+        }
+
         byte[] data = element.serialize();
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
@@ -415,7 +419,10 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
-            if (this.closed.get()) {
+            // a safety net if in case we reach this point with `headPage` null
+            // the possibility of headPage being null is either Queue is created but not opened (`open()` not called) or queue is closed
+            // we have high level safeguard with `this.closed.get()` but in case make sure we are not producing NPE since we don't handle
+            if (Objects.isNull(this.headPage)) {
                 throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
             }
 

@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 /**
  * This class is the communication bus for the `pipeline` inputs and outputs to talk to each other.
- *
+ * <p>
  * This class is threadsafe.
  */
 public class PipelineBus {
@@ -83,10 +83,8 @@ public class PipelineBus {
                             // fail position to avoid reprocessing of some events in the downstream.
                             // we get 0~clones.length position on failure, keep tracking failed position to correctly copy from original orderedEvents
                             lastFailedPosition += lastResponse.getSequencePosition();
-
-                            logger.warn("Attempted to send event to '{}' but that address reached error condition. " +
-                                    "Will Retry. Root cause {} Failed at {} position.", address, lastResponse.getCauseMessage(), lastFailedPosition);
-
+                            logger.warn("Attempted to send events to '{}' but that address reached error condition with {} events remaining. " +
+                                    "Will Retry. Root cause {}", address, orderedEvents.length - lastFailedPosition, lastResponse.getCauseMessage());
                         } else {
                             logger.warn("Attempted to send event to '{}' but that address was unavailable. " +
                                     "Maybe the destination pipeline is down or stopping? Will Retry.", address);
@@ -99,7 +97,7 @@ public class PipelineBus {
                             logger.error("Sleep unexpectedly interrupted in bus retry loop", e);
                         }
                     }
-                } while(partialProcessing);
+                } while (partialProcessing);
             });
         }
     }
@@ -217,7 +215,7 @@ public class PipelineBus {
      * Stop listening on the given address with the given listener. Blocks until upstream outputs have
      * stopped.
      *
-     * @param input Input that should stop listening
+     * @param input   Input that should stop listening
      * @param address Address on which to stop listening
      * @throws InterruptedException if interrupted while attempting to stop listening
      */
@@ -276,6 +274,4 @@ public class PipelineBus {
     public void setBlockOnUnlisten(boolean blockOnUnlisten) {
         this.blockOnUnlisten = blockOnUnlisten;
     }
-
-
 }

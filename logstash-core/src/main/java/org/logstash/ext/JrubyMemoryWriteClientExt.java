@@ -23,6 +23,7 @@ package org.logstash.ext;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -45,15 +46,15 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
     }
 
     private JrubyMemoryWriteClientExt(final Ruby runtime, final RubyClass metaClass,
-        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
+                                      final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
         super(runtime, metaClass);
         this.queue = queue;
     }
 
     public static JrubyMemoryWriteClientExt create(
-        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
+            final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue) {
         return new JrubyMemoryWriteClientExt(RubyUtil.RUBY,
-            RubyUtil.MEMORY_WRITE_CLIENT_CLASS, queue);
+                RubyUtil.MEMORY_WRITE_CLIENT_CLASS, queue);
     }
 
     @Override
@@ -62,7 +63,7 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
         try {
             queue.put(event);
         } catch (InterruptedException exception) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING, exception);
+            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING_SINGLE_ELEMENT, exception);
         }
 
         return this;
@@ -74,7 +75,7 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
         try {
             LsQueueUtils.addAll(queue, batch);
         } catch (InterruptedException exception) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING, exception);
+            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING_ULTIPLE_ELEMENTS, exception);
         }
         return this;
     }

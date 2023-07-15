@@ -25,6 +25,7 @@ import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,18 +34,17 @@ import static org.logstash.RubyUtil.RUBY;
 
 /**
  * Persistent queue collection of events implementation
- * */
+ */
 public final class AckedReadBatch implements QueueBatch {
 
-    private AckedBatch ackedBatch;
+    private final AckedBatch ackedBatch;
 
-    private Collection<RubyEvent> events;
+    private final Collection<RubyEvent> events;
 
     public static AckedReadBatch create(
-        final JRubyAckedQueueExt queue,
-        final int size,
-        final long timeout)
-    {
+            final JRubyAckedQueueExt queue,
+            final int size,
+            final long timeout) {
         try {
             final AckedBatch batch = queue.readBatch(size, timeout);
             return (batch == null) ? new AckedReadBatch() : new AckedReadBatch(batch);
@@ -69,7 +69,7 @@ public final class AckedReadBatch implements QueueBatch {
 
     @Override
     public RubyArray<RubyEvent> to_a() {
-        @SuppressWarnings({"unchecked"})  final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
+        @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> result = RUBY.newArray(events.size());
         for (final RubyEvent e : events) {
             if (!MemoryReadBatch.isCancelled(e)) {
                 result.append(e);
