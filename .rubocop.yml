@@ -27,6 +27,12 @@ Lint/DeprecatedClassMethods:
 
 #################### Layout ###########################
 ##### Enabled Cops #####
+Layout/AccessModifierIndentation:
+  Enabled: true
+  EnforcedStyle: indent
+Layout/ArgumentAlignment:
+  Enabled: true
+  EnforcedStyle:  with_fixed_indentation
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -39,12 +45,6 @@ Layout/SpaceAfterSemicolon:
   Enabled: true
 
 ##### Need review #####
-Layout/AccessModifierIndentation:
-  Enabled: true
-  EnforcedStyle: indent
-Layout/ArgumentAlignment:
-  Enabled: true
-  EnforcedStyle:  with_fixed_indentation
 Layout/ArrayAlignment:
   Enabled: false
 Layout/AssignmentIndentation:
