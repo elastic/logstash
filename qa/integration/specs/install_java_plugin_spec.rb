@@ -48,33 +48,47 @@ describe "Install and run java plugin" do
   let(:plugin_name) { "logstash-input-java_input_example" }
   let(:install_command) { "bin/logstash-plugin install" }
 
-  it "successfully runs a pipeline with an installed Java plugins" do
-    execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}")
+  shared_examples "install a plugin and run it with" do
+    it "should be successful" do
+      execute = @logstash_plugin.run_raw("#{install_command} #{install_detail}")
 
-    expect(execute.stderr_and_stdout).to match(/Installation successful/)
-    expect(execute.exit_code).to eq(0)
+      expect(execute.stderr_and_stdout).to match(/Installation successful/)
+      expect(execute.exit_code).to eq(0)
 
-    installed = @logstash_plugin.list(plugin_name)
-    expect(installed.stderr_and_stdout).to match(/#{plugin_name}/)
+      installed = @logstash_plugin.list(plugin_name)
+      expect(installed.stderr_and_stdout).to match(/#{plugin_name}/)
 
-    @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
+      @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
 
-    # wait for Logstash to start
-    started = false
-    while !started
-      begin
-        sleep(1)
+      # wait for Logstash to start
+      started = false
+      while !started
+        begin
+          sleep(1)
+          result = @logstash.monitoring_api.event_stats
+          started = !result.nil?
+        rescue
+          retry
+        end
+      end
+
+      Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
         result = @logstash.monitoring_api.event_stats
-        started = !result.nil?
-      rescue
-        retry
+        expect(result["in"]).to eq(4)
       end
     end
+  end
 
-    Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
-      result = @logstash.monitoring_api.event_stats
-      expect(result["in"]).to eq(4)
+  context "successfully runs a pipeline with an installed Java plugins" do
+    it_behaves_like 'install a plugin and run it with' do
+      let(:install_detail) { "logstash-input-java_input_example" }
     end
+  end
 
+  context "local multi-jar plugin" do
+    it_behaves_like 'install a plugin and run it with' do
+      let(:plugin_filepath) { File.join(File.dirname(__FILE__), "..", "fixtures", "logstash-input-java_input_example-1.0.3.gem") }
+      let(:install_detail) { "--local #{plugin_filepath}" }
+    end
   end
 end
