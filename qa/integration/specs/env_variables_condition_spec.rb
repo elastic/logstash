@@ -83,7 +83,7 @@ describe "Support environment variable in condition" do
                                     filter { if (\"${APP}\") { mutate { add_tag => \"${TAG1}\"} } }
                                     output { stdout{} }",
                                   "--path.settings", settings_dir],
-                                 true, test_env)
+      true, test_env)
     expect(logstash.stderr_and_stdout).to match(/mytag1/)
     expect(logstash.stderr_and_stdout).not_to match(/wrong_env/)
     expect(logstash.exit_code).to be(0)

@@ -72,15 +72,15 @@ describe LogStash::Bundler do
       expect(::Bundler::CLI).to receive(:start).with(bundler_args)
       expect(ENV).to receive(:replace) do |args|
         expect(args).to include("BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
-                                                            "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
-                                                            "BUNDLE_SILENCE_ROOT_WARNING" => "true",
-                                                            "BUNDLE_WITHOUT" => "development")
+          "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
+          "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+          "BUNDLE_WITHOUT" => "development")
       end
       expect(ENV).to receive(:replace) do |args|
         expect(args).not_to include(
-                                "BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
-                                "BUNDLE_SILENCE_ROOT_WARNING" => "true",
-                                "BUNDLE_WITHOUT" => "development")
+          "BUNDLE_PATH" => LogStash::Environment::BUNDLE_DIR,
+          "BUNDLE_SILENCE_ROOT_WARNING" => "true",
+          "BUNDLE_WITHOUT" => "development")
       end
 
       LogStash::Bundler.invoke!(options)

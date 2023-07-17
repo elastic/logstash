@@ -15,7 +15,7 @@ module LogStash
   module ConfigManagement
     class ElasticsearchSource < LogStash::Config::Source::Base
       include LogStash::Util::Loggable, LogStash::LicenseChecker::Licensed,
-              LogStash::Helpers::ElasticsearchOptions
+        LogStash::Helpers::ElasticsearchOptions
 
       class RemoteConfigError < LogStash::Error; end
 

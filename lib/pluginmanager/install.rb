@@ -192,8 +192,8 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     if unlock_dependencies.any?
       puts "Updating mixin dependencies #{unlock_dependencies.join(', ')}"
       LogStash::Bundler.invoke! update: unlock_dependencies,
-                                rubygems_source: gemfile.gemset.sources,
-                                conservative: conservative?
+        rubygems_source: gemfile.gemset.sources,
+        conservative: conservative?
     end
 
     unlock_dependencies

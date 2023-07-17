@@ -71,9 +71,9 @@ describe "uncaught exception" do
 
   def spawn_logstash_and_wait_for_exit!(config, timeout)
     @logstash.spawn_logstash('--pipeline.workers=1',
-                             '--path.logs', logs_dir,
-                             '--path.data', data_dir,
-                             '--config.string', config)
+      '--path.logs', logs_dir,
+      '--path.data', data_dir,
+      '--config.string', config)
 
     time = Time.now
     while (Time.now - time) < timeout

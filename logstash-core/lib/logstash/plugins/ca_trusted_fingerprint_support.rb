@@ -12,7 +12,7 @@ module LogStash
       extend LogStash::Util::ThreadSafeAttributes
 
       lazy_init_attr(:trust_strategy_for_ca_trusted_fingerprint,
-                     variable: :@_trust_strategy_for_ca_trusted_fingerprint) do
+        variable: :@_trust_strategy_for_ca_trusted_fingerprint) do
         require 'logstash/patches/manticore/trust_strategies'
         @ca_trusted_fingerprint && CATrustedFingerprintTrustStrategy.new(@ca_trusted_fingerprint)
       end

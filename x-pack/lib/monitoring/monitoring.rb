@@ -208,9 +208,9 @@ module LogStash
         end
         es_settings = es_options_from_settings_or_modules('monitoring', settings)
         data = TemplateData.new(LogStash::SETTINGS.get("node.uuid"), API_VERSION,
-                                es_settings,
-                                opt[:collection_interval], opt[:collection_timeout_interval],
-                                opt[:extended_performance_collection], opt[:config_collection])
+          es_settings,
+          opt[:collection_interval], opt[:collection_timeout_interval],
+          opt[:extended_performance_collection], opt[:config_collection])
 
         template_path = ::File.join(::File.dirname(__FILE__), "..", "template.cfg.erb")
         template = ::File.read(template_path)

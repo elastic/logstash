@@ -4,7 +4,7 @@ module LogStash
       def self.included(base)
         base.extend(ArgumentValidator)
         base.config(:ecs_compatibility, :validate => :ecs_compatibility_argument,
-                                        :attr_accessor => false)
+          :attr_accessor => false)
       end
 
       def ecs_compatibility

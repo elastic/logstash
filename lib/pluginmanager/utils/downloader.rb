@@ -30,9 +30,9 @@ module LogStash module PluginManager module Utils
 
       def initialize(max)
         @progress_bar = ProgressBar.create(:title => TITLE,
-                                           :starting_at => 0,
-                                           :total => max,
-                                           :format => FORMAT)
+          :starting_at => 0,
+          :total => max,
+          :format => FORMAT)
       end
 
       def update(status)

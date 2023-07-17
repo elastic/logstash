@@ -51,7 +51,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @worker_threads = []
 
     @worker_observer = org.logstash.execution.WorkerObserver.new(process_events_namespace_metric,
-                                                                 pipeline_events_namespace_metric)
+      pipeline_events_namespace_metric)
 
     @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
@@ -77,8 +77,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @finished_run = Concurrent::AtomicBoolean.new(false)
 
     @logger.info(I18n.t('logstash.pipeline.effective_ecs_compatibility',
-                        :pipeline_id       => pipeline_id,
-                        :ecs_compatibility => settings.get('pipeline.ecs_compatibility')))
+      :pipeline_id       => pipeline_id,
+      :ecs_compatibility => settings.get('pipeline.ecs_compatibility')))
 
     @thread = nil
   end # def initialize
@@ -108,7 +108,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # warn if the default is multiple
       if default > 1
         @logger.warn("Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads",
-                     default_logging_keys(:count_was => default, :filters => plugins))
+          default_logging_keys(:count_was => default, :filters => plugins))
         return 1 # can't allow the default value to propagate if there are unsafe filters
       end
     end
@@ -416,10 +416,10 @@ module LogStash; class JavaPipeline < AbstractPipeline
       if plugin.stop?
         @logger.debug(
           "Input plugin raised exception during shutdown, ignoring it.",
-           default_logging_keys(
-             :plugin => plugin.class.config_name,
-             :exception => e.message,
-             :backtrace => e.backtrace))
+          default_logging_keys(
+            :plugin => plugin.class.config_name,
+            :exception => e.message,
+            :backtrace => e.backtrace))
         return
       end
 
