@@ -214,7 +214,7 @@ module LogStash
 
         template_path = ::File.join(::File.dirname(__FILE__), "..", "template.cfg.erb")
         template = ::File.read(template_path)
-        ERB.new(template, 3).result(data.get_binding)
+        ERB.new(template).result(data.get_binding)
       end
 
       private

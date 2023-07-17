@@ -151,9 +151,9 @@ describe LogStash::Event do
     # BigDecimal is now natively converted by JRuby, see https://github.com/elastic/logstash/pull/4838
     it "should set BigDecimal" do
       e = LogStash::Event.new()
-      e.set("[foo]", BigDecimal.new(1))
+      e.set("[foo]", BigDecimal(1))
       expect(e.get("foo")).to be_kind_of(BigDecimal)
-      expect(e.get("foo")).to eq(BigDecimal.new(1))
+      expect(e.get("foo")).to eq(BigDecimal(1))
     end
 
     it "should set RubyInteger" do

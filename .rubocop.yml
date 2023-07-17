@@ -24,6 +24,10 @@ AllCops:
 ##### Enabled Cops #####
 Lint/DeprecatedClassMethods:
   Enabled: true
+Lint/ErbNewArguments:
+  Enabled: true
+Lint/BigDecimalNew:
+  Enabled: true
 
 #################### Layout ###########################
 ##### Enabled Cops #####

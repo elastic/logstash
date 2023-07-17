@@ -193,11 +193,11 @@ describe LogStash::Timestamp do
 
     context "with BigDecimal epoch" do
       it "should convert to correct date" do
-        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456789")).to_iso8601).to eq("2000-01-01T05:00:00.123456789Z")
+        expect(LogStash::Timestamp.at(BigDecimal("946702800.123456789")).to_iso8601).to eq("2000-01-01T05:00:00.123456789Z")
       end
 
       it "should return usec with a minimum of millisec precision" do
-        expect(LogStash::Timestamp.at(BigDecimal.new("946702800.123456789")).usec).to be_within(1000).of(123456)
+        expect(LogStash::Timestamp.at(BigDecimal("946702800.123456789")).usec).to be_within(1000).of(123456)
       end
     end
 

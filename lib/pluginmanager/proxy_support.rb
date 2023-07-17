@@ -113,7 +113,7 @@ def configure_proxy
     FileUtils.mkdir_p(SETTINGS_TARGET)
     target = ::File.join(SETTINGS_TARGET, "settings.xml")
     template = ::File.read(SETTINGS_TEMPLATE)
-    template_content = ERB.new(template, 3).result(ProxyTemplateData.new(proxies).get_binding)
+    template_content = ERB.new(template).result(ProxyTemplateData.new(proxies).get_binding)
 
     if ::File.exist?(target)
       if template_content != ::File.read(target)
