@@ -366,7 +366,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.4.4)
+    logstash-input-azure_event_hubs (1.4.5)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -479,7 +479,7 @@ GEM
       logstash-mixin-aws (>= 4.3.0)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (~> 0.0.18)
-    logstash-input-snmp (1.3.1)
+    logstash-input-snmp (1.3.2)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
