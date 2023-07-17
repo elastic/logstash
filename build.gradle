@@ -56,6 +56,8 @@ allprojects {
       options.compilerArgs.add("-Xlint:all")
       options.compilerArgs.add("-Xlint:-processing")
       options.compilerArgs.add("-Werror")
+      // Ensure compilation/bytecode compatibility with the specified -target Java version (JEP-247)
+      options.release.set(project.targetCompatibility.getMajorVersion().toInteger())
   }
 
   tasks.withType(Javadoc).configureEach {
