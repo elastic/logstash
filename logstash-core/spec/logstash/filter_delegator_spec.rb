@@ -45,7 +45,7 @@ describe LogStash::FilterDelegator do
 
   subject {
     LogStash::Plugins::PluginFactory.filter_delegator(
-        described_class, plugin_klass, config, metric, execution_context
+      described_class, plugin_klass, config, metric, execution_context
     )
   }
 

@@ -92,9 +92,11 @@ Layout/SpaceBeforeSemicolon:
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
-  Enabled: false
+  Enabled: true
+  EnforcedStyle: indent
 Layout/ArgumentAlignment:
-  Enabled: false
+  Enabled: true
+  EnforcedStyle:  with_fixed_indentation
 Layout/ArrayAlignment:
   Enabled: false
 Layout/AssignmentIndentation:

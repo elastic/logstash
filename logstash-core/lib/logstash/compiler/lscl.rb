@@ -151,9 +151,9 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
         if !codec_attribute.nil? && codec_attribute.kind_of?(::Array)
           raise ::LogStash::ConfigurationError.new(
             I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
-                   :plugin => plugin_name,
-                   :type => section_type,
-                   :line => input.line_of(interval.first)
+              :plugin => plugin_name,
+              :type => section_type,
+              :line => input.line_of(interval.first)
             )
           )
         end

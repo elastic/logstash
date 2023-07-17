@@ -99,8 +99,8 @@ module LogStash module Config
             if esconnected && kbnconnected
               current_module.add_kibana_version(kbnclient.version_parts)
               current_module.import(
-                  LogStash::Modules::ElasticsearchImporter.new(esclient),
-                  LogStash::Modules::KibanaImporter.new(kbnclient)
+                LogStash::Modules::ElasticsearchImporter.new(esclient),
+                LogStash::Modules::KibanaImporter.new(kbnclient)
                 )
             else
               connect_fail_args[:module_name] = module_name

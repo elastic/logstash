@@ -110,11 +110,11 @@ describe LogStash::ConfigManagement::BootstrapCheck do
     context "when `path.config` is given" do
       let(:settings) do
         apply_settings(
-            {
-                "xpack.management.enabled" => true,
-                "path.config" => config_location
-            },
-            system_settings
+          {
+              "xpack.management.enabled" => true,
+              "path.config" => config_location
+          },
+          system_settings
         )
       end
 
@@ -197,11 +197,11 @@ describe LogStash::ConfigManagement::BootstrapCheck do
         let(:pipeline_ids) { ["pipeline1", "pipeline2", "*pipeline*"] }
         let(:settings) do
           apply_settings(
-              {
-                  "xpack.management.enabled" => true,
-                  "xpack.management.pipeline.id" => pipeline_ids
-              },
-              system_settings
+            {
+                "xpack.management.enabled" => true,
+                "xpack.management.pipeline.id" => pipeline_ids
+            },
+            system_settings
           )
         end
 

@@ -193,10 +193,10 @@ class LogStash::Agent
     update_metrics(converge_result)
 
     logger.info(
-        "Pipelines running",
-        :count => running_pipelines.size,
-        :running_pipelines => running_pipelines.keys,
-        :non_running_pipelines => non_running_pipelines.keys
+      "Pipelines running",
+      :count => running_pipelines.size,
+      :running_pipelines => running_pipelines.keys,
+      :non_running_pipelines => non_running_pipelines.keys
     ) if converge_result.success? && converge_result.total > 0
 
     dispatch_events(converge_result)
@@ -245,25 +245,25 @@ class LogStash::Agent
         uuid = ::File.open(id_path) {|f| f.each_line.first.chomp }
       rescue => e
         logger.warn("Could not open persistent UUID file!",
-                    :path => id_path,
-                    :error => e.message,
-                    :class => e.class.name)
+          :path => id_path,
+          :error => e.message,
+          :class => e.class.name)
       end
     end
 
     if !uuid
       uuid = SecureRandom.uuid
       logger.info("No persistent UUID file found. Generating new UUID",
-                  :uuid => uuid,
-                  :path => id_path)
+        :uuid => uuid,
+        :path => id_path)
       begin
         ::File.open(id_path, 'w') {|f| f.write(uuid) }
       rescue => e
         logger.warn("Could not write persistent UUID file! Will use ephemeral UUID",
-                    :uuid => uuid,
-                    :path => id_path,
-                    :error => e.message,
-                    :class => e.class.name)
+          :uuid => uuid,
+          :path => id_path,
+          :error => e.message,
+          :class => e.class.name)
       end
     end
 

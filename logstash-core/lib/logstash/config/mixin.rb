@@ -138,7 +138,7 @@ module LogStash::Config::Mixin
         extra.gsub!("%PLUGIN%", self.class.config_name)
         raise LogStash::ConfigurationError,
           I18n.t("logstash.runner.configuration.obsolete", :name => name,
-                 :plugin => self.class.config_name, :extra => extra)
+            :plugin => self.class.config_name, :extra => extra)
       end
     end
 
@@ -309,8 +309,8 @@ module LogStash::Config::Mixin
         value = params[config_key]
         if value.nil? || (config[:list] && Array(value).empty?)
           self.logger.error(I18n.t("logstash.runner.configuration.setting_missing",
-                               :setting => config_key, :plugin => @plugin_name,
-                               :type => @plugin_type))
+            :setting => config_key, :plugin => @plugin_name,
+            :type => @plugin_type))
           is_valid = false
         end
       end
@@ -359,10 +359,10 @@ module LogStash::Config::Mixin
             params[key] = processed_value
           else
             self.logger.error(I18n.t("logstash.runner.configuration.setting_invalid",
-                                 :plugin => @plugin_name, :type => @plugin_type,
-                                 :setting => key, :value => value.inspect,
-                                 :value_type => config_settings[:validate],
-                                 :note => processed_value))
+              :plugin => @plugin_name, :type => @plugin_type,
+              :setting => key, :value => value.inspect,
+              :value_type => config_settings[:validate],
+              :note => processed_value))
           end
 
           all_params_valid &&= is_valid
@@ -443,7 +443,7 @@ module LogStash::Config::Mixin
               # which ensure the inner plugin has access to the outer's execution context and metric store.
               # This deprecation exists to warn plugins that call `Config::Mixin::validate_value` directly.
               self.deprecation_logger.deprecated("Codec instantiated by `Config::Mixin::DSL::validate_value(String, :codec)` which cannot propagate parent plugin's execution context or metrics. ",
-                                                 self.logger.debug? ? {:backtrace => caller} : {})
+                self.logger.debug? ? {:backtrace => caller} : {})
               value = LogStash::Codecs::Delegator.new LogStash::Plugin.lookup("codec", value.first).new
               return true, value
             else

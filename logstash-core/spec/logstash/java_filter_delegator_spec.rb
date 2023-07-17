@@ -35,7 +35,7 @@ describe LogStash::FilterDelegator do
   end
   let(:metric) {
     LogStash::Instrument::NamespacedMetric.new(
-        LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
+      LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
     )
   }
   let(:counter_in) {
@@ -69,7 +69,7 @@ describe LogStash::FilterDelegator do
 
   subject {
     LogStash::Plugins::PluginFactory.filter_delegator(
-        described_class, plugin_klass, config, metric, execution_context
+      described_class, plugin_klass, config, metric, execution_context
     )
   }
 

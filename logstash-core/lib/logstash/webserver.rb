@@ -80,11 +80,11 @@ module LogStash
       end
 
       logger.debug("Initializing API WebServer",
-                   "api.http.host"        => options[:http_host],
-                   "api.http.port"        => settings.get("api.http.port"),
-                   "api.ssl.enabled"      => settings.get("api.ssl.enabled"),
-                   "api.auth.type"        => settings.get("api.auth.type"),
-                   "api.environment"      => settings.get("api.environment"))
+        "api.http.host"        => options[:http_host],
+        "api.http.port"        => settings.get("api.http.port"),
+        "api.ssl.enabled"      => settings.get("api.ssl.enabled"),
+        "api.auth.type"        => settings.get("api.auth.type"),
+        "api.environment"      => settings.get("api.environment"))
 
       new(logger, agent, options)
     end
@@ -256,7 +256,7 @@ module LogStash
 
       java.security.KeyStore.getInstance("JKS")
           .load(java.io.FileInputStream.new(@ssl_params.fetch(:keystore_path)),
-                @ssl_params.fetch(:keystore_password).value.chars&.to_java(:char))
+            @ssl_params.fetch(:keystore_password).value.chars&.to_java(:char))
     rescue => e
       raise ArgumentError.new("API Keystore could not be opened (#{e})")
     end
