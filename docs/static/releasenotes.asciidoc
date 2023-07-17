@@ -3,6 +3,10 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-11,Logstash 7.17.11>>
+* <<logstash-7-17-10,Logstash 7.17.10>>
+* <<logstash-7-17-9,Logstash 7.17.9>>
+* <<logstash-7-17-8,Logstash 7.17.8>>
 * <<logstash-7-17-7,Logstash 7.17.7>>
 * <<logstash-7-17-6,Logstash 7.17.6>>
 * <<logstash-7-17-5,Logstash 7.17.5>>
@@ -65,6 +69,110 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-11]]
+=== Logstash 7.17.11 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Cef Codec - 6.2.7*
+
+* Fix: when decoding in an ecs_compatibility mode, timestamp-normalized fields now handle provided-but-empty values https://github.com/logstash-plugins/logstash-codec-cef/issues/102[#102]
+
+*Anonymize Filter - 3.0.7*
+
+* Pin murmurhash3 to 0.1.6 https://github.com/logstash-plugins/logstash-filter-anonymize/pull/16[#16]
+
+*Mutate Filter - 3.5.7*
+
+* Clarify that `split` and `join` also support strings https://github.com/logstash-plugins/logstash-filter-mutate/pull/164[#164]
+
+*Truncate Filter - 1.0.6*
+
+* Make 0.0.8 the lower bound for flores dependency https://github.com/logstash-plugins/logstash-filter-truncate/pull/9[#9]
+
+*Rabbitmq Integration - 7.3.3*
+
+* Fixed the cancellation flow to avoid multiple invocations of basic.cancel https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/55[#55]
+
+* Change `tls_certificate_password` type to `password` to protect from leaks in the logs https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/54[#54]
+
+*Csv Output - 3.0.9*
+
+* Fix: updates syntax to JRuby 9.4 https://github.com/logstash-plugins/logstash-output-csv/pull/25[#25]
+
+*Email Output - 4.1.2*
+
+* Change `password` config type to `Password` to prevent leaks in debug logs https://github.com/logstash-plugins/logstash-output-email/pull/65[#65]
+
+
+[[logstash-7-17-10]]
+=== Logstash 7.17.10 Release Notes
+
+[[notable-7-17-10]]
+==== Notable issues fixed
+* Fix missing method `worker_threads_draining?` in deprecated Ruby pipeline https://github.com/elastic/logstash/pull/15013[#15013]
+
+[[dependencies-7-17-10]]
+==== Updates to dependencies
+* Pin snakeyaml to 1.33 https://github.com/elastic/logstash/pull/14960[#14960]
+* Pin murmurhash3 to 0.1.6 until 0.1.7-java is out https://github.com/elastic/logstash/pull/15004[#15004]
+* Updated JDK to 11.0.19 https://github.com/elastic/logstash/pull/15016[#15016]
+
+==== Plugins
+
+*Fluent Codec - 3.4.2*
+
+* Fix: Convert LogStash::Timestamp values to iso-8601 to resolve crash issue with `msgpack` serialization https://github.com/logstash-plugins/logstash-codec-fluent/pull/30[#30]
+
+*Geoip Filter - 7.2.13*
+
+* [DOC] Add documentation for database auto-update configuration https://github.com/logstash-plugins/logstash-filter-geoip/pull/210[#210]
+
+*Useragent Filter - 3.3.4*
+
+* Upgrade `snakeyaml` dependency to 1.33 https://github.com/logstash-plugins/logstash-filter-useragent/pull/84[#84]
+
+[[logstash-7-17-9]]
+=== Logstash 7.17.9 Release Notes
+
+[[dependencies-7-17-9]]
+==== Updates to dependencies
+* Updates bundled JDK to 11.0.18+10 https://github.com/elastic/logstash/pull/14850[#14850]
+
+[[logstash-7-17-8]]
+=== Logstash 7.17.8 Release Notes
+
+* Eliminated unnecessary warning log from status log4j logger when new codecs are created by clone. https://github.com/elastic/logstash/pull/14727[#14727]
+* Fixed an issue that occurred during process shutdown in which the stalled shutdown watcher incorrectly reported inflight_count as 0 even when there are events in-flight. https://github.com/elastic/logstash/pull/14760[#14760]
+
+[[dependencies-7-17-8]]
+==== Updates to dependencies
+
+* Updated bundled JDK to 11.0.17+8 https://github.com/elastic/logstash/pull/14729[#14729]
+
+[[plugins-7-17-8]]
+==== Plugins
+
+*Cef Codec - 6.2.6*
+
+* Fix: When decoding, escaped newlines and carriage returns in extension values are now correctly decoded into literal newlines and carriage returns respectively https://github.com/logstash-plugins/logstash-codec-cef/pull/98[#98]
+* Fix: When decoding, non-CEF payloads are identified and intercepted to prevent data-loss and corruption. They now cause a descriptive log message to be emitted, and are emitted as their own `_cefparsefailure`-tagged event containing the original bytes in its `message` field https://github.com/logstash-plugins/logstash-codec-cef/issues/99[#99]
+* Fix: When decoding while configured with a `delimiter`, flushing this codec now correctly consumes the remainder of its internal buffer. This resolves an issue where bytes that are written without a trailing delimiter could be lost https://github.com/logstash-plugins/logstash-codec-cef/issues/100[#100] 
+
+*Grok Filter - 4.4.3*
+
+* [DOC] Fixed minor typos in docs examples https://github.com/logstash-plugins/logstash-filter-grok/pull/176[#176]
+
+*Tcp Output - 6.0.3*
+
+* Pulled applicable back-ports from 6.1.0 https://github.com/logstash-plugins/logstash-output-tcp/pull/50[#50]
+** Fix: Ensure sockets are closed when this plugin is closed
+** Fix: Fixes an issue in client mode where payloads larger than a connection's current TCP window could be silently truncated
+** Fix: Fixes an issue in server mode where payloads larger than a connection's current TCP window could be silently truncated
 
 
 [[logstash-7-17-7]]
