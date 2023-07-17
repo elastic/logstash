@@ -55,7 +55,7 @@ describe "Test Logstash configuration" do
     send_data(test_tcp_port, sample_data)
     output_file = File.join(test_path, "logstash_env_test.log")
     try(num_retries) do
-      expect(File.exists?(output_file)).to be true
+      expect(File.exist?(output_file)).to be true
     end
     # should have created the file using env variable with filters adding a tag based on env variable
     try(num_retries) do

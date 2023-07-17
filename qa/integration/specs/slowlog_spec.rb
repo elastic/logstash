@@ -57,7 +57,7 @@ describe "Test Logstash Slowlog" do
     @ls.wait_for_logstash
     sleep 2 until @ls.exited?
     slowlog_file = "#{temp_dir}/logstash-slowlog-plain.log"
-    expect(File.exists?(slowlog_file)).to be true
+    expect(File.exist?(slowlog_file)).to be true
     expect(IO.read(slowlog_file).split("\n").size).to be >= 1
   end
 end

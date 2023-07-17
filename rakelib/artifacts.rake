@@ -476,7 +476,7 @@ namespace "artifact" do
       end
 
       source_license_path = "licenses/#{license}.txt"
-      fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
+      fail("Missing source license: #{source_license_path}") unless File.exist?(source_license_path)
       write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
 
       # add build.rb to tar
@@ -513,7 +513,7 @@ namespace "artifact" do
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
     puts("[artifact:zip] building #{zippath}")
-    File.unlink(zippath) if File.exists?(zippath)
+    File.unlink(zippath) if File.exist?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files(exclude_paths).each do |path|
         path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
@@ -521,7 +521,7 @@ namespace "artifact" do
       end
 
       source_license_path = "licenses/#{license}.txt"
-      fail("Missing source license: #{source_license_path}") unless File.exists?(source_license_path)
+      fail("Missing source license: #{source_license_path}") unless File.exist?(source_license_path)
       zipfile.add("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt", source_license_path)
 
       # add build.rb to zip
@@ -677,7 +677,7 @@ namespace "artifact" do
         script = "#{stage}-#{action}" # like, "before-install"
         script_sym = script.gsub("-", "_").to_sym
         script_path = File.join(File.dirname(__FILE__), "..", "pkg", platform, "#{script}.sh")
-        next unless File.exists?(script_path)
+        next unless File.exist?(script_path)
 
         out.scripts[script_sym] = File.read(script_path)
       end

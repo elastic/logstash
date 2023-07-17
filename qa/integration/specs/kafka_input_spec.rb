@@ -48,7 +48,7 @@ describe "Test Kafka Input" do
   end
 
   after do
-    File.delete(file_output_path) if File.exists?(file_output_path)
+    File.delete(file_output_path) if File.exist?(file_output_path)
   end
 
   it "can ingest 37 apache log lines from Kafka broker" do

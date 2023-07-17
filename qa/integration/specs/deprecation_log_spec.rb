@@ -60,7 +60,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate
 
     deprecation_log_file = "#{temp_dir}/logstash-deprecation.log"
-    expect(File.exists?(deprecation_log_file)).to be true
+    expect(File.exist?(deprecation_log_file)).to be true
     deprecation_log_content = IO.read(deprecation_log_file)
     expect(deprecation_log_content =~ /\[deprecation.logstash.filters.ruby\].*Teleport/).to be > 0
   end

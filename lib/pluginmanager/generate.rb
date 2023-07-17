@@ -63,7 +63,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
       target_entry = File.join(target, entry)
 
       if File.directory?(source_entry)
-        FileUtils.mkdir(target_entry) unless File.exists?(target_entry)
+        FileUtils.mkdir(target_entry) unless File.exist?(target_entry)
         transform_r(source_entry, target_entry)
       else
         # copy the new file, in case of being an .erb file should render first
