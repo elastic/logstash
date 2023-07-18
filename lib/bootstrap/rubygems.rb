@@ -52,6 +52,5 @@ module LogStash
 
       return [package, target_path]
     end
-
   end
 end

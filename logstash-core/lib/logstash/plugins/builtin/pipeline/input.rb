@@ -84,5 +84,4 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   def isRunning
     @running.get
   end
-
 end; end; end; end; end

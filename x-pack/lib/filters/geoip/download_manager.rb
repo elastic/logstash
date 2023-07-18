@@ -150,5 +150,4 @@ module LogStash module Filters module Geoip class DownloadManager
     download_uri.path = "/#{url}"
     download_uri.to_s
   end
-
 end end end end

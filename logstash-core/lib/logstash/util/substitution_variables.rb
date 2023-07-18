@@ -21,7 +21,6 @@ require_relative 'lazy_singleton'
 require_relative 'password'
 
 module ::LogStash::Util::SubstitutionVariables
-
   include LogStash::Util::Loggable
 
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/

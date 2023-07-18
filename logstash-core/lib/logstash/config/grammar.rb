@@ -307,7 +307,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_plugin_section
@@ -493,7 +492,6 @@ module LogStashConfig
     def plugin
       elements[0]
     end
-
   end
 
   def _nt_plugins
@@ -572,7 +570,6 @@ module LogStashConfig
     def attribute
       elements[0]
     end
-
   end
 
   module Plugin2
@@ -595,7 +592,6 @@ module LogStashConfig
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_plugin
@@ -1502,7 +1498,6 @@ module LogStashConfig
     def value
       elements[0]
     end
-
   end
 
   module Array2
@@ -1513,7 +1508,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_array
@@ -1633,7 +1627,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_hash
@@ -1710,7 +1703,6 @@ module LogStashConfig
     def hashentry
       elements[0]
     end
-
   end
 
   def _nt_hashentries
@@ -1877,7 +1869,6 @@ module LogStashConfig
     def if
       elements[0]
     end
-
   end
 
   def _nt_branch
@@ -1981,7 +1972,6 @@ module LogStashConfig
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_if
@@ -2109,7 +2099,6 @@ module LogStashConfig
     def cs4
       elements[7]
     end
-
   end
 
   def _nt_else_if
@@ -2239,7 +2228,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_else
@@ -2351,7 +2339,6 @@ module LogStashConfig
     def expression
       elements[0]
     end
-
   end
 
   def _nt_condition
@@ -2427,7 +2414,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_expression
@@ -2552,7 +2538,6 @@ module LogStashConfig
     def cs3
       elements[5]
     end
-
   end
 
   module NegativeExpression1
@@ -2831,7 +2816,6 @@ module LogStashConfig
     def cs
       elements[1]
     end
-
   end
 
   def _nt_not_in_operator
@@ -2955,7 +2939,6 @@ module LogStashConfig
     def rvalue
       elements[0]
     end
-
   end
 
   module MethodCall2
@@ -2974,7 +2957,6 @@ module LogStashConfig
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_method_call
@@ -3291,7 +3273,6 @@ module LogStashConfig
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_regexp_expression
@@ -3570,7 +3551,6 @@ module LogStashConfig
 
     r0
   end
-
 end
 
 class LogStashConfigParser < Treetop::Runtime::CompiledParser

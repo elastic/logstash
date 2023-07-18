@@ -47,7 +47,6 @@ LogStash::Environment.load_locale!
 # }
 #
 module LogStash::Config::Mixin
-
   include LogStash::Util::SubstitutionVariables
   include LogStash::Util::Loggable
 
@@ -166,7 +165,6 @@ module LogStash::Config::Mixin
   end # def config_init
 
   module DSL
-
     include LogStash::Util::SubstitutionVariables
 
     attr_accessor :flags

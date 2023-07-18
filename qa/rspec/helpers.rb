@@ -18,7 +18,6 @@
 require_relative "commands"
 
 module ServiceTester
-
   class Configuration
     attr_accessor :servers, :lookup
 

@@ -66,5 +66,4 @@ module LogStash module Modules class Scaffold
   def is_enabled?(settings)
     true
   end
-
 end end end # class LogStash::Modules::Scaffold

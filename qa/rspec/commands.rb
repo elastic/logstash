@@ -26,7 +26,6 @@ require_relative "./commands/suse/sles-11"
 require "forwardable"
 
 module ServiceTester
-
   # An artifact is the component being tested, it's able to interact with
   # a destination machine by holding a client and is basically provides all
   # necessary abstractions to make the test simple.

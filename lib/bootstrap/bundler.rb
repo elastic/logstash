@@ -310,6 +310,5 @@ module LogStash
     ensure
       $stdout = old_stdout
     end
-
   end
 end

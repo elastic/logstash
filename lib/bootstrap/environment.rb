@@ -72,7 +72,6 @@ module LogStash
     def pattern_path(path)
       return ::File.join(LOGSTASH_HOME, "patterns", path)
     end
-
   end
 end
 

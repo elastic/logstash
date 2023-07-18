@@ -83,7 +83,6 @@ module LogStash
       def get_current_license_state
         @license_state.dup
       end
-
     end
   end
 end

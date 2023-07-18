@@ -283,7 +283,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_plugin_section
@@ -469,7 +468,6 @@ module LogStashCompilerLSCLGrammar
     def plugin
       elements[0]
     end
-
   end
 
   def _nt_plugins
@@ -548,7 +546,6 @@ module LogStashCompilerLSCLGrammar
     def attribute
       elements[0]
     end
-
   end
 
   module Plugin2
@@ -571,7 +568,6 @@ module LogStashCompilerLSCLGrammar
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_plugin
@@ -1478,7 +1474,6 @@ module LogStashCompilerLSCLGrammar
     def value
       elements[0]
     end
-
   end
 
   module Array2
@@ -1489,7 +1484,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_array
@@ -1609,7 +1603,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_hash
@@ -1686,7 +1679,6 @@ module LogStashCompilerLSCLGrammar
     def hashentry
       elements[0]
     end
-
   end
 
   def _nt_hashentries
@@ -1853,7 +1845,6 @@ module LogStashCompilerLSCLGrammar
     def if
       elements[0]
     end
-
   end
 
   def _nt_branch
@@ -1957,7 +1948,6 @@ module LogStashCompilerLSCLGrammar
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_if
@@ -2085,7 +2075,6 @@ module LogStashCompilerLSCLGrammar
     def cs4
       elements[7]
     end
-
   end
 
   def _nt_else_if
@@ -2215,7 +2204,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_else
@@ -2327,7 +2315,6 @@ module LogStashCompilerLSCLGrammar
     def expression
       elements[0]
     end
-
   end
 
   def _nt_condition
@@ -2403,7 +2390,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_expression
@@ -2528,7 +2514,6 @@ module LogStashCompilerLSCLGrammar
     def cs3
       elements[5]
     end
-
   end
 
   module NegativeExpression1
@@ -2807,7 +2792,6 @@ module LogStashCompilerLSCLGrammar
     def cs
       elements[1]
     end
-
   end
 
   def _nt_not_in_operator
@@ -2931,7 +2915,6 @@ module LogStashCompilerLSCLGrammar
     def rvalue
       elements[0]
     end
-
   end
 
   module MethodCall2
@@ -2950,7 +2933,6 @@ module LogStashCompilerLSCLGrammar
     def cs3
       elements[5]
     end
-
   end
 
   def _nt_method_call
@@ -3267,7 +3249,6 @@ module LogStashCompilerLSCLGrammar
     def cs2
       elements[3]
     end
-
   end
 
   def _nt_regexp_expression
@@ -3546,7 +3527,6 @@ module LogStashCompilerLSCLGrammar
 
     r0
   end
-
 end
 
 class LogStashCompilerLSCLGrammarParser < Treetop::Runtime::CompiledParser

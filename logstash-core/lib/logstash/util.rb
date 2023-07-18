@@ -232,5 +232,4 @@ module LogStash::Util
       value.respond_to?(:empty?) ? value.empty? : !value
     end
   end
-
 end # module LogStash::Util

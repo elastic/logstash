@@ -47,6 +47,10 @@ Layout/EmptyLinesAroundBlockBody:
   Enabled: true
 Layout/EmptyLinesAroundExceptionHandlingKeywords:
   Enabled: true
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: true
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -100,10 +104,6 @@ Layout/EmptyLineAfterMagicComment:
 Layout/EmptyLineAfterMultilineCondition:
   Enabled: false
 Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-Layout/EmptyLinesAroundMethodBody:
-  Enabled: true
-Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 Layout/EndAlignment:
   Enabled: false

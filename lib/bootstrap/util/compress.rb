@@ -22,12 +22,10 @@ require "zlib"
 require "stud/temporary"
 
 module LogStash
-
   class CompressError < StandardError; end
 
   module Util
     module Zip
-
       extend self
 
       # Extract a zip file into a destination directory.
@@ -61,7 +59,6 @@ module LogStash
     end
 
     module Tar
-
       extend self
 
       # Extract a tar.gz file into a destination directory.

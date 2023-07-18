@@ -18,7 +18,6 @@
 require "logstash/config/defaults"
 
 module LogStash module Config module CpuCoreStrategy
-
   extend self
 
   def maximum

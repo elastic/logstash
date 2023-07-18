@@ -3,7 +3,6 @@ require 'logstash/util/thread_safe_attributes'
 module LogStash
   module Plugins
     module EventFactorySupport
-
       extend LogStash::Util::ThreadSafeAttributes
 
       # The event_factory method is effectively final and should not be re-defined by plugins.
@@ -62,7 +61,6 @@ module LogStash
 
       end
       private_constant :TargetedEventFactory
-
     end
   end
 end

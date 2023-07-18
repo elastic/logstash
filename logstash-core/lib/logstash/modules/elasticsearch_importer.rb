@@ -46,5 +46,4 @@ module LogStash module Modules class ElasticsearchImporter
     response = @client.head(path)
     response.status >= 200 && response.status < 300
   end
-
 end end end # class LogStash::Modules::Importer

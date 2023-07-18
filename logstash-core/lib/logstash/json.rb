@@ -43,6 +43,5 @@ module LogStash
 
     alias_method :load, "jruby_load".to_sym
     alias_method :dump, "jruby_dump".to_sym
-
   end
 end

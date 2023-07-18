@@ -30,7 +30,6 @@ require "logstash/environment"
 # The methods should be called in the above order before the settings are ready to be used.
 ########################
 module LogStash::Util::SettingsHelper
-
   # The `path.settings` and `path.logs` can not be defined in "logstash/environment" since the `Environment::LOGSTASH_HOME` doesn't
   # exist unless launched via "bootstrap/environment"
   def self.pre_process
@@ -93,5 +92,4 @@ module LogStash::Util::SettingsHelper
     # I know, double negative
     !(["--help", "-h"] & args).empty?
   end
-
 end
