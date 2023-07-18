@@ -43,7 +43,6 @@ describe LogStash::ConfigManagement::BootstrapCheck do
         .to change { settings.get_value("config.reload.interval").to_nanos }.to(interval * 1_000_000_000)
     end
 
-
     context "when `config.string` is given" do
       let(:settings) do
         apply_settings(

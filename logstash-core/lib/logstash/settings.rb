@@ -77,7 +77,6 @@ module LogStash
       "queue.type",
     ]
 
-
     def initialize
       @settings = {}
       # Theses settings were loaded from the yaml file

@@ -12,7 +12,6 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
 
   let(:settings) { LogStash::Runner::SYSTEM_SETTINGS }
 
-
   shared_examples "can not get a license" do
 
     before(:each) {

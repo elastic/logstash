@@ -87,6 +87,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
   end
 
   class Plugins < Node; end
+
   class Plugin < Node
     def expr
       expr_attributes = self.map_expr_attributes
@@ -336,7 +337,6 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       rest_elements = elements.size > 1 ? elements[1].recursive_select(BooleanOperator, Expression, SelectorElement) : []
 
       all_elements = [first_element, *rest_elements]
-
 
       res = if all_elements.size == 1
         elem = all_elements.first

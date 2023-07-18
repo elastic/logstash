@@ -23,6 +23,7 @@ module LogStash module Modules
     def http(method, endpoint, options)
       self
     end
+
     def call
       KibanaTestResponse.new(200, '{"version":{"number":"1.2.3","build_snapshot":false}}', {})
     end

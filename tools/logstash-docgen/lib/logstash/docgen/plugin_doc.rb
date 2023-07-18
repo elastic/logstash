@@ -32,7 +32,6 @@ end
 
 task :doc => "doc:html"
 
-
 def generate_preview(options = {})
   LogStash::Docgen.generate_for_plugin(Dir.pwd, options).output
 end

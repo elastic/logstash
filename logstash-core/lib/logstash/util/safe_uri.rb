@@ -26,7 +26,6 @@ class LogStash::Util::SafeURI
 
   extend Forwardable
 
-
   attr_reader :uri
 
   public

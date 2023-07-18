@@ -368,7 +368,6 @@ class LogStash::Runner < Clamp::StrictCommand
 
     configure_plugin_paths(setting("path.plugins"))
 
-
     @settings.format_settings.each {|line| logger.debug(line) }
 
     # Check for absence of any configuration

@@ -85,7 +85,6 @@ def bootstrap_password_exists?
   response.successful? && response.stdout_lines.any? { |line| line =~ /^bootstrap.password$/ }
 end
 
-
 def elasticsearch_xpack_installed?
   cmd = "bin/elasticsearch-plugin list"
   response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path })

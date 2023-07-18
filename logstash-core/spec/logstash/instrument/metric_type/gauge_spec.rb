@@ -42,5 +42,4 @@ describe LogStash::Instrument::MetricType::Gauge do
     end
   end
 
-
 end

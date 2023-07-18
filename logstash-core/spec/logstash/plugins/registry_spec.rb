@@ -26,7 +26,6 @@ class LogStash::Inputs::Dummy < LogStash::Inputs::Base
   def register; end
 end
 
-
 class LogStash::Inputs::NewPlugin < LogStash::Inputs::Base
   config_name "new_plugin"
 

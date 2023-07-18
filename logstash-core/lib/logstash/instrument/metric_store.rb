@@ -134,7 +134,6 @@ module LogStash module Instrument
       key_paths.reduce(get(*key_paths)) {|acc, p| acc[p]}
     end
 
-
     # Return a hash including the values of the keys given at the path given
     #
     # Example Usage:

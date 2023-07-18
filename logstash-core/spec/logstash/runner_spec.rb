@@ -212,8 +212,6 @@ describe LogStash::Runner do
             expect(settings.get("path.queue")).to eq(queue_override_path)
           end
 
-
-
           args = ["--path.data", test_data_path, "-e", pipeline_string]
           subject.run("bin/logstash", args)
         end

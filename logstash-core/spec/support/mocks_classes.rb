@@ -154,7 +154,6 @@ module LogStash
     end
 end end
 
-
 # A Test Source loader will return the same configuration on every fetch call
 class TestSourceLoader
   FailedFetch = LogStash::Config::SourceLoader::FailedFetch

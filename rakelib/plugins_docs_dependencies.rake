@@ -79,7 +79,6 @@ class PluginVersionWorking
     end
   end
 
-
   # We us a brute force strategy to get the highest version possible for all the community plugins.
   # We take each plugin and we add it to the current dependencies and we try to resolve the tree, if it work we
   # record the version installed.

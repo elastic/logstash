@@ -47,7 +47,6 @@ describe LogStash::LicenseChecker::XPackInfo do
     }
   end
 
-
   let(:license) do
       {
           "status" => status,
@@ -86,7 +85,6 @@ describe LogStash::LicenseChecker::XPackInfo do
       expect(subject.license_one_of?(type)).to be expected_one_of
     end
   end
-
 
   context "when the license type is valid" do
     context 'the license has expired' do

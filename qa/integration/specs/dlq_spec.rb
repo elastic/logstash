@@ -47,7 +47,6 @@ describe "Test Dead Letter Queue" do
     es_client.perform_request("PUT", "_template/ip-template", {}, template)
   }
 
-
   after(:each) do
     logstash_service.teardown
   end

@@ -39,7 +39,6 @@ module LogStash
         settings.set("config.reload.automatic", true)
         settings.set("config.reload.interval", interval)
 
-
         pipeline_ids = settings.get("xpack.management.pipeline.id")
 
         if pipeline_ids.reject { |id| id.strip.empty? }.empty?
@@ -58,7 +57,6 @@ module LogStash
 
         logger.info("Using Elasticsearch as config store", :pipeline_id => pipeline_ids, :poll_interval => "#{interval}ns")
       end
-
 
       def self.check_path_config(settings)
         path_config = settings.get("path.config")

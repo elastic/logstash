@@ -428,7 +428,6 @@ describe LogStash::Compiler do
           EOS
         end
 
-
         it "should contain both section declarations, in order" do
           expect(compiled_section).to ir_eql(compose(
                                       splugin("aplugin", {"count" => 1}),

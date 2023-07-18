@@ -113,8 +113,6 @@ module LogStash
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
-
-
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
   SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)

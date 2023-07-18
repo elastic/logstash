@@ -1,7 +1,7 @@
 # encoding: utf-8
 
-# Test the 
-# - build (rspec), 
+# Test the
+# - build (rspec),
 # - packaging (gem build)
 # - and deploy (bin/logstash-plugin install)
 # of a plugins inside the current Logstash, using its JRuby
@@ -103,7 +103,6 @@ class Plugin
     end
   end
 end
-
 
 # reason could be a symbol, describing the phase that broke:
 # :unit_test, :gem_build, :gem_install
@@ -267,5 +266,3 @@ if failed_plugins
 else
   puts "NO ERROR ON PLUGINS!"
 end
-
-

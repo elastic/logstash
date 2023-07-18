@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
 require "logstash/plugin"
 require "logstash/config/mixin"
 require "logstash/util/decorators"
@@ -159,7 +158,6 @@ class LogStash::Filters::Base < LogStash::Plugin
     filter(event, &block)
     @slow_logger.on_event("event processing time", @original_params, event, java.lang.System.nanoTime - time)
   end
-
 
   # in 1.5.0 multi_filter is meant to be used in the generated filter function in LogStash::Config::AST::Plugin only
   # and is temporary until we refactor the filter method interface to accept events list and return events list,

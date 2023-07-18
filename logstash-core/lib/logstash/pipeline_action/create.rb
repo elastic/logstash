@@ -18,7 +18,6 @@
 require "logstash/pipeline_action/base"
 require "logstash/java_pipeline"
 
-
 module LogStash module PipelineAction
   class Create < Base
     include LogStash::Util::Loggable

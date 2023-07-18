@@ -74,7 +74,6 @@ module LogStash::Util
     }
   end
 
-
   # Merge hash 'src' into 'dst' nondestructively
   #
   # Duplicate keys will become array values
@@ -155,7 +154,6 @@ module LogStash::Util
     end
     return dst
   end # def hash_merge_many
-
 
   # normalize method definition based on platform.
   # normalize is used to convert an object create through

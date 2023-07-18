@@ -247,7 +247,6 @@ describe LogStash::Event do
     end
   end
 
-
   # TODO(talevy): migrate tests to Java. no reason to test logging logic in ruby when it is being
   #               done in java land.
 

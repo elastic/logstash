@@ -29,6 +29,7 @@ module LogStash
       require_relative "patches/gems"
       Gems.versions(plugin)
     end
+
     # Take a gem package and extract it to a specific target
     # @param [String] Gem file, this must be a path
     # @param [String, String] Return a Gem::Package and the installed path

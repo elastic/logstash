@@ -81,6 +81,7 @@ describe LogStash::FilterDelegator do
         config :host, :validate => :string
         def register; end
         def flush(options = {}); @events ; end
+
         def filter(event)
           @events ||= []
           @events << event
@@ -167,6 +168,7 @@ describe LogStash::FilterDelegator do
         config_name "super_plugin"
         config :host, :validate => :string
         def register; end
+
         def filter(event)
           event
         end

@@ -612,7 +612,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             end
           end
 
-
           context "With an invalid basic license, it should raise an error [#{es_version}]" do
             let(:license_type) { 'basic' }
 
@@ -739,7 +738,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         allow(mock_client).to receive(:get).with(system_indices_url_regex).and_raise("Something bad")
         expect { subject.pipeline_configs }.to raise_error /Something bad/
       end
-
 
       it "raises the exception upstream in [7.9]" do
         allow(mock_client).to receive(:get).with("/").and_return(es_version_7_9_response)

@@ -20,7 +20,6 @@ describe LogStash::Inputs::Metrics do
   let(:elasticsearch_username) { nil }
   let(:elasticsearch_password) { nil }
 
-
   subject(:metrics_input) { described_class.new(options) }
   let(:settings) do
     {

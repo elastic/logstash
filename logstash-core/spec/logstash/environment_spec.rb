@@ -65,7 +65,6 @@ describe LogStash::Environment do
     end
   end
 
-
   describe "OS detection" do
     windows_host_os = %w(bccwin cygwin mingw mswin wince)
     linux_host_os = %w(linux)

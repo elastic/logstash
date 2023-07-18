@@ -54,7 +54,6 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
   context "creating a pack for integration plugins" do
     let(:plugin_to_pack) { "logstash-integration-jdbc" }
 
-
     it "successfully create a pack" do
       execute = @logstash_plugin.prepare_offline_pack(plugin_to_pack, temporary_zip_file)
 
@@ -69,7 +68,6 @@ describe "CLI > logstash-plugin prepare-offline-pack" do
       expect(unpacked.dependencies.size).to be > 0
     end
   end
-
 
   context "create a pack from a wildcard" do
     let(:plugins_to_pack) { %w(logstash-filter-*) }

@@ -15,7 +15,6 @@ require "json-schema"
 require 'license_checker/x_pack_info'
 require 'monitoring/monitoring'
 
-
 describe LogStash::Monitoring::InternalPipelineSource do
   context 'license testing' do
     let(:xpack_monitoring_interval) { 1 }

@@ -31,6 +31,12 @@ Lint/BigDecimalNew:
 
 #################### Layout ###########################
 ##### Enabled Cops #####
+Layout/EmptyLineBetweenDefs:
+  EnabLEd: true
+Layout/EmptyLines:
+  Enabled: true
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: false
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -82,12 +88,6 @@ Layout/EmptyLineAfterGuardClause:
 Layout/EmptyLineAfterMagicComment:
   Enabled: false
 Layout/EmptyLineAfterMultilineCondition:
-  Enabled: false
-Layout/EmptyLineBetweenDefs:
-  Enabled: false
-Layout/EmptyLines:
-  Enabled: false
-Layout/EmptyLinesAroundAccessModifier:
   Enabled: false
 Layout/EmptyLinesAroundArguments:
   Enabled: false

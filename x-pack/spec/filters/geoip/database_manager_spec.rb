@@ -329,7 +329,6 @@ describe LogStash::Filters::Geoip do
       let(:asn02) { get_file_path(dirname2, default_asn_db_name) }
       let(:city02) { get_file_path(dirname2, default_city_db_name) }
 
-
       before(:each) do
         FileUtils.mkdir_p [dir_path, dir_path2]
       end

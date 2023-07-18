@@ -139,7 +139,6 @@ describe "Proxy support" do
       }
     }
 
-
     it "doesn't raise an exception" do
       expect { configure_proxy }.not_to raise_exception
     end
@@ -152,7 +151,6 @@ describe "Proxy support" do
         "https_proxy" => "myproxy:8080"
       }
     }
-
 
     it "raises an exception" do
       expect { configure_proxy }.to raise_error(RuntimeError)

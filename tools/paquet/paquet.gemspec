@@ -14,7 +14,6 @@ Gem::Specification.new do |spec|
   spec.description   = %q{This gem add a few rake tasks to create a uber gems that will be shipped as a zip}
   spec.homepage      = "https://github.com/elastic/logstash"
 
-
   spec.files         = Dir.glob(File.join(File.dirname(__FILE__), "lib", "**", "*.rb"))
 
   spec.bindir        = "exe"

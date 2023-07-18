@@ -74,7 +74,6 @@ describe "Read configuration from elasticsearch" do
       count_hashes(@pipelines.keys)
     end.to eq(2)
 
-
     pipelines = {
       "super_generator" => "input { generator { count => 100 } tcp { port => 6005 } } output { file { path => '#{@temporary_directory}/super_generator_new' }}",
       "another_generator" => "input { generator { count => 100 } tcp { port => 6006 } } output { file { path => '#{@temporary_directory}/another_generator_new' }}"
@@ -156,7 +155,6 @@ describe "Read configuration from elasticsearch" do
       nil
     end
   end
-
 
   it "reloads the configuration when its different from the running pipeline" do
     pipelines = {

@@ -102,6 +102,7 @@ module LogStash module Instrument module PeriodicPoller
         @procs[:read_int] = lambda {|path| IO.readlines(path).first.to_i }
         @procs[:read_lines] = lambda {|path| IO.readlines(path) }
       end
+
       def call_if_file_exists(call_key, file, not_found_value)
         path = ::File.join(@base_path, @offset_path, file)
         if ::File.exist?(path)
@@ -125,6 +126,7 @@ module LogStash module Instrument module PeriodicPoller
       def initialize(original_path)
         common_initialize(CPUACCT_DIR, "ls.cgroup.cpuacct.path.override", original_path)
       end
+
       def to_hash
         {:control_group => offset_path, :usage_nanos => cpuacct_usage}
       end
@@ -140,6 +142,7 @@ module LogStash module Instrument module PeriodicPoller
       def initialize(original_path)
         common_initialize(CPU_DIR, "ls.cgroup.cpu.path.override", original_path)
       end
+
       def to_hash
         {
           :control_group => offset_path,
@@ -152,9 +155,11 @@ module LogStash module Instrument module PeriodicPoller
       def cfs_period_us
         call_if_file_exists(:read_int, "cpu.cfs_period_us", -1)
       end
+
       def cfs_quota_us
         call_if_file_exists(:read_int, "cpu.cfs_quota_us", -1)
       end
+
       def build_cpu_stats_hash
         stats = CpuStats.new
         lines = call_if_file_exists(:read_lines, "cpu.stat", [])
@@ -168,6 +173,7 @@ module LogStash module Instrument module PeriodicPoller
       def initialize(controller, original_path)
         @controller, @original_path = controller, original_path
       end
+
       def implemented?
         false
       end
@@ -179,6 +185,7 @@ module LogStash module Instrument module PeriodicPoller
         @number_of_times_throttled = -1
         @time_throttled_nanos = -1
       end
+
       def update(lines)
         lines.each do |line|
           fields = line.split(/\s+/)
@@ -190,6 +197,7 @@ module LogStash module Instrument module PeriodicPoller
           end
         end
       end
+
       def to_hash
         {
           :number_of_elapsed_periods => @number_of_elapsed_periods,

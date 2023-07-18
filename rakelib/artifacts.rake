@@ -183,7 +183,6 @@ namespace "artifact" do
     safe_system("./gradlew deleteLocalJdk") if bundle_jdk
   end
 
-
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
   task "no_bundle_jdk_tar" => ["prepare", "generate_build_metadata"] do
     create_local_archive_pack(false)
@@ -240,7 +239,6 @@ namespace "artifact" do
     safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", :oss)
   end
-
 
   desc "Build a DEB of logstash with all dependencies"
   task "deb" => ["prepare", "generate_build_metadata"] do
@@ -457,7 +455,6 @@ namespace "artifact" do
     end
   end
 
-
   def build_tar(license, tar_suffix = nil, exclude_paths=default_exclude_paths, platform: '')
     require "zlib"
     require 'rubygems'
@@ -486,7 +483,6 @@ namespace "artifact" do
     end
     gz.close
   end
-
 
   def write_to_tar(tar, path, path_in_tar)
     stat = File.lstat(path)
@@ -555,7 +551,6 @@ namespace "artifact" do
     metadata_file_path = File.join("logstash-core", "lib", "logstash", "build.rb")
     metadata_source_file_path = BUILD_METADATA_FILE.path
     dir.input("#{metadata_source_file_path}=/usr/share/logstash/#{metadata_file_path}")
-
 
     suffix = ""
     if oss

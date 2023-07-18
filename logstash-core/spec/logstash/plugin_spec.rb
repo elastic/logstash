@@ -305,7 +305,6 @@ describe LogStash::Plugin do
             'when a user provide an ID for the plugin' => { 'id' => 'ABC' },
         }.each do |desc, config_override|
 
-
           context(desc) do
             let(:config) { super().merge(config_override) }
 

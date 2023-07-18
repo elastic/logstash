@@ -47,6 +47,7 @@ describe "conditionals in output" do
 
     def register
     end
+
     def multi_receive(events)
     end
   end

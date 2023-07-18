@@ -198,7 +198,6 @@ describe LogStash::PipelinesRegistry do
         # 2nd call: finished_execution? is true
         expect(subject.running_pipelines).to be_empty
 
-
         queue = Queue.new # threadsafe queue
         in_block = Concurrent::AtomicBoolean.new(false)
 

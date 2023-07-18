@@ -60,7 +60,6 @@ shared_examples "metrics commons operations" do
       expect { subject.gauge(key, "pluto") }.not_to raise_error
     end
 
-
     it "raises an exception if the key is an empty string" do
       expect { subject.gauge("", 20) }.to raise_error(LogStash::Instrument::MetricNoKeyProvided)
     end

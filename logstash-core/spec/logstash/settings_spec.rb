@@ -198,7 +198,6 @@ describe LogStash::Settings do
 
     context "placeholders in flat logstash.yml" do
 
-
       after do
         ENV.delete('SOME_LOGSTASH_SPEC_ENV_VAR')
         ENV.delete('some.logstash.spec.env.var')

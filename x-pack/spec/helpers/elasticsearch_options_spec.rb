@@ -202,7 +202,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
         end
       end
 
-
       context "with api_key" do
         let(:settings) do
           super().merge(
@@ -291,7 +290,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
       it_behaves_like 'elasticsearch options hash is populated without security'
       it_behaves_like 'elasticsearch options hash is populated with secure options'
     end
-
 
     context 'when cloud_id' do
       let(:cloud_name) { 'thebigone'}
@@ -520,7 +518,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         it_behaves_like 'elasticsearch options hash is populated without security'
       end
-
 
       context 'when everything is set' do
         let(:cloud_name) { 'thebigone'}

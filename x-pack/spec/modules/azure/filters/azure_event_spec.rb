@@ -45,7 +45,6 @@ describe LogStash::Filters::AzureEvent do
       expect(subject).not_to include("properties")
     end
 
-
     describe "with default" do
       let(:config) do
         <<-CONFIG
@@ -70,7 +69,6 @@ describe LogStash::Filters::AzureEvent do
         expect(subject).not_to include("activity_log_Administrative_properties")
         expect(subject).not_to include("properties")
       end
-
 
       # as observed, missing the resource group, type, and name
       file = File.read(File.join(File.dirname(__FILE__), '../samples/activity_log/administrative3.json'))
