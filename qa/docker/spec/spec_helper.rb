@@ -96,7 +96,7 @@ def get_plugin_info(container, type, id, pipeline='main')
     puts "Unable to find plugins from #{pipeline_info}, when looking for #{type} plugins in #{pipeline}"
     return nil
   end
-  all_plugins.find{|plugin|plugin['id'] == id}
+  all_plugins.find{|plugin| plugin['id'] == id}
 end
 
 def logstash_available?(container)

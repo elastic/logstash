@@ -55,7 +55,7 @@ module LogStash
             :config_reload_interval,
             :dead_letter_queue_enabled,
             :dead_letter_queue_path,
-          ).reject{|_, v|v.nil?}
+          ).reject{|_, v| v.nil?}
           if options.fetch(:graph, false)
             extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
             decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_with_cluster_uuids(vertex)  }

@@ -290,7 +290,7 @@ module LogStash
 
     # @return [Hash{String=>Pipeline}]
     def running_user_defined_pipelines
-      select_pipelines { |state | !state.terminated? && !state.pipeline.system? }
+      select_pipelines { |state| !state.terminated? && !state.pipeline.system? }
     end
 
     private

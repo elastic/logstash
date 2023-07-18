@@ -90,7 +90,7 @@ describe LogStash::PersistedQueueConfigValidator do
       end
 
       it "should throw" do
-        expect(pq_config_validator).to receive(:check_disk_space) do | _, _, required_free_bytes|
+        expect(pq_config_validator).to receive(:check_disk_space) do |_, _, required_free_bytes|
           expect(required_free_bytes.size).to eq(1)
           expect(required_free_bytes.values[0]).to eq(1024**5 * 1000 * 2) # require 2000pb
         end.and_call_original
