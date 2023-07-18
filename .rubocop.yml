@@ -39,6 +39,8 @@ Layout/EmptyLinesAroundAccessModifier:
   Enabled: false
 Layout/EmptyLinesAroundArguments:
   Enabled: true
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -90,8 +92,6 @@ Layout/EmptyLineAfterGuardClause:
 Layout/EmptyLineAfterMagicComment:
   Enabled: false
 Layout/EmptyLineAfterMultilineCondition:
-  Enabled: false
-Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: false
 Layout/EmptyLinesAroundBeginBody:
   Enabled: false

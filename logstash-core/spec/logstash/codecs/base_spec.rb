@@ -22,6 +22,7 @@ DATA_DOUBLE = "data".freeze
 # use a dummy NOOP output to test Outputs::Base
 class LogStash::Codecs::NOOPAsync < LogStash::Codecs::Base
   attr_reader :last_result
+
   config_name "noop_async"
 
   def encode(event)
@@ -31,6 +32,7 @@ end
 
 class LogStash::Codecs::NOOPSync < LogStash::Codecs::Base
   attr_reader :last_result
+
   config_name "noop_sync"
 
   def encode_sync(event)
@@ -40,6 +42,7 @@ end
 
 class LogStash::Codecs::NOOPMulti < LogStash::Codecs::Base
   attr_reader :last_result
+
   config_name "noop_multi"
 
   def encode_sync(event)

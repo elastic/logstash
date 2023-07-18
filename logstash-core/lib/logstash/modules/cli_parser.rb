@@ -19,6 +19,7 @@ module LogStash module Modules class CLIParser
   include LogStash::Util::Loggable
 
   attr_reader :output
+
   def initialize(module_names, module_variables)
     @output = []
     # The #compact here catches instances when module_variables may be nil or

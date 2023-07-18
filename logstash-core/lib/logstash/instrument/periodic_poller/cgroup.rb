@@ -22,6 +22,7 @@ module LogStash module Instrument module PeriodicPoller
     include LogStash::Util::Loggable
     class Override
       attr_reader :key, :value
+
       def initialize(key)
         @key = key
         @value = java.lang.System.getProperty(@key)
@@ -89,6 +90,7 @@ module LogStash module Instrument module PeriodicPoller
 
     module ControllerResource
       attr_reader :base_path, :override, :offset_path
+
       def implemented?
         true
       end
@@ -170,6 +172,7 @@ module LogStash module Instrument module PeriodicPoller
 
     class UnimplementedResource
       attr_reader :controller, :original_path
+
       def initialize(controller, original_path)
         @controller, @original_path = controller, original_path
       end

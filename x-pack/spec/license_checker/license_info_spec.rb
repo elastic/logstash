@@ -9,6 +9,7 @@ require 'monitoring/monitoring'
 
 class Observer
   attr_reader :license
+
   def initialize
     @license = nil
   end

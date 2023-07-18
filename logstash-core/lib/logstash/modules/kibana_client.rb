@@ -28,6 +28,7 @@ module LogStash module Modules class KibanaClient
   class Response
     # to create a custom response with body as an Object (Hash or Array)
     attr_reader :status, :body, :headers
+
     def initialize(status, body, headers={})
       @status, @body, @headers = status, body, headers
       @body = body.is_a?(String) ? LogStash::Json.load(body) : body
