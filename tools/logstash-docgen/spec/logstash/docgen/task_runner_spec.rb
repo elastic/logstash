@@ -49,7 +49,7 @@ describe LogStash::Docgen::TaskRunner do
   context "an execution without errors" do
     let(:job_with_no_errors) do
       lambda do
-        1+1
+        1 + 1
       end
     end
 
@@ -87,7 +87,7 @@ describe LogStash::Docgen::TaskRunner do
   context "an execution with errors" do
     let(:job_with_with_errors) do
       lambda do
-        1/0
+        1 / 0
       end
     end
 

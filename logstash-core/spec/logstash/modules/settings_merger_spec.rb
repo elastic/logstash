@@ -30,8 +30,8 @@ end
 
 describe LogStash::Modules::SettingsMerger do
   describe "#merge" do
-    let(:cli) { LogStash::Util::ModulesSettingArray.new [{"name"=>"mod1", "var.input.tcp.port"=>"3333"}, {"name"=>"mod2"}] }
-    let(:yml) {[{"name"=>"mod1", "var.input.tcp.port"=>2222, "var.kibana.username"=>"rupert", "var.kibana.password"=>"fotherington"}, {"name"=>"mod3", "var.input.tcp.port"=>4445}]}
+    let(:cli) { LogStash::Util::ModulesSettingArray.new [{"name" => "mod1", "var.input.tcp.port" => "3333"}, {"name" => "mod2"}] }
+    let(:yml) {[{"name" => "mod1", "var.input.tcp.port" => 2222, "var.kibana.username" => "rupert", "var.kibana.password" => "fotherington"}, {"name" => "mod3", "var.input.tcp.port" => 4445}]}
     subject(:results) { described_class.merge(cli, yml) }
     it "merges cli overwriting any common fields in yml" do
       expect(results).to be_a(Array)
@@ -51,7 +51,7 @@ describe LogStash::Modules::SettingsMerger do
     end
 
     context 'only elasticsearch username and password is set' do
-      let(:mod_settings) { {"name"=>"mod1", "var.input.tcp.port"=>2222, "var.elasticsearch.username"=>"rupert", "var.elasticsearch.password"=>"fotherington" } }
+      let(:mod_settings) { {"name" => "mod1", "var.input.tcp.port" => 2222, "var.elasticsearch.username" => "rupert", "var.elasticsearch.password" => "fotherington" } }
       it "sets kibana username and password" do
         expect(mod_settings["var.elasticsearch.username"]).to eq("rupert")
         expect(mod_settings["var.elasticsearch.password"]).to eq("fotherington")
@@ -61,8 +61,8 @@ describe LogStash::Modules::SettingsMerger do
     end
 
     context 'elasticsearch and kibana usernames and passwords are set' do
-      let(:mod_settings) { {"name"=>"mod1", "var.input.tcp.port"=>2222, "var.elasticsearch.username"=>"rupert", "var.elasticsearch.password"=>"fotherington",
-                                                               "var.kibana.username"=>"davey", "var.kibana.password"=>"stott"} }
+      let(:mod_settings) { {"name" => "mod1", "var.input.tcp.port" => 2222, "var.elasticsearch.username" => "rupert", "var.elasticsearch.password" => "fotherington",
+                                                               "var.kibana.username" => "davey", "var.kibana.password" => "stott"} }
 
       it "keeps existing kibana username and password" do
         expect(mod_settings["var.elasticsearch.username"]).to eq("rupert")

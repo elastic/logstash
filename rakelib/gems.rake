@@ -35,7 +35,7 @@ namespace "gem" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install", [:name, :requirement, :target] =>  ["build/bootstrap"] do |task, args|
+  task "install", [:name, :requirement, :target] => ["build/bootstrap"] do |task, args|
     name, requirement, target = args[:name], args[:requirement], args[:target]
 
     ENV["GEM_HOME"] = ENV["GEM_PATH"] = target

@@ -68,7 +68,7 @@ describe "Test Logstash service when config reload is enabled" do
     # make sure the pipeline flow has non-zero input throughput after receiving data
     Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       pipeline_flow_stats = logstash_service.monitoring_api.pipeline_stats("main")["flow"]
-      expect(pipeline_flow_stats['input_throughput']).to include('lifetime' => (a_value >  0))
+      expect(pipeline_flow_stats['input_throughput']).to include('lifetime' => (a_value > 0))
     end
 
     # do a reload

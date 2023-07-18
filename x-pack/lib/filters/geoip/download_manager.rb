@@ -125,7 +125,7 @@ module LogStash module Filters module Geoip class DownloadManager
                     request_timeout: 15,
                     connect_timeout: 5
                   }
-                  client_options[:proxy]=ENV['http_proxy'] if ENV.include?('http_proxy')
+                  client_options[:proxy] = ENV['http_proxy'] if ENV.include?('http_proxy')
                   Manticore::Client.new(client_options)
                 end
   end

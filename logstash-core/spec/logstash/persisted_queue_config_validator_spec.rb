@@ -63,7 +63,7 @@ describe LogStash::PersistedQueueConfigValidator do
       before do
         # create a 2MB file
         ::File.open(page_file, 'wb') do |f|
-          f.write( SecureRandom.random_bytes( 2 ** 21 ) )
+          f.write( SecureRandom.random_bytes( 2**21 ) )
         end
       end
 

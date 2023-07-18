@@ -28,7 +28,7 @@ class LogStash::PluginManager::PackCommand < LogStash::PluginManager::Command
   end
 
   def signal_deprecation_warning_for_pack
-  message =<<-EOS
+  message = <<-EOS
 The pack and the unpack command are now deprecated and will be removed in a future version of Logstash.
 See the `prepare-offline-pack` to update your workflow. You can get documentation about this by running `bin/logstash-plugin prepare-offline-pack --help`
   EOS

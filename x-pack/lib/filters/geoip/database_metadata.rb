@@ -55,7 +55,7 @@ module LogStash module Filters module Geoip class DatabaseMetadata
   end
 
   def get_all
-    file_exist?(@metadata_path)? ::CSV.read(@metadata_path, headers: false) : Array.new
+    file_exist?(@metadata_path) ? ::CSV.read(@metadata_path, headers: false) : Array.new
   end
 
   # Give rows of metadata that match/exclude the type

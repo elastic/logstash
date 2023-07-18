@@ -193,7 +193,7 @@ module LogStash
     end
 
     def specific_platforms(platforms = ::Gem.platforms)
-      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
+      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil?}
     end
 
     def genericize_platform
@@ -233,7 +233,7 @@ module LogStash
     # @return [Array] gem names that plugin depends on
     def fetch_plugin_dependencies(plugin_name)
       old_spec = ::Gem::Specification.find_all_by_name(plugin_name).last
-      require_version = old_spec ? ">= #{old_spec.version}": nil
+      require_version = old_spec ? ">= #{old_spec.version}" : nil
       dep = ::Gem::Dependency.new(plugin_name, require_version)
       new_specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
 

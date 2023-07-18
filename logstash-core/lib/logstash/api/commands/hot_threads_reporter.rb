@@ -71,7 +71,7 @@ class HotThreadsReport
   end
 
   def cpu_time_as_percent(hash)
-    (((cpu_time(hash) / @cmd.uptime * 1.0)*10000).to_i)/100.0
+    (((cpu_time(hash) / @cmd.uptime * 1.0) * 10000).to_i) / 100.0
   end
 
   def cpu_time(hash)

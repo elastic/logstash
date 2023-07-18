@@ -32,7 +32,7 @@ module Paquet
         uri = URI.parse(source)
 
         http = Net::HTTP.new(uri.host, uri.port, )
-        http.use_ssl = uri.scheme ==  HTTPS_SCHEME
+        http.use_ssl = uri.scheme == HTTPS_SCHEME
 
         response = http.get(uri.path)
 

@@ -77,7 +77,7 @@ module Bundler
     end
 
     def display_cant_remove_message(gem_name, dependencies_from)
-        message =<<-eos
+        message = <<-eos
 Failed to remove \"#{gem_name}\" because the following plugins or libraries depend on it:
 
 * #{dependencies_from.join("\n* ")}

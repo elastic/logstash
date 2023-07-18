@@ -213,7 +213,7 @@ module LogStash
           rescue Errno::EADDRINUSE
             if http_ports.count == 1
               raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
-            elsif idx == http_ports.count-1
+            elsif idx == http_ports.count - 1
               raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
             end
           end

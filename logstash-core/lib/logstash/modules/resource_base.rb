@@ -23,7 +23,7 @@ module LogStash module Modules module ResourceBase
 
   def initialize(base, content_type, content_path, content = nil, content_id = nil)
     @base, @content_type, @content_path = base, content_type, content_path
-    @content_id =  content_id || ::File.basename(@content_path, ".*")
+    @content_id = content_id || ::File.basename(@content_path, ".*")
     # content at this time will be a JSON string
     @content = content
     if !@content.nil?

@@ -339,7 +339,7 @@ describe LogStash::Compiler do
                         "integer" => 7,
                         "quoted-key-string" => "nested-quoted-key-string",
                         "quoted-key-integer" => 31,
-                        "deep"    => { # <-- This is deeper nested hash!
+                        "deep" => { # <-- This is deeper nested hash!
                             "string"  => "deeply-nested-string",
                             "integer" => 127,
                             "quoted-key-string" => "deeply-nested-quoted-key-string",

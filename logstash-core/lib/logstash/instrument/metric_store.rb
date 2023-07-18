@@ -313,7 +313,7 @@ module LogStash module Instrument
         node = memo.compute_if_absent(current) { Concurrent::Map.new }
 
         unless node.kind_of?(Concurrent::Map)
-          raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{node.class.name} for namespaces_path: #{namespaces_path.first(index+1)}"
+          raise NamespacesExpectedError, "Expecting a `Namespaces` but found class:  #{node.class.name} for namespaces_path: #{namespaces_path.first(index + 1)}"
         end
 
         node

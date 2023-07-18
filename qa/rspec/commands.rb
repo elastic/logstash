@@ -72,7 +72,7 @@ module ServiceTester
     end
 
     def install(options = {})
-      base      = options.fetch(:base, ServiceTester::Base::LOCATION)
+      base = options.fetch(:base, ServiceTester::Base::LOCATION)
       @skip_jdk_infix = options.fetch(:skip_jdk_infix, false)
       filename = filename(options)
       package   = client.package_for(filename, @skip_jdk_infix, base)
@@ -119,7 +119,7 @@ module ServiceTester
 
     def filename(options = {})
       snapshot  = options.fetch(:snapshot, true)
-      "logstash-#{options[:version]}#{(snapshot ?  "-SNAPSHOT" : "")}"
+      "logstash-#{options[:version]}#{(snapshot ? "-SNAPSHOT" : "")}"
     end
   end
 

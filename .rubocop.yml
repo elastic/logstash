@@ -73,6 +73,8 @@ Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: true
 Layout/SpaceAroundKeyword:
   Enabled: true
+Layout/SpaceAroundOperators:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -196,8 +198,6 @@ Layout/SpaceAfterMethodName:
 Layout/SpaceAfterNot:
   Enabled: false
 Layout/SpaceAroundMethodCallOperator:
-  Enabled: false
-Layout/SpaceAroundOperators:
   Enabled: false
 Layout/SpaceBeforeBlockBraces:
   Enabled: false

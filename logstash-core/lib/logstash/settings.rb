@@ -459,7 +459,7 @@ module LogStash
       PORT_SEPARATOR = "-"
 
       def initialize(name, default = nil, strict = true)
-        super(name, ::Range, default, strict=true) { |value| valid?(value) }
+        super(name, ::Range, default, strict = true) { |value| valid?(value) }
       end
 
       def valid?(range)
@@ -668,7 +668,7 @@ module LogStash
 
     class Bytes < Coercible
       def initialize(name, default = nil, strict = true)
-        super(name, ::Integer, default, strict=true) { |value| valid?(value) }
+        super(name, ::Integer, default, strict = true) { |value| valid?(value) }
       end
 
       def valid?(value)

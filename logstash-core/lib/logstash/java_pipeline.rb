@@ -53,7 +53,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @worker_observer = org.logstash.execution.WorkerObserver.new(process_events_namespace_metric,
                                                                  pipeline_events_namespace_metric)
 
-    @drain_queue =  settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
+    @drain_queue = settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
     @events_filtered = java.util.concurrent.atomic.LongAdder.new
     @events_consumed = java.util.concurrent.atomic.LongAdder.new

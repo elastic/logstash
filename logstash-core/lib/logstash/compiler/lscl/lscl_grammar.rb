@@ -198,12 +198,12 @@ module LogStashCompilerLSCLGrammar
       i1 = index
       r2 = _nt_comment
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r1 = r2
       else
         r3 = _nt_whitespace
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r1 = r3
         else
           @index = i1
@@ -380,12 +380,12 @@ module LogStashCompilerLSCLGrammar
     i0 = index
     r1 = _nt_branch
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r2 = _nt_plugin
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         @index = i0
@@ -418,7 +418,7 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       if (match_len = has_terminal?("filter", false, index))
@@ -429,7 +429,7 @@ module LogStashCompilerLSCLGrammar
         r2 = nil
       end
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         if (match_len = has_terminal?("output", false, index))
@@ -440,7 +440,7 @@ module LogStashCompilerLSCLGrammar
           r3 = nil
         end
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
         else
           @index = i0
@@ -711,12 +711,12 @@ module LogStashCompilerLSCLGrammar
       r1 = instantiate_node(LogStash::Compiler::LSCL::AST::Name, input, i1...index, s1)
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r3 = _nt_string
       if r3
-        r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+        r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
         r0 = r3
       else
         @index = i0
@@ -810,32 +810,32 @@ module LogStashCompilerLSCLGrammar
     i0 = index
     r1 = _nt_plugin
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r2 = _nt_bareword
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         r3 = _nt_string
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
         else
           r4 = _nt_number
           if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+            r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
             r0 = r4
           else
             r5 = _nt_array
             if r5
-              r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+              r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
               r0 = r5
             else
               r6 = _nt_hash
               if r6
-                r6 = SyntaxNode.new(input, (index-1)...index) if r6 == true
+                r6 = SyntaxNode.new(input, (index - 1)...index) if r6 == true
                 r0 = r6
               else
                 @index = i0
@@ -866,27 +866,27 @@ module LogStashCompilerLSCLGrammar
     i0 = index
     r1 = _nt_bareword
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r2 = _nt_string
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         r3 = _nt_number
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
         else
           r4 = _nt_array
           if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+            r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
             r0 = r4
           else
             r5 = _nt_hash
             if r5
-              r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+              r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
               r0 = r5
             else
               @index = i0
@@ -1000,7 +1000,7 @@ module LogStashCompilerLSCLGrammar
           r4 = nil
         end
         if r4
-          r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+          r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
           r3 = r4
         else
           i5, s5 = index, []
@@ -1040,7 +1040,7 @@ module LogStashCompilerLSCLGrammar
             r5 = nil
           end
           if r5
-            r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+            r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
             r3 = r5
           else
             @index = i3
@@ -1117,7 +1117,7 @@ module LogStashCompilerLSCLGrammar
           r4 = nil
         end
         if r4
-          r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+          r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
           r3 = r4
         else
           i5, s5 = index, []
@@ -1157,7 +1157,7 @@ module LogStashCompilerLSCLGrammar
             r5 = nil
           end
           if r5
-            r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+            r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
             r3 = r5
           else
             @index = i3
@@ -1210,12 +1210,12 @@ module LogStashCompilerLSCLGrammar
     i0 = index
     r1 = _nt_double_quoted_string
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r2 = _nt_single_quoted_string
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         @index = i0
@@ -1266,7 +1266,7 @@ module LogStashCompilerLSCLGrammar
           r4 = nil
         end
         if r4
-          r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+          r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
           r3 = r4
         else
           i5, s5 = index, []
@@ -1306,7 +1306,7 @@ module LogStashCompilerLSCLGrammar
             r5 = nil
           end
           if r5
-            r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+            r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
             r3 = r5
           else
             @index = i3
@@ -1767,17 +1767,17 @@ module LogStashCompilerLSCLGrammar
     i1 = index
     r2 = _nt_number
     if r2
-      r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+      r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
       r1 = r2
     else
       r3 = _nt_bareword
       if r3
-        r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+        r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
         r1 = r3
       else
         r4 = _nt_string
         if r4
-          r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+          r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
           r1 = r4
         else
           @index = i1
@@ -2443,43 +2443,43 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
       r0.extend(LogStash::Compiler::LSCL::AST::Expression)
     else
       r7 = _nt_negative_expression
       if r7
-        r7 = SyntaxNode.new(input, (index-1)...index) if r7 == true
+        r7 = SyntaxNode.new(input, (index - 1)...index) if r7 == true
         r0 = r7
         r0.extend(LogStash::Compiler::LSCL::AST::Expression)
       else
         r8 = _nt_in_expression
         if r8
-          r8 = SyntaxNode.new(input, (index-1)...index) if r8 == true
+          r8 = SyntaxNode.new(input, (index - 1)...index) if r8 == true
           r0 = r8
           r0.extend(LogStash::Compiler::LSCL::AST::Expression)
         else
           r9 = _nt_not_in_expression
           if r9
-            r9 = SyntaxNode.new(input, (index-1)...index) if r9 == true
+            r9 = SyntaxNode.new(input, (index - 1)...index) if r9 == true
             r0 = r9
             r0.extend(LogStash::Compiler::LSCL::AST::Expression)
           else
             r10 = _nt_compare_expression
             if r10
-              r10 = SyntaxNode.new(input, (index-1)...index) if r10 == true
+              r10 = SyntaxNode.new(input, (index - 1)...index) if r10 == true
               r0 = r10
               r0.extend(LogStash::Compiler::LSCL::AST::Expression)
             else
               r11 = _nt_regexp_expression
               if r11
-                r11 = SyntaxNode.new(input, (index-1)...index) if r11 == true
+                r11 = SyntaxNode.new(input, (index - 1)...index) if r11 == true
                 r0 = r11
                 r0.extend(LogStash::Compiler::LSCL::AST::Expression)
               else
                 r12 = _nt_rvalue
                 if r12
-                  r12 = SyntaxNode.new(input, (index-1)...index) if r12 == true
+                  r12 = SyntaxNode.new(input, (index - 1)...index) if r12 == true
                   r0 = r12
                   r0.extend(LogStash::Compiler::LSCL::AST::Expression)
                 else
@@ -2591,7 +2591,7 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
       r0.extend(LogStash::Compiler::LSCL::AST::NegativeExpression)
     else
@@ -2620,7 +2620,7 @@ module LogStashCompilerLSCLGrammar
         r9 = nil
       end
       if r9
-        r9 = SyntaxNode.new(input, (index-1)...index) if r9 == true
+        r9 = SyntaxNode.new(input, (index - 1)...index) if r9 == true
         r0 = r9
         r0.extend(LogStash::Compiler::LSCL::AST::NegativeExpression)
       else
@@ -2855,32 +2855,32 @@ module LogStashCompilerLSCLGrammar
     i0 = index
     r1 = _nt_string
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
     else
       r2 = _nt_number
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
       else
         r3 = _nt_selector
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
         else
           r4 = _nt_array
           if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+            r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
             r0 = r4
           else
             r5 = _nt_method_call
             if r5
-              r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+              r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
               r0 = r5
             else
               r6 = _nt_regexp
               if r6
-                r6 = SyntaxNode.new(input, (index-1)...index) if r6 == true
+                r6 = SyntaxNode.new(input, (index - 1)...index) if r6 == true
                 r0 = r6
               else
                 @index = i0
@@ -3155,7 +3155,7 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
       r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
     else
@@ -3167,7 +3167,7 @@ module LogStashCompilerLSCLGrammar
         r2 = nil
       end
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
         r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
       else
@@ -3179,7 +3179,7 @@ module LogStashCompilerLSCLGrammar
           r3 = nil
         end
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
           r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
         else
@@ -3191,7 +3191,7 @@ module LogStashCompilerLSCLGrammar
             r4 = nil
           end
           if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+            r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
             r0 = r4
             r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
           else
@@ -3203,7 +3203,7 @@ module LogStashCompilerLSCLGrammar
               r5 = nil
             end
             if r5
-              r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+              r5 = SyntaxNode.new(input, (index - 1)...index) if r5 == true
               r0 = r5
               r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
             else
@@ -3215,7 +3215,7 @@ module LogStashCompilerLSCLGrammar
                 r6 = nil
               end
               if r6
-                r6 = SyntaxNode.new(input, (index-1)...index) if r6 == true
+                r6 = SyntaxNode.new(input, (index - 1)...index) if r6 == true
                 r0 = r6
                 r0.extend(LogStash::Compiler::LSCL::AST::ComparisonOperator)
               else
@@ -3278,12 +3278,12 @@ module LogStashCompilerLSCLGrammar
             i5 = index
             r6 = _nt_string
             if r6
-              r6 = SyntaxNode.new(input, (index-1)...index) if r6 == true
+              r6 = SyntaxNode.new(input, (index - 1)...index) if r6 == true
               r5 = r6
             else
               r7 = _nt_regexp
               if r7
-                r7 = SyntaxNode.new(input, (index-1)...index) if r7 == true
+                r7 = SyntaxNode.new(input, (index - 1)...index) if r7 == true
                 r5 = r7
               else
                 @index = i5
@@ -3328,7 +3328,7 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
       r0.extend(LogStash::Compiler::LSCL::AST::RegExpOperator)
     else
@@ -3340,7 +3340,7 @@ module LogStashCompilerLSCLGrammar
         r2 = nil
       end
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
         r0.extend(LogStash::Compiler::LSCL::AST::RegExpOperator)
       else
@@ -3374,7 +3374,7 @@ module LogStashCompilerLSCLGrammar
       r1 = nil
     end
     if r1
-      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r1 = SyntaxNode.new(input, (index - 1)...index) if r1 == true
       r0 = r1
       r0.extend(LogStash::Compiler::LSCL::AST::BooleanOperator)
     else
@@ -3386,7 +3386,7 @@ module LogStashCompilerLSCLGrammar
         r2 = nil
       end
       if r2
-        r2 = SyntaxNode.new(input, (index-1)...index) if r2 == true
+        r2 = SyntaxNode.new(input, (index - 1)...index) if r2 == true
         r0 = r2
         r0.extend(LogStash::Compiler::LSCL::AST::BooleanOperator)
       else
@@ -3398,7 +3398,7 @@ module LogStashCompilerLSCLGrammar
           r3 = nil
         end
         if r3
-          r3 = SyntaxNode.new(input, (index-1)...index) if r3 == true
+          r3 = SyntaxNode.new(input, (index - 1)...index) if r3 == true
           r0 = r3
           r0.extend(LogStash::Compiler::LSCL::AST::BooleanOperator)
         else
@@ -3410,7 +3410,7 @@ module LogStashCompilerLSCLGrammar
             r4 = nil
           end
           if r4
-            r4 = SyntaxNode.new(input, (index-1)...index) if r4 == true
+            r4 = SyntaxNode.new(input, (index - 1)...index) if r4 == true
             r0 = r4
             r0.extend(LogStash::Compiler::LSCL::AST::BooleanOperator)
           else

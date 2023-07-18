@@ -89,21 +89,21 @@ describe "LogStash::Util::Accessors", :if => class_exists do
   context "using field path" do
     it "should get shallow string value of word key" do
       str = "[hello]"
-      data = { "hello" =>  "world" }
+      data = { "hello" => "world" }
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.get(str)).to eq("world")
     end
 
     it "should get shallow string value of key with spaces" do
       str = "[hel lo]"
-      data = { "hel lo" =>  "world" }
+      data = { "hel lo" => "world" }
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.get(str)).to eq("world")
     end
 
     it "should get shallow string value of numeric key string" do
       str = "[1]"
-      data = { "1" =>  "world" }
+      data = { "1" => "world" }
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.get(str)).to eq("world")
     end

@@ -52,7 +52,7 @@ module LogStash
     end
 
     def oss_only?
-      return true if ENV['OSS']=="true"
+      return true if ENV['OSS'] == "true"
 
       !File.exist?(File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack"))
     end

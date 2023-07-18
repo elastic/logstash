@@ -53,7 +53,7 @@ def cleanup_container(container)
     begin
       container.stop
     ensure
-      container.delete(:force=>true)
+      container.delete(:force => true)
     end
   end
 end

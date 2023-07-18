@@ -139,7 +139,7 @@ module LogStash module Instrument module PeriodicPoller
 
     def collect_heap_metrics(data)
       heap = aggregate_information_for(data["heap"].values)
-      heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f)*100.0
+      heap[:used_percent] = (heap[:used_in_bytes] / heap[:max_in_bytes].to_f) * 100.0
 
       heap.each_pair do |key, value|
         metric.gauge([:jvm, :memory, :heap], key, value.to_i)

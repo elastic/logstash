@@ -120,7 +120,7 @@ module LogStash
 
       CONST_FIELD_NAMES = {
           "SUBSCRIPTIONS" => "subscription",
-          "RESOURCEGROUPS" =>"resource_group",
+          "RESOURCEGROUPS" => "resource_group",
           "PROVIDERS" => "provider"
       }.freeze
 

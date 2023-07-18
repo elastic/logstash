@@ -25,7 +25,7 @@ describe "LogStash::Util::PluginVersion" do
     let(:gem)     { "bundler" }
 
     it 'raises an PluginNoVersionError if we cant find the plugin in the gem path' do
-      dummy_name ='this-character-doesnt-exist-in-the-marvel-universe'
+      dummy_name = 'this-character-doesnt-exist-in-the-marvel-universe'
       expect { subject.find_version!(dummy_name) }.to raise_error(LogStash::PluginNoVersionError)
     end
 

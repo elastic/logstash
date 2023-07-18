@@ -62,7 +62,7 @@ describe LogStash::StateResolver do
       let(:main_pipeline) { mock_pipeline(:main) }
       let(:main_pipeline_config) { main_pipeline.pipeline_config }
       let(:pipelines) do
-        r =  LogStash::PipelinesRegistry.new
+        r = LogStash::PipelinesRegistry.new
         r.create_pipeline(:main, main_pipeline) { true }
         r
       end
@@ -111,7 +111,7 @@ describe LogStash::StateResolver do
 
     context "when we have a lot of pipeline running" do
       let(:pipelines) do
-        r =  LogStash::PipelinesRegistry.new
+        r = LogStash::PipelinesRegistry.new
         r.create_pipeline(:main1, mock_pipeline(:main1)) { true }
         r.create_pipeline(:main2, mock_pipeline(:main2)) { true }
         r.create_pipeline(:main3, mock_pipeline(:main3)) { true }
@@ -176,7 +176,7 @@ describe LogStash::StateResolver do
       let(:main_pipeline) { mock_pipeline(:main) }
       let(:main_pipeline_config) { main_pipeline.pipeline_config }
       let(:pipelines) do
-        r =  LogStash::PipelinesRegistry.new
+        r = LogStash::PipelinesRegistry.new
         r.create_pipeline(:main, main_pipeline) { true }
         r
       end

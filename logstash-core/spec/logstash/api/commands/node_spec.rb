@@ -23,19 +23,19 @@ describe LogStash::Api::Commands::Node do
   let(:report_method) { :all }
   let(:pipeline_id) { nil }
   let(:opts) { {} }
-  let(:mocked_vertex) {{:config_name=>"elasticsearch",
-                       :plugin_type=>"output",
-                       :meta=>{
-                         :source=>{
-                           :protocol=>"str",
-                           :id=>"pipeline",
-                           :line=>1,
-                           :column=>64
+  let(:mocked_vertex) {{:config_name => "elasticsearch",
+                       :plugin_type => "output",
+                       :meta => {
+                         :source => {
+                           :protocol => "str",
+                           :id => "pipeline",
+                           :line => 1,
+                           :column => 64
                          }
                        },
-                       :id=>"2d2270426a2e8d7976b972b6a5318624331fa0d39fa3f903d2f3490e58a7d25a",
-                       :explicit_id=>false,
-                       :type=>"plugin"}
+                       :id => "2d2270426a2e8d7976b972b6a5318624331fa0d39fa3f903d2f3490e58a7d25a",
+                       :explicit_id => false,
+                       :type => "plugin"}
                   }
   let(:api_service) { LogStash::Api::Service.new(@agent) }
   subject(:report) do
@@ -108,7 +108,7 @@ describe LogStash::Api::Commands::Node do
   describe "#pipeline?opts" do
     let(:report_method) { :pipeline }
     let(:pipeline_id) { "main" }
-    let(:opts) { { :graph=>true } }
+    let(:opts) { { :graph => true } }
     # Enforce just the structure
     it "check keys" do
       expect(report.keys).to include(

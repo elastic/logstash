@@ -381,7 +381,7 @@ namespace "artifact" do
 
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
-    BUILD_DATE=Time.now.iso8601
+    BUILD_DATE = Time.now.iso8601
     build_info = {
       "build_date" => BUILD_DATE,
       "build_sha" => `git rev-parse HEAD`.chomp,
@@ -553,7 +553,7 @@ namespace "artifact" do
 
     suffix = ""
     if oss
-      suffix= "-oss"
+      suffix = "-oss"
       exclude_paths = oss_exclude_paths
     else
       exclude_paths = default_exclude_paths

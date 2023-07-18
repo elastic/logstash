@@ -22,7 +22,7 @@ require "forwardable"
 # logged, you don't accidentally print the password itself.
 class LogStash::Util::SafeURI
   PASS_PLACEHOLDER = "xxxxxx".freeze
-  HOSTNAME_PORT_REGEX=/\A(?<hostname>([A-Za-z0-9\.\-]+)|\[[0-9A-Fa-f\:]+\])(:(?<port>\d+))?\Z/
+  HOSTNAME_PORT_REGEX = /\A(?<hostname>([A-Za-z0-9\.\-]+)|\[[0-9A-Fa-f\:]+\])(:(?<port>\d+))?\Z/
 
   extend Forwardable
 

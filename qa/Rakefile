@@ -48,7 +48,7 @@ namespace :qa do
 
     desc "Bootstrap all the VM's used for this tests"
     task :setup, :platform do |t, args|
-      config   = PlatformConfig.new
+      config = PlatformConfig.new
       experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
@@ -63,7 +63,7 @@ namespace :qa do
 
     desc "Halt all VM's involved in the acceptance test round"
     task :halt, :platform do |t, args|
-      config   = PlatformConfig.new
+      config = PlatformConfig.new
       experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
       machines = config.select_names_for(args[:platform], {"experimental" => experimental})
 
@@ -84,14 +84,14 @@ namespace :qa do
     platforms.types.each do |type|
       desc "Run acceptance test in #{type} machines"
       task type do
-        ENV['LS_TEST_PLATFORM']=type
+        ENV['LS_TEST_PLATFORM'] = type
         exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
       end
     end
 
     desc "Run one single machine acceptance test"
     task :single, :machine do |t, args|
-      ENV['LS_VAGRANT_HOST']  = args[:machine]
+      ENV['LS_VAGRANT_HOST'] = args[:machine]
       exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/**/*_spec.rb"]]))
     end
   end

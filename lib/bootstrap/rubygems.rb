@@ -43,7 +43,7 @@ module LogStash
       # - User build his own gem with a fix
       # - User doesnt increment the version
       # - User install the same version but different code or dependencies multiple times..
-      basename  = ::File.basename(file, '.gem')
+      basename = ::File.basename(file, '.gem')
       unique = SecureRandom.hex(4)
       target_path = ::File.expand_path(::File.join(path, unique, basename))
 

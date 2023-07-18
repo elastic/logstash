@@ -191,7 +191,7 @@ describe "cgroup stats" do
         it "fills in the hash with minus one" do
           expect(cpuacct_resource.base_path).to eq("/sys/fs/cgroup/cpuacct")
           expect(cpuacct_resource.offset_path).to eq("/bar")
-          expect(cpuacct_resource.to_hash).to eq({:control_group=>"/bar", :usage_nanos=>-1})
+          expect(cpuacct_resource.to_hash).to eq({:control_group => "/bar", :usage_nanos => -1})
         end
       end
     end
@@ -206,7 +206,7 @@ describe "cgroup stats" do
         it "fills in the hash with minus one" do
           expect(cpuacct_resource.base_path).to eq("/sys/fs/cgroup/cpuacct")
           expect(cpuacct_resource.offset_path).to eq("/quux")
-          expect(cpuacct_resource.to_hash).to eq({:control_group=>"/quux", :usage_nanos=>-1})
+          expect(cpuacct_resource.to_hash).to eq({:control_group => "/quux", :usage_nanos => -1})
         end
       end
     end
@@ -219,7 +219,7 @@ describe "cgroup stats" do
         it "fills in the hash with minus one" do
           expect(cpu_resource.base_path).to eq("/sys/fs/cgroup/cpu")
           expect(cpu_resource.offset_path).to eq("/bar")
-          expect(cpu_resource.to_hash).to eq({:cfs_period_micros=>-1, :cfs_quota_micros=>-1, :control_group=>"/bar", :stat=>{:number_of_elapsed_periods=>-1, :number_of_times_throttled=>-1, :time_throttled_nanos=>-1}})
+          expect(cpu_resource.to_hash).to eq({:cfs_period_micros => -1, :cfs_quota_micros => -1, :control_group => "/bar", :stat => {:number_of_elapsed_periods => -1, :number_of_times_throttled => -1, :time_throttled_nanos => -1}})
         end
       end
     end
@@ -235,7 +235,7 @@ describe "cgroup stats" do
         it "fills in the hash with minus one" do
           expect(cpu_resource.base_path).to eq("/sys/fs/cgroup/cpu")
           expect(cpu_resource.offset_path).to eq("/quux")
-          expect(cpu_resource.to_hash).to eq({:cfs_period_micros=>-1, :cfs_quota_micros=>-1, :control_group=>"/quux", :stat=>{:number_of_elapsed_periods=>-1, :number_of_times_throttled=>-1, :time_throttled_nanos=>-1}})
+          expect(cpu_resource.to_hash).to eq({:cfs_period_micros => -1, :cfs_quota_micros => -1, :control_group => "/quux", :stat => {:number_of_elapsed_periods => -1, :number_of_times_throttled => -1, :time_throttled_nanos => -1}})
         end
       end
     end

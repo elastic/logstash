@@ -41,7 +41,7 @@ module LogStash module Filters
       end
 
       def md5(file_path)
-        file_exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)): ""
+        file_exist?(file_path) ? Digest::MD5.hexdigest(::File.read(file_path)) : ""
       end
 
       def error_details(e, logger)

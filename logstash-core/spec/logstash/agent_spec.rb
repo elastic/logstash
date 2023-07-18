@@ -393,7 +393,7 @@ describe LogStash::Agent do
       let(:original_config_output) { Stud::Temporary.pathname }
       let(:new_config_output) { Stud::Temporary.pathname }
 
-      let(:config_file_txt) { "input { generator { count => #{initial_generator_threshold*2} } } output { file { path => '#{original_config_output}'} }" }
+      let(:config_file_txt) { "input { generator { count => #{initial_generator_threshold * 2} } } output { file { path => '#{original_config_output}'} }" }
 
       let(:agent_args) do
         {

@@ -46,7 +46,7 @@ shared_context "api setup" do |settings_overrides = {}|
       break if Time.now >= deadline
       return true if condition.call
 
-      next_sleep = [(2.0**(try))/10, 2, deadline - Time.now].min
+      next_sleep = [(2.0**(try)) / 10, 2, deadline - Time.now].min
       Kernel::sleep(next_sleep) unless next_sleep <= 0
     end
     # one last try

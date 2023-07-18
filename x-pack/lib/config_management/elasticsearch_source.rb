@@ -53,7 +53,7 @@ module LogStash
 
       # decide using system indices api (7.10+) or legacy api (< 7.10) base on elasticsearch server version
       def get_pipeline_fetcher(es_version)
-        (es_version[:major] >= 8 || (es_version[:major] == 7 && es_version[:minor] >= 10))? SystemIndicesFetcher.new: LegacyHiddenIndicesFetcher.new
+        (es_version[:major] >= 8 || (es_version[:major] == 7 && es_version[:minor] >= 10)) ? SystemIndicesFetcher.new : LegacyHiddenIndicesFetcher.new
       end
 
       def pipeline_configs
@@ -215,7 +215,7 @@ module LogStash
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
           path = es_supports_pipeline_wildcard_search ?
-                   "#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}":
+                   "#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}" :
                    "#{SYSTEM_INDICES_API_PATH}/"
           client.get(path)
         }
@@ -245,7 +245,7 @@ module LogStash
         wildcard_patterns, fix_pids = pipeline_ids.partition { |pattern| pattern.include?("*")}
 
         fix_id_pipelines = fix_pids.map { |id|
-          response.has_key?(id) ? {id => response[id]}: {}
+          response.has_key?(id) ? {id => response[id]} : {}
         }.reduce({}, :merge)
         fix_id_pipelines.keys.map { |id| response.delete(id)}
 
@@ -256,7 +256,7 @@ module LogStash
             wildcard_matched_patterns << pattern if matched
             matched
           }
-          found_pattern ? {id => response[id]}: {}
+          found_pattern ? {id => response[id]} : {}
         }.reduce({}, :merge)
 
         log_pipeline_not_found((fix_pids - fix_id_pipelines.keys) + (wildcard_patterns - wildcard_matched_patterns.to_a))

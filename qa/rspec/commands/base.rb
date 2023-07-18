@@ -23,8 +23,8 @@ module ServiceTester
   class InstallException < Exception; end
 
   class Base
-    LOCATION="/logstash-build".freeze
-    LOGSTASH_PATH="/usr/share/logstash/".freeze
+    LOCATION = "/logstash-build".freeze
+    LOGSTASH_PATH = "/usr/share/logstash/".freeze
 
     def snapshot(host)
       LogStash::VagrantHelpers.save_snapshot(host)
@@ -68,7 +68,7 @@ module ServiceTester
         search_token = plugin_name
       else
         cmd = run_command_in_path("bin/logstash-plugin list --verbose", host)
-        search_token ="#{plugin_name} (#{version})"
+        search_token = "#{plugin_name} (#{version})"
       end
 
       plugins_list = cmd.stdout.split("\n")

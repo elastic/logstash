@@ -55,7 +55,7 @@ describe LogStash::Setting::SplittableStringArray do
   end
 
   context "when defining a custom tokenizer" do
-    subject { described_class.new("testing", element_class, default_value, strict=true, ";") }
+    subject { described_class.new("testing", element_class, default_value, strict = true, ";") }
 
     let(:candidate) { "hello;ninja" }
 
