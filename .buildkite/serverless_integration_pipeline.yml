@@ -16,7 +16,9 @@ steps:
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/elastic_integration_filter_tests.sh
   - label: "central pipeline management test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/cpm_tests.sh
-  - label: "monitoring test"
+  - label: "Logstash legacy monitoring test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/monitoring_tests.sh
-  - label: "kibana test"
+  - label: "kibana api test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/kibana_api_tests.sh
+  - label: "metricbeat stack monitoring test"
+    command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/metricbeat_monitoring_tests.sh
