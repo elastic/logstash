@@ -108,12 +108,10 @@ class Benchmark
   attr_reader :client_count
 
   def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil)
-    @client_count = 24 #cores * 2 = event loops threads
-#     @total_traffic_for_connection = 256 * MB
-    @total_traffic_for_connection = 1024 * MB
+    @client_count = 12
+    @total_traffic_per_connection = 1024 * MB
     # keep message size above 16k, requiring two TLS records
-#     @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
-    @message_sizes = [8 * KB]
+    @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
     @traffic_type = traffic_type
     @beats_ack = beats_ack
     @acks_per_second = acks_per_second
@@ -125,7 +123,7 @@ class Benchmark
       puts "\n\n"
       message = 'a' * message_size + "\n"
       test_iterations = 3
-      repetitions = @total_traffic_for_connection / message_size
+      repetitions = @total_traffic_per_connection / message_size
       puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
       puts "Writing approximately #{(client_count * repetitions * message.size)/1024.0/1024.0}Mib across #{@client_count} clients (message size: #{message_size} Kb)"
 
@@ -209,7 +207,7 @@ class Benchmark
               client.read_ack
               acks_counter = acks_counter + 1
             rescue
-              puts "Closing reader thread for client #{i}"
+              #puts "Closing reader thread for client #{i}"
               exit = true
             end
           end
