@@ -3,7 +3,6 @@ set -ex
 
 source ./$(dirname "$0")/common.sh
 
-trap cpm_clean_up_and_get_result INT TERM EXIT
 export PIPELINE_NAME='gen_es'
 
 # update pipeline and check response code
@@ -44,5 +43,6 @@ cpm_clean_up_and_get_result() {
 }
 
 setup
+trap cpm_clean_up_and_get_result INT TERM EXIT
 prepare_cpm_pipelines
 run_cpm_logstash check_plugin
