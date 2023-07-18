@@ -191,7 +191,6 @@ describe LogStash::Plugin do
         config :foo_tag, :validate => :string, :default => "bar"
       end
     ].each do |klass|
-
       it "subclass #{klass.name} does not modify params" do
         klass.new(args)
         expect(args).to be_empty
@@ -199,7 +198,6 @@ describe LogStash::Plugin do
     end
 
     context "codec initialization" do
-
       class LogStash::Codecs::Noop < LogStash::Codecs::Base
         config_name "noop"
 
@@ -212,7 +210,6 @@ describe LogStash::Plugin do
         expect_any_instance_of(LogStash::Codecs::Noop).to receive(:register).once
         LogStash::Plugin.new(args)
       end
-
     end
   end
 
@@ -304,8 +301,6 @@ describe LogStash::Plugin do
             'when there is not ID configured for the plugin' => {},
             'when a user provide an ID for the plugin' => { 'id' => 'ABC' },
         }.each do |desc, config_override|
-
-
           context(desc) do
             let(:config) { super().merge(config_override) }
 
@@ -428,7 +423,6 @@ describe LogStash::Plugin do
         end
       end
     end
-
   end
 
   describe "deprecation logger" do

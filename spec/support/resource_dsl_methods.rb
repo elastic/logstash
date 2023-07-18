@@ -18,9 +18,11 @@
 # Ruby doesn't have common class for boolean,
 # And to simplify the ResourceDSLMethods check it make sense to have it.
 module Boolean; end
+
 class TrueClass
   include Boolean
 end
+
 class FalseClass
   include Boolean
 end
@@ -50,7 +52,6 @@ module ResourceDSLMethods
       it "should respond OK" do
         expect(last_response).to be_ok
       end
-
 
       describe "the default metadata" do
         it "should include the host" do

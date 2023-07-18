@@ -20,6 +20,7 @@ module Paquet
     class << self
       def debug(message)
       end
+
       def info(message)
       end
     end

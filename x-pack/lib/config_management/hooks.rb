@@ -9,7 +9,6 @@ require "logstash/config/source/local"
 require "logstash/config/source/multi_local"
 require "logstash/config/source/modules"
 
-
 module LogStash
   module ConfigManagement
     class Hooks

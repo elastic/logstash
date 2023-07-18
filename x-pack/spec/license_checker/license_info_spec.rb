@@ -9,6 +9,7 @@ require 'monitoring/monitoring'
 
 class Observer
   attr_reader :license
+
   def initialize
     @license = nil
   end
@@ -46,7 +47,6 @@ describe LogStash::LicenseChecker::XPackInfo do
         "xpack.monitoring.elasticsearch.password" => elasticsearch_password,
     }
   end
-
 
   let(:license) do
       {
@@ -86,7 +86,6 @@ describe LogStash::LicenseChecker::XPackInfo do
       expect(subject.license_one_of?(type)).to be expected_one_of
     end
   end
-
 
   context "when the license type is valid" do
     context 'the license has expired' do

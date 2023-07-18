@@ -8,7 +8,6 @@ require 'license_checker/x_pack_info'
 require 'license_checker/license_reader'
 java_import java.util.concurrent.TimeUnit
 
-
 # Mixin to add License Checking functionality to a feature:
 # To add license checking:
 # - Include the Licensed mixin to the class under license
@@ -84,7 +83,6 @@ module LogStash
       def get_current_license_state
         @license_state.dup
       end
-
     end
   end
 end

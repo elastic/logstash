@@ -24,7 +24,6 @@ require_relative 'spec_helper.rb'
 require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Dead Letter Queue" do
-
   # template with an ip field
   let(:template) { { "index_patterns": ["te*"], "mappings": { "properties": { "ip": { "type": "ip" }}}} }
   # a message that is incompatible with the template
@@ -46,7 +45,6 @@ describe "Test Dead Letter Queue" do
     clean_es(es_client)
     es_client.perform_request("PUT", "_template/ip-template", {}, template)
   }
-
 
   after(:each) do
     logstash_service.teardown

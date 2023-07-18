@@ -10,7 +10,6 @@ require 'helpers/elasticsearch_options'
 require 'helpers/loggable_try'
 require "license_checker/licensed"
 
-
 module LogStash
   module ConfigManagement
     class ElasticsearchSource < LogStash::Config::Source::Base
@@ -316,6 +315,5 @@ module LogStash
         end
       end
     end
-
   end
 end

@@ -102,7 +102,6 @@ describe LogStashConfigParser do
       end
     end
 
-
     context "invalid configuration" do
       it "rejects duplicate hash key" do
         parser = LogStashConfigParser.new
@@ -223,6 +222,7 @@ describe LogStashConfigParser do
           @code = @config.compile
           eval(@code)
         end
+
         def plugin(*args); end
         def line_to_source(*args); end
       end
@@ -234,7 +234,6 @@ describe LogStashConfigParser do
          filter { filter1 { } }
          output { output1 { } }"
       }
-
 
       it "should create a pipeline with both sections" do
         generated_objects = pipeline_klass.new(config_string, settings).instance_variable_get("@generated_objects")
@@ -249,7 +248,6 @@ describe LogStashConfigParser do
          output { output1 { } }
          output { output1 { } }"
       }
-
 
       it "should create a pipeline with both sections" do
         generated_objects = pipeline_klass.new(config_string, settings).instance_variable_get("@generated_objects")
@@ -277,6 +275,7 @@ describe LogStashConfigParser do
           @code = @config.compile
           eval(@code)
         end
+
         def plugin(*args); end
         def line_to_source(*args); end
       end

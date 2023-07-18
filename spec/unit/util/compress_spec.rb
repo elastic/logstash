@@ -54,11 +54,9 @@ def list_files(target)
 end
 
 describe LogStash::Util::Zip do
-
   subject { Class.new { extend LogStash::Util::Zip } }
 
   context "#extraction" do
-
     let(:source) { File.join(File.expand_path("."), "source_file.zip") }
     let(:target) { File.expand_path("target_dir") }
 
@@ -151,7 +149,6 @@ describe LogStash::Util::Zip do
 end
 
 describe LogStash::Util::Tar do
-
   subject { Class.new { extend LogStash::Util::Tar } }
 
   context "#extraction" do
@@ -183,7 +180,6 @@ describe LogStash::Util::Tar do
   end
 
   context "#compression" do
-
     let(:target) { File.join(File.expand_path("."), "target_file.tar.gz") }
     let(:source) { File.expand_path("source_dir") }
 

@@ -20,7 +20,6 @@ require          'logstash/version'
 
 # This test checks if the current package could used to update from the latest version released.
 RSpec.shared_examples "updated" do |logstash|
-
   before(:all) {
     #unset to force it using bundled JDK to run LS
     logstash.run_command("unset LS_JAVA_HOME")

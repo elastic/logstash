@@ -382,7 +382,6 @@ describe LogStash::Filters::NOOP do
     sample_one("type" => "noop", "go" => "away", "tags" => "blackhole") do
       expect(subject.get("[tags]")).to eq("blackhole")
     end
-
   end
 
   describe "when metrics are disabled" do

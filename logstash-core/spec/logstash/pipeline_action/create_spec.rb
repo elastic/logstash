@@ -45,7 +45,6 @@ describe LogStash::PipelineAction::Create do
     expect(subject.pipeline_id).to eq(:main)
   end
 
-
   context "when we have really short lived pipeline" do
     let(:pipeline_config) { mock_pipeline_config(:main, "input { generator { count => 1 } } output { null {} }") }
 

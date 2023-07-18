@@ -44,7 +44,6 @@ describe LogStash::Instrument::PeriodicPoller::JVM::GarbageCollectorName do
   end
 end
 
-
 describe LogStash::Instrument::PeriodicPoller::JVM do
   let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
   let(:options) { {} }

@@ -132,7 +132,6 @@ module LogStash module Docgen
     end
   end
 
-
   # This class orchestrate all the operation between the `logstash-plugins` organization and the
   # doc build for each plugin.
   class DocumentationGenerator

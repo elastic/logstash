@@ -9,7 +9,6 @@ require "monitoring/inputs/metrics/state_event_factory"
 require 'json'
 
 describe LogStash::Inputs::Metrics::StateEventFactory do
-
   let(:schemas_path) { File.join(File.dirname(__FILE__), "..", "..", "..", "..", "spec", "monitoring", "schemas") }
 
   let(:config) {

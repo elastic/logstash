@@ -25,7 +25,6 @@ require "fileutils"
 require "open3"
 
 describe "CLI > logstash-keystore" do
-
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")
@@ -36,7 +35,6 @@ describe "CLI > logstash-keystore" do
   end
 
   context 'create' do
-
     before do
       FileUtils.rm_f File.join(@logstash.logstash_home, 'config', 'logstash.keystore')
     end
@@ -50,11 +48,9 @@ describe "CLI > logstash-keystore" do
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
       expect(keystore_list.stderr_and_stdout).to include('Created Logstash keystore')
     end
-
   end
 
   context 'list' do
-
     before do
       keystore = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "logstash.keystore"))
       FileUtils.cp keystore, File.join(@logstash.logstash_home, 'config')
@@ -69,7 +65,5 @@ describe "CLI > logstash-keystore" do
       expect(keystore_list.stderr_and_stdout).to_not match(/ERROR/)
       expect(keystore_list.stderr_and_stdout).to include('foo') # contains foo: bar
     end
-
   end
-
 end

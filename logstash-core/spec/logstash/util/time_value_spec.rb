@@ -26,7 +26,6 @@ RSpec.shared_examples "coercion example" do |value, expected|
   end
 end
 
-
 module LogStash module Util
 describe TimeValue do
     it_behaves_like "coercion example", TimeValue.new(100, :hour), TimeValue.new(100, :hour)

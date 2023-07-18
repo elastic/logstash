@@ -81,7 +81,6 @@ describe LogStash::Agent do
       expect(mval(:stats, :flow, :queue_backpressure)).to be_a_kind_of(java.util.Map)
       expect(mval(:stats, :flow, :worker_concurrency)).to be_a_kind_of(java.util.Map)
     end
-
   end
 
   context "when we try to start one pipeline" do

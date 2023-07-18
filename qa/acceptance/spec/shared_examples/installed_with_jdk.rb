@@ -20,7 +20,6 @@ require          'logstash/version'
 
 # This test checks if a package is possible to be installed without errors.
 RSpec.shared_examples "installable_with_jdk" do |logstash|
-
   before(:all) do
     #unset to force it using bundled JDK to run LS
     logstash.run_command("unset LS_JAVA_HOME")

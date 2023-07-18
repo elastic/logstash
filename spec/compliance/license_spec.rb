@@ -19,7 +19,6 @@ require 'spec_helper'
 require_relative '../../rakelib/default_plugins'
 
 describe "Project licenses" do
-
   let(:expected_licenses) {
     ##
     # Expected licenses are Apache License 2.0, BSD license, MIT license and the ruby one,
@@ -54,7 +53,6 @@ describe "Project licenses" do
   end
 
   shared_examples "runtime license test" do
-
     subject(:gem_name) do |example|
       example.metadata[:example_group][:parent_example_group][:description]
     end
@@ -89,5 +87,4 @@ describe "Project licenses" do
       it_behaves_like "runtime license test"
     end
   end
-
 end

@@ -121,5 +121,4 @@ namespace :version do
       abort("Invalid version argument: \"#{args[:version]}\". Aborting...")
     end
   end
-
 end

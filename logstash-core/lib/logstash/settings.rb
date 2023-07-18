@@ -24,7 +24,6 @@ require "logstash/util/time_value"
 require "i18n"
 
 module LogStash
-
   class Settings
 
     include LogStash::Util::SubstitutionVariables
@@ -76,7 +75,6 @@ module LogStash
       "queue.page_capacity",
       "queue.type",
     ]
-
 
     def initialize
       @settings = {}

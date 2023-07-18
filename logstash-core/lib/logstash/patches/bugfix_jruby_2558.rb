@@ -44,6 +44,7 @@ if LogStash::Environment.windows?
     alias_method :orig_peeraddr, :peeraddr
     include JRubyBug2558SocketPeerAddrBugFix
   end
+
   class UDPSocket
     alias_method :orig_peeraddr, :peeraddr
     include JRubyBug2558SocketPeerAddrBugFix

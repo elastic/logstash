@@ -19,11 +19,9 @@ require "spec_helper"
 require "logstash/util/plugin_version"
 
 describe "LogStash::Util::PluginVersion" do
-
   subject { LogStash::Util::PluginVersion }
 
   context "#find_version!" do
-
     let(:gem)     { "bundler" }
 
     it 'raises an PluginNoVersionError if we cant find the plugin in the gem path' do
@@ -36,7 +34,6 @@ describe "LogStash::Util::PluginVersion" do
     end
 
     context "with a pre release gem" do
-
       it 'return the version of the gem' do
         # Gem::Specification.find_by_name return nil if the gem is not activated, as for
         # example the pre release ones.
@@ -44,7 +41,6 @@ describe "LogStash::Util::PluginVersion" do
         expect { subject.find_version!(gem) }.not_to raise_error
       end
     end
-
   end
 
   context "#new" do

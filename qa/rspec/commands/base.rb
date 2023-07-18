@@ -20,7 +20,6 @@ require_relative "../../vagrant/helpers"
 require_relative "system_helpers"
 
 module ServiceTester
-
   class InstallException < Exception; end
 
   class Base

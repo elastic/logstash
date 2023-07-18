@@ -19,7 +19,6 @@ require "logstash/util"
 
 # This class exists to format the settings for default worker threads
 module LogStash module Util class WorkerThreadsDefaultPrinter
-
   def initialize(settings)
     @setting = settings.fetch('pipeline.workers', 0)
     @default = settings.fetch('default-pipeline-workers', 0)
@@ -39,5 +38,4 @@ module LogStash module Util class WorkerThreadsDefaultPrinter
     return if @default == 0
     collector.push "Default pipeline workers: #{@default}"
   end
-
 end end end

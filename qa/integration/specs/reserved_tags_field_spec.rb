@@ -48,7 +48,6 @@ describe "Guard reserved tags field against incorrect use" do
   }
   let(:settings_dir) { Stud::Temporary.directory }
 
-
   shared_examples_for 'assign illegal value to tags' do |mode, pipeline_fixture, tags_match, fail_tags_match|
     it "[#{mode}] update tags and _tags successfully" do
       @logstash.env_variables = test_env

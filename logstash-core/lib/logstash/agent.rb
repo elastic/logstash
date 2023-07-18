@@ -488,7 +488,6 @@ class LogStash::Agent
     resolve_actions_and_converge_state([]) # We stop all the pipeline, so we converge to a empty state
   end
 
-
   def setting(key)
     @settings.get(key)
   end

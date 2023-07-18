@@ -92,7 +92,6 @@ module LogStash; module Config; module AST
       set_meta(PROCESS_ESCAPE_SEQUENCES, val)
     end
 
-
     def compile
       LogStash::Config::AST.exclusive { do_compile }
     end
@@ -156,6 +155,7 @@ module LogStash; module Config; module AST
 
   class Comment < Node; end
   class Whitespace < Node; end
+
   class PluginSection < Node
     # Global plugin numbering for the janky instance variable naming we use
     # like @filter_<name>_1
@@ -168,8 +168,6 @@ module LogStash; module Config; module AST
       generate_variables
       code = []
       @variables.each do |plugin, name|
-
-
         code << <<-CODE
           @generated_objects[:#{name}] = #{plugin.compile_initializer}
           @#{plugin.plugin_type}s << @generated_objects[:#{name}]
@@ -228,6 +226,7 @@ module LogStash; module Config; module AST
   end
 
   class Plugins < Node; end
+
   class Plugin < Node
     def plugin_type
       if recursive_select_parent(Plugin).any?
@@ -324,11 +323,13 @@ module LogStash; module Config; module AST
       return text_value.inspect
     end
   end
+
   class Attribute < Node
     def compile
       return %Q(#{name.compile} => #{value.compile})
     end
   end
+
   class RValue < Node; end
   class Value < RValue; end
 
@@ -343,6 +344,7 @@ module LogStash; module Config; module AST
       return Unicode.wrap(text_value)
     end
   end
+
   class String < Value
     def compile
       if get_meta(PROCESS_ESCAPE_SEQUENCES)
@@ -352,21 +354,25 @@ module LogStash; module Config; module AST
       end
     end
   end
+
   class RegExp < Value
     def compile
       return "Regexp.new(" + Unicode.wrap(text_value[1...-1]) + ")"
     end
   end
+
   class Number < Value
     def compile
       return text_value
     end
   end
+
   class Array < Value
     def compile
       return "[" << recursive_select(Value).collect(&:compile).reject(&:empty?).join(", ") << "]"
     end
   end
+
   class Hash < Value
     def validate!
       duplicate_values = find_duplicate_keys
@@ -408,7 +414,6 @@ module LogStash; module Config; module AST
 
   class Branch < Node
     def compile
-
       # this construct is non obvious. we need to loop through each event and apply the conditional.
       # each branch of a conditional will contain a construct (a filter for example) that also loops through
       # the events variable so we have to initialize it to [event] for the branch code.
@@ -454,6 +459,7 @@ module LogStash; module Config; module AST
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
+
   class Elsif < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
@@ -461,6 +467,7 @@ module LogStash; module Config; module AST
         << children.collect(&:compile).map { |s| s.split("\n", -1).map { |l| "  " + l }.join("\n") }.join("") << "\n"
     end
   end
+
   class Else < BranchEntry
     def compile
       children = recursive_inject { |e| e.is_a?(Branch) || e.is_a?(Plugin) }
@@ -529,25 +536,27 @@ module LogStash; module Config; module AST
       return " #{text_value} "
     end
   end
+
   module RegExpOperator
     def compile
       return " #{text_value} "
     end
   end
+
   module BooleanOperator
     def compile
       return " #{text_value} "
     end
   end
+
   class Selector < RValue
     def compile
       return "event.get(#{text_value.inspect})"
     end
   end
+
   class SelectorElement < Node; end
 end; end; end
-
-
 
 # Monkeypatch Treetop::Runtime::SyntaxNode's inspect method to skip
 # any Whitespace or SyntaxNodes with no children.

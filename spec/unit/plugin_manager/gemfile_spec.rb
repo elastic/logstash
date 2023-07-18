@@ -19,11 +19,8 @@ require "spec_helper"
 require "pluginmanager/gemfile"
 
 describe "logstash Gemfile Manager" do
-
   context LogStash::Gemfile do
-
     context "load" do
-
       it "should load and return self" do
         file = <<-END
           source "https://rubygems.org"
@@ -184,7 +181,6 @@ describe "logstash Gemfile Manager" do
       end
 
       context "keep a backup of the original file" do
-
       end
     end
 

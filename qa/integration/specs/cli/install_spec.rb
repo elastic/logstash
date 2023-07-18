@@ -30,7 +30,6 @@ def gem_in_lock_file?(pattern, lock_file)
 end
 
 describe "CLI > logstash-plugin install" do
-
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")
@@ -46,7 +45,6 @@ describe "CLI > logstash-plugin install" do
     # When you are on anything by linux we won't disable the internet with seccomp
     if RbConfig::CONFIG["host_os"] == "linux"
       context "without internet connection (linux seccomp wrapper)" do
-
         let(:offline_wrapper_path) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "offline_wrapper")) }
 
         before do
@@ -149,7 +147,6 @@ describe "CLI > logstash-plugin install" do
         installed = @logstash_plugin.list(plugin_name)
         expect(installed.stderr_and_stdout).to match(/#{plugin_name}/)
       end
-
     end
   end
 end

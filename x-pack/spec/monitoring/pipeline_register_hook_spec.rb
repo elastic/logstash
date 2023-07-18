@@ -5,7 +5,6 @@
 require 'monitoring/monitoring'
 
 describe LogStash::MonitoringExtension::PipelineRegisterHook do
-
   subject(:monitoring_extension) { described_class.new }
 
   let(:settings) {

@@ -23,7 +23,6 @@ describe LogStash::Docgen::Util do
 
   context "time_execution" do
     it "prints the execution time to stdout" do
-
       output = capture do
         subject.time_execution do
           sleep(0.1)

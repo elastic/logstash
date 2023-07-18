@@ -18,15 +18,12 @@
 require "spec_helper"
 
 describe "Java integration" do
-
   context "type equivalence" do
-
     # here we test for both is_a? and case/when usage of the Java types
     # because these are the specific use-cases in our code and the expected
     # behaviour.
 
     context "Java::JavaUtil::ArrayList" do
-
       it "should report to be a Ruby Array" do
         expect(Java::JavaUtil::ArrayList.new.is_a?(Array)).to eq(true)
       end
@@ -178,7 +175,6 @@ describe "Java integration" do
     end
 
     context "when intersecting with a Ruby Array" do
-
       context "using string collection with duplicates and single result" do
         let(:initial_array) {["foo", "bar", "foo"]}
 
@@ -214,7 +210,6 @@ describe "Java integration" do
     end
 
     context "when unioning with a Ruby Array" do
-
       context "using string collection with duplicates" do
         let(:initial_array) {["foo", "bar", "foo"]}
 
@@ -271,7 +266,6 @@ describe "Java integration" do
 
   context "Enumerable implementation" do
     context "Java Map interface should report key with nil value as included" do
-
       it "should support include? method" do
         expect(Java::JavaUtil::LinkedHashMap.new({"foo" => nil}).include?("foo")).to eq(true)
       end
@@ -290,7 +284,6 @@ describe "Java integration" do
     end
 
     context "Java Map interface should report key with a value as included" do
-
       it "should support include? method" do
         expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1}).include?("foo")).to eq(true)
       end
@@ -309,7 +302,6 @@ describe "Java integration" do
     end
 
     context "Java Map interface should report non existing key as not included" do
-
       it "should support include? method" do
         expect(Java::JavaUtil::LinkedHashMap.new({"foo" => 1})).not_to include("bar")
       end

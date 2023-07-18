@@ -22,6 +22,7 @@ module LogStash module Modules class KibanaSettings < KibanaBase
 
   class Setting
     attr_reader :name, :value
+
     def initialize(name, value)
       @name, @value = name, value
     end

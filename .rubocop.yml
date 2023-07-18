@@ -30,7 +30,33 @@ Lint/BigDecimalNew:
   Enabled: true
 
 #################### Layout ###########################
-##### Enabled Cops #####
+##### Enabled/Disabled Cops #####
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Layout/EmptyLineAfterMagicComment:
+  Enabled: true
+Layout/EmptyLineAfterMultilineCondition:
+  Enabled: false
+Layout/EmptyLineBetweenDefs:
+  EnabLEd: true
+Layout/EmptyLines:
+  Enabled: true
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: false
+Layout/EmptyLinesAroundArguments:
+  Enabled: true
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: true
+Layout/EmptyLinesAroundBeginBody:
+  Enabled: true
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: true
+Layout/EmptyLinesAroundExceptionHandlingKeywords:
+  Enabled: true
+Layout/EmptyLinesAroundMethodBody:
+  Enabled: true
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: true
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -77,33 +103,7 @@ Layout/ElseAlignment:
   Enabled: false
 Layout/EmptyComment:
   Enabled: false
-Layout/EmptyLineAfterGuardClause:
-  Enabled: false
-Layout/EmptyLineAfterMagicComment:
-  Enabled: false
-Layout/EmptyLineAfterMultilineCondition:
-  Enabled: false
-Layout/EmptyLineBetweenDefs:
-  Enabled: false
-Layout/EmptyLines:
-  Enabled: false
-Layout/EmptyLinesAroundAccessModifier:
-  Enabled: false
-Layout/EmptyLinesAroundArguments:
-  Enabled: false
-Layout/EmptyLinesAroundAttributeAccessor:
-  Enabled: false
-Layout/EmptyLinesAroundBeginBody:
-  Enabled: false
-Layout/EmptyLinesAroundBlockBody:
-  Enabled: false
 Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-Layout/EmptyLinesAroundExceptionHandlingKeywords:
-  Enabled: false
-Layout/EmptyLinesAroundMethodBody:
-  Enabled: false
-Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 Layout/EndAlignment:
   Enabled: false

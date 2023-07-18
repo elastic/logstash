@@ -66,7 +66,6 @@ module LogStash module Instrument
     #                         to the provided default_value_generator block will be stored.
     #   @return [Metric] the value as it exists in the tree after this operation
     def fetch_or_store(namespaces, key, default_value = nil)
-
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
       # This give us a `o(1)` access, which is faster than searching through the structured
       # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
@@ -133,7 +132,6 @@ module LogStash module Instrument
     def get_shallow(*key_paths)
       key_paths.reduce(get(*key_paths)) {|acc, p| acc[p]}
     end
-
 
     # Return a hash including the values of the keys given at the path given
     #

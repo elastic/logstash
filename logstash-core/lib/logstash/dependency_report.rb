@@ -80,7 +80,6 @@ class LogStash::DependencyReport < Clamp::Command
     #   Look at META-INF/MANIFEST.MF for any jars in each gem
     #   Note any important details.
     Gem::Specification.select { |g| g.requirements && g.requirements.any? { |r| r =~ /^jar / } }.collect do |gem|
-
       # Where is the gem installed
       root = gem.full_gem_path
 

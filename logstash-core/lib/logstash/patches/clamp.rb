@@ -33,7 +33,6 @@ module Clamp
   end
 
   module Option
-
     module Declaration
       def deprecated_option(switches, type, description, opts = {})
         Option::Definition.new(switches, type, description, opts).tap do |option|
@@ -45,7 +44,6 @@ module Clamp
     end
 
     module StrictDeclaration
-
       include Clamp::Attribute::Declaration
       include LogStash::Util::Loggable
 

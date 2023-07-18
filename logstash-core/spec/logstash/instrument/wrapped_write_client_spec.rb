@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
 require_relative "../../support/mocks_classes"
 require "spec_helper"
 require "java"
@@ -139,5 +138,4 @@ describe LogStash::WrappedWriteClient do
 
     include_examples "queue tests"
   end
-
 end

@@ -25,7 +25,6 @@ require "json"
 require "logstash/util"
 
 describe "Test Logstash service when config reload is enabled" do
-
   define_negated_matcher :exclude, :include
 
   before(:all) {

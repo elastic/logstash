@@ -36,7 +36,6 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
     end
     # add address to the plugin stats
     metric.gauge(:address, address)
-
   end
 
   def run(queue)
@@ -85,5 +84,4 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
   def isRunning
     @running.get
   end
-
 end; end; end; end; end

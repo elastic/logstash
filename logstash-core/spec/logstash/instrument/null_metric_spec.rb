@@ -20,7 +20,6 @@ require_relative "../../support/matchers"
 require "spec_helper"
 
 describe LogStash::Instrument::NullMetric do
-
   let(:key) { "test" }
   subject { LogStash::Instrument::NullMetric.new(nil) }
 

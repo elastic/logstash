@@ -28,9 +28,7 @@ require 'timeout'
 java_import org.logstash.Timestamp
 
 describe LogStash::Agent do
-
   shared_examples "all Agent tests" do
-
     let(:agent_settings) { mock_settings({}) }
     let(:agent_args) { {} }
     let(:pipeline_settings) { agent_settings.clone }
@@ -194,7 +192,6 @@ describe LogStash::Agent do
               t.join
             end
           end
-
         end
         context "when calling reload_state!" do
           context "with a pipeline with auto reloading turned off" do
@@ -286,7 +283,6 @@ describe LogStash::Agent do
       end
 
       context "referenced environment variable does not exist" do
-
         it "does not converge the pipeline" do
           expect(subject.converge_state_and_update).not_to be_a_successful_converge
         end
@@ -393,7 +389,6 @@ describe LogStash::Agent do
     end
 
     context "metrics after config reloading" do
-
       let(:initial_generator_threshold) { 1000 }
       let(:original_config_output) { Stud::Temporary.pathname }
       let(:new_config_output) { Stud::Temporary.pathname }

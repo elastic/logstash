@@ -41,7 +41,6 @@ describe LogStash::ShutdownWatcher do
     end
 
     describe ".unsafe_shutdown = false" do
-
       before :each do
         subject.class.unsafe_shutdown = false
       end
@@ -64,7 +63,6 @@ describe LogStash::ShutdownWatcher do
     end
 
     describe ".unsafe_shutdown = true" do
-
       before :each do
         subject.class.unsafe_shutdown = true
       end
@@ -79,7 +77,6 @@ describe LogStash::ShutdownWatcher do
     end
 
     describe ".unsafe_shutdown = false" do
-
       before :each do
         subject.class.unsafe_shutdown = false
       end

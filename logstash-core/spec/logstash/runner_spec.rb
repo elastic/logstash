@@ -31,7 +31,6 @@ require_relative "../support/helpers"
 require_relative "../support/matchers"
 
 describe LogStash::Runner do
-
   subject(:runner) { LogStash::Runner }
   let(:logger) { double("logger") }
   let(:agent) { double("agent") }
@@ -87,7 +86,6 @@ describe LogStash::Runner do
     subject { LogStash::Runner.new("") }
 
     context "when -e is given" do
-
       let(:args) { ["-e", "input {} output {}"] }
       let(:agent) { double("agent") }
 
@@ -134,7 +132,6 @@ describe LogStash::Runner do
   context "--auto-reload" do
     subject { LogStash::Runner.new("") }
     context "when -e is given" do
-
       let(:args) { ["-r", "-e", "input {} output {}"] }
 
       it "should exit immediately" do
@@ -211,8 +208,6 @@ describe LogStash::Runner do
             expect(settings.get("path.data")).to eq(test_data_path)
             expect(settings.get("path.queue")).to eq(queue_override_path)
           end
-
-
 
           args = ["--path.data", test_data_path, "-e", pipeline_string]
           subject.run("bin/logstash", args)

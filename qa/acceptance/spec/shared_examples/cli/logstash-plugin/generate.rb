@@ -29,7 +29,6 @@ shared_examples "logstash generate" do |logstash|
   end
 
   describe "on #{logstash.hostname}" do
-
     GENERATE_TYPES = ["input", "filter", "codec", "output"]
     GENERATE_TYPES.each do |type|
       context "with type #{type}" do

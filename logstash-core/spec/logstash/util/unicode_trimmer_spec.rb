@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 require "spec_helper"
 require "logstash/util/unicode_trimmer"
 require "flores/rspec"

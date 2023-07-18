@@ -155,7 +155,6 @@ module LogStash module Helpers
       opts
     end
 
-
     # Determine whether only modules have been configured, and not monitoring
     # @param String feature to be checked
     # @param Logstash::Settings Logstash settings

@@ -84,7 +84,6 @@ describe "LogStash::Util::JavaVersion" do
       # Not sure this is what is being returned, but it doesn't match the
       # regex, which is the point
       expect(mod.parse_java_version("JCL - 20140103_01 based on Oracle 7u51-b11
-
 ")).to be_nil
     end
 
@@ -119,5 +118,4 @@ describe "LogStash::Util::JavaVersion" do
     include_examples("version parsing", "a build", "1.4.0-beta", 1, 4, 0, 0, "beta")
     include_examples("version parsing", "an update+build", "1.4.0_03-beta", 1, 4, 0, 3, "beta")
   end
-
 end

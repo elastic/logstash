@@ -7,7 +7,6 @@ require "filters/geoip/database_manager"
 require "filters/geoip/database_metric"
 
 describe LogStash::Filters::Geoip do
-
   describe 'DatabaseManager', :aggregate_failures do
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }
@@ -328,7 +327,6 @@ describe LogStash::Filters::Geoip do
       let(:city00) { get_file_path(dirname, default_city_db_name) }
       let(:asn02) { get_file_path(dirname2, default_asn_db_name) }
       let(:city02) { get_file_path(dirname2, default_city_db_name) }
-
 
       before(:each) do
         FileUtils.mkdir_p [dir_path, dir_path2]

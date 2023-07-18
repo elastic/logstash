@@ -168,7 +168,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
   end
 
   describe "es_options_from_settings" do
-
     context "with implicit username" do
       let(:settings) do
         {
@@ -201,7 +200,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
           expect(es_options).to_not include("user")
         end
       end
-
 
       context "with api_key" do
         let(:settings) do
@@ -291,7 +289,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
       it_behaves_like 'elasticsearch options hash is populated without security'
       it_behaves_like 'elasticsearch options hash is populated with secure options'
     end
-
 
     context 'when cloud_id' do
       let(:cloud_name) { 'thebigone'}
@@ -520,7 +517,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
 
         it_behaves_like 'elasticsearch options hash is populated without security'
       end
-
 
       context 'when everything is set' do
         let(:cloud_name) { 'thebigone'}

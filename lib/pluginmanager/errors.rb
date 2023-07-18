@@ -21,6 +21,7 @@ module LogStash module PluginManager
     class UnpackablePluginError < PluginManagerError; end
     class FileNotFoundError < PluginManagerError; end
     class InvalidPackError < PluginManagerError; end
+
     class InstallError < PluginManagerError
       attr_reader :original_exception
 

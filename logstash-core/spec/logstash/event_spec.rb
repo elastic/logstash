@@ -247,7 +247,6 @@ describe LogStash::Event do
     end
   end
 
-
   # TODO(talevy): migrate tests to Java. no reason to test logging logic in ruby when it is being
   #               done in java land.
 
@@ -343,7 +342,6 @@ describe LogStash::Event do
   end
 
   context "initialize" do
-
     it "should accept Ruby Hash" do
       e = LogStash::Event.new({"foo" => 1, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.get("foo")).to eq(1)

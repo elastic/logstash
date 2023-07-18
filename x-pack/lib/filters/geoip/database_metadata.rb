@@ -105,5 +105,4 @@ module LogStash module Filters module Geoip class DatabaseMetadata
     DIRNAME       = 3
     IS_EULA       = 4
   end
-
 end end end end

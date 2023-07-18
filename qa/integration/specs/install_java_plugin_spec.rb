@@ -22,7 +22,6 @@ require "logstash/devutils/rspec/spec_helper"
 require "stud/temporary"
 
 describe "Install and run java plugin" do
-
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")
@@ -75,6 +74,5 @@ describe "Install and run java plugin" do
       result = @logstash.monitoring_api.event_stats
       expect(result["in"]).to eq(4)
     end
-
   end
 end

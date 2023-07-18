@@ -19,9 +19,7 @@ require "spec_helper"
 require "logstash/environment"
 
 describe LogStash::Environment do
-
   context "when loading jars dependencies" do
-
     let(:default_jars_location)    { File.join("vendor", "jar-dependencies") }
     let(:default_runtime_location) { File.join(default_jars_location, "runtime-jars", "*.jar") }
     let(:default_test_location)    { File.join(default_jars_location, "test-jars", "*.jar") }
@@ -37,7 +35,6 @@ describe LogStash::Environment do
     end
 
     context "when loading a jar file" do
-
       let(:dummy_jar_file) { File.join(default_jars_location, "runtime-jars", "elasticsearch.jar") }
 
       it "requires the jar files if there are jars to load" do
@@ -64,7 +61,6 @@ describe LogStash::Environment do
       expect($LOAD_PATH).to include(path)
     end
   end
-
 
   describe "OS detection" do
     windows_host_os = %w(bccwin cygwin mingw mswin wince)

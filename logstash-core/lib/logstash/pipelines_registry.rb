@@ -122,9 +122,9 @@ module LogStash
     end
   end
 
-
   class PipelinesRegistry
     attr_reader :states
+
     include LogStash::Util::Loggable
 
     def initialize

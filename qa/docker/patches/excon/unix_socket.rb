@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 module Excon
   class UnixSocket < Excon::Socket
     private

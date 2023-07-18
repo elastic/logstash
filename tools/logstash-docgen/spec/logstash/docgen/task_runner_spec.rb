@@ -125,7 +125,6 @@ describe LogStash::Docgen::TaskRunner do
       expect(output).to match(/FAILURE: #{name}/)
       expect(output).to match(/Exception:/)
 
-
       expect(output).to match(/FAILURE: not_working_bob/)
     end
   end

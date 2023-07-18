@@ -645,5 +645,4 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def inputs_running?
     @input_threads.any?(&:alive?)
   end
-
 end; end

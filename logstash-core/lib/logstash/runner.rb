@@ -368,7 +368,6 @@ class LogStash::Runner < Clamp::StrictCommand
 
     configure_plugin_paths(setting("path.plugins"))
 
-
     @settings.format_settings.each {|line| logger.debug(line) }
 
     # Check for absence of any configuration
@@ -441,7 +440,6 @@ class LogStash::Runner < Clamp::StrictCommand
     org.apache.logging.log4j.LogManager.shutdown
 
     agent_return
-
   rescue org.logstash.LockException => e
     logger.fatal(I18n.t("logstash.runner.locked-data-path", :path => setting("path.data")))
     return 1

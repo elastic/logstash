@@ -20,7 +20,6 @@ describe LogStash::Inputs::Metrics do
   let(:elasticsearch_username) { nil }
   let(:elasticsearch_password) { nil }
 
-
   subject(:metrics_input) { described_class.new(options) }
   let(:settings) do
     {
@@ -40,7 +39,6 @@ describe LogStash::Inputs::Metrics do
   end
 
   context "integration" do
-
     let(:schemas_path) { File.join(File.dirname(__FILE__), "..", "..", "..", "spec", "monitoring", "schemas") }
     let(:queue) { Concurrent::Array.new }
 
@@ -71,7 +69,6 @@ describe LogStash::Inputs::Metrics do
     end
 
     context "with pipeline execution" do
-
       before :each do
         allow(metrics_input).to receive(:fetch_global_stats).and_return({"uuid" => "00001" })
         allow(metrics_input).to receive(:exec_timer_task)

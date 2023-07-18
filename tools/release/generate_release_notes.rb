@@ -120,7 +120,6 @@ branch_name = "update_release_notes_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
 `git commit docs/static/releasenotes.asciidoc -m "Update release notes for #{current_release}"`
 
-
 puts "Pushing commit.."
 `git remote set-url origin https://x-access-token:#{token}@github.com/elastic/logstash.git`
 `git push origin #{branch_name}`

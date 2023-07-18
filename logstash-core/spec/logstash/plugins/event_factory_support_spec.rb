@@ -8,7 +8,6 @@ require 'logstash/codecs/base'
 require 'logstash/outputs/base'
 
 describe LogStash::Plugins::EventFactorySupport do
-
   let(:event_factory_support) { described_class }
 
   [
@@ -17,9 +16,7 @@ describe LogStash::Plugins::EventFactorySupport do
       LogStash::Codecs::Base,
       LogStash::Outputs::Base
   ].each do |base_class|
-
     context "that inherits from `#{base_class}`" do
-
       let(:plugin_base_class) { base_class }
 
       subject(:plugin_class) do
@@ -40,17 +37,14 @@ describe LogStash::Plugins::EventFactorySupport do
       let(:plugin) { plugin_class.new(options) }
 
       shared_examples 'an event factory' do
-
         it 'returns an event' do
           expect( event_factory.new_event ).to be_a LogStash::Event
           expect( event = event_factory.new_event('foo' => 'bar') ).to be_a LogStash::Event
           expect( event.get('foo') ).to eql 'bar'
         end
-
       end
 
       describe 'event_factory' do
-
         subject(:event_factory) { plugin.send(:event_factory) }
 
         it_behaves_like 'an event factory'
@@ -58,19 +52,15 @@ describe LogStash::Plugins::EventFactorySupport do
         it 'memoizes the factory instance' do
           expect( event_factory ).to be plugin.send(:event_factory)
         end
-
       end
 
       describe 'targeted_event_factory (no config :target option)' do
-
         it 'raises an error' do
           expect { plugin.send(:targeted_event_factory) }.to raise_error(ArgumentError, /target/)
         end
-
       end
 
       describe 'targeted_event_factory' do
-
         subject(:plugin_class) do
           Class.new(plugin_base_class) do
             config_name 'sample'
@@ -94,7 +84,6 @@ describe LogStash::Plugins::EventFactorySupport do
         end
 
         context 'with target' do
-
           let(:options) { super().merge('target' => '[the][baz]') }
 
           it 'returns an event' do
@@ -111,11 +100,9 @@ describe LogStash::Plugins::EventFactorySupport do
           it 'uses a different factory from the basic one' do
             expect( targeted_event_factory ).not_to be plugin.send(:event_factory)
           end
-
         end
 
         context 'from_json (integration)' do
-
           let(:json) { '[ {"foo": "bar"}, { "baz": { "a": 1 } } ]' }
 
           let(:options) { super().merge('target' => 'internal') }
@@ -126,11 +113,8 @@ describe LogStash::Plugins::EventFactorySupport do
             expect( events[0].get('[internal]') ).to eql 'foo' => 'bar'
             expect( events[1].get('[internal]') ).to eql 'baz' => { 'a' => 1 }
           end
-
         end
       end
-
     end
   end
-
 end

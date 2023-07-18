@@ -70,5 +70,4 @@ module LogStash module Filters module Geoip class DatabaseMetric
       n.gauge(:fail_check_in_days, days_without_update)
     end
   end
-
 end end end end

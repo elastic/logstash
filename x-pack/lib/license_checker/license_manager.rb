@@ -10,7 +10,6 @@ java_import java.util.concurrent.TimeUnit
 
 module LogStash
   module LicenseChecker
-
     class LicenseError < StandardError; end
 
     class LicenseManager

@@ -18,7 +18,6 @@
 require "concurrent"
 
 module LogStash module Config module Defaults
-
   extend self
 
   def input

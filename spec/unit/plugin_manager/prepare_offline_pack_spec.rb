@@ -86,7 +86,6 @@ describe LogStash::PluginManager::PrepareOfflinePack do
       end
     end
 
-
     context "if the output is directory" do
       let(:tmp_zip_file) { f = Stud::Temporary.pathname; FileUtils.mkdir_p(f); f }
       let(:cmd) { "prepare-offline-pack" }

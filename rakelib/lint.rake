@@ -16,7 +16,6 @@
 # under the License.
 
 namespace "lint" do
-
   module RuboCLI
     def self.run!(*args)
       require "rubocop"

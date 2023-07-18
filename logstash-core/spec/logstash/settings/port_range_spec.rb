@@ -19,7 +19,6 @@ require "logstash/settings"
 require "spec_helper"
 
 describe LogStash::Setting::PortRange do
-
   context "When the value is an Integer" do
     subject { LogStash::Setting::PortRange.new("mynewtest", 9000) }
 
@@ -65,7 +64,6 @@ describe LogStash::Setting::PortRange do
       expect { subject }.to raise_error
     end
 
-
     it "raises an exception on update" do
       expect { LogStash::Setting::PortRange.new("mynewtest", 10000).set("dsfnsdknfksdnfjksdnfjns") }.to raise_error
     end
@@ -74,11 +72,9 @@ describe LogStash::Setting::PortRange do
   context "when the value is an unknown type" do
     subject { LogStash::Setting::PortRange.new("mynewtest", 0.1) }
 
-
     it "raises an argument error" do
       expect { subject }.to raise_error
     end
-
 
     it "raises an exception on update" do
       expect { LogStash::Setting::PortRange.new("mynewtest", 10000).set(0.1) }.to raise_error

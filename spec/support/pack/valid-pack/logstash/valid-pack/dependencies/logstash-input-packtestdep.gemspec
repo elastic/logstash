@@ -1,4 +1,5 @@
 # coding: utf-8
+
 Gem::Specification.new do |spec|
   spec.name          = "logstash-input-packtestdep"
   spec.version       = "0.0.1"

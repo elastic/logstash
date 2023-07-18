@@ -7,18 +7,14 @@ require "logstash/modules/settings_merger"
 require 'license_checker/x_pack_info'
 
 describe LogStash::LicenseChecker::ModuleLicenseChecker do
-
   let(:license_types) { LogStash::LicenseChecker::LICENSE_TYPES }
 
   let(:settings) { LogStash::Runner::SYSTEM_SETTINGS }
 
-
   shared_examples "can not get a license" do
-
     before(:each) {
       expect(subject).to receive(:license_reader).and_return(mock_reader)
       expect(mock_reader).to receive(:fetch_xpack_info).and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
-
     }
     let(:mock_reader) {double("reader")}
 
@@ -113,5 +109,4 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
     end
     include_examples "can not get a license"
   end
-
 end

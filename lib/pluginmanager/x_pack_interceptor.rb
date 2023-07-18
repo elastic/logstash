@@ -16,11 +16,9 @@
 # under the License.
 
 module LogStash; module PluginManager
-
   # Centralised messaging about installing and removing x-pack, which is no longer a plugin, but
   # part of the distribution.
   module XPackInterceptor
-
     module Install
       extend self
 

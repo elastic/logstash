@@ -18,7 +18,6 @@
 require "logstash/util"
 
 module LogStash::Util
-
   # Decorators provides common manipulation on the event data.
   module Decorators
     include LogStash::Util::Loggable
@@ -64,7 +63,5 @@ module LogStash::Util
 
       event.set("tags", tags)
     end
-
   end # module LogStash::Util::Decorators
-
 end # module LogStash::Util

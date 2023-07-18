@@ -24,7 +24,6 @@ describe LogStash::ConvergeResult do
 
   subject { described_class.new(expected_actions_count) }
 
-
   context "When the action was executed" do
     it "returns the time of execution" do
       expect(LogStash::ConvergeResult::FailedAction.new("testing").executed_at.class).to eq(LogStash::Timestamp)

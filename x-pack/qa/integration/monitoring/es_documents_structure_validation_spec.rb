@@ -5,7 +5,6 @@
 require_relative "../spec_helper"
 
 describe "Monitoring internal collector documents" do
-
   before :all do
     @elasticsearch_service = elasticsearch
 

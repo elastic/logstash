@@ -81,7 +81,6 @@ module LogStash module Config
             next
           end
 
-
           alt_name = "module-#{module_name}"
           pipeline_id = alt_name
           module_settings.set("pipeline.id", pipeline_id)

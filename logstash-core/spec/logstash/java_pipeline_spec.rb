@@ -155,12 +155,15 @@ class DummyFlushingFilter < LogStash::Filters::Base
 
   def register() end
   def filter(event) end
+
   def periodic_flush
     true
   end
+
   def flush(options)
     [::LogStash::Event.new("message" => "dummy_flush")]
   end
+
   def close() end
 end
 
@@ -544,7 +547,6 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-
     let(:test_config_without_output_workers) {
       <<-eos
       input {
@@ -784,7 +786,6 @@ describe LogStash::JavaPipeline do
     end
   end
 
-
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
@@ -984,7 +985,6 @@ describe LogStash::JavaPipeline do
 
         pipeline.shutdown
       end
-
     end
 
     it_behaves_like 'it flushes correctly'
@@ -1315,7 +1315,6 @@ describe LogStash::JavaPipeline do
           collect_stats
           expect(collected_stats).to be_nil
         end
-
       end
 
       context 'when dlq is enabled' do

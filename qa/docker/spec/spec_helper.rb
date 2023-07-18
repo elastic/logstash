@@ -157,7 +157,6 @@ def normalized_architecture(cpu)
   end
 end
 
-
 RSpec::Matchers.define :have_correct_license_label do |expected|
   match do |actual|
     values_match? license_label_for_flavor(expected), actual

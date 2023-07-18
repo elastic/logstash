@@ -26,7 +26,6 @@ require "pluginmanager/gemfile"
 require "rubygems/specification"
 require "pathname"
 
-
 # This class cannot be in the logstash namespace, because of the way the DSL
 # class interact with the other libraries
 module Bundler

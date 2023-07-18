@@ -19,7 +19,6 @@ module LogStash
   module Util
     # @api internal
     module ThreadSafeAttributes
-
       # Thread-safe lazy initialized attribute with a given (variable) name.
       def lazy_init_attr(attribute, variable: "@#{attribute}".to_sym, &block)
         raise ArgumentError.new("invalid attribute name: #{attribute}") unless attribute.match? /^[_A-Za-z]\w*$/
@@ -38,7 +37,6 @@ module LogStash
           end
         end
       end
-
     end
   end
 end

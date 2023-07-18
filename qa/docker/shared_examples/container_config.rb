@@ -1,5 +1,4 @@
 shared_examples_for 'it runs with different configurations' do |flavor|
-
   before do
     @image = find_image(flavor)
     @container = start_container(@image, options)

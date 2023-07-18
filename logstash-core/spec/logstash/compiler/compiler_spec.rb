@@ -298,7 +298,6 @@ describe LogStash::Compiler do
           it "should merge the values of the duplicate keys into an array" do
             expect(c_plugin).to ir_eql(j.iPlugin(rand_meta, FILTER, "grok", expected_plugin_args))
           end
-
         end
 
         describe "a filter plugin that has nested Hash directives" do
@@ -427,7 +426,6 @@ describe LogStash::Compiler do
             }
           EOS
         end
-
 
         it "should contain both section declarations, in order" do
           expect(compiled_section).to ir_eql(compose(

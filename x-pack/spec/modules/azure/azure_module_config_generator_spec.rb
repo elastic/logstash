@@ -10,7 +10,6 @@ require 'logstash/modules/scaffold'
 require 'azure_module_config_generator'
 
 describe LogStash::Azure::ConfigGenerator do
-
   # always clone and work with the clone since settings are global and can bleed between tests
   let(:settings) {settings = LogStash::SETTINGS.clone}
 
@@ -140,7 +139,5 @@ event_hub_connections => ["Endpoint=sb://example1...EntityPath=insights-logs-err
       module_config = LogStash::Modules::LogStashConfig.new(scaffolding, module_hash)
       expect {module_config.config_string}.to raise_error(/'var.input.azure_event_hubs.event_hub_connections' must be set./)
     end
-
   end
-
 end

@@ -20,7 +20,6 @@ require_relative "../framework/settings"
 require_relative "../framework/helpers"
 
 describe "CLI >" do
-
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")

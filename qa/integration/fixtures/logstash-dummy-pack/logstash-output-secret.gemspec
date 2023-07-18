@@ -22,11 +22,9 @@ This plugins will require the configuration of XXXXX in the logstash.yml
 Make sure you double check your configuration
 eos
 
-
   # Gem dependencies
   s.add_runtime_dependency "manticore"
   s.add_runtime_dependency "gemoji", "< 2.0"
-
 
   s.add_development_dependency "paquet"
   s.add_development_dependency "rake"

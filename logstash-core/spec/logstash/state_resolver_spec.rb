@@ -210,6 +210,5 @@ describe LogStash::StateResolver do
         end
       end
     end
-
   end
 end

@@ -25,7 +25,6 @@ describe I18n do
     glob_path = File.join(LogStash::Environment::LOGSTASH_HOME, "logstash-*", "lib", "**", "*.rb")
 
     Dir.glob(glob_path).each do |file_name|
-
       context "in file \"#{file_name}\"" do
         File.foreach(file_name) do |line|
           next unless (match = line.match(I18N_T_REGEX))

@@ -20,7 +20,6 @@ require 'logstash/plugin_metadata'
 require 'securerandom'
 
 describe LogStash::PluginMetadata do
-
   let(:registry) { described_class }
   before(:each) { registry.reset! }
 
@@ -61,7 +60,6 @@ describe LogStash::PluginMetadata do
         expect(plugin_registry.set?(:foo)).to be false
       end
     end
-
   end
 
   describe 'instance' do

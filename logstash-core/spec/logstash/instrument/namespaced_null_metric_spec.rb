@@ -43,5 +43,4 @@ describe LogStash::Instrument::NamespacedNullMetric do
     expect(subject.namespace_name).to eq([namespace])
     expect(new_namespace.namespace_name).to eq([:root, :wally])
   end
-
 end

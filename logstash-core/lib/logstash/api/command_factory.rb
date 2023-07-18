@@ -22,7 +22,6 @@ require "logstash/api/commands/stats"
 require "logstash/api/commands/node"
 require "logstash/api/commands/default_metadata"
 
-
 module LogStash
   module Api
     class CommandFactory

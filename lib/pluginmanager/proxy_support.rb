@@ -23,7 +23,6 @@ require "fileutils"
 require "stud/temporary"
 require "jar-dependencies"
 
-
 # This is a bit of a hack, to make sure that all of our call pass to a specific proxies.
 # We do this before any jar-dependences check is done, meaning we have to silence him.
 module Jars

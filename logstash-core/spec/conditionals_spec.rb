@@ -47,6 +47,7 @@ describe "conditionals in output" do
 
     def register
     end
+
     def multi_receive(events)
     end
   end
@@ -366,7 +367,6 @@ describe "conditionals in filter" do
       sample_one("sample") { expect(subject.get("tags")).to include("failure") }
       sample_one("some sample") { expect(subject.get("tags")).to include("failure") }
     end
-
   end
 
   describe "negated expressions" do
@@ -413,7 +413,6 @@ describe "conditionals in filter" do
       sample_one("sample") { expect(subject.get("tags")).not_to include("failure") }
       sample_one("some sample") { expect(subject.get("tags")).not_to include("failure") }
     end
-
   end
 
   describe "value as an expression" do

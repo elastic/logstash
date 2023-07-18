@@ -19,7 +19,6 @@ require "spec_helper"
 require "logstash/settings"
 
 describe LogStash::Setting::SettingWithDeprecatedAlias do
-
   let(:canonical_setting_name) { "canonical.setting" }
   let(:deprecated_setting_name) { "legacy.setting" }
 
@@ -56,7 +55,6 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   end
 
   context "when only the deprecated alias is set" do
-
     let(:value) { "crusty_value" }
 
     before(:each) do
@@ -78,7 +76,6 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     context 'using a boolean setting' do
-
       let(:value) { true }
       let(:default_value) { false }
 
@@ -93,7 +90,6 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
       it 'validates deprecated alias' do
         expect { settings.get_setting(canonical_setting_name).deprecated_alias.validate_value }.to_not raise_error
       end
-
     end
   end
 

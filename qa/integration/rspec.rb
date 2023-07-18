@@ -33,5 +33,4 @@ require "rspec/core"
 
 RSpec.clear_examples
 
-
 return RSpec::Core::Runner.run($JUNIT_ARGV).to_i

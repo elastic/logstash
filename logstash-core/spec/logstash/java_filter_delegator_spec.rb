@@ -22,7 +22,6 @@ require "support/shared_contexts"
 java_import org.logstash.RubyUtil
 
 describe LogStash::FilterDelegator do
-
   class MockGauge
     def increment(_)
     end
@@ -81,6 +80,7 @@ describe LogStash::FilterDelegator do
         config :host, :validate => :string
         def register; end
         def flush(options = {}); @events ; end
+
         def filter(event)
           @events ||= []
           @events << event
@@ -116,7 +116,6 @@ describe LogStash::FilterDelegator do
     end
 
     context "when the filter buffer events" do
-
       it "has incremented :in" do
         subject.to_java.multiFilter(events)
         expect(
@@ -167,6 +166,7 @@ describe LogStash::FilterDelegator do
         config_name "super_plugin"
         config :host, :validate => :string
         def register; end
+
         def filter(event)
           event
         end
@@ -196,5 +196,4 @@ describe LogStash::FilterDelegator do
       expect(subject.config_name).to eq("super_plugin")
     end
   end
-
 end

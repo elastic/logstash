@@ -21,7 +21,6 @@ require_relative '../services/logstash_service'
 require_relative 'spec_helper.rb'
 
 describe "Test Elasticsearch output" do
-
   before(:all) {
     @fixture = Fixture.new(__FILE__)
     es_allow_wildcard_deletes(@fixture.get_service("elasticsearch").get_client)

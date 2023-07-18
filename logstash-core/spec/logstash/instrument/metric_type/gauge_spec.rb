@@ -41,6 +41,4 @@ describe LogStash::Instrument::MetricType::Gauge do
       expect(LogStash::Json.dump(subject)).to eq("\"#{value}\"")
     end
   end
-
-
 end

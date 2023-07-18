@@ -20,7 +20,6 @@ require 'pluginmanager/util'
 require 'gems'
 
 describe LogStash::PluginManager do
-
   describe "fetching plugin information" do
     let(:plugin_name) { "logstash-output-elasticsearch" }
 
@@ -48,7 +47,6 @@ describe LogStash::PluginManager do
         version_info = LogStash::PluginManager.fetch_latest_version_info(plugin_name)
         expect(version_info["number"]).to eq("1.0.7")
       end
-
 
       it "should search for the last version information with prerelease" do
         version_info = LogStash::PluginManager.fetch_latest_version_info(plugin_name, :pre => true)

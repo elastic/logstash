@@ -28,7 +28,6 @@ module LogStash module Docgen
       /%PLUGIN%/ => :config_name
     }
 
-
     def initialize(options = {})
       @options = options
       @template = read_template(TEMPLATE_FILE)

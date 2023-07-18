@@ -24,7 +24,6 @@ describe LogStash::Api::Modules::Logging do
   include_context "api setup"
 
   describe "#logging" do
-
     context "when setting a logger's log level" do
       it "should return a positive acknowledgement on success" do
         put '/', '{"logger.logstash": "ERROR"}'

@@ -35,5 +35,4 @@ describe LogStash::Instrument::MetricType::Counter do
       expect(LogStash::Json.dump(subject)).to eq("0")
     end
   end
-
 end
