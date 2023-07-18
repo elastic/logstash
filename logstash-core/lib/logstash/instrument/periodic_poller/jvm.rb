@@ -44,7 +44,7 @@ module LogStash module Instrument module PeriodicPoller
       def self.get(gc_name)
         if YOUNG_GC_NAMES.include?(gc_name)
           YOUNG
-        elsif(OLD_GC_NAMES.include?(gc_name))
+        elsif (OLD_GC_NAMES.include?(gc_name))
           OLD
         end
       end
