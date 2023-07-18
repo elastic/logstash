@@ -73,6 +73,8 @@ Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: true
 Layout/SpaceAroundKeyword:
   Enabled: true
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
 Layout/SpaceAroundOperators:
   Enabled: true
 
@@ -196,8 +198,6 @@ Layout/SingleLineBlockChain:
 Layout/SpaceAfterMethodName:
   Enabled: false
 Layout/SpaceAfterNot:
-  Enabled: false
-Layout/SpaceAroundMethodCallOperator:
   Enabled: false
 Layout/SpaceBeforeBlockBraces:
   Enabled: false
