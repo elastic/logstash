@@ -440,7 +440,6 @@ class LogStash::Runner < Clamp::StrictCommand
     org.apache.logging.log4j.LogManager.shutdown
 
     agent_return
-
   rescue org.logstash.LockException => e
     logger.fatal(I18n.t("logstash.runner.locked-data-path", :path => setting("path.data")))
     return 1

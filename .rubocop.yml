@@ -41,6 +41,12 @@ Layout/EmptyLinesAroundArguments:
   Enabled: true
 Layout/EmptyLinesAroundAttributeAccessor:
   Enabled: true
+Layout/EmptyLinesAroundBeginBody:
+  Enabled: true
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: true
+Layout/EmptyLinesAroundExceptionHandlingKeywords:
+  Enabled: true
 Layout/TrailingWhitespace:
   Enabled: true
 Layout/TrailingEmptyLines:
@@ -93,13 +99,7 @@ Layout/EmptyLineAfterMagicComment:
   Enabled: false
 Layout/EmptyLineAfterMultilineCondition:
   Enabled: false
-Layout/EmptyLinesAroundBeginBody:
-  Enabled: true
-Layout/EmptyLinesAroundBlockBody:
-  Enabled: true
 Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-Layout/EmptyLinesAroundExceptionHandlingKeywords:
   Enabled: false
 Layout/EmptyLinesAroundMethodBody:
   Enabled: false

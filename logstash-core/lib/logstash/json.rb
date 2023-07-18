@@ -27,7 +27,6 @@ module LogStash
       # options[:symbolize_keys] ? JrJackson::Raw.parse_sym(data) : JrJackson::Raw.parse_raw(data)
 
       JrJackson::Ruby.parse(data, options)
-
     rescue JrJackson::ParseError => e
       raise LogStash::Json::ParserError.new(e.message)
     end
@@ -38,7 +37,6 @@ module LogStash
       # also look for Java::JavaUtil::ArrayList, see TODO submit issue
       # o.is_a?(Enumerable) ? JrJackson::Raw.generate(o) : JrJackson::Json.dump(o)
       JrJackson::Base.generate(o, options)
-
     rescue => e
       raise LogStash::Json::GeneratorError.new(e.message)
     end
