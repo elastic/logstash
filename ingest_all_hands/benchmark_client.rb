@@ -45,6 +45,19 @@ module Lumberjack
       send_payload(payload)
     end
 
+    public
+    def read_ack
+      ack = @socket.sysread(6)
+      if ack.size > 2
+        # ACK os size 2 are "2A" messages which are keep alive
+        unpacked = ack.unpack('AAN')
+        if unpacked[0] == "2" && unpacked[1] == "A"
+          sequence_num = unpacked[2]
+          #puts "Received ACK #{sequence_num}"
+        end
+      end
+    end
+
     private
     def inc
       @sequence = 0 if @sequence + 1 > Lumberjack::SEQUENCE_MAX
@@ -94,7 +107,7 @@ class Benchmark
 
   attr_reader :client_count
 
-  def initialize(traffic_type = :tcp)
+  def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil)
     @client_count = 24 #cores * 2 = event loops threads
 #     @total_traffic_for_connection = 256 * MB
     @total_traffic_for_connection = 1024 * MB
@@ -102,10 +115,12 @@ class Benchmark
 #     @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
     @message_sizes = [8 * KB]
     @traffic_type = traffic_type
+    @beats_ack = beats_ack
+    @acks_per_second = acks_per_second
   end
 
   def run
-    puts "Using #{client_count} clients"
+    puts "Using #{client_count} clients, starting at: #{Time.now()}"
     @message_sizes.each do |message_size|
       puts "\n\n"
       message = 'a' * message_size + "\n"
@@ -119,6 +134,7 @@ class Benchmark
         speeds << execute_message_benchmark(message, repetitions)
       end
 
+      puts "Terminated  at: #{Time.now()}"
       puts "Average evts(#{message_size}bytes)/sec (mean): #{speeds.sum / test_iterations} values: #{speeds}"
     end
   end
@@ -164,7 +180,7 @@ class Benchmark
   def beats_traffic_load(client_count, message, repetitions, sent_messages)
     clients = @client_count.times.map { Lumberjack::Client.new }
 
-    threads = client_count.times.map do |i|
+    writer_threads = client_count.times.map do |i|
       Thread.new(i) do |i|
         client = clients[i]
         # keep message size above 16k, requiring two TLS records
@@ -177,19 +193,54 @@ class Benchmark
       end
     end
 
-    threads.each(&:join)
+    if @beats_ack
+      puts "Starting ACK reading thread"
+      reader_threads = client_count.times.map do |i|
+        Thread.new(i) do |i|
+          client = clients[i]
+          exit = false
+          acks_counter = 0;
+          while (!exit)
+            if acks_counter == @acks_per_second
+              sleep 1
+              acks_counter = 0
+            end
+            begin
+              client.read_ack
+              acks_counter = acks_counter + 1
+            rescue
+              puts "Closing reader thread for client #{i}"
+              exit = true
+            end
+          end
+        end
+      end
+    end
+
+    writer_threads.each(&:join)
+    reader_threads.each(&:join) if @beats_ack
   end
 end
 
-option_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: ruby tcp_client.rb benchmark_client.rb --test=beats|tcp"
-  opts.on '-tKIND', '--test=KIND', 'Select to benchmark the TCP or Beats input'
-end
 options = {}
+option_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: ruby tcp_client.rb benchmark_client.rb --test=beats|tcp -ack [yes|no] --acks_per_second 1000"
+  opts.on '-tKIND', '--test=KIND', 'Select to benchmark the TCP or Beats input'
+  opts.on '-a' '--[no-]ack [FLAG]', TrueClass, 'In beats determine if read ACKs flow or not' do |v|
+    options[:ack] = v.nil? ? true : v
+  end
+  opts.on("-fACKS", "--acks_per_second ACKS", Integer, "Rate ACKs per second")
+end
 option_parser.parse!(into: options)
+
+puts "Parsed options: #{options}"
+
+ack = options[:ack]
 
 kind = :tcp
 kind = options[:test].downcase.to_sym if options[:test]
+acks_per_second = nil
+acks_per_second = options[:acks_per_second] if options[:acks_per_second]
 
-benchmark = Benchmark.new(kind)
+benchmark = Benchmark.new(kind, ack, acks_per_second)
 benchmark.run
