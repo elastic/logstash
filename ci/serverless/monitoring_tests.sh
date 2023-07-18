@@ -4,7 +4,7 @@ set -ex
 source ./$(dirname "$0")/common.sh
 
 get_monitor_count() {
-  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/.monitoring-logstash-*/_count" | jq '.count'
+  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/.monitoring-logstash-7-*/_count" | jq '.count'
 }
 
 compare_monitor_count() {
