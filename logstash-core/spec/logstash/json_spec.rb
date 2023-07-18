@@ -21,7 +21,6 @@ require "logstash/environment"
 require "logstash/util"
 
 describe "LogStash::Json" do
-
   let(:hash)   {{"a" => 1}}
   let(:json_hash)   {"{\"a\":1}"}
 
@@ -73,7 +72,6 @@ describe "LogStash::Json" do
     end
 
     context "pretty print" do
-
       let(:hash) { { "foo" => "bar", :zoo => 2 } }
 
       it "should serialize with pretty print" do

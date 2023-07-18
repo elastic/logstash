@@ -28,9 +28,7 @@ rescue LoadError
 end
 
 describe "LogStash::Util::Accessors", :if => class_exists do
-
   context "using simple field" do
-
     it "should get value of word key" do
       str = "hello"
       data = { "hello" => "world" }
@@ -89,7 +87,6 @@ describe "LogStash::Util::Accessors", :if => class_exists do
   end
 
   context "using field path" do
-
     it "should get shallow string value of word key" do
       str = "[hello]"
       data = { "hello" =>  "world" }

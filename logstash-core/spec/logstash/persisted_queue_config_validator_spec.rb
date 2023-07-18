@@ -22,7 +22,6 @@ require 'securerandom'
 require_relative '../support/helpers'
 
 describe LogStash::PersistedQueueConfigValidator do
-
   context("when persisted queues are enabled") do
     let(:input_block) { "input { generator {} }" }
     let(:config_path) { temporary_file(input_block) }
@@ -212,6 +211,5 @@ describe LogStash::PersistedQueueConfigValidator do
         end
       end
     end
-
   end
 end

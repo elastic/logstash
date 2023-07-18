@@ -8,7 +8,6 @@ require "filters/geoip/download_manager"
 require "filters/geoip/database_manager"
 
 describe LogStash::Filters::Geoip do
-
   describe 'DownloadManager', :aggregate_failures do
     let(:mock_metadata)  { double("database_metadata") }
     let(:download_manager) do
@@ -27,7 +26,6 @@ describe LogStash::Filters::Geoip do
 
     # this is disabled until https://github.com/elastic/logstash/issues/13261 is solved
     context "rest client" do
-
       it "can call endpoint" do
         conn = download_manager.send(:rest_client)
         res = conn.get("#{GEOIP_STAGING_ENDPOINT}?key=#{SecureRandom.uuid}&elastic_geoip_service_tos=agree")
@@ -92,7 +90,6 @@ describe LogStash::Filters::Geoip do
         updated_db = download_manager.send(:check_update)
         expect(updated_db.size).to eql(0)
       end
-
     end
 
     context "download database" do

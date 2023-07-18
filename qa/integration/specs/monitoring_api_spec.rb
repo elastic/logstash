@@ -343,5 +343,4 @@ describe "Test Monitoring API" do
   def logging_put_assert(result)
     expect(result['acknowledged']).to be(true), "result not acknowledged, got: #{result.inspect}"
   end
-
 end

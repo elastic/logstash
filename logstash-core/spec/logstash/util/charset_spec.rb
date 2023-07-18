@@ -50,7 +50,6 @@ describe LogStash::Util::Charset do
         expect(subject.convert(data).encoding.name).to eq("UTF-8")
       end
     end
-
   end
 
   context "with valid non UTF-8 source encoding" do

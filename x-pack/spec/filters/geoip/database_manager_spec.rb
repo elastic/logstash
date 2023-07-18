@@ -7,7 +7,6 @@ require "filters/geoip/database_manager"
 require "filters/geoip/database_metric"
 
 describe LogStash::Filters::Geoip do
-
   describe 'DatabaseManager', :aggregate_failures do
     let(:mock_geoip_plugin)  { double("geoip_plugin") }
     let(:mock_metadata)  { double("database_metadata") }

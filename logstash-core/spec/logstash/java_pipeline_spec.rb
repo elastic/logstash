@@ -985,7 +985,6 @@ describe LogStash::JavaPipeline do
 
         pipeline.shutdown
       end
-
     end
 
     it_behaves_like 'it flushes correctly'
@@ -1316,7 +1315,6 @@ describe LogStash::JavaPipeline do
           collect_stats
           expect(collected_stats).to be_nil
         end
-
       end
 
       context 'when dlq is enabled' do

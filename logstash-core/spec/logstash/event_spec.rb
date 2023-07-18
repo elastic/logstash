@@ -342,7 +342,6 @@ describe LogStash::Event do
   end
 
   context "initialize" do
-
     it "should accept Ruby Hash" do
       e = LogStash::Event.new({"foo" => 1, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.get("foo")).to eq(1)

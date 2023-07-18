@@ -168,7 +168,6 @@ module LogStash; module Config; module AST
       generate_variables
       code = []
       @variables.each do |plugin, name|
-
         code << <<-CODE
           @generated_objects[:#{name}] = #{plugin.compile_initializer}
           @#{plugin.plugin_type}s << @generated_objects[:#{name}]

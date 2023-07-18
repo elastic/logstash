@@ -18,7 +18,6 @@
 require "spec_helper"
 
 describe  FileWatch::BufferedTokenizer  do
-
   subject { FileWatch::BufferedTokenizer.new }
 
   it "should tokenize a single token" do
@@ -45,7 +44,6 @@ describe  FileWatch::BufferedTokenizer  do
   end
 
   context 'with delimiter' do
-
     subject { FileWatch::BufferedTokenizer.new(delimiter) }
 
     let(:delimiter) { "||" }
@@ -58,7 +56,5 @@ describe  FileWatch::BufferedTokenizer  do
       expect(subject.extract("")).to eq([])
       expect(subject.extract("foo||bar")).to eq(["foo"])
     end
-
   end
-
 end

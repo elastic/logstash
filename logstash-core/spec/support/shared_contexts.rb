@@ -36,7 +36,6 @@ shared_context "execution_context" do
 end
 
 shared_context "api setup" do |settings_overrides={}|
-
   ##
   # blocks until the condition returns true, or the limit has passed
   # @return [true] if the condition was met

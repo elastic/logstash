@@ -47,7 +47,6 @@ module Bundler
 
     def uninstall!(gem_name)
       unfreeze_gemfile do
-
         dependencies_from = dependants_gems(gem_name)
 
         if dependencies_from.size > 0

@@ -1,5 +1,4 @@
 shared_examples_for 'the container is configured correctly' do |flavor|
-
   before do
     @image = find_image(flavor)
     @container = create_container(@image, {})

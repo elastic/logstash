@@ -22,7 +22,6 @@ require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 
 describe "uncaught exception" do
-
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")
@@ -82,5 +81,4 @@ describe "uncaught exception" do
     end
     raise 'LS process did not exit!' unless @logstash.exited?
   end
-
 end

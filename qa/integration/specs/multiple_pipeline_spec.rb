@@ -105,7 +105,6 @@ describe "Test Logstash service when multiple pipelines are used" do
   end
 
   context 'readable pipelines.yml with invalid YAML contents' do
-
     let!(:pipelines_yaml) do
       <<~EOYAML
          - pipeline.id: my_id

@@ -45,7 +45,6 @@ describe "Java plugin API" do
   let!(:settings_dir) { Stud::Temporary.directory }
 
   it "successfully sends events through Java plugins" do
-
     @logstash.start_background_with_config_settings(config_to_temp_file(@fixture.config), settings_dir)
 
     # wait for Logstash to start

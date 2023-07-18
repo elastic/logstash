@@ -19,7 +19,6 @@ require "spec_helper"
 require "logstash/modules/cli_parser"
 
 describe LogStash::Modules::CLIParser do
-
   subject { LogStash::Modules::CLIParser.new(module_names, module_variables) }
   let(:logger) { double("logger") }
   let(:module_name) { "foo" }
@@ -140,5 +139,4 @@ describe LogStash::Modules::CLIParser do
       end
     end
   end
-
 end

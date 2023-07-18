@@ -9,7 +9,6 @@ require 'logstash/outputs/base'
 java_import "org.logstash.util.CATrustedFingerprintTrustStrategy"
 
 describe LogStash::Plugins::CATrustedFingerprintSupport do
-
   let(:ca_trusted_fingerprint_support) { described_class }
 
   [
@@ -18,9 +17,7 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
       LogStash::Codecs::Base,
       LogStash::Outputs::Base
   ].each do |base_class|
-
     context "that inherits from `#{base_class}`" do
-
       let(:plugin_base_class) { base_class }
 
       subject(:plugin_class) do
@@ -39,7 +36,6 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
       let(:plugin) { plugin_class.new(options) }
 
       context '#initialize' do
-
         shared_examples 'normalizes fingerprints' do
           context '#ca_trusted_fingerprint' do
             it "normalizes to an array of capital hex fingerprints" do
@@ -109,5 +105,4 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
       end
     end
   end
-
 end

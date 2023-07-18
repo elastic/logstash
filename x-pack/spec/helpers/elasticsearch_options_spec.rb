@@ -168,7 +168,6 @@ describe LogStash::Helpers::ElasticsearchOptions do
   end
 
   describe "es_options_from_settings" do
-
     context "with implicit username" do
       let(:settings) do
         {

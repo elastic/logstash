@@ -9,7 +9,6 @@ require "stud/temporary"
 require "fileutils"
 
 describe LogStash::Filters::Geoip do
-
   describe 'DatabaseMetadata', :aggregate_failures do
     let(:database_type) { LogStash::Filters::Geoip::CITY }
     let(:dbm) do

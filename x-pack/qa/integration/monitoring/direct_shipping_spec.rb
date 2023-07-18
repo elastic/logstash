@@ -6,7 +6,6 @@ require_relative "../spec_helper"
 require 'securerandom'
 
 describe "Direct shipping" do
-
   before :all do
     @elasticsearch_service = elasticsearch
 

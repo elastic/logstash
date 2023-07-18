@@ -48,7 +48,6 @@ describe LogStash::Setting::WritableDirectory do
     before { subject.set(path) }
 
     context "when the directory is missing" do
-
       context "and the parent is writable" do
         after {
           Dir.unlink(path)

@@ -21,7 +21,6 @@
 require 'pathname'
 
 namespace "test" do
-
   desc "run the java unit tests"
   task "core-java" do
     exit(1) unless system('./gradlew clean javaTests')

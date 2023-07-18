@@ -708,7 +708,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             expect { subject.pipeline_configs }.to raise_error LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError
           end
         end
-
       }
     end
 
@@ -745,7 +744,6 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect { subject.pipeline_configs }.to raise_error /Something bad/
       end
     end
-
   end
 
   describe "#get_es_version" do

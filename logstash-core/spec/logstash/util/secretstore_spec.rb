@@ -20,7 +20,6 @@ require "logstash/settings"
 java_import "org.logstash.secret.store.SecretStoreExt"
 
 describe SecretStoreExt do
-
   subject {SecretStoreExt}
   let(:settings) { LogStash::SETTINGS.clone }
 

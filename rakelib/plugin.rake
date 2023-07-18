@@ -19,7 +19,6 @@ require_relative "default_plugins"
 require 'rubygems'
 
 namespace "plugin" do
-
   def install_plugins(*args)
     require_relative "../lib/pluginmanager/main"
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["install"] + args)
@@ -105,5 +104,4 @@ namespace "plugin" do
 
     task.reenable # Allow this task to be run again
   end
-
 end # namespace "plugin"

@@ -120,7 +120,6 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
           )[:filter]
           expect(event_metrics[:send_to].value).to eq([address])
         end
-
       end
 
       after(:each) do

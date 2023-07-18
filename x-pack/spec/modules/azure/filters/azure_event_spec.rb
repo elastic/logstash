@@ -85,7 +85,6 @@ describe LogStash::Filters::AzureEvent do
         expect(subject).not_to include("properties")
       end
     end
-
   end
 
   describe "Parses the service health activity log" do
@@ -210,7 +209,6 @@ describe LogStash::Filters::AzureEvent do
       expect(subject).to include("activity_log_Autoscale_properties")
       expect(subject).not_to include("properties")
     end
-
   end
 
   describe "Parses the Alert activity log" do
@@ -254,7 +252,6 @@ describe LogStash::Filters::AzureEvent do
       expect(subject).to include("activity_log_Alert_properties")
       expect(subject).not_to include("properties")
     end
-
   end
 
   describe "Parses database wait stats logs" do
@@ -287,9 +284,7 @@ describe LogStash::Filters::AzureEvent do
       expect(subject.get("[azure][category]")).to eq("DatabaseWaitStatistics")
       expect(subject).to include("sql_diagnostics_DatabaseWaitStatistics_properties")
       expect(subject).not_to include("properties")
-
     end
-
   end
   describe "Parses database block logs" do
     let(:config) do
@@ -498,5 +493,4 @@ describe LogStash::Filters::AzureEvent do
       expect(subject.get("[tags][0]")).to eq("_azure_event_failure")
     end
   end
-
 end

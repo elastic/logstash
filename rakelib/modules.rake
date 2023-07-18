@@ -16,7 +16,6 @@
 # under the License.
 
 namespace "modules" do
-
   def unpacker(src_file, dest_dir)
     puts "Reading #{src_file}"
     array = JSON.parse(IO.read(src_file))

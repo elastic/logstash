@@ -25,7 +25,6 @@ describe LogStash::Api::Modules::Node do
   include_examples "not found"
 
   describe "#hot threads" do
-
     before(:all) do
       get "/hot_threads"
     end
@@ -39,7 +38,6 @@ describe LogStash::Api::Modules::Node do
     end
 
     context "#threads count" do
-
       before(:all) do
         get "/hot_threads?threads=5"
       end
@@ -63,7 +61,6 @@ describe LogStash::Api::Modules::Node do
     end
 
     context "broken params in URL" do
-
       before(:all) do
         get "/hot_threads?human=?threads=5"
       end
@@ -80,7 +77,6 @@ describe LogStash::Api::Modules::Node do
         "/hot_threads?human=1",
         "/hot_threads?human=t",
       ].each do |path|
-
         before(:all) do
           get path
         end

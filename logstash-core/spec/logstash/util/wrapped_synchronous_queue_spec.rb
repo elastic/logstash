@@ -19,7 +19,6 @@ require "spec_helper"
 require "logstash/instrument/collector"
 
 describe LogStash::WrappedSynchronousQueue do
-
   subject {LogStash::WrappedSynchronousQueue.new(5)}
 
   describe "queue clients" do

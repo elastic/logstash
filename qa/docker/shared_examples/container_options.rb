@@ -1,5 +1,4 @@
 shared_examples_for 'it applies settings correctly' do |flavor|
-
   before do
     @image = find_image(flavor)
     @container = start_container(@image, options)

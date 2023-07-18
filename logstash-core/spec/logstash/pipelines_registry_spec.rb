@@ -19,7 +19,6 @@ require "spec_helper"
 require "logstash/pipelines_registry"
 
 describe LogStash::PipelinesRegistry do
-
   let(:pipeline_id) { "test".to_sym }
   let(:pipeline) { double("Pipeline") }
   let(:logger) { double("Logger") }
@@ -109,7 +108,6 @@ describe LogStash::PipelinesRegistry do
       let (:pipeline2) { double("pipeline2") }
 
       it "should create a loading state before calling the create block" do
-
         # create a thread which calls create_pipeline and wait in the create
         # block so we can controle the pipeline initialization phase
         t = Thread.new do
@@ -342,6 +340,5 @@ describe LogStash::PipelinesRegistry do
         expect(subject.running_user_defined_pipelines).to be_empty
       end
     end
-
   end
 end

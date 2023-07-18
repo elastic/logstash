@@ -21,7 +21,6 @@ require "logstash/settings"
 require "fileutils"
 
 describe LogStash::Settings do
-
   let(:numeric_setting_name) { "number" }
   let(:numeric_setting) { LogStash::Setting.new(numeric_setting_name, Numeric, 1) }
 
@@ -186,7 +185,6 @@ describe LogStash::Settings do
   end
 
   describe "#from_yaml" do
-
     before :each do
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
       LogStash::Util::SubstitutionVariables.send(:reset_secret_store)
@@ -197,7 +195,6 @@ describe LogStash::Settings do
     end
 
     context "placeholders in flat logstash.yml" do
-
       after do
         ENV.delete('SOME_LOGSTASH_SPEC_ENV_VAR')
         ENV.delete('some.logstash.spec.env.var')
@@ -250,7 +247,6 @@ describe LogStash::Settings do
     } }
 
     context "when running PasswordValidator coerce" do
-
       it "raises an error when supplied value is not LogStash::Util::Password" do
         expect {
           LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", password_policies)
@@ -272,7 +268,6 @@ describe LogStash::Settings do
   end
 
   context "placeholders in nested logstash.yml" do
-
     before :each do
       LogStash::SETTINGS.set("keystore.file", File.join(File.dirname(__FILE__), "../../src/test/resources/logstash.keystore.with.default.pass"))
       LogStash::Util::SubstitutionVariables.send(:reset_secret_store)

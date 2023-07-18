@@ -42,7 +42,6 @@ describe LogStash::PluginManager::Install do
   end
 
   context "when installs alias plugin" do
-
     before(:each) do
       # mocked to avoid validation of options
       expect(cmd).to receive(:validate_cli_options!).and_return(nil)

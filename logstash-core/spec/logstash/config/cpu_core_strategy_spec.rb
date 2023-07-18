@@ -19,7 +19,6 @@ require "spec_helper"
 require "logstash/config/cpu_core_strategy"
 
 describe LogStash::Config::CpuCoreStrategy do
-
   before do
     allow(LogStash::Config::Defaults).to receive(:cpu_cores).and_return(cores)
   end
@@ -135,5 +134,4 @@ describe LogStash::Config::CpuCoreStrategy do
       expect(described_class.max_minus_two).to eq(1)
     end
   end
-
 end

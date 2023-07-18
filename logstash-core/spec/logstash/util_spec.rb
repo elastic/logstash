@@ -28,7 +28,6 @@ module TestingClassName
 end
 
 describe LogStash::Util do
-
   subject { described_class }
 
   context "stringify_keys" do

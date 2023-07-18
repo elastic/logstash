@@ -46,7 +46,6 @@ describe LogStash::Modules::SettingsMerger do
   end
 
   describe "#merge_kibana_auth" do
-
     before do
       described_class.merge_kibana_auth!(mod_settings)
     end
@@ -72,7 +71,6 @@ describe LogStash::Modules::SettingsMerger do
         expect(mod_settings["var.kibana.password"]).to eq("stott")
       end
     end
-
   end
 
   describe "#merge_cloud_settings" do

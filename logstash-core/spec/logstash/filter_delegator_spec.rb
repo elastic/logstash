@@ -21,7 +21,6 @@ require "logstash/filter_delegator"
 require "support/shared_contexts"
 
 describe LogStash::FilterDelegator do
-
   include_context "execution_context"
 
   let(:filter_id) { "my-filter" }
@@ -86,7 +85,6 @@ describe LogStash::FilterDelegator do
     end
 
     context "when the filter buffer events" do
-
       it "has incremented :in" do
         subject.multi_filter(events)
         expect(collector.snapshot_metric.metric_store.get_with_path("/null")[:null]["my-filter".to_sym][:events][:in].value).to eq(events.size)
@@ -161,5 +159,4 @@ describe LogStash::FilterDelegator do
       expect(subject.config_name).to eq("super_plugin")
     end
   end
-
 end

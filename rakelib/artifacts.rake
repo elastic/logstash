@@ -16,7 +16,6 @@
 # under the License.
 
 namespace "artifact" do
-
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
   if VERSION_QUALIFIER

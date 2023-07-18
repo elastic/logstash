@@ -20,7 +20,6 @@ require 'pluginmanager/util'
 require 'gems'
 
 describe LogStash::PluginManager do
-
   describe "fetching plugin information" do
     let(:plugin_name) { "logstash-output-elasticsearch" }
 

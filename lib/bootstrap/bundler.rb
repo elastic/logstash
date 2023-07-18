@@ -143,7 +143,6 @@ module LogStash
                 "BUNDLE_GEMFILE" => LogStash::Environment::GEMFILE_PATH,
                 "BUNDLE_SILENCE_ROOT_WARNING" => "true",
                 "BUNDLE_WITHOUT" => options[:without].join(":")}) do
-
         if !debug?
           # Will deal with transient network errors
           execute_bundler_with_retry(options)

@@ -10,7 +10,6 @@ require 'logstash/modules/scaffold'
 require 'arcsight_module_config_helper'
 
 describe LogStash::Arcsight::ConfigHelper do
-
   let(:sample_yaml_folder) { ::File.join(File.dirname(__FILE__), "yaml") }
   let(:settings) { settings = LogStash::SETTINGS.clone }
   let(:module_name) { "arcsight" }

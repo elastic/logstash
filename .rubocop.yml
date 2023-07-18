@@ -94,9 +94,9 @@ Layout/EmptyLineAfterMagicComment:
 Layout/EmptyLineAfterMultilineCondition:
   Enabled: false
 Layout/EmptyLinesAroundBeginBody:
-  Enabled: false
+  Enabled: true
 Layout/EmptyLinesAroundBlockBody:
-  Enabled: false
+  Enabled: true
 Layout/EmptyLinesAroundClassBody:
   Enabled: false
 Layout/EmptyLinesAroundExceptionHandlingKeywords:

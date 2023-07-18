@@ -29,7 +29,6 @@ describe "CLI > logstash-plugin remove" do
 
     if RbConfig::CONFIG["host_os"] == "linux"
       context "without internet connection (linux seccomp wrapper)" do
-
         let(:offline_wrapper_path) { File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "fixtures", "offline_wrapper")) }
         let(:offline_wrapper_cmd) { File.join(offline_wrapper_path, "offline") }
 
@@ -74,7 +73,6 @@ describe "CLI > logstash-plugin remove" do
             expect(presence_check.stderr_and_stdout).to match(/logstash-codec-json/)
           end
         end
-
       end
     else
       context "when no other plugins depends on this plugin" do

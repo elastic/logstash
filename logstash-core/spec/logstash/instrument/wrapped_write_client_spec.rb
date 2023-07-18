@@ -138,5 +138,4 @@ describe LogStash::WrappedWriteClient do
 
     include_examples "queue tests"
   end
-
 end

@@ -61,7 +61,6 @@ describe LogStash::Api::Modules::Plugins do
   end
 
   context "#values" do
-
     let(:payload) { LogStash::Json.load(last_response.body) }
 
     it "return totals of plugins" do

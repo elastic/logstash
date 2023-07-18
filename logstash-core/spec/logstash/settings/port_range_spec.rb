@@ -19,7 +19,6 @@ require "logstash/settings"
 require "spec_helper"
 
 describe LogStash::Setting::PortRange do
-
   context "When the value is an Integer" do
     subject { LogStash::Setting::PortRange.new("mynewtest", 9000) }
 

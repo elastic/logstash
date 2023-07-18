@@ -37,7 +37,6 @@ describe LogStash::Setting::Bytes do
   subject { described_class.new("a byte value", default, false) }
 
   describe "#set" do
-
     # Hard-coded test just to make sure at least one known case is working
     context "when given '10mb'" do
       it "returns 10485760" do

@@ -115,5 +115,4 @@ describe LogStash::JavaPipeline do
       subject.shutdown
     end
   end
-
 end
