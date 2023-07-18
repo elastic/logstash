@@ -84,7 +84,6 @@ describe "LogStash::Util::JavaVersion" do
       # Not sure this is what is being returned, but it doesn't match the
       # regex, which is the point
       expect(mod.parse_java_version("JCL - 20140103_01 based on Oracle 7u51-b11
-
 ")).to be_nil
     end
 
