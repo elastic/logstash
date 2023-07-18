@@ -631,7 +631,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.15.8-java)
+    logstash-output-elasticsearch (11.15.9-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -755,7 +755,7 @@ GEM
     rspec-expectations (3.12.3)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
-    rspec-mocks (3.12.5)
+    rspec-mocks (3.12.6)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.1)
