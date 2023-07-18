@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-12,Logstash 7.17.12>>
 * <<logstash-7-17-11,Logstash 7.17.11>>
 * <<logstash-7-17-10,Logstash 7.17.10>>
 * <<logstash-7-17-9,Logstash 7.17.9>>
@@ -69,6 +70,53 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-12]]
+=== Logstash 7.17.12 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.12
+
+* Add initial PQ sizing doc https://github.com/elastic/logstash/pull/15033[#15033]
+* Backport PR #15033 to 7.17: Add initial PQ sizing doc https://github.com/elastic/logstash/pull/15171[#15171]
+* Fix Java 8 compatibility issues https://github.com/elastic/logstash/pull/15178[#15178]
+
+=== Logstash Commits between 7.17 and 7.17.11
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.11..7.17"
+
+fb45b171b - (HEAD -> 7.17, origin/7.17) Upgrade dependencies, remove deprecated dependencies. (#15134) (12 hours ago) <Mashhur>
+6ac076092 - specs: assert presence of logging without risking NoMethodError (#14633) (#14719) (12 hours ago) <github-actions[bot]>
+8fac9131b - Update patch plugin versions in gemfile lock (#15187) (12 hours ago) <github-actions[bot]>
+55b39e17f - Add release flag on the Gradle CompileJava task (#15178) (34 hours ago) <Edmo Vamerlatti Costa>
+c2cb579eb - Add initial PQ sizing doc (#15033) (#15171) (4 days ago) <github-actions[bot]>
+985afee00 - Version Bump to 7.17.12 (#15128) (3 weeks ago) <Rob Bavey>
+b4f269455 - Release notes for 7.17.11 (#15107) (3 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.11..7.17 *.release"
+Changed plugin versions:
+logstash-input-azure_event_hubs: 1.4.4 -> 1.4.5
+logstash-input-snmp: 1.3.1 -> 1.3.2
+logstash-mixin-aws: 4.4.1 -> 5.1.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Azure_event_hubs Input - 1.4.5*
+
+* Upgrade multiple dependencies such as `gson`, `log4j2`, `jackson` to make the plugin stable https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/83[#83]
+
+*Snmp Input - 1.3.2*
+
+*  Docs: add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs
+
+*Aws Mixin - 5.1.0*
+
+* Add support for 'addition_settings' configuration options used by S3 and SQS input plugins https://github.com/logstash-plugins/logstash-mixin-aws/pull/53[#53].
+
+* Drop support for aws-sdk-v1
 
 
 [[logstash-7-17-11]]
