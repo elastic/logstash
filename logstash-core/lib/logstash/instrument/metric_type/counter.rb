@@ -22,7 +22,6 @@ module LogStash module Instrument module MetricType
 
     def initialize(namespaces, key)
       super(key.to_s)
-
     end
 
     def execute(action, value = 1)

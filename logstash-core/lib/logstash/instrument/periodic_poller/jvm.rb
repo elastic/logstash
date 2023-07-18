@@ -117,7 +117,6 @@ module LogStash module Instrument module PeriodicPoller
       metric.gauge(cpu_path, :total_in_millis, cpu_metrics["total_in_millis"])
 
       metric.gauge(path + [:mem], :total_virtual_in_bytes, process_metrics["mem"]["total_virtual_in_bytes"])
-
     end
 
     def collect_load_average

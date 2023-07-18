@@ -58,7 +58,6 @@ module LogStash::PluginManager
   # @option options [Array<String>] :rubygems_source Gem sources to lookup for the verification
   # @return [Boolean] true if valid logstash plugin gem name & version or a .gem file
   def self.logstash_plugin?(plugin, version = nil, options={})
-
     if plugin_file?(plugin)
       begin
         return logstash_plugin_gem_spec?(plugin_file_spec(plugin))
@@ -174,7 +173,6 @@ module LogStash::PluginManager
   # @param plugin_list [Array] array of [plugin name, version] tuples
   # @return [Array] array of [plugin name, version, ...] tuples when duplicate names have been merged and non duplicate version requirements added
   def self.merge_duplicates(plugin_list)
-
     # quick & dirty naive dedup for now
     # TODO: properly merge versions requirements
     plugin_list.uniq(&:first)

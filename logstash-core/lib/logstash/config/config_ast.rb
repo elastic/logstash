@@ -414,7 +414,6 @@ module LogStash; module Config; module AST
 
   class Branch < Node
     def compile
-
       # this construct is non obvious. we need to loop through each event and apply the conditional.
       # each branch of a conditional will contain a construct (a filter for example) that also loops through
       # the events variable so we have to initialize it to [event] for the branch code.

@@ -45,7 +45,6 @@ module LogStash
         @ssl_key = es_settings['ssl_key']
         @ssl_cipher_suites = es_settings['ssl_cipher_suites']
         @sniffing = es_settings['sniffing']
-
       end
 
       attr_accessor :system_api_version, :es_hosts, :user, :password, :node_uuid, :cloud_id, :cloud_auth, :api_key
@@ -136,7 +135,6 @@ module LogStash
       end
 
       def after_agent(runner)
-
         return unless monitoring_enabled?(runner.settings)
 
         deprecation_logger.deprecated(

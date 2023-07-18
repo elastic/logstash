@@ -131,7 +131,6 @@ module LogStash module Modules class KibanaClient
 
   # content will be converted to a json string
   def post(relative_path, content, headers = nil)
-
     body = content.is_a?(String) ? content : LogStash::Json.dump(content)
     options = {:body => body}.merge(headers || @http_options)
     safely(:post, relative_path, options)
