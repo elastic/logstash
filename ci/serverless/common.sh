@@ -22,7 +22,7 @@ build_logstash() {
   ./gradlew clean bootstrap assemble installDefaultGems
 }
 
-prepare_test_data() {
+index_test_data() {
   curl -X POST -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
 }
 

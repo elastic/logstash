@@ -15,7 +15,7 @@ index_pipeline() {
 }
 
 # index pipeline to serverless ES
-prepare_cpm_pipelines() {
+index_cpm_pipelines() {
   index_pipeline "$PIPELINE_NAME" '{
     "pipeline": "input { generator { count => 100 } } output { elasticsearch { hosts => \"${ES_ENDPOINT}\" user => \"${ES_USER}\" password => \"${ES_PW}\" index=> \"${INDEX_NAME}\" } }",
     "last_modified": "2023-07-04T22:22:22.222Z",
@@ -44,5 +44,5 @@ cpm_clean_up_and_get_result() {
 
 setup
 trap cpm_clean_up_and_get_result INT TERM EXIT
-prepare_cpm_pipelines
+index_cpm_pipelines
 run_cpm_logstash check_plugin

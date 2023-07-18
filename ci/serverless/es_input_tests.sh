@@ -12,5 +12,5 @@ check_plugin() {
 }
 
 setup
-prepare_test_data
+index_test_data
 run_logstash "$CURRENT_DIR/pipeline/003_es-input.conf" check_plugin

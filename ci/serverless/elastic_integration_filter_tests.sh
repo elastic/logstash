@@ -3,7 +3,7 @@ set -ex
 
 source ./$(dirname "$0")/common.sh
 
-prepare_ingest_pipeline() {
+deploy_ingest_pipeline() {
   PIPELINE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/_ingest/pipeline/integration-logstash_test.events-default" \
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/ingest_pipeline.json")
@@ -50,5 +50,5 @@ check_plugin() {
 setup
 # install plugin
 "$CURRENT_DIR/../../bin/logstash-plugin" install logstash-filter-elastic_integration
-prepare_ingest_pipeline
+deploy_ingest_pipeline
 run_logstash "$CURRENT_DIR/pipeline/004_integration-filter.conf" check_plugin
