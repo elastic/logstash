@@ -26,7 +26,7 @@ module LogStash
 
       attr_reader :top_count, :ignore, :dump
 
-      def initialize(options={})
+      def initialize(options = {})
         @options   = options
         @dump = options.fetch(:dump, ThreadsReport.generate({}))
         @top_count = options.fetch(:threads, THREADS_COUNT_DEFAULT)

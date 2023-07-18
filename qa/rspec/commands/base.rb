@@ -34,11 +34,11 @@ module ServiceTester
       LogStash::VagrantHelpers.restore_snapshot(host)
     end
 
-    def start_service(service, host=nil)
+    def start_service(service, host = nil)
       service_manager(service, "start", host)
     end
 
-    def stop_service(service, host=nil)
+    def stop_service(service, host = nil)
       service_manager(service, "stop", host)
     end
 
@@ -106,7 +106,7 @@ module ServiceTester
       run_command("rm -rf #{path}", host)
     end
 
-    def package_for(filename, skip_jdk_infix, base=ServiceTester::Base::LOCATION)
+    def package_for(filename, skip_jdk_infix, base = ServiceTester::Base::LOCATION)
       jdk_arch_ext = jdk_architecture_extension(skip_jdk_infix)
       File.join(base, "#{filename}#{jdk_arch_ext}.#{package_extension}")
     end

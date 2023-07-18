@@ -81,7 +81,7 @@ module LogStash
 
       attr_reader :num_closes, :events
 
-      def initialize(params={})
+      def initialize(params = {})
         super
         @num_closes = 0
         @events = []
@@ -109,7 +109,7 @@ module LogStash
 
       attr_reader :events
 
-      def initialize(params={})
+      def initialize(params = {})
         super
         @events = []
       end
@@ -131,7 +131,7 @@ module LogStash
 
       attr_reader :num_closes
 
-      def initialize(params={})
+      def initialize(params = {})
         super
         @num_closes = 0
         @events_received = Concurrent::AtomicFixnum.new(0)

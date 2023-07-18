@@ -15,7 +15,7 @@ module LogStash; module Inputs; class Metrics;
       @webserver_enabled = LogStash::SETTINGS.get_value("api.enabled")
     end
 
-    def make(agent, extended_performance_collection=true, collection_interval=10)
+    def make(agent, extended_performance_collection = true, collection_interval = 10)
       metrics_doc = {
         "timestamp" => @snapshot.created_at,
         "logstash" => fetch_node_stats(agent, @metric_store),

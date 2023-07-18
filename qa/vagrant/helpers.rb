@@ -22,26 +22,26 @@ require_relative "command"
 module LogStash
   class VagrantHelpers
 
-    def self.halt(machines=[], options={})
+    def self.halt(machines = [], options = {})
       debug = options.fetch(:debug, false)
       CommandExecutor.run!("vagrant halt #{machines.join(' ')}", debug)
     end
 
-    def self.destroy(machines=[], options={})
+    def self.destroy(machines = [], options = {})
       debug = options.fetch(:debug, false)
       CommandExecutor.run!("vagrant destroy --force #{machines.join(' ')}", debug)
     end
 
-    def self.bootstrap(machines=[], options={})
+    def self.bootstrap(machines = [], options = {})
       debug = options.fetch(:debug, false)
       CommandExecutor.run!("vagrant up #{machines.join(' ')}", debug)
     end
 
-    def self.save_snapshot(machine="")
+    def self.save_snapshot(machine = "")
       CommandExecutor.run!("vagrant snapshot save #{machine} #{machine}-snapshot")
     end
 
-    def self.restore_snapshot(machine="")
+    def self.restore_snapshot(machine = "")
       CommandExecutor.run!("vagrant snapshot restore #{machine} #{machine}-snapshot")
     end
 

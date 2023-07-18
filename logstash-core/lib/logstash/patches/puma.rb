@@ -88,7 +88,7 @@ module LogStash
     # and +text+ additional info
     # @version 5.0.0
     # @overload
-    def connection_error(error, req, text="HTTP connection error")
+    def connection_error(error, req, text = "HTTP connection error")
       @logger.debug(text, { error: error, req: req, backtrace: error&.backtrace }) if @logger.debug?
     end
 
@@ -113,7 +113,7 @@ module LogStash
     # +error+ an exception object, +req+ the request,
     # and +text+ additional info
     # @overload
-    def unknown_error(error, req=nil, text="Unknown error")
+    def unknown_error(error, req = nil, text = "Unknown error")
       details = { error: error, req: req }
       details[:backtrace] = error.backtrace if @logger.debug?
       @logger.error(text, details)
@@ -123,7 +123,7 @@ module LogStash
     # +error+ an exception object, +req+ the request,
     # and +text+ additional info
     # @overload
-    def debug_error(error, req=nil, text="")
+    def debug_error(error, req = nil, text = "")
       @logger.debug(text, { error: error, req: req, backtrace: error&.backtrace }) if @logger.debug?
     end
   end

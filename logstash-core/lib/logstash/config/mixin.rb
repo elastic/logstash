@@ -199,7 +199,7 @@ module LogStash::Config::Mixin
     # @option opts [Boolean]      :list
     # @option opts [Object]       :default
     # @option opts [Boolean]      :required
-    def config(name, opts={})
+    def config(name, opts = {})
       @config ||= Hash.new
       # TODO(sissel): verify 'name' is of type String, Symbol, or Regexp
 

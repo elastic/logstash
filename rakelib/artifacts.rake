@@ -108,11 +108,11 @@ namespace "artifact" do
     @oss_excludes = default_exclude_paths + [ "x-pack/**/*" ]
   end
 
-  def files(exclude_paths=default_exclude_paths)
+  def files(exclude_paths = default_exclude_paths)
     Rake::FileList.new(*package_files).exclude(*exclude_paths)
   end
 
-  def source_modified_since?(time, exclude_paths=default_exclude_paths)
+  def source_modified_since?(time, exclude_paths = default_exclude_paths)
     skip_list = ["logstash-core-plugin-api/versions-gem-copy.yml", "logstash-core/versions-gem-copy.yml"]
     result = false
     files(exclude_paths).each do |file|
@@ -454,7 +454,7 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(license, tar_suffix = nil, exclude_paths=default_exclude_paths, platform: '')
+  def build_tar(license, tar_suffix = nil, exclude_paths = default_exclude_paths, platform: '')
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
@@ -503,7 +503,7 @@ namespace "artifact" do
     end
   end
 
-  def build_zip(license, zip_suffix = "", exclude_paths=default_exclude_paths, platform: '')
+  def build_zip(license, zip_suffix = "", exclude_paths = default_exclude_paths, platform: '')
     require 'zip'
     ensure_logstash_version_constant_defined
     zippath = "build/logstash#{zip_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.zip"
@@ -529,13 +529,13 @@ namespace "artifact" do
     puts "Complete: #{zippath}"
   end
 
-  def package_with_jdk(platform, jdk_arch, variant=:standard)
+  def package_with_jdk(platform, jdk_arch, variant = :standard)
     safe_system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
     package(platform, variant, true, jdk_arch)
     safe_system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
   end
 
-  def package(platform, variant=:standard, bundle_jdk=false, jdk_arch='x86_64')
+  def package(platform, variant = :standard, bundle_jdk = false, jdk_arch = 'x86_64')
     oss = variant == :oss
 
     require "stud/temporary"

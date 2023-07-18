@@ -56,7 +56,7 @@ module LogStash::PluginManager
   # @param [Hash] options the options used to setup external components
   # @option options [Array<String>] :rubygems_source Gem sources to lookup for the verification
   # @return [Boolean] true if valid logstash plugin gem name & version or a .gem file
-  def self.logstash_plugin?(plugin, version = nil, options={})
+  def self.logstash_plugin?(plugin, version = nil, options = {})
     if plugin_file?(plugin)
       begin
         return logstash_plugin_gem_spec?(plugin_file_spec(plugin))
@@ -92,7 +92,7 @@ module LogStash::PluginManager
   # @param [Hash] Set of available options when fetching the information
   # @option options [Boolean] :pre Include pre release versions in the search (default: false)
   # @return [Hash] The plugin version information as returned by rubygems
-  def self.fetch_latest_version_info(plugin, options={})
+  def self.fetch_latest_version_info(plugin, options = {})
     exclude_prereleases =  options.fetch(:pre, false)
     versions = LogStash::Rubygems.versions(plugin)
     raise ValidationError.new("Something went wrong with the validation. You can skip the validation with the --no-verify option") if !versions.is_a?(Array) || versions.empty?

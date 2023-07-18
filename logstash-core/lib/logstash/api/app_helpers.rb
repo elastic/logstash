@@ -25,7 +25,7 @@ module LogStash::Api::AppHelpers
   # it will make sense to separate them.
   #
   # See `#error` method in the `LogStash::Api::Module::Base`
-  def respond_with(data, options={})
+  def respond_with(data, options = {})
     as     = options.fetch(:as, :json)
     filter = options.fetch(:filter, "")
 

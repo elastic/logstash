@@ -39,7 +39,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   config :workers, :type => :number, :default => 1
 
   # Set or return concurrency type
-  def self.concurrency(type=nil)
+  def self.concurrency(type = nil)
     if type
       @concurrency = type
     else
@@ -59,7 +59,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
 
   # Deprecated: Favor `concurrency :single`
   # Remove in Logstash 6.0.0
-  def self.declare_workers_not_supported!(message=nil)
+  def self.declare_workers_not_supported!(message = nil)
     concurrency :single
   end
 
@@ -70,7 +70,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
   end
 
   public
-  def initialize(params={})
+  def initialize(params = {})
     super
     config_init(@params)
 
@@ -105,7 +105,7 @@ class LogStash::Outputs::Base < LogStash::Plugin
     end
   end
 
-  def workers_not_supported(message=nil)
+  def workers_not_supported(message = nil)
     raise "This plugin (#{self.class.name}) is using the obsolete '#workers_not_supported' method. If you installed this plugin specifically on this Logstash version, it is not compatible. If you are a plugin author, please see https://www.elastic.co/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html for more info"
   end
 

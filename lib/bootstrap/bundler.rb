@@ -192,7 +192,7 @@ module LogStash
       ::Bundler::CLI.start(bundler_arguments(options))
     end
 
-    def specific_platforms(platforms=::Gem.platforms)
+    def specific_platforms(platforms = ::Gem.platforms)
       platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os=='java' && !plat.cpu.nil?}
     end
 

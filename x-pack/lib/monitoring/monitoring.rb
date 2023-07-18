@@ -216,7 +216,7 @@ module LogStash
       end
 
       private
-      def retrieve_collection_settings(settings, prefix="")
+      def retrieve_collection_settings(settings, prefix = "")
         opt = {}
         opt[:collection_interval] = settings.get("#{prefix}monitoring.collection.interval").to_nanos
         opt[:collection_timeout_interval] = settings.get("#{prefix}monitoring.collection.timeout_interval").to_nanos

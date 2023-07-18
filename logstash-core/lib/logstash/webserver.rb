@@ -127,7 +127,7 @@ module LogStash
     # @option :auth_basic [Hash{Symbol=>Object}]
     #             :username [String]
     #             :password [LogStash::Util::Password]
-    def initialize(logger, agent, options={})
+    def initialize(logger, agent, options = {})
       @logger = logger
       @agent = agent
       @http_host = options[:http_host] || DEFAULT_HOST
@@ -181,7 +181,7 @@ module LogStash
       "#{http_host}:#{@port}"
     end
 
-    def stop(options={})
+    def stop(options = {})
       @mutex.synchronize do
         @running.make_false
         @server.stop(true) if @server

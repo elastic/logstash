@@ -69,6 +69,8 @@ Layout/SpaceAfterSemicolon:
   Enabled: true
 Layout/SpaceAroundBlockParameters:
   Enabled: true
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -190,8 +192,6 @@ Layout/SingleLineBlockChain:
 Layout/SpaceAfterMethodName:
   Enabled: false
 Layout/SpaceAfterNot:
-  Enabled: false
-Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: false
 Layout/SpaceAroundKeyword:
   Enabled: false

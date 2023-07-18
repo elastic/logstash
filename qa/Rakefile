@@ -29,7 +29,7 @@ task :default => :spec
 
 namespace :qa do
   namespace :vm do
-    def user_feedback_string_for(action, platform, machines, options={})
+    def user_feedback_string_for(action, platform, machines, options = {})
       experimental_string = options["experimental"] ? "experimental" : "non experimental"
       message  = "#{action} all #{experimental_string} VM's defined in acceptance/Vagrantfile"
       "#{message} for #{platform}: #{machines}" if !platform.nil?

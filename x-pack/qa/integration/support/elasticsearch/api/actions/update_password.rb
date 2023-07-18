@@ -6,7 +6,7 @@ module Elasticsearch
   module API
     module Actions
       # Update the password of the specified user
-      def update_password(arguments={})
+      def update_password(arguments = {})
         method = HTTP_PUT
         path   = Utils.__pathify '_security/user/',
                                  Utils.__escape(arguments[:user]),

@@ -36,7 +36,7 @@ module ServiceTester
 
     attr_reader :host, :client
 
-    def initialize(host, options={})
+    def initialize(host, options = {})
       @host    = host
       @options = options
       @client  = CommandsFactory.fetch(options["type"], options["host"])
@@ -71,7 +71,7 @@ module ServiceTester
       client.stop_service(name, host)
     end
 
-    def install(options={})
+    def install(options = {})
       base      = options.fetch(:base, ServiceTester::Base::LOCATION)
       @skip_jdk_infix = options.fetch(:skip_jdk_infix, false)
       filename = filename(options)
@@ -117,7 +117,7 @@ module ServiceTester
 
     private
 
-    def filename(options={})
+    def filename(options = {})
       snapshot  = options.fetch(:snapshot, true)
       "logstash-#{options[:version]}#{(snapshot ?  "-SNAPSHOT" : "")}"
     end
