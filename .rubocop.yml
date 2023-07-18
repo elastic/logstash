@@ -31,6 +31,12 @@ Lint/BigDecimalNew:
 
 #################### Layout ###########################
 ##### Enabled/Disabled Cops #####
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Layout/EmptyLineAfterMagicComment:
+  Enabled: true
+Layout/EmptyLineAfterMultilineCondition:
+  Enabled: false
 Layout/EmptyLineBetweenDefs:
   EnabLEd: true
 Layout/EmptyLines:
@@ -96,12 +102,6 @@ Layout/DotPosition:
 Layout/ElseAlignment:
   Enabled: false
 Layout/EmptyComment:
-  Enabled: false
-Layout/EmptyLineAfterGuardClause:
-  Enabled: false
-Layout/EmptyLineAfterMagicComment:
-  Enabled: false
-Layout/EmptyLineAfterMultilineCondition:
   Enabled: false
 Layout/EmptyLinesAroundClassBody:
   Enabled: false
