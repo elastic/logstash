@@ -56,7 +56,7 @@ class Fixture
     end
 
     if options != nil
-      ERB.new(config, nil, "-").result(TemplateContext.new(options).get_binding)
+      ERB.new(config, trim_mode: "-").result(TemplateContext.new(options).get_binding)
     else
       config
     end

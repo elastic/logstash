@@ -80,7 +80,7 @@ module LogStash module Docgen
             .sort
             .collect { |file| ::File.basename(file, ASCIIDOC_EXTENSION) }
 
-        template = ERB.new(TEMPLATES[type.to_sym], nil, "-")
+        template = ERB.new(TEMPLATES[type.to_sym], trim_mode: "-")
         save(type, template.result(IndexContext.new(type, plugins).get_binding))
       end
     end

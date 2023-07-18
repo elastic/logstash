@@ -54,7 +54,7 @@ module LogStash module Docgen
 
     private
     def read_template(file)
-      ERB.new(::File.read(file), nil, "-")
+      ERB.new(::File.read(file), trim_mode: "-")
     end
 
     def post_process!(context, erb)
