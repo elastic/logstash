@@ -29,6 +29,7 @@ start_metricbeat() {
       tar -zxf "$MB_FILENAME.tar.gz"
   fi
 
+  chmod go-w "metricbeat/metricbeat.yml"
   "$MB_FILENAME/metricbeat" -c "metricbeat/metricbeat.yml" &
   export MB_PID=$!
   cd -
