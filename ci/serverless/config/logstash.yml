@@ -1,0 +1,10 @@
+xpack.management.enabled: true
+xpack.management.pipeline.id: ["gen_es"]
+xpack.management.elasticsearch.username: ${ES_USER}
+xpack.management.elasticsearch.password: ${ES_PW}
+xpack.management.elasticsearch.hosts: ["${ES_ENDPOINT}"]
+
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.username: ${ES_USER}
+xpack.monitoring.elasticsearch.password: ${ES_PW}
+xpack.monitoring.elasticsearch.hosts: ["${ES_ENDPOINT}"]

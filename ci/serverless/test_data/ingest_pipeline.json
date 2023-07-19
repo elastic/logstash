@@ -1,0 +1,10 @@
+{
+  "processors": [
+    {
+      "append": {
+        "field": "message",
+        "value": ["serverless test ^_^ "]
+      }
+    }
+  ]
+}

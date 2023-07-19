@@ -25,6 +25,10 @@ def clean_es(es_client)
   es_client.indices.refresh
 end
 
+def serverless?
+  ENV["SERVERLESS"] == "true"
+end
+
 RSpec.configure do |config|
   if RbConfig::CONFIG["host_os"] != "linux"
     exclude_tags = { :linux => true }

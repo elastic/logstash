@@ -16,6 +16,7 @@
 # under the License.
 
 require_relative "../services/service_locator"
+require_relative '../specs/spec_helper'
 
 # A class that holds all fixtures for a given test file. This deals with
 # bootstrapping services, dealing with config files, inputs etc
@@ -43,7 +44,7 @@ class Fixture
     @test_file_location = test_file_location
     @settings = TestSettings.new(@test_file_location)
     @service_locator = ServiceLocator.new(@settings)
-    setup_services
+    setup_services unless serverless?
     @input = File.join(FIXTURES_DIR, @settings.get("input")) if @settings.is_set?("input")
     @actual_output = @settings.get("actual_output")
   end

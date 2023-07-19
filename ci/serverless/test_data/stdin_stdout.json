@@ -1,0 +1,6 @@
+{
+  "pipeline": "input { stdin {} } output { stdout {} }",
+  "settings": {
+    "queue.type": "persisted"
+  }
+}

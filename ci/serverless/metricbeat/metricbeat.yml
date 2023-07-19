@@ -1,0 +1,20 @@
+metricbeat.config:
+  modules:
+    path: ${path.config}/modules.d/*.yml
+    reload.enabled: false
+
+output.elasticsearch:
+  hosts: ["${ES_ENDPOINT}"]
+  protocol: "https"
+  username: "${ES_USER}"
+  password: "${ES_PW}"
+
+metricbeat.modules:
+  - module: logstash
+    metricsets:
+      - node
+      - node_stats
+    period: 10s
+    hosts:
+        - localhost:9600
+    xpack.enabled: true
