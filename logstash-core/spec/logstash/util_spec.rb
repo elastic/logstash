@@ -86,8 +86,8 @@ describe LogStash::Util do
   describe ".get_thread_id" do
     it "returns native identifier" do
       thread_id = LogStash::Util.get_thread_id(Thread.current)
-      expect( thread_id ).to be_a Integer
-      expect( thread_id ).to eq(java.lang.Thread.currentThread.getId)
+      expect(thread_id).to be_a Integer
+      expect(thread_id).to eq(java.lang.Thread.currentThread.getId)
     end
   end
 end

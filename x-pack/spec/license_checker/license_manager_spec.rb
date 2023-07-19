@@ -124,7 +124,7 @@ describe LogStash::LicenseChecker::LicenseManager do
     context 'when the type changes' do
       let(:new_type) { 'basic' }
       let(:second_license) do
-        { 'license' => license['license'].merge( { 'type' => new_type })}
+        { 'license' => license['license'].merge({ 'type' => new_type })}
       end
 
       it 'updates observers' do
@@ -139,7 +139,7 @@ describe LogStash::LicenseChecker::LicenseManager do
     context 'when the status changes' do
       let(:new_status) { 'expired' }
       let(:second_license) do
-        { 'license' => license['license'].merge( { 'status' => new_status })}
+        { 'license' => license['license'].merge({ 'status' => new_status })}
       end
       it 'updates observers' do
         expect(license_reader).to receive(:fetch_xpack_info).and_return LogStash::LicenseChecker::XPackInfo.from_es_response(second_license)

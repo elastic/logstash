@@ -224,7 +224,8 @@ Layout/SpaceInsideBlockBraces:
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
 Layout/SpaceInsideParens:
-  Enabled: false
+  Enabled: true
+  EnforcedStyle: no_space
 Layout/SpaceInsidePercentLiteralDelimiters:
   Enabled: false
 Layout/SpaceInsideRangeLiteral:

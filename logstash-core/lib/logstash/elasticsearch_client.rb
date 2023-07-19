@@ -56,7 +56,7 @@ module LogStash class ElasticsearchClient
         if password.is_a?(LogStash::Util::Password)
           password = password.value
         end
-        @client_args[:transport_options] = { :headers => { "Authorization" => 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp } }
+        @client_args[:transport_options] = { :headers => { "Authorization" => 'Basic ' + Base64.encode64("#{username}:#{password}").chomp } }
       end
 
       @client = Elasticsearch::Client.new(@client_args)

@@ -23,15 +23,15 @@ module GeoipHelper
   end
 
   def default_city_db_path
-    ::File.join(get_data_dir_path, "CC", default_city_db_name )
+    ::File.join(get_data_dir_path, "CC", default_city_db_name)
   end
 
   def default_city_gz_path
-    ::File.join(get_data_dir_path, "CC", "GeoLite2-City.tgz" )
+    ::File.join(get_data_dir_path, "CC", "GeoLite2-City.tgz")
   end
 
   def default_asn_db_path
-    ::File.join(get_data_dir_path, "CC", default_asn_db_name )
+    ::File.join(get_data_dir_path, "CC", default_asn_db_name)
   end
 
   def metadata_path
@@ -47,11 +47,11 @@ module GeoipHelper
   end
 
   def second_city_db_path
-    ::File.join(get_data_dir_path, second_dirname, default_city_db_name )
+    ::File.join(get_data_dir_path, second_dirname, default_city_db_name)
   end
 
   def second_asn_db_path
-    ::File.join(get_data_dir_path, second_dirname, default_asn_db_name )
+    ::File.join(get_data_dir_path, second_dirname, default_asn_db_name)
   end
 
   def second_dirname

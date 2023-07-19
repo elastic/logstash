@@ -158,7 +158,7 @@ def logstash_with_empty_default(cmd, options = {}, default_settings = {})
 
   logstash_yaml = File.join(temporary_settings, "logstash.yml")
   IO.write(logstash_yaml, YAML::dump(default_settings.merge(options.fetch(:settings, {}))))
-  FileUtils.cp(File.join(get_logstash_path, "config", "log4j2.properties"), File.join(temporary_settings, "log4j2.properties") )
+  FileUtils.cp(File.join(get_logstash_path, "config", "log4j2.properties"), File.join(temporary_settings, "log4j2.properties"))
 
   puts "Running logstash with #{cmd} in #{get_logstash_path} with settings #{options.inspect}"
   Belzebuth.run(cmd, {:directory => get_logstash_path }.merge(options.fetch(:belzebuth, { })))

@@ -336,8 +336,8 @@ describe LogStash::Event do
 
     it "should allow to pass a block that acts as an event factory" do
       events = LogStash::Event.from_json(source_json) { |data| LogStash::Event.new(data).tap { |e| e.set('answer', 42) } }
-      expect( events.size ).to eql 1
-      expect( events.first.get('answer') ).to eql 42
+      expect(events.size).to eql 1
+      expect(events.first.get('answer')).to eql 42
     end
   end
 

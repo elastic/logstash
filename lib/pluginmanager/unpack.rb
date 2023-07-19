@@ -41,7 +41,7 @@ class LogStash::PluginManager::Unpack < LogStash::PluginManager::PackCommand
     cache_location = LogStash::Environment::CACHE_PATH
     if File.exist?(cache_location)
       puts("Directory #{cache_location} is going to be overwritten, do you want to continue? (Y/N)")
-      override = ( "y" == STDIN.gets.strip.downcase ? true : false)
+      override = ("y" == STDIN.gets.strip.downcase ? true : false)
       if override
         FileUtils.rm_rf(cache_location)
       else

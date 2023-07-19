@@ -63,7 +63,7 @@ describe LogStash::PersistedQueueConfigValidator do
       before do
         # create a 2MB file
         ::File.open(page_file, 'wb') do |f|
-          f.write( SecureRandom.random_bytes( 2**21 ) )
+          f.write(SecureRandom.random_bytes(2**21))
         end
       end
 
@@ -164,13 +164,13 @@ describe LogStash::PersistedQueueConfigValidator do
 
         it "gives true when add a new pipeline " do
           pq_config_validator.instance_variable_set(:@last_check_pass, true)
-          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs)
           expect(pq_config_validator.cache_check_fail?(pipeline_configs2)).to be_truthy
         end
 
         it "gives false when remove a old pipeline" do
           pq_config_validator.instance_variable_set(:@last_check_pass, true)
-          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs2 )
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs2)
           expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_falsey
         end
       end
@@ -178,7 +178,7 @@ describe LogStash::PersistedQueueConfigValidator do
       context("last check fail") do
         it "gives true" do
           pq_config_validator.instance_variable_set(:@last_check_pass, false)
-          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs)
           expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_truthy
         end
       end
@@ -186,7 +186,7 @@ describe LogStash::PersistedQueueConfigValidator do
       context("no update and last check pass") do
         it "gives false" do
           pq_config_validator.instance_variable_set(:@last_check_pass, true)
-          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs )
+          pq_config_validator.instance_variable_set(:@last_check_pipeline_configs, pipeline_configs)
           expect(pq_config_validator.cache_check_fail?(pipeline_configs)).to be_falsey
         end
       end

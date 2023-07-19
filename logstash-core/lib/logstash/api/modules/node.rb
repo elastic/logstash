@@ -49,14 +49,14 @@ module LogStash
                   :vertices => as_boolean(params.fetch("vertices", false))}
           payload = node.pipeline(pipeline_id, opts)
           halt(404) if payload.empty?
-          respond_with(:pipelines => { pipeline_id => payload } )
+          respond_with(:pipelines => { pipeline_id => payload })
         end
 
         get "/pipelines" do
           opts = {:graph => as_boolean(params.fetch("graph", false)),
                   :vertices => as_boolean(params.fetch("vertices", false))}
           payload = node.pipelines(opts)
-          respond_with(:pipelines => payload )
+          respond_with(:pipelines => payload)
         end
 
          get "/?:filter?" do

@@ -29,7 +29,7 @@ class HotThreadsReport
 
   def to_s
     hash = to_hash[:hot_threads]
-    report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => @thread_dump.top_count )} \n"
+    report =  "#{I18n.t("logstash.web_api.hot_threads.title", :hostname => hash[:hostname], :time => hash[:time], :top_count => @thread_dump.top_count)} \n"
     report << '=' * STRING_SEPARATOR_LENGTH
     report << "\n"
     hash[:threads].each do |thread|

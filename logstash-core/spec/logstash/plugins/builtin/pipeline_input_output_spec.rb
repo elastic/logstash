@@ -22,7 +22,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
   let(:input_options) { { "address" => address }}
   let(:output_options) { { "send_to" => [address] }}
 
-  let(:execution_context) { double("execution_context" )}
+  let(:execution_context) { double("execution_context")}
   let(:agent) { double("agent") }
   let(:pipeline_bus) { org.logstash.plugins.pipeline.PipelineBus.new }
 

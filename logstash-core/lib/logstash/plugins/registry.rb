@@ -170,7 +170,7 @@ module LogStash module Plugins
             logger.debug("Executing hooks", :name => plugin_context.name, :type => plugin_context.type, :hooks_file => plugin_context.hooks_file)
             plugin_context.execute_hooks!
           rescue => e
-            logger.error("error occured when loading plugins hooks file", :name => plugin_context.name, :type => plugin_context.type, :exception => e.message, :stacktrace => e.backtrace )
+            logger.error("error occured when loading plugins hooks file", :name => plugin_context.name, :type => plugin_context.type, :exception => e.message, :stacktrace => e.backtrace)
           end
         end
       end

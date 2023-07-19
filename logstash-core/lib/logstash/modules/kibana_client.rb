@@ -98,7 +98,7 @@ module LogStash module Modules class KibanaClient
       if password.is_a?(LogStash::Util::Password)
         password = password.value
       end
-      @http_options[:headers]['Authorization'] = 'Basic ' + Base64.encode64( "#{username}:#{password}" ).chomp
+      @http_options[:headers]['Authorization'] = 'Basic ' + Base64.encode64("#{username}:#{password}").chomp
     end
 
     # e.g. {"name":"Elastics-MacBook-Pro.local","version":{"number":"6.0.0-beta1","build_hash":"41e69","build_number":15613,"build_snapshot":true}..}

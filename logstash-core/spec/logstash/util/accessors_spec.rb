@@ -163,7 +163,7 @@ describe "LogStash::Util::Accessors", :if => class_exists do
       str = "[hello][0]"
       data = {"hello" => ["foo", "bar"]}
       accessors = LogStash::Util::Accessors.new(data)
-      expect(accessors.set(str, "world") ).to eq("world")
+      expect(accessors.set(str, "world")).to eq("world")
       expect(data).to eq({"hello" => ["world", "bar"]})
     end
 

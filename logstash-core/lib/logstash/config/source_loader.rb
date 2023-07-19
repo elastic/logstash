@@ -80,7 +80,7 @@ module LogStash module Config
           duplicate_ids = find_duplicate_ids(pipeline_configs)
 
           if duplicate_ids.any?
-            logger.debug("Fetching pipelines with duplicate ids", duplicate_ids.each { |k, v| v.collect(&:pipeline_id) } )
+            logger.debug("Fetching pipelines with duplicate ids", duplicate_ids.each { |k, v| v.collect(&:pipeline_id) })
             return FailedFetch.new("Found duplicate ids in your source: #{duplicate_ids.keys.sort.join(", ")}")
           end
 

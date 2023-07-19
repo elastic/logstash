@@ -26,7 +26,7 @@ class TestSettings
   FIXTURES_DIR = File.join(INTEG_TESTS_DIR, "fixtures")
 
   def initialize(test_file_path)
-    test_name = File.basename(test_file_path, ".*" )
+    test_name = File.basename(test_file_path, ".*")
     @tests_settings_file = File.join(FIXTURES_DIR, "#{test_name}.yml")
     # Global suite settings
     @suite_settings = YAML.load(ERB.new(File.new(SUITE_SETTINGS_FILE).read).result)

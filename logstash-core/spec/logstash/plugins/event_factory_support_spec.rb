@@ -38,9 +38,9 @@ describe LogStash::Plugins::EventFactorySupport do
 
       shared_examples 'an event factory' do
         it 'returns an event' do
-          expect( event_factory.new_event ).to be_a LogStash::Event
-          expect( event = event_factory.new_event('foo' => 'bar') ).to be_a LogStash::Event
-          expect( event.get('foo') ).to eql 'bar'
+          expect(event_factory.new_event).to be_a LogStash::Event
+          expect(event = event_factory.new_event('foo' => 'bar')).to be_a LogStash::Event
+          expect(event.get('foo')).to eql 'bar'
         end
       end
 
@@ -50,7 +50,7 @@ describe LogStash::Plugins::EventFactorySupport do
         it_behaves_like 'an event factory'
 
         it 'memoizes the factory instance' do
-          expect( event_factory ).to be plugin.send(:event_factory)
+          expect(event_factory).to be plugin.send(:event_factory)
         end
       end
 
@@ -76,29 +76,29 @@ describe LogStash::Plugins::EventFactorySupport do
         end
 
         it 'memoizes the factory instance' do
-          expect( targeted_event_factory ).to be plugin.send(:targeted_event_factory)
+          expect(targeted_event_factory).to be plugin.send(:targeted_event_factory)
         end
 
         it 'uses the basic event factory (no target specified)' do
-          expect( targeted_event_factory ).to be plugin.send(:event_factory)
+          expect(targeted_event_factory).to be plugin.send(:event_factory)
         end
 
         context 'with target' do
           let(:options) { super().merge('target' => '[the][baz]') }
 
           it 'returns an event' do
-            expect( targeted_event_factory.new_event ).to be_a LogStash::Event
-            expect( event = targeted_event_factory.new_event('foo' => 'bar') ).to be_a LogStash::Event
-            expect( event.include?('foo') ).to be false
-            expect( event.get('[the][baz][foo]') ).to eql 'bar'
+            expect(targeted_event_factory.new_event).to be_a LogStash::Event
+            expect(event = targeted_event_factory.new_event('foo' => 'bar')).to be_a LogStash::Event
+            expect(event.include?('foo')).to be false
+            expect(event.get('[the][baz][foo]')).to eql 'bar'
           end
 
           it 'memoizes the factory instance' do
-            expect( targeted_event_factory ).to be plugin.send(:targeted_event_factory)
+            expect(targeted_event_factory).to be plugin.send(:targeted_event_factory)
           end
 
           it 'uses a different factory from the basic one' do
-            expect( targeted_event_factory ).not_to be plugin.send(:event_factory)
+            expect(targeted_event_factory).not_to be plugin.send(:event_factory)
           end
         end
 
@@ -109,9 +109,9 @@ describe LogStash::Plugins::EventFactorySupport do
 
           it 'works' do
             events = LogStash::Event.from_json(json) { |data| targeted_event_factory.new_event(data) }
-            expect( events.size ).to eql 2
-            expect( events[0].get('[internal]') ).to eql 'foo' => 'bar'
-            expect( events[1].get('[internal]') ).to eql 'baz' => { 'a' => 1 }
+            expect(events.size).to eql 2
+            expect(events[0].get('[internal]')).to eql 'foo' => 'bar'
+            expect(events[1].get('[internal]')).to eql 'baz' => { 'a' => 1 }
           end
         end
       end

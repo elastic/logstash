@@ -319,7 +319,7 @@ describe LogStash::Config::Source::Local do
 
   context "when only the `config.string` is set" do
     let(:settings) do
-      mock_settings( "config.string" => filter_block)
+      mock_settings("config.string" => filter_block)
     end
 
     it "returns a config" do
@@ -330,7 +330,7 @@ describe LogStash::Config::Source::Local do
   context "when only the `path.config` is set" do
     let(:config_file) { temporary_file(input_block) }
     let(:settings) do
-      mock_settings( "path.config" => config_file)
+      mock_settings("path.config" => config_file)
     end
 
     it "returns a config" do
@@ -358,7 +358,7 @@ describe LogStash::Config::Source::Local do
     end
 
     let(:settings) do
-      mock_settings( "path.config" => remote_url)
+      mock_settings("path.config" => remote_url)
     end
 
     it "returns a config" do
@@ -389,7 +389,7 @@ describe LogStash::Config::Source::Local do
         file.close # we need to flush the write
         path
       end
-      let(:settings) { mock_settings( "path.config" => config_path) }
+      let(:settings) { mock_settings("path.config" => config_path) }
 
       it "doesn't add anything" do
         expect(subject.pipeline_configs.first.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
@@ -397,7 +397,7 @@ describe LogStash::Config::Source::Local do
     end
 
     context "when the input block is missing" do
-      let(:settings) { mock_settings( "config.string" => "#{filter_block} #{output_block}") }
+      let(:settings) { mock_settings("config.string" => "#{filter_block} #{output_block}") }
 
       it "add stdin input" do
         expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.input)
@@ -405,7 +405,7 @@ describe LogStash::Config::Source::Local do
     end
 
     context "when the output block is missing" do
-      let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block}") }
+      let(:settings) { mock_settings("config.string" => "#{input_block} #{filter_block}") }
 
       it "add stdout output" do
         expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.output)
@@ -413,7 +413,7 @@ describe LogStash::Config::Source::Local do
     end
 
     context "when both the output block and input block are missing" do
-      let(:settings) { mock_settings( "config.string" => "#{filter_block}") }
+      let(:settings) { mock_settings("config.string" => "#{filter_block}") }
 
       it "add stdin and output" do
         expect(subject.pipeline_configs.first.config_string).to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
@@ -421,7 +421,7 @@ describe LogStash::Config::Source::Local do
     end
 
     context "when it has an input and an output" do
-      let(:settings) { mock_settings( "config.string" => "#{input_block} #{filter_block} #{output_block}") }
+      let(:settings) { mock_settings("config.string" => "#{input_block} #{filter_block} #{output_block}") }
 
       it "doesn't add anything" do
         expect(subject.pipeline_configs.first.config_string).not_to include(LogStash::Config::Defaults.output, LogStash::Config::Defaults.input)
