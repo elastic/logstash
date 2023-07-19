@@ -299,7 +299,7 @@ class LogstashService < Service
   end
 
   def run(*args)
-    run_cmd [ @logstash_bin, *args ]
+    run_cmd [@logstash_bin, *args]
   end
 
   class PluginCli

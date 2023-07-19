@@ -248,7 +248,7 @@ describe "conditionals in filter" do
       }
     CONFIG
 
-    sample_one("foo" => "foo", "somelist" => [ "one", "two" ], "foobar" => "foobar", "greeting" => "hello world", "tags" => [ "fancypantsy" ]) do
+    sample_one("foo" => "foo", "somelist" => ["one", "two"], "foobar" => "foobar", "greeting" => "hello world", "tags" => ["fancypantsy"]) do
       # verify the original exists
       expect(subject.get("tags")).to include("fancypantsy")
 

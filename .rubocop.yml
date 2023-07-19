@@ -214,7 +214,9 @@ Layout/SpaceAfterNot:
 Layout/SpaceInLambdaLiteral:
   Enabled: false
 Layout/SpaceInsideArrayLiteralBrackets:
-  Enabled: false
+  Enabled: true
+  EnforcedStyle: no_space
+  EnforcedStyleForEmptyBrackets: no_space
 Layout/SpaceInsideArrayPercentLiteral:
   Enabled: false
 Layout/SpaceInsideBlockBraces:

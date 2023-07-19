@@ -175,7 +175,7 @@ describe "LogStash::Util::Accessors", :if => class_exists do
     end
 
     it "should retrieve array item containing hash" do
-      data = { "hello" => { "world" => [ { "a" => 123 }, { "b" => 345 } ], "bar" => "baz" } }
+      data = { "hello" => { "world" => [{ "a" => 123 }, { "b" => 345 }], "bar" => "baz" } }
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.get("[hello][world][0][a]")).to eq(data["hello"]["world"][0]["a"])
       expect(accessors.get("[hello][world][1][b]")).to eq(data["hello"]["world"][1]["b"])

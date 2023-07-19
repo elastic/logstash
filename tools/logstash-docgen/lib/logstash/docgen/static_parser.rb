@@ -38,12 +38,12 @@ module LogStash::Docgen
 
     def initialize(context)
       @rules = [
-        [ COMMENT_RE, :parse_comment ],
-        [ CLASS_DEFINITION_RE, :parse_class_description ],
-        [ NEW_CLASS_DEFINITION_RE_ML, :parse_new_class_description ],
-        [ CONFIG_OPTION_RE, :parse_config ],
-        [ CONFIG_NAME_RE, :parse_config_name ],
-        [ RESET_BUFFER_RE, :reset_buffer ]
+        [COMMENT_RE, :parse_comment],
+        [CLASS_DEFINITION_RE, :parse_class_description],
+        [NEW_CLASS_DEFINITION_RE_ML, :parse_new_class_description],
+        [CONFIG_OPTION_RE, :parse_config],
+        [CONFIG_NAME_RE, :parse_config_name],
+        [RESET_BUFFER_RE, :reset_buffer]
       ]
 
       @context = context

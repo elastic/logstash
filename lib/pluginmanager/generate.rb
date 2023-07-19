@@ -24,7 +24,7 @@ require "pathname"
 
 class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
-  TYPES = [ "input", "filter", "output", "codec" ]
+  TYPES = ["input", "filter", "output", "codec"]
 
   option "--type", "TYPE", "Type of the plugin {input, filter, codec, output}s", :required => true
   option "--name", "PLUGIN", "Name of the new plugin", :required => true
@@ -58,7 +58,7 @@ class LogStash::PluginManager::Generate < LogStash::PluginManager::Command
 
   def transform_r(source, target)
     Dir.entries(source).each do |entry|
-      next if [ ".", ".." ].include?(entry)
+      next if [".", ".."].include?(entry)
       source_entry = File.join(source, entry)
       target_entry = File.join(target, entry)
 

@@ -22,7 +22,7 @@ require "logstash/environment"
 
 # Bundler + gemspec already setup $LOAD_PATH << '.../lib'
 # but since we load specs from 2 locations we need to hook up these:
-[ LogStash::Environment::LOGSTASH_HOME, LogStash::Environment::LOGSTASH_CORE ].each do |path|
+[LogStash::Environment::LOGSTASH_HOME, LogStash::Environment::LOGSTASH_CORE].each do |path|
   spec_path = File.join(path, "spec")
   $LOAD_PATH.unshift(spec_path) unless $LOAD_PATH.include?(spec_path)
 end

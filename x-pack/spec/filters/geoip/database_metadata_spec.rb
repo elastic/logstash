@@ -198,8 +198,8 @@ describe LogStash::Filters::Geoip do
 
     context "reset md5" do
       it "should reset md5 to empty string only" do
-        rewrite_temp_metadata(temp_metadata_path, [ ["ASN", "1620246514", "SOME MD5", "1620246514", true],
-                                                    ["City", "1620246514", "SOME MD5", "1620246514", true] ])
+        rewrite_temp_metadata(temp_metadata_path, [["ASN", "1620246514", "SOME MD5", "1620246514", true],
+                                                    ["City", "1620246514", "SOME MD5", "1620246514", true]])
 
         dbm.reset_md5(database_type)
         row = dbm.get_metadata(database_type).last
@@ -212,8 +212,8 @@ describe LogStash::Filters::Geoip do
     context "dirnames" do
       it "should reset md5 to empty string only" do
         write_temp_metadata(temp_metadata_path, city2_metadata)
-        rewrite_temp_metadata(temp_metadata_path, [ ["ASN", "1620246514", "SOME MD5", "CC", true],
-                                                    city2_metadata ])
+        rewrite_temp_metadata(temp_metadata_path, [["ASN", "1620246514", "SOME MD5", "CC", true],
+                                                    city2_metadata])
 
         dirnames = dbm.dirnames
         expect(dirnames).to match_array([second_dirname, "CC"])

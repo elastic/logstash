@@ -68,7 +68,7 @@ describe LogStash::StateResolver do
       end
 
       context "when the pipeline config contains a new one and the existing" do
-        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
+        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config] }
 
         it "creates the new one and keep the other one" do
           expect(subject.resolve(pipelines, pipeline_configs)).to have_actions(
@@ -186,7 +186,7 @@ describe LogStash::StateResolver do
       end
 
       context "when pipeline config contains a new one and the existing" do
-        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config ] }
+        let(:pipeline_configs) { [mock_pipeline_config(:hello_world), main_pipeline_config] }
 
         it "creates the new one and keep the other one stop" do
           expect(subject.resolve(pipelines, pipeline_configs)).to have_actions([:Create, :hello_world])

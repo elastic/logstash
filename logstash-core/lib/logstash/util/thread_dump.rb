@@ -20,7 +20,7 @@ java_import 'org.logstash.instrument.reports.ThreadsReport'
 module LogStash
   module Util
     class ThreadDump
-      SKIPPED_THREADS             = [ "Finalizer", "Reference Handler", "Signal Dispatcher" ].freeze
+      SKIPPED_THREADS             = ["Finalizer", "Reference Handler", "Signal Dispatcher"].freeze
       THREADS_COUNT_DEFAULT       = 10.freeze
       IGNORE_IDLE_THREADS_DEFAULT = true.freeze
 

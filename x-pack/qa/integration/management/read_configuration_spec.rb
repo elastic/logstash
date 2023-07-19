@@ -69,8 +69,8 @@ describe "Read configuration from elasticsearch" do
     end
 
     it "reloads the configuration when its different from the running pipeline" do
-      [ File.join(Stud::Temporary.directory, "hello.log"),
-        File.join(Stud::Temporary.directory, "whole-new-file.log") ].each do |temporary_file|
+      [File.join(Stud::Temporary.directory, "hello.log"),
+        File.join(Stud::Temporary.directory, "whole-new-file.log")].each do |temporary_file|
         new_config = "input { generator { count => 10000 }} output { file { path => '#{temporary_file}' } }"
 
         expect(File.exist?(temporary_file)).to be_falsey

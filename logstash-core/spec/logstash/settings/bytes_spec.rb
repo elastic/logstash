@@ -56,7 +56,7 @@ describe LogStash::Setting::Bytes do
       end
 
       context "which is not a valid byte unit" do
-        values = [ "hello world", "1234", "", "-__-" ]
+        values = ["hello world", "1234", "", "-__-"]
         values.each do |value|
           it "should fail" do
             expect { subject.set(value) }.to raise_error

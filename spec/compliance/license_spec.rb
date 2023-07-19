@@ -24,7 +24,7 @@ describe "Project licenses" do
     # Expected licenses are Apache License 2.0, BSD license, MIT license and the ruby one,
     # this not exclude that this list change in the feature.
     ##
-    Regexp.union([ /mit/,
+    Regexp.union([/mit/,
                    /apache*/,
                    /bsd/,
                    /artistic 2.*/,
@@ -32,7 +32,7 @@ describe "Project licenses" do
                    /lgpl/,
                    /epl/,
                    /elastic/i
-  ])
+])
   }
 
   ##

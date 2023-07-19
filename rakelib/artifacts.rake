@@ -105,7 +105,7 @@ namespace "artifact" do
 
   def oss_exclude_paths
     return @oss_excludes if @oss_excludes
-    @oss_excludes = default_exclude_paths + [ "x-pack/**/*" ]
+    @oss_excludes = default_exclude_paths + ["x-pack/**/*"]
   end
 
   def files(exclude_paths = default_exclude_paths)
@@ -388,7 +388,7 @@ namespace "artifact" do
       "build_snapshot" => SNAPSHOT_BUILD
     }
 
-    metadata = [ "# encoding: utf-8", "BUILD_INFO = #{build_info}" ]
+    metadata = ["# encoding: utf-8", "BUILD_INFO = #{build_info}"]
     IO.write(BUILD_METADATA_FILE.path, metadata.join("\n"))
   end
 

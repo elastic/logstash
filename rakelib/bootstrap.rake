@@ -15,4 +15,4 @@
 # specific language governing permissions and limitations
 # under the License.
 
-task "bootstrap" => [ "vendor:all", "compile:all" ]
+task "bootstrap" => ["vendor:all", "compile:all"]

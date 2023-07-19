@@ -21,7 +21,7 @@ describe LogStash::PluginManager::InstallStrategyFactory do
   subject { described_class }
 
   context "when the plugins args is valid" do
-    let(:plugins_args) { [ "logstash-pack-mega" ] }
+    let(:plugins_args) { ["logstash-pack-mega"] }
 
     it "returns the first matched strategy" do
       success = double("urifetch success")
