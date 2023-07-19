@@ -227,7 +227,7 @@ Layout/SpaceInsideParens:
   Enabled: true
   EnforcedStyle: no_space
 Layout/SpaceInsidePercentLiteralDelimiters:
-  Enabled: false
+  Enabled: true
 Layout/SpaceInsideRangeLiteral:
   Enabled: false
 Layout/SpaceInsideReferenceBrackets:
