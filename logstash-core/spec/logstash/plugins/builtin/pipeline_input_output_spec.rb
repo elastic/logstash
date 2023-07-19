@@ -33,7 +33,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
   let(:inputs) { [input] }
   let(:metric) {
     LogStash::Instrument::NamespacedMetric.new(
-      LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
+        LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new), [:filter]
     )
   }
 

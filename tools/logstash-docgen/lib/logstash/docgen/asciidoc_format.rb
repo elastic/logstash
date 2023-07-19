@@ -41,9 +41,9 @@ module LogStash module Docgen
         erb
       else
         Asciidoctor.convert(erb,
-          :header_footer => true,
-          :stylesheet => CSS_FILE,
-          :safe => 'safe')
+                            :header_footer => true,
+                            :stylesheet => CSS_FILE,
+                            :safe => 'safe')
       end
     end
 

@@ -50,13 +50,13 @@ module LogStash module Filters module Geoip class DatabaseManager
     asn_database_path = @metadata.database_path(ASN)
 
     @states = { "#{CITY}" => DatabaseState.new(@metadata.is_eula(CITY),
-      Concurrent::Array.new,
-      city_database_path,
-      cc_city_database_path),
+                                               Concurrent::Array.new,
+                                               city_database_path,
+                                               cc_city_database_path),
                 "#{ASN}" => DatabaseState.new(@metadata.is_eula(ASN),
-                  Concurrent::Array.new,
-                  asn_database_path,
-                  cc_asn_database_path) }
+                                              Concurrent::Array.new,
+                                              asn_database_path,
+                                              cc_asn_database_path) }
 
     @download_manager = DownloadManager.new(@metadata)
 
@@ -112,7 +112,7 @@ module LogStash module Filters module Geoip class DatabaseManager
 
           notify_plugins(database_type, :update, new_database_path) do |db_type, ids|
             logger.info("geoip plugin will use database #{new_database_path}",
-              :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
+                        :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
           end
 
           success_cnt += 1
@@ -166,7 +166,7 @@ module LogStash module Filters module Geoip class DatabaseManager
               "which you can download from https://dev.maxmind.com/geoip/geoip2/geolite2/ ")
 
             logger.warn("geoip plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
-              :database_type => db_type, :pipeline_ids => ids)
+                        :database_type => db_type, :pipeline_ids => ids)
           end
         end
 

@@ -198,7 +198,7 @@ class LogStash::Filters::Base < LogStash::Plugin
     @remove_field.each do |field|
       field = event.sprintf(field)
       @logger.debug? and @logger.debug("filters/#{self.class.name}: removing field",
-        :field => field)
+                                       :field => field)
       event.remove(field)
     end
 

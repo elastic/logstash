@@ -82,9 +82,9 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     Bundler.settings.temporary(:frozen => false) do # Unfreeze the bundle when updating gems
       output = LogStash::Bundler.invoke! update: plugins,
-        rubygems_source: gemfile.gemset.sources,
-        local: local?,
-        conservative: conservative?
+                                         rubygems_source: gemfile.gemset.sources,
+                                         local: local?,
+                                         conservative: conservative?
       output << LogStash::Bundler.genericize_platform unless output.nil?
     end
 

@@ -211,7 +211,7 @@ describe "Test Monitoring API" do
 
     #default
     logging_get_assert logstash_service, "INFO", "TRACE",
-      skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
+                       skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
 
     #root logger - does not apply to logger.slowlog
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
@@ -277,8 +277,8 @@ describe "Test Monitoring API" do
       )
       if logstash_service.settings.feature_flag == "persistent_queues"
         expect(flow_status).to include(
-          'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
-          'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
+                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
+                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
                                )
       else
         expect(flow_status).to_not include('queue_persisted_growth_bytes')
@@ -316,12 +316,12 @@ describe "Test Monitoring API" do
 
       expect(input_plugin_flow_status).to include('throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0))
       expect(filter_plugin_flow_status).to include(
-        'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-        'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
       expect(output_plugin_flow_status).to include(
-        'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-        'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
                                            )
     end
   end

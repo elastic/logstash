@@ -60,7 +60,7 @@ module LogStash; module Inputs; class Metrics;
       result = stats.extract_metrics([:jvm], :uptime_in_millis)
 
       heap_stats = stats.extract_metrics([:jvm, :memory, :heap],
-        :used_in_bytes, :used_percent, :max_in_bytes)
+                      :used_in_bytes, :used_percent, :max_in_bytes)
 
       result["mem"] = {
         "heap_used_in_bytes" => heap_stats[:used_in_bytes],
@@ -71,9 +71,9 @@ module LogStash; module Inputs; class Metrics;
       result["gc"] = {
         "collectors" => {
           "old" => stats.extract_metrics([:jvm, :gc, :collectors, :old],
-            :collection_time_in_millis, :collection_count),
+                        :collection_time_in_millis, :collection_count),
           "young" => stats.extract_metrics([:jvm, :gc, :collectors, :young],
-            :collection_time_in_millis, :collection_count)
+                        :collection_time_in_millis, :collection_count)
         }
       }
 

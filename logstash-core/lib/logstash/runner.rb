@@ -70,9 +70,9 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("node.name")
 
   option ["--enable-local-plugin-development"], :flag,
-    I18n.t("logstash.runner.flag.enable-local-plugin-development"),
-    :attribute_name => "enable-local-plugin-development",
-    :default => LogStash::SETTINGS.get_default("enable-local-plugin-development")
+         I18n.t("logstash.runner.flag.enable-local-plugin-development"),
+         :attribute_name => "enable-local-plugin-development",
+         :default => LogStash::SETTINGS.get_default("enable-local-plugin-development")
 
   # Config Settings
   option ["-f", "--path.config"], "CONFIG_PATH",
@@ -87,14 +87,14 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "config.string"
 
   option ["--field-reference-escape-style"], "STYLE",
-    I18n.t("logstash.runner.flag.field-reference-escape-style"),
-    :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
-    :attribute_name => "config.field_reference.escape_style"
+         I18n.t("logstash.runner.flag.field-reference-escape-style"),
+         :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
+         :attribute_name => "config.field_reference.escape_style"
 
   option ["--event_api.tags.illegal"], "STRING",
-    I18n.t("logstash.runner.flag.event_api.tags.illegal"),
-    :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
-    :attribute_name => "event_api.tags.illegal"
+         I18n.t("logstash.runner.flag.event_api.tags.illegal"),
+         :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
+         :attribute_name => "event_api.tags.illegal"
 
   # Module settings
   option ["--modules"], "MODULES",
@@ -137,9 +137,9 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default("pipeline.ordered")
 
   option ["--plugin-classloaders"], :flag,
-    I18n.t("logstash.runner.flag.plugin-classloaders"),
-    :attribute_name => "pipeline.plugin_classloaders",
-    :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
+         I18n.t("logstash.runner.flag.plugin-classloaders"),
+         :attribute_name => "pipeline.plugin_classloaders",
+         :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
@@ -311,7 +311,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if JavaVersion::CURRENT < JavaVersion::JAVA_11
       logger.warn I18n.t("logstash.runner.java.version",
-        :java_home => java.lang.System.getProperty("java.home"))
+                                             :java_home => java.lang.System.getProperty("java.home"))
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]

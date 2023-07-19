@@ -64,8 +64,8 @@ describe LogStash::Filters::Geoip do
       before(:each) do
         expect(download_manager).to receive(:uuid).and_return(SecureRandom.uuid)
         mock_resp = double("geoip_endpoint",
-          :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
-          :code => 200)
+                           :body => ::File.read(::File.expand_path("./fixtures/normal_resp.json", ::File.dirname(__FILE__))),
+                           :code => 200)
         allow(download_manager).to receive_message_chain("rest_client.get").and_return(mock_resp)
       end
 

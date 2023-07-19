@@ -111,8 +111,8 @@ end
 def mock_pipeline(pipeline_id, reloadable = true, config_hash = nil)
   config_string = "input { stdin { id => '#{pipeline_id}' }}"
   settings = mock_settings("pipeline.id" => pipeline_id.to_s,
-    "config.string" => config_string,
-    "config.reload.automatic" => reloadable)
+                           "config.string" => config_string,
+                           "config.reload.automatic" => reloadable)
   pipeline_config = mock_pipeline_config(pipeline_id, config_string, settings)
   LogStash::JavaPipeline.new(pipeline_config)
 end

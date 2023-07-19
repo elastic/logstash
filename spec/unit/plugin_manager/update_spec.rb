@@ -31,8 +31,8 @@ describe LogStash::PluginManager::Update do
   it "pass all gem sources to the bundle update command" do
     sources = cmd.gemfile.gemset.sources
     expect_any_instance_of(LogStash::Bundler).to receive(:invoke!).with(
-      :update => [], :rubygems_source => sources,
-      :conservative => true, :local => false
+        :update => [], :rubygems_source => sources,
+        :conservative => true, :local => false
     )
     cmd.execute
   end

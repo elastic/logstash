@@ -9,8 +9,8 @@ module Elasticsearch
       def update_password(arguments = {})
         method = HTTP_PUT
         path   = Utils.__pathify '_security/user/',
-          Utils.__escape(arguments[:user]),
-          '/_password'
+                                 Utils.__escape(arguments[:user]),
+                                 '/_password'
         params = {}
         body   = {
             "password" => "#{arguments[:password]}"

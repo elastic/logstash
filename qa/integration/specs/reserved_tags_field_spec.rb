@@ -52,8 +52,8 @@ describe "Guard reserved tags field against incorrect use" do
     it "[#{mode}] update tags and _tags successfully" do
       @logstash.env_variables = test_env
       @logstash.spawn_logstash("-f", config_to_temp_file(@fixture.config(pipeline_fixture)),
-        "--event_api.tags.illegal", "#{mode}",
-        "--path.settings", settings_dir)
+                               "--event_api.tags.illegal", "#{mode}",
+                               "--path.settings", settings_dir)
 
       Stud.try(num_retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         output = IO.read(File.join(test_path, "#{pipeline_fixture}.log"))
@@ -75,7 +75,7 @@ describe "Guard reserved tags field against incorrect use" do
     ['rename', 'warn'].each do |mode|
       logstash = @logstash.run_cmd(["bin/logstash", "-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
                                     "--path.settings", settings_dir, "--event_api.tags.illegal", mode],
-        true, test_env)
+                                   true, test_env)
       expect(logstash.stderr_and_stdout).to match(/Ruby exception occurred/)
     end
   end

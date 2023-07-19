@@ -205,9 +205,9 @@ describe LogStash::Compiler do
         let(:plugin_source) { "generator { codec => plain codec => json }" }
         let(:expected_error_message) {
           I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
-            :plugin => "generator",
-            :type => "input",
-            :line => "1"
+                 :plugin => "generator",
+                 :type => "input",
+                 :line => "1"
           )
         }
 
@@ -234,9 +234,9 @@ describe LogStash::Compiler do
         let(:source) { "input { generator {} } output { stdout { codec => plain codec => json } }" }
         let(:expected_error_message) {
           I18n.t("logstash.runner.configuration.invalid_plugin_settings_multiple_codecs",
-            :plugin => "stdout",
-            :type => "output",
-            :line => "1"
+                 :plugin => "stdout",
+                 :type => "output",
+                 :line => "1"
           )
         }
 
@@ -378,8 +378,8 @@ describe LogStash::Compiler do
 
         it "should contain both inputs" do
           expect(input).to ir_eql(j.iComposeParallel(
-            j.iPlugin(rand_meta, INPUT, "generator", {"count" => 1}),
-            j.iPlugin(rand_meta, INPUT, "generator", {"count" => 2})
+                                j.iPlugin(rand_meta, INPUT, "generator", {"count" => 1}),
+                                j.iPlugin(rand_meta, INPUT, "generator", {"count" => 2})
                               ))
         end
       end
@@ -429,8 +429,8 @@ describe LogStash::Compiler do
 
         it "should contain both section declarations, in order" do
           expect(compiled_section).to ir_eql(compose(
-            splugin("aplugin", {"count" => 1}),
-            splugin("aplugin", {"count" => 2})
+                                      splugin("aplugin", {"count" => 1}),
+                                        splugin("aplugin", {"count" => 2})
                                       ))
                                     end
       end
@@ -448,8 +448,8 @@ describe LogStash::Compiler do
 
         it "should contain both" do
           expect(compiled_section).to ir_eql(compose(
-            splugin("aplugin", {"count" => 1}),
-            splugin("aplugin", {"count" => 2})
+                                        splugin("aplugin", {"count" => 1}),
+                                        splugin("aplugin", {"count" => 2})
                                       ))
         end
 
@@ -686,9 +686,9 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              splugin("grok")
+                                            rand_meta,
+                                            j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                            splugin("grok")
                                           )
                                        )
           end
@@ -699,10 +699,10 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              j.noop,
-              splugin("fplugin"),
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.noop,
+                                          splugin("fplugin"),
                                         )
                                        )
           end
@@ -713,10 +713,10 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              j.noop,
-              j.noop
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.noop,
+                                          j.noop
                                         )
                                        )
           end
@@ -727,10 +727,10 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              splugin("tplugin"),
-              splugin("fplugin")
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          splugin("tplugin"),
+                                          splugin("fplugin")
                                         )
                                        )
           end
@@ -741,15 +741,15 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              splugin("tplugin"),
-              j.iIf(
-                rand_meta,
-                j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
-                splugin("eifplugin"),
-                splugin("fplugin")
-              )
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          splugin("tplugin"),
+                                          j.iIf(
+                                            rand_meta,
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            splugin("eifplugin"),
+                                            splugin("fplugin")
+                                          )
                                         )
                                        )
           end
@@ -769,20 +769,20 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              splugin("tplugin"),
-              j.iIf(
-                rand_meta,
-                j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
-                splugin("eifplugin"),
-                j.iIf(
-                  rand_meta,
-                  j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
-                  splugin("eeifplugin"),
-                  splugin("fplugin")
-                )
-              )
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          splugin("tplugin"),
+                                          j.iIf(
+                                            rand_meta,
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            splugin("eifplugin"),
+                                            j.iIf(
+                                              rand_meta,
+                                              j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
+                                              splugin("eeifplugin"),
+                                              splugin("fplugin")
+                                            )
+                                          )
                                         )
                                        )
           end
@@ -804,23 +804,23 @@ describe LogStash::Compiler do
 
           it "should compile correctly" do
             expect(compiled_section).to ir_eql(j.iIf(
-              rand_meta,
-              j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
-              j.iIf(rand_meta, j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
-                splugin("aplugin"),
-                j.noop
-                      ),
-              j.iIf(
-                rand_meta,
-                j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
-                splugin("bplugin"),
-                j.iIf(
-                  rand_meta,
-                  j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
-                  splugin("cplugin"),
-                  splugin("dplugin")
-                )
-              )
+                                          rand_meta,
+                                          j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
+                                          j.iIf(rand_meta, j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                                   splugin("aplugin"),
+                                                   j.noop
+                                                  ),
+                                          j.iIf(
+                                            rand_meta,
+                                            j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
+                                            splugin("bplugin"),
+                                            j.iIf(
+                                              rand_meta,
+                                              j.eEq(j.eEventValue("[baz]"), j.eEventValue("[bot]")),
+                                              splugin("cplugin"),
+                                              splugin("dplugin")
+                                            )
+                                          )
                                         )
                                        )
           end

@@ -55,12 +55,12 @@ module LogStash module Instrument
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e
         logger.error("Collector: Cannot create concrete class for this metric type",
-          :type => type,
-          :namespaces_path => namespaces_path,
-          :key => key,
-          :metrics_params => metric_type_params,
-          :exception => e,
-          :stacktrace => e.backtrace)
+                     :type => type,
+                     :namespaces_path => namespaces_path,
+                     :key => key,
+                     :metrics_params => metric_type_params,
+                     :exception => e,
+                     :stacktrace => e.backtrace)
       end
     end
 

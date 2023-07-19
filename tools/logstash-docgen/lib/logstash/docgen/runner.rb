@@ -41,9 +41,9 @@ module LogStash module Docgen
       end
 
       DocumentationGenerator.new(with_plugins,
-        target,
-        source,
-        YAML.load(File.read(config))).generate
+                                 target,
+                                 source,
+                                 YAML.load(File.read(config))).generate
     end
   end
 end end

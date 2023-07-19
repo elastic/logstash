@@ -12,9 +12,9 @@ require 'monitoring/monitoring'
 shared_examples "elasticsearch options hash is populated without security" do
   it "with username, hosts and password" do
       expect(test_class.es_options_from_settings_or_modules('monitoring', system_settings)).to include(
-        "hosts" => expected_url,
-        "user" => expected_username,
-        "password" => expected_password
+                                                                                                   "hosts" => expected_url,
+                                                                                                   "user" => expected_username,
+                                                                                                   "password" => expected_password
                                                                                                )
   end
 end
@@ -26,11 +26,11 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-        "hosts" => elasticsearch_url,
-        "user" => elasticsearch_username,
-        "password" => elasticsearch_password,
-        "ssl_enabled" => true,
-        "ssl_certificate_authorities" => elasticsearch_ca
+                                                                                        "hosts" => elasticsearch_url,
+                                                                                        "user" => elasticsearch_username,
+                                                                                        "password" => elasticsearch_password,
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_certificate_authorities" => elasticsearch_ca
                                                                                     )
     end
   end
@@ -41,11 +41,11 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-        "hosts" => elasticsearch_url,
-        "user" => elasticsearch_username,
-        "password" => elasticsearch_password,
-        "ssl_enabled" => true,
-        "ca_trusted_fingerprint" => ca_trusted_fingerprint
+                                                                                      "hosts" => elasticsearch_url,
+                                                                                      "user" => elasticsearch_username,
+                                                                                      "password" => elasticsearch_password,
+                                                                                      "ssl_enabled" => true,
+                                                                                      "ca_trusted_fingerprint" => ca_trusted_fingerprint
                                                                                     )
     end
   end
@@ -62,12 +62,12 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-        "hosts" => elasticsearch_url,
-        "user" => elasticsearch_username,
-        "password" => elasticsearch_password,
-        "ssl_enabled" => true,
-        "ssl_truststore_path" => elasticsearch_truststore_path,
-        "ssl_truststore_password" => elasticsearch_truststore_password
+                                                                                        "hosts" => elasticsearch_url,
+                                                                                        "user" => elasticsearch_username,
+                                                                                        "password" => elasticsearch_password,
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_truststore_path" => elasticsearch_truststore_path,
+                                                                                        "ssl_truststore_password" => elasticsearch_truststore_password
                                                                                     )
     end
   end
@@ -85,12 +85,12 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-        "hosts" => elasticsearch_url,
-        "user" => elasticsearch_username,
-        "password" => elasticsearch_password,
-        "ssl_enabled" => true,
-        "ssl_keystore_path" => elasticsearch_keystore_path,
-        "ssl_keystore_password" => elasticsearch_keystore_password
+                                                                                        "hosts" => elasticsearch_url,
+                                                                                        "user" => elasticsearch_username,
+                                                                                        "password" => elasticsearch_password,
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_keystore_path" => elasticsearch_keystore_path,
+                                                                                        "ssl_keystore_password" => elasticsearch_keystore_password
                                                                                     )
     end
   end
@@ -108,12 +108,12 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
     it "creates the elasticsearch output options hash" do
       expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-        "hosts" => elasticsearch_url,
-        "user" => elasticsearch_username,
-        "password" => elasticsearch_password,
-        "ssl_enabled" => true,
-        "ssl_certificate" => elasticsearch_certificate_path,
-        "ssl_key" => elasticsearch_key_path
+                                                                                        "hosts" => elasticsearch_url,
+                                                                                        "user" => elasticsearch_username,
+                                                                                        "password" => elasticsearch_password,
+                                                                                        "ssl_enabled" => true,
+                                                                                        "ssl_certificate" => elasticsearch_certificate_path,
+                                                                                        "ssl_key" => elasticsearch_key_path
                                                                                       )
     end
   end
@@ -128,11 +128,11 @@ shared_examples 'elasticsearch options hash is populated with secure options' do
 
       it "creates the elasticsearch output options hash" do
         expect(test_class.es_options_from_settings('monitoring', system_settings)).to include(
-          "hosts" => elasticsearch_url,
-          "user" => elasticsearch_username,
-          "password" => elasticsearch_password,
-          "ssl_enabled" => true,
-          "ssl_cipher_suites" => ["FOO", "BAR"],
+                                                                                          "hosts" => elasticsearch_url,
+                                                                                          "user" => elasticsearch_username,
+                                                                                          "password" => elasticsearch_password,
+                                                                                          "ssl_enabled" => true,
+                                                                                          "ssl_cipher_suites" => ["FOO", "BAR"],
                                                                                         )
       end
     end

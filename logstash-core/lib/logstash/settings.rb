@@ -840,15 +840,15 @@ module LogStash
 
       def set(value)
         deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
-          deprecated_alias: name,
-          canonical_name: canonical_proxy.name))
+                                             deprecated_alias: name,
+                                             canonical_name: canonical_proxy.name))
         super
       end
 
       def value
         logger.warn(I18n.t("logstash.settings.deprecation.queried",
-          deprecated_alias: name,
-          canonical_name: canonical_proxy.name))
+                           deprecated_alias: name,
+                           canonical_name: canonical_proxy.name))
         @canonical_proxy.value
       end
 
@@ -914,8 +914,8 @@ module LogStash
       def validate_value
         if deprecated_alias.set? && canonical_setting.set?
           fail(ArgumentError, I18n.t("logstash.settings.deprecation.ambiguous",
-            canonical_name: canonical_setting.name,
-            deprecated_alias: deprecated_alias.name))
+                                     canonical_name: canonical_setting.name,
+                                     deprecated_alias: deprecated_alias.name))
         end
 
         super

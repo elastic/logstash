@@ -43,20 +43,20 @@ module LogStash module Instrument module PeriodicPoller
         # On a busy system this can happen, we just log it as a debug
         # event instead of an error, Some of the JVM calls can take a long time or block.
         logger.debug("Timeout exception",
-          :poller => self,
-          :result => result,
-          :polling_timeout => @options[:polling_timeout],
-          :polling_interval => @options[:polling_interval],
-          :exception => exception.class,
-          :executed_at => time)
+                :poller => self,
+                :result => result,
+                :polling_timeout => @options[:polling_timeout],
+                :polling_interval => @options[:polling_interval],
+                :exception => exception.class,
+                :executed_at => time)
       else
         logger.error("Exception",
-          :poller => self,
-          :result => result,
-          :exception => exception.class,
-          :polling_timeout => @options[:polling_timeout],
-          :polling_interval => @options[:polling_interval],
-          :executed_at => time)
+                :poller => self,
+                :result => result,
+                :exception => exception.class,
+                :polling_timeout => @options[:polling_timeout],
+                :polling_interval => @options[:polling_interval],
+                :executed_at => time)
       end
     end
 
@@ -66,8 +66,8 @@ module LogStash module Instrument module PeriodicPoller
 
     def start
       logger.debug("Starting",
-        :polling_interval => @options[:polling_interval],
-        :polling_timeout => @options[:polling_timeout]) if logger.debug?
+                   :polling_interval => @options[:polling_interval],
+                   :polling_timeout => @options[:polling_timeout]) if logger.debug?
 
       collect # Collect data right away if possible
       @task.execute
