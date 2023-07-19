@@ -79,7 +79,7 @@ describe LogStash::FilterDelegator do
         config_name "super_plugin"
         config :host, :validate => :string
         def register; end
-        def flush(options = {}); @events ; end
+        def flush(options = {}); @events; end
 
         def filter(event)
           @events ||= []
@@ -139,7 +139,7 @@ describe LogStash::FilterDelegator do
           config_name "super_plugin"
           config :host, :validate => :string
           def register; end
-          def flush(options = {}); @events ; end
+          def flush(options = {}); @events; end
 
           # naive split filter implementation
           def filter(event)

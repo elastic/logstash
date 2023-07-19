@@ -127,7 +127,7 @@ describe LogStash::Modules::SettingsMerger do
     context "when only cloud.auth is supplied" do
       let(:ls_settings) { SubstituteSettingsForRSpec.new({"cloud.auth" => cloud_auth}) }
       it "should raise an error" do
-        expect{ described_class.merge_cloud_settings(mod_settings, ls_settings) }.to raise_exception(ArgumentError)
+        expect { described_class.merge_cloud_settings(mod_settings, ls_settings) }.to raise_exception(ArgumentError)
       end
     end
 

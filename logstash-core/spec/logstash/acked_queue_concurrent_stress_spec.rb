@@ -114,7 +114,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
         sleep 0.1
         expect { queue.close }.not_to raise_error
         sleep 0.1
-        files = Dir.glob(path + '/*').map{|f| f.sub("#{path}/", '')}
+        files = Dir.glob(path + '/*').map {|f| f.sub("#{path}/", '')}
         if files.count != 2
           output_strings << "File count after close mismatch expected: 2 got: #{files.count}"
           output_strings.concat files
@@ -123,7 +123,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
         queue.close
 
         if output_strings.any?
-          output_strings << __memoized.reject{|k, v| reject_memo_keys.include?(k)}.inspect
+          output_strings << __memoized.reject {|k, v| reject_memo_keys.include?(k)}.inspect
         end
 
         expect(output_strings).to eq([])

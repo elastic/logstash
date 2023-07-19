@@ -104,7 +104,7 @@ describe "LogStash::Json" do
   end
 
   it "should raise Json::ParserError on invalid json" do
-    expect{LogStash::Json.load("abc")}.to raise_error LogStash::Json::ParserError
+    expect {LogStash::Json.load("abc")}.to raise_error LogStash::Json::ParserError
   end
 
   it "should return nil on empty string" do

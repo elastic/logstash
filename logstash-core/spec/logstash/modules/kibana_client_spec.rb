@@ -37,7 +37,7 @@ module LogStash module Modules
     context "when supplied with conflicting scheme data" do
       let(:settings) { {"var.kibana.scheme" => "http", "var.kibana.host" => kibana_host} }
       it "a new instance will throw an error" do
-        expect{described_class.new(settings, test_client)}.to raise_error(ArgumentError, /Detected differing Kibana host schemes as sourced from var\.kibana\.host: 'https' and var\.kibana\.scheme: 'http'/)
+        expect {described_class.new(settings, test_client)}.to raise_error(ArgumentError, /Detected differing Kibana host schemes as sourced from var\.kibana\.host: 'https' and var\.kibana\.scheme: 'http'/)
       end
     end
 
@@ -45,7 +45,7 @@ module LogStash module Modules
       ["httpd", "ftp", "telnet"].each do |uri_scheme|
         it "a new instance will throw an error" do
           re = /Kibana host scheme given is invalid, given value: '#{uri_scheme}' - acceptable values: 'http', 'https'/
-          expect{described_class.new({"var.kibana.scheme" => uri_scheme}, test_client)}.to raise_error(ArgumentError, re)
+          expect {described_class.new({"var.kibana.scheme" => uri_scheme}, test_client)}.to raise_error(ArgumentError, re)
         end
       end
     end

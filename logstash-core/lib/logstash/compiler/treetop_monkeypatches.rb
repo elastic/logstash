@@ -93,13 +93,13 @@ class Treetop::Runtime::SyntaxNode
 
     indent +
     self.class.to_s.sub(/.*:/, '') +
-      em.map{|m| "+" + m.to_s.sub(/.*:/, '')} * "" +
+      em.map {|m| "+" + m.to_s.sub(/.*:/, '')} * "" +
       " offset=#{interval.first}" +
       ", #{tv.inspect}" +
       im +
       (elements && elements.size > 0 ?
         ":" +
-          (elements.select { |e| !e.is_a?(LogStash::Config::AST::Whitespace) && e.elements && e.elements.size > 0 } || []).map{|e|
+          (elements.select { |e| !e.is_a?(LogStash::Config::AST::Whitespace) && e.elements && e.elements.size > 0 } || []).map {|e|
       begin
         "\n" + e.inspect(indent + "  ")
       rescue  # Defend against inspect not taking a parameter

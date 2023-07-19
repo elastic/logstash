@@ -90,7 +90,7 @@ class PlatformConfig
 
   def select_names_for(platform, options = {})
     filter_options = { "experimental" => options.fetch("experimental", false) }
-    filter_type(platform, filter_options).map{ |p| p.name }
+    filter_type(platform, filter_options).map { |p| p.name }
   end
 
   def types

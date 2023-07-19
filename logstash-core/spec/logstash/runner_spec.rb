@@ -120,11 +120,11 @@ describe LogStash::Runner do
 
     it "should fail with single invalid dir path" do
       expect(LogStash::Environment).not_to receive(:add_plugin_path)
-      expect{subject.configure_plugin_paths(invalid_directory)}.to raise_error(Clamp::UsageError)
+      expect {subject.configure_plugin_paths(invalid_directory)}.to raise_error(Clamp::UsageError)
     end
 
     it "should add multiple valid dir path to the environment" do
-      multiple_paths.each{|path| expect(LogStash::Environment).to receive(:add_plugin_path).with(path)}
+      multiple_paths.each {|path| expect(LogStash::Environment).to receive(:add_plugin_path).with(path)}
       subject.configure_plugin_paths(multiple_paths)
     end
   end

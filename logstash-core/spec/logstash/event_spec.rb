@@ -323,14 +323,14 @@ describe LogStash::Event do
     end
 
     it "should consistently handle nil" do
-      expect{LogStash::Event.from_json(nil)}.to raise_error(TypeError)
-      expect{LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error # java.lang.ClassCastException
+      expect {LogStash::Event.from_json(nil)}.to raise_error(TypeError)
+      expect {LogStash::Event.new(LogStash::Json.load(nil))}.to raise_error # java.lang.ClassCastException
     end
 
     it "should consistently handle bare string" do
       bare_strings.each do |s|
-        expect{LogStash::Event.from_json(s)}.to raise_error LogStash::Json::ParserError
-        expect{LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
+        expect {LogStash::Event.from_json(s)}.to raise_error LogStash::Json::ParserError
+        expect {LogStash::Event.new(LogStash::Json.load(s))}.to raise_error LogStash::Json::ParserError
        end
     end
 

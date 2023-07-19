@@ -63,7 +63,7 @@ module LogStash module Instrument module PeriodicPoller
 
       def cgroup_available?
         # don't cache to ivar, in case the files are mounted after logstash starts??
-        CRITICAL_PATHS.all?{|path| ::File.exist?(path)}
+        CRITICAL_PATHS.all? {|path| ::File.exist?(path)}
       end
 
       def controller_groups

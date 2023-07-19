@@ -102,7 +102,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   # create list of plugins to update
   def plugins_to_update(previous_gem_specs_map)
     if update_all?
-      previous_gem_specs_map.values.map{|spec| spec.name}
+      previous_gem_specs_map.values.map {|spec| spec.name}
     else
       # If the plugins isn't available in the gemspec or in
       # the gemfile defined with a local path, we assume the plugins is not
@@ -153,7 +153,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   def find_latest_gem_specs
     LogStash::PluginManager.all_installed_plugins_gem_specs(gemfile).inject({}) do |result, spec|
       previous = result[spec.name.downcase]
-      result[spec.name.downcase] = previous ? [previous, spec].max_by{|s| s.version} : spec
+      result[spec.name.downcase] = previous ? [previous, spec].max_by {|s| s.version} : spec
       result
     end
   end

@@ -173,7 +173,7 @@ class LogStash::Filters::Base < LogStash::Plugin
     events.each do |event|
       unless event.cancelled?
         result << event
-        do_filter(event){|new_event| result << new_event}
+        do_filter(event) {|new_event| result << new_event}
       end
     end
     result

@@ -169,9 +169,9 @@ module LogStash::Util
   def self.normalize(o)
     case o
     when Java::JavaUtil::LinkedHashMap
-      o.inject({}){|r, (k, v)| r[k] = normalize(v); r}
+      o.inject({}) {|r, (k, v)| r[k] = normalize(v); r}
     when Java::JavaUtil::ArrayList
-      o.map{|i| normalize(i)}
+      o.map {|i| normalize(i)}
     else
       o
     end
@@ -180,9 +180,9 @@ module LogStash::Util
   def self.stringify_symbols(o)
     case o
     when Hash
-      o.inject({}){|r, (k, v)| r[k.is_a?(Symbol) ? k.to_s : k] = stringify_symbols(v); r}
+      o.inject({}) {|r, (k, v)| r[k.is_a?(Symbol) ? k.to_s : k] = stringify_symbols(v); r}
     when Array
-      o.map{|i| stringify_symbols(i)}
+      o.map {|i| stringify_symbols(i)}
     when Symbol
       o.to_s
     else

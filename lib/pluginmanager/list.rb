@@ -36,7 +36,7 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
 
     installed_plugin_names = filtered_specs.collect {|spec| spec.name}
 
-    filtered_specs.sort_by{|spec| spec.name}.each do |spec|
+    filtered_specs.sort_by {|spec| spec.name}.each do |spec|
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
       puts(line)
@@ -63,9 +63,9 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
                           specs = LogStash::PluginManager.find_plugins_gem_specs
 
                           # apply filters
-                          specs = specs.select{|spec| gemfile.find(spec.name)} if installed?
-                          specs = specs.select{|spec| spec_matches_search?(spec) } if plugin
-                          specs = specs.select{|spec| spec.metadata['logstash_group'] == group} if group
+                          specs = specs.select {|spec| gemfile.find(spec.name)} if installed?
+                          specs = specs.select {|spec| spec_matches_search?(spec) } if plugin
+                          specs = specs.select {|spec| spec.metadata['logstash_group'] == group} if group
 
                           specs
                         end

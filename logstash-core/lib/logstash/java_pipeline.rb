@@ -290,7 +290,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         .map(&:value)
       workers_init_elapsed = Time.now - workers_init_start
 
-      fail("Some worker(s) were not correctly initialized") if worker_loops.any?{|v| v.nil?}
+      fail("Some worker(s) were not correctly initialized") if worker_loops.any? {|v| v.nil?}
 
       @logger.info("Pipeline Java execution initialization time", "seconds" => workers_init_elapsed.round(2))
 
@@ -475,7 +475,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @shutdownRequested.set(true)
 
     @worker_threads.each do |t|
-      @logger.debug("Shutdown waiting for worker thread" , default_logging_keys(:thread => t.inspect))
+      @logger.debug("Shutdown waiting for worker thread", default_logging_keys(:thread => t.inspect))
       t.join
     end
 

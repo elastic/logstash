@@ -193,7 +193,7 @@ describe LogStash::Agent do
         end
 
         it "increment the pipeline successes" do
-          expect{ subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :successes) }.by(1)
+          expect { subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :successes) }.by(1)
         end
 
         it "record the `last_success_timestamp`" do
@@ -213,7 +213,7 @@ describe LogStash::Agent do
         end
 
         it "increment the pipeline failures" do
-          expect{ subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :failures) }.by(1)
+          expect { subject.converge_state_and_update }.to change { mval(:stats, :pipelines, pipeline_name, :reloads, :failures) }.by(1)
         end
       end
     end
@@ -252,8 +252,8 @@ describe LogStash::Agent do
         # since the pipeline is async, it can actually take some time to have metrics recordings
         # so we try a few times
         try(20) do
-          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error , "Events pipeline stats should exist"
-          expect { mhash(:stats, :pipelines, :main, :flow) }.not_to raise_error , "Events pipeline stats should exist"
+          expect { mhash(:stats, :pipelines, :main, :events) }.not_to raise_error, "Events pipeline stats should exist"
+          expect { mhash(:stats, :pipelines, :main, :flow) }.not_to raise_error, "Events pipeline stats should exist"
           expect { mhash(:stats, :pipelines, :main, :plugins) }.not_to raise_error, "Plugins pipeline stats should exist"
         end
 

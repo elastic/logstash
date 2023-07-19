@@ -9,7 +9,7 @@ describe "ArcSight module" do
   let(:logstash_config_class) { LogStash::Modules::LogStashConfig  }
   let(:module_name) { "arcsight" }
   let(:module_path) { ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "modules", module_name, "configuration") }
-  let(:mod) { instance_double("arcsight", :directory => module_path , :module_name => module_name) }
+  let(:mod) { instance_double("arcsight", :directory => module_path, :module_name => module_name) }
   let(:settings) { {} }
   subject { logstash_config_class.new(mod, settings) }
 

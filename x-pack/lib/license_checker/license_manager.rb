@@ -24,8 +24,8 @@ module LogStash
         fetch_xpack_info
 
         if @executor.nil?
-            @executor = Executors.new_single_thread_scheduled_executor{ |runnable| create_daemon_thread (runnable)}
-            @executor.schedule_at_fixed_rate(Proc.new{fetch_xpack_info}, refresh_period, refresh_period, refresh_unit)
+            @executor = Executors.new_single_thread_scheduled_executor { |runnable| create_daemon_thread (runnable)}
+            @executor.schedule_at_fixed_rate(Proc.new {fetch_xpack_info}, refresh_period, refresh_period, refresh_unit)
         end
       end
 

@@ -100,7 +100,7 @@ module ServiceTester
     end
 
     def download(from, to)
-      client.download(from, to , host)
+      client.download(from, to, host)
     end
 
     def replace_in_gemfile(pattern, replace)

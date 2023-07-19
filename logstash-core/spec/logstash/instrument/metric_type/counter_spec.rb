@@ -26,7 +26,7 @@ describe LogStash::Instrument::MetricType::Counter do
 
   describe "#increment" do
     it "increment the counter" do
-      expect{ subject.increment }.to change { subject.value }.by(1)
+      expect { subject.increment }.to change { subject.value }.by(1)
     end
   end
 

@@ -162,13 +162,13 @@ class LogStash::Runner < Clamp::StrictCommand
     :default => LogStash::SETTINGS.get_default('pipeline.ecs_compatibility')
 
   # Data Path Setting
-  option ["--path.data"] , "PATH",
+  option ["--path.data"], "PATH",
     I18n.t("logstash.runner.flag.datapath"),
     :attribute_name => "path.data",
     :default => LogStash::SETTINGS.get_default("path.data")
 
   # Plugins Settings
-  option ["-p", "--path.plugins"] , "PATH",
+  option ["-p", "--path.plugins"], "PATH",
     I18n.t("logstash.runner.flag.pluginpath"),
     :multivalued => true, :attribute_name => "path.plugins",
     :default => LogStash::SETTINGS.get_default("path.plugins")

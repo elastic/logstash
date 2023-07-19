@@ -53,7 +53,7 @@ describe "Test Logstash Pipeline id" do
       "log.level" => "debug"
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate()
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true

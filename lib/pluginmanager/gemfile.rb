@@ -115,7 +115,7 @@ module LogStash
     end
 
     def to_s
-      [sources_to_s, gemspec_to_s, gems_to_s].select{|s| !s.empty?}.join("\n") + "\n"
+      [sources_to_s, gemspec_to_s, gems_to_s].select {|s| !s.empty?}.join("\n") + "\n"
     end
 
     # @return [Gem] found gem or nil if not found
@@ -180,21 +180,21 @@ module LogStash
 
     def sources_to_s
       return "" if @sources.empty?
-      @sources.map{|source| "source #{source.inspect}"}.join("\n")
+      @sources.map {|source| "source #{source.inspect}"}.join("\n")
     end
 
     def gems_to_s
       return "" if @gems.empty?
       @gems.map do |gem|
-        requirements = gem.requirements.empty? ? nil : gem.requirements.map{|r| r.inspect}.join(", ")
-        options = gem.options.empty? ? nil : gem.options.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
+        requirements = gem.requirements.empty? ? nil : gem.requirements.map {|r| r.inspect}.join(", ")
+        options = gem.options.empty? ? nil : gem.options.map {|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
         "gem " + [gem.name.inspect, requirements, options].compact.join(", ")
       end.join("\n")
     end
 
     def gemspec_to_s
       return "" if @gemspec.empty?
-      options = @gemspec.map{|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
+      options = @gemspec.map {|k, v| "#{k.inspect} => #{v.inspect}"}.join(", ")
       "gemspec #{options}"
     end
   end
@@ -237,7 +237,7 @@ module LogStash
 
     def initialize(name, requirements = [], options = {})
       @name = name
-      @requirements = requirements.map{|r| r.to_s.strip}.select{|r| !r.empty?}
+      @requirements = requirements.map {|r| r.to_s.strip}.select {|r| !r.empty?}
       @options = options
     end
 

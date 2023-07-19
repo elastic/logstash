@@ -253,7 +253,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "#fetch_config should raise error" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(elasticsearch_8_err_response.clone)
-        expect{ subject.fetch_config(es_version_8_2, ["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+        expect { subject.fetch_config(es_version_8_2, ["apache", "nginx"], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       describe "wildcard" do
@@ -353,12 +353,12 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       it "#fetch_config should raise error" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(elasticsearch_7_9_err_response)
         expect(mock_logger).to receive(:warn).never
-        expect{ subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+        expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#fetch_config should raise error when response is empty" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(LogStash::Json.load("{}"))
-        expect{ subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+        expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
       it "#fetch_config should log unmatched pipeline id" do
@@ -557,7 +557,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             end
 
             it 'should raise an error' do
-              expect{subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
+              expect {subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
             end
           end
 
@@ -568,7 +568,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             end
 
             it 'should raise an error' do
-              expect{subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
+              expect {subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
             end
           end
 
@@ -616,7 +616,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             let(:license_type) { 'basic' }
 
             it 'should raise an error' do
-              expect{subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
+              expect {subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
             end
           end
 
@@ -697,7 +697,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         end
 
         context "when any error returned from elasticsearch [#{es_version}]" do
-          let(:elasticsearch_8_response){"{\"error\" : \"no handler found for uri [/_logstash/pipelines?pretty] and method [GET]\"}" }
+          let(:elasticsearch_8_response) {"{\"error\" : \"no handler found for uri [/_logstash/pipelines?pretty] and method [GET]\"}" }
           let(:elasticsearch_7_9_response) { '{ "error":{"root_cause":[{"type":"illegal_argument_exception","reason":"No endpoint or operation is available at [testing_ph]"}],"type":"illegal_argument_exception","reason":"No endpoint or operation is available at [testing_ph]"},"status":400}' }
 
           before do
@@ -769,7 +769,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
     it "responses with an error" do
       allow(mock_client).to receive(:get).with("/").and_return(elasticsearch_8_err_response)
-      expect{ subject.get_es_version }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+      expect { subject.get_es_version }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
     end
   end
 

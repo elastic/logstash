@@ -230,14 +230,14 @@ describe LogStash::IOWrappedLogger do
   end
 
   it "responds to sync=(v)" do
-    expect{ subject.sync = true }.not_to raise_error
+    expect { subject.sync = true }.not_to raise_error
   end
 
   it "responds to sync" do
-    expect{ subject.sync }.not_to raise_error
+    expect { subject.sync }.not_to raise_error
   end
 
   it "responds to flush" do
-    expect{ subject.flush }.not_to raise_error
+    expect { subject.flush }.not_to raise_error
   end
 end
