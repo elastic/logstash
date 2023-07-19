@@ -234,3 +234,4 @@ Layout/SpaceInsideReferenceBrackets:
   Enabled: false
 Layout/SpaceInsideStringInterpolation:
   Enabled: true
+  EnforcedStyle: no_space
