@@ -109,7 +109,7 @@ describe LogStash::Filters::Geoip do
 
       it "should raise error if md5 does not match" do
         allow(Down).to receive(:download)
-        expect{ download_manager.send(:download_database, database_type, dirname, db_info) }.to raise_error /wrong checksum/
+        expect { download_manager.send(:download_database, database_type, dirname, db_info) }.to raise_error /wrong checksum/
       end
 
       it "should download file and return zip path" do
@@ -161,7 +161,7 @@ describe LogStash::Filters::Geoip do
       end
 
       it "should raise error if file is invalid" do
-        expect{ download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
+        expect { download_manager.send(:assert_database!, "Gemfile") }.to raise_error /failed to load database/
       end
 
       it "should pass validation" do

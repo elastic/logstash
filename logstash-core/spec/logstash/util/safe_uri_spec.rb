@@ -72,7 +72,7 @@ module LogStash module Util
         context 'malformed uris via string' do
           MALFORMED_URIS.each do |arg|
             it "#{arg}: should raise an error" do
-              expect{LogStash::Util::SafeURI.new(arg)}.to raise_error(ArgumentError)
+              expect {LogStash::Util::SafeURI.new(arg)}.to raise_error(ArgumentError)
             end
           end
         end
@@ -81,7 +81,7 @@ module LogStash module Util
           MALFORMED_URIS.each do |arg|
             it "#{arg}: should raise an error" do
               java_uri = java.net.URI.new(arg)
-              expect{LogStash::Util::SafeURI.new(java_uri)}.to raise_error(ArgumentError)
+              expect {LogStash::Util::SafeURI.new(java_uri)}.to raise_error(ArgumentError)
             end
           end
         end
@@ -90,7 +90,7 @@ module LogStash module Util
           MALFORMED_URIS.each do |arg|
             it "#{arg}: should raise an error" do
               ruby_uri = URI.parse(arg)
-              expect{LogStash::Util::SafeURI.new(ruby_uri)}.to raise_error(ArgumentError)
+              expect {LogStash::Util::SafeURI.new(ruby_uri)}.to raise_error(ArgumentError)
             end
           end
         end

@@ -56,7 +56,7 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
             allow(plugin_class).to receive(:logger).and_return(logger_stub)
           end
           it 'logs helpfully and raises an exception' do
-            expect{plugin}.to raise_exception(LogStash::ConfigurationError)
+            expect {plugin}.to raise_exception(LogStash::ConfigurationError)
             expect(logger_stub).to have_received(:error).with(a_string_including "Expected a hex-encoded SHA-256 fingerprint")
           end
         end

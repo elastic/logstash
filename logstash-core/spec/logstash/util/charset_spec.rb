@@ -60,7 +60,7 @@ describe LogStash::Util::Charset do
         ["foobar", "foobar"],
         ["\xE0 Montr\xE9al", "à Montréal"],
       ]
-      samples.map{|(a, b)| [a.force_encoding("ISO-8859-1"), b]}.each do |(a, b)|
+      samples.map {|(a, b)| [a.force_encoding("ISO-8859-1"), b]}.each do |(a, b)|
         expect(a.encoding.name).to eq("ISO-8859-1")
         expect(b.encoding.name).to eq("UTF-8")
         expect(a.valid_encoding?).to eq(true)
@@ -78,7 +78,7 @@ describe LogStash::Util::Charset do
         ["\xE0 Montr\xE9al", "� Montr�al"],
         ["\xCE\xBA\xCF\x8C\xCF\x83\xCE\xBC\xCE\xB5", "����������"],
       ]
-      samples.map{|(a, b)| [a.force_encoding("ASCII-8BIT"), b]}.each do |(a, b)|
+      samples.map {|(a, b)| [a.force_encoding("ASCII-8BIT"), b]}.each do |(a, b)|
         expect(a.encoding.name).to eq("ASCII-8BIT")
         expect(b.encoding.name).to eq("UTF-8")
         expect(subject.convert(a).encoding.name).to eq("UTF-8")

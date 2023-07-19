@@ -56,7 +56,7 @@ describe LogStash::Timestamp do
   end
 
   it "should raise on invalid string coerce" do
-    expect{LogStash::Timestamp.coerce("foobar")}.to raise_error LogStash::TimestampParserError
+    expect {LogStash::Timestamp.coerce("foobar")}.to raise_error LogStash::TimestampParserError
   end
 
   it "should return nil on invalid object coerce" do
@@ -203,11 +203,11 @@ describe LogStash::Timestamp do
 
     context "with illegal parameters" do
       it "should raise exception on nil input" do
-        expect{LogStash::Timestamp.at(nil)}.to raise_error
+        expect {LogStash::Timestamp.at(nil)}.to raise_error
       end
 
       it "should raise exception on invalid input type" do
-        expect{LogStash::Timestamp.at(:foo)}.to raise_error
+        expect {LogStash::Timestamp.at(:foo)}.to raise_error
       end
     end
   end

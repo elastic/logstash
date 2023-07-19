@@ -32,7 +32,7 @@ module LogStash module Modules module SettingsMerger
     # union will also coalesce identical hashes
     # this "|" operator is provided to Java List by RubyJavaIntegration
     union_of_settings = (cli_settings | yml_settings)
-    grouped_by_name = union_of_settings.group_by{|e| e["name"]}
+    grouped_by_name = union_of_settings.group_by {|e| e["name"]}
     grouped_by_name.each do |_, array|
       if array.size == 2
         merged << array.last.merge(array.first)

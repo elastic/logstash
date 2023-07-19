@@ -77,6 +77,18 @@ Layout/SpaceAroundMethodCallOperator:
   Enabled: true
 Layout/SpaceAroundOperators:
   Enabled: true
+Layout/SpaceBeforeBlockBraces:
+  Enabled: true
+Layout/SpaceBeforeBrackets:
+  Enabled: true
+Layout/SpaceBeforeComma:
+  Enabled: true
+Layout/SpaceBeforeComment:
+  Enabled: true
+Layout/SpaceBeforeFirstArg:
+  Enabled: true
+Layout/SpaceBeforeSemicolon:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -198,18 +210,6 @@ Layout/SingleLineBlockChain:
 Layout/SpaceAfterMethodName:
   Enabled: false
 Layout/SpaceAfterNot:
-  Enabled: false
-Layout/SpaceBeforeBlockBraces:
-  Enabled: false
-Layout/SpaceBeforeBrackets:
-  Enabled: false
-Layout/SpaceBeforeComma:
-  Enabled: false
-Layout/SpaceBeforeComment:
-  Enabled: false
-Layout/SpaceBeforeFirstArg:
-  Enabled: false
-Layout/SpaceBeforeSemicolon:
   Enabled: false
 Layout/SpaceInLambdaLiteral:
   Enabled: false

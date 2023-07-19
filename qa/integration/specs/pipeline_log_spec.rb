@@ -56,7 +56,7 @@ describe "Test Logstash Pipeline id" do
       "pipeline.id" => pipeline_name
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
@@ -70,7 +70,7 @@ describe "Test Logstash Pipeline id" do
       "pipeline.id" => pipeline_name
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
@@ -99,7 +99,7 @@ describe "Test Logstash Pipeline id" do
       "pipeline.separate_logs" => true
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"
@@ -130,7 +130,7 @@ describe "Test Logstash Pipeline id" do
     expect(log_definition).to match(/appender\.rolling\.filePattern\s*=\s*.*\/logstash-plain-%d{yyyy-MM-dd}\.log/)
     FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
 
-    @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+    @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1", "-e", config)
     wait_logstash_process_terminate(@ls)
 
     logstash_logs = Dir.glob("logstash-plain*.log", base: temp_dir)
@@ -158,7 +158,7 @@ describe "Test Logstash Pipeline id" do
       expect(log_definition).to match(/appender\.routing\.pipeline\.policy\.size\s*=\s*1KB/)
       FileUtils.cp("fixtures/logs_rollover/log4j2.properties", temp_dir)
 
-      @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1" , "-e", config)
+      @ls.spawn_logstash("--path.settings", temp_dir, "-w", "1", "-e", config)
       wait_logstash_process_terminate(@ls)
 
       pipeline_logs = Dir.glob("pipeline*.log", base: temp_dir)
@@ -173,7 +173,7 @@ describe "Test Logstash Pipeline id" do
       "pipeline.separate_logs" => false
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate(@ls)
 
     pipeline_log_file = "#{temp_dir}/pipeline_#{pipeline_name}.log"

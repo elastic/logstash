@@ -120,7 +120,7 @@ describe "LogStash::Util::Accessors", :if => class_exists do
       data = {}
       accessors = LogStash::Util::Accessors.new(data)
       expect(accessors.get(str)).to be_nil
-      expect(data).to  be_empty
+      expect(data).to be_empty
       expect(accessors.set(str, "foo")).to eq("foo")
       expect(data).to eq({ "hello" => {"world" => "foo"} })
     end

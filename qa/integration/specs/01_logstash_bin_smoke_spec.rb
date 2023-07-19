@@ -48,7 +48,7 @@ describe "Test Logstash instance" do
 
   let(:num_retries) { 50 }
   let(:config1) { config_to_temp_file(@fixture.config("root", { :port => port1, :random_file => file_config1 })) }
-  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => port2 , :random_file => file_config2 })) }
+  let(:config2) { config_to_temp_file(@fixture.config("root", { :port => port2, :random_file => file_config2 })) }
   let(:config3) { config_to_temp_file(@fixture.config("root", { :port => port3, :random_file => file_config3 })) }
   let(:port1) { random_port }
   let(:port2) { random_port }

@@ -24,7 +24,7 @@ describe LogStash::Util::CloudSettingId do
 
   describe "when given unacceptable input" do
     it "a nil input does not raise an exception" do
-      expect{described_class.new(nil)}.not_to raise_exception
+      expect {described_class.new(nil)}.not_to raise_exception
     end
     it "when given a nil input, the accessors are all nil" do
       cloud_id = described_class.new(nil)
@@ -41,7 +41,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {%w(first second)}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}\".")
+        expect {subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}\".")
       end
     end
 
@@ -49,7 +49,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {["first", "", "third"]}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}$#{raw[2]}\".")
+        expect {subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"#{raw[0]}$#{raw[1]}$#{raw[2]}\".")
       end
     end
 
@@ -57,7 +57,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {%w(us-east-1.aws.found.io undefined my-kibana)}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.")
+        expect {subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.")
       end
     end
 
@@ -65,7 +65,7 @@ describe LogStash::Util::CloudSettingId do
       let(:raw) {%w(us-east-1.aws.found.io my-elastic-cluster undefined)}
       let(:input) { described_class.cloud_id_encode(*raw) }
       it "raises an error" do
-        expect{subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.")
+        expect {subject}.to raise_exception(ArgumentError, "Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.")
       end
     end
   end

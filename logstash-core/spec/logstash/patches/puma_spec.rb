@@ -58,7 +58,7 @@ describe LogStash::DelegatingLogWriter do
   context "#error" do
     it "should log an :error message and raise LogStash::UnrecoverablePumaError" do
       expect(logger).to receive(:error).with(text)
-      expect{ subject.send(:error, text) }.to raise_error(LogStash::UnrecoverablePumaError, text)
+      expect { subject.send(:error, text) }.to raise_error(LogStash::UnrecoverablePumaError, text)
     end
   end
 

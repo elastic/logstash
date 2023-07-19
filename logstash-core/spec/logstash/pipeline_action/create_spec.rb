@@ -68,7 +68,7 @@ describe LogStash::PipelineAction::Create do
     end
   end
 
-  context  "when the pipeline doesn't start" do
+  context "when the pipeline doesn't start" do
     context "with a syntax error" do
       let(:pipeline_config) { mock_pipeline_config(:main, "input { dummyblockinginput { id => '123' } } output { stdout ") } # bad syntax
 

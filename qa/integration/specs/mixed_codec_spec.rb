@@ -82,7 +82,7 @@ describe "Ruby codec when used in" do
 
     it "should encode correctly to file and don't log any ERROR" do
       logstash_service.env_variables = {'PATH_TO_OUT' => out_capture.path}
-      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.spawn_logstash("-w", "1", "-e", config)
       logstash_service.wait_for_logstash
       logstash_service.wait_for_rest_api
 
@@ -105,7 +105,7 @@ describe "Ruby codec when used in" do
     let(:config) { @fixture.config("output_encode") }
 
     it "should encode correctly without any ERROR log" do
-      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.spawn_logstash("-w", "1", "-e", config)
       logstash_service.wait_for_logstash
       logstash_service.wait_for_rest_api
 

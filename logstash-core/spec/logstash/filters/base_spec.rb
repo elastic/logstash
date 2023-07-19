@@ -36,8 +36,8 @@ describe LogStash::Filters::Base do
   subject {LogStash::Filters::Base.new({})}
 
   it "should provide method interfaces to override" do
-    expect{subject.register}.to raise_error(RuntimeError)
-    expect{subject.filter(:foo)}.to raise_error(RuntimeError)
+    expect {subject.register}.to raise_error(RuntimeError)
+    expect {subject.filter(:foo)}.to raise_error(RuntimeError)
   end
 
   it "should provide class public API" do
@@ -47,8 +47,8 @@ describe LogStash::Filters::Base do
   end
 
   context "multi_filter" do
-    let(:event1){LogStash::Event.new}
-    let(:event2){LogStash::Event.new}
+    let(:event1) {LogStash::Event.new}
+    let(:event2) {LogStash::Event.new}
 
     it "should multi_filter without new events" do
       allow(subject).to receive(:filter) do |event, &block|

@@ -58,7 +58,7 @@ describe "logstash Gemfile Manager" do
           gemspec "boom"
         END
 
-        expect{LogStash::Gemfile.new(StringIO.new(file)).load}.to raise_error(LogStash::GemfileError)
+        expect {LogStash::Gemfile.new(StringIO.new(file)).load}.to raise_error(LogStash::GemfileError)
       end
 
       it "should add gems" do
@@ -79,7 +79,7 @@ describe "logstash Gemfile Manager" do
           gem "foo"
         END
 
-        expect{LogStash::Gemfile.new(StringIO.new(file)).load}.to raise_error(LogStash::GemfileError)
+        expect {LogStash::Gemfile.new(StringIO.new(file)).load}.to raise_error(LogStash::GemfileError)
       end
 
       it "should add gems with only name" do

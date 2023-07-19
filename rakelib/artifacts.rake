@@ -407,7 +407,7 @@ namespace "artifact" do
     gem_line_regex = /^\s*gem\s+["']logstash-core["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[gem_line_regex]}
+    matches = lines.select {|line| line[gem_line_regex]}
     abort("ERROR: Gemfile format error, need a single logstash-core gem specification") if matches.size != 1
 
     path = matches.first[gem_line_regex, 1]
@@ -427,7 +427,7 @@ namespace "artifact" do
     gem_line_regex = /^\s*gem\s+["']logstash-core-plugin-api["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[gem_line_regex]}
+    matches = lines.select {|line| line[gem_line_regex]}
     abort("ERROR: Gemfile format error, need a single logstash-core-plugin-api gem specification") if matches.size != 1
 
     path = matches.first[gem_line_regex, 1]

@@ -124,7 +124,7 @@ module LogStash::PluginManager
   # @return [Array<Gem::Specification>] all local logstash plugin gem specs
   def self.find_plugins_gem_specs(name = nil)
     specs = name ? ::Gem::Specification.find_all_by_name(name) : ::Gem::Specification.find_all
-    specs.select{|spec| logstash_plugin_gem_spec?(spec)}
+    specs.select {|spec| logstash_plugin_gem_spec?(spec)}
   end
 
   # list of all locally installed plugins specs specified in the Gemfile.
@@ -135,7 +135,7 @@ module LogStash::PluginManager
   def self.all_installed_plugins_gem_specs(gemfile)
     # we start form the installed gemspecs so we can verify the metadata for valid logstash plugin
     # then filter out those not included in the Gemfile
-    find_plugins_gem_specs.select{|spec| !!gemfile.find(spec.name)}
+    find_plugins_gem_specs.select {|spec| !!gemfile.find(spec.name)}
   end
 
   # @param plugin [String] plugin name

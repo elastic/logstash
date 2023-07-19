@@ -94,7 +94,7 @@ describe "Test Monitoring API" do
     let(:logstash_service) { @fixture.get_service("logstash") }
 
     before(:each) do
-      logstash_service.spawn_logstash("-w", "1" , "-e", config)
+      logstash_service.spawn_logstash("-w", "1", "-e", config)
       logstash_service.wait_for_logstash
       wait_for_port(tcp_port, 60)
 

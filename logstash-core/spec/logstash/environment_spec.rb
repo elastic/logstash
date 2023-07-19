@@ -57,7 +57,7 @@ describe LogStash::Environment do
     after(:each) { $LOAD_PATH.delete(path) }
 
     it "should add the path to $LOAD_PATH" do
-      expect{subject.add_plugin_path(path)}.to change{$LOAD_PATH.size}.by(1)
+      expect {subject.add_plugin_path(path)}.to change {$LOAD_PATH.size}.by(1)
       expect($LOAD_PATH).to include(path)
     end
   end

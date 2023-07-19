@@ -65,8 +65,8 @@ describe "Java integration" do
   context "Java::JavaUtil::Map" do
     # this is to test the Java 8 Map interface change for the merge method
 
-    let(:merger){{:a => 1, :b => 2}}
-    let(:mergee){{:b => 3, :c => 4}}
+    let(:merger) {{:a => 1, :b => 2}}
+    let(:mergee) {{:b => 3, :c => 4}}
 
     shared_examples "map merge" do
       it "should support merging" do
@@ -74,25 +74,25 @@ describe "Java integration" do
       end
 
       it "should return a new hash and not change original hash" do
-        expect{subject.merge(mergee)}.to_not change{subject}
+        expect {subject.merge(mergee)}.to_not change {subject}
       end
     end
 
     context "with Java::JavaUtil::LinkedHashMap" do
       it_behaves_like "map merge" do
-        subject{Java::JavaUtil::LinkedHashMap.new(merger)}
+        subject {Java::JavaUtil::LinkedHashMap.new(merger)}
       end
     end
 
     context "with Java::JavaUtil::HashMap" do
       it_behaves_like "map merge" do
-        subject{Java::JavaUtil::HashMap.new(merger)}
+        subject {Java::JavaUtil::HashMap.new(merger)}
       end
     end
   end
 
   context "Java::JavaUtil::Collection" do
-    subject{Java::JavaUtil::ArrayList.new(initial_array)}
+    subject {Java::JavaUtil::ArrayList.new(initial_array)}
 
     context "when inspecting a list" do
       let(:items) { [:a, {:b => :c}] }
@@ -130,7 +130,7 @@ describe "Java integration" do
       end
 
       it "should remove the object to delete" do
-        expect{subject.delete("foo")}.to change{subject.to_a}.from(initial_array).to(["bar"])
+        expect {subject.delete("foo")}.to change {subject.to_a}.from(initial_array).to(["bar"])
       end
     end
 
@@ -142,7 +142,7 @@ describe "Java integration" do
       end
 
       it "should remove all the objects to delete" do
-        expect{subject.delete("foo")}.to change{subject.to_a}.from(initial_array).to(["bar"])
+        expect {subject.delete("foo")}.to change {subject.to_a}.from(initial_array).to(["bar"])
       end
     end
 
@@ -154,11 +154,11 @@ describe "Java integration" do
       end
 
       it "should not change the collection" do
-        expect{subject.delete("baz")}.to_not change{subject.to_a}
+        expect {subject.delete("baz")}.to_not change {subject.to_a}
       end
 
       it "should yield to block when given" do
-        expect(subject.delete("baz"){"foobar"}).to eq("foobar")
+        expect(subject.delete("baz") {"foobar"}).to eq("foobar")
       end
     end
 
@@ -170,7 +170,7 @@ describe "Java integration" do
       end
 
       it "should not change the collection" do
-        expect{subject.delete("baz")}.to_not change{subject.to_a}
+        expect {subject.delete("baz")}.to_not change {subject.to_a}
       end
     end
 
@@ -179,7 +179,7 @@ describe "Java integration" do
         let(:initial_array) {["foo", "bar", "foo"]}
 
         it "should not change original collection" do
-          expect{subject & ["foo"]}.to_not change{subject.to_a}
+          expect {subject & ["foo"]}.to_not change {subject.to_a}
         end
 
         it "should return a new array containing elements common to the two arrays, excluding any duplicate" do
@@ -214,7 +214,7 @@ describe "Java integration" do
         let(:initial_array) {["foo", "bar", "foo"]}
 
         it "should not change original collection" do
-          expect{subject | ["bar", "baz"]}.to_not change{subject.to_a}
+          expect {subject | ["bar", "baz"]}.to_not change {subject.to_a}
         end
 
         it "should return a new array by joining excluding any duplicates and preserving the order from the original array" do

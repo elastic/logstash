@@ -56,7 +56,7 @@ describe "Test Logstash Pipeline id" do
       "pipeline.separate_logs" => false
     }
     IO.write(@ls.application_settings_file, settings.to_yaml)
-    @ls.spawn_logstash("-w", "1" , "-e", config)
+    @ls.spawn_logstash("-w", "1", "-e", config)
     wait_logstash_process_terminate
 
     deprecation_log_file = "#{temp_dir}/logstash-deprecation.log"

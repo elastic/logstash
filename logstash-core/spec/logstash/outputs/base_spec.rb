@@ -63,7 +63,7 @@ describe "LogStash::Outputs::Base#new" do
       params = { "dummy_option" => "potatoes", "codec" => "json", "workers" => 2 }
       worker_params = params.dup; worker_params["workers"] = 1
 
-      expect{ subject }.not_to raise_error
+      expect { subject }.not_to raise_error
     end
 
     it "should set concurrency correctly" do

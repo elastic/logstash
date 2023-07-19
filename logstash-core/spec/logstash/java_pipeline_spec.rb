@@ -277,7 +277,7 @@ describe LogStash::JavaPipeline do
         sleep 0.01 until pipeline.stopped?
       end
       pipeline.shutdown
-      expect(output.events.map{|e| e.get("message")}).to include("END")
+      expect(output.events.map {|e| e.get("message")}).to include("END")
       expect(output.events.size).to eq(2)
       expect(output.events[0].get("tags")).to eq(["notdropped"])
       expect(output.events[1].get("tags")).to eq(["notdropped"])
@@ -432,7 +432,7 @@ describe LogStash::JavaPipeline do
         # when the pipeline has exited, no input threads should be alive
         wait(5).for {subject.input_threads.any?(&:alive?)}.to be_falsey
 
-        expect{dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
+        expect {dummyinput.push_once}.to raise_error(/Tried to write to a closed queue/)
       end
     end
   end
@@ -684,7 +684,7 @@ describe LogStash::JavaPipeline do
       CONFIG
 
        sample_one(["a", "1", "b", "2", "c", "3"]) do
-        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+        expect(subject.map {|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
       end
     end
 
@@ -699,7 +699,7 @@ describe LogStash::JavaPipeline do
       let(:pipeline) { mock_java_pipeline_from_string(config, settings) }
 
       it "should raise error" do
-        expect{pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
+        expect {pipeline.run}.to raise_error(RuntimeError, /pipeline\.ordered/)
         pipeline.close
       end
     end
@@ -723,7 +723,7 @@ describe LogStash::JavaPipeline do
       CONFIG
 
        sample_one(["a", "1", "b", "2", "c", "3"]) do
-        expect(subject.map{|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
+        expect(subject.map {|e| e.get("message")}).to eq(["a", "1", "b", "2", "c", "3"])
       end
     end
 
@@ -758,7 +758,7 @@ describe LogStash::JavaPipeline do
       CONFIG
 
       sample_one(["a", "1", "b", "2", "c", "3"]) do
-        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+        expect(subject.map {|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
       end
     end
 
@@ -781,7 +781,7 @@ describe LogStash::JavaPipeline do
       CONFIG
 
       sample_one(["a", "1", "b", "2", "c", "3"]) do
-        expect(subject.map{|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
+        expect(subject.map {|e| e.get("message")}).to eq(["1", "2", "3", "a", "b", "c"])
       end
     end
   end

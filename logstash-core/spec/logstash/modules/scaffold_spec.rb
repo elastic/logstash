@@ -148,7 +148,7 @@ ERB
       expect(resource2.import_path).to eq("api/kibana/dashboards/import")
       expect(resource2.content).to be_a(Array)
       expect(resource2.content.size).to eq(5)
-      expect(resource2.content.map{|o| o.class}.uniq).to eq([LogStash::Modules::KibanaResource])
+      expect(resource2.content.map {|o| o.class}.uniq).to eq([LogStash::Modules::KibanaResource])
 
       test_object = resource2.content[0]
       expect(test_object.content_id).to eq("foo-*")
