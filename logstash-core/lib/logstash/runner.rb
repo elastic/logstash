@@ -65,9 +65,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Node Settings
   option ["-n", "--node.name"], "NAME",
-    I18n.t("logstash.runner.flag.name"),
-    :attribute_name => "node.name",
-    :default => LogStash::SETTINGS.get_default("node.name")
+         I18n.t("logstash.runner.flag.name"),
+         :attribute_name => "node.name",
+         :default => LogStash::SETTINGS.get_default("node.name")
 
   option ["--enable-local-plugin-development"], :flag,
          I18n.t("logstash.runner.flag.enable-local-plugin-development"),
@@ -76,15 +76,15 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Config Settings
   option ["-f", "--path.config"], "CONFIG_PATH",
-    I18n.t("logstash.runner.flag.config"),
-    :attribute_name => "path.config"
+         I18n.t("logstash.runner.flag.config"),
+         :attribute_name => "path.config"
 
   option ["-e", "--config.string"], "CONFIG_STRING",
-    I18n.t("logstash.runner.flag.config-string",
-      :default_input => LogStash::Config::Defaults.input,
-      :default_output => LogStash::Config::Defaults.output),
-    :default => LogStash::SETTINGS.get_default("config.string"),
-    :attribute_name => "config.string"
+         I18n.t("logstash.runner.flag.config-string",
+                :default_input => LogStash::Config::Defaults.input,
+                :default_output => LogStash::Config::Defaults.output),
+         :default => LogStash::SETTINGS.get_default("config.string"),
+         :attribute_name => "config.string"
 
   option ["--field-reference-escape-style"], "STYLE",
          I18n.t("logstash.runner.flag.field-reference-escape-style"),
@@ -98,43 +98,43 @@ class LogStash::Runner < Clamp::StrictCommand
 
   # Module settings
   option ["--modules"], "MODULES",
-    I18n.t("logstash.runner.flag.modules"),
-    :multivalued => true,
-    :attribute_name => "modules_list"
+         I18n.t("logstash.runner.flag.modules"),
+         :multivalued => true,
+         :attribute_name => "modules_list"
 
   option ["-M", "--modules.variable"], "MODULES_VARIABLE",
-    I18n.t("logstash.runner.flag.modules_variable"),
-    :multivalued => true,
-    :attribute_name => "modules_variable_list"
+         I18n.t("logstash.runner.flag.modules_variable"),
+         :multivalued => true,
+         :attribute_name => "modules_variable_list"
 
   option ["--setup"], :flag,
-    I18n.t("logstash.runner.flag.modules_setup"),
-    :default => LogStash::SETTINGS.get_default("modules_setup"),
-    :attribute_name => "modules_setup"
+         I18n.t("logstash.runner.flag.modules_setup"),
+         :default => LogStash::SETTINGS.get_default("modules_setup"),
+         :attribute_name => "modules_setup"
 
   option ["--cloud.id"], "CLOUD_ID",
-    I18n.t("logstash.runner.flag.cloud_id"),
-    :attribute_name => "cloud.id"
+         I18n.t("logstash.runner.flag.cloud_id"),
+         :attribute_name => "cloud.id"
 
   option ["--cloud.auth"], "CLOUD_AUTH",
-    I18n.t("logstash.runner.flag.cloud_auth"),
-    :attribute_name => "cloud.auth"
+         I18n.t("logstash.runner.flag.cloud_auth"),
+         :attribute_name => "cloud.auth"
 
   # Pipeline settings
   option ["--pipeline.id"], "ID",
-    I18n.t("logstash.runner.flag.pipeline-id"),
-    :attribute_name => "pipeline.id",
-    :default => LogStash::SETTINGS.get_default("pipeline.id")
+         I18n.t("logstash.runner.flag.pipeline-id"),
+         :attribute_name => "pipeline.id",
+         :default => LogStash::SETTINGS.get_default("pipeline.id")
 
   option ["-w", "--pipeline.workers"], "COUNT",
-    I18n.t("logstash.runner.flag.pipeline-workers"),
-    :attribute_name => "pipeline.workers",
-    :default => LogStash::SETTINGS.get_default("pipeline.workers")
+         I18n.t("logstash.runner.flag.pipeline-workers"),
+         :attribute_name => "pipeline.workers",
+         :default => LogStash::SETTINGS.get_default("pipeline.workers")
 
   option "--pipeline.ordered", "ORDERED",
-    I18n.t("logstash.runner.flag.pipeline-ordered"),
-    :attribute_name => "pipeline.ordered",
-    :default => LogStash::SETTINGS.get_default("pipeline.ordered")
+         I18n.t("logstash.runner.flag.pipeline-ordered"),
+         :attribute_name => "pipeline.ordered",
+         :default => LogStash::SETTINGS.get_default("pipeline.ordered")
 
   option ["--plugin-classloaders"], :flag,
          I18n.t("logstash.runner.flag.plugin-classloaders"),
@@ -142,124 +142,124 @@ class LogStash::Runner < Clamp::StrictCommand
          :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
   option ["-b", "--pipeline.batch.size"], "SIZE",
-    I18n.t("logstash.runner.flag.pipeline-batch-size"),
-    :attribute_name => "pipeline.batch.size",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.size")
+         I18n.t("logstash.runner.flag.pipeline-batch-size"),
+         :attribute_name => "pipeline.batch.size",
+         :default => LogStash::SETTINGS.get_default("pipeline.batch.size")
 
   option ["-u", "--pipeline.batch.delay"], "DELAY_IN_MS",
-    I18n.t("logstash.runner.flag.pipeline-batch-delay"),
-    :attribute_name => "pipeline.batch.delay",
-    :default => LogStash::SETTINGS.get_default("pipeline.batch.delay")
+         I18n.t("logstash.runner.flag.pipeline-batch-delay"),
+         :attribute_name => "pipeline.batch.delay",
+         :default => LogStash::SETTINGS.get_default("pipeline.batch.delay")
 
   option ["--pipeline.unsafe_shutdown"], :flag,
-    I18n.t("logstash.runner.flag.unsafe_shutdown"),
-    :attribute_name => "pipeline.unsafe_shutdown",
-    :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
+         I18n.t("logstash.runner.flag.unsafe_shutdown"),
+         :attribute_name => "pipeline.unsafe_shutdown",
+         :default => LogStash::SETTINGS.get_default("pipeline.unsafe_shutdown")
 
   option ["--pipeline.ecs_compatibility"], "STRING",
-    I18n.t("logstash.runner.flag.ecs_compatibility"),
-    :attribute_name => "pipeline.ecs_compatibility",
-    :default => LogStash::SETTINGS.get_default('pipeline.ecs_compatibility')
+         I18n.t("logstash.runner.flag.ecs_compatibility"),
+         :attribute_name => "pipeline.ecs_compatibility",
+         :default => LogStash::SETTINGS.get_default('pipeline.ecs_compatibility')
 
   # Data Path Setting
   option ["--path.data"], "PATH",
-    I18n.t("logstash.runner.flag.datapath"),
-    :attribute_name => "path.data",
-    :default => LogStash::SETTINGS.get_default("path.data")
+         I18n.t("logstash.runner.flag.datapath"),
+         :attribute_name => "path.data",
+         :default => LogStash::SETTINGS.get_default("path.data")
 
   # Plugins Settings
   option ["-p", "--path.plugins"], "PATH",
-    I18n.t("logstash.runner.flag.pluginpath"),
-    :multivalued => true, :attribute_name => "path.plugins",
-    :default => LogStash::SETTINGS.get_default("path.plugins")
+         I18n.t("logstash.runner.flag.pluginpath"),
+         :multivalued => true, :attribute_name => "path.plugins",
+         :default => LogStash::SETTINGS.get_default("path.plugins")
 
   # Logging Settings
   option ["-l", "--path.logs"], "PATH",
-    I18n.t("logstash.runner.flag.log"),
-    :attribute_name => "path.logs",
-    :default => LogStash::SETTINGS.get_default("path.logs")
+         I18n.t("logstash.runner.flag.log"),
+         :attribute_name => "path.logs",
+         :default => LogStash::SETTINGS.get_default("path.logs")
 
   option "--log.level", "LEVEL", I18n.t("logstash.runner.flag.log_level"),
-    :default => LogStash::SETTINGS.get_default("log.level"),
-    :attribute_name => "log.level"
+         :default => LogStash::SETTINGS.get_default("log.level"),
+         :attribute_name => "log.level"
 
   option "--config.debug", :flag,
-    I18n.t("logstash.runner.flag.config_debug"),
-    :default => LogStash::SETTINGS.get_default("config.debug"),
-    :attribute_name => "config.debug"
+         I18n.t("logstash.runner.flag.config_debug"),
+         :default => LogStash::SETTINGS.get_default("config.debug"),
+         :attribute_name => "config.debug"
 
   # Other settings
   option ["-i", "--interactive"], "SHELL",
-    I18n.t("logstash.runner.flag.rubyshell"),
-    :attribute_name => "interactive"
+         I18n.t("logstash.runner.flag.rubyshell"),
+         :attribute_name => "interactive"
 
   option ["-V", "--version"], :flag,
-    I18n.t("logstash.runner.flag.version")
+         I18n.t("logstash.runner.flag.version")
 
   option ["-t", "--config.test_and_exit"], :flag,
-    I18n.t("logstash.runner.flag.configtest"),
-    :attribute_name => "config.test_and_exit",
-    :default => LogStash::SETTINGS.get_default("config.test_and_exit")
+         I18n.t("logstash.runner.flag.configtest"),
+         :attribute_name => "config.test_and_exit",
+         :default => LogStash::SETTINGS.get_default("config.test_and_exit")
 
   option ["-r", "--config.reload.automatic"], :flag,
-    I18n.t("logstash.runner.flag.auto_reload"),
-    :attribute_name => "config.reload.automatic",
-    :default => LogStash::SETTINGS.get_default("config.reload.automatic")
+         I18n.t("logstash.runner.flag.auto_reload"),
+         :attribute_name => "config.reload.automatic",
+         :default => LogStash::SETTINGS.get_default("config.reload.automatic")
 
   option ["--config.reload.interval"], "RELOAD_INTERVAL",
-    I18n.t("logstash.runner.flag.reload_interval"),
-    :attribute_name => "config.reload.interval",
-    :default => LogStash::SETTINGS.get_default("config.reload.interval")
+         I18n.t("logstash.runner.flag.reload_interval"),
+         :attribute_name => "config.reload.interval",
+         :default => LogStash::SETTINGS.get_default("config.reload.interval")
 
   option ["--api.enabled"], "ENABLED",
-    I18n.t("logstash.runner.flag.api_enabled"),
-    :attribute_name => 'api.enabled',
-    :default => LogStash::SETTINGS.get_default('api.enabled')
+         I18n.t("logstash.runner.flag.api_enabled"),
+         :attribute_name => 'api.enabled',
+         :default => LogStash::SETTINGS.get_default('api.enabled')
 
   option ["--api.http.host"], "HTTP_HOST",
-    I18n.t("logstash.runner.flag.api_http_host"),
-    :attribute_name => "api.http.host",
-    :default => LogStash::SETTINGS.get_default("api.http.host")
+         I18n.t("logstash.runner.flag.api_http_host"),
+         :attribute_name => "api.http.host",
+         :default => LogStash::SETTINGS.get_default("api.http.host")
 
   option ["--api.http.port"], "HTTP_PORT",
-    I18n.t("logstash.runner.flag.api_http_port"),
-    :attribute_name => "api.http.port",
-    :default => LogStash::SETTINGS.get_default("api.http.port")
+         I18n.t("logstash.runner.flag.api_http_port"),
+         :attribute_name => "api.http.port",
+         :default => LogStash::SETTINGS.get_default("api.http.port")
 
   option ["--log.format"], "FORMAT",
-    I18n.t("logstash.runner.flag.log_format"),
-    :attribute_name => "log.format",
-    :default => LogStash::SETTINGS.get_default("log.format")
+         I18n.t("logstash.runner.flag.log_format"),
+         :attribute_name => "log.format",
+         :default => LogStash::SETTINGS.get_default("log.format")
 
   option ["--path.settings"], "SETTINGS_DIR",
-    I18n.t("logstash.runner.flag.path_settings"),
-    :attribute_name => "path.settings",
-    :default => LogStash::SETTINGS.get_default("path.settings")
+         I18n.t("logstash.runner.flag.path_settings"),
+         :attribute_name => "path.settings",
+         :default => LogStash::SETTINGS.get_default("path.settings")
 
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
-    I18n.t("logstash.runner.flag.verbose"),
-    :new_flag => "log.level", :new_value => "info"
+                    I18n.t("logstash.runner.flag.verbose"),
+                    :new_flag => "log.level", :new_value => "info"
 
   deprecated_option ["--debug"], :flag,
-    I18n.t("logstash.runner.flag.debug"),
-    :new_flag => "log.level", :new_value => "debug"
+                    I18n.t("logstash.runner.flag.debug"),
+                    :new_flag => "log.level", :new_value => "debug"
 
   deprecated_option ["--quiet"], :flag,
-    I18n.t("logstash.runner.flag.quiet"),
-    :new_flag => "log.level", :new_value => "error"
+                    I18n.t("logstash.runner.flag.quiet"),
+                    :new_flag => "log.level", :new_value => "error"
 
   deprecated_option ["--http.enabled"], :flag,
-    I18n.t("logstash.runner.flag.http_enabled"),
-    :new_flag => "api.enabled", :passthrough => true # use settings to disambiguate
+                    I18n.t("logstash.runner.flag.http_enabled"),
+                    :new_flag => "api.enabled", :passthrough => true # use settings to disambiguate
 
   deprecated_option ["--http.host"], "HTTP_HOST",
-    I18n.t("logstash.runner.flag.http_host"),
-    :new_flag => "api.http.host", :passthrough => true # use settings to disambiguate
+                    I18n.t("logstash.runner.flag.http_host"),
+                    :new_flag => "api.http.host", :passthrough => true # use settings to disambiguate
 
   deprecated_option ["--http.port"], "HTTP_PORT",
-    I18n.t("logstash.runner.flag.http_port"),
-    :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
+                    I18n.t("logstash.runner.flag.http_port"),
+                    :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
@@ -311,7 +311,7 @@ class LogStash::Runner < Clamp::StrictCommand
 
     if JavaVersion::CURRENT < JavaVersion::JAVA_11
       logger.warn I18n.t("logstash.runner.java.version",
-                                             :java_home => java.lang.System.getProperty("java.home"))
+                         :java_home => java.lang.System.getProperty("java.home"))
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]

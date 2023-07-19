@@ -105,8 +105,8 @@ def push_elasticsearch_config(pipeline_id, config, version = "1")
   major, minor = es_version
   if major >= 8 || (major == 7 && minor >= 10)
     elasticsearch_client.perform_request(:put, "_logstash/pipeline/#{pipeline_id}", {},
-      { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => version },
-              :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
+                                         { :pipeline => config, :username => "log.stash", :pipeline_metadata => {:version => version },
+                                                 :pipeline_settings => {"pipeline.batch.delay": "50"}, :last_modified => Time.now.utc.iso8601})
   else
     elasticsearch_client.index :index => '.logstash', :type => "_doc", id: pipeline_id, :body => { :pipeline => config }
   end

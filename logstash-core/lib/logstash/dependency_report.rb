@@ -27,7 +27,7 @@ require 'securerandom'
 
 class LogStash::DependencyReport < Clamp::Command
   option [ "--csv" ], "OUTPUT_PATH", "The path to write the dependency report in csv format.",
-    :required => true, :attribute_name => :output_path
+         :required => true, :attribute_name => :output_path
 
   OTHER_DEPENDENCIES = [
     ["jruby", "", "http://jruby.org", "EPL-2.0"],
