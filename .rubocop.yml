@@ -89,12 +89,14 @@ Layout/SpaceBeforeFirstArg:
   Enabled: true
 Layout/SpaceBeforeSemicolon:
   Enabled: true
+Layout/AccessModifierIndentation:
+  Enabled: true
+  EnforcedStyle: indent
+Layout/ArgumentAlignment:
+  Enabled: true
+  EnforcedStyle: with_first_argument
 
 ##### Need review #####
-Layout/AccessModifierIndentation:
-  Enabled: false
-Layout/ArgumentAlignment:
-  Enabled: false
 Layout/ArrayAlignment:
   Enabled: false
 Layout/AssignmentIndentation:

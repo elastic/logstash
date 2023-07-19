@@ -109,7 +109,7 @@ module LogStash::Config::Mixin
 
     if !self.class.validate(params)
       raise LogStash::ConfigurationError,
-        I18n.t("logstash.runner.configuration.invalid_plugin_settings")
+            I18n.t("logstash.runner.configuration.invalid_plugin_settings")
     end
 
     # now that we know the parameters are valid, we can obfuscate the original copy
@@ -137,8 +137,8 @@ module LogStash::Config::Mixin
         extra = opts[:obsolete].is_a?(String) ? opts[:obsolete] : ""
         extra.gsub!("%PLUGIN%", self.class.config_name)
         raise LogStash::ConfigurationError,
-          I18n.t("logstash.runner.configuration.obsolete", :name => name,
-                 :plugin => self.class.config_name, :extra => extra)
+              I18n.t("logstash.runner.configuration.obsolete", :name => name,
+                     :plugin => self.class.config_name, :extra => extra)
       end
     end
 
@@ -309,8 +309,8 @@ module LogStash::Config::Mixin
         value = params[config_key]
         if value.nil? || (config[:list] && Array(value).empty?)
           self.logger.error(I18n.t("logstash.runner.configuration.setting_missing",
-                               :setting => config_key, :plugin => @plugin_name,
-                               :type => @plugin_type))
+                                   :setting => config_key, :plugin => @plugin_name,
+                                   :type => @plugin_type))
           is_valid = false
         end
       end
@@ -359,10 +359,10 @@ module LogStash::Config::Mixin
             params[key] = processed_value
           else
             self.logger.error(I18n.t("logstash.runner.configuration.setting_invalid",
-                                 :plugin => @plugin_name, :type => @plugin_type,
-                                 :setting => key, :value => value.inspect,
-                                 :value_type => config_settings[:validate],
-                                 :note => processed_value))
+                                     :plugin => @plugin_name, :type => @plugin_type,
+                                     :setting => key, :value => value.inspect,
+                                     :value_type => config_settings[:validate],
+                                     :note => processed_value))
           end
 
           all_params_valid &&= is_valid

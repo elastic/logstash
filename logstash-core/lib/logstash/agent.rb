@@ -388,10 +388,10 @@ class LogStash::Agent
 
           unless action_result.successful?
             logger.error("Failed to execute action",
-              :id => action.pipeline_id,
-              :action_type => action_result.class,
-              :message => action_result.message,
-              :backtrace => action_result.backtrace
+                         :id => action.pipeline_id,
+                         :action_type => action_result.class,
+                         :message => action_result.message,
+                         :backtrace => action_result.backtrace
             )
           end
         rescue SystemExit, Exception => e
@@ -402,9 +402,9 @@ class LogStash::Agent
     end.each(&:join)
 
     logger.trace? && logger.trace("Converge results",
-      :success => converge_result.success?,
-      :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
-      :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" }
+                                  :success => converge_result.success?,
+                                  :failed_actions => converge_result.failed_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}, message: #{r.message}" },
+                                  :successful_actions => converge_result.successful_actions.collect { |a, r| "id: #{a.pipeline_id}, action_type: #{a.class}" }
     )
 
     converge_result
