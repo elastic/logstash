@@ -89,6 +89,24 @@ Layout/SpaceBeforeFirstArg:
   Enabled: true
 Layout/SpaceBeforeSemicolon:
   Enabled: true
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: true
+  EnforcedStyle: no_space
+  EnforcedStyleForEmptyBrackets: no_space
+Layout/SpaceInsideArrayPercentLiteral:
+  Enabled: true # no offenses
+Layout/SpaceInsideParens:
+  Enabled: true
+  EnforcedStyle: no_space
+Layout/SpaceInsidePercentLiteralDelimiters:
+  Enabled: true
+Layout/SpaceInsideRangeLiteral:
+  Enabled: true # no offenses
+Layout/SpaceInsideReferenceBrackets:
+  Enabled: true # no offenses
+Layout/SpaceInsideStringInterpolation:
+  Enabled: true
+  EnforcedStyle: no_space
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -213,25 +231,7 @@ Layout/SpaceAfterNot:
   Enabled: false
 Layout/SpaceInLambdaLiteral:
   Enabled: false
-Layout/SpaceInsideArrayLiteralBrackets:
-  Enabled: true
-  EnforcedStyle: no_space
-  EnforcedStyleForEmptyBrackets: no_space
-Layout/SpaceInsideArrayPercentLiteral:
-  Enabled: false
 Layout/SpaceInsideBlockBraces:
   Enabled: false
 Layout/SpaceInsideHashLiteralBraces:
   Enabled: false
-Layout/SpaceInsideParens:
-  Enabled: true
-  EnforcedStyle: no_space
-Layout/SpaceInsidePercentLiteralDelimiters:
-  Enabled: true
-Layout/SpaceInsideRangeLiteral:
-  Enabled: false
-Layout/SpaceInsideReferenceBrackets:
-  Enabled: false
-Layout/SpaceInsideStringInterpolation:
-  Enabled: true
-  EnforcedStyle: no_space
