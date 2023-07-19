@@ -233,4 +233,4 @@ Layout/SpaceInsideRangeLiteral:
 Layout/SpaceInsideReferenceBrackets:
   Enabled: false
 Layout/SpaceInsideStringInterpolation:
-  Enabled: false
+  Enabled: true
