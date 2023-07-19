@@ -77,9 +77,9 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
         context 'with a single `ca_trusted_fingerprint`' do
           let(:options) { super().merge('ca_trusted_fingerprint' => input) }
           context 'that is valid' do
-            let(:input) { "1b:ad:1d:ea:"*8 }
+            let(:input) { "1b:ad:1d:ea:" * 8 }
             include_examples('normalizes fingerprints') do
-              let(:normalized) { ['1BAD1DEA'*8] }
+              let(:normalized) { ['1BAD1DEA' * 8] }
             end
           end
           context 'that is not valid' do
@@ -91,13 +91,13 @@ describe LogStash::Plugins::CATrustedFingerprintSupport do
         context 'with multiple `ca_trusted_fingerprint` values' do
           let(:options) { super().merge('ca_trusted_fingerprint' => input) }
           context 'that are valid' do
-            let(:input) { ["1b:ad:1d:ea:"*8, 'BEefCaB1'*8] }
+            let(:input) { ["1b:ad:1d:ea:" * 8, 'BEefCaB1' * 8] }
             include_examples('normalizes fingerprints') do
-              let(:normalized) { ["1BAD1DEA"*8, "BEEFCAB1"*8] }
+              let(:normalized) { ["1BAD1DEA" * 8, "BEEFCAB1" * 8] }
             end
           end
           context 'that is not valid' do
-            let(:input) { ["NOPE", "1BAD1DEA"*8] }
+            let(:input) { ["NOPE", "1BAD1DEA" * 8] }
 
             include_examples('rejects bad input in the usual way')
           end

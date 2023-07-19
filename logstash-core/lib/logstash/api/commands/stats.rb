@@ -91,7 +91,7 @@ module LogStash
           {}
         end
 
-        def pipeline(pipeline_id = nil, opts={})
+        def pipeline(pipeline_id = nil, opts = {})
           extended_stats = LogStash::Config::PipelinesInfo.format_pipelines_info(
             service.agent,
             service.snapshot.metric_store,
@@ -143,7 +143,7 @@ module LogStash
           service.get_shallow(:jvm, :gc)
         end
 
-        def hot_threads(options={})
+        def hot_threads(options = {})
           HotThreadsReport.new(self, options)
         end
 
@@ -154,7 +154,7 @@ module LogStash
         end
 
         private
-        def plugins_stats_report(pipeline_id, extended_pipeline, opts={})
+        def plugins_stats_report(pipeline_id, extended_pipeline, opts = {})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
           PluginsStats.report(stats, extended_pipeline, opts)
         end
@@ -172,7 +172,7 @@ module LogStash
             end
           end
 
-          def report(stats, extended_stats=nil, opts={})
+          def report(stats, extended_stats = nil, opts = {})
             ret = {
               :events => stats[:events],
               :flow => stats[:flow],

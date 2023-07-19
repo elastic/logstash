@@ -67,6 +67,16 @@ Layout/SpaceAfterComma:
   Enabled: true
 Layout/SpaceAfterSemicolon:
   Enabled: true
+Layout/SpaceAroundBlockParameters:
+  Enabled: true
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: true
+Layout/SpaceAroundKeyword:
+  Enabled: true
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+Layout/SpaceAroundOperators:
+  Enabled: true
 
 ##### Need review #####
 Layout/AccessModifierIndentation:
@@ -188,16 +198,6 @@ Layout/SingleLineBlockChain:
 Layout/SpaceAfterMethodName:
   Enabled: false
 Layout/SpaceAfterNot:
-  Enabled: false
-Layout/SpaceAroundBlockParameters:
-  Enabled: false
-Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-Layout/SpaceAroundKeyword:
-  Enabled: false
-Layout/SpaceAroundMethodCallOperator:
-  Enabled: false
-Layout/SpaceAroundOperators:
   Enabled: false
 Layout/SpaceBeforeBlockBraces:
   Enabled: false

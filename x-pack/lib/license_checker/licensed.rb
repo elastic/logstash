@@ -30,7 +30,7 @@ module LogStash
     module Licensed
       include LogStash::Util::Loggable
 
-      def setup_license_checker(feature, refresh_period=30, refresh_unit=TimeUnit::SECONDS)
+      def setup_license_checker(feature, refresh_period = 30, refresh_unit = TimeUnit::SECONDS)
         @feature = feature
 
         license_manager = LogStash::LicenseChecker::LicenseManager.new(license_reader, feature, refresh_period, refresh_unit)
@@ -52,7 +52,7 @@ module LogStash
         { :state => :error, :log_level => :error, :log_message => "Licensing is not currently setup for #{@feature}, please contact support"}
       end
 
-      def with_license_check(raise_on_error=false)
+      def with_license_check(raise_on_error = false)
         current_license_state = get_current_license_state
         message = current_license_state[:log_message]
 

@@ -25,7 +25,7 @@ require "fileutils"
 require "open3"
 
 def gem_in_lock_file?(pattern, lock_file)
-  content =  File.read(lock_file)
+  content = File.read(lock_file)
   content.match(pattern)
 end
 
@@ -139,7 +139,7 @@ describe "CLI > logstash-plugin install" do
       end
 
       it "successfully installs the plugin with debug enabled" do
-        execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}", true, {"DEBUG"=>"1"})
+        execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}", true, {"DEBUG" => "1"})
 
         expect(execute.stderr_and_stdout).to match(/Installation successful/)
         expect(execute.exit_code).to eq(0)

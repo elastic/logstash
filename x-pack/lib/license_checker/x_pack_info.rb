@@ -14,7 +14,7 @@ module LogStash
     class XPackInfo
       include LogStash::Util::Loggable
 
-      def initialize(license, features = nil, installed=true, failed = false)
+      def initialize(license, features = nil, installed = true, failed = false)
         @license = license
         @installed = installed
         @features = features

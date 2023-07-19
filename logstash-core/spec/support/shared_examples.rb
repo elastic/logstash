@@ -86,7 +86,7 @@ shared_examples "metrics commons operations" do
   describe "#time" do
     it "allow to record time with a block given" do
       expect do
-        subject.time(key) { 1+1 }
+        subject.time(key) { 1 + 1 }
       end.not_to raise_error
     end
 

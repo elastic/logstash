@@ -48,7 +48,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       "license" => {
         "status" => license_status,
         "uid" => "9a48c67c-ce2c-4169-97bf-37d324b8ab80",
-        "type"=> license_type,
+        "type" => license_type,
         "expiry_date_in_millis" => license_expiry_in_millis
       },
       "features" => {
@@ -99,31 +99,31 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   let(:es_version_7_9_response) { generate_es_version_response("7.9.1") }
 
   let(:elasticsearch_7_9_err_response) {
-    {"error"=>
-         {"root_cause"=>
-              [{"type"=>"parse_exception",
-                "reason"=>"request body or source parameter is required"}],
-          "type"=>"parse_exception",
-          "reason"=>"request body or source parameter is required"},
-     "status"=>400}
+    {"error" =>
+         {"root_cause" =>
+              [{"type" => "parse_exception",
+                "reason" => "request body or source parameter is required"}],
+          "type" => "parse_exception",
+          "reason" => "request body or source parameter is required"},
+     "status" => 400}
   }
 
   let(:elasticsearch_8_err_response) {
-    {"error"=>
-         {"root_cause"=>
-              [{"type"=>"index_not_found_exception",
-                "reason"=>"no such index [.logstash]",
-                "resource.type"=>"index_expression",
-                "resource.id"=>".logstash",
-                "index_uuid"=>"_na_",
-                "index"=>".logstash"}],
-          "type"=>"index_not_found_exception",
-          "reason"=>"no such index [.logstash]",
-          "resource.type"=>"index_expression",
-          "resource.id"=>".logstash",
-          "index_uuid"=>"_na_",
-          "index"=>".logstash"},
-     "status"=>404}
+    {"error" =>
+         {"root_cause" =>
+              [{"type" => "index_not_found_exception",
+                "reason" => "no such index [.logstash]",
+                "resource.type" => "index_expression",
+                "resource.id" => ".logstash",
+                "index_uuid" => "_na_",
+                "index" => ".logstash"}],
+          "type" => "index_not_found_exception",
+          "reason" => "no such index [.logstash]",
+          "resource.type" => "index_expression",
+          "resource.id" => ".logstash",
+          "index_uuid" => "_na_",
+          "index" => ".logstash"},
+     "status" => 404}
   }
 
   before do
@@ -225,7 +225,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:es_version_8_3) { { major: 8, minor: 3} }
       let(:es_version_9_0) { { major: 9, minor: 0} }
       let(:pipeline_id) { "super_generator" }
-      let(:elasticsearch_response) { {"#{pipeline_id}"=> {"pipeline"=> "#{config}"}} }
+      let(:elasticsearch_response) { {"#{pipeline_id}" => {"pipeline" => "#{config}"}} }
       let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
       let(:mock_logger) { double("fetcher's logger") }
 
@@ -236,19 +236,19 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       it "#fetch_config from ES v8.2" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return(elasticsearch_response.clone)
         expect(subject.fetch_config(es_version_8_2, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=>"#{config}"})
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
       end
 
       it "#fetch_config from ES v8.3" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
         expect(subject.fetch_config(es_version_8_3, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=>"#{config}"})
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
       end
 
       it "#fetch_config from ES v9.0" do
         expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
         expect(subject.fetch_config(es_version_9_0, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline"=>"#{config}"})
+        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
       end
 
       it "#fetch_config should raise error" do
@@ -311,28 +311,28 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:pipeline_id) { "super_generator" }
       let(:another_pipeline_id) { "another_generator" }
       let(:elasticsearch_response) {
-        {"docs"=>
-             [{"_index"=>".logstash",
-               "_id"=>"#{pipeline_id}",
-               "_version"=>2,
-               "_seq_no"=>2,
-               "_primary_term"=>1,
-               "found"=>true,
-               "_source"=>
-                   {"pipeline"=> "#{config}"}},
-              {"_index"=>".logstash",
-               "_id"=>"#{another_pipeline_id}",
-               "_version"=>2,
-               "_seq_no"=>3,
-               "_primary_term"=>1,
-               "found"=>true,
-               "_source"=>
-                   {"pipeline"=> "#{another_config}"}},
-              {"_index"=>".logstash", "_id"=>"not_exists", "found"=>false}]}
+        {"docs" =>
+             [{"_index" => ".logstash",
+               "_id" => "#{pipeline_id}",
+               "_version" => 2,
+               "_seq_no" => 2,
+               "_primary_term" => 1,
+               "found" => true,
+               "_source" =>
+                   {"pipeline" => "#{config}"}},
+              {"_index" => ".logstash",
+               "_id" => "#{another_pipeline_id}",
+               "_version" => 2,
+               "_seq_no" => 3,
+               "_primary_term" => 1,
+               "found" => true,
+               "_source" =>
+                   {"pipeline" => "#{another_config}"}},
+              {"_index" => ".logstash", "_id" => "not_exists", "found" => false}]}
       }
 
       let(:formatted_es_response) {
-        {"super_generator"=>{"_index"=>".logstash", "_id"=>"super_generator", "_version"=>2, "_seq_no"=>2, "_primary_term"=>1, "found"=>true, "_source"=>{"pipeline"=>"input { generator { count => 100 } tcp { port => 6005 } } output {  }}"}}}
+        {"super_generator" => {"_index" => ".logstash", "_id" => "super_generator", "_version" => 2, "_seq_no" => 2, "_primary_term" => 1, "found" => true, "_source" => {"pipeline" => "input { generator { count => 100 } tcp { port => 6005 } } output {  }}"}}}
       }
 
       let(:mock_logger) { double("fetcher's logger") }
@@ -430,7 +430,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
         # invalid settings to be ignored...
         "pipeline.output.workers"    => "99",
-        "nonsensical.invalid.setting"=> "-9999",
+        "nonsensical.invalid.setting" => "-9999",
       }
     end
     let(:pipeline_metadata) do
@@ -484,10 +484,10 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
     describe "system indices [8] and legacy api [7.9]" do
       [8, 7.9].each { |es_version|
-        let(:elasticsearch_response) { (es_version >= 8)? elasticsearch_8_response: elasticsearch_7_9_response }
+        let(:elasticsearch_response) { (es_version >= 8) ? elasticsearch_8_response : elasticsearch_7_9_response }
 
         before :each do
-          allow(mock_client).to receive(:get).with("/").and_return(es_version >= 8? es_version_response: es_version_7_9_response)
+          allow(mock_client).to receive(:get).with("/").and_return(es_version >= 8 ? es_version_response : es_version_7_9_response)
         end
 
         context "with one `pipeline_id` configured [#{es_version}]" do
@@ -575,11 +575,11 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           describe "security enabled/disabled in Elasticsearch [#{es_version}]" do
             let(:xpack_response) do
               {
-                  "license"=> {
-                      "status"=> license_status,
-                      "uid"=> "9a48c67c-ce2c-4169-97bf-37d324b8ab80",
-                      "type"=> license_type,
-                      "expiry_date_in_millis"=> license_expiry_in_millis
+                  "license" => {
+                      "status" => license_status,
+                      "uid" => "9a48c67c-ce2c-4169-97bf-37d324b8ab80",
+                      "type" => license_type,
+                      "expiry_date_in_millis" => license_expiry_in_millis
                   },
                   "features" => {
                       "security" => {
@@ -774,19 +774,19 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   end
 
   def generate_es_version_response(version)
-    {"name"=>"MacBook-Pro",
-     "cluster_name"=>"elasticsearch",
-     "cluster_uuid"=>"YgpKq8VkTJuGTSb9aidlIA",
-     "version"=>
-         {"number"=>"#{version}",
-          "build_flavor"=>"default",
-          "build_type"=>"tar",
-          "build_hash"=>"26eb422dc55236a1c5625e8a73e5d866e54610a2",
-          "build_date"=>"2020-09-24T09:37:06.459350Z",
-          "build_snapshot"=>true,
-          "lucene_version"=>"8.7.0",
-          "minimum_wire_compatibility_version"=>"7.10.0",
-          "minimum_index_compatibility_version"=>"7.0.0"},
-     "tagline"=>"You Know, for Search"}
+    {"name" => "MacBook-Pro",
+     "cluster_name" => "elasticsearch",
+     "cluster_uuid" => "YgpKq8VkTJuGTSb9aidlIA",
+     "version" =>
+         {"number" => "#{version}",
+          "build_flavor" => "default",
+          "build_type" => "tar",
+          "build_hash" => "26eb422dc55236a1c5625e8a73e5d866e54610a2",
+          "build_date" => "2020-09-24T09:37:06.459350Z",
+          "build_snapshot" => true,
+          "lucene_version" => "8.7.0",
+          "minimum_wire_compatibility_version" => "7.10.0",
+          "minimum_index_compatibility_version" => "7.0.0"},
+     "tagline" => "You Know, for Search"}
   end
 end

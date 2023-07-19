@@ -37,7 +37,7 @@ module LogStash::Docgen
     RESET_BUFFER_RE = /^require\s("|')\w+("|')/
 
     def initialize(context)
-      @rules =  [
+      @rules = [
         [ COMMENT_RE, :parse_comment ],
         [ CLASS_DEFINITION_RE, :parse_class_description ],
         [ NEW_CLASS_DEFINITION_RE_ML, :parse_new_class_description ],

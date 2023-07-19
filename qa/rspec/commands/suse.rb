@@ -37,7 +37,7 @@ module ServiceTester
       "x86_64"
     end
 
-    def install(package, host=nil)
+    def install(package, host = nil)
       hosts  = (host.nil? ? servers : Array(host))
       errors = []
       at(hosts, {in: :serial}) do |_host|
@@ -47,7 +47,7 @@ module ServiceTester
       raise InstallException.new(errors.join("\n")) unless errors.empty?
     end
 
-    def uninstall(package, host=nil)
+    def uninstall(package, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive remove #{package}")
@@ -72,7 +72,7 @@ module ServiceTester
       stdout.match(/Active: active \(running\)/)
     end
 
-    def service_manager(service, action, host=nil)
+    def service_manager(service, action, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("service #{service} #{action}")

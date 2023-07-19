@@ -47,7 +47,7 @@ module LogStashCompilerLSCLGrammar; module LogStash; module Compiler; module LSC
       set_meta(PROCESS_ESCAPE_SEQUENCES, val)
     end
 
-    def compile(base_source_with_metadata=nil)
+    def compile(base_source_with_metadata = nil)
       # There is no way to move vars across nodes in treetop :(
       self.base_source_with_metadata = base_source_with_metadata
 

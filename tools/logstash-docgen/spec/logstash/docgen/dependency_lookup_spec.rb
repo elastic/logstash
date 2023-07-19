@@ -43,7 +43,7 @@ describe LogStash::Docgen::DependencyLookup do
 
   it "doesn't include duplicates" do
     VCR.use_cassette("logstash-core") do
-      versions =  subject.supported_logstash(gemspec)
+      versions = subject.supported_logstash(gemspec)
       expect { versions.size }.not_to change { versions.uniq }
     end
   end

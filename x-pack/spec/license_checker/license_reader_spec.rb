@@ -100,7 +100,7 @@ describe LogStash::LicenseChecker::LicenseReader do
       end
     end
     context 'when client raises a 404' do
-      let(:exception_404)do
+      let(:exception_404) do
         LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError.new(404, '', '', '')
       end
       before(:each) do

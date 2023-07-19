@@ -44,7 +44,7 @@ module ServiceTester
       end
     end
 
-    def install(package, host=nil)
+    def install(package, host = nil)
       hosts  = (host.nil? ? servers : Array(host))
       errors = []
       exit_status = 0
@@ -58,7 +58,7 @@ module ServiceTester
       end
     end
 
-    def uninstall(package, host=nil)
+    def uninstall(package, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("yum remove -y #{package}")

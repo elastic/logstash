@@ -27,7 +27,7 @@ module LogStash module PluginManager module PackFetchStrategy
     class << self
       def get_installer_for(plugin_name)
         begin
-          uri =  URI.parse(plugin_name)
+          uri = URI.parse(plugin_name)
 
           if local?(uri)
             PluginManager.ui.debug("Local file: #{uri.path}")

@@ -80,7 +80,7 @@ class PlatformConfig
     @platforms.each(&block)
   end
 
-  def filter_type(type_name, options={})
+  def filter_type(type_name, options = {})
     experimental = options.fetch("experimental", false)
     @platforms.select do |platform|
       (type_name.nil? ? true : platform.type == type_name) &&
@@ -88,7 +88,7 @@ class PlatformConfig
     end
   end
 
-  def select_names_for(platform, options={})
+  def select_names_for(platform, options = {})
     filter_options = { "experimental" => options.fetch("experimental", false) }
     filter_type(platform, filter_options).map{ |p| p.name }
   end

@@ -31,7 +31,7 @@ RSpec.shared_examples "updated" do |logstash|
   end
 
   before(:each) do
-    options={:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./", :skip_jdk_infix => true }
+    options = {:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./", :skip_jdk_infix => true }
     logstash.install(options) # make sure latest version is installed
   end
 

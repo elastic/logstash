@@ -185,7 +185,7 @@ module LogStash
       @settings.values.each(&:reset)
     end
 
-    def from_yaml(yaml_path, file_name="logstash.yml")
+    def from_yaml(yaml_path, file_name = "logstash.yml")
       settings = read_yaml(::File.join(yaml_path, file_name))
       self.merge(deep_replace(flatten_hash(settings)), true)
       self
@@ -223,7 +223,7 @@ module LogStash
       YAML.safe_load(IO.read(path)) || {}
     end
 
-    def flatten_hash(h, f="", g={})
+    def flatten_hash(h, f = "", g = {})
       return g.update({ f => h }) unless h.is_a? Hash
       if f.empty?
         h.each { |k, r| flatten_hash(r, k, g) }
@@ -239,7 +239,7 @@ module LogStash
 
     attr_reader :name, :default
 
-    def initialize(name, klass, default=nil, strict=true, &validator_proc)
+    def initialize(name, klass, default = nil, strict = true, &validator_proc)
       @name = name
       unless klass.is_a?(Class)
         raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
@@ -343,7 +343,7 @@ module LogStash
     end
 
     class Coercible < Setting
-      def initialize(name, klass, default=nil, strict=true, &validator_proc)
+      def initialize(name, klass, default = nil, strict = true, &validator_proc)
         @name = name
         unless klass.is_a?(Class)
           raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
@@ -377,7 +377,7 @@ module LogStash
     ### Specific settings #####
 
     class Boolean < Coercible
-      def initialize(name, default, strict=true, &validator_proc)
+      def initialize(name, default, strict = true, &validator_proc)
         super(name, Object, default, strict, &validator_proc)
       end
 
@@ -394,7 +394,7 @@ module LogStash
     end
 
     class Numeric < Coercible
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, ::Numeric, default, strict)
       end
 
@@ -414,7 +414,7 @@ module LogStash
     end
 
     class Integer < Coercible
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, ::Integer, default, strict)
       end
 
@@ -432,7 +432,7 @@ module LogStash
     end
 
     class PositiveInteger < Integer
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, default, strict) do |v|
           if v > 0
             true
@@ -446,7 +446,7 @@ module LogStash
     class Port < Integer
       VALID_PORT_RANGE = 1..65535
 
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, default, strict) { |value| valid?(value) }
       end
 
@@ -458,8 +458,8 @@ module LogStash
     class PortRange < Coercible
       PORT_SEPARATOR = "-"
 
-      def initialize(name, default=nil, strict=true)
-        super(name, ::Range, default, strict=true) { |value| valid?(value) }
+      def initialize(name, default = nil, strict = true)
+        super(name, ::Range, default, strict = true) { |value| valid?(value) }
       end
 
       def valid?(range)
@@ -493,7 +493,7 @@ module LogStash
     end
 
     class Validator < Setting
-      def initialize(name, default=nil, strict=true, validator_class=nil)
+      def initialize(name, default = nil, strict = true, validator_class = nil)
         @validator_class = validator_class
         super(name, ::Object, default, strict)
       end
@@ -504,7 +504,7 @@ module LogStash
     end
 
     class String < Setting
-      def initialize(name, default=nil, strict=true, possible_strings=[])
+      def initialize(name, default = nil, strict = true, possible_strings = [])
         @possible_strings = possible_strings
         super(name, ::String, default, strict)
       end
@@ -525,7 +525,7 @@ module LogStash
     end
 
     class Password < Coercible
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, LogStash::Util::Password, default, strict)
       end
 
@@ -592,7 +592,7 @@ module LogStash
     # then these options in the config file or command line will be all valid: "foo", true, false, "true", "false"
     #
     class CoercibleString < Coercible
-      def initialize(name, default=nil, strict=true, possible_strings=[], &validator_proc)
+      def initialize(name, default = nil, strict = true, possible_strings = [], &validator_proc)
         @possible_strings = possible_strings
         super(name, Object, default, strict, &validator_proc)
       end
@@ -610,7 +610,7 @@ module LogStash
     end
 
     class ExistingFilePath < Setting
-      def initialize(name, default=nil, strict=true)
+      def initialize(name, default = nil, strict = true)
         super(name, ::String, default, strict) do |file_path|
           if !::File.exist?(file_path)
             raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
@@ -622,7 +622,7 @@ module LogStash
     end
 
     class WritableDirectory < Setting
-      def initialize(name, default=nil, strict=false)
+      def initialize(name, default = nil, strict = false)
         super(name, ::String, default, strict)
       end
 
@@ -667,8 +667,8 @@ module LogStash
     end
 
     class Bytes < Coercible
-      def initialize(name, default=nil, strict=true)
-        super(name, ::Integer, default, strict=true) { |value| valid?(value) }
+      def initialize(name, default = nil, strict = true)
+        super(name, ::Integer, default, strict = true) { |value| valid?(value) }
       end
 
       def valid?(value)
@@ -696,7 +696,7 @@ module LogStash
     class TimeValue < Coercible
       include LogStash::Util::Loggable
 
-      def initialize(name, default, strict=true, &validator_proc)
+      def initialize(name, default, strict = true, &validator_proc)
         super(name, Util::TimeValue, default, strict, &validator_proc)
       end
 
@@ -714,7 +714,7 @@ module LogStash
     end
 
     class ArrayCoercible < Coercible
-      def initialize(name, klass, default, strict=true, &validator_proc)
+      def initialize(name, klass, default, strict = true, &validator_proc)
         @element_class = klass
         super(name, ::Array, default, strict, &validator_proc)
       end
@@ -742,7 +742,7 @@ module LogStash
     class SplittableStringArray < ArrayCoercible
       DEFAULT_TOKEN = ","
 
-      def initialize(name, klass, default, strict=true, tokenizer = DEFAULT_TOKEN, &validator_proc)
+      def initialize(name, klass, default, strict = true, tokenizer = DEFAULT_TOKEN, &validator_proc)
         @element_class = klass
         @token = tokenizer
         super(name, klass, default, strict, &validator_proc)
@@ -760,7 +760,7 @@ module LogStash
     end
 
     class StringArray < ArrayCoercible
-      def initialize(name, default, strict=true, possible_strings=[], &validator_proc)
+      def initialize(name, default, strict = true, possible_strings = [], &validator_proc)
         @possible_strings = possible_strings
         super(name, ::String, default, strict, &validator_proc)
       end

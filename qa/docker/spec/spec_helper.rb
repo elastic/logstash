@@ -29,7 +29,7 @@ def create_container(image, options = {})
   image.run(nil, options)
 end
 
-def start_container(image, options={})
+def start_container(image, options = {})
   container = create_container(image, options)
   wait_for_logstash(container)
   container
@@ -42,7 +42,7 @@ def wait_for_logstash(container)
   end
 end
 
-def wait_for_pipeline(container, pipeline='main')
+def wait_for_pipeline(container, pipeline = 'main')
   Stud.try(40.times, [NoMethodError, Docker::Error::ConflictError, RSpec::Expectations::ExpectationNotMetError, TypeError]) do
     expect(pipeline_stats_available?(container, pipeline)).to be true
   end
@@ -53,7 +53,7 @@ def cleanup_container(container)
     begin
       container.stop
     ensure
-      container.delete(:force=>true)
+      container.delete(:force => true)
     end
   end
 end
@@ -78,16 +78,16 @@ def get_node_stats(container)
   make_request(container, 'curl -s http://localhost:9600/_node/stats')
 end
 
-def get_pipeline_setting(container, property, pipeline='main')
+def get_pipeline_setting(container, property, pipeline = 'main')
   make_request(container, "curl -s http://localhost:9600/_node/pipelines/#{pipeline}")
           .dig('pipelines', pipeline, property)
 end
 
-def get_pipeline_stats(container, pipeline='main')
+def get_pipeline_stats(container, pipeline = 'main')
   make_request(container, "curl -s http://localhost:9600/_node/stats/pipelines").dig('pipelines', pipeline)
 end
 
-def get_plugin_info(container, type, id, pipeline='main')
+def get_plugin_info(container, type, id, pipeline = 'main')
   pipeline_info = make_request(container, "curl -s http://localhost:9600/_node/stats/pipelines")
   all_plugins = pipeline_info.dig('pipelines', pipeline, 'plugins', type)
   if all_plugins.nil?
@@ -96,7 +96,7 @@ def get_plugin_info(container, type, id, pipeline='main')
     puts "Unable to find plugins from #{pipeline_info}, when looking for #{type} plugins in #{pipeline}"
     return nil
   end
-  all_plugins.find{|plugin|plugin['id'] == id}
+  all_plugins.find{|plugin| plugin['id'] == id}
 end
 
 def logstash_available?(container)

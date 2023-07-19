@@ -233,7 +233,7 @@ describe "Test Monitoring API" do
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
 
     result = logstash_service.monitoring_api.logging_get
-    result["loggers"].each do | k, v |
+    result["loggers"].each do |k, v|
       next if k.eql?("logstash.agent")
       #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
       if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
@@ -330,7 +330,7 @@ describe "Test Monitoring API" do
 
   def logging_get_assert(logstash_service, logstash_level, slowlog_level, skip: '')
     result = logstash_service.monitoring_api.logging_get
-    result["loggers"].each do | k, v |
+    result["loggers"].each do |k, v|
       next if !k.empty? && k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
         expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"

@@ -53,7 +53,7 @@ end
 
 if LogStash::Environment.windows?
   # make sure all strings pulled out of ENV are UTF8
-  class <<ENV
+  class << ENV
     alias_method :orig_getter, :[]
     def [](key)
       case value = orig_getter(key)

@@ -29,11 +29,11 @@ describe LogStash::Api::Modules::NodeStats do
 
   # DSL describing response structure
   root_structure = {
-    "jvm"=>{
+    "jvm" => {
       "uptime_in_millis" => Numeric,
-      "threads"=>{
-        "count"=>Numeric,
-        "peak_count"=>Numeric
+      "threads" => {
+        "count" => Numeric,
+        "peak_count" => Numeric
       },
       "gc" => {
         "collectors" => {
@@ -76,16 +76,16 @@ describe LogStash::Api::Modules::NodeStats do
         }
       }
     },
-    "process"=>{
-      "peak_open_file_descriptors"=>Numeric,
-      "max_file_descriptors"=>Numeric,
-      "open_file_descriptors"=>Numeric,
-      "mem"=>{
-        "total_virtual_in_bytes"=>Numeric
+    "process" => {
+      "peak_open_file_descriptors" => Numeric,
+      "max_file_descriptors" => Numeric,
+      "open_file_descriptors" => Numeric,
+      "mem" => {
+        "total_virtual_in_bytes" => Numeric
       },
-      "cpu"=>{
-        "total_in_millis"=>Numeric,
-        "percent"=>Numeric,
+      "cpu" => {
+        "total_in_millis" => Numeric,
+        "percent" => Numeric,
         # load_average is not supported on Windows, set it below
       }
    },

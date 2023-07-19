@@ -236,7 +236,7 @@ describe LogStash::Timestamp do
       999999999,
       Random.rand(1_000_000_000)
     ].each do |excess_nanos|
-      context "with excess_nanos=`#{'%09d'% excess_nanos}`" do
+      context "with excess_nanos=`#{'%09d' % excess_nanos}`" do
         let(:epoch_seconds) { Time.now.to_i }
         let(:excess_nanos) {  }
 

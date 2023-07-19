@@ -39,7 +39,7 @@ def clear_data_dir
   end
 end
 
-def mock_settings(settings_values={})
+def mock_settings(settings_values = {})
   settings = LogStash::SETTINGS.clone
 
   settings_values.each do |key, value|
@@ -49,7 +49,7 @@ def mock_settings(settings_values={})
   settings
 end
 
-def make_test_agent(settings=mock_settings, config_source=nil)
+def make_test_agent(settings = mock_settings, config_source = nil)
     sl = LogStash::Config::SourceLoader.new
     sl.add_source(config_source || LogStash::Config::Source::Local.new(settings))
     sl
@@ -57,7 +57,7 @@ def make_test_agent(settings=mock_settings, config_source=nil)
     ::LogStash::Agent.new(settings, sl)
 end
 
-def make_config_source(settings=mock_settings)
+def make_config_source(settings = mock_settings)
   TestPipelineConfigSource.new(settings)
 end
 
@@ -72,7 +72,7 @@ class TestPipelineConfigSource
     @pipelines = {}
   end
 
-  def add_pipeline(pipeline_id, config_string, settings_overrides={})
+  def add_pipeline(pipeline_id, config_string, settings_overrides = {})
     logger.debug("adding pipeline `#{pipeline_id}` from string `#{config_string}` with additional settings `#{settings_overrides}`")
     @pipelines[pipeline_id.to_sym] = compose_pipeline_config(pipeline_id, config_string, settings_overrides)
   end

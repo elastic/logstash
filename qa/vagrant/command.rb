@@ -37,7 +37,7 @@ module LogStash
       end
     end
 
-    def self.run(cmd, debug=false)
+    def self.run(cmd, debug = false)
       # This block is require to be able to launch a ruby subprocess
       # that use bundler.
       Bundler.with_clean_env do
@@ -58,7 +58,7 @@ module LogStash
 
     # This method will raise an exception if the `CMD`
     # was not run successfully and will display the content of STDERR
-    def self.run!(cmd, debug=false)
+    def self.run!(cmd, debug = false)
       response = run(cmd, debug)
 
       unless response.success?

@@ -35,7 +35,7 @@ shared_context "execution_context" do
   end
 end
 
-shared_context "api setup" do |settings_overrides={}|
+shared_context "api setup" do |settings_overrides = {}|
   ##
   # blocks until the condition returns true, or the limit has passed
   # @return [true] if the condition was met
@@ -46,7 +46,7 @@ shared_context "api setup" do |settings_overrides={}|
       break if Time.now >= deadline
       return true if condition.call
 
-      next_sleep = [(2.0**(try))/10, 2, deadline - Time.now].min
+      next_sleep = [(2.0**(try)) / 10, 2, deadline - Time.now].min
       Kernel::sleep(next_sleep) unless next_sleep <= 0
     end
     # one last try

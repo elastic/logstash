@@ -31,7 +31,7 @@ module LogStash
       raise LogStash::Json::ParserError.new(e.message)
     end
 
-    def jruby_dump(o, options={})
+    def jruby_dump(o, options = {})
       # TODO [guyboertje] remove these comments in 5.0
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
       # also look for Java::JavaUtil::ArrayList, see TODO submit issue

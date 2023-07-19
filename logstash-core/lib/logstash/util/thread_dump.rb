@@ -26,15 +26,15 @@ module LogStash
 
       attr_reader :top_count, :ignore, :dump
 
-      def initialize(options={})
-        @options   = options
+      def initialize(options = {})
+        @options = options
         @dump = options.fetch(:dump, ThreadsReport.generate({}))
         @top_count = options.fetch(:threads, THREADS_COUNT_DEFAULT)
         @ignore    = options.fetch(:ignore_idle_threads, IGNORE_IDLE_THREADS_DEFAULT)
       end
 
       def each(&block)
-        i=0
+        i = 0
         dump.each do |hash|
           thread_name = hash["thread.name"]
           break if i >= top_count

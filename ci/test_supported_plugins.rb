@@ -23,7 +23,7 @@ logstash_plugin_cli = ENV['LOGSTASH_PATH'] + "/bin/logstash-plugin"
 
 # it has to be out of logstash local close else plugins' Gradle script
 # would interfere with Logstash's one
-base_folder =  ENV['LOGSTASH_PLUGINS_TMP'] || (require 'tmpdir'; Dir.tmpdir)
+base_folder = ENV['LOGSTASH_PLUGINS_TMP'] || (require 'tmpdir'; Dir.tmpdir)
 puts "Using #{base_folder} as temporary clone folder"
 plugins_folder = File.join(base_folder, "plugin_clones")
 unless File.directory?(plugins_folder)

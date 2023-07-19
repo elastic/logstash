@@ -150,7 +150,7 @@ module LogStash module Inputs
       return unless @agent
 
       # Update once every 10m
-      time_for_update = @last_states_update.nil? || @last_states_update < (Time.now - 60*10)
+      time_for_update = @last_states_update.nil? || @last_states_update < (Time.now - 60 * 10)
 
       pipeline_hashes = []
       agent.running_pipelines.each do |pipeline_id, pipeline|

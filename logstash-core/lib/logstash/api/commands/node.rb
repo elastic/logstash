@@ -23,7 +23,7 @@ module LogStash
     module Commands
       class Node < Commands::Base
 
-        def all(selected_fields=[])
+        def all(selected_fields = [])
           payload = {
             :pipelines => pipelines,
             :os => os,
@@ -33,7 +33,7 @@ module LogStash
           payload
         end
 
-        def pipelines(options={})
+        def pipelines(options = {})
           pipeline_ids = service.get_shallow(:stats, :pipelines).keys
           pipeline_ids.each_with_object({}) do |pipeline_id, result|
             pipeline_node = pipeline(pipeline_id, options)
@@ -43,7 +43,7 @@ module LogStash
           {}
         end
 
-        def pipeline(pipeline_id, options={})
+        def pipeline(pipeline_id, options = {})
           metrics = extract_metrics(
             [:stats, :pipelines, pipeline_id.to_sym, :config],
             :ephemeral_id,
@@ -55,7 +55,7 @@ module LogStash
             :config_reload_interval,
             :dead_letter_queue_enabled,
             :dead_letter_queue_path,
-          ).reject{|_, v|v.nil?}
+          ).reject{|_, v| v.nil?}
           if options.fetch(:graph, false)
             extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
             decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_with_cluster_uuids(vertex)  }
@@ -96,7 +96,7 @@ module LogStash
           }
         end
 
-        def hot_threads(options={})
+        def hot_threads(options = {})
           HotThreadsReport.new(self, options)
         end
 

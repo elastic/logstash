@@ -39,7 +39,7 @@ module LogStash::Util::UnicodeTrimmer
     # Try to do an initial shortening based on the average char size
     # The goal here is to get us somewhere above or below the boundary quickly
     orig_extra_bytes = orig_bs - desired_bytes
-    pre_shorten_by = (orig_extra_bytes  / avg_size).to_i
+    pre_shorten_by = (orig_extra_bytes / avg_size).to_i
     orig_str.slice(0, orig_len - pre_shorten_by)
   end
 

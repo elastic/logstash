@@ -75,8 +75,8 @@ module LogStash::Util::SettingsHelper
   # 3. check if the LS_SETTINGS_DIR environment variable is set
   # 4. return nil if not found
   def self.fetch_settings_path(cli_args)
-    if i=cli_args.find_index("--path.settings")
-      cli_args[i+1]
+    if i = cli_args.find_index("--path.settings")
+      cli_args[i + 1]
     elsif settings_arg = cli_args.find {|v| v.match(/--path.settings=/)}
       match = settings_arg.match(/--path.settings=(.*)/)
       match[1]

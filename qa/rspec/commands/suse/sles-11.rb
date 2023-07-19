@@ -30,7 +30,7 @@ module ServiceTester
       stdout.match(/#{package} is running$/)
     end
 
-    def service_manager(service, action, host=nil)
+    def service_manager(service, action, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("/etc/init.d/#{service} #{action}")

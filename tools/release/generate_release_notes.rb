@@ -66,8 +66,8 @@ report << ""
 report <<  "=== Logstash Commits between #{release_branch} and #{previous_release_tag}\n"
 report <<  "Computed with \"git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v#{previous_release_tag}..#{release_branch}\""
 report <<  ""
-logstash_prs =  `git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v#{previous_release_tag}..#{release_branch}`
-report <<  logstash_prs
+logstash_prs = `git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v#{previous_release_tag}..#{release_branch}`
+report << logstash_prs
 report << "\n=== Logstash Plugin Release Changelogs ==="
 report << "Computed from \"git diff v#{previous_release_tag}..#{release_branch} *.release\""
 result = `git diff v#{previous_release_tag}..#{release_branch} *.release`.split("\n")

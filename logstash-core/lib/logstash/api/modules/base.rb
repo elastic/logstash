@@ -40,7 +40,7 @@ module LogStash
 
         helpers AppHelpers
 
-        def initialize(app=nil, agent)
+        def initialize(app = nil, agent)
           super(app)
           @agent = agent
           @factory = ::LogStash::Api::CommandFactory.new(LogStash::Api::Service.new(agent))

@@ -165,7 +165,7 @@ describe LogStash::Api::Modules::Node do
         },
         "gc_collectors" => Array
         },
-        "hot_threads"=> {
+        "hot_threads" => {
           "time" => String,
           "busiest_threads" => Numeric,
           "threads" => Array

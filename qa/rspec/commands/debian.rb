@@ -44,7 +44,7 @@ module ServiceTester
       end
     end
 
-    def install(package, host=nil)
+    def install(package, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       errors = []
       at(hosts, {in: :serial}) do |_|
@@ -56,7 +56,7 @@ module ServiceTester
       raise InstallException.new(errors.join("\n")) unless errors.empty?
     end
 
-    def uninstall(package, host=nil)
+    def uninstall(package, host = nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("dpkg -r #{package}")

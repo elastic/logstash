@@ -106,7 +106,7 @@ module LogStash module Docgen
 
     def release_date(format = "%B %-d, %Y")
       @release_date ||= begin
-                          url ="https://rubygems.org/api/v1/versions/#{canonical_name}.json"
+                          url = "https://rubygems.org/api/v1/versions/#{canonical_name}.json"
                           response = open(url).read
                           # HACK: One of out default plugins, the webhdfs, has a bad encoding in the gemspec
                           # which make our parser trip with this error:
@@ -178,7 +178,7 @@ module LogStash module Docgen
   class Parser
     # This is a multipass parser
     def self.parse(file, options = { :default_plugin => true })
-      context =  PluginContext.new(options)
+      context = PluginContext.new(options)
       static = StaticParser.new(context)
 
       # Extract ancestors, classes and modules and retrieve the physical

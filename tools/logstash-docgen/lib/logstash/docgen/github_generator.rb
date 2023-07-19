@@ -150,7 +150,7 @@ module LogStash module Docgen
     end
 
     def create_plugins(plugins)
-      plugin_names = plugins == :all ?  retrieve_all_plugins : Array(plugins)
+      plugin_names = plugins == :all ? retrieve_all_plugins : Array(plugins)
       plugin_names.map do |name|
         if skip_plugin?(name)
           puts "#{name} > #{Util.yellow("IGNORED")}"

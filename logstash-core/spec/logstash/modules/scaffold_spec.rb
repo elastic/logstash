@@ -65,7 +65,7 @@ describe LogStash::Modules::Scaffold do
   let(:index_pattern_hash) do
     {
       "title" => "foo-*",
-      "timeFieldName" =>"time",
+      "timeFieldName" => "time",
       "fieldFormatMap" => "{some map}",
       "fields" => "[some array]"
     }
@@ -169,12 +169,12 @@ ERB
       test_object = resource2.content[3]
       expect(test_object.content_id).to eq("foo-d") #<- the panels can contain items from other folders
       expect(test_object.content_type).to eq("search")
-      expect(test_object.content_as_object).to eq("d"=>"search")
+      expect(test_object.content_as_object).to eq("d" => "search")
 
       test_object = resource2.content[4]
       expect(test_object.content_id).to eq("foo-e") # <- the visualization can contain items from the search folder
       expect(test_object.content_type).to eq("search")
-      expect(test_object.content_as_object).to eq("e"=>"search")
+      expect(test_object.content_as_object).to eq("e" => "search")
     end
   end
 
@@ -216,7 +216,7 @@ ERB
       test_module.with_settings(module_settings)
       test_module.import(LogStash::Modules::ElasticsearchImporter.new(client), LogStash::Modules::KibanaImporter.new(kbnclient))
       expect(paths).to eq(expected_paths)
-      expect(contents[0]).to eq({"changes"=>{"defaultIndex"=>"tester-*"}})
+      expect(contents[0]).to eq({"changes" => {"defaultIndex" => "tester-*"}})
       second_kbn_post = contents[1]
       expect(second_kbn_post[:version]).to eq("9.8.7-6")
       expect(second_kbn_post[:objects]).to be_a(Array)

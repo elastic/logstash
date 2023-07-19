@@ -305,7 +305,7 @@ class LogStash::Runner < Clamp::StrictCommand
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
 
-    while(msg = LogStash::DeprecationMessage.instance.shift)
+    while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
     end
 

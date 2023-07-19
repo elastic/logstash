@@ -127,7 +127,7 @@ module LogStash
     # @option :auth_basic [Hash{Symbol=>Object}]
     #             :username [String]
     #             :password [LogStash::Util::Password]
-    def initialize(logger, agent, options={})
+    def initialize(logger, agent, options = {})
       @logger = logger
       @agent = agent
       @http_host = options[:http_host] || DEFAULT_HOST
@@ -181,7 +181,7 @@ module LogStash
       "#{http_host}:#{@port}"
     end
 
-    def stop(options={})
+    def stop(options = {})
       @mutex.synchronize do
         @running.make_false
         @server.stop(true) if @server
@@ -213,7 +213,7 @@ module LogStash
           rescue Errno::EADDRINUSE
             if http_ports.count == 1
               raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port", :port => http_ports.first))
-            elsif idx == http_ports.count-1
+            elsif idx == http_ports.count - 1
               raise Errno::EADDRINUSE.new(I18n.t("logstash.web_api.cant_bind_to_port_in_range", :http_ports => http_ports))
             end
           end

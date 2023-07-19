@@ -29,7 +29,7 @@ end
 
 module ResourceDSLMethods
   # Convert a nested hash to a mapping of key paths to expected classes
-  def hash_to_mapping(h, path=[], mapping={})
+  def hash_to_mapping(h, path = [], mapping = {})
     h.each do |k, v|
       if v.is_a?(Hash)
         hash_to_mapping(v, path + [k], mapping)
@@ -94,7 +94,7 @@ module ResourceDSLMethods
     yield if block_given? # Add custom expectations
   end
 
-  def test_api_and_resources(expected, xopts={})
+  def test_api_and_resources(expected, xopts = {})
     xopts[:exclude_from_root] ||= []
     root_expectation = expected.clone
     xopts[:exclude_from_root].each {|k| root_expectation.delete(k)}

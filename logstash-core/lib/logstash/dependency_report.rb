@@ -160,7 +160,7 @@ class LogStash::DependencyReport < Clamp::Command
 
     module_function
     def map(value)
-      MAP_APACHE2[value] ||  MAP_ARTISTIC2[value] || MAP_BSD[value] ||  MAP_GPL2[value] || value
+      MAP_APACHE2[value] || MAP_ARTISTIC2[value] || MAP_BSD[value] || MAP_GPL2[value] || value
     end
   end
 end

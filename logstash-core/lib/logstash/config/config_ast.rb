@@ -561,26 +561,26 @@ end; end; end
 # Monkeypatch Treetop::Runtime::SyntaxNode's inspect method to skip
 # any Whitespace or SyntaxNodes with no children.
 class Treetop::Runtime::SyntaxNode
-  def _inspect(indent="")
+  def _inspect(indent = "")
     em = extension_modules
-    interesting_methods = methods-[em.last ? em.last.methods : nil]-self.class.instance_methods
+    interesting_methods = methods - [em.last ? em.last.methods : nil] - self.class.instance_methods
     im = interesting_methods.size > 0 ? " (#{interesting_methods.join(",")})" : ""
     tv = text_value
     tv = "...#{tv[-20..-1]}" if tv.size > 20
 
     indent +
     self.class.to_s.sub(/.*:/, '') +
-      em.map{|m| "+"+m.to_s.sub(/.*:/, '')}*"" +
+      em.map{|m| "+" + m.to_s.sub(/.*:/, '')} * "" +
       " offset=#{interval.first}" +
       ", #{tv.inspect}" +
       im +
       (elements && elements.size > 0 ?
         ":" +
-          (elements.select { |e| !e.is_a?(LogStash::Config::AST::Whitespace) && e.elements && e.elements.size > 0 }||[]).map{|e|
+          (elements.select { |e| !e.is_a?(LogStash::Config::AST::Whitespace) && e.elements && e.elements.size > 0 } || []).map{|e|
       begin
-        "\n"+e.inspect(indent+"  ")
+        "\n" + e.inspect(indent + "  ")
       rescue  # Defend against inspect not taking a parameter
-        "\n"+indent+" "+e.inspect
+        "\n" + indent + " " + e.inspect
       end
           }.join("") :
         ""

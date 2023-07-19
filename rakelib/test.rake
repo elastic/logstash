@@ -54,7 +54,7 @@ namespace "test" do
   end
 
   desc "run all installed plugins specs"
-  task "plugins"  => "bootstrap" do
+  task "plugins" => "bootstrap" do
     plugins_to_exclude = ENV.fetch("EXCLUDE_PLUGIN", "").split(",")
     # the module LogStash::PluginManager requires the file `lib/pluginmanager/plugin_aliases.yml`,
     # that file is created during the bootstrap task

@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   # Special flag to let us know this is actually a logstash plugin
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "output" }
-  s.post_install_message =<<eos
+  s.post_install_message = <<eos
 This plugins will require the configuration of XXXXX in the logstash.yml
 
 Make sure you double check your configuration

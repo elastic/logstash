@@ -45,7 +45,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
   context "no configs" do
     context "in the directory" do
       let(:directory) do
-        p =  Stud::Temporary.pathname
+        p = Stud::Temporary.pathname
         FileUtils.mkdir_p(p)
         p
       end
@@ -57,7 +57,7 @@ describe LogStash::Config::Source::Local::ConfigPathLoader do
 
     context "target file doesn't exist" do
       let(:directory) do
-        p =  Stud::Temporary.pathname
+        p = Stud::Temporary.pathname
         FileUtils.mkdir_p(p)
         ::File.join(p, "ls.conf")
       end

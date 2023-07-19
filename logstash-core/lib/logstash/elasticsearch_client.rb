@@ -28,7 +28,7 @@ module LogStash class ElasticsearchClient
     # to create a normalised response across different client IMPL
     attr_reader :status, :body, :headers
 
-    def initialize(status, body, headers={})
+    def initialize(status, body, headers = {})
       @status, @body, @headers = status, body, headers
       @body = body.force_encoding('UTF-8') if body.respond_to?(:force_encoding)
     end

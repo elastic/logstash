@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.authors       = ["Elastic"]
   s.email         = ["info@elastic.co"]
 
-  s.homepage        = "http://www.elasticsearch.org/guide/en/logstash/current/index.html"
+  s.homepage = "http://www.elasticsearch.org/guide/en/logstash/current/index.html"
   s.require_paths = ["lib"]
 
   # Files
