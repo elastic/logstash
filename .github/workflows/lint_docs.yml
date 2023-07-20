@@ -29,7 +29,7 @@ jobs:
       - name: Run docs-lint
         id: run_docs_lint
         run: |
-          LINT=$(((docs-lint $GITHUB_WORKSPACE --gh-actions) 2>&1) || true)
+          LINT=$(((docs-lint $GITHUB_WORKSPACE/docs --asciidoc) 2>&1) || true)
           echo "$LINT"
           LINT="${LINT//'%'/'%25'}"
           LINT="${LINT//$'\n'/'%0A'}"
