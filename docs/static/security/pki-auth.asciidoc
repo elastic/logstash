@@ -4,7 +4,7 @@
 
 The `elasticsearch` output supports PKI authentication. To use an X.509
 client-certificate for authentication, you configure the `keystore` and
-`keystore_password` options in your Logstash `.conf` file:
+`keystore_password` options in your {ls} `.conf` file:
 
 [source,js]
 --------------------------------------------------

@@ -11,7 +11,7 @@ about {ls}:
 * <<hot-threads-api>>
 
 
-You can use the root resource to retrieve general information about the Logstash instance, including
+You can use the root resource to retrieve general information about the {ls} instance, including
 the host and version.
 
 [source,js]
@@ -30,17 +30,17 @@ Example response:
 }
 --------------------------------------------------
 
-NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
+NOTE: By default, the monitoring API attempts to bind to `tcp:9600`. If this port is already in use by another {ls}
+instance, you need to launch {ls} with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 [discrete]
 [[monitoring-api-security]]
-==== Securing the Logstash API
+==== Securing the {ls} API
 
 The {ls} Monitoring APIs are not secured by default, but you can configure {ls} to secure them in one of several ways to meet your organization's needs.
 
-You can enable SSL for the Logstash API by setting `api.ssl.enabled: true` in the `logstash.yml`, and providing the relevant keystore settings `api.ssl.keystore.path` and `api.ssl.keystore.password`:
+You can enable SSL for the {ls} API by setting `api.ssl.enabled: true` in the `logstash.yml`, and providing the relevant keystore settings `api.ssl.keystore.path` and `api.ssl.keystore.password`:
 
 [source]
 --------------------------------------------------
@@ -50,7 +50,7 @@ api.ssl.keystore.password: "s3cUr3p4$$w0rd"
 --------------------------------------------------
 
 The keystore must be in either jks or p12 format, and must contain both a certificate and a private key.
-Connecting clients receive this certificate, allowing them to authenticate the Logstash endpoint.
+Connecting clients receive this certificate, allowing them to authenticate the {ls} endpoint.
 
 You can also require HTTP Basic authentication by setting `api.auth.type: basic` in the `logstash.yml`, and providing the relevant credentials `api.auth.basic.username` and `api.auth.basic.password`:
 
@@ -68,7 +68,7 @@ NOTE: Usage of Keystore or Environment or variable replacements is encouraged fo
 [[monitoring-common-options]]
 ==== Common options
 
-The following options can be applied to all of the Logstash monitoring APIs.
+The following options can be applied to all of the {ls} monitoring APIs.
 
 [discrete]
 ===== Pretty results
@@ -79,7 +79,7 @@ will be pretty formatted (use it for debugging only!).
 [discrete]
 ===== Human-readable output
 
-NOTE: For Logstash {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
+NOTE: For {ls} {logstash_version}, the `human` option is supported for the <<hot-threads-api>>
 only. When you specify `human=true`, the results are returned in plain text instead of
 JSON format. The default is false.
 
@@ -116,7 +116,7 @@ Gets node-level info about the OS.
 Gets node-level JVM info, including info about threads.
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
+{ls} monitoring APIs.
 
 [discrete]
 [[node-pipeline-info]]
@@ -252,7 +252,7 @@ Example response:
 [[plugins-api]]
 === Plugins info API
 
-The plugins info API gets information about all Logstash plugins that are currently installed.
+The plugins info API gets information about all {ls} plugins that are currently installed.
 This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
 
 [source,js]
@@ -261,7 +261,7 @@ curl -XGET 'localhost:9600/_node/plugins?pretty'
 --------------------------------------------------
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
+{ls} monitoring APIs.
 
 The output is a JSON document.
 
@@ -298,7 +298,7 @@ Example response:
 [[node-stats-api]]
 === Node Stats API
 
-The node stats API retrieves runtime stats about Logstash.
+The node stats API retrieves runtime stats about {ls}.
 
 [source,js]
 --------------------------------------------------
@@ -316,22 +316,22 @@ and uptime.
 <<process-stats,`process`>>::
 Gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
 <<event-stats,`events`>>::
-Gets event-related statistics for the Logstash instance (regardless of how many
+Gets event-related statistics for the {ls} instance (regardless of how many
 pipelines were created and destroyed).
 <<flow-stats,`flow`>>::
-Gets flow-related statistics for the Logstash instance (regardless of how many
+Gets flow-related statistics for the {ls} instance (regardless of how many
 pipelines were created and destroyed).
 <<pipeline-stats,`pipelines`>>::
-Gets runtime stats about each Logstash pipeline.
+Gets runtime stats about each {ls} pipeline.
 <<reload-stats,`reloads`>>::
 Gets runtime stats about config reload successes and failures.
 <<os-stats,`os`>>::
-Gets runtime stats about cgroups when Logstash is running in a container.
+Gets runtime stats about cgroups when {ls} is running in a container.
 <<geoip-database-stats,`geoip_download_manager`>>::
 Gets stats for databases used with the <<plugins-filters-geoip, Geoip filter plugin>>.
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
+{ls} monitoring APIs.
 
 [discrete]
 [[jvm-stats]]
@@ -441,7 +441,7 @@ Example response:
 ==== Event stats
 
 The following request returns a JSON document containing event-related statistics
-for the Logstash instance:
+for the {ls} instance:
 
 [source,js]
 --------------------------------------------------
@@ -467,7 +467,7 @@ Example response:
 ==== Flow stats
 
 The following request returns a JSON document containing flow-rates
-for the Logstash instance:
+for the {ls} instance:
 
 [source,js]
 --------------------------------------------------
@@ -507,7 +507,7 @@ Example response:
 NOTE: When the rate for a given flow metric window is infinite, it is presented as a string (either `"Infinity"` or  `"-Infinity"`).
       This occurs when the numerator metric has changed during the window without a change in the rate's denominator metric.
 
-Flow rates provide visibility into how a Logstash instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
+Flow rates provide visibility into how a {ls} instance or an individual pipeline is _currently_ performing relative to _itself_ over time.
 This allows us to attach _meaning_ to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
 
 The following flow rates are available for the logstash process as a whole and for each of its pipelines individually.
@@ -1026,7 +1026,7 @@ Example response:
 [[os-stats]]
 ==== OS stats
 
-When Logstash is running in a container, the following request returns a JSON document that
+When {ls} is running in a container, the following request returns a JSON document that
 contains cgroup information to give you a more accurate view of CPU load, including whether
 the container is being throttled.
 
@@ -1077,7 +1077,7 @@ For more info, see <<plugins-filters-geoip-metrics,Database Metrics>> in the Geo
 [[hot-threads-api]]
 === Hot Threads API
 
-The hot threads API gets the current hot threads for Logstash. A hot thread is a
+The hot threads API gets the current hot threads for {ls}. A hot thread is a
 Java thread that has high CPU usage and executes for a longer than normal period
 of time.
 
@@ -1087,7 +1087,7 @@ curl -XGET 'localhost:9600/_node/hot_threads?pretty'
 --------------------------------------------------
 
 The output is a JSON document that contains a breakdown of the top hot threads for
-Logstash.
+{ls}.
 
 Example response:
 
@@ -1127,7 +1127,7 @@ The parameters allowed are:
 `ignore_idle_threads`:: If true, does not return idle threads. The default is true.
 
 See <<monitoring-common-options, Common Options>> for a list of options that can be applied to all
-Logstash monitoring APIs.
+{ls} monitoring APIs.
 
 You can use the `?human` parameter to return the document in a human-readable format.
 

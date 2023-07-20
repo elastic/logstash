@@ -2,9 +2,9 @@
 [[ls-pipeline-management-user]]
 === Configuring credentials for Centralized Pipeline Management
 
-If you plan to use Logstash
+If you plan to use {ls}
 {logstash-ref}/logstash-centralized-pipeline-management.html[centralized pipeline management],
-you need to configure the username and password that Logstash uses for managing
+you need to configure the username and password that {ls} uses for managing
 configurations.
 
 You configure the user and password in the `logstash.yml` configuration file:

@@ -10,7 +10,7 @@ experimental[]
 deprecated[7.8.0, "We recommend using the Azure modules in {filebeat-ref}/filebeat-module-azure.html[{Filebeat}] and {metricbeat-ref}/metricbeat-module-azure.html[{metricbeat}], which are compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]"]
 
 The https://azure.microsoft.com/en-us/overview/what-is-azure/[Microsoft Azure]
-module in Logstash helps you easily integrate your Azure activity logs and SQL
+module in {ls} helps you easily integrate your Azure activity logs and SQL
 diagnostic logs with the Elastic Stack. 
 
 image::static/images/azure-flow.png["Azure Work Flow",width="80%"]
@@ -26,7 +26,7 @@ and decreasing overall time to resolution. The Azure module helps you:
 * Monitor and optimize your SQL DB deployments.
 
 The Azure module uses the
-{logstash-ref}/plugins-inputs-azure_event_hubs.html[Logstash Azure Event Hubs
+{logstash-ref}/plugins-inputs-azure_event_hubs.html[{ls} Azure Event Hubs
 input plugin] to consume data from Azure Event Hubs. The module taps directly into the
 Azure dashboard, parses and indexes events into Elasticsearch, and installs a
 suite of {kib} dashboards to help you start exploring your data immediately.   
@@ -80,13 +80,13 @@ easy to install.
 ===== Azure prerequisites
 
 Azure Monitor should be configured to stream logs to one or more Event Hubs. 
-Logstash will need to access these Event Hubs instances to consume your Azure logs and metrics.
+{ls} will need to access these Event Hubs instances to consume your Azure logs and metrics.
 See <<azure-resources>> at the end of this topic for links to Microsoft Azure documentation.
 
 [[configuring-azure]]
 ==== Configure the module
 
-Specify <<azure_config_options,options>> for the Logstash Azure module in the
+Specify <<azure_config_options,options>> for the {ls} Azure module in the
 `logstash.yml` configuration file. 
 
 * *Basic configuration.* You can use the `logstash.yml` file to configure inputs from multiple Event Hubs that share the same configuration.
@@ -126,7 +126,7 @@ modules:
       - "Endpoint=sb://...EntityPath=insights-logs-timeouts"
 -----
 <1> The `consumer_group` (optional) is highly recommended. See <<azure_best_practices>>.
-<2> The `storage_connection` (optional) sets the Azure Blob Storage connection for tracking processing state for Event Hubs when scaling out a deployment with multiple Logstash instances. See <<scaling-blob>> for additional details.
+<2> The `storage_connection` (optional) sets the Azure Blob Storage connection for tracking processing state for Event Hubs when scaling out a deployment with multiple {ls} instances. See <<scaling-blob>> for additional details.
 <3> See <<azure_best_practices>> for guidelines on choosing an appropriate number of threads.
 <4> This connection sets up the consumption of Activity Logs. By default, Azure Monitor uses the `insights-operational-logs` Event Hub name. Make sure this matches the name of the Event Hub specified for Activity Logs.
 <5> This connection and the ones below set up the consumption of SQL DB diagnostic logs and metrics. By default, Azure Monitor uses all these different Event Hub names.
@@ -188,7 +188,7 @@ configuration option. Notice the notation for the `initial_position` option.
 ===== Scale Event Hub consumption
 
 An https://azure.microsoft.com/en-us/services/storage/blobs[Azure Blob Storage
-account] is an essential part of Azure-to-Logstash configuration. 
+account] is an essential part of Azure-to-{ls} configuration. 
 It is required for users who want to scale out multiple {ls} instances to consume from Event Hubs.
 
 A Blob Storage account is a central location that enables multiple instances of
@@ -282,20 +282,20 @@ Be sure that the `logstash.yml` file is <<configuring-azure,configured correctly
 
 ===== First time setup
 
-Run this command from the Logstash directory:
+Run this command from the {ls} directory:
 
 ["source","shell",subs="attributes"]
 -----
 bin/logstash --setup
 -----
 
-The `--modules azure` option starts a Logstash pipeline for ingestion from Azure
+The `--modules azure` option starts a {ls} pipeline for ingestion from Azure
 Event Hubs. The `--setup` option creates an `azure-*` index pattern in
 Elasticsearch and imports Kibana dashboards and visualizations. 
 
 ===== Subsequent starts
 
-Run this command from the Logstash directory:
+Run this command from the {ls} directory:
 
 ["source","shell",subs="attributes"]
 -----
@@ -308,7 +308,7 @@ overwritten.
 
 [[exploring-data-azure]]
 ==== Explore your data
-When the Logstash Azure module starts receiving events, you can begin using the
+When the {ls} Azure module starts receiving events, you can begin using the
 packaged Kibana dashboards to explore and visualize your data. 
 
 To explore your data with Kibana:
@@ -368,7 +368,7 @@ Writing checkpoints too frequently can slow down processing unnecessarily.
 * Default value is `$Default` 
 
 Consumer group used to read the Event Hub(s). Create a consumer group
-specifically for Logstash. Then ensure that all instances of Logstash use that
+specifically for {ls}. Then ensure that all instances of {ls} use that
 consumer group so that they can work together properly.
 
 
@@ -396,7 +396,7 @@ When first reading from an Event Hub, start from this position:
 You control the number of seconds using the `initial_position_look_back` option.
 
 If `storage_connection` is set, the `initial_position` value is used only
-the first time Logstash reads from the Event Hub.
+the first time {ls} reads from the Event Hub.
 
 
 [[azure_initial_position_look_back]]
@@ -428,7 +428,7 @@ requires more memory.
 * No default value 
 
 Connection string for blob account storage. Blob account storage persists the
-offsets between restarts, and ensures that multiple instances of Logstash
+offsets between restarts, and ensures that multiple instances of {ls}
 process different partitions. 
 When this value is set, restarts resume where processing left off.
 When this value is not set, the `initial_position` value is used on every restart.

@@ -1,7 +1,7 @@
 [[multiple-pipelines]]
 === Multiple Pipelines
 
-If you need to run more than one pipeline in the same process, Logstash provides a way to do this through a configuration file called `pipelines.yml`.
+If you need to run more than one pipeline in the same process, {ls} provides a way to do this through a configuration file called `pipelines.yml`.
 This file must be placed in the `path.settings` folder and follows this structure:
 
 [source,yaml]
@@ -17,7 +17,7 @@ This file must be placed in the `path.settings` folder and follows this structur
 This file is formatted in YAML and contains a list of dictionaries, where each dictionary describes a pipeline, and each key/value pair specifies a setting for that pipeline. The example shows two different pipelines described by their IDs and  configuration paths. For the first pipeline, the value of `pipeline.workers` is set to 3, while in the other, the persistent queue feature is enabled.
 The value of a setting that is not explicitly set in the `pipelines.yml` file will fall back to the default specified in the `logstash.yml` <<logstash-settings-file,settings file>>.
 
-When you start Logstash without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, Logstash ignores the `pipelines.yml` file and logs a warning about it.
+When you start {ls} without arguments, it will read the `pipelines.yml` file and instantiate all pipelines specified in the file. On the other hand, when you use `-e` or `-f`, {ls} ignores the `pipelines.yml` file and logs a warning about it.
 
 [[multiple-pipeline-usage]]
 ==== Usage Considerations

@@ -1,7 +1,7 @@
 [[transformation]]
 == Transforming Data
 
-With over 200 plugins in the Logstash plugin ecosystem, it's sometimes
+With over 200 plugins in the {ls} plugin ecosystem, it's sometimes
 challenging to choose the best plugin to meet your data processing needs.
 In this section, we've collected a list of popular plugins and organized them
 according to their processing capabilities:
@@ -22,9 +22,9 @@ mutating and dropping events.
 
 <<plugins-filters-date,date filter>>::
 
-Parses dates from fields to use as Logstash timestamps for events.
+Parses dates from fields to use as {ls} timestamps for events.
 +
-The following config parses a field called `logdate` to set the Logstash
+The following config parses a field called `logdate` to set the {ls}
 timestamp:
 +
 [source,json]
@@ -122,11 +122,11 @@ filter {
 === Deserializing Data
 
 The plugins described in this section are useful for deserializing data into
-Logstash events.
+{ls} events.
 
 <<plugins-codecs-avro,avro codec>>::
 
-Reads serialized Avro records as Logstash events. This plugin deserializes
+Reads serialized Avro records as {ls} events. This plugin deserializes
 individual Avro records. It is not for reading Avro files. Avro files have a
 unique format that must be handled upon input.
 +
@@ -202,7 +202,7 @@ input {
 
 <<plugins-codecs-protobuf,protobuf codec>>::
 
-Reads protobuf encoded messages and converts them to Logstash events. Requires
+Reads protobuf encoded messages and converts them to {ls} events. Requires
 the protobuf definitions to be compiled as Ruby files. You can compile them by
 using the
 https://github.com/codekitchen/ruby-protocol-buffers[ruby-protoc compiler].
@@ -399,7 +399,7 @@ filter {
 The <<plugins-filters-elasticsearch,elasticsearch filter>> copies fields from previous log events in Elasticsearch to current events.
 +
 The following config shows a complete example of how this filter might
-be used.  Whenever Logstash receives an "end" event, it uses this Elasticsearch
+be used.  Whenever {ls} receives an "end" event, it uses this Elasticsearch
 filter to find the matching "start" event based on some operation identifier.
 Then it copies the `@timestamp` field from the "start" event into a new field on
 the "end" event.  Finally, using a combination of the date filter and the

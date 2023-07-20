@@ -45,20 +45,20 @@ deploy it to the host where {ls} is running.
 NOTE: If you're using a monitoring cluster, use the {kib} instance connected to
 the monitoring cluster.
 
-. In the query bar, search for and select the **Logstash** integration for
+. In the query bar, search for and select the **{ls}** integration for
 {agent}.
 . Read the overview to make sure you understand integration requirements and
 other considerations.
-. Click **Add Logstash**.
+. Click **Add {ls}**.
 +
 TIP: If you're installing an integration for the first time, you may be prompted
 to install {agent}. Click **Add integration only (skip agent installation)**.
 
 . Configure the integration name and optionally add a description. Make sure you
 configure all required settings:
-* Under **Collect Logstash application and slowlog logs**, modify the log paths
+* Under **Collect {ls} application and slowlog logs**, modify the log paths
 to match your {ls} environment.
-* Under **Collect Logstash node metrics and stats**, make sure the hosts setting
+* Under **Collect {ls} node metrics and stats**, make sure the hosts setting
 points to your {ls} host URLs. By default, the integration collects {ls}
 monitoring metrics from `localhost:9600`. If that host and port number are not
 correct, update the `hosts` setting. If you configured {ls} to use encrypted

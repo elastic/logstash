@@ -8,10 +8,10 @@ A {ls} persistent queue helps protect against data loss during abnormal terminat
 
 A persistent queue (PQ):
 
-* Helps protect against message loss during a normal shutdown and when Logstash
+* Helps protect against message loss during a normal shutdown and when {ls}
 is terminated abnormally. 
-If Logstash is restarted while events are in-flight,
-Logstash attempts to deliver messages stored in the persistent queue until
+If {ls} is restarted while events are in-flight,
+{ls} attempts to deliver messages stored in the persistent queue until
 delivery succeeds at least once.  
 * Can absorb bursts of events without needing an external buffering mechanism like Redis or Apache Kafka. 
 
@@ -34,7 +34,7 @@ TIP: Use the local filesystem for data integrity and performance. Network File S
 [[configuring-persistent-queues]]
 ==== Configuring persistent queues
 
-To configure persistent queues, specify options in the Logstash <<logstash-settings-file,settings file>>.
+To configure persistent queues, specify options in the {ls} <<logstash-settings-file,settings file>>.
 Settings are applied to every pipeline.
 
 When you set values for capacity and sizing settings, remember that the value you set is applied _per pipeline_ rather than a total to be shared among all pipelines. 
@@ -46,7 +46,7 @@ TIP: If you want to define values for a specific pipeline, use <<multiple-pipeli
 `queue.page_capacity`:: The queue data consists of append-only files called "pages." This value sets the maximum size of a queue page in bytes. 
 The default size of 64mb is a good value for most users, and changing this value is unlikely to have performance benefits. 
 If you change the page capacity of an existing queue, the new size applies only to the new page.
-`queue.drain`:: Specify `true` if you want Logstash to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
+`queue.drain`:: Specify `true` if you want {ls} to wait until the persistent queue is drained before shutting down. The amount of time it takes to drain the queue depends on the number of events that have accumulated in the queue. Therefore, you should avoid using this setting unless the queue, even when full, is relatively small and can be drained quickly. 
 `queue.max_events`:: The maximum number of events not yet read by the pipeline worker. The default is 0 (unlimited).
 We use this setting for internal testing. 
 Users generally shouldn't be changing this value.
@@ -86,7 +86,7 @@ If you optimize for data protection, you may impact performance.
 [[pq-size]]
 ===== Queue size
 You can control queue size with the `queue.max_events` and  `queue.max_bytes` settings.
-If both settings are specified, Logstash uses whichever criteria is reached
+If both settings are specified, {ls} uses whichever criteria is reached
 first. 
 See <<backpressure-persistent-queue>> for behavior when queue limits are
 reached.
@@ -157,7 +157,7 @@ queue.max_bytes: 10mb
 Setting `queue.checkpoint.writes` and `queue.checkpoint.acks` to `0` may
 yield maximum performance, but may have potential impact on durability.
 
-In a situation where Logstash is terminated or there is a hardware-level
+In a situation where {ls} is terminated or there is a hardware-level
 failure, any data that has not been checkpointed, is lost. 
 See <<durability-persistent-queues>> to better understand the trade-offs.
 
@@ -170,7 +170,7 @@ Persistent queues can play an important role in your <<pipeline-to-pipeline,pipe
 [[uc-isolator]]
 ====== Use case: PQs and output isolator pattern
 
-Here is a real world use case described by a Logstash user.
+Here is a real world use case described by a {ls} user.
 
 "_In our deployment, we use one pipeline per output, and each pipeline has a
 large PQ. This configuration allows a single output to stall without blocking
@@ -196,7 +196,7 @@ This error indicates that the head page (the oldest in a directory and the one w
 To research and resolve the issue: 
 
 . Identify the queue (or queues) that may be corrupt by checking log files, or running the `pqcheck` utility.
-. Stop Logstash, and wait for it to shut down. 
+. Stop {ls}, and wait for it to shut down. 
 . Run `pqrepair <path>` for each of the corrupted queues.
 
 [[pqcheck]]
@@ -232,9 +232,9 @@ In this case, run `pqrepair` against the specified queue directory.
 *Sample with healthy page file*
 
 This sample represents a healthy queue with three page files. 
-In this sample, Logstash is currently writing to `page.2` as referenced by
+In this sample, {ls} is currently writing to `page.2` as referenced by
 `checkpoint.head`.
-Logstash is reading from `page.0` as referenced by `checkpoint.0`.
+{ls} is reading from `page.0` as referenced by `checkpoint.0`.
 
 [source,txt]
 -----
@@ -257,7 +257,7 @@ checkpoint.0, fully-acked: NO, page.0 size: 67108864  <1>
 
 *Sample with corrupted page file*
 
-If Logstash doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue directory.
+If {ls} doesn't start and/or `pqcheck` shows an anomaly, such as `NOT_FOUND` for a page, run `pqrepair` on the queue directory.
 
 [source,txt]
 -----
@@ -293,7 +293,7 @@ where `<queue_directory>` is the fully qualified path to the persistent queue lo
 There is no output if the utility runs properly.  
 
 The `pqrepair` utility requires write access to the directory. 
-Folder permissions may cause problems when Logstash is run as a service.
+Folder permissions may cause problems when {ls} is run as a service.
 In this situation, use `sudo`.
 
 [source,txt]
@@ -301,7 +301,7 @@ In this situation, use `sudo`.
 /usr/share/logstash$ sudo -u logstash bin/pqrepair /var/lib/logstash/queue/main/
 -----
 
-After you run `pqrepair`, restart Logstash to verify that the repair operation was successful. 
+After you run `pqrepair`, restart {ls} to verify that the repair operation was successful. 
 
  
 [[draining-pqs]]
@@ -317,8 +317,8 @@ Examples include:
 To drain the persistent queue:
 
 . In the `logstash.yml` file, set `queue.drain: true`.
-. Restart Logstash for this setting to take effect.
-. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
+. Restart {ls} for this setting to take effect.
+. Shutdown {ls} (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
 [[persistent-queues-architecture]]
 ==== How persistent queues work
@@ -332,30 +332,30 @@ When an input has events ready to process, it writes them to the queue. When
 the write to the queue is successful, the input can send an acknowledgement to
 its data source.
 
-When processing events from the queue, Logstash acknowledges events as
+When processing events from the queue, {ls} acknowledges events as
 completed, within the queue, only after filters and outputs have completed.
 The queue keeps a record of events that have been processed by the pipeline.
 An event is recorded as processed (in this document, called "acknowledged" or
 "ACKed") if, and only if, the event has been processed completely by the
-Logstash pipeline. 
+{ls} pipeline. 
 
 What does acknowledged mean? This means the event has been handled by all
 configured filters and outputs. For example, if you have only one output,
 Elasticsearch, an event is ACKed when the Elasticsearch output has successfully
 sent this event to Elasticsearch. 
 
-During a normal shutdown (*CTRL+C* or SIGTERM), Logstash stops reading
+During a normal shutdown (*CTRL+C* or SIGTERM), {ls} stops reading
 from the queue and finishes processing the in-flight events being processed
-by the filters and outputs. Upon restart, Logstash resumes processing the
+by the filters and outputs. Upon restart, {ls} resumes processing the
 events in the persistent queue as well as accepting new events from inputs.
 
-If Logstash is abnormally terminated, any in-flight events will not have been
-ACKed and will be reprocessed by filters and outputs when Logstash is
-restarted. Logstash processes events in batches, so it is possible
+If {ls} is abnormally terminated, any in-flight events will not have been
+ACKed and will be reprocessed by filters and outputs when {ls} is
+restarted. {ls} processes events in batches, so it is possible
 that for any given batch, some of that batch may have been successfully
 completed, but not recorded as ACKed, when an abnormal termination occurs.
 
-NOTE: If you override the default behavior by setting `drain.queue: true`, Logstash reads from the queue until it is emptied--even after a controlled shutdown. 
+NOTE: If you override the default behavior by setting `drain.queue: true`, {ls} reads from the queue until it is emptied--even after a controlled shutdown. 
 
 For more details specific behaviors of queue writes and acknowledgement, see 
 <<durability-persistent-queues>>.
@@ -364,8 +364,8 @@ For more details specific behaviors of queue writes and acknowledgement, see
 [[backpressure-persistent-queue]]
 ===== Handling back pressure
 
-When the queue is full, Logstash puts back pressure on the inputs to stall data
-flowing into Logstash. This mechanism helps Logstash control the rate of data
+When the queue is full, {ls} puts back pressure on the inputs to stall data
+flowing into {ls}. This mechanism helps {ls} control the rate of data
 flow at the input stage without overwhelming outputs like Elasticsearch.
 
 Use `queue.max_bytes` setting to configure the total capacity of the queue on
@@ -377,15 +377,15 @@ queue.type: persisted
 queue.max_bytes: 8gb
 -----
 
-With these settings specified, Logstash buffers events on disk until the
+With these settings specified, {ls} buffers events on disk until the
 size of the queue reaches 8gb. When the queue is full of unACKed events, and
-the size limit has been reached, Logstash no longer accepts new events. 
+the size limit has been reached, {ls} no longer accepts new events. 
 
 Each input handles back pressure independently. For example, when the
 <<plugins-inputs-beats,beats>> input encounters back pressure, it no longer
 accepts new connections and waits until the persistent queue has space to accept
 more events. After the filter and output stages finish processing existing
-events in the queue and ACKs them, Logstash automatically starts accepting new
+events in the queue and ACKs them, {ls} automatically starts accepting new
 events.
 
 [[durability-persistent-queues]]
@@ -393,24 +393,24 @@ events.
 
 Durability is a property of storage writes that ensures data will be available after it's written.
 
-When the persistent queue feature is enabled, Logstash stores events on
-disk. Logstash commits to disk in a mechanism called _checkpointing_.
+When the persistent queue feature is enabled, {ls} stores events on
+disk. {ls} commits to disk in a mechanism called _checkpointing_.
 
 The queue itself is a set of pages. There are two kinds of pages: head pages and tail pages. The head page is where new events are written. There is only one head page. When the head page is of a certain size (see `queue.page_capacity`), it becomes a tail page, and a new head page is created. Tail pages are immutable, and the head page is append-only. 
 Second, the queue records details about itself (pages, acknowledgements, etc) in a separate file called a checkpoint file.
 
-When recording a checkpoint, Logstash:
+When recording a checkpoint, {ls}:
 
 * Calls `fsync` on the head page.
 * Atomically writes to disk the current state of the queue.
 
 The process of checkpointing is atomic, which means any update to the file is saved if successful.
 
-IMPORTANT: If Logstash is terminated, or if there is a hardware-level failure,
+IMPORTANT: If {ls} is terminated, or if there is a hardware-level failure,
 any data that is buffered in the persistent queue, but not yet checkpointed, is
 lost.
 
-You can force Logstash to checkpoint more frequently by setting
+You can force {ls} to checkpoint more frequently by setting
 `queue.checkpoint.writes`. This setting specifies the maximum number of events
 that may be written to disk before forcing a checkpoint. The default is 1024. To
 ensure maximum durability and avoid data loss in the persistent queue, you can

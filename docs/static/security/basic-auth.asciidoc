@@ -1,11 +1,11 @@
 [discrete]
 [[ls-http-auth-basic]]
-=== Configuring Logstash to use basic authentication
+=== Configuring {ls} to use basic authentication
 
-Logstash needs to be able to manage index templates, create indices,
+{ls} needs to be able to manage index templates, create indices,
 and write and delete documents in the indices it creates.
 
-To set up authentication credentials for Logstash:
+To set up authentication credentials for {ls}:
 
 . Use the the **Management > Roles** UI in {kib} or the `role` API to create a
 `logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
@@ -31,7 +31,7 @@ POST _security/role/logstash_writer
 <1> The cluster needs the `manage_ilm` privilege if 
 {ref}/getting-started-index-lifecycle-management.html[index lifecycle management]
 is enabled.
-<2> If you use a custom Logstash index pattern, specify your custom pattern
+<2> If you use a custom {ls} index pattern, specify your custom pattern
 instead of the default `logstash-*` pattern.
 <3> If {ref}/getting-started-index-lifecycle-management.html[index lifecycle
 management] is enabled, the role requires the `manage` and `manage_ilm`
@@ -48,13 +48,13 @@ POST _security/user/logstash_internal
 {
   "password" : "x-pack-test-password",
   "roles" : [ "logstash_writer"],
-  "full_name" : "Internal Logstash User"
+  "full_name" : "Internal {ls} User"
 }
 ---------------------------------------------------------------
 
-. Configure Logstash to authenticate as the `logstash_internal` user you just
+. Configure {ls} to authenticate as the `logstash_internal` user you just
 created. You configure credentials separately for each of the {es} plugins in
-your Logstash `.conf` file. For example:
+your {ls} `.conf` file. For example:
 +
 [source,js]
 --------------------------------------------------

@@ -1,9 +1,9 @@
 [[memory-queue]]
 === Memory queue 
 
-By default, Logstash uses in-memory bounded queues between pipeline stages (inputs → pipeline workers) to buffer events. 
-If Logstash experiences a temporary machine failure, the contents of the memory queue will be lost. 
-Temporary machine failures are scenarios where Logstash or its host machine are terminated abnormally, but are capable of being restarted. 
+By default, {ls} uses in-memory bounded queues between pipeline stages (inputs → pipeline workers) to buffer events. 
+If {ls} experiences a temporary machine failure, the contents of the memory queue will be lost. 
+Temporary machine failures are scenarios where {ls} or its host machine are terminated abnormally, but are capable of being restarted. 
 
 [[mem-queue-benefits]]
 ==== Benefits of memory queues
@@ -26,7 +26,7 @@ TIP: Consider using <<persistent-queues,persistent queues>> to avoid these limit
 ==== Memory queue size
 
 Memory queue size is not configured directly.
-Instead, it depends on how you have Logstash tuned. 
+Instead, it depends on how you have {ls} tuned. 
 
 Its upper bound is defined by `pipeline.workers` (default: number of CPUs) times the `pipeline.batch.size` (default: 125) events.
 This value, called the "inflight count," determines maximum number of events that can be held in each memory queue.
@@ -57,9 +57,9 @@ This value defaults to the number of the host's CPU cores.
 [[backpressure-mem-queue]]
 ==== Back pressure
 
-When the queue is full, Logstash puts back pressure on the inputs to stall data
-flowing into Logstash. 
-This mechanism helps Logstash control the rate of data flow at the input stage
+When the queue is full, {ls} puts back pressure on the inputs to stall data
+flowing into {ls}. 
+This mechanism helps {ls} control the rate of data flow at the input stage
 without overwhelming outputs like Elasticsearch.
 
 Each input handles back pressure independently. 

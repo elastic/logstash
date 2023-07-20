@@ -23,7 +23,7 @@ Examples:
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }``
 
 For more details, check out the
-{logstash-ref}/connecting-to-cloud.html[Logstash-to-Cloud documentation].
+{logstash-ref}/connecting-to-cloud.html[{ls}-to-Cloud documentation].
 
 {ess-leadin-short}
 =====
@@ -50,7 +50,7 @@ Therefore {ls} needs its own copy of the self-signed CA from the {es} cluster in
 
 Copy the {ref}/configuring-stack-security.html#stack-security-certificates[self-signed CA certificate] from the {es} `config/certs` directory.
 
-Save it to a location that Logstash can access, such as `config/certs` on the {ls} instance. 
+Save it to a location that {ls} can access, such as `config/certs` on the {ls} instance. 
 
 /////
 ToDo: 

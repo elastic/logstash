@@ -24,7 +24,7 @@ terminating. Let's look at the main class in the  example input.
  
 [source,java]
 ----- 
-@LogstashPlugin(name="java_input_example")
+@{ls}Plugin(name="java_input_example")
 public class JavaInputExample implements Input {
 
     public static final PluginConfigSpec<Long> EVENT_COUNT_CONFIG =
@@ -90,20 +90,20 @@ Let's step through and examine each part of that class.
 
 [source,java]
 -----
-@LogstashPlugin(name="java_input_example")
+@{ls}Plugin(name="java_input_example")
 public class JavaInputExample implements Input {
 -----
 
 Notes about the class declaration:
 
-* All Java plugins must be annotated with the `@LogstashPlugin` annotation. Additionally:
+* All Java plugins must be annotated with the `@{ls}Plugin` annotation. Additionally:
 ** The `name` property of the annotation must be supplied and defines the name of the plugin as it will be used
-   in the Logstash pipeline definition. For example, this input would be referenced in the input section of the
-   Logstash pipeline defintion as `input { java_input_example => { .... } }`
+   in the {ls} pipeline definition. For example, this input would be referenced in the input section of the
+   {ls} pipeline defintion as `input { java_input_example => { .... } }`
 ** The value of the `name` property must match the name of the class excluding casing and underscores.
 * The class must implement the `co.elastic.logstash.api.Input` interface.
 * Java plugins may not be created in the `org.logstash` or `co.elastic.logstash` packages to prevent potential
-clashes with classes in Logstash itself.
+clashes with classes in {ls} itself.
 
 [float]
 ==== Plugin settings
@@ -133,7 +133,7 @@ if it is not explicitly set, the settings default to `3` and  `message`,
 respectively.
 
 The `configSchema` method must return a list of all settings that the plugin
-supports. In a future phase of the Java plugin project, the Logstash execution
+supports. In a future phase of the Java plugin project, the {ls} execution
 engine will validate that all required settings are present and that no
 unsupported settings are present.
 
@@ -163,7 +163,7 @@ the `start` method.
 Any additional initialization may occur in the constructor as well. If there are
 any unrecoverable errors encountered in the configuration or initialization of
 the input plugin, a descriptive exception should be thrown. The exception will
-be logged and will prevent Logstash from starting.
+be logged and will prevent {ls} from starting.
 
 [float]
 ==== Start method
@@ -256,9 +256,9 @@ test] that you can use as a template for your own.
 include::include/javapluginpkg.asciidoc[]
 
 [float]
-=== Running Logstash with the Java input plugin
+=== Running {ls} with the Java input plugin
 
-The following is a minimal Logstash configuration that can be used to test that
+The following is a minimal {ls} configuration that can be used to test that
 the Java input plugin is correctly installed and functioning.
 
 [source,java]
@@ -271,7 +271,7 @@ output {
 }
 -----
 
-Copy the above Logstash configuration to a file such as `java_input.conf`. 
+Copy the above {ls} configuration to a file such as `java_input.conf`. 
 Start {ls} with:
 
 [source,shell]
@@ -280,7 +280,7 @@ bin/logstash -f /path/to/java_input.conf
 -----
 
 
-The expected Logstash output (excluding initialization) with the configuration above is:
+The expected {ls} output (excluding initialization) with the configuration above is:
 
 [source,txt]
 -----
@@ -304,9 +304,9 @@ The expected Logstash output (excluding initialization) with the configuration a
 [float]
 === Feedback
 
-If you have any feedback on Java plugin support in Logstash, please comment on our 
+If you have any feedback on Java plugin support in {ls}, please comment on our 
 https://github.com/elastic/logstash/issues/9215[main Github issue] or post in the 
-https://discuss.elastic.co/c/logstash[Logstash forum].
+https://discuss.elastic.co/c/logstash[{ls} forum].
 
 :pluginrepo!:
 :sversion!:

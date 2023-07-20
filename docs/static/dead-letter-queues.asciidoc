@@ -14,10 +14,10 @@ See <<dlq-size>> and <<dlq-clear>> for more info.
 [[dead-letter-how]]
 ==== How the dead letter queue works
 
-By default, when Logstash encounters an event that it cannot process because the
-data contains a mapping error or some other issue, the Logstash pipeline 
+By default, when {ls} encounters an event that it cannot process because the
+data contains a mapping error or some other issue, the {ls} pipeline 
 either hangs or drops the unsuccessful event. In order to protect against data
-loss in this situation, you can <<configuring-dlq,configure Logstash>> to write
+loss in this situation, you can <<configuring-dlq,configure {ls}>> to write
 unsuccessful events to a dead letter queue instead of dropping them.
 
 NOTE: The dead letter queue is currently supported only for the
@@ -30,7 +30,7 @@ metadata that describes the reason the event could not be processed, information
 about the plugin that wrote the event, and the timestamp when the event
 entered the dead letter queue.
 
-To process events in the dead letter queue, create a Logstash pipeline
+To process events in the dead letter queue, create a {ls} pipeline
 configuration that uses the
 <<plugins-inputs-dead_letter_queue,`dead_letter_queue` input plugin>> to read
 from the queue. See <<processing-dlq-events>> for more information.
@@ -71,7 +71,7 @@ the `dead_letter_queue_enable` option in the `logstash.yml`
 dead_letter_queue.enable: true
 -------------------------------------------------------------------------------
 
-Dead letter queues are stored as files in the local directory of the Logstash
+Dead letter queues are stored as files in the local directory of the {ls}
 instance. By default, the dead letter queue files are stored in
 `path.data/dead_letter_queue`. Each pipeline has a separate queue. For example,
 the dead letter queue for the `main` pipeline is stored in
@@ -109,7 +109,7 @@ dead_letter_queue.flush_interval: 5000
 -------------------------------------------------------------------------------
 
 NOTE: You may not use the same `dead_letter_queue` path for two different
-Logstash instances.
+{ls} instances.
 
 [[file-rotation]]
 ===== File rotation
@@ -198,7 +198,7 @@ output {
 <1> The path to the top-level directory containing the dead letter queue. This
 directory contains a separate folder for each pipeline that writes to the dead
 letter queue. To find the path to this directory, look at the `logstash.yml`
-<<logstash-settings-file,settings file>>. By default, Logstash creates the
+<<logstash-settings-file,settings file>>. By default, {ls} creates the
 `dead_letter_queue` directory under the location used for persistent
 storage (`path.data`), for example, `LOGSTASH_HOME/data/dead_letter_queue`.
 However, if `path.dead_letter_queue` is set, it uses that location instead.
@@ -256,7 +256,7 @@ but the data cannot be processed because it contains a mapping error:
 {"geoip":{"location":"home"}}
 --------------------------------------------------------------------------------
 
-Indexing fails because the Logstash output plugin expects a `geo_point` object in
+Indexing fails because the {ls} output plugin expects a `geo_point` object in
 the `location` field, but the value is a string. The failed event is written to
 the dead letter queue, along with metadata about the error that caused the
 failure:
@@ -266,7 +266,7 @@ failure:
 {
    "@metadata" => {
     "dead_letter_queue" => {
-       "entry_time" => #<Java::OrgLogstash::Timestamp:0x5b5dacd5>,
+       "entry_time" => #<Java::Org{ls}::Timestamp:0x5b5dacd5>,
         "plugin_id" => "fb80f1925088497215b8d037e622dec5819b503e-4",
       "plugin_type" => "elasticsearch",
            "reason" => "Could not index event to Elasticsearch. status: 400, action: [\"index\", {:_id=>nil, :_index=>\"logstash-2017.06.22\", :_type=>\"doc\", :_routing=>nil}, 2017-06-22T01:29:29.804Z My-MacBook-Pro-2.local {\"geoip\":{\"location\":\"home\"}}], response: {\"index\"=>{\"_index\"=>\"logstash-2017.06.22\", \"_type\"=>\"doc\", \"_id\"=>\"AVzNayPze1iR9yDdI2MD\", \"status\"=>400, \"error\"=>{\"type\"=>\"mapper_parsing_exception\", \"reason\"=>\"failed to parse\", \"caused_by\"=>{\"type\"=>\"illegal_argument_exception\", \"reason\"=>\"illegal latitude value [266.30859375] for geoip.location\"}}}}"

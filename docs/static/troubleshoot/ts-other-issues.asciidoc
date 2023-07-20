@@ -8,7 +8,7 @@ Coming soon, and you can help! If you have something to add, please:
 https://github.com/elastic/logstash/issues, or
 * create a pull request with your proposed changes at https://github.com/elastic/logstash.
 
-Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+Also check out the https://discuss.elastic.co/c/logstash[{ls} discussion
 forum].
 
 

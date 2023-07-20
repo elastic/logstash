@@ -21,7 +21,7 @@ include::{include_path}/plugin_header-core.asciidoc[]
 Generate synthetic log events.
 
 This plugin generates a stream of synthetic events that can be used to test the correctness or performance of a
-Logstash pipeline.
+{ls} pipeline.
 
 
 [id="plugins-{type}s-{plugin}-options"]

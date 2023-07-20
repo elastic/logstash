@@ -1,10 +1,10 @@
 [[offline-plugins]]
 === Offline Plugin Management
 
-The Logstash <<working-with-plugins,plugin manager>> provides support for preparing offline plugin packs that you can
-use to install Logstash plugins on systems that don't have Internet access. 
+The {ls} <<working-with-plugins,plugin manager>> provides support for preparing offline plugin packs that you can
+use to install {ls} plugins on systems that don't have Internet access. 
 
-This procedure requires a staging machine running Logstash that has access to a public or
+This procedure requires a staging machine running {ls} that has access to a public or
 <<private-rubygem,private Rubygems>> server. The staging machine downloads and packages all the files and dependencies
 required for offline installation.
 
@@ -12,7 +12,7 @@ required for offline installation.
 [discrete]
 === Building Offline Plugin Packs
 
-An _offline plugin pack_ is a compressed file that contains all the plugins your offline Logstash installation requires,
+An _offline plugin pack_ is a compressed file that contains all the plugins your offline {ls} installation requires,
 along with the dependencies for those plugins.
 
 To build an offline plugin pack:

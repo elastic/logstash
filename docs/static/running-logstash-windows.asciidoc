@@ -1,12 +1,12 @@
 [[running-logstash-windows]]
-=== Running Logstash on Windows
-Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used to test running Logstash on Windows.
+=== Running {ls} on Windows
+Before reading this section, see <<installing-logstash>> to get started.  You also need to be familiar with <<running-logstash-command-line>> as command line options are used to test running {ls} on Windows.
 
-IMPORTANT: Specifying command line options is useful when you are testing Logstash. However, in a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution. Using the settings file makes it easier for you to specify multiple options, and it provides you with a single, versionable file that you can use to start up Logstash consistently for each run.
+IMPORTANT: Specifying command line options is useful when you are testing {ls}. However, in a production environment, we recommend that you use <<logstash-settings-file>> to control {ls} execution. Using the settings file makes it easier for you to specify multiple options, and it provides you with a single, versionable file that you can use to start up {ls} consistently for each run.
 
-Logstash is not started automatically after installation. How to start and stop Logstash on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task. This guide provides an example of some of the ways Logstash can run on Windows.
+{ls} is not started automatically after installation. How to start and stop {ls} on Windows depends on whether you want to run it manually, as a service (with https://nssm.cc/[NSSM]), or run it as a scheduled task. This guide provides an example of some of the ways {ls} can run on Windows.
 
-NOTE: It is recommended to validate your configuration works by running Logstash manually before running Logstash as a service or a scheduled task.
+NOTE: It is recommended to validate your configuration works by running {ls} manually before running {ls} as a service or a scheduled task.
 
 [[running-logstash-windows-validation]]
 ==== Validating JVM prerequisites on Windows
@@ -51,14 +51,14 @@ NOTE: As of the publication of this document, please review this https://github.
 Once you have <<setup-logstash>> and validated JVM pre-requisites, you may proceed.  
 
 NOTE: For the examples listed below, we are running Windows Server 2016, Java 11.0.3,
-have extracted the https://www.elastic.co/downloads/logstash[Logstash ZIP
+have extracted the https://www.elastic.co/downloads/logstash[{ls} ZIP
 package] to +C:{backslash}logstash-{logstash_version}{backslash}+, and using the example
 `syslog.conf` file shown below (stored in
 +C:{backslash}logstash-{logstash_version}{backslash}config{backslash}+).
 
 [[running-logstash-windows-manual]]
-==== Running Logstash manually
-Logstash can be run manually using https://docs.microsoft.com/en-us/powershell/[PowerShell].  Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
+==== Running {ls} manually
+{ls} can be run manually using https://docs.microsoft.com/en-us/powershell/[PowerShell].  Open an Administrative https://docs.microsoft.com/en-us/powershell/[PowerShell] session, then run the following commands:
 
 ["source","sh",subs="attributes"]
 -----
@@ -66,20 +66,20 @@ PS C:{backslash}Windows{backslash}system32> cd C:{backslash}logstash-{logstash_v
 PS C:{backslash}logstash-{logstash_version}> .{backslash}bin{backslash}logstash.bat -f .{backslash}config{backslash}syslog.conf
 -----
 
-NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control {ls} execution.
 
-Wait for the following messages to appear, to confirm Logstash has started successfully:
+Wait for the following messages to appear, to confirm {ls} has started successfully:
 
 ["source","sh",subs="attributes"]
 -----
-[logstash.runner          ] Starting Logstash {"logstash.version"=>"{logstash_version}"}
+[logstash.runner          ] Starting {ls} {"logstash.version"=>"{logstash_version}"}
 [logstash.inputs.udp      ] Starting UDP listener {:address=>"0.0.0.0:514"}
-[logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
+[logstash.agent           ] Successfully started {ls} API endpoint {:port=>9600}
 -----
 
 [[running-logstash-windows-nssm]]
-==== Running Logstash as a service with NSSM
-NOTE: It is recommended to validate your configuration works by running Logstash manually before you proceed.
+==== Running {ls} as a service with NSSM
+NOTE: It is recommended to validate your configuration works by running {ls} manually before you proceed.
 
 Download https://nssm.cc/[NSSM], then extract `nssm.exe` from
 `nssm-<version.number>\win64\nssm.exe` to +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}+.
@@ -98,9 +98,9 @@ Once the `NSSM service installer` window appears, specify the following paramete
 ** In the `Application` tab:
 *** Path: Path to `logstash.bat`: +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}logstash.bat+
 *** Startup Directory: Path to the `bin` directory: +C:{backslash}logstash-{logstash_version}{backslash}bin+
-*** Arguments: For this example to start Logstash: +-f C:{backslash}logstash-{logstash_version}{backslash}config{backslash}syslog.conf+
+*** Arguments: For this example to start {ls}: +-f C:{backslash}logstash-{logstash_version}{backslash}config{backslash}syslog.conf+
 +
-NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control {ls} execution.
 
 ** Review and make any changes necessary in the `Details` tab:
 *** Ensure `Startup Type` is set appropriately
@@ -117,8 +117,8 @@ NOTE: In a production environment, we recommend that you use <<logstash-settings
 Once the service has been installed with NSSM, validate and start the service following the https://docs.microsoft.com/en-us/powershell/scripting/samples/managing-services[PowerShell Managing Services] documentation.
 
 [[running-logstash-windows-scheduledtask]]
-==== Running Logstash with Task Scheduler
-NOTE: It is recommended to validate your configuration works by running Logstash manually before you proceed.
+==== Running {ls} with Task Scheduler
+NOTE: It is recommended to validate your configuration works by running {ls} manually before you proceed.
 
 Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-scheduler-start-page[Task Scheduler], then click `Create Task` in the Actions window.  Specify the following parameters in the `Actions` tab:
 
@@ -129,7 +129,7 @@ Open the Windows https://docs.microsoft.com/en-us/windows/desktop/taskschd/task-
 *** Add arguments: +-f C:\logstash-{logstash_version}{backslash}config{backslash}syslog.conf+
 *** Start in: +C:{backslash}logstash-{logstash_version}{backslash}bin{backslash}+
 +
-NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control Logstash execution.
+NOTE: In a production environment, we recommend that you use <<logstash-settings-file>> to control {ls} execution.
 
 ** Review and make any changes necessary in the `General`, `Triggers`, `Conditions`, and `Settings` tabs.
 
@@ -137,14 +137,14 @@ NOTE: In a production environment, we recommend that you use <<logstash-settings
 
 ** Once the new task has been created, either wait for it to run on the schedule or select the service then click `Run` to start the task.
 
-NOTE: Logstash can be stopped by selecting the service, then clicking `End` in the Task Scheduler window.
+NOTE: {ls} can be stopped by selecting the service, then clicking `End` in the Task Scheduler window.
 
 [[running-logstash-windows-example]]
-==== Example Logstash Configuration
-We will configure Logstash to listen for syslog messages over port 514 with this configuration (file name is `syslog.conf`):
+==== Example {ls} Configuration
+We will configure {ls} to listen for syslog messages over port 514 with this configuration (file name is `syslog.conf`):
 [source,yaml]
 -----
-# Sample Logstash configuration for receiving
+# Sample {ls} configuration for receiving
 # UDP syslog messages over port 514
 
 input {

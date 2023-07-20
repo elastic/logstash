@@ -8,7 +8,7 @@ to 8.y). On occasion, we are forced to break compatibility within a given major 
 to ensure correctness of operation.
 
 This section covers the changes that you need to be aware of when migrating to
-Logstash 8.0.0 and later.
+{ls} 8.0.0 and later.
 
 NOTE: Migrating directly between non-consecutive major versions (6.x to
 8.x) is not recommended. 

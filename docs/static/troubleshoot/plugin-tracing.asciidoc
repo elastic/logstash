@@ -12,7 +12,7 @@ While you can define an "id" for each plugin to facilitate this discovery,
 naming each plugin is not practical, especially for very large pipelines
 containing hundreds of plugins. 
 
-You can use the information from the Logstash APIs to fetch link an auto
+You can use the information from the {ls} APIs to fetch link an auto
 generated ID of a plugin to its declaration (starting with 7.6.0).
 
 Here's how:

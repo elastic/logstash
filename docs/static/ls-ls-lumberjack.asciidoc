@@ -1,21 +1,21 @@
 [[ls-to-ls-lumberjack]]
-=== Logstash-to-Logstash: Lumberjack output to Beats input
+=== {ls}-to-{ls}: Lumberjack output to Beats input
 
-You can set up communication between two Logstash machines by connecting the Lumberjack output to the Beats input. 
+You can set up communication between two {ls} machines by connecting the Lumberjack output to the Beats input. 
 
-Logstash-to-Logstash using Lumberjack and Beats has been our standard approach for {ls}-to-{ls}, and may still be the best option for more robust use cases. 
+{ls}-to-{ls} using Lumberjack and Beats has been our standard approach for {ls}-to-{ls}, and may still be the best option for more robust use cases. 
 
-NOTE: Check out these <<lumberjack-considerations,considerations>> before you implement Logstash-to-Logstash using Lumberjack and Beats. 
+NOTE: Check out these <<lumberjack-considerations,considerations>> before you implement {ls}-to-{ls} using Lumberjack and Beats. 
 
 ==== Configuration overview
 
-Use the Lumberjack protocol to connect two Logstash machines.
+Use the Lumberjack protocol to connect two {ls} machines.
 
 . Generate a trusted SSL certificate (required by the lumberjack protocol).
-. Copy the SSL certificate to the upstream Logstash machine.
-. Copy the SSL certificate and key to the downstream Logstash machine.
-. Set the upstream Logstash machine to use the Lumberjack output to send data.
-. Set the downstream Logstash machine to listen for incoming Lumberjack connections through the Beats input.
+. Copy the SSL certificate to the upstream {ls} machine.
+. Copy the SSL certificate and key to the downstream {ls} machine.
+. Set the upstream {ls} machine to use the Lumberjack output to send data.
+. Set the downstream {ls} machine to listen for incoming Lumberjack connections through the Beats input.
 . Test it.
 
 [[generate-self-signed-cert]]
@@ -34,7 +34,7 @@ where:
 
 * `lumberjack.key` is the name of the SSL key to be created
 * `lumberjack.cert` is the name of the SSL certificate to be created
-* `localhost` is the name of the upstream Logstash computer
+* `localhost` is the name of the upstream {ls} computer
 
 
 This command produces output similar to the following:
@@ -50,14 +50,14 @@ writing new private key to 'lumberjack.key'
 [[copy-cert-key]]
 ===== Copy the SSL certificate and key
 
-Copy the SSL certificate to the upstream Logstash machine.
+Copy the SSL certificate to the upstream {ls} machine.
 
-Copy the SSL certificate and key to the downstream Logstash machine.
+Copy the SSL certificate and key to the downstream {ls} machine.
 
 [[save-cert-ls1]]
-===== Start the upstream Logstash instance
+===== Start the upstream {ls} instance
 
-Start Logstash and generate test events:
+Start {ls} and generate test events:
 
 [source,shell]
 ----
@@ -67,9 +67,9 @@ bin/logstash -e 'input { generator { count => 5 } } output { lumberjack { codec 
 This sample command sends five events to mydownstreamhost:5000 using the SSL certificate provided.
 
 [[save-cert-ls2]]
-===== Start the downstream Logstash instance
+===== Start the downstream {ls} instance
 
-Start the downstream instance of Logstash:
+Start the downstream instance of {ls}:
 
 [source,shell]
 ----
@@ -81,7 +81,7 @@ This sample command sets port 5000 to listen for incoming Beats input.
 [[test-ls-to-ls]]
 ===== Verify the communication
 
-Watch the downstream Logstash machine for the incoming events. You should see five incrementing events similar to the following:
+Watch the downstream {ls} machine for the incoming events. You should see five incrementing events similar to the following:
 
 [source,shell]
 ----

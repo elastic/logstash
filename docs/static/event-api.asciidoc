@@ -1,22 +1,22 @@
 [[event-api]]
 === Event API
 
-This section is targeted for plugin developers and users of Logstash's Ruby filter. Below we document recent 
-changes (starting with version 5.0) in the way users have been accessing Logstash's event based data in 
+This section is targeted for plugin developers and users of {ls}'s Ruby filter. Below we document recent 
+changes (starting with version 5.0) in the way users have been accessing {ls}'s event based data in 
 custom plugins and in the Ruby filter. Note that <<event-dependent-configuration>> 
-data flow in Logstash's config files -- using <<logstash-config-field-references>> -- is 
+data flow in {ls}'s config files -- using <<logstash-config-field-references>> -- is 
 not affected by this change, and will continue to use existing syntax.
 
 [float]
 ==== Event Object
 
-Event is the main object that encapsulates data flow internally in Logstash and provides an API for the plugin 
+Event is the main object that encapsulates data flow internally in {ls} and provides an API for the plugin 
 developers to interact with the event's content. Typically, this API is used in plugins and in a Ruby filter to 
-retrieve data and use it for transformations. Event object contains the original data sent to Logstash and any additional 
-fields created during Logstash's filter stages.
+retrieve data and use it for transformations. Event object contains the original data sent to {ls} and any additional 
+fields created during {ls}'s filter stages.
 
 In 5.0, we've re-implemented the Event class and its supporting classes in pure Java. Since Event is a critical component 
-in data processing,  a rewrite in Java improves performance and provides efficient serialization when storing data on disk. For the most part, this change aims at keeping backward compatibility and is transparent to the users. To this extent we've updated and published most of the plugins in Logstash's ecosystem to adhere to the new API changes. However, if you are maintaining a custom plugin, or have a Ruby filter, this change will affect you. The aim of this guide is to describe the new API and provide examples to migrate to the new changes.
+in data processing,  a rewrite in Java improves performance and provides efficient serialization when storing data on disk. For the most part, this change aims at keeping backward compatibility and is transparent to the users. To this extent we've updated and published most of the plugins in {ls}'s ecosystem to adhere to the new API changes. However, if you are maintaining a custom plugin, or have a Ruby filter, this change will affect you. The aim of this guide is to describe the new API and provide examples to migrate to the new changes.
 
 [float]
 ==== Event API
@@ -34,7 +34,7 @@ The getter is a read-only access of field-based data in an Event.
 **Returns:** Value for this field or nil if the field does not exist. Returned values could be a string, 
 numeric or timestamp scalar value.
 
-`field` is a structured field sent to Logstash or created after the transformation process. `field` can also 
+`field` is a structured field sent to {ls} or created after the transformation process. `field` can also 
 be a nested <<field-references-deepdive,field reference>> such as `[field][bar]`.
 
 Examples:

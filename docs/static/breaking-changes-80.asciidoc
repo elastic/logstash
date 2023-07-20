@@ -15,7 +15,7 @@ Here are the breaking changes for 8.0.
 {ls} must have a copy of the {es} CA that signed the cluster's certificates.
 When a new {es} cluster is started up _without_ dedicated certificates, it generates its own default self-signed Certificate Authority at startup.
 
-Our hosted {ess} simplifies safe, secure communication between Logstash and Elasticsearch. 
+Our hosted {ess} simplifies safe, secure communication between {ls} and Elasticsearch. 
 {ess} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
 
 For more information, see {logstash-ref}/ls-security.html#es-security-on[{es} security on by default]. 
@@ -23,9 +23,9 @@ For more information, see {logstash-ref}/ls-security.html#es-security-on[{es} se
 [discrete]
 [[bc-java-11-minimum]]
 ===== Java 11 minimum
-Logstash requires Java 11 or later.
-By default, Logstash will run with the bundled JDK, which has been verified to
-work with each specific version of Logstash, and generally provides the best
+{ls} requires Java 11 or later.
+By default, {ls} will run with the bundled JDK, which has been verified to
+work with each specific version of {ls}, and generally provides the best
 performance and reliability.
 
 [discrete]
@@ -40,15 +40,15 @@ The value of `JAVA_HOME` will be ignored.
 [[bc-ecs-compatibility]]
 ===== ECS compatibility is now on by default
 Many plugins can now be run in a mode that avoids implicit conflict with the Elastic Common Schema.
-This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the Logstash `pipeline.ecs_compatibility` setting.
-In Logstash 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
+This mode is controlled individually with each plugin's `ecs_compatibility` option, which defaults to the value of the {ls} `pipeline.ecs_compatibility` setting.
+In {ls} 8, this compatibility mode will be on-by-default for all pipelines. https://github.com/elastic/logstash/issues/11623[#11623]
 
-If you wish to _lock in_ a pipeline's behaviour from Logstash 7.x before upgrading to Logstash 8, you can set  `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
+If you wish to _lock in_ a pipeline's behaviour from {ls} 7.x before upgrading to {ls} 8, you can set  `pipeline.ecs_compatibility: disabled` to its definition in `pipelines.yml` (or globally in `logstash.yml`).
 
 [discrete]
 [[bc-ruby-engine]]
 ===== Ruby Execution Engine removed
-The Java Execution Engine has been the default engine since Logstash 7.0, and works with plugins written in either Ruby or Java.
+The Java Execution Engine has been the default engine since {ls} 7.0, and works with plugins written in either Ruby or Java.
 Removal of the Ruby Execution Engine will not affect the ability to run existing pipelines. https://github.com/elastic/logstash/pull/12517[#12517]
 
 [discrete]

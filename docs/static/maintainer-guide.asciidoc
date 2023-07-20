@@ -1,5 +1,5 @@
 [[community-maintainer]]
-=== Logstash Plugins Community Maintainer Guide
+=== {ls} Plugins Community Maintainer Guide
 
 This document, to be read by new Maintainers, should explain their responsibilities.  It was inspired by the
 http://rfc.zeromq.org/spec:22[C4] document from the ZeroMQ project.  This document is subject to change and suggestions
@@ -8,13 +8,13 @@ through Pull Requests and issues are strongly encouraged.
 [float]
 === Contribution Guidelines
 
-For general guidance around contributing to Logstash Plugins, see the
-https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html[_Contributing to Logstash_] section.
+For general guidance around contributing to {ls} Plugins, see the
+https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html[_Contributing to {ls}_] section.
 
 [float]
 === Document Goals
 
-To help make the Logstash plugins community participation easy with positive feedback.
+To help make the {ls} plugins community participation easy with positive feedback.
 
 To increase diversity.
 
@@ -135,22 +135,22 @@ Each version identifier should be a level-2 header using `##`
 [float]
 ==== Continuous Integration
 
-Plugins are setup with automated continuous integration (CI) environments and there should be a corresponding badge on each Github page.  If it’s missing, please contact the Logstash core team.
+Plugins are setup with automated continuous integration (CI) environments and there should be a corresponding badge on each Github page.  If it’s missing, please contact the {ls} core team.
 
 Every Pull Request opened automatically triggers a CI run.  To conduct a manual run, comment “Jenkins, please test this.” on the Pull Request.
 
 [float]
 === Versioning Plugins
 
-Logstash core and its plugins have separate product development lifecycles. Hence the versioning and release strategy for
+{ls} core and its plugins have separate product development lifecycles. Hence the versioning and release strategy for
 the core and plugins do not have to be aligned. In fact, this was one of our goals during the great separation of plugins
-work in Logstash 1.5.
+work in {ls} 1.5.
 
-At times, there will be changes in core API in Logstash, which will require mass update of plugins to reflect the changes
+At times, there will be changes in core API in {ls}, which will require mass update of plugins to reflect the changes
 in core. However, this does not happen frequently.
 
 For plugins, we would like to adhere to a versioning and release strategy that can better inform our users, about any
-breaking changes to the Logstash configuration formats and functionality.
+breaking changes to the {ls} configuration formats and functionality.
 
 Plugin releases follows a three-placed numbering scheme X.Y.Z. where X denotes a major release version which may break
 compatibility with existing configuration or functionality. Y denotes releases which includes features which are backward
@@ -186,11 +186,11 @@ details.
 === Logging
 
 Although it’s important not to bog down performance with excessive logging, debug level logs can be immensely helpful when
-diagnosing and troubleshooting issues with Logstash.  Please remember to liberally add debug logs wherever it makes sense
+diagnosing and troubleshooting issues with {ls}.  Please remember to liberally add debug logs wherever it makes sense
 as users will be forever gracious.
 
 [source,shell]
-@logger.debug("Logstash loves debug logs!", :actions => actions)
+@logger.debug("{ls} loves debug logs!", :actions => actions)
 
 [float]
 === Contributor License Agreement (CLA) Guidance
@@ -209,7 +209,7 @@ Please make sure the CLA is signed by every Contributor prior to reviewing PRs a
 [float]
 === Need Help?
 
-Ping @logstash-core on Github to get the attention of the Logstash core team.
+Ping @logstash-core on Github to get the attention of the {ls} core team.
 
 [float]
 === Community Administration

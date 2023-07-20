@@ -2,14 +2,14 @@
 == Creating a {ls} pipeline
 
 You can create a pipeline by stringing together plugins--<<input-plugins,inputs>>, <<output-plugins,outputs>>, <<filter-plugins,filters>>, and sometimes <<codec-plugins,codecs>>--in order to process data. 
-To build a Logstash pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
+To build a {ls} pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
 
 A very basic pipeline might contain only an input and an output. 
 Most pipelines include at least one filter plugin because that's where the "transform" part of the ETL (extract, transform, load) magic happens. 
 You can reference event fields in a pipeline and use conditionals to process events when they meet certain criteria. 
 
-Let's step through creating a simple pipeline config on your local machine and then using it to run Logstash. 
-Create a file named "logstash-simple.conf" and save it in the same directory as Logstash.
+Let's step through creating a simple pipeline config on your local machine and then using it to run {ls}. 
+Create a file named "logstash-simple.conf" and save it in the same directory as {ls}.
 
 [source,ruby]
 ----------------------------------
@@ -27,7 +27,7 @@ Then, run {ls} and specify the configuration file with the `-f` flag.
 bin/logstash -f logstash-simple.conf
 -----
 
-Et voilà! Logstash reads the specified configuration file and outputs to both Elasticsearch and stdout. 
+Et voilà! {ls} reads the specified configuration file and outputs to both Elasticsearch and stdout. 
 Before we move on to <<config-examples,more complex examples>>, let's take a look at what's in a pipeline config file.
 
 [[configuration-file-structure]]
@@ -166,12 +166,12 @@ Examples:
 [discrete]
 ==== Codec
 
-A codec is the name of Logstash codec used to represent the data. Codecs can be
+A codec is the name of {ls} codec used to represent the data. Codecs can be
 used in both inputs and outputs.
 
 Input codecs provide a convenient way to decode your data before it enters the input.
 Output codecs provide a convenient way to encode your data before it leaves the output.
-Using an input or output codec eliminates the need for a separate filter in your Logstash pipeline.
+Using an input or output codec eliminates the need for a separate filter in your {ls} pipeline.
 
 A list of available codecs can be found at the <<codec-plugins,Codec Plugins>> page.
 

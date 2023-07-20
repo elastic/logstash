@@ -133,10 +133,10 @@ endif::[]
   * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
-Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+Add a unique `ID` to the plugin configuration. If no ID is specified, {ls} will generate one.
 It is strongly recommended to set this ID in your configuration. This is particularly useful
 when you have two or more plugins of the same type, for example, if you have 2 {plugin} filters.
-Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
+Adding a named ID in this case will help in monitoring {ls} when using the monitoring APIs.
 
 
 ["source","json",subs="attributes"]

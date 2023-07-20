@@ -1,7 +1,7 @@
 [[getting-started-with-logstash]]
-== Getting Started with Logstash
+== Getting Started with {ls}
 
-This section guides you through the process of installing Logstash and verifying that everything is running properly.
+This section guides you through the process of installing {ls} and verifying that everything is running properly.
 After learning how to stash your first event, you go on to create a more advanced pipeline that takes Apache web logs as
 input, parses the logs, and writes the parsed data to an Elasticsearch cluster. Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
 
@@ -10,13 +10,13 @@ This section includes the following topics:
 * <<ls-jvm>>
 * <<installing-logstash>>
 * <<first-event>>
-* {logstash-ref}/advanced-pipeline.html[Parsing Logs with Logstash]
+* {logstash-ref}/advanced-pipeline.html[Parsing Logs with {ls}]
 * {logstash-ref}/multiple-input-output-plugins.html[Stitching Together Multiple Input and Output Plugins]
 
 include::jvm.asciidoc[]
 
 [[installing-logstash]]
-=== Installing Logstash
+=== Installing {ls}
 
 [discrete]
 [[installing-binary]]
@@ -24,10 +24,10 @@ include::jvm.asciidoc[]
 
 The {ls} binaries are available from 
 https://www.elastic.co/downloads/logstash[https://www.elastic.co/downloads].
-Download the Logstash installation file for your host environment--TAR.GZ, DEB,
+Download the {ls} installation file for your host environment--TAR.GZ, DEB,
 ZIP, or RPM. 
 
-Unpack the file. Do not install Logstash into a directory path that
+Unpack the file. Do not install {ls} into a directory path that
 contains colon (:) characters.
 
 [NOTE]
@@ -43,7 +43,7 @@ Alternatively, you can download an `oss` package, which contains only features
 that are available under the Apache 2.0 license. 
 --
 
-On supported Linux operating systems, you can use a package manager to install Logstash.
+On supported Linux operating systems, you can use a package manager to install {ls}.
 
 [discrete]
 [[package-repositories]]
@@ -51,9 +51,9 @@ On supported Linux operating systems, you can use a package manager to install L
 
 We also have repositories available for APT and YUM based distributions. Note
 that we only provide binary packages, but no source packages, as the packages
-are created as part of the Logstash build.
+are created as part of the {ls} build.
 
-We have split the Logstash package repositories by version into separate urls
+We have split the {ls} package repositories by version into separate urls
 to avoid accidental upgrades across major versions. For all {major-version}.y
 releases use {major-version} as version number.
 
@@ -68,14 +68,14 @@ to sign all our packages. It is available from https://pgp.mit.edu.
 [NOTE]
 --
 When installing from a package repository (or from the DEB or RPM installation file),
-you will need to run Logstash as a service. Please refer to
-{logstash-ref}/running-logstash.html[Running Logstash as a Service] for more
+you will need to run {ls} as a service. Please refer to
+{logstash-ref}/running-logstash.html[Running {ls} as a Service] for more
 information.
 
-For testing purposes, you may still run Logstash from the command line, but
+For testing purposes, you may still run {ls} from the command line, but
 you may need to define the default setting options (described in
-{logstash-ref}/dir-layout.html[Logstash Directory Layout]) manually. Please
-refer to {logstash-ref}/running-logstash-command-line.html[Running Logstash from the Command Line]
+{logstash-ref}/dir-layout.html[{ls} Directory Layout]) manually. Please
+refer to {logstash-ref}/running-logstash-command-line.html[Running {ls} from the Command Line]
 for more information.
 --
 
@@ -84,7 +84,7 @@ for more information.
 
 ifeval::["{release-state}"=="unreleased"]
 
-Version {logstash_version} of Logstash has not yet been released.
+Version {logstash_version} of {ls} has not yet been released.
 
 endif::[]
 
@@ -132,7 +132,7 @@ endif::[]
 
 [WARNING]
 ==================================================
-Use the `echo` method described above to add the Logstash repository.  Do not
+Use the `echo` method described above to add the {ls} repository.  Do not
 use `add-apt-repository` as it will add a `deb-src` entry as well, but we do not
 provide a source package. If you have added the `deb-src` entry, you will see an
 error like the following:
@@ -151,7 +151,7 @@ it with:
 sudo apt-get update && sudo apt-get install logstash
 --------------------------------------------------
 
-See {logstash-ref}/running-logstash.html[Running Logstash] for details about managing Logstash as a system service.
+See {logstash-ref}/running-logstash.html[Running {ls}] for details about managing {ls} as a system service.
 
 endif::[]
 
@@ -160,7 +160,7 @@ endif::[]
 
 ifeval::["{release-state}"=="unreleased"]
 
-Version {logstash_version} of Logstash has not yet been released.
+Version {logstash_version} of {ls} has not yet been released.
 
 endif::[]
 
@@ -222,25 +222,25 @@ sudo yum install logstash
 WARNING: The repositories do not work with older rpm based distributions
          that still use RPM v3, like CentOS5.
 
-See the {logstash-ref}/running-logstash.html[Running Logstash] document for managing Logstash as a system service.
+See the {logstash-ref}/running-logstash.html[Running {ls}] document for managing {ls} as a system service.
 
 endif::[]
 
 [discrete]
 ==== Docker
 
-Images are available for running Logstash as a Docker container. They are
+Images are available for running {ls} as a Docker container. They are
 available from the Elastic Docker registry.
 
-See <<docker,Running Logstash on Docker>> for
-details on how to configure and run Logstash Docker containers.
+See <<docker,Running {ls} on Docker>> for
+details on how to configure and run {ls} Docker containers.
 
 [[first-event]]
 === Stashing Your First Event
 
-First, let's test your Logstash installation by running the most basic _Logstash pipeline_.
+First, let's test your {ls} installation by running the most basic _{ls} pipeline_.
 
-A Logstash pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input
+A {ls} pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input
 plugins consume data from a source, the filter plugins modify the data as you specify, and the output plugins write
 the data to a destination.
 
@@ -248,7 +248,7 @@ the data to a destination.
 
 image::static/images/basic_logstash_pipeline.png[]
 
-To test your Logstash installation, run the most basic Logstash pipeline. 
+To test your {ls} installation, run the most basic {ls} pipeline. 
 
 **MacOS, Linux**
 
@@ -305,13 +305,13 @@ command line lets you quickly test configurations without having to edit a file 
 The pipeline in the example takes input from the standard input, `stdin`, and moves that input to the standard output,
 `stdout`, in a structured format.
 
-After starting Logstash, wait until you see "Pipeline main started" and then enter `hello world` at the command prompt:
+After starting {ls}, wait until you see "Pipeline main started" and then enter `hello world` at the command prompt:
 
 [source,shell]
 hello world
 2013-11-21T01:22:14.405+0000 0.0.0.0 hello world
 
-Logstash adds timestamp and IP address information to the message. Exit Logstash by issuing a *CTRL-D* command in the
-shell where Logstash is running.
+{ls} adds timestamp and IP address information to the message. Exit {ls} by issuing a *CTRL-D* command in the
+shell where {ls} is running.
 
-Congratulations! You've created and run a basic Logstash pipeline. Next, you learn how to create a more realistic pipeline.
+Congratulations! You've created and run a basic {ls} pipeline. Next, you learn how to create a more realistic pipeline.

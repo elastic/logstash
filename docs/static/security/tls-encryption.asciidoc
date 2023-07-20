@@ -1,9 +1,9 @@
 [discrete]
 [[ls-http-ssl]]
-=== Configuring Logstash to use TLS/SSL encryption
+=== Configuring {ls} to use TLS/SSL encryption
 
 If TLS encryption is enabled on an on premise {es} cluster, you need to
-configure the `ssl` and `cacert` options in your Logstash `.conf` file:
+configure the `ssl` and `cacert` options in your {ls} `.conf` file:
 
 [source,js]
 --------------------------------------------------

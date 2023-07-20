@@ -1,7 +1,7 @@
 [[ls-to-ls-http]]
-=== Logstash-to-Logstash: HTTP output to HTTP input
+=== {ls}-to-{ls}: HTTP output to HTTP input
 
-HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for Logstash-to-Logstash communication. 
+HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for {ls}-to-{ls} communication. 
 This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
 
 NOTE: Check out these <<http-considerations,considerations>> before you implement {ls}-to-{ls} using HTTP. 
@@ -11,16 +11,16 @@ For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http inpu
 [[overview-http-http]]
 ==== Configuration overview
 
-To use the HTTP protocol to connect two Logstash instances:
+To use the HTTP protocol to connect two {ls} instances:
 
-. Configure the downstream (server) Logstash to use HTTP input
-. Configure the upstream (client) Logstash to use HTTP output
+. Configure the downstream (server) {ls} to use HTTP input
+. Configure the upstream (client) {ls} to use HTTP output
 . Secure the communication between HTTP input and HTTP output
 
 [[configure-downstream-logstash-http-input]]
-===== Configure the downstream Logstash to use HTTP input
+===== Configure the downstream {ls} to use HTTP input
 
-Configure the HTTP input on the downstream (receiving) Logstash to receive connections. 
+Configure the HTTP input on the downstream (receiving) {ls} to receive connections. 
 The minimum configuration requires these options:
 
 * `port` - To set a custom port.
@@ -37,11 +37,11 @@ input {
 ----
 
 [[configure-upstream-logstash-http-output]]
-===== Configure the upstream Logstash to use HTTP output
+===== Configure the upstream {ls} to use HTTP output
 
-In order to obtain the best performance when sending data from one Logstash to another, the data needs to be batched and compressed. As such, the upstream Logstash (the sending Logstash) needs to be configured with these options:
+In order to obtain the best performance when sending data from one {ls} to another, the data needs to be batched and compressed. As such, the upstream {ls} (the sending {ls}) needs to be configured with these options:
 
-* `url` - The receiving Logstash.
+* `url` - The receiving {ls}.
 * `http_method` - Set to `post`.
 * `retry_non_idempotent` - Set to `true`, in order to retry failed events.
 * `format` - Set to `json_batch` to batch the data.
@@ -61,23 +61,23 @@ output {
 ----
 
 [[securing-logstash-to-logstash]]
-===== Secure Logstash to Logstash
+===== Secure {ls} to {ls}
 
-It is important that you secure the communication between Logstash instances. 
-Use SSL/TLS mutual authentication in order to ensure that the upstream Logstash instance sends encrypted data to a trusted downstream Logstash instance, and vice versa. 
+It is important that you secure the communication between {ls} instances. 
+Use SSL/TLS mutual authentication in order to ensure that the upstream {ls} instance sends encrypted data to a trusted downstream {ls} instance, and vice versa. 
 
-. Create a certificate authority (CA) in order to sign the certificates that you plan to use between Logstash instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document.
+. Create a certificate authority (CA) in order to sign the certificates that you plan to use between {ls} instances. Creating a correct SSL/TLS infrastructure is outside the scope of this document.
 +
 TIP: We recommend you use the {ref}/certutil.html[elasticsearch-certutil] tool to generate your certificates.
 
-. Configure the downstream (receiving) Logstash to use SSL. 
+. Configure the downstream (receiving) {ls} to use SSL. 
 Add these settings to the HTTP Input configuration:
 +
- * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
- * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
- * `ssl_certificate`: Specifies the certificate that Logstash uses to authenticate with the client.
- * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specified CA.
- * `ssl_verify_mode`:  Specifies whether Logstash server verifies the client certificate against the CA.
+ * `ssl`: When set to `true`, it enables {ls} use of SSL/TLS
+ * `ssl_key`: Specifies the key that {ls} uses to authenticate with the client.
+ * `ssl_certificate`: Specifies the certificate that {ls} uses to authenticate with the client.
+ * `ssl_certificate_authorities`: Configures {ls} to trust any certificates signed by the specified CA.
+ * `ssl_verify_mode`:  Specifies whether {ls} server verifies the client certificate against the CA.
 +
 For example:
 +
@@ -96,12 +96,12 @@ input {
 }
 ----
 
-. Configure the upstream (sending) Logstash to use SSL. 
+. Configure the upstream (sending) {ls} to use SSL. 
 Add these settings to the HTTP output configuration:
 +
- * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
- * `client_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
- * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the Logstash server.
+ * `cacert`: Configures the {ls} client to trust any certificates signed by the specified CA.
+ * `client_key`: Specifies the key the {ls} client uses to authenticate with the {ls} server.
+ * `client_cert`: Specifies the certificate that the {ls} client uses to authenticate to the {ls} server.
 +
 For example:
 +
@@ -118,12 +118,12 @@ output {
 }
 ----
 
-. If you would like an additional authentication step, you can also use basic user/password authentication in both Logstash instances:
+. If you would like an additional authentication step, you can also use basic user/password authentication in both {ls} instances:
 +
  * `user`: Sets the username to use for authentication.
  * `password`: Sets the password to use for authentication.
 +
-For example, you would need to add the following to both Logstash instances:
+For example, you would need to add the following to both {ls} instances:
 +
 [source,json]
 ----
