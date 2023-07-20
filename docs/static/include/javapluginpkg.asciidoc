@@ -1,5 +1,5 @@
 [float]
-=== Package and deploy
+!=== Package and deploy
 
 Java plugins are packaged as Ruby gems for dependency management and
 interoperability with Ruby plugins. Once they are packaged as gems, they may
