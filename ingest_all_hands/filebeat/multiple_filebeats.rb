@@ -72,7 +72,6 @@ end
 filebeat_folder = download_and_unpack_beats('8.8.2')
 puts "Generating sample data"
 generate_sample_file("input_sample.txt", 800 * 1024 * 1024, 1024)
-# generate_sample_file("input_sample.txt",  2 * 1024, 1024)
 puts "Ok."
 puts "Setting up filebeat configuration file"
 generate_filebeat_config_file("input_sample.txt")
@@ -100,8 +99,6 @@ puts "Killed all beats processes"
 
 puts "cleaning data and logs folders for all the beats"
 (1..beats_instances).each do |id|
-#   Dir.rmdir(pwd + "/data_#{id}")
-#   Dir.rmdir(pwd + "/logs_#{id}")
   FileUtils.remove_dir(pwd + "/data_#{id}")
   FileUtils.remove_dir(pwd + "/logs_#{id}")
 end
