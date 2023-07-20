@@ -41,6 +41,7 @@ def generate_filebeat_config_file(sample_file)
 
   output.logstash:
     hosts: ["127.0.0.1:5044"]
+    slow_start: true
   CONFIG
   File.write("filebeat.yml", config_string, mode: "w")
 end
@@ -70,13 +71,15 @@ end
 
 filebeat_folder = download_and_unpack_beats('8.8.2')
 puts "Generating sample data"
-generate_sample_file("input_sample.txt", 80 * 1024 * 1024, 1024)
+generate_sample_file("input_sample.txt", 800 * 1024 * 1024, 1024)
+# generate_sample_file("input_sample.txt",  2 * 1024, 1024)
 puts "Ok."
 puts "Setting up filebeat configuration file"
 generate_filebeat_config_file("input_sample.txt")
 puts "Ok."
 
-beats_instances = 10
+beats_instances = 20
+# beats_instances = 1
 wait_threads = []
 pwd = Dir.pwd
 (1..beats_instances).each do |id|
