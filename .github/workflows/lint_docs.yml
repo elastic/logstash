@@ -1,0 +1,69 @@
+name: Lint the docs!
+on:
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  lint-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.13.2
+          cache: npm
+
+      - name: Install docs-lint
+        run: npm install -g @elastic/docs-lint
+
+      - name: Install strip-ansi
+        run: npm install strip-ansi
+        
+      - name: Run docs-lint
+        id: run_docs_lint
+        run: |
+          LINT=$(((docs-lint $GITHUB_WORKSPACE --gh-actions) 2>&1) || true)
+          echo "$LINT"
+          LINT="${LINT//'%'/'%25'}"
+          LINT="${LINT//$'\n'/'%0A'}"
+          LINT="${LINT//$'\r'/'%0D'}"
+          LINT="${LINT//$'`'/'\`'}"
+          echo "::set-output name=LINT_RESULT::$LINT"
+
+      - name: Add PR comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const report = `${{ steps.run_docs_lint.outputs.LINT_RESULT }}`
+            if (report !== '') {
+              const { default: stripAnsi } = await import('/home/runner/work/docs-lint/docs-lint/node_modules/strip-ansi/index.js')
+              const cleanText = stripAnsi(report)
+              const errorWithContext = `**⚠️ Lint failed**\n~~~\n${cleanText}\n~~~`
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: errorWithContext
+              })
+            } else {
+              console.log("🎉 No errors!")
+            }
+
+      - name: Throw error if linter fails
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const report = `${{ steps.run_docs_lint.outputs.LINT_RESULT }}`
+            if (report !== '') {
+              core.setFailed(report)
+            } else {
+              console.log("No errors!")
+            }
