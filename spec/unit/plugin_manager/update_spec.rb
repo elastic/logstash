@@ -39,7 +39,7 @@ describe LogStash::PluginManager::Update do
 
   context "when skipping validation" do
     let(:cmd)    { LogStash::PluginManager::Update.new("update") }
-    let(:plugin) { OpenStruct.new(:name => "dummy", :options => {} ) }
+    let(:plugin) { OpenStruct.new(:name => "dummy", :options => {}) }
 
     before(:each) do
       expect(cmd.gemfile).to receive(:find).with(plugin).and_return(plugin)

@@ -22,18 +22,18 @@ describe LogStash::Modules::CLIParser do
   subject { LogStash::Modules::CLIParser.new(module_names, module_variables) }
   let(:logger) { double("logger") }
   let(:module_name) { "foo" }
-  let(:module_names) { [ module_name, "bar" ] }
+  let(:module_names) { [module_name, "bar"] }
   let(:proto_key_value) { "var.input.stdin.type=example" }
   let(:proto_mod_vars) { module_name + "." + proto_key_value }
-  let(:module_variables) { [ proto_mod_vars ] }
+  let(:module_variables) { [proto_mod_vars] }
   let(:expected_output) { { "name" => module_name, "var.input.stdin.type" => "example" } }
 
   describe ".parse_modules" do
     let(:module1) { "module1" }
     let(:module2) { "module2" }
     let(:csv_modules) { "#{module1},#{module2}" }
-    let(:list_with_csv) { [ module_name, csv_modules ] }
-    let(:post_parse) { [ module_name, module1, module2 ] }
+    let(:list_with_csv) { [module_name, csv_modules] }
+    let(:post_parse) { [module_name, module1, module2] }
 
     context "when it receives an array without a csv entry" do
       it "return the array unaltered" do
@@ -54,7 +54,7 @@ describe LogStash::Modules::CLIParser do
     end
 
     context "when it receives an array with a bad csv entry" do
-      let(:bad_modules) { [ "-Minvalid", module1 ] }
+      let(:bad_modules) { ["-Minvalid", module1] }
       it "raise a LogStash::ConfigLoadingError exception" do
         expect { subject.parse_modules(bad_modules) }.to raise_error LogStash::ConfigLoadingError
       end
@@ -126,7 +126,7 @@ describe LogStash::Modules::CLIParser do
 
   describe ".parse_it" do
     context "when it receives a valid module_list and module_variable_list" do
-      let(:module_names) { [ module_name ]}
+      let(:module_names) { [module_name]}
       it "@output is array of hashes with the module name and associated variables as key value pairs" do
         expect(subject.output).to eq([expected_output])
       end

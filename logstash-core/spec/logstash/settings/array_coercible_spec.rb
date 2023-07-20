@@ -20,7 +20,7 @@ require "logstash/settings"
 
 describe LogStash::Setting::ArrayCoercible do
   subject { described_class.new("option", element_class, value) }
-  let(:value) { [ ] }
+  let(:value) { [] }
   let(:element_class) { Object }
 
   context "when given a non array value" do
@@ -76,7 +76,7 @@ describe LogStash::Setting::ArrayCoercible do
           end
         end
         context "and the other also the same value in an array" do
-          let(:value_2) { [ "a string" ] }
+          let(:value_2) { ["a string"] }
           it "should be equal" do
             expect(setting_1).to be == setting_2
           end
@@ -88,7 +88,7 @@ describe LogStash::Setting::ArrayCoercible do
           end
         end
         context "and the other a different value in an array" do
-          let(:value_2) { [ "a different string" ] }
+          let(:value_2) { ["a different string"] }
           it "should be equal" do
             expect(setting_1).to_not be == setting_2
           end
@@ -96,9 +96,9 @@ describe LogStash::Setting::ArrayCoercible do
       end
 
       context "where one was given a value in an array" do
-        let(:value_1) { [ "a string"] }
+        let(:value_1) { ["a string"] }
         context "and the other the same value in an array" do
-          let(:value_2) { [ "a string" ] }
+          let(:value_2) { ["a string"] }
           it "should be equal" do
             expect(setting_1).to be == setting_2
           end
@@ -110,7 +110,7 @@ describe LogStash::Setting::ArrayCoercible do
           end
         end
         context "and the other a different value in an array" do
-          let(:value_2) { [ "a different string" ] }
+          let(:value_2) { ["a different string"] }
           it "should be equal" do
             expect(setting_1).to_not be == setting_2
           end

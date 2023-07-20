@@ -18,7 +18,7 @@
 require "logstash/instrument/metric_store"
 
 describe LogStash::Instrument::MetricStore do
-  let(:namespaces) { [ :root, :pipelines, :pipeline_01 ] }
+  let(:namespaces) { [:root, :pipelines, :pipeline_01] }
   let(:key) { :events_in }
   let(:counter) { LogStash::Instrument::MetricType::Counter.new(namespaces, key) }
 

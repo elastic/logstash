@@ -79,10 +79,10 @@ module LogStash module Docgen
     CANONICAL_NAME_PREFIX = "logstash"
     GLOBAL_BLOCKLIST = ["enable_metric", "id"]
     BLOCKLIST = {
-      "input" => GLOBAL_BLOCKLIST + [ "type", "debug", "format", "charset", "message_format", "codec", "tags", "add_field"],
+      "input" => GLOBAL_BLOCKLIST + ["type", "debug", "format", "charset", "message_format", "codec", "tags", "add_field"],
       "codec" => GLOBAL_BLOCKLIST,
-      "output" => GLOBAL_BLOCKLIST + [ "type", "tags", "exclude_tags", "codec", "workers" ],
-      "filter" => GLOBAL_BLOCKLIST + ["type", "tags", "add_tag", "remove_tag", "add_field", "remove_field", "periodic_flush" ]
+      "output" => GLOBAL_BLOCKLIST + ["type", "tags", "exclude_tags", "codec", "workers"],
+      "filter" => GLOBAL_BLOCKLIST + ["type", "tags", "add_tag", "remove_tag", "add_field", "remove_field", "periodic_flush"]
     }
 
     attr_accessor :description, :config_name, :section, :name, :default_plugin, :gemspec

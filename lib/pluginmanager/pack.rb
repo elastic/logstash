@@ -41,7 +41,7 @@ class LogStash::PluginManager::Pack < LogStash::PluginManager::PackCommand
   def delete_target_file?
     return true if overwrite?
     puts("File #{target_file} exist, do you want to overwrite it? (Y/N)")
-    ( "y" == STDIN.gets.strip.downcase ? true : false)
+    ("y" == STDIN.gets.strip.downcase ? true : false)
   end
 
   def validate_target_file

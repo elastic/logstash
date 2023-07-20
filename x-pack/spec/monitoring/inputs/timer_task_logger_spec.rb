@@ -23,7 +23,7 @@ describe LogStash::Inputs::TimerTaskLogger do
         let(:exception) { Concurrent::TimeoutError.new }
 
         it "logs the exception in debug mode" do
-          expect(subject.logger).to receive(:debug).with(/metric shipper/, hash_including(:exception => exception.class, :message => exception.message ))
+          expect(subject.logger).to receive(:debug).with(/metric shipper/, hash_including(:exception => exception.class, :message => exception.message))
           subject.update(run_at, result, exception)
         end
       end
@@ -32,7 +32,7 @@ describe LogStash::Inputs::TimerTaskLogger do
         let(:exception) { ArgumentError.new }
 
         it "logs the exception in debug mode" do
-          expect(subject.logger).to receive(:error).with(/metric shipper/, hash_including(:exception => exception.class, :message => exception.message ))
+          expect(subject.logger).to receive(:error).with(/metric shipper/, hash_including(:exception => exception.class, :message => exception.message))
           subject.update(run_at, result, exception)
         end
       end

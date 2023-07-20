@@ -227,17 +227,17 @@ describe LogStash::Filters::Geoip do
       it 'sets up periodic task when download triggered' do
         db_manager.send :trigger_download
         download_task = db_manager.instance_variable_get(:@download_task)
-        expect( download_task ).to_not be nil
-        expect( download_task.running? ).to be true
-        expect( download_task.execution_interval ).to eq 86_400
+        expect(download_task).to_not be nil
+        expect(download_task.running?).to be true
+        expect(download_task.execution_interval).to eq 86_400
       end
 
       it 'executes download job after interval passes' do
         db_manager.instance_variable_set(:@download_interval, 1.5)
         db_manager.send :trigger_download
         download_task = db_manager.instance_variable_get(:@download_task)
-        expect( download_task.running? ).to be true
-        expect( db_manager ).to receive :database_update_check
+        expect(download_task.running?).to be true
+        expect(db_manager).to receive :database_update_check
         sleep 2.0 # wait for task execution
       end
     end
@@ -396,7 +396,7 @@ describe LogStash::Filters::Geoip do
 
             eula_db_dirname = get_dir_path("foo")
             FileUtils.mkdir_p(eula_db_dirname)
-            rewrite_temp_metadata(metadata_path, [ ["City", "1620246514", "", "foo", true],
+            rewrite_temp_metadata(metadata_path, [["City", "1620246514", "", "foo", true],
                                                    ["ASN", "1620246514", "", "foo", true]])
 
             path = db_manager.subscribe_database_path(CITY, nil, mock_geoip_plugin)

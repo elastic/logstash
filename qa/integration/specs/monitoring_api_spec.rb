@@ -102,7 +102,7 @@ describe "Test Monitoring API" do
     end
 
     context "when a drop filter is in the pipeline" do
-      let(:config) { @fixture.config("dropping_events", { :port => tcp_port } ) }
+      let(:config) { @fixture.config("dropping_events", { :port => tcp_port }) }
 
       it 'expose the correct output counter' do
         try(max_retry) do
@@ -118,7 +118,7 @@ describe "Test Monitoring API" do
     end
 
     context "when a clone filter is in the pipeline" do
-      let(:config) { @fixture.config("cloning_events", { :port => tcp_port } ) }
+      let(:config) { @fixture.config("cloning_events", { :port => tcp_port }) }
 
       it 'expose the correct output counter' do
         try(max_retry) do

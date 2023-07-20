@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.licenses    = ['Apache License (2.0)']
   s.summary     = "Tests LS binary"
   s.description = "This is a Logstash integration test helper gem"
-  s.authors     = [ "Elastic"]
+  s.authors     = ["Elastic"]
   s.email       = 'info@elastic.co'
   s.homepage    = "http://www.elastic.co/guide/en/logstash/current/index.html"
 

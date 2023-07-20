@@ -66,7 +66,7 @@ describe LogStash::Util::Zip do
     end
 
     let(:zip_file) do
-      [ "foo", "bar", "zoo" ].inject([]) do |acc, name|
+      ["foo", "bar", "zoo"].inject([]) do |acc, name|
         acc << OpenStruct.new(:name => name)
         acc
       end
@@ -134,7 +134,7 @@ describe LogStash::Util::Zip do
     end
 
     let(:dir_files) do
-      [ "foo", "bar", "zoo" ]
+      ["foo", "bar", "zoo"]
     end
 
     let(:zip_file) { Class.new }
@@ -163,7 +163,7 @@ describe LogStash::Util::Tar do
     let(:gzip_file) { Class.new }
 
     let(:tar_file) do
-      [ "foo", "bar", "zoo" ].inject([]) do |acc, name|
+      ["foo", "bar", "zoo"].inject([]) do |acc, name|
         acc << OpenStruct.new(:full_name => name)
         acc
       end
@@ -189,7 +189,7 @@ describe LogStash::Util::Tar do
     end
 
     let(:dir_files) do
-      [ "foo", "bar", "zoo" ]
+      ["foo", "bar", "zoo"]
     end
 
     let(:tar_file) { Class.new }

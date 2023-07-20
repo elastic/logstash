@@ -525,7 +525,7 @@ describe LogStash::Config::Mixin do
           plugin_class.new(
             "oneString" => "${notExistingVar:foo}",
             "oneBoolean" => "${notExistingVar:true}",
-            "oneArray" => [ "first array value", "${notExistingVar:foo}", "${notExistingVar:}", "${notExistingVar: }", "${notExistingVar:foo bar}" ],
+            "oneArray" => ["first array value", "${notExistingVar:foo}", "${notExistingVar:}", "${notExistingVar: }", "${notExistingVar:foo bar}"],
             "oneHash" => { "key" => "${notExistingVar:foo}" }
           )
         end
@@ -556,7 +556,7 @@ describe LogStash::Config::Mixin do
         plugin_class.new(
           "oneString" => "${FunString:foo}",
           "oneBoolean" => "${FunBool:false}",
-          "oneArray" => [ "first array value", "${FunString:foo}" ],
+          "oneArray" => ["first array value", "${FunString:foo}"],
           "oneHash" => { "key1" => "${FunString:foo}", "key2" => "${FunString} is ${FunBool}", "key3" => "${FunBool:false} or ${funbool:false}" },
           "nestedHash" => { "level1" => { "key1" => "http://${FunString}:8080/blah.txt" } },
           "nestedArray" => { "level1" => [{ "key1" => "http://${FunString}:8080/blah.txt" }, { "key2" => "http://${FunString}:8080/foo.txt" }] },
@@ -568,7 +568,7 @@ describe LogStash::Config::Mixin do
         skip("This test fails on Windows, tracked in https://github.com/elastic/logstash/issues/10454")
         expect(subject.oneString).to(be == "fancy")
         expect(subject.oneBoolean).to(be_truthy)
-        expect(subject.oneArray).to(be == [ "first array value", "fancy" ])
+        expect(subject.oneArray).to(be == ["first array value", "fancy"])
         expect(subject.oneHash).to(be == { "key1" => "fancy", "key2" => "fancy is true", "key3" => "true or false" })
         expect(subject.nestedHash).to(be == { "level1" => { "key1" => "http://fancy:8080/blah.txt" } })
         expect(subject.nestedArray).to(be == { "level1" => [{ "key1" => "http://fancy:8080/blah.txt" }, { "key2" => "http://fancy:8080/foo.txt" }] })

@@ -84,4 +84,4 @@ namespace "test" do
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
 end
 
-task "test" => [ "test:core" ]
+task "test" => ["test:core"]

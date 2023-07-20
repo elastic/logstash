@@ -53,7 +53,7 @@ module LogStash
         ssl_key = bound_scope.setting("var.input.tcp.ssl_key", "")
         lines.push("ssl_key => '#{ssl_key}'") unless ssl_key.empty?
 
-        lines.push("ssl_key_passphrase => '#{ bound_scope.setting("var.input.tcp.ssl_key_passphrase", "")}'")
+        lines.push("ssl_key_passphrase => '#{bound_scope.setting("var.input.tcp.ssl_key_passphrase", "")}'")
 
         certs_array_as_string = bound_scope.array_to_string(
           bound_scope.get_setting(LogStash::Setting::SplittableStringArray.new("var.input.tcp.ssl_extra_chain_certs", String, []))
