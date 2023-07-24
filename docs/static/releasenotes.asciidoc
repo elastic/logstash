@@ -75,7 +75,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-12]]
 === Logstash 7.17.12 Release Notes
 
-* Upgrade json and fpm, remove aws-sdk-v1 https://github.com/elastic/logstash/pull/15134[#15134]
+* Upgrade `json` and `fpm` dependencies, remove `aws-sdk-v1` https://github.com/elastic/logstash/pull/15134[#15134]
 * Docs: Add initial PQ sizing doc https://github.com/elastic/logstash/pull/15171[#15171]
 * Fix Java 8 compatibility issues https://github.com/elastic/logstash/pull/15178[#15178]
 
@@ -87,11 +87,11 @@ This section summarizes the changes in the following releases:
 
 *Snmp Input - 1.3.2*
 
-* Docs: add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs https://github.com/logstash-plugins/logstash-input-snmp/pull/112[#112]
+* Docs: Add troubleshooting help for "failed to locate MIB module" error when using smidump to convert MIBs https://github.com/logstash-plugins/logstash-input-snmp/pull/112[#112]
 
 *Aws Mixin - 5.1.0*
 
-* Add support for 'addition_settings' configuration options used by S3 and SQS input plugins https://github.com/logstash-plugins/logstash-mixin-aws/pull/53[#53].
+* Add support for 'additional_settings' configuration options used by S3 and SQS input plugins https://github.com/logstash-plugins/logstash-mixin-aws/pull/53[#53].
 * Drop support for aws-sdk-v1 https://github.com/logstash-plugins/logstash-mixin-aws/pull/51[#51]
 
 [[logstash-7-17-11]]
