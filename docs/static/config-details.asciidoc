@@ -103,9 +103,9 @@ pipelines number * (workers * stack size + 2 * PQ page size) + direct memory + J
 
 Considering a Logstash running 10 pipelines and that JVM by default allocates as much direct memory as Java heap,
 we could end with:
-  * native memory: 10 * (12 * 1Mb + 128Mb), 1.4Gb
-  * direct memory: 4Gb
-  * Java heap: 4Gb
+* native memory: 10 * (12 * 1Mb + 128Mb), 1.4Gb
+* direct memory: 4Gb
+* Java heap: 4Gb
 There is an amount of native memory, other than Java heap and direct memory, that has to be accounted to size
 the overall memory consumption of Logstash process and that could only be estimated and doesn't have a direct control.
 
