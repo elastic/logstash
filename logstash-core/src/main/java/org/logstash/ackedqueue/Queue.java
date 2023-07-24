@@ -419,10 +419,8 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
-            // a safety net if in case we reach this point with `headPage` null
-            // the possibility of headPage being null is either Queue is created but not opened (`open()` not called) or queue is closed
-            // we have high level safeguard with `this.closed.get()` but in case make sure we are not producing NPE since we don't handle
-            if (Objects.isNull(this.headPage)) {
+            // ensure that the queue is still open now that this thread has acquired the lock.
+            if (this.closed.get()) {
                 throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
             }
 
