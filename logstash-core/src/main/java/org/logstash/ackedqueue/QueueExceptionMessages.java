@@ -25,10 +25,6 @@ package org.logstash.ackedqueue;
  */
 public class QueueExceptionMessages {
 
-    public final static String WHILE_INSERTING_SINGLE_ELEMENT = "Received an exception while inserting an element to an acked queue.";
-
-    public final static String WHILE_INSERTING_ULTIPLE_ELEMENTS = "Received an exception while writing multiple elements to an acked queue.";
-
     public final static String WHILE_READING = "Attempted to read on a closed acked queue.";
 
     public final static String WRITE_TO_CLOSED_QUEUE = "Tried to write to a closed queue.";

@@ -21,7 +21,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -31,10 +31,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.LockException;
 import org.logstash.RubyUtil;
-import org.logstash.ackedqueue.QueueExceptionMessages;
-import org.logstash.ackedqueue.QueueRuntimeException;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -44,7 +41,7 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * JRuby extension
- * */
+ */
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
@@ -59,7 +56,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        boolean checkpointRetry = !((RubyBoolean)args[6]).isFalse();
+        boolean checkpointRetry = !((RubyBoolean) args[6]).isFalse();
         long queueMaxBytes = RubyFixnum.num2long(args[7]);
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,

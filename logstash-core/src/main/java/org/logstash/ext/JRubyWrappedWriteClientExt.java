@@ -32,7 +32,6 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.logstash.ackedqueue.QueueRuntimeException;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -107,7 +106,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     @JRubyMethod(name = {"push", "<<"}, required = 1)
     public IRubyObject push(final ThreadContext context,
-                            final IRubyObject event) throws QueueRuntimeException {
+                            final IRubyObject event) throws InterruptedException {
         final JrubyEventExtLibrary.RubyEvent rubyEvent = (JrubyEventExtLibrary.RubyEvent) event;
 
         incrementCounters(1L);
@@ -117,7 +116,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
     @SuppressWarnings("unchecked")
     @JRubyMethod(name = "push_batch", required = 1)
     public IRubyObject pushBatch(final ThreadContext context,
-                                 final IRubyObject batch) throws QueueRuntimeException {
+                                 final IRubyObject batch) throws InterruptedException {
         final Collection<JrubyEventExtLibrary.RubyEvent> rubyEvents = (Collection<JrubyEventExtLibrary.RubyEvent>) batch;
 
         incrementCounters(rubyEvents.size());

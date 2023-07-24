@@ -23,7 +23,7 @@ package org.logstash.ext;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -45,10 +45,10 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
 
     @JRubyMethod(meta = true, required = 2)
     public static JrubyAckedWriteClientExt create(final ThreadContext context, final IRubyObject recv,
-        final IRubyObject queue, final IRubyObject closed) {
+                                                  final IRubyObject queue, final IRubyObject closed) {
         return new JrubyAckedWriteClientExt(
-            context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
-            queue.toJava(JRubyAckedQueueExt.class)
+                context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
+                queue.toJava(JRubyAckedQueueExt.class)
         );
     }
 
@@ -61,21 +61,21 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
     }
 
     private JrubyAckedWriteClientExt(final Ruby runtime, final RubyClass metaClass,
-        final JRubyAckedQueueExt queue) {
+                                     final JRubyAckedQueueExt queue) {
         super(runtime, metaClass);
         this.queue = queue;
     }
 
     @Override
     protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
-        final JrubyEventExtLibrary.RubyEvent event) {
+                                                      final JrubyEventExtLibrary.RubyEvent event) {
         queue.rubyWrite(context, event.getEvent());
         return this;
     }
 
     @Override
     protected JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
-        final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
+                                                           final Collection<JrubyEventExtLibrary.RubyEvent> batch) {
         for (final IRubyObject event : batch) {
             queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
         }

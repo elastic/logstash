@@ -30,8 +30,6 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.runtime.ThreadContext;
 import org.logstash.Event;
 import org.logstash.RubyUtil;
-import org.logstash.ackedqueue.QueueExceptionMessages;
-import org.logstash.ackedqueue.QueueRuntimeException;
 import org.logstash.common.LsQueueUtils;
 
 @JRubyClass(name = "MemoryWriteClient")
@@ -59,24 +57,15 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
 
     @Override
     protected JRubyAbstractQueueWriteClientExt doPush(final ThreadContext context,
-                                                      final JrubyEventExtLibrary.RubyEvent event) throws QueueRuntimeException {
-        try {
-            queue.put(event);
-        } catch (InterruptedException exception) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING_SINGLE_ELEMENT, exception);
-        }
-
+                                                      final JrubyEventExtLibrary.RubyEvent event) throws InterruptedException {
+        queue.put(event);
         return this;
     }
 
     @Override
     public JRubyAbstractQueueWriteClientExt doPushBatch(final ThreadContext context,
-                                                        final Collection<JrubyEventExtLibrary.RubyEvent> batch) throws QueueRuntimeException {
-        try {
-            LsQueueUtils.addAll(queue, batch);
-        } catch (InterruptedException exception) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_INSERTING_ULTIPLE_ELEMENTS, exception);
-        }
+                                                        final Collection<JrubyEventExtLibrary.RubyEvent> batch) throws InterruptedException {
+        LsQueueUtils.addAll(queue, batch);
         return this;
     }
 
