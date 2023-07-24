@@ -66,9 +66,26 @@ by doubling the heap size to see if performance improves.
 * Do not increase the heap size past the amount of physical memory. Some memory
 must be left to run the OS and other processes.  As a general guideline for most
 installations, don't exceed 50-75% of physical memory. The more memory you have,
-the higher percentage you can use. The heap size used by the process comprises native
-memory needed by the JVM itself to work, the direct memory used for IO operations and
-the Java heap used to execute Logstash.
+the higher percentage you can use.
+
+* The total memory used by the JVM comprises native memory allocate for internal JVM data structures, thread stacks,
+memory mapped files, the direct memory used for IO operations and the Java heap used to execute Logstash.
+For example if a Logstash instance is running a certain number of  pipelines, all with PQ enabled we could
+estimate a memory consumption as follow:
++
+[source,text]
+-------------------------------------
+pipelines number x (workers x stack size + 2 * PQ page size) + direct memory + Java heap
+-------------------------------------
+
+Considering a Logstash running 10 pipelines and that by default JVM allocates as much direct memory as Java heap,
+we could end in:
+  * native memory: 10 x (12 x 1Mb + 128Mb), 1.4Gb
+  * direct memory: 4Gb
+  * Java heap: 4Gb
+There is an amount of native memory, other than Java heap and direct memory, that has to be accounted to size
+the memory consumption of the overall Logstash process and that could be estimated and doesn't have a direct control.
+
 
 * Set the minimum (Xms) and maximum (Xmx) heap allocation size to the same
 value to prevent the heap from resizing at runtime, which is a very costly
