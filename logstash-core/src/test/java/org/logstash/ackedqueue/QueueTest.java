@@ -1149,15 +1149,16 @@ public class QueueTest {
     @Test
     public void writeToClosedQueueException() throws Exception {
         Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
-        try {
-            Queue queue = new Queue(settings);
-            queue.open();
-            queue.write(new StringElement("First test string to be written in queue."));
-            queue.write(new StringElement("Second test string to be written in queue."));
-            queue.close();
+        Queue queue = new Queue(settings);
+
+        queue.open();
+        queue.write(new StringElement("First test string to be written in queue."));
+        queue.write(new StringElement("Second test string to be written in queue."));
+        queue.close();
+
+        final QueueRuntimeException qre = assertThrows(QueueRuntimeException.class, () -> {
             queue.write(new StringElement("Third test string to be REJECTED to write in queue."));
-        } catch (QueueRuntimeException e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString("Tried to write to a closed queue."));
-        }
+        });
+        assertThat(qre.getMessage(), containsString("Tried to write to a closed queue."));
     }
 }
