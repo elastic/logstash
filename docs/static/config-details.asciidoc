@@ -66,11 +66,17 @@ by doubling the heap size to see if performance improves.
 * Do not increase the heap size past the amount of physical memory. Some memory
 must be left to run the OS and other processes.  As a general guideline for most
 installations, don't exceed 50-75% of physical memory. The more memory you have,
-the higher percentage you can use.
+the higher percentage you can use. The heap size used by the process comprises native
+memory needed by the JVM itself to work, the direct memory used for IO operations and
+the Java heap used to execute Logstash.
 
 * Set the minimum (Xms) and maximum (Xmx) heap allocation size to the same
 value to prevent the heap from resizing at runtime, which is a very costly
 process.
+
+* If you plan to use some plugins that leverages direct memory, like Beats, TCP or HTTP input,
+ set the direct memory size (-XX:MaxDirectMemorySize) accordingly to the scale of load
+ they need to sustain, but never go to the maximum java heap (Xmx).
 
 * You can make more accurate measurements of the JVM heap by using either the
 `jmap` command line utility distributed with Java or by using VisualVM. For more
