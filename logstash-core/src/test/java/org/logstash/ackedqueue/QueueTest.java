@@ -41,7 +41,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,6 +58,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
+import static org.logstash.util.ExceptionMatcher.assertThrows;
 
 public class QueueTest {
 
@@ -1159,6 +1159,6 @@ public class QueueTest {
         final QueueRuntimeException qre = assertThrows(QueueRuntimeException.class, () -> {
             queue.write(new StringElement("Third test string to be REJECTED to write in queue."));
         });
-        assertThat(qre.getMessage(), containsString("Tried to write to a closed queue."));
+        assertThat(qre.getMessage(), CoreMatchers.containsString("Tried to write to a closed queue."));
     }
 }
