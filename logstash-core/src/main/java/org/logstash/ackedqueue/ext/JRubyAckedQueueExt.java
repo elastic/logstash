@@ -39,7 +39,6 @@ import org.logstash.ackedqueue.AckedBatch;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.QueueExceptionMessages;
-import org.logstash.ackedqueue.QueueRuntimeException;
 import org.logstash.ackedqueue.SettingsImpl;
 
 /**
@@ -136,8 +135,12 @@ public final class JRubyAckedQueueExt extends RubyObject {
         }
     }
 
-    public void write(Event event) throws IOException {
-        this.queue.write(event);
+    public void write(Event event) {
+        try {
+            this.queue.write(event);
+        } catch (IOException e) {
+            throw new IllegalStateException(QueueExceptionMessages.WHILE_WRITING, e);
+        }
     }
 
     @JRubyMethod(name = "read_batch", required = 2)
@@ -152,9 +155,6 @@ public final class JRubyAckedQueueExt extends RubyObject {
     }
 
     public AckedBatch readBatch(int limit, long timeout) throws IOException {
-        if (this.queue.isClosed()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
-        }
         final Batch batch = queue.readBatch(limit, timeout);
         return Objects.isNull(batch) ? null : AckedBatch.create(batch);
     }

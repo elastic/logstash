@@ -35,4 +35,8 @@ public class QueueExceptionMessages {
 
     public final static String CANNOT_DESERIALIZE = "cannot find deserialize method on class ";
 
+    public final static String WHILE_WRITING = "Unhandleable error occurred while writing to queue.";
+
+    public final static String WHILE_READING_NEXT_PAGE = "Attempted to read next page on a closed acked queue.";
+
 }

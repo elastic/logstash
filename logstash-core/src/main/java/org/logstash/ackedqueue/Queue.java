@@ -31,7 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -101,7 +100,7 @@ public final class Queue implements Closeable {
             }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
-            throw new QueueRuntimeException(QueueExceptionMessages.CREATING_QUEUE_DIR_ERROR, ex);
+            throw new IllegalStateException(QueueExceptionMessages.CREATING_QUEUE_DIR_ERROR, ex);
         }
 
         this.pageCapacity = settings.getCapacity();
@@ -610,9 +609,14 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
      * @param timeout the maximum time to wait in milliseconds on write operations
      * @return the read {@link Batch} or null if no element upon timeout
+     * @throws QueueRuntimeException if queue is closed
      * @throws IOException if an IO error occurs
      */
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {
+        if (isClosed()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
+        }
+
         lock.lock();
         try {
             return readPageBatch(nextReadPage(), limit, timeout);
@@ -803,8 +807,13 @@ public final class Queue implements Closeable {
     /**
      * return the {@link Page} for the next read operation.
      * @return {@link Page} will be either a read-only tail page or the head page.
+     * @throws QueueRuntimeException if queue is closed
      */
     public Page nextReadPage() {
+        if (isClosed()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING_NEXT_PAGE);
+        }
+
         lock.lock();
         try {
             // look at head page if no unreadTailPages

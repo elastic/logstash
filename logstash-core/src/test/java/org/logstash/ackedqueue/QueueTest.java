@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,6 +48,7 @@ import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -1098,7 +1098,7 @@ public class QueueTest {
             queue.open();
             fail("expected queue.open() to throws when not enough disk free");
         } catch (IOException e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString("Unable to allocate"));
+            assertThat(e.getMessage(), containsString("Unable to allocate"));
         }
 
         // at this point the Queue lock should be released and Queue.open should not throw a LockException
@@ -1159,6 +1159,6 @@ public class QueueTest {
         final QueueRuntimeException qre = assertThrows(QueueRuntimeException.class, () -> {
             queue.write(new StringElement("Third test string to be REJECTED to write in queue."));
         });
-        assertThat(qre.getMessage(), CoreMatchers.containsString("Tried to write to a closed queue."));
+        assertThat(qre.getMessage(), containsString("Tried to write to a closed queue."));
     }
 }
