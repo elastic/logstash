@@ -17,7 +17,7 @@ index_pipeline() {
 # index pipeline to serverless ES
 index_cpm_pipelines() {
   index_pipeline "$PIPELINE_NAME" '{
-    "pipeline": "input { generator { count => 100 } } output { elasticsearch { hosts => \"${ES_ENDPOINT}\" user => \"${ES_USER}\" password => \"${ES_PW}\" index=> \"${INDEX_NAME}\" } }",
+    "pipeline": "input { generator { count => 100 } } output { elasticsearch { hosts => \"${ES_ENDPOINT}\" api_key => \"${LS_PLUGIN_API_KEY}\" index=> \"${INDEX_NAME}\" } }",
     "last_modified": "2023-07-04T22:22:22.222Z",
     "pipeline_metadata": { "version": "1"},
     "username": "log.stash",
