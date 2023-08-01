@@ -26,8 +26,4 @@ include::breaking-changes-70.asciidoc[]
 include::breaking-changes-pre63.asciidoc[]
 include::breaking-changes-60.asciidoc[]
 
-Check out out <<releasenotes>> for additional release information. 
-
-//NOTE: The notable-breaking-changes tagged regions are re-used in the
-//Installation and Upgrade Guide
-
+Check out our <<releasenotes>> for additional release information.
