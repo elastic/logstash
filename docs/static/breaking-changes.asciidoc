@@ -26,4 +26,4 @@ include::breaking-changes-70.asciidoc[]
 include::breaking-changes-pre63.asciidoc[]
 include::breaking-changes-60.asciidoc[]
 
-Check out out <<releasenotes>> for additional release information.
+Check out our <<releasenotes>> for additional release information.
