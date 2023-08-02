@@ -1,6 +1,6 @@
 /////
-These settings control attributes for Logstash core content 
-in the Logstash Reference (LSR) only.
+These settings control attributes for {ls} core content 
+in the {ls} Reference (LSR) only.
  
 Shared attributes for the plugin docs (in the LSR and VPR) should
 go in /docs/include/attributes-lsplugins.asciidoc instead 

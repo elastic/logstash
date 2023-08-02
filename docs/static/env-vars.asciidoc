@@ -3,14 +3,14 @@
 
 ==== Overview
 
-* You can set environment variable references in the configuration for Logstash plugins by using `${var}`.
-* At Logstash startup, each reference is replaced by the value of the environment variable.
+* You can set environment variable references in the configuration for {ls} plugins by using `${var}`.
+* At {ls} startup, each reference is replaced by the value of the environment variable.
 * The replacement is case-sensitive.
-* References to undefined variables raise a Logstash configuration error.
-* You can give a default value by using the form `${var:default value}`. Logstash uses the default value if the
+* References to undefined variables raise a {ls} configuration error.
+* You can give a default value by using the form `${var:default value}`. {ls} uses the default value if the
 environment variable is undefined.
 * You can add environment variable references in any plugin option type: string, number, boolean, array, or hash.
-* Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
+* Environment variables are immutable. If you update the environment variable, you'll have to restart {ls} to pick up the updated value.
 
 ==== Examples
 
@@ -37,7 +37,7 @@ Now let's set the value of `TCP_PORT`:
 export TCP_PORT=12345
 ----
 
-At startup, Logstash uses this configuration:
+At startup, {ls} uses this configuration:
 
 [source,ruby]
 ----------------------------------
@@ -48,7 +48,7 @@ input {
 }
 ----------------------------------
 
-If the `TCP_PORT` environment variable is not set, Logstash returns a configuration error.
+If the `TCP_PORT` environment variable is not set, {ls} returns a configuration error.
 
 You can fix this problem by specifying a default value:
 
@@ -61,7 +61,7 @@ input {
 }
 ----
 
-Now, instead of returning a configuration error if the variable is undefined, Logstash uses the default:
+Now, instead of returning a configuration error if the variable is undefined, {ls} uses the default:
 
 [source,ruby]
 ----
@@ -72,7 +72,7 @@ input {
 }
 ----
 
-If the environment variable is defined, Logstash uses the value specified for the variable instead of the default.
+If the environment variable is defined, {ls} uses the value specified for the variable instead of the default.
 
 ===== Setting the value of a tag
 
@@ -94,7 +94,7 @@ Let's set the value of `ENV_TAG`:
 export ENV_TAG="tag2"
 ----
 
-At startup, Logstash uses this configuration:
+At startup, {ls} uses this configuration:
 
 [source,ruby]
 ----
@@ -127,7 +127,7 @@ Let's set the value of `HOME`:
 export HOME="/path"
 ----
 
-At startup, Logstash uses the following configuration:
+At startup, {ls} uses the following configuration:
 
 [source,ruby]
 ----

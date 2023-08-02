@@ -10,7 +10,7 @@ https://github.com/elastic/logstash/issues, or
 
 // After merge, update PR link to link directly to this topic in GH
 
-Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+Also check out the https://discuss.elastic.co/c/logstash[{ls} discussion
 forum].
 
 [discrete] 
@@ -50,7 +50,7 @@ You can manage pipelines in a {ls} instance using either local pipeline configur
 {logstash-ref}/configuring-centralized-pipelines.html[centralized pipeline management]
 in {kib}.
 
-After you configure Logstash to use centralized pipeline management, you can
+After you configure {ls} to use centralized pipeline management, you can
 no longer specify local pipeline configurations. The `pipelines.yml` file and
 settings such as `path.config` and `config.string` are inactive when centralized
 pipeline management is enabled.

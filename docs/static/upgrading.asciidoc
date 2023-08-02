@@ -1,25 +1,25 @@
 [[upgrading-logstash]]
-== Upgrading Logstash
+== Upgrading {ls}
 
 [IMPORTANT]
 ===========================================
-Before upgrading Logstash:
+Before upgrading {ls}:
 
 * Consult the <<breaking-changes,breaking changes>> docs.
 * Read the <<releasenotes>>.
 * Test upgrades in a development environment before upgrading your production cluster.
 
-While upgrading Logstash:
+While upgrading {ls}:
 
 * If you use monitoring, you must re-use the data directory when you
-upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID
+upgrade {ls}. Otherwise, the {ls} node is assigned a new persistent UUID
 and becomes a new node in the monitoring data.
 ===========================================
 
 If you're upgrading other products in the stack, also read the
 {stack-ref}/index.html[Elastic Stack Installation and Upgrade Guide]. 
 
-See the following topics for information about upgrading Logstash:
+See the following topics for information about upgrading {ls}:
 
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
@@ -31,62 +31,62 @@ See the following topics for information about upgrading Logstash:
 
 Fresh installations can and should start with the same version across the Elastic Stack.
 
-Elasticsearch 8.0 does not require Logstash 8.0. An Elasticsearch 8.0 cluster
-will happily receive data from earlier versions of Logstash via the default
+Elasticsearch 8.0 does not require {ls} 8.0. An Elasticsearch 8.0 cluster
+will happily receive data from earlier versions of {ls} via the default
 HTTP communication layer. This provides some flexibility to decide when to
-upgrade Logstash relative to an Elasticsearch upgrade. It may or may not be
+upgrade {ls} relative to an Elasticsearch upgrade. It may or may not be
 convenient for you to upgrade them together, and it is not required to be done
 at the same time as long as Elasticsearch is upgraded first.
 
 You should upgrade in a timely manner to get the performance improvements that
-come with Logstash 8.0, but do so in the way that makes the most sense for your
+come with {ls} 8.0, but do so in the way that makes the most sense for your
 environment.
 
 [discrete]
 ==== When not to upgrade
 
-If any Logstash plugin that you require is not compatible with Logstash 8.0, then you should wait until it is ready
+If any {ls} plugin that you require is not compatible with {ls} 8.0, then you should wait until it is ready
 before upgrading.
 
-Although we make great efforts to ensure compatibility, Logstash 8.0 is not completely backwards compatible. 
-As noted in the Elastic Stack upgrade guide, you should not upgrade Logstash 8.0 before you upgrade Elasticsearch 8.0. 
+Although we make great efforts to ensure compatibility, {ls} 8.0 is not completely backwards compatible. 
+As noted in the Elastic Stack upgrade guide, you should not upgrade {ls} 8.0 before you upgrade Elasticsearch 8.0. 
 This is both
-practical and because some Logstash 8.0 plugins may attempt to use features of Elasticsearch 8.0 that did not exist
+practical and because some {ls} 8.0 plugins may attempt to use features of Elasticsearch 8.0 that did not exist
 in earlier versions. 
 
 For example, if you attempt to send the 8.x template to a cluster before
 Elasticsearch 8.0, then  all indexing likely fail. 
-If you use your own custom template with Logstash, then this issue can be ignored.
+If you use your own custom template with {ls}, then this issue can be ignored.
 
 
 [[upgrading-using-package-managers]]
 === Upgrading using package managers
 
-This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
+This procedure uses <<package-repositories,package managers>> to upgrade {ls}.
 
-. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
+. Shut down your {ls} pipeline, including any inputs that send events to {ls}.
 . Using the directions in the <<package-repositories>> section, update your repository
 links to point to the 8.x repositories.
 . Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 8.x release.
-. Restart your Logstash pipeline after you have updated your configuration file.
+some {ls} plugins have changed in the 8.x release.
+. Restart your {ls} pipeline after you have updated your configuration file.
 
 [[upgrading-using-direct-download]]
 === Upgrading using a direct download
 
-This procedure downloads the relevant Logstash binaries directly from Elastic.
+This procedure downloads the relevant {ls} binaries directly from Elastic.
 
-. Shut down your Logstash pipeline, including any inputs that send events to Logstash.
-. Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
+. Shut down your {ls} pipeline, including any inputs that send events to {ls}.
+. Download the https://www.elastic.co/downloads/logstash[{ls} installation file] that matches your host environment.
 . Backup your `config/` and `data/` folders in a temporary space.
-. Delete your Logstash directory.
-. Unpack the installation file into the folder that contained the Logstash directory that you just deleted.
+. Delete your {ls} directory.
+. Unpack the installation file into the folder that contained the {ls} directory that you just deleted.
 . Restore the `config/` and `data/` folders that were previously saved, overwriting the folders created during the unpack operation.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command.
 Configuration options for
-some Logstash plugins have changed.
-. Restart your Logstash pipeline after updating your configuration file.
+some {ls} plugins have changed.
+. Restart your {ls} pipeline after updating your configuration file.
 
 [[upgrading-minor-versions]]
 === Upgrading between minor versions
@@ -102,9 +102,9 @@ not supported.
 
 
 [[upgrading-logstash-8.0]]
-=== Upgrading Logstash to 8.0
+=== Upgrading {ls} to 8.0
 
-Before upgrading Logstash:
+Before upgrading {ls}:
 
 * Read the <<releasenotes>>.
 * Read the <<breaking-changes,breaking changes>> docs. 
@@ -116,7 +116,7 @@ There you can find info on these topics and more:
 ** <<bc-field-ref-parser,Field parser is more strict>>
 
  
-If you are installing Logstash with other components in the Elastic Stack, also see the
+If you are installing {ls} with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
 NOTE: Upgrading between non-consecutive major versions (6.x to 8.x, for example) is not supported. 

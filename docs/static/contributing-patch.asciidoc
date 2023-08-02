@@ -1,7 +1,7 @@
 [[contributing-patch-plugin]]
-=== Contributing a patch to a Logstash plugin
+=== Contributing a patch to a {ls} plugin
 
-This section discusses the information you need to know to successfully contribute a patch to a Logstash plugin.
+This section discusses the information you need to know to successfully contribute a patch to a {ls} plugin.
 
 Each plugin defines its own configuration options. These control the behavior of the plugin to some degree. 
 Configuration option definitions commonly include:
@@ -10,13 +10,13 @@ Configuration option definitions commonly include:
 * Default value
 * Any required flags
 
-Plugins are subclasses of a Logstash base class. A plugin's base class defines common configuration and methods.
+Plugins are subclasses of a {ls} base class. A plugin's base class defines common configuration and methods.
 
 [[contrib-patch-input]]
 ==== Input plugins
 
 Input plugins ingest data from an external source. Input plugins are always associated with a codec. An input plugin 
-always has an associated codec plugin. Input and codec plugins operate in conjunction to create a Logstash event and add 
+always has an associated codec plugin. Input and codec plugins operate in conjunction to create a {ls} event and add 
 that event to the processing queue. An input codec is a subclass of the `LogStash::Inputs::Base` class.
 
 [[input-api]]
@@ -97,7 +97,7 @@ multiple execution paths or varying input data.
 [[rspec]]
 ===== RSpec framework
 
-Logstash uses Rspec, a Ruby testing framework, to define and run the test suite. What follows is a summary of various 
+{ls} uses Rspec, a Ruby testing framework, to define and run the test suite. What follows is a summary of various 
 sources.
 
 .Rspec Example

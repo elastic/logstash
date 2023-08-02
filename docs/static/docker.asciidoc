@@ -1,6 +1,6 @@
 [[docker]]
-=== Running Logstash on Docker
-Docker images for Logstash are available from the Elastic Docker
+=== Running {ls} on Docker
+Docker images for {ls} are available from the Elastic Docker
 registry. The base image is https://hub.docker.com/_/ubuntu/[ubuntu:20.04].
 
 A list of all published Docker images and tags is available at
@@ -16,12 +16,12 @@ Elastic license levels.
 
 ==== Pulling the image
 
-Obtaining Logstash for Docker is as simple as issuing a +docker
+Obtaining {ls} for Docker is as simple as issuing a +docker
 pull+ command against the Elastic Docker registry.
 
 ifeval::["{release-state}"=="unreleased"]
 
-However, version {logstash_version} of Logstash has not yet been
+However, version {logstash_version} of {ls} has not yet been
 released, so no Docker image is currently available for this version.
 
 endif::[]
@@ -50,7 +50,7 @@ Run the following commands to verify the container image signature for {ls} v{ve
 
 ifeval::["{release-state}"=="unreleased"]
 
-Version {logstash_version} of Logstash has not yet been
+Version {logstash_version} of {ls} has not yet been
 released, so no Docker image is currently available for this version.
 
 endif::[]
@@ -79,15 +79,15 @@ The following checks were performed on each of these signatures:
 endif::[]
 
 [[docker-config]]
-=== Configuring Logstash for Docker
+=== Configuring {ls} for Docker
 
-Logstash differentiates between two types of configuration:
+{ls} differentiates between two types of configuration:
 <<config-setting-files,Settings and Pipeline Configuration>>.
 
 ==== Pipeline Configuration
 
 It is essential to place your pipeline configuration where it can be
-found by Logstash. By default, the container will look in
+found by {ls}. By default, the container will look in
 +/usr/share/logstash/pipeline/+ for pipeline configuration files.
 
 In this example we use a bind-mounted volume to provide the
@@ -99,9 +99,9 @@ docker run --rm -it -v ~/pipeline/:/usr/share/logstash/pipeline/ {docker-image}
 --------------------------------------------
 
 Every file in the host directory +~/pipeline/+ will then be parsed
-by Logstash as pipeline configuration.
+by {ls} as pipeline configuration.
 
-If you don't provide configuration to Logstash, it will run with a
+If you don't provide configuration to {ls}, it will run with a
 minimal config that listens for messages from the
 <<plugins-inputs-beats,Beats input plugin>> and echoes any that are
 received to `stdout`. In this case, the startup logs will be similar
@@ -109,12 +109,12 @@ to the following:
 
 ["source","text"]
 --------------------------------------------
-Sending Logstash logs to /usr/share/logstash/logs which is now configured via log4j2.properties.
+Sending {ls} logs to /usr/share/logstash/logs which is now configured via log4j2.properties.
 [2016-10-26T05:11:34,992][INFO ][logstash.inputs.beats    ] Beats inputs: Starting input listener {:address=>"0.0.0.0:5044"}
 [2016-10-26T05:11:35,068][INFO ][logstash.pipeline        ] Starting pipeline {"id"=>"main", "pipeline.workers"=>4, "pipeline.batch.size"=>125, "pipeline.batch.delay"=>5, "pipeline.max_inflight"=>500}
 [2016-10-26T05:11:35,078][INFO ][org.logstash.beats.Server] Starting server on port: 5044
 [2016-10-26T05:11:35,078][INFO ][logstash.pipeline        ] Pipeline main started
-[2016-10-26T05:11:35,105][INFO ][logstash.agent           ] Successfully started Logstash API endpoint {:port=>9600}
+[2016-10-26T05:11:35,105][INFO ][logstash.agent           ] Successfully started {ls} API endpoint {:port=>9600}
 --------------------------------------------
 
 This is the default configuration for the image, defined in
@@ -132,7 +132,7 @@ also possible to use environment variables to define settings.
 [[docker-bind-mount-settings]]
 ===== Bind-mounted settings files
 
-Settings files can also be provided through bind-mounts. Logstash
+Settings files can also be provided through bind-mounts. {ls}
 expects to find them at +/usr/share/logstash/config/+.
 
 It's possible to provide an entire directory containing all needed
@@ -176,9 +176,9 @@ that you don't retain the example config from the base image.
 [[docker-env-config]]
 ===== Environment variable configuration
 
-Under Docker, Logstash settings can be configured via environment
+Under Docker, {ls} settings can be configured via environment
 variables. When the container starts, a helper process checks the environment
-for variables that can be mapped to Logstash settings. Settings that are found
+for variables that can be mapped to {ls} settings. Settings that are found
 in the environment override those in the `logstash.yml` as the container starts up.
 
 For compatibility with container orchestration systems, these environment
@@ -189,7 +189,7 @@ Some example translations are shown here:
 
 .Example Docker Environment Variables
 [horizontal]
-**Environment Variable**:: **Logstash Setting**
+**Environment Variable**:: **{ls} Setting**
 `PIPELINE_WORKERS`:: `pipeline.workers`
 `LOG_LEVEL`:: `log.level`
 `MONITORING_ENABLED`:: `monitoring.enabled`
@@ -201,7 +201,7 @@ NOTE: Defining settings with environment variables causes `logstash.yml` to
 be modified in place. This behaviour is likely undesirable if `logstash.yml` was
 bind-mounted from the host system. Thus, it is not recommended to
 combine the bind-mount technique with the environment variable technique. It
-is best to choose a single method for defining Logstash settings.
+is best to choose a single method for defining {ls} settings.
 
 ==== Docker defaults
 The following settings have different default values when using the Docker
@@ -224,6 +224,6 @@ be "masked" by the new file.
 
 ==== Logging Configuration
 
-Under Docker, Logstash logs go to standard output by default. To
+Under Docker, {ls} logs go to standard output by default. To
 change this behaviour, use any of the techniques above to replace the
 file at +/usr/share/logstash/config/log4j2.properties+.

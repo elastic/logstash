@@ -1,9 +1,9 @@
 [[setup-logstash]]
-== Setting Up and Running Logstash
+== Setting Up and Running {ls}
 
 Before reading this section, see <<installing-logstash>> for basic installation instructions to get you started.
 
-This section includes additional information on how to set up and run Logstash, including:
+This section includes additional information on how to set up and run {ls}, including:
 
 * <<dir-layout>>
 * <<config-setting-files>>
@@ -19,9 +19,9 @@ This section includes additional information on how to set up and run Logstash, 
 
 
 [[dir-layout]]
-=== Logstash Directory Layout
+=== {ls} Directory Layout
 
-This section describes the default directory structure that is created when you unpack the Logstash installation packages.
+This section describes the default directory structure that is created when you unpack the {ls} installation packages.
 
 [[zip-targz-layout]]
 ==== Directory Layout of `.zip` and `.tar.gz` Archives
@@ -30,20 +30,20 @@ The `.zip` and `.tar.gz` packages are entirely self-contained. All files and
 directories are, by default, contained within the home directory -- the directory
 created when unpacking the archive.
 
-This is very convenient because you don't have to create any directories to start using Logstash, and uninstalling
-Logstash is as easy as removing the home directory.  However, it is advisable to change the default locations of the
+This is very convenient because you don't have to create any directories to start using {ls}, and uninstalling
+{ls} is as easy as removing the home directory.  However, it is advisable to change the default locations of the
 config and the logs directories so that you do not delete important data later on.
 
 [cols="<h,<,<m,<m",options="header",]
 |=======================================================================
 | Type | Description | Default Location | Setting
 | home
-  | Home directory of the Logstash installation.
+  | Home directory of the {ls} installation.
   | `{extract.path}`- Directory created by unpacking the archive
  d|
 
 | bin
-  | Binary scripts, including `logstash` to start Logstash
+  | Binary scripts, including `logstash` to start {ls}
     and `logstash-plugin` to install plugins
   | `{extract.path}/bin`
  d|
@@ -80,12 +80,12 @@ locations for the system:
 |=======================================================================
 | Type | Description | Default Location | Setting
 | home
-  | Home directory of the Logstash installation.
+  | Home directory of the {ls} installation.
   | `/usr/share/logstash`
  d|
 
 | bin
-  | Binary scripts including `logstash` to start Logstash
+  | Binary scripts including `logstash` to start {ls}
     and `logstash-plugin` to install plugins
   | `/usr/share/logstash/bin`
  d|
@@ -96,7 +96,7 @@ locations for the system:
   | `path.settings`
 
 | conf
-  | Logstash pipeline configuration files
+  | {ls} pipeline configuration files
   | `/etc/logstash/conf.d/*.conf`
   | See `/etc/logstash/pipelines.yml`
 
@@ -127,12 +127,12 @@ similar directory layout.
 |=======================================================================
 | Type | Description | Default Location | Setting
 | home
-  | Home directory of the Logstash installation.
+  | Home directory of the {ls} installation.
   | `/usr/share/logstash`
  d|
 
 | bin
-  | Binary scripts, including `logstash` to start Logstash
+  | Binary scripts, including `logstash` to start {ls}
     and `logstash-plugin` to install plugins
   | `/usr/share/logstash/bin`
  d|
@@ -143,7 +143,7 @@ similar directory layout.
   | `path.settings`
 
 | conf
-  | Logstash pipeline configuration files
+  | {ls} pipeline configuration files
   | `/usr/share/logstash/pipeline`
   | `path.config`
 
@@ -159,20 +159,20 @@ similar directory layout.
 
 |=======================================================================
 
-NOTE: Logstash Docker containers do not create log files by default. They log
+NOTE: {ls} Docker containers do not create log files by default. They log
 to standard output.
 
 [[config-setting-files]]
-=== Logstash Configuration Files
+=== {ls} Configuration Files
 
-Logstash has two types of configuration files: _pipeline configuration files_, which define the Logstash processing
-pipeline, and _settings files_, which specify options that control Logstash startup and execution.
+{ls} has two types of configuration files: _pipeline configuration files_, which define the {ls} processing
+pipeline, and _settings files_, which specify options that control {ls} startup and execution.
 
 [[pipeline-config-files]]
 ==== Pipeline Configuration Files
 
-You create pipeline configuration files when you define the stages of your Logstash processing pipeline. On deb and
-rpm, you place the pipeline configuration files in the `/etc/logstash/conf.d` directory. Logstash tries to load only
+You create pipeline configuration files when you define the stages of your {ls} processing pipeline. On deb and
+rpm, you place the pipeline configuration files in the `/etc/logstash/conf.d` directory. {ls} tries to load only
 files with `.conf` extension in the `/etc/logstash/conf.d directory` and ignores all other files.
 
 See <<configuration>> for more info.
@@ -180,16 +180,16 @@ See <<configuration>> for more info.
 [[settings-files]]
 ==== Settings Files
 
-The settings files are already defined in the Logstash installation. Logstash includes the following settings files:
+The settings files are already defined in the {ls} installation. {ls} includes the following settings files:
 
 *`logstash.yml`*::
-  Contains Logstash configuration flags. You can set flags in this file instead of passing the flags at the command
+  Contains {ls} configuration flags. You can set flags in this file instead of passing the flags at the command
   line. Any flags that you set at the command line override the corresponding settings in the `logstash.yml` file. See <<logstash-settings-file>> for more info.
 *`pipelines.yml`*::
-  Contains the framework and instructions for running multiple pipelines in a single Logstash instance. See <<multiple-pipelines>> for more info.
+  Contains the framework and instructions for running multiple pipelines in a single {ls} instance. See <<multiple-pipelines>> for more info.
 *`jvm.options`*::
   Contains JVM configuration flags. Use this file to set initial and maximum values for
-  total heap space. You can also use this file to set the locale for Logstash.
+  total heap space. You can also use this file to set the locale for {ls}.
   Specify each flag on a separate line. All other settings in this file are
   considered expert settings.
 *`log4j2.properties`*:: Contains default settings for `log4j 2` library. See <<log4j2>> for more info.

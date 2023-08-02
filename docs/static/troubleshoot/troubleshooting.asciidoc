@@ -21,7 +21,7 @@ https://github.com/elastic/logstash/issues, or
 [discrete]
 [[discuss]]
 === Discussion forums
-Also check out the https://discuss.elastic.co/c/logstash[Logstash discussion
+Also check out the https://discuss.elastic.co/c/logstash[{ls} discussion
 forum].
 
 include::ts-logstash.asciidoc[]

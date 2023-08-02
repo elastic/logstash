@@ -1,16 +1,16 @@
 [[event-dependent-configuration]]
 === Accessing event data and fields
 
-A Logstash pipeline usually has three stages: inputs -> filters -> outputs. 
+A {ls} pipeline usually has three stages: inputs -> filters -> outputs. 
 Inputs generate events, filters modify them, and outputs ship them elsewhere.
 
 All events have properties. 
 For example, an Apache access log has properties
 like status code (200, 404), request path ("/", "index.html"), HTTP verb
 (GET, POST), client IP address, and so forth. 
-Logstash calls these properties "fields".
+{ls} calls these properties "fields".
 
-Some configuration options in Logstash require the existence of fields in
+Some configuration options in {ls} require the existence of fields in
 order to function.  
 Because inputs generate events, there are no fields to
 evaluate within the input block--they do not exist yet!
@@ -22,7 +22,7 @@ These configuration options depend on events and fields, and therefore, work onl
 [[logstash-config-field-references]]
 ==== Field references
 
-When you need to refer to a field by name, you can use the Logstash <<field-references-deepdive,field reference syntax>>. 
+When you need to refer to a field by name, you can use the {ls} <<field-references-deepdive,field reference syntax>>. 
 
 The basic syntax to access a field is `[fieldname]`. 
 If you are referring to a **top-level field**, you can omit the `[]` and simply
@@ -60,7 +60,7 @@ For more detailed information, see <<field-references-deepdive>>.
 [[sprintf]]
 ==== sprintf format
 
-The field reference format is also used in what Logstash calls 'sprintf format'. 
+The field reference format is also used in what {ls} calls 'sprintf format'. 
 This format enables you to embed field values in other strings. 
 For example, the statsd output has an 'increment' setting that enables you to
 keep a count of apache logs by status code:
@@ -92,7 +92,7 @@ output {
 NOTE: The sprintf format continues to support http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html[deprecated joda time format] strings as well using the `%{+FORMAT}` syntax.
 These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
 
-NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
+NOTE: A {ls} timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 
 [discrete]
 [[conditionals]]
@@ -101,7 +101,7 @@ NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using s
 Sometimes you want to filter or output an event only under
 certain conditions. For that, you can use a conditional.
 
-Conditionals in Logstash look and act the same way they do in programming
+Conditionals in {ls} look and act the same way they do in programming
 languages. Conditionals support `if`, `else if` and `else` statements
 and can be nested.
 
@@ -222,7 +222,7 @@ See <<date-time>> for more details and an example.
 [[metadata]]
 ==== The @metadata field
 
-In Logstash, there is a special field called `@metadata`.  The contents
+In {ls}, there is a special field called `@metadata`.  The contents
 of `@metadata` are not part of any of your events at output time, which
 makes it great to use for conditionals, or extending and building event fields
 with field reference and `sprintf` formatting.

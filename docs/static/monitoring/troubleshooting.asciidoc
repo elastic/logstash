@@ -1,13 +1,13 @@
 [role="xpack"]
 [[monitoring-troubleshooting]]
-=== Troubleshooting monitoring in Logstash
+=== Troubleshooting monitoring in {ls}
 ++++
 <titleabbrev>Troubleshooting</titleabbrev>
 ++++
 
 
 [float]
-==== Logstash Monitoring Not Working After Upgrade
+==== {ls} Monitoring Not Working After Upgrade
 
 When upgrading from older versions, the built-in `logstash_system` user is
 disabled for security reasons. To resume monitoring:

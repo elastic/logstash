@@ -1,5 +1,5 @@
 [[running-logstash-command-line]]
-=== Running Logstash from the Command Line
+=== Running {ls} from the Command Line
 
 [IMPORTANT]
 .macOS Gatekeeper warnings
@@ -27,14 +27,14 @@ https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
 ====
 
 
-To run Logstash from the command line, use the following command:
+To run {ls} from the command line, use the following command:
 
 [source,shell]
 ----
 bin/logstash [options]
 ----
 
-To run Logstash from the Windows command line, use the following command:
+To run {ls} from the Windows command line, use the following command:
 
 [source,shell]
 ----
@@ -42,11 +42,11 @@ bin/logstash.bat [options]
 ----
 
 Where `options` are <<command-line-flags,command-line>> flags that you can
-specify to control Logstash execution. The location of the `bin` directory
+specify to control {ls} execution. The location of the `bin` directory
 varies by platform. See <<dir-layout>> to find the location of `bin\logstash` on
 your system.
 
-The following example runs Logstash and loads the Logstash config defined in
+The following example runs {ls} and loads the {ls} config defined in
 the `mypipeline.conf` file:
 
 [source,shell]
@@ -56,29 +56,29 @@ bin/logstash -f mypipeline.conf
 
 Any flags that you set at the command line override the corresponding settings
 in <<logstash-settings-file>>, but the file
-itself is not changed. It remains as-is for subsequent Logstash runs.
+itself is not changed. It remains as-is for subsequent {ls} runs.
 
-Specifying command line options is useful when you are testing Logstash.
+Specifying command line options is useful when you are testing {ls}.
 However, in a production environment, we recommend that you use
-<<logstash-settings-file>> to control Logstash execution. Using
+<<logstash-settings-file>> to control {ls} execution. Using
 the settings file makes it easier for you to specify multiple options, and it
 provides you with a single, versionable file that you can use to start up
-Logstash consistently for each run.
+{ls} consistently for each run.
 
 [[command-line-flags]]
 ==== Command-Line Flags
 
-Logstash has the following flags. You can use the `--help` flag to display this information.
+{ls} has the following flags. You can use the `--help` flag to display this information.
 
 *`--node.name NAME`*::
-  Specify the name of this Logstash instance. If no value is given it will default to the current
+  Specify the name of this {ls} instance. If no value is given it will default to the current
   hostname.
 
 *`-f, --path.config CONFIG_PATH`*::
-Load the Logstash config from a specific file or directory. If a directory is given, all
+Load the {ls} config from a specific file or directory. If a directory is given, all
 files in that directory will be concatenated in lexicographical order and then parsed as a
 single config file. Specifying this flag multiple times is not supported. If you specify
-this flag multiple times, Logstash uses the last occurrence (for example, `-f foo -f bar`
+this flag multiple times, {ls} uses the last occurrence (for example, `-f foo -f bar`
 is the same as `-f bar`).
 +
 You can specify wildcards (<<glob-support,globs>>) and any matched files will
@@ -90,7 +90,7 @@ load specific files by name:
 bin/logstash --debug -f '/tmp/{one,two,three}'
 ---------------------------------------------
 +
-With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/two`, and
+With this command, {ls} concatenates three config files, `/tmp/one`, `/tmp/two`, and
 `/tmp/three`, and parses them into a single config.
 
 *`-e, --config.string CONFIG_STRING`*::
@@ -114,7 +114,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 
 *`-M, --modules.variable`*::
   Assign a value to a configurable option for a module.  The format for assigning variables is
-  `-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.KEY_NAME=value"` for Logstash variables. For other
+  `-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.KEY_NAME=value"` for {ls} variables. For other
   settings, it will be `-M "MODULE_NAME.KEY_NAME.SUB_KEYNAME=value"`.  The `-M` flag can be used
   as many times as is necessary. If no `-M` options are specified, then the default value for
   that setting will be used.  The `-M` flag is only used in conjunction with the `--modules`
@@ -158,20 +158,20 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Sets the process default value for  ECS compatibility mode.
   Can be an ECS version like `v1` or `v8`, or `disabled`.
   The default is `v8`.
-  Pipelines defined before Logstash 8 operated without ECS in mind.
-  To ensure a migrated pipeline continues to operate as it did in older releases of Logstash, opt-OUT of ECS for the individual pipeline by setting `pipeline.ecs_compatibility: disabled` in its `pipelines.yml` definition.
+  Pipelines defined before {ls} 8 operated without ECS in mind.
+  To ensure a migrated pipeline continues to operate as it did in older releases of {ls}, opt-OUT of ECS for the individual pipeline by setting `pipeline.ecs_compatibility: disabled` in its `pipelines.yml` definition.
   Using the command-line flag will set the default for _all_ pipelines, including new ones.
   See <<ecs-compatibility>> for more info.
 
 *`--pipeline.unsafe_shutdown`*::
-  Force Logstash to exit during shutdown even if there are still inflight events
-  in memory. By default, Logstash will refuse to quit until all received events
+  Force {ls} to exit during shutdown even if there are still inflight events
+  in memory. By default, {ls} will refuse to quit until all received events
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 
 *`--path.data PATH`*::
-  This should point to a writable directory. Logstash will use this directory whenever it needs to store
+  This should point to a writable directory. {ls} will use this directory whenever it needs to store
   data. Plugins will also have access to this path. The default is the `data` directory under
-  Logstash home.
+  {ls} home.
 
 *`-p, --path.plugins PATH`*::
   A path of where to find custom plugins. This flag can be given multiple times to include
@@ -180,10 +180,10 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   and `NAME` is the name of the plugin.
 
 *`-l, --path.logs PATH`*::
-  Directory to write Logstash internal logs to.
+  Directory to write {ls} internal logs to.
 
 *`--log.level LEVEL`*::
- Set the log level for Logstash. Possible values are:
+ Set the log level for {ls}. Possible values are:
 * `fatal`: log very severe error messages that will usually be followed by the application aborting
 * `error`: log errors
 * `warn`: log warnings
@@ -200,12 +200,12 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
   Drop to shell instead of running as normal. Valid shells are "irb" and "pry".
 
 *`-V, --version`*::
-  Emit the version of Logstash and its friends, then exit.
+  Emit the version of {ls} and its friends, then exit.
 
 *`-t, --config.test_and_exit`*::
   Check configuration for valid syntax and then exit. Note that grok patterns are not checked for
-  correctness with this flag. Logstash can read multiple config files from a directory. If you combine this
-  flag with `--log.level=debug`, Logstash will log the combined config file, annotating
+  correctness with this flag. {ls} can read multiple config files from a directory. If you combine this
+  flag with `--log.level=debug`, {ls} will log the combined config file, annotating
   each config block with the source file it came from.
 
 *`-r, --config.reload.automatic`*::
@@ -224,22 +224,22 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 
 *`--api.http.port HTTP_PORT`*::
   Web API http port. This option specifies the bind port for the metrics REST endpoint. The default is 9600-9700.
-  This setting accepts a range of the format 9600-9700. Logstash will pick up the first available port.
+  This setting accepts a range of the format 9600-9700. {ls} will pick up the first available port.
 
 *`--log.format FORMAT`*::
-   Specify if Logstash should write its own logs in JSON form (one event per line) or in plain text
+   Specify if {ls} should write its own logs in JSON form (one event per line) or in plain text
    (using Ruby's Object#inspect). The default is "plain".
 
 *`--path.settings SETTINGS_DIR`*::
   Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
   as the log4j logging configuration. This can also be set through the LS_SETTINGS_DIR environment variable.
-  The default is the `config` directory under Logstash home.
+  The default is the `config` directory under {ls} home.
 
 *`--enable-local-plugin-development`*::
   This flag enables developers to update their local Gemfile without running into issues caused by a frozen lockfile.
   This flag can be helpful when you are developing/testing plugins locally.
 
-NOTE: This flag is for Logstash developers only. End users should not need it.
+NOTE: This flag is for {ls} developers only. End users should not need it.
 
 
 

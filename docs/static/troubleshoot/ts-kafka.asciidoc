@@ -107,7 +107,7 @@ NOTE: The default setting of `auto` is the best option for most circumstances an
 
 *Symptoms*
 
-Logstash’s Kafka Input is causing a much higher number of commits to
+{ls}’s Kafka Input is causing a much higher number of commits to
 the offset topic than expected. Often the complaint also mentions redundant
 offset commits where the same offset is committed repeatedly.
 
@@ -132,7 +132,7 @@ this scenario. For example, raising it by 10x will lead to 10x fewer offset comm
 
 *Symptoms*
 
-Logstash Kafka input randomly logs errors from the configured codec and/or reads
+{ls} Kafka input randomly logs errors from the configured codec and/or reads
 events incorrectly (partial reads, mixing data between multiple events etc.).
 
 -----

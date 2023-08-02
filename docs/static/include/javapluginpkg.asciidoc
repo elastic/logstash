@@ -9,7 +9,7 @@ plugin development, the procedure for packaging Java plugins as Ruby gems
 has been automated through a custom task in the Gradle build file provided
 with the example Java plugins. The following sections describe how to
 configure and execute that packaging task as well as how to install the
-packaged Java plugin in Logstash.
+packaged Java plugin in {ls}.
 
 [float]
 ==== Configuring the Gradle packaging task
@@ -27,7 +27,7 @@ group                      'org.logstashplugins' // must match the package of th
 version                    "${file("VERSION").text.trim()}" // read from required VERSION file
 description                = "Example Java filter implementation"
 pluginInfo.licenses        = ['Apache-2.0'] // list of SPDX license IDs
-pluginInfo.longDescription = "This gem is a Logstash plugin required to be installed on top of the Logstash core pipeline using \$LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
+pluginInfo.longDescription = "This gem is a {ls} plugin required to be installed on top of the {ls} core pipeline using \$LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
 pluginInfo.authors         = ['Elasticsearch']
 pluginInfo.email           = ['info@elastic.co']
 pluginInfo.homepage        = "http://www.elastic.co/guide/en/logstash/current/index.html"
@@ -43,7 +43,7 @@ You should configure the values above for your plugin.
 root of your plugin's codebase.
 * `pluginInfo.pluginType` should be set to one of `input`, `filter`, `codec`,
 or `output`.
-* `pluginInfo.pluginName` must match the name specified on the `@LogstashPlugin`
+* `pluginInfo.pluginName` must match the name specified on the `@{ls}Plugin`
 annotation on the main plugin class. The Gradle packaging task will validate
 that and return an error if they do not match.
 
@@ -52,7 +52,7 @@ that and return an error if they do not match.
 
 Several Ruby source files along with a `gemspec` file and a `Gemfile` are
 required to package the plugin as a Ruby gem. These Ruby files are used only
-for defining the Ruby gem structure or at Logstash startup time to register
+for defining the Ruby gem structure or at {ls} startup time to register
 the Java plugin. They are not used during runtime event processing. The
 Gradle packaging task automatically generates all of these files based on
 the values configured in the section above.
@@ -70,10 +70,10 @@ That task will produce a gem file in the root directory of your
 plugin's codebase with the name `logstash-{plugintype}-<pluginName>-<version>.gem`
 
 [float]
-==== Installing the Java plugin in Logstash
+==== Installing the Java plugin in {ls}
 
 After you have packaged your Java plugin as a Ruby gem, you can install it in
-Logstash with this command:
+{ls} with this command:
 
 [source,shell]
 -----

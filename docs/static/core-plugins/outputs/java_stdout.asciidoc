@@ -18,10 +18,10 @@ include::{include_path}/plugin_header-core.asciidoc[]
 
 ==== Description
 
-Prints events to the STDOUT of the shell running Logstash. This output is convenient for debugging
+Prints events to the STDOUT of the shell running {ls}. This output is convenient for debugging
 plugin configurations by providing instant access to event data after it has passed through the inputs and filters.
 
-For example, the following output configuration in conjunction with the Logstash `-e` command-line flag, will
+For example, the following output configuration in conjunction with the {ls} `-e` command-line flag, will
 allow you to see the results of your event pipeline for quick iteration.
 [source,ruby]
     output {

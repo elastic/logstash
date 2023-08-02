@@ -1,8 +1,8 @@
 [[logging]]
 === Logging
 
-Logstash emits internal logs during its operation, which are placed in `LS_HOME/logs` (or `/var/log/logstash` for
-DEB/RPM). The default logging level is `INFO`. Logstash's logging framework is based on
+{ls} emits internal logs during its operation, which are placed in `LS_HOME/logs` (or `/var/log/logstash` for
+DEB/RPM). The default logging level is `INFO`. {ls}'s logging framework is based on
 http://logging.apache.org/log4j/2.x/[Log4j 2 framework], and much of its functionality is exposed directly to users.
 
 You can configure logging for a particular subsystem, module, or plugin.
@@ -13,26 +13,26 @@ example, if you are debugging issues with Elasticsearch Output, you can increase
 log levels just for that component. This approach reduces noise from
 excessive logging and helps you focus on the problem area.
 
-You can configure logging using the `log4j2.properties` file or the Logstash API.
+You can configure logging using the `log4j2.properties` file or the {ls} API.
 
 * *`log4j2.properties` file.*  Changes made through the `log4j2.properties`
-file require you to restart Logstash for the changes to take effect.  Changes *persist*
+file require you to restart {ls} for the changes to take effect.  Changes *persist*
 through subsequent restarts. 
 * *Logging API.* Changes made through the Logging API are effective immediately 
-without a restart. The changes *do not persist* after Logstash
+without a restart. The changes *do not persist* after {ls}
 is restarted.
 
 [[log4j2]]
 ==== Log4j2 configuration
 
-Logstash ships with a `log4j2.properties` file with out-of-the-box settings, including logging to console. You
+{ls} ships with a `log4j2.properties` file with out-of-the-box settings, including logging to console. You
 can modify this file to change the rotation policy, type, and other
 https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers[log4j2
 configuration]. 
 
-You must restart Logstash to apply any changes that you make to
+You must restart {ls} to apply any changes that you make to
 this file.
-Changes to `log4j2.properties` persist after Logstash is restarted.
+Changes to `log4j2.properties` persist after {ls} is restarted.
 
 Here's an example using `outputs.elasticsearch`:
 
@@ -50,12 +50,12 @@ the logger name is obtained by lowercasing the full class name and replacing dou
 
 ==== Logging APIs
 
-For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
+For temporary logging changes, modifying the `log4j2.properties` file and restarting {ls} leads to unnecessary
 downtime. Instead, you can dynamically update logging levels through the logging API. These settings are effective
 immediately and do not need a restart. 
 
-NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another Logstash
-instance, you need to launch Logstash with the `--api.http.port` flag specified to bind to a different port. See
+NOTE: By default, the logging API attempts to bind to `tcp:9600`. If this port is already in use by another {ls}
+instance, you need to launch {ls} with the `--api.http.port` flag specified to bind to a different port. See
 <<command-line-flags>> for more information.
 
 ===== Retrieve list of logging configurations
@@ -114,7 +114,7 @@ curl -XPUT 'localhost:9600/_node/logging?pretty' -H 'Content-Type: application/j
 '
 --------------------------------------------------
 
-While this setting is in effect, Logstash emits DEBUG-level logs for __all__ the Elasticsearch outputs
+While this setting is in effect, {ls} emits DEBUG-level logs for __all__ the Elasticsearch outputs
 specified in your configuration. Please note this new setting is transient and will not survive a restart.
 
 NOTE: If you want logging changes to persist after a restart, add them to `log4j2.properties` instead. 
@@ -135,7 +135,7 @@ You can specify the log file location using `--path.logs` setting.
 
 ==== Slowlog
 
-Slowlog for Logstash adds the ability to log when a specific event takes an abnormal amount of time to make its way
+Slowlog for {ls} adds the ability to log when a specific event takes an abnormal amount of time to make its way
 through the pipeline. Just like the normal application log, you can find slowlogs in your `--path.logs` directory.
 Slowlog is configured in the `logstash.yml` settings file with the following options:
 

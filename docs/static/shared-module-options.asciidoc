@@ -11,9 +11,9 @@ The following configuration options are supported by all modules:
 +
 Sets the host(s) of the Elasticsearch cluster. For each host, you must specify
 the hostname and port. For example, "myhost:9200". If given an <<array,array>>,
-Logstash will load balance requests across the hosts specified in the hosts
+{ls} will load balance requests across the hosts specified in the hosts
 parameter. It is important to exclude {ref}/modules-node.html[dedicated master
-nodes] from the hosts list to prevent Logstash from sending bulk requests to the
+nodes] from the hosts list to prevent {ls} from sending bulk requests to the
 master nodes. So this parameter should only reference either data or client
 nodes in Elasticsearch.
 +

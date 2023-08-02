@@ -46,7 +46,7 @@ ifndef::default_codec[]
   * Default value is `"plain"`
 endif::[]
 
-The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
+The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your {ls} pipeline.
 endif::no_codec[]
 
 ifeval::["{versioned_docs}"!="true"]
@@ -75,10 +75,10 @@ endif::[]
   * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
   * There is no default value for this setting.
 
-Add a unique `ID` to the plugin configuration. If no ID is specified, Logstash will generate one.
+Add a unique `ID` to the plugin configuration. If no ID is specified, {ls} will generate one.
 It is strongly recommended to set this ID in your configuration. This is particularly useful
 when you have two or more plugins of the same type. For example, if you have 2 {plugin} outputs.
-Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
+Adding a named ID in this case will help in monitoring {ls} when using the monitoring APIs.
 
 ["source","json",subs="attributes"]
 ---------------------------------------------------------------------------------------------------

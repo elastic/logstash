@@ -17,7 +17,7 @@ executable files to the temp directory. This situation causes subsequent failure
 
 [source,sh]
 -----
-[2018-03-25T12:23:01,149][ERROR][org.logstash.Logstash ]
+[2018-03-25T12:23:01,149][ERROR][org.logstash.{ls} ]
 java.lang.IllegalStateException: org.jruby.exceptions.RaiseException:
 (LoadError) Could not load FFI Provider: (NotImplementedError) FFI not
 available: java.lang.UnsatisfiedLinkError: /tmp/jffi5534463206038012403.so:
@@ -39,7 +39,7 @@ Operation not permitted
 
 // https://github.com/elastic/logstash/issues/10496 and https://github.com/elastic/logstash/issues/10498
 
-After an upgrade, Logstash may show warnings similar to these:
+After an upgrade, {ls} may show warnings similar to these:
 
 [source,sh]
 -----
@@ -67,7 +67,7 @@ Try adding these values to the `jvm.options` file.
 
 *Notes:*
 
-* These settings allow Logstash to start without warnings.
+* These settings allow {ls} to start without warnings.
 * This workaround has been tested with simple pipelines. If you have experiences
 to share, please comment in the
 https://github.com/elastic/logstash/issues/10496[issue].
@@ -76,14 +76,14 @@ https://github.com/elastic/logstash/issues/10496[issue].
 [[ts-windows-permission-denied-NUL]]
 ===== 'Permission denied - NUL' errors on Windows
 
-Logstash may not start with some user-supplied versions of the JDK on Windows.  
+{ls} may not start with some user-supplied versions of the JDK on Windows.  
 
 
 *Sample error*
 
 [source,sh]
 -----
-[FATAL] 2022-04-27 15:13:16.650 [main] Logstash - Logstash stopped processing because of an error: (EACCES) Permission denied - NUL
+[FATAL] 2022-04-27 15:13:16.650 [main] {ls} - {ls} stopped processing because of an error: (EACCES) Permission denied - NUL
 org.jruby.exceptions.SystemCallError: (EACCES) Permission denied - NUL
 -----
 
@@ -98,8 +98,8 @@ This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azu
 
 *Work around*
 
-* Use the {logstash-ref}/getting-started-with-logstash.html#ls-jvm[bundled JDK] included with Logstash
-* Or, try adding this value to the `jvm.options` file, and restarting Logstash
+* Use the {logstash-ref}/getting-started-with-logstash.html#ls-jvm[bundled JDK] included with {ls}
+* Or, try adding this value to the `jvm.options` file, and restarting {ls}
 +
 [source,sh]
 -----
@@ -127,8 +127,8 @@ queue section for more information on remediating problems with persistent queue
 ===== Error response code 429
 
 A `429` message indicates that an application is busy handling other requests. For
-example, Elasticsearch sends a `429` code to notify Logstash (or other indexers)
-that the bulk failed because the ingest queue is full. Logstash will retry sending documents.
+example, Elasticsearch sends a `429` code to notify {ls} (or other indexers)
+that the bulk failed because the ingest queue is full. {ls} will retry sending documents.
 
 *Possible actions*
 
@@ -198,8 +198,8 @@ Inputs and outputs might be affected, too.
 
 *Background*
 
-The different plugins running on Logstash can be quite verbose if the logging level is set to `debug` or `trace`.
-As the logging library used in Logstash is synchronous, heavy logging can affect performances.
+The different plugins running on {ls} can be quite verbose if the logging level is set to `debug` or `trace`.
+As the logging library used in {ls} is synchronous, heavy logging can affect performances.
 
 *Solution*
 

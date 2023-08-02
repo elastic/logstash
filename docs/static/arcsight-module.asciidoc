@@ -1,18 +1,18 @@
 [role="xpack"]
 [[arcsight-module]]
-=== Logstash ArcSight Module
+=== {ls} ArcSight Module
 
 ++++
 <titleabbrev>ArcSight Module</titleabbrev>
 ++++
 
-NOTE: The Logstash ArcSight module is an
+NOTE: The {ls} ArcSight module is an
 https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
 and is therefore free to use. Please contact
 mailto:arcsight@elastic.co[arcsight@elastic.co] for questions or more
 information.
 
-The Logstash ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack.
+The {ls} ArcSight module enables you to easily integrate your ArcSight data with the Elastic Stack.
 With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker,
 parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards
 to get you exploring your data immediately.
@@ -20,7 +20,7 @@ to get you exploring your data immediately.
 [[arcsight-prereqs]]
 ==== Prerequisites
 
-These instructions assume that Logstash, Elasticsearch, and Kibana are already
+These instructions assume that {ls}, Elasticsearch, and Kibana are already
 installed. The products you need are https://www.elastic.co/downloads[available
 to download] and easy to install. The Elastic Stack 5.6 (or later) and {xpack} are required for
 this module.   If you are using the Elastic Stack 6.2 and earlier, please see
@@ -30,14 +30,14 @@ for those versions.
 [[arcsight-architecture]]
 ==== Deployment Architecture
 
-The Logstash ArcSight module understands CEF (Common Event Format), and can
+The {ls} ArcSight module understands CEF (Common Event Format), and can
 accept, enrich, and index these events for analysis on the Elastic Stack. ADP
 contains two core data collection components for data streaming:
 
 * The _Smart Connectors (SC)_ are edge log collectors that parse and normalize
-data to CEF prior to publishing to the Logstash receiver.
+data to CEF prior to publishing to the {ls} receiver.
 * The _Event Broker_ is the central hub for incoming data and is based on
-open source Apache Kafka. The Logstash ArcSight module can consume directly from
+open source Apache Kafka. The {ls} ArcSight module can consume directly from
 Event Broker topics.
 
 [[arcsight-getting-started-smartconnector]]
@@ -54,14 +54,14 @@ image::static/images/arcsight-diagram-smart-connectors.svg[ArcSight Smart Connec
 Smart Connector has been configured to publish ArcSight data (to TCP port `5000`) using the CEF syslog
 destination.
 
-NOTE: Logstash, Elasticsearch, and Kibana must run locally. Note that you can also run
-Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
+NOTE: {ls}, Elasticsearch, and Kibana must run locally. Note that you can also run
+Elasticsearch, Kibana and {ls} on separate hosts to consume data from ArcSight.
 
 [[arcsight-instructions-smartconnector]]
 ===== Instructions for Smart Connector
 
-. Start the Logstash ArcSight module by running the following command in the
-Logstash install directory with your respective Smart Connector host and port:
+. Start the {ls} ArcSight module by running the following command in the
+{ls} install directory with your respective Smart Connector host and port:
 +
 ["source","shell",subs="attributes"]
 -----
@@ -73,10 +73,10 @@ bin/logstash --modules arcsight --setup \
 +
 --
 
-The `--modules arcsight` option spins up an ArcSight CEF-aware Logstash
+The `--modules arcsight` option spins up an ArcSight CEF-aware {ls}
 pipeline for ingestion. The `--setup` option creates an `arcsight-*` index
 pattern in Elasticsearch and imports Kibana dashboards and visualizations. On
-subsequent module runs or when scaling out the Logstash deployment,
+subsequent module runs or when scaling out the {ls} deployment,
 the `--setup` option should be omitted to avoid overwriting the existing Kibana
 dashboards.
 
@@ -103,18 +103,18 @@ the Event Broker event stream.
 
 image::static/images/arcsight-diagram-adp.svg[ArcSight Event Broker architecture]
 
-By default, the Logstash ArcSight module consumes from the Event Broker "eb-cef" topic.
+By default, the {ls} ArcSight module consumes from the Event Broker "eb-cef" topic.
 For additional settings, see <<arcsight-module-config>>. Consuming from a
 secured Event Broker port is possible, see <<arcsight-module-config>>.
 
-NOTE: Logstash, Elasticsearch, and Kibana must run locally. Note that you can also run
-Elasticsearch, Kibana and Logstash on separate hosts to consume data from ArcSight.
+NOTE: {ls}, Elasticsearch, and Kibana must run locally. Note that you can also run
+Elasticsearch, Kibana and {ls} on separate hosts to consume data from ArcSight.
 
 [[arcsight-instructions-eventbroker]]
 ===== Instructions for Event Broker
 
-. Start the Logstash ArcSight module by running the following command in the
-Logstash install directory with your respective Event Broker host and port:
+. Start the {ls} ArcSight module by running the following command in the
+{ls} install directory with your respective Event Broker host and port:
 +
 ["source","shell",subs="attributes"]
 -----
@@ -125,10 +125,10 @@ bin/logstash --modules arcsight --setup \
 -----
 +
 --
-The `--modules arcsight` option spins up an ArcSight CEF-aware Logstash
+The `--modules arcsight` option spins up an ArcSight CEF-aware {ls}
 pipeline for ingestion. The `--setup` option creates an `arcsight-*` index
 pattern in Elasticsearch and imports Kibana dashboards and visualizations. On
-subsequent module runs or when scaling out the Logstash deployment,
+subsequent module runs or when scaling out the {ls} deployment,
 the `--setup` option should be omitted to avoid overwriting the existing Kibana
 dashboards.
 
@@ -146,7 +146,7 @@ control the behavior of the ArcSight module.
 
 [[exploring-data-arcsight]]
 ==== Exploring Your Security Data
-Once the Logstash ArcSight module starts receiving events, you can immediately
+Once the {ls} ArcSight module starts receiving events, you can immediately
 begin using the packaged Kibana dashboards to explore and visualize your
 security data. The dashboards rapidly accelerate the time and effort required
 for security analysts and operators to gain situational and behavioral insights
@@ -196,7 +196,7 @@ causing the elevated count of failures?
 [[configuring-arcsight]]
 ==== Configuring the Module
 
-You can specify additional options for the Logstash ArcSight module in the
+You can specify additional options for the {ls} ArcSight module in the
 `logstash.yml` configuration file or with overrides through the command line
 like in the getting started. For more information about configuring modules, see
 <<logstash-modules>>.
@@ -219,16 +219,16 @@ modules:
 -----
 
 [[arcsight-module-config]]
-===== Logstash ArcSight Module Configuration Options
+===== {ls} ArcSight Module Configuration Options
 
 The ArcSight module provides the following settings for configuring the behavior
 of the module. These settings include ArcSight-specific options plus common
-options that are supported by all Logstash modules.
+options that are supported by all {ls} modules.
 
 When you override a setting at the command line, remember to prefix the setting
 with the module name, for example, `arcsight.var.inputs` instead of `var.inputs`.
 
-If you don't specify configuration settings, Logstash uses the defaults.
+If you don't specify configuration settings, {ls} uses the defaults.
 
 *ArcSight Module Options*
 
@@ -239,7 +239,7 @@ If you don't specify configuration settings, Logstash uses the defaults.
 * Default value is "eventbroker"
 --
 +
-Set the input(s) to expose for the Logstash ArcSight module. Valid settings are
+Set the input(s) to expose for the {ls} ArcSight module. Valid settings are
 "eventbroker", "smartconnector", or "eventbroker,smartconnector" (exposes both
 inputs concurrently).
 
@@ -384,7 +384,7 @@ KafkaClient {
 Please note that specifying `jaas_path` and `kerberos_config` here will add these
 to the global JVM system properties. This means if you have multiple Kafka inputs,
 all of them would be sharing the same `jaas_path` and `kerberos_config`.
-If this is not desirable, you would have to run separate instances of Logstash on
+If this is not desirable, you would have to run separate instances of {ls} on
 different JVM instances.
 
 

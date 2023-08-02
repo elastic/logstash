@@ -1,10 +1,10 @@
 [[logstash-settings-file]]
 === logstash.yml
 
-You can set options in the Logstash settings file, `logstash.yml`, to control Logstash execution. For example,
+You can set options in the {ls} settings file, `logstash.yml`, to control {ls} execution. For example,
 you can specify pipeline settings, the location of configuration files, logging options, and other settings.
 Most of the settings in the `logstash.yml` file are also available as <<command-line-flags,command-line flags>>
-when you run Logstash. Any flags that you set at the command line override the corresponding settings in the
+when you run {ls}. Any flags that you set at the command line override the corresponding settings in the
 `logstash.yml` file.
 
 The `logstash.yml` file is written in http://yaml.org/[YAML]. Its location varies by platform (see
@@ -74,7 +74,7 @@ The `logstash.yml` file includes the following settings.
 | Machine's hostname
 
 | `path.data`
-| The directory that Logstash and its plugins use for any persistent needs.
+| The directory that {ls} and its plugins use for any persistent needs.
 |`LOGSTASH_HOME/data`
 
 | `pipeline.id`
@@ -105,8 +105,8 @@ increasing this number to better utilize machine processing power.
 | `50`
 
 | `pipeline.unsafe_shutdown`
-| When set to `true`, forces Logstash to exit during shutdown even if there are still inflight events
-  in memory. By default, Logstash will refuse to quit until all received events
+| When set to `true`, forces {ls} to exit during shutdown even if there are still inflight events
+  in memory. By default, {ls} will refuse to quit until all received events
   have been pushed to the outputs. Enabling this option can lead to data loss during shutdown.
 | `false`
 
@@ -119,7 +119,7 @@ a|
 Set the pipeline event ordering. Valid options are:
 
 * `auto`. Automatically enables ordering if the `pipeline.workers` setting is `1`, and disables otherwise.
-* `true`. Enforces ordering on the pipeline and prevents Logstash from starting
+* `true`. Enforces ordering on the pipeline and prevents {ls} from starting
 if there are multiple workers.
 * `false`. Disables the processing required to preserve order. Ordering will not be
 guaranteed, but you save the processing cost of preserving order.
@@ -143,7 +143,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `disabled`
 
 | `path.config`
-| The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
+| The path to the {ls} config for the main pipeline. If you specify a directory or wildcard,
   config files are read from the directory in alphabetical order.
 | Platform-specific. See <<dir-layout>>.
 
@@ -154,8 +154,8 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 
 | `config.test_and_exit`
 | When set to `true`, checks that the configuration is valid and then exits. Note that grok patterns are not checked for
-  correctness with this setting. Logstash can read multiple config files from a directory. If you combine this
-  setting with `log.level: debug`, Logstash will log the combined config file, annotating
+  correctness with this setting. {ls} can read multiple config files from a directory. If you combine this
+  setting with `log.level: debug`, {ls} will log the combined config file, annotating
   each config block with the source file it came from.
 | `false`
 
@@ -165,7 +165,7 @@ Values other than `disabled` are currently considered BETA, and may produce unin
 | `false`
 
 | `config.reload.interval`
-| How often in seconds Logstash checks the config files for changes. Note that the unit qualifier (`s`) is required.
+| How often in seconds {ls} checks the config files for changes. Note that the unit qualifier (`s`) is required.
 | `3s`
 
 | `config.debug`
@@ -212,7 +212,7 @@ Current options are:
 | 0 (unlimited)
 
 | `queue.max_bytes`
-| The total capacity of the queue (`queue.type: persisted`) in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, Logstash uses whichever criteria is reached first.
+| The total capacity of the queue (`queue.type: persisted`) in number of bytes. Make sure the capacity of your disk drive is greater than the value you specify here. If both `queue.max_events` and `queue.max_bytes` are specified, {ls} uses whichever criteria is reached first.
 | 1024mb (1g)
 
 | `queue.checkpoint.acks`
@@ -224,15 +224,15 @@ Current options are:
 | 1024
 
 | `queue.checkpoint.retry`
-| When enabled, Logstash will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (`queue.type: persisted`)
+| When enabled, {ls} will retry four times per attempted checkpoint write for any checkpoint writes that fail. Any subsequent errors are not retried. This is a workaround for failed checkpoint writes that have been seen only on Windows platform, filesystems with non-standard behavior such as SANs and is not recommended except in those specific circumstances. (`queue.type: persisted`)
 | `true`
 
 | `queue.drain`
-| When enabled, Logstash waits until the persistent queue (`queue.type: persisted`) is drained before shutting down.
+| When enabled, {ls} waits until the persistent queue (`queue.type: persisted`) is drained before shutting down.
 | `false`
 
 | `dead_letter_queue.enable`
-| Flag to instruct Logstash to enable the DLQ feature supported by plugins.
+| Flag to instruct {ls} to enable the DLQ feature supported by plugins.
 | `false`
 
 | `dead_letter_queue.max_bytes`
@@ -337,12 +337,12 @@ The log level. Valid options are:
 | `plain`
 
 | `path.logs`
-| The directory where Logstash will write its log to.
+| The directory where {ls} will write its log to.
 | `LOGSTASH_HOME/logs`
 
 | `pipeline.separate_logs`
-|  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled Logstash will create a different log file for each pipeline,
-using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in Logstash,
+|  This a boolean setting to enable separation of logs per pipeline in different log files. If enabled {ls} will create a different log file for each pipeline,
+using the pipeline.id as name of the file. The destination directory is taken from the `path.log`s setting. When there are many pipelines configured in {ls},
 separating each log lines per pipeline could be helpful in case you need to troubleshoot what’s happening in a single pipeline, without interference of the other ones.
 | `false`
 
@@ -354,12 +354,12 @@ separating each log lines per pipeline could be helpful in case you need to trou
 | Platform-specific. See <<dir-layout>>.
 
 | `allow_superuser`
-| Setting to `true` to allow or `false` to block running Logstash as a superuser.
+| Setting to `true` to allow or `false` to block running {ls} as a superuser.
 | `true`
 
 | `event_api.tags.illegal`
 | When set to `warn`, allow illegal value assignment to the reserved `tags` field.
-When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
+When set to `rename`, {ls} events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
 Setting this flag to `warn` is deprecated and will be removed in a future release.
 | `rename`
 |=======================================================================

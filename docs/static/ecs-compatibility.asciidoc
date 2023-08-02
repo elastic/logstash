@@ -1,5 +1,5 @@
 [[ecs-ls]]
-=== ECS in Logstash
+=== ECS in {ls}
 
 // LS8 will ship with ECS v8, but until ECS v8 is ready we rely on ECS v1 as an approximation.
 :ls8-ecs-major-version: v8

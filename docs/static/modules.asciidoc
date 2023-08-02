@@ -1,7 +1,7 @@
 [[logstash-modules]]
-== Working with Logstash Modules
+== Working with {ls} Modules
 
-Logstash modules provide a quick, end-to-end solution for ingesting data and
+{ls} modules provide a quick, end-to-end solution for ingesting data and
 visualizing it with purpose-built dashboards.
 
 These modules are available:
@@ -10,7 +10,7 @@ These modules are available:
 * <<netflow-module,Netflow Module (deprecated)>>
 * <<azure-module, Microsoft Azure Module (deprecated)>>
 
-Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
+Each module comes pre-packaged with {ls} configurations, Kibana dashboards,
 and other meta files that make it easier for you to set up the Elastic Stack for
 specific use cases or data sources.
 
@@ -22,10 +22,10 @@ easier for you to get started. When you run a module, it will:
 . Set up the Kibana dashboards, including the index pattern, searches, and
 visualizations required to visualize your data in Kibana.
 
-. Run the Logstash pipeline with the configurations required to read and parse
+. Run the {ls} pipeline with the configurations required to read and parse
 the data.
 
-image::static/images/logstash-module-overview.png[Logstash modules overview]
+image::static/images/logstash-module-overview.png[{ls} modules overview]
 
 [discrete]
 [[running-logstash-modules]]
@@ -43,7 +43,7 @@ bin/logstash --modules MODULE_NAME --setup [-M "CONFIG_SETTING=VALUE"]
 
 Where:
 
-* `--modules` runs the Logstash module specified by `MODULE_NAME`.
+* `--modules` runs the {ls} module specified by `MODULE_NAME`.
 
 * `-M "CONFIG_SETTING=VALUE"` is optional and overrides the specified
 configuration setting. You can specify multiple overrides. Each override must
@@ -135,7 +135,7 @@ https://support.apple.com/en-us/HT202491[Safely open apps on your Mac].
 ====
 
 You can override module settings by specifying one or more configuration
-overrides when you start Logstash. To specify an override, you use the `-M`
+overrides when you start {ls}. To specify an override, you use the `-M`
 command line option:
 
 [source,shell]
@@ -156,7 +156,7 @@ bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" -M "netflow.
 ----
 
 Any settings defined in the command line are ephemeral and will not persist across
-subsequent runs of Logstash. If you want to persist a configuration, you need to
+subsequent runs of {ls}. If you want to persist a configuration, you need to
 set it in the `logstash.yml` <<logstash-settings-file,settings file>>.
 
 Settings that you specify at the command line are merged with any settings 

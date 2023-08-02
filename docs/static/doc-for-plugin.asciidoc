@@ -5,13 +5,13 @@ Documentation is a required component of your plugin.
 Quality documentation with good examples contributes to the adoption of your plugin.
 
 The documentation that you write for your plugin will be generated and published
-in the {logstash-ref}/index.html[Logstash Reference] and the
-{lsplugindocs}[Logstash Versioned Plugin Reference].
+in the {logstash-ref}/index.html[{ls} Reference] and the
+{lsplugindocs}[{ls} Versioned Plugin Reference].
 
 .Plugin listing in {ls} Reference
 [NOTE]
 =====
-We may list your plugin in the {logstash-ref}/index.html[Logstash Reference] if
+We may list your plugin in the {logstash-ref}/index.html[{ls} Reference] if
 it meets our <<plugin-acceptance,requirements and quality standards>>. 
 When we list your plugin, we point to _your_ documentation--a readme.md, docs/index.asciidoc, or both--in your plugin repo.
 For more info on this option, see <<plugin-listing>>. 
@@ -31,7 +31,7 @@ The <<plugin-generator,plugin generation utility>> creates a starter file for yo
 ==== Heading IDs
 
 Format heading anchors with variables that can support generated IDs. This approach
-creates unique IDs when the {lsplugindocs}[Logstash Versioned Plugin Reference]
+creates unique IDs when the {lsplugindocs}[{ls} Versioned Plugin Reference]
 is built. Unique heading IDs are required to avoid duplication over multiple versions of a plugin.
 
 *Example*
@@ -46,7 +46,7 @@ Instead, use variables to define it:
 ==== Configuration models
 ----------------------------------
 
-If you hardcode an ID, the {lsplugindocs}[Logstash Versioned Plugin Reference]
+If you hardcode an ID, the {lsplugindocs}[{ls} Versioned Plugin Reference]
 builds correctly the first time. The second time the doc build runs, the ID
 is flagged as a duplicate, and the build fails.
 
@@ -77,9 +77,9 @@ Points to this heading in the same file:
 ==== Configuration models
 ----------------------------------
 
-===== Link to content in the Logstash Reference Guide
+===== Link to content in the {ls} Reference Guide
 
-Use external link syntax for links that point to documentation for other plugins or content in the Logstash Reference Guide.
+Use external link syntax for links that point to documentation for other plugins or content in the {ls} Reference Guide.
 
 *Examples*
 [source,txt]
@@ -104,10 +104,10 @@ If you want your link to display as {logstash-ref}/getting-started-with-logstash
 {logstash-ref}/getting-started-with-logstash.html
 -----
 
-If you want your link to display as {logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash], use this format:
+If you want your link to display as {logstash-ref}/getting-started-with-logstash.html[Getting Started with {ls}], use this format:
 [source,txt]
 -----
-{logstash-ref}/getting-started-with-logstash.html[Getting Started with Logstash]
+{logstash-ref}/getting-started-with-logstash.html[Getting Started with {ls}]
 -----
 
 ===== Link to data type descriptions
@@ -152,7 +152,7 @@ match => {
 ==== Where's my doc?
 
 Plugin documentation goes through several steps before it gets published in the 
-{lsplugindocs}[Logstash Versioned Plugin Reference] and the {logstash-ref}/index.html[Logstash Reference].
+{lsplugindocs}[{ls} Versioned Plugin Reference] and the {logstash-ref}/index.html[{ls} Reference].
 
 Here's an overview of the workflow:
 
@@ -161,7 +161,7 @@ Here's an overview of the workflow:
 * Wait for the continuous integration build to complete successfully.
 * Publish the plugin to https://rubygems.org.
 * A script detects the new or changed version, and picks up the `index.asciidoc` file for inclusion in the doc build.
-* The documentation for your new plugin is published in the {lsplugindocs}[Logstash Versioned Plugin Reference].
+* The documentation for your new plugin is published in the {lsplugindocs}[{ls} Versioned Plugin Reference].
 
 We're not done yet. 
 
@@ -169,8 +169,8 @@ We're not done yet.
 (We sometimes package plugin docs between releases if we make significant changes to plugin documentation or add a new plugin.)
 * The script detects the new or changed version, and picks up the `index.asciidoc` file for inclusion in the doc build.
 * We create a pull request, and merge the new and changed content into the appropriate version branches.
-* For a new plugin, we add a link to the list of plugins in the {logstash-ref}/index.html[Logstash Reference].
-* The documentation for your new (or changed) plugin is published in the {logstash-ref}/index.html[Logstash Reference].
+* For a new plugin, we add a link to the list of plugins in the {logstash-ref}/index.html[{ls} Reference].
+* The documentation for your new (or changed) plugin is published in the {logstash-ref}/index.html[{ls} Reference].
 
 ===== Documentation or plugin updates
 
@@ -187,5 +187,5 @@ For tips on contributing and changelog guidelines, see
 https://github.com/elastic/logstash/blob/main/CONTRIBUTING.md#logstash-plugin-changelog-guidelines[CONTRIBUTING.md].
 
 For general information about contributing, see
-{logstash-ref}/contributing-to-logstash.html[Contributing to Logstash].
+{logstash-ref}/contributing-to-logstash.html[Contributing to {ls}].
 

@@ -1,8 +1,8 @@
 [id="{plugintype}-new-plugin"]
 
-=== How to write a Logstash {plugintype} plugin
+=== How to write a {ls} {plugintype} plugin
 
-To develop a new {plugintype} for Logstash, build a self-contained Ruby gem
+To develop a new {plugintype} for {ls}, build a self-contained Ruby gem
 whose source code lives in its own GitHub repository. The Ruby gem can then be
 hosted and shared on RubyGems.org. You can use the example {plugintype}
 implementation as a starting point. (If you're unfamiliar with
@@ -14,7 +14,7 @@ https://www.ruby-lang.org/en/documentation/quickstart/[].)
 {getstarted}
 
 ===== Create a GitHub repo for your new plugin
-Each Logstash plugin lives in its own GitHub repository. To create a new repository for your plugin:
+Each {ls} plugin lives in its own GitHub repository. To create a new repository for your plugin:
 
 . Log in to GitHub.
 . Click the **Repositories** tab. You'll see a list of other repositories you've forked or contributed to.
@@ -27,9 +27,9 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 
 ===== Use the plugin generator tool
 
-You can create your own Logstash plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
-for a new Logstash plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
-can start adding custom code to process data with Logstash.
+You can create your own {ls} plugin in seconds! The `generate` subcommand of `bin/logstash-plugin` creates the foundation 
+for a new {ls} plugin with templatized files. It creates the correct directory structure, gemspec files, and dependencies so you 
+can start adding custom code to process data with {ls}.
 
 For more information, see <<plugin-generator>>
 
@@ -118,7 +118,7 @@ require "socket" # for Socket.gethostname
 class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
   config_name "example"
 
-  # If undefined, Logstash will complain, even if codec is unused.
+  # If undefined, {ls} will complain, even if codec is unused.
   default :codec, "plain"
 
   # The message string to use in the event.
@@ -225,7 +225,7 @@ require "logstash/namespace"
 class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
 
   # Setting the config_name here is required. This is how you
-  # configure this {plugintype} from your Logstash config.
+  # configure this {plugintype} from your {ls} config.
   #
   # {plugintype} {
   #   {pluginname} { message => "My message..." }
@@ -276,9 +276,9 @@ class LogStash::{pluginclass}::{pluginnamecap} < LogStash::{pluginclass}::Base
   config_name "example"
 
   # This sets the concurrency behavior of this plugin. By default it is :legacy, which was the standard
-  # way concurrency worked before Logstash 2.4
+  # way concurrency worked before {ls} 2.4
   # 
-  # You should explicitly set it to either :single or :shared as :legacy will be removed in Logstash 6.0
+  # You should explicitly set it to either :single or :shared as :legacy will be removed in {ls} 6.0
   # 
   # When configured as :single a single instance of the Output will be shared among the
   # pipeline worker threads. Access to the `#multi_receive/#multi_receive_encoded/#receive` method will be synchronized
@@ -310,7 +310,7 @@ Now let's take a line-by-line look at the example plugin.
 
 ===== `require` Statements
 
-Logstash {plugintype} plugins require parent classes defined in
+{ls} {plugintype} plugins require parent classes defined in
 +logstash/pass:attributes[{plugintype}]s/base+ and logstash/namespace:
 
 [source,ruby]
@@ -321,7 +321,7 @@ require "logstash/namespace"
 ----------------------------------
 
 Of course, the plugin you build may depend on other code, or even gems. Just put
-them here along with these Logstash dependencies.
+them here along with these {ls} dependencies.
 
 ==== Plugin Body
 
@@ -354,7 +354,7 @@ This is the name your plugin will call inside the {plugintype} configuration
 block.
 
 If you set +config_name "pass:attributes[{pluginname}]"+ in your plugin code,
-the corresponding Logstash configuration block would need to look like this:
+the corresponding {ls} configuration block would need to look like this:
 
 // /////////////////////////////////////////////////////////////////////////////
 // If encode_method is NOT defined (not a codec)
@@ -402,11 +402,11 @@ endif::encode_method[]
   config :variable_name, :validate => :variable_type, :default => "Default value", :required => boolean, :deprecated => boolean, :obsolete => string
 ----------------------------------
 The configuration, or `config` section allows you to define as many (or as few)
-parameters as are needed to enable Logstash to process events.
+parameters as are needed to enable {ls} to process events.
 
 There are several configuration attributes:
 
-* `:validate` - allows you to enforce passing a particular data type to Logstash
+* `:validate` - allows you to enforce passing a particular data type to {ls}
 for this configuration option, such as `:string`, `:password`, `:boolean`,
 `:number`, `:array`, `:hash`, `:path` (a file-system path), `uri`, `:codec` (since
 1.2.0), `:bytes`.  Note that this also works as a coercion 
@@ -438,7 +438,7 @@ ifdef::register_method[]
   end # def register
 ----------------------------------
 
-The Logstash `register` method is like an `initialize` method. It was originally
+The {ls} `register` method is like an `initialize` method. It was originally
 created to enforce having `super` called, preventing headaches for newbies.
 (Note: It may go away in favor of `initialize`, in conjunction with some
 enforced testing to ensure `super` is called.)
@@ -478,7 +478,7 @@ end # def filter
 ----------------------------------
 The plugin's `filter` method is where the actual filtering work takes place!
 Inside the `filter` method you can refer to the event data using the `Event`
-object. Event is the main object that encapsulates data flow internally in Logstash 
+object. Event is the main object that encapsulates data flow internally in {ls} 
 and provides an <<event-api, API>> for the plugin developers to interact with the 
 event's content.
 
@@ -498,7 +498,7 @@ Note that configuration variables are now in scope as instance variables, like
   filter_matched(event)
 ----------------------------------
 Calling the `filter_matched` method upon successful execution of the plugin will
-ensure that any fields or tags added through the Logstash configuration for this
+ensure that any fields or tags added through the {ls} configuration for this
 filter will be handled correctly. For example, any `add_field`, `remove_field`,
 `add_tag` and/or `remove_tag` actions will be performed at this time.
 
@@ -747,7 +747,7 @@ codec plugin:
 
 ** `sha1` is the sha1 signature used to verify the integrity of the file
 referenced by `url`.
-** `url` is the address from where Logstash will download the file.
+** `url` is the address from where {ls} will download the file.
 ** `files` is an optional array of files to extract from the downloaded file.
 Note that while tar archives can use absolute or relative paths, treat them as
 absolute in this array.  If `files` is not present, all files will be
@@ -783,7 +783,7 @@ Deprecations are noted in the `logstash-deprecation.log` file in the
 ===== Add a Gemfile
 
 Gemfiles allow Ruby's Bundler to maintain the dependencies for your plugin.
-Currently, all we'll need is the Logstash gem, for testing, but if you require
+Currently, all we'll need is the {ls} gem, for testing, but if you require
 other gems, you should add them in here.
 
 TIP: See http://bundler.io/gemfile.html[Bundler's Gemfile page] for more details.
@@ -809,8 +809,8 @@ Gem::Specification.new do |s|
   s.name = 'logstash-{plugintype}-{pluginname}'
   s.version = '0.1.0'
   s.licenses = ['Apache License (2.0)']
-  s.summary = "This {plugintype} does x, y, z in Logstash"
-  s.description = "This gem is a logstash plugin required to be installed on top of the Logstash core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
+  s.summary = "This {plugintype} does x, y, z in {ls}"
+  s.description = "This gem is a logstash plugin required to be installed on top of the {ls} core pipeline using $LS_HOME/bin/logstash-plugin install gemname. This gem is not a stand-alone program"
   s.authors = ["Elastic"]
   s.email = 'info@elastic.co'
   s.homepage = "http://www.elastic.co/guide/en/logstash/current/index.html"
@@ -836,7 +836,7 @@ It is appropriate to change these values to fit your plugin. In particular,
 `s.licenses` and `s.version` are also important and will come into play when
 you are ready to publish your plugin.
 
-Logstash and all its plugins are licensed under
+{ls} and all its plugins are licensed under
 https://github.com/elastic/logstash/blob/main/LICENSE.txt[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
 please make sure to have this line in your gemspec:
@@ -856,7 +856,7 @@ a gem are only used for testing, then it would be a development dependency.
 [NOTE]
 =========================
 You can also have versioning requirements for your dependencies--including other
-Logstash plugins:
+{ls} plugins:
 
 [source,ruby]
 [subs="attributes"]
@@ -895,13 +895,13 @@ file at http://mvnrepository.com and download the specified version.
 ==== Document your plugin
 Documentation is an important part of your plugin. All plugin documentation is
 rendered and placed in the 
-{logstash-ref}[Logstash Reference] and the {lsplugindocs}[Versioned plugin docs].
+{logstash-ref}[{ls} Reference] and the {lsplugindocs}[Versioned plugin docs].
 
 See <<plugin-doc>> for tips and guidelines.
 
 ==== Add Tests
 
-Logstash loves tests. Lots of tests. If you're using your new {plugintype}
+{ls} loves tests. Lots of tests. If you're using your new {plugintype}
 plugin in a production environment, you'll want to have some tests to ensure you
 are not breaking any existing functionality.
 
@@ -981,9 +981,9 @@ this case, `0.1.0`.
 
 ===== Test installation
 
-You should test install your plugin into a clean installation of Logstash.
+You should test install your plugin into a clean installation of {ls}.
 Download the latest version from the
-https://www.elastic.co/downloads/logstash/[Logstash downloads page].
+https://www.elastic.co/downloads/logstash/[{ls} downloads page].
 
 . Untar and cd in to the directory:
 +
@@ -1005,7 +1005,7 @@ environment, and `0.1.0` with the correct version number from the gemspec file.
 bin/logstash-plugin install /my/logstash/plugins/logstash-{plugintype}-{pluginname}/logstash-{plugintype}-{pluginname}-0.1.0.gem
 ----------------------------------
 +
-* After running this, you should see feedback from Logstash that it was
+* After running this, you should see feedback from {ls} that it was
 successfully installed:
 +
 [source,sh]
@@ -1018,7 +1018,7 @@ Successfully installed 'logstash-{plugintype}-{pluginname}' with version '0.1.0'
 +
 [TIP]
 =======
-You can also use the Logstash plugin tool to determine which plugins are
+You can also use the {ls} plugin tool to determine which plugins are
 currently available:
 
 [source,sh]
@@ -1029,7 +1029,7 @@ Depending on what you have installed, you might see a short or long list of
 plugins: inputs, codecs, filters and outputs.
 =======
 +
-. Now try running Logstash with a simple configuration passed in via the
+. Now try running {ls} with a simple configuration passed in via the
 command-line, using the `-e` flag.
 [NOTE]
 Your results will depend on what your {plugintype} plugin is designed to do.
@@ -1076,7 +1076,7 @@ bin/logstash -e 'input { stdin{ codec => {pluginname}{}} } output {stdout { code
 The {pluginname} {plugintype} plugin will append the contents of `append` (which
 by default appends ", Hello World!")
 
-After starting Logstash, type something, for example "Random output string".
+After starting {ls}, type something, for example "Random output string".
 The resulting output message field contents should be,
 "Random output string, Hello World!":
 
@@ -1157,17 +1157,17 @@ verify that your target is receiving the expected results.
 
 endif::receive_method[]
 
-Congratulations! You've built, deployed and successfully run a Logstash
+Congratulations! You've built, deployed and successfully run a {ls}
 {plugintype}.
 
 ==== Submitting your plugin to http://rubygems.org[RubyGems.org] and https://github.com/logstash-plugins[logstash-plugins]
 
-Logstash uses http://rubygems.org[RubyGems.org] as its repository for all plugin
+{ls} uses http://rubygems.org[RubyGems.org] as its repository for all plugin
 artifacts. Once you have developed your new plugin, you can make it available to
-Logstash users by simply publishing it to RubyGems.org.
+{ls} users by simply publishing it to RubyGems.org.
 
 ===== Licensing
-Logstash and all its plugins are licensed under
+{ls} and all its plugins are licensed under
 https://github.com/elasticsearch/logstash/blob/main/LICENSE[Apache License, version 2 ("ALv2")].
 If you make your plugin publicly available via http://rubygems.org[RubyGems.org],
 please make sure to have this line in your gemspec:
@@ -1220,7 +1220,7 @@ in your local repository.
 . Publishes the gem to RubyGems.org
 ========
 
-That's it! Your plugin is published! Logstash users can now install your plugin
+That's it! Your plugin is published! {ls} users can now install your plugin
 by running:
 
 [source,sh]
@@ -1240,12 +1240,12 @@ we always welcome new plugins!
 Some of the many benefits of having your plugin in the logstash-plugins
 repository are:
 
-* **Discovery.** Your plugin will appear in the {logstash-ref}[Logstash Reference],
-where Logstash users look first for plugins and documentation.
+* **Discovery.** Your plugin will appear in the {logstash-ref}[{ls} Reference],
+where {ls} users look first for plugins and documentation.
 * **Documentation.** Your plugin documentation will automatically be added to the
-{logstash-ref}[Logstash Reference].
+{logstash-ref}[{ls} Reference].
 * **Testing.** With our testing infrastructure, your plugin will be continuously
-tested against current and future releases of Logstash.  As a result, users will
+tested against current and future releases of {ls}.  As a result, users will
 have the assurance that if incompatibilities arise, they will be quickly
 discovered and corrected.
 
@@ -1256,12 +1256,12 @@ coherence, quality, readability, stability and security.
 * **Tests.** Your plugin must contain tests to be accepted.  These tests are also
 subject to code review for scope and completeness.  It's ok if you don't know
 how to write tests -- we will guide you. We are working on publishing a guide to
-creating tests for Logstash which will make it easier.  In the meantime, you can
+creating tests for {ls} which will make it easier.  In the meantime, you can
 refer to http://betterspecs.org/ for examples.
 
 To begin migrating your plugin to logstash-plugins, simply create a new
 https://github.com/elasticsearch/logstash/issues[issue] in
-the Logstash repository. When the acceptance guidelines are completed, we will
+the {ls} repository. When the acceptance guidelines are completed, we will
 facilitate the move to the logstash-plugins organization using the recommended
 https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization[github process].
 

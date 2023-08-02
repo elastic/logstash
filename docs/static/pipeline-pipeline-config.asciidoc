@@ -1,9 +1,9 @@
 [[pipeline-to-pipeline]]
 === Pipeline-to-pipeline communication
 
-When using the multiple pipeline feature of Logstash, you may want to connect multiple pipelines within the same Logstash instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
+When using the multiple pipeline feature of {ls}, you may want to connect multiple pipelines within the same {ls} instance. This configuration can be useful to isolate the execution of these pipelines, as well as to help break-up the logic of complex pipelines. The `pipeline` input/output enables a number of advanced architectural patterns discussed later in this document.
 
-If you need to set up communication _between_ Logstash instances, use either {logstash-ref}/ls-to-ls.html[Logstash-to-Logstash] communications, or an intermediary queue, such as Kafka or Redis.
+If you need to set up communication _between_ {ls} instances, use either {logstash-ref}/ls-to-ls.html[{ls}-to-{ls}] communications, or an intermediary queue, such as Kafka or Redis.
 
 TIP: Persistent queues (PQs) can help keep data moving through pipelines.  
 See <<pq-pline-pline>> to learn how PQs can enhance your
@@ -12,7 +12,7 @@ pipeline-to-pipeline communication strategy.
 [[pipeline-to-pipeline-overview]]
 ==== Configuration overview
 
-Use the `pipeline` input and `pipeline` output to connect two pipelines running within the same Logstash instance. These inputs use a client-server approach, where the `pipeline` input registers a virtual address that a `pipeline` output can connect to.
+Use the `pipeline` input and `pipeline` output to connect two pipelines running within the same {ls} instance. These inputs use a client-server approach, where the `pipeline` input registers a virtual address that a `pipeline` output can connect to.
 
 . Create a 'downstream' pipeline that listens for events on a virtual address.
 . Create an 'upstream' pipeline that produces events, sending them through a `pipeline` output to one or more virtual addresses.
@@ -31,11 +31,11 @@ Here is a simple example of this configuration.
 [[how-pipeline-to-pipeline-works]]
 ===== How it works
 
-The `pipeline` input acts as a virtual server listening on a single virtual address in the local process. Only `pipeline` outputs running on the same local Logstash can send events to this address. Pipeline `outputs` can send events to a list of virtual addresses. A `pipeline` output will be blocked if the downstream pipeline is blocked or unavailable.
+The `pipeline` input acts as a virtual server listening on a single virtual address in the local process. Only `pipeline` outputs running on the same local {ls} can send events to this address. Pipeline `outputs` can send events to a list of virtual addresses. A `pipeline` output will be blocked if the downstream pipeline is blocked or unavailable.
 
 When events are sent across pipelines, their data is fully copied. Modifications to an event in a downstream pipeline do not affect that event in any upstream pipelines.
 
-The `pipeline` plugin may be the most efficient way to communicate between pipelines, but it still incurs a performance cost. Logstash must duplicate each event in full on the Java heap for each downstream pipeline. Using this feature may affect the heap memory utilization of Logstash.
+The `pipeline` plugin may be the most efficient way to communicate between pipelines, but it still incurs a performance cost. {ls} must duplicate each event in full on the Java heap for each downstream pipeline. Using this feature may affect the heap memory utilization of {ls}.
 
 [[delivery-guarantees]]
 ===== Delivery guarantees
@@ -52,13 +52,13 @@ downstream pipeline without blocking any upstream pipelines sending to it.
 These delivery guarantees also inform the shutdown behavior of this feature. When performing a pipeline reload, changes
 will be made immediately as the user requests, even if that means removing a downstream pipeline receiving events from
 an upstream pipeline. This will cause the upstream pipeline to block. You must restore the downstream pipeline to
-cleanly shut down Logstash. You may issue a force kill, but inflight events may be lost unless the persistent queue is
+cleanly shut down {ls}. You may issue a force kill, but inflight events may be lost unless the persistent queue is
 enabled for that pipeline.
 
 [[avoid-cycles]]
 ===== Avoid cycles
 
-When you connect pipelines, keep the data flowing in one direction. Looping data or connecting the pipelines into a cyclic graph can cause problems. Logstash waits for each pipeline's work to complete before shutting down. Pipeline loops can prevent Logstash from shutting down cleanly.
+When you connect pipelines, keep the data flowing in one direction. Looping data or connecting the pipelines into a cyclic graph can cause problems. {ls} waits for each pipeline's work to complete before shutting down. Pipeline loops can prevent {ls} from shutting down cleanly.
 
 [[architectural-patterns]]
 ==== Architectural patterns
@@ -126,7 +126,7 @@ Notice how following the flow of data is a simple due to the fact that each pipe
 [[output-isolator-pattern]]
 ===== The output isolator pattern
 
-You can use the output isolator pattern to prevent Logstash from becoming blocked if one of multiple outputs experiences a temporary failure. Logstash, by default, is blocked when any single output is down. This behavior is important in guaranteeing at-least-once delivery of data. 
+You can use the output isolator pattern to prevent {ls} from becoming blocked if one of multiple outputs experiences a temporary failure. {ls}, by default, is blocked when any single output is down. This behavior is important in guaranteeing at-least-once delivery of data. 
 
 For example, a server might be configured to send log data to both Elasticsearch and an HTTP endpoint. The HTTP endpoint might be frequently unavailable due to regular service or other reasons. In this scenario, data would be paused from sending to Elasticsearch any time the HTTP endpoint is down. 
 

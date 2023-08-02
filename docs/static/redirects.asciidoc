@@ -34,18 +34,18 @@ from many known apps, such as nginx or apache.
 // HOMEBREW INSTALL 
 
 [role="exclude",id="brew"]
-=== Homebrew (MacOS) for Logstash
+=== Homebrew (MacOS) for {ls}
 
-As of Logstash 8.0, Elastic no longer maintains a homebrew cask containing formulae for installing the Elastic-licensed distribution of Logstash.
-If you want to run the full distribution of Logstash on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
+As of {ls} 8.0, Elastic no longer maintains a homebrew cask containing formulae for installing the Elastic-licensed distribution of {ls}.
+If you want to run the full distribution of {ls} on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
 
 You can still install the Apache-licensed OSS distribution with homebrew using the formulae maintained by Homebrew.
 
 [role="exclude",id="brew-start"]
-==== Homebrew for Logstash
+==== Homebrew for {ls}
 
-As of Logstash 8.0, Elastic no longer maintains a Homebrew cask containing formulae for installing the Elastic-licensed distribution of Logstash.
-If you want to run the full distribution of Logstash on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
+As of {ls} 8.0, Elastic no longer maintains a Homebrew cask containing formulae for installing the Elastic-licensed distribution of {ls}.
+If you want to run the full distribution of {ls} on a Mac, you are encouraged to <<installing-binary,install from a downloaded binary distribution>>.
 
 // UPGRADE FROM OLDER VERSIONS
 
@@ -65,11 +65,11 @@ applies for your upgrade scenario.
 [float]
 ==== Drain the Persistent Queue (version 6.2.x and earlier)
 
-The following applies only if you are upgrading from Logstash version 6.2.x or
+The following applies only if you are upgrading from {ls} version 6.2.x or
 earlier with the persistent queue (PQ) enabled.
 
 We strive to maintain backward compatibility within a given major release. 
-Serialization issues in Logstash 6.2.x and earlier required us to break
+Serialization issues in {ls} 6.2.x and earlier required us to break
 that compatibility in version 6.3.0 to ensure correctness of operation. For more
 technical details, please check our tracking github issue for this
 matter, https://github.com/elastic/logstash/issues/9494[#9494].
@@ -80,13 +80,13 @@ the persistent queue before you upgrade from version 6.2.x and earlier.
 To drain the queue:
 
 . In the logstash.yml file, set `queue.drain: true`.
-. Restart Logstash for this setting to take effect. 
-. Shutdown Logstash (using CTRL+C or SIGTERM), and wait for the queue to empty.
+. Restart {ls} for this setting to take effect. 
+. Shutdown {ls} (using CTRL+C or SIGTERM), and wait for the queue to empty.
 
 When the queue is empty:
 
 . Complete the upgrade.
-. Restart Logstash.
+. Restart {ls}.
 
 We have resolved issues with data incompatibilities for version 6.3 and later. 
 These steps won’t be required for future upgrades.
@@ -95,14 +95,14 @@ These steps won’t be required for future upgrades.
 [role="exclude",id="upgrading-logstash-pqs-6.3"]
 ==== Upgrading from version 6.3 (and later) with Persistent Queues enabled 
 
-Upgrading Logstash with persistent queues enabled is supported. The persistent
-queue directory is self-contained and can be read by a new Logstash instance
-running the same pipeline. You can safely shut down the original Logstash
+Upgrading {ls} with persistent queues enabled is supported. The persistent
+queue directory is self-contained and can be read by a new {ls} instance
+running the same pipeline. You can safely shut down the original {ls}
 instance, spin up a new instance, and set `path.queue` in the `logstash.yml`
 <<logstash-settings-file,settings file>> to point to the original queue directory.
 You can also use a mounted drive to make this workflow easier.
 
-Keep in mind that only one Logstash instance can write to `path.queue`. You
+Keep in mind that only one {ls} instance can write to `path.queue`. You
 cannot have the original instance and the new instance writing to the queue at
 the same time.
 

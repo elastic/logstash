@@ -1,6 +1,6 @@
 [role="xpack"]
 [[configuration-management-settings]]
-==== Configuration Management Settings in Logstash
+==== Configuration Management Settings in {ls}
 ++++
 <titleabbrev>Configuration Management Settings</titleabbrev>
 ++++
@@ -8,7 +8,7 @@
 You can set the following `xpack.management` settings in `logstash.yml` to
 enable
 <<logstash-centralized-pipeline-management,centralized pipeline management>>.
-For more information about configuring Logstash, see <<logstash-settings-file>>.
+For more information about configuring {ls}, see <<logstash-settings-file>>.
 
 The following example shows basic settings that assume {es} and {kib} are
 installed on the localhost with basic AUTH enabled, but no SSL. If you're using
@@ -28,31 +28,31 @@ xpack.management.pipeline.id: ["apache", "cloudwatch_logs"]
 `xpack.management.enabled`::
 
 Set to `true` to enable {xpack} centralized configuration management for
-Logstash.
+{ls}.
 
 `xpack.management.logstash.poll_interval`::
 
-How often the Logstash instance polls for pipeline changes from Elasticsearch.
+How often the {ls} instance polls for pipeline changes from Elasticsearch.
 The default is 5s.
 
 `xpack.management.pipeline.id`::
 
 Specify a comma-separated list of pipeline IDs to register for centralized
-pipeline management. After changing this setting, you need to restart Logstash
+pipeline management. After changing this setting, you need to restart {ls}
 to pick up changes.
 Pipeline IDs support `*` as a <<wildcard-in-pipeline-id, wildcard>> for matching multiple IDs
 
 `xpack.management.elasticsearch.hosts`::
 
-The {es} instance that will store the Logstash pipeline configurations and
+The {es} instance that will store the {ls} pipeline configurations and
 metadata. This might be the same {es} instance specified in the `outputs`
-section in your Logstash configuration, or a different one. Defaults to
+section in your {ls} configuration, or a different one. Defaults to
 `http://localhost:9200`.
 
 `xpack.management.elasticsearch.username` and `xpack.management.elasticsearch.password`::
 
 If your {es} cluster is protected with basic authentication, these settings
-provide the username and password that the Logstash instance uses to
+provide the username and password that the {ls} instance uses to
 authenticate for accessing the configuration data. The username you specify here
 should have the built-in `logstash_admin` role and the customized `logstash_writer` role, which provides access to system
 indices for managing configurations. Starting with Elasticsearch version 7.10.0, the
@@ -61,7 +61,7 @@ If a user has created their own roles and granted them access to the .logstash i
 
 `xpack.management.elasticsearch.proxy`::
 
-Optional setting that allows you to specify a proxy URL if Logstash needs to use a proxy
+Optional setting that allows you to specify a proxy URL if {ls} needs to use a proxy
 to reach your Elasticsearch cluster.
 
 `xpack.management.elasticsearch.ssl.ca_trusted_fingerprint`::
@@ -135,7 +135,7 @@ Supported cipher suites vary depending on the Java and protocol versions.
 If you're using {es} in {ecloud}, you should specify the identifier here.
 This setting is an alternative to `xpack.management.elasticsearch.hosts`.
 If `cloud_id` is configured, `xpack.management.elasticsearch.hosts` should not be used.
-This {es} instance will store the Logstash pipeline configurations and metadata.
+This {es} instance will store the {ls} pipeline configurations and metadata.
 
 `xpack.management.elasticsearch.cloud_auth`::
 

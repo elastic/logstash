@@ -1,7 +1,7 @@
 [[private-rubygem]]
 === Private Gem Repositories
 
-The Logstash plugin manager connects to a Ruby gems repository to install and update Logstash plugins. By default, this
+The {ls} plugin manager connects to a Ruby gems repository to install and update {ls} plugins. By default, this
 repository is http://rubygems.org.
 
 Some use cases are unable to use the default repository, as in the following examples:
@@ -28,7 +28,7 @@ By default, the gemfile's `source` line reads:
 
 [source,shell]
 ----------
-# This is a Logstash generated Gemfile.
+# This is a {ls} generated Gemfile.
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://rubygems.org"
@@ -38,7 +38,7 @@ To change the source, edit the `source` line to contain your preferred source, a
 
 [source,shell]
 ----------
-# This is a Logstash generated Gemfile.
+# This is a {ls} generated Gemfile.
 # If you modify this file manually all comments and formatting will be lost.
 
 source "https://my.private.repository"
