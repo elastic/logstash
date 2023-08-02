@@ -12,7 +12,18 @@ The test cases against serverless Elasticsearch covers the following scenarios
 
 ### Credentials
 
-The username, password, API key and hosts are stored in Vault. 
+The username, password, API key and hosts are stored in Vault `secret/ci/elastic-logstash/serverless-test`.
+
+| Vault field             |                                       |
+|-------------------------|---------------------------------------|
+| es_user                 | username of superuser                 |
+| es_user_pw              | password of superuser                 |
+| ls_role_api_key_encoded | base64 api_key for integration-filter |
+| ls_plugin_api_key       | id:api_key for Logstash plugins       |
+| es_host                 | Elasticsearch endpoint                |
+| kb_host                 | Kibana endpoint                       |
+
+
 
 Generate API key for Logstash with limited privileges instead of using superuser `elastic`.
 
