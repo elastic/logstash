@@ -69,9 +69,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
       end)
       ReceiveResponse.completed()
     rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
-      # WARN is intentional, if ensure_delivery disabled we lose warnings in PipelineBus.java caused by ReceiveResponse.failed_at(stream_position, e)
-      logger.warn('queueing event failed', message: e.message, exception: e.class)
-      logger.debug? && logger.debug('queueing event failed trace', message: e.message, exception: e.class, backtrace: e.backtrace)
+      logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
       ReceiveResponse.failed_at(stream_position, e)
     end
   end

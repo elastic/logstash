@@ -403,6 +403,8 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public long write(Queueable element) throws IOException {
+        // pre-check before incurring serialization overhead;
+        // we must check again after acquiring the lock.
         if (this.closed.get()) {
             throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
         }
