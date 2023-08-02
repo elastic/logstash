@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# Legacy monitoring is disabled. Serverless does not support /_monitoring/bulk, hence this test always fails to ingest metrics.
 set -ex
 
 source ./$(dirname "$0")/common.sh
