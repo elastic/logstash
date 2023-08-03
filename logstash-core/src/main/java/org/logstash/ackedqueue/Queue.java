@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,7 +79,7 @@ public final class Queue implements Closeable {
     private final Method deserializeMethod;
 
     // thread safety
-    private final Lock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
     private final Condition notFull  = lock.newCondition();
     private final Condition notEmpty = lock.newCondition();
 
@@ -809,16 +808,14 @@ public final class Queue implements Closeable {
     /**
      * return the {@link Page} for the next read operation.
      * @return {@link Page} will be either a read-only tail page or the head page.
-     * @throws QueueRuntimeException if queue is closed
+     * @throws QueueRuntimeException if other thread acquired lock
      */
     private Page nextReadPage() {
-        lock.lock();
-        try {
-            // look at head page if no unreadTailPages
-            return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
-        } finally {
-            lock.unlock();
+        if (!lock.isHeldByCurrentThread()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_READ_PAGE);
         }
+
+        return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
     }
 
     private void removeUnreadPage(Page p) {

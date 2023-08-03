@@ -40,15 +40,6 @@ public final class JrubyAckedWriteClientExt extends JRubyAbstractQueueWriteClien
 
     private JRubyAckedQueueExt queue;
 
-    @JRubyMethod(meta = true, required = 2)
-    public static JrubyAckedWriteClientExt create(final ThreadContext context, final IRubyObject recv,
-                                                  final IRubyObject queue, final IRubyObject closed) {
-        return new JrubyAckedWriteClientExt(
-                context.runtime, RubyUtil.ACKED_WRITE_CLIENT_CLASS,
-                queue.toJava(JRubyAckedQueueExt.class)
-        );
-    }
-
     public static JrubyAckedWriteClientExt create(final JRubyAckedQueueExt queue) {
         return new JrubyAckedWriteClientExt(RubyUtil.RUBY, RubyUtil.ACKED_WRITE_CLIENT_CLASS, queue);
     }

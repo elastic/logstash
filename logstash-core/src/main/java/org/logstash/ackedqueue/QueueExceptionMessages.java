@@ -37,6 +37,6 @@ public class QueueExceptionMessages {
 
     public final static String WHILE_WRITING = "Unhandleable error occurred while writing to queue.";
 
-    public final static String WHILE_READING_NEXT_PAGE = "Attempted to read next page on a closed acked queue.";
+    public final static String CANNOT_READ_PAGE = "Cannot get next read page without first acquiring the lock.";
 
 }
