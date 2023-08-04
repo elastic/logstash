@@ -51,6 +51,19 @@ module LogStash::Util
     Thread.current[:plugin] = plugin
   end
 
+  def self.with_logging_thread_context(override_context)
+    java_import org.apache.logging.log4j.ThreadContext
+
+    backup = ThreadContext.getImmutableContext()
+    ThreadContext.putAll(override_context)
+
+    yield
+
+  ensure
+    ThreadContext.removeAll(override_context.keys)
+    ThreadContext.putAll(backup)
+  end
+
   def self.thread_info(thread)
     # When the `thread` is dead, `Thread#backtrace` returns `nil`; fall back to an empty array.
     backtrace = (thread.backtrace || []).map do |line|

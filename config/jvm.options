@@ -46,7 +46,8 @@
 #-Djna.nosys=true
 
 # Turn on JRuby invokedynamic
--Djruby.compile.invokedynamic=true
+# TEMPORARILY DISABLED FOR DEV WHILE 9.4.3.0 is broken
+-Djruby.compile.invokedynamic=false
 
 ## heap dumps
 

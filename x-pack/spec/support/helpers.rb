@@ -30,6 +30,8 @@ def apply_settings(settings_values, settings = nil)
     settings.set(key, value)
   end
 
+  return yield(settings) if block_given?
+
   settings
 end
 
