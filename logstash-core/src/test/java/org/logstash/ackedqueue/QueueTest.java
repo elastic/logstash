@@ -40,8 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,6 +48,7 @@ import org.junit.Ignore;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -59,6 +58,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
+import static org.logstash.util.ExceptionMatcher.assertThrows;
 
 public class QueueTest {
 
@@ -1098,7 +1098,7 @@ public class QueueTest {
             queue.open();
             fail("expected queue.open() to throws when not enough disk free");
         } catch (IOException e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString("Unable to allocate"));
+            assertThat(e.getMessage(), containsString("Unable to allocate"));
         }
 
         // at this point the Queue lock should be released and Queue.open should not throw a LockException
@@ -1144,5 +1144,21 @@ public class QueueTest {
             File cp0 = Paths.get(dataPath, "checkpoint.0").toFile();
             assertFalse("Dangling page's checkpoint file should be removed", cp0.exists());
         }
+    }
+
+    @Test
+    public void writeToClosedQueueException() throws Exception {
+        Settings settings = TestSettings.persistedQueueSettings(100, dataPath);
+        Queue queue = new Queue(settings);
+
+        queue.open();
+        queue.write(new StringElement("First test string to be written in queue."));
+        queue.write(new StringElement("Second test string to be written in queue."));
+        queue.close();
+
+        final QueueRuntimeException qre = assertThrows(QueueRuntimeException.class, () -> {
+            queue.write(new StringElement("Third test string to be REJECTED to write in queue."));
+        });
+        assertThat(qre.getMessage(), containsString("Tried to write to a closed queue."));
     }
 }

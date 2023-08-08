@@ -21,7 +21,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -41,14 +41,13 @@ import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * JRuby extension
- * */
+ */
 @JRubyClass(name = "WrappedAckedQueue")
 public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
-    private final AtomicBoolean isClosed = new AtomicBoolean();
 
     @JRubyMethod(optional = 8)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
@@ -57,7 +56,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        boolean checkpointRetry = !((RubyBoolean)args[6]).isFalse();
+        boolean checkpointRetry = !((RubyBoolean) args[6]).isFalse();
         long queueMaxBytes = RubyFixnum.num2long(args[7]);
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
@@ -78,19 +77,16 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     public void close() throws IOException {
         queue.close();
-        isClosed.set(true);
     }
 
     @JRubyMethod(name = {"push", "<<"})
     public void rubyPush(ThreadContext context, IRubyObject event) {
-        checkIfClosed("write");
         queue.rubyWrite(context, ((JrubyEventExtLibrary.RubyEvent) event).getEvent());
     }
 
     @JRubyMethod(name = "read_batch")
     public IRubyObject rubyReadBatch(ThreadContext context, IRubyObject size, IRubyObject wait) {
-        checkIfClosed("read a batch");
-        return queue.ruby_read_batch(context, size, wait);
+        return queue.rubyReadBatch(context, size, wait);
     }
 
     @JRubyMethod(name = "is_empty?")
@@ -100,7 +96,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
-        return JrubyAckedWriteClientExt.create(queue, isClosed);
+        return JrubyAckedWriteClientExt.create(queue);
     }
 
     @Override
@@ -116,11 +112,5 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
         return context.nil;
-    }
-
-    private void checkIfClosed(String action) {
-        if (isClosed.get()) {
-            throw new RuntimeException("Attempted to " + action + " on a closed AckedQueue");
-        }
     }
 }
