@@ -99,7 +99,7 @@ public final class Queue implements Closeable {
             }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
-            throw new IllegalStateException(QueueExceptionMessages.CREATING_QUEUE_DIR_ERROR, ex);
+            throw new IllegalStateException(QueueExceptionMessages.CANNOT_CREATE_QUEUE_DIR, ex);
         }
 
         this.pageCapacity = settings.getCapacity();
@@ -405,7 +405,7 @@ public final class Queue implements Closeable {
         // pre-check before incurring serialization overhead;
         // we must check again after acquiring the lock.
         if (this.closed.get()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
         }
 
         byte[] data = element.serialize();
@@ -421,7 +421,7 @@ public final class Queue implements Closeable {
         try {
             // ensure that the queue is still open now that this thread has acquired the lock.
             if (this.closed.get()) {
-                throw new QueueRuntimeException(QueueExceptionMessages.WRITE_TO_CLOSED_QUEUE);
+                throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
             }
 
             if (!this.headPage.hasCapacity(data.length)) {
@@ -810,11 +810,11 @@ public final class Queue implements Closeable {
      */
     private Page nextReadPage() {
         if (!lock.isHeldByCurrentThread()) {
-            throw new IllegalStateException(QueueExceptionMessages.CANNOT_READ_PAGE);
+            throw new IllegalStateException(QueueExceptionMessages.CANNOT_READ_PAGE_WITHOUT_LOCK);
         }
 
         if (isClosed()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_READ_FROM_CLOSED_QUEUE);
         }
 
 

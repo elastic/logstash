@@ -25,18 +25,18 @@ package org.logstash.ackedqueue;
  */
 public class QueueExceptionMessages {
 
-    public final static String WHILE_READING = "Attempted to read on a closed acked queue.";
+    public final static String CANNOT_READ_FROM_CLOSED_QUEUE = "Attempted to read on a closed acked queue.";
 
-    public final static String WRITE_TO_CLOSED_QUEUE = "Tried to write to a closed queue.";
+    public final static String CANNOT_WRITE_TO_CLOSED_QUEUE = "Tried to write to a closed queue.";
 
     public final static String BIGGER_DATA_THAN_PAGE_SIZE = "data to be written is bigger than page capacity";
 
-    public final static String CREATING_QUEUE_DIR_ERROR = "Error creating queue directories.";
+    public final static String CANNOT_CREATE_QUEUE_DIR = "Error creating queue directories.";
 
     public final static String CANNOT_DESERIALIZE = "cannot find deserialize method on class ";
 
-    public final static String WHILE_WRITING = "Unhandleable error occurred while writing to queue.";
+    public final static String UNHANDLED_ERROR_WRITING_TO_QUEUE = "Unhandleable error occurred while writing to queue.";
 
-    public final static String CANNOT_READ_PAGE = "Cannot get next read page without first acquiring the lock.";
+    public final static String CANNOT_READ_PAGE_WITHOUT_LOCK = "Cannot get next read page without first acquiring the lock.";
 
 }

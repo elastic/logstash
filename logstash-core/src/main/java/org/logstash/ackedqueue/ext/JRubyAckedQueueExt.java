@@ -139,7 +139,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
         try {
             this.queue.write(event);
         } catch (IOException e) {
-            throw new IllegalStateException(QueueExceptionMessages.WHILE_WRITING, e);
+            throw new IllegalStateException(QueueExceptionMessages.UNHANDLED_ERROR_WRITING_TO_QUEUE, e);
         }
     }
 
