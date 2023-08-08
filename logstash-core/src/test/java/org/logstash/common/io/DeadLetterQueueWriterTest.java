@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,6 +43,7 @@ import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
 import org.logstash.LockException;
+import org.logstash.Timestamp;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.is;
@@ -343,6 +345,91 @@ public class DeadLetterQueueWriterTest {
                     .collect(Collectors.toSet());
             assertEquals(Collections.singleton("10.log"), segments);
         }
+    }
+
+    @Test
+    public void testUpdateOldestSegmentReference() throws IOException {
+        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 20 * MB)
+                .build()) {
+
+            final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
+
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("1.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("2.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("3.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            // Exercise
+            sut.updateOldestSegmentReference();
+
+            // Verify
+            final Optional<Path> oldestSegmentPath = sut.getOldestSegmentPath();
+            assertTrue(oldestSegmentPath.isPresent());
+            assertEquals("1.log", oldestSegmentPath.get().getFileName().toString());
+        }
+    }
+
+    @Test
+    public void testUpdateOldestSegmentReferenceWithDeletedSegment() throws IOException {
+        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 20 * MB)
+                .build()) {
+
+            final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("1.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("2.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            // Exercise
+            sut.updateOldestSegmentReference();
+
+            // Delete 1.log (oldest)
+            Files.delete(sut.getOldestSegmentPath().get());
+
+            sut.updateOldestSegmentReference();
+
+            // Verify
+            assertEquals("2.log",sut.getOldestSegmentPath().get().getFileName().toString());
+        }
+    }
+
+    @Test
+    public void testReadTimestampOfLastEventInSegment() throws IOException {
+        final Timestamp expectedTimestamp = Timestamp.now();
+        final byte[] eventBytes = new DLQEntry(new Event(), "", "", "", expectedTimestamp).serialize();
+
+        final Path segmentPath = dir.resolve("1.log");
+        try (RecordIOWriter writer = new RecordIOWriter(segmentPath)) {
+            writer.writeEvent(eventBytes);
+        }
+
+        // Exercise
+        Optional<Timestamp> timestamp = DeadLetterQueueWriter.readTimestampOfLastEventInSegment(segmentPath);
+
+        // Verify
+        assertTrue(timestamp.isPresent());
+        assertEquals(expectedTimestamp, timestamp.get());
+    }
+
+    @Test
+    public void testReadTimestampOfLastEventInSegmentWithDeletedSegment() throws IOException {
+        // Exercise
+        Optional<Timestamp> timestamp = DeadLetterQueueWriter.readTimestampOfLastEventInSegment(Path.of("non_existing_file.txt"));
+
+        // Verify
+        assertTrue(timestamp.isEmpty());
     }
 
     @Test
