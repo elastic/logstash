@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,7 +79,7 @@ public final class Queue implements Closeable {
     private final Method deserializeMethod;
 
     // thread safety
-    private final Lock lock = new ReentrantLock();
+    private final ReentrantLock lock = new ReentrantLock();
     private final Condition notFull  = lock.newCondition();
     private final Condition notEmpty = lock.newCondition();
 
@@ -100,8 +99,9 @@ public final class Queue implements Closeable {
             }
             this.dirPath = queueDir.toRealPath();
         } catch (final IOException ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException(QueueExceptionMessages.CANNOT_CREATE_QUEUE_DIR, ex);
         }
+
         this.pageCapacity = settings.getCapacity();
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
@@ -120,7 +120,7 @@ public final class Queue implements Closeable {
             cArg[0] = byte[].class;
             this.deserializeMethod = this.elementClass.getDeclaredMethod("deserialize", cArg);
         } catch (NoSuchMethodException e) {
-            throw new QueueRuntimeException("cannot find deserialize method on class " + this.elementClass.getName(), e);
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_DESERIALIZE.concat(this.elementClass.getName()), e);
         }
     }
 
@@ -402,6 +402,12 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public long write(Queueable element) throws IOException {
+        // pre-check before incurring serialization overhead;
+        // we must check again after acquiring the lock.
+        if (this.closed.get()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+        }
+
         byte[] data = element.serialize();
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
@@ -413,12 +419,17 @@ public final class Queue implements Closeable {
 
         lock.lock();
         try {
-            if (! this.headPage.hasCapacity(data.length)) {
-                throw new IOException("data to be written is bigger than page capacity");
+            // ensure that the queue is still open now that this thread has acquired the lock.
+            if (this.closed.get()) {
+                throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
+            }
+
+            if (!this.headPage.hasCapacity(data.length)) {
+                throw new QueueRuntimeException(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE);
             }
 
             // create a new head page if the current does not have sufficient space left for data to be written
-            if (! this.headPage.hasSpace(data.length)) {
+            if (!this.headPage.hasSpace(data.length)) {
 
                 // TODO: verify queue state integrity WRT Queue.open()/recover() at each step of this process
 
@@ -599,10 +610,12 @@ public final class Queue implements Closeable {
      * @param limit size limit of the batch to read. returned {@link Batch} can be smaller.
      * @param timeout the maximum time to wait in milliseconds on write operations
      * @return the read {@link Batch} or null if no element upon timeout
+     * @throws QueueRuntimeException if queue is closed
      * @throws IOException if an IO error occurs
      */
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {
         lock.lock();
+
         try {
             return readPageBatch(nextReadPage(), limit, timeout);
         } finally {
@@ -790,17 +803,22 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * return the {@link Page} for the next read operation.
+     * Return the {@link Page} for the next read operation.
+     * Caller <em>MUST</em> have exclusive access to the lock.
      * @return {@link Page} will be either a read-only tail page or the head page.
+     * @throws QueueRuntimeException if queue is closed
      */
-    public Page nextReadPage() {
-        lock.lock();
-        try {
-            // look at head page if no unreadTailPages
-            return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
-        } finally {
-            lock.unlock();
+    private Page nextReadPage() {
+        if (!lock.isHeldByCurrentThread()) {
+            throw new IllegalStateException(QueueExceptionMessages.CANNOT_READ_PAGE_WITHOUT_LOCK);
         }
+
+        if (isClosed()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_READ_FROM_CLOSED_QUEUE);
+        }
+
+
+        return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
     }
 
     private void removeUnreadPage(Page p) {
@@ -849,7 +867,7 @@ public final class Queue implements Closeable {
         }
     }
 
-    private boolean isClosed() {
+    public boolean isClosed() {
         return this.closed.get();
     }
 
