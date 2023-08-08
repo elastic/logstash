@@ -806,13 +806,13 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * return the {@link Page} for the next read operation.
+     * Return the {@link Page} for the next read operation.
+     * Caller <em>MUST</em> have exclusive access to the lock.
      * @return {@link Page} will be either a read-only tail page or the head page.
-     * @throws QueueRuntimeException if other thread acquired lock
      */
     private Page nextReadPage() {
         if (!lock.isHeldByCurrentThread()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_READ_PAGE);
+            throw new IllegalStateException(QueueExceptionMessages.CANNOT_READ_PAGE);
         }
 
         return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
