@@ -31,4 +31,7 @@ public class QueueRuntimeException extends RuntimeException {
         super(message, cause);
     }
 
+    public QueueRuntimeException(String message) {
+        super(message);
+    }
 }

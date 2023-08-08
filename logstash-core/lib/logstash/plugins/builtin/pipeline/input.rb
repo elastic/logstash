@@ -68,8 +68,7 @@ module ::LogStash; module Plugins; module Builtin; module Pipeline; class Input 
         stream_position = stream_position + 1
       end)
       ReceiveResponse.completed()
-    rescue java.lang.InterruptedException, IOError => e
-      # maybe an IOException in enqueueing
+    rescue java.lang.InterruptedException, org.logstash.ackedqueue.QueueRuntimeException, IOError => e
       logger.debug? && logger.debug('queueing event failed', message: e.message, exception: e.class, backtrace: e.backtrace)
       ReceiveResponse.failed_at(stream_position, e)
     end

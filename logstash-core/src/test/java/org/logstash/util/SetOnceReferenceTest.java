@@ -1,6 +1,5 @@
 package org.logstash.util;
 
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.NoSuchElementException;
@@ -14,7 +13,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.logstash.util.ExceptionMatcher.assertThrows;
 
 public class SetOnceReferenceTest {
     @Test
@@ -250,17 +249,6 @@ public class SetOnceReferenceTest {
         assertThat(consumed.getValue(), is(sameInstance(expectedValue)));
 
         checkExpectedValue(immutable, expectedValue);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    void assertThrows(final Class<? extends Throwable> expectedThrowable, final Runnable runnable) {
-        try {
-            runnable.run();
-        } catch (Exception e) {
-            assertThat("wrong exception thrown", e, Matchers.instanceOf(expectedThrowable));
-            return;
-        }
-        fail(String.format("expected exception %s but nothing was thrown", expectedThrowable.getSimpleName()));
     }
 
     private static class MutableReference<T> {
