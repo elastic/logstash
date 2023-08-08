@@ -615,9 +615,6 @@ public final class Queue implements Closeable {
      */
     public synchronized Batch readBatch(int limit, long timeout) throws IOException {
         lock.lock();
-        if (isClosed()) {
-            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
-        }
 
         try {
             return readPageBatch(nextReadPage(), limit, timeout);
@@ -809,11 +806,17 @@ public final class Queue implements Closeable {
      * Return the {@link Page} for the next read operation.
      * Caller <em>MUST</em> have exclusive access to the lock.
      * @return {@link Page} will be either a read-only tail page or the head page.
+     * @throws QueueRuntimeException if queue is closed
      */
     private Page nextReadPage() {
         if (!lock.isHeldByCurrentThread()) {
             throw new IllegalStateException(QueueExceptionMessages.CANNOT_READ_PAGE);
         }
+
+        if (isClosed()) {
+            throw new QueueRuntimeException(QueueExceptionMessages.WHILE_READING);
+        }
+
 
         return (this.unreadTailPages.isEmpty()) ?  this.headPage : this.unreadTailPages.get(0);
     }
