@@ -108,22 +108,22 @@ public final class DeadLetterQueueWriter implements Closeable {
     private final long maxSegmentSize;
     private final long maxQueueSize;
     private final QueueStorageType storageType;
-    private AtomicLong currentQueueSize;
+    private final AtomicLong currentQueueSize;
     private final Path queuePath;
     private final FileLock fileLock;
     private volatile RecordIOWriter currentWriter;
-    private int currentSegmentIndex;
-    private Timestamp lastEntryTimestamp;
-    private Duration flushInterval;
+    private volatile int currentSegmentIndex;
+    private volatile Timestamp lastEntryTimestamp;
+    private final Duration flushInterval;
     private Instant lastWrite;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
     private final LongAdder expiredEvents = new LongAdder();
-    private String lastError = "no errors";
+    private volatile String lastError = "no errors";
     private final Clock clock;
-    private Optional<Timestamp> oldestSegmentTimestamp;
-    private Optional<Path> oldestSegmentPath = Optional.empty();
+    private volatile Optional<Timestamp> oldestSegmentTimestamp;
+    private volatile Optional<Path> oldestSegmentPath = Optional.empty();
     private final TemporalAmount retentionTime;
 
     public static final class Builder {
@@ -405,7 +405,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
-    private void updateOldestSegmentReference() throws IOException {
+    // package-private for testing
+    void updateOldestSegmentReference() throws IOException {
         final Optional<Path> previousOldestSegmentPath = oldestSegmentPath;
         oldestSegmentPath = listSegmentPaths(this.queuePath)
                 .filter(p -> p.toFile().length() > 1) // take the files that have content to process
@@ -433,15 +434,19 @@ public final class DeadLetterQueueWriter implements Closeable {
         oldestSegmentTimestamp = foundTimestamp;
     }
 
+    // package-private for testing
+    Optional<Path> getOldestSegmentPath() {
+        return oldestSegmentPath;
+    }
+
     /**
      * Extract the timestamp from the last DLQEntry it finds in the given segment.
      * Start from the end of the latest block, and going backward try to read the next event from its start.
      * */
-    private static Optional<Timestamp> readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
-        final int lastBlockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;
+    static Optional<Timestamp> readTimestampOfLastEventInSegment(Path segmentPath) throws IOException {
         byte[] eventBytes = null;
         try (RecordIOReader recordReader = new RecordIOReader(segmentPath)) {
-            int blockId = lastBlockId;
+            int blockId = (int) Math.ceil(((Files.size(segmentPath) - VERSION_SIZE) / (double) BLOCK_SIZE)) - 1;;
             while (eventBytes == null && blockId >= 0) { // no event present in last block, try with the one before
                 recordReader.seekToBlock(blockId);
                 eventBytes = recordReader.readEvent();
