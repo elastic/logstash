@@ -355,15 +355,15 @@ public class DeadLetterQueueWriterTest {
 
             final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
 
-            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("9.log"))){
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("1.log"))){
                 writer.writeEvent(eventBytes);
             }
 
-            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("10.log"))){
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("2.log"))){
                 writer.writeEvent(eventBytes);
             }
 
-            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("8.log"))){
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("3.log"))){
                 writer.writeEvent(eventBytes);
             }
 
@@ -373,7 +373,7 @@ public class DeadLetterQueueWriterTest {
             // Verify
             final Optional<Path> oldestSegmentPath = sut.getOldestSegmentPath();
             assertTrue(oldestSegmentPath.isPresent());
-            assertEquals("10.log", oldestSegmentPath.get().getFileName().toString());
+            assertEquals("1.log", oldestSegmentPath.get().getFileName().toString());
         }
     }
 
@@ -384,23 +384,24 @@ public class DeadLetterQueueWriterTest {
                 .build()) {
 
             final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
-            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("9.log"))){
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("1.log"))){
                 writer.writeEvent(eventBytes);
             }
 
-            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("10.log"))){
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("2.log"))){
                 writer.writeEvent(eventBytes);
             }
 
             // Exercise
             sut.updateOldestSegmentReference();
 
+            // Delete 1.log (oldest)
             Files.delete(sut.getOldestSegmentPath().get());
 
             sut.updateOldestSegmentReference();
 
             // Verify
-            assertEquals("9.log",sut.getOldestSegmentPath().get().getFileName().toString());
+            assertEquals("2.log",sut.getOldestSegmentPath().get().getFileName().toString());
         }
     }
 
