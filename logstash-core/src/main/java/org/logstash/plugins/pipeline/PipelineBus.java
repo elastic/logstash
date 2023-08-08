@@ -79,9 +79,9 @@ public class PipelineBus {
                     partialProcessing = ensureDelivery && !sendWasSuccess;
                     if (partialProcessing) {
                         if (lastResponse != null && lastResponse.getStatus() == PipelineInput.ReceiveStatus.FAIL) {
-                            // when last call to internalReceive generated a fail, restart from the
-                            // fail position to avoid reprocessing of some events in the downstream.
-                            // we get 0~clones.length position on failure, keep tracking failed position to correctly copy from original orderedEvents
+                            // when last call to internalReceive generated a fail for the subset of the orderedEvents
+                            // it is handling, restart from the cumulative last-failed position of the batch so that
+                            // the next attempt will operate on a subset that excludes those successfully received.
                             lastFailedPosition += lastResponse.getSequencePosition();
                             logger.warn("Attempted to send events to '{}' but that address reached error condition with {} events remaining. " +
                                     "Will Retry. Root cause {}", address, orderedEvents.length - lastFailedPosition, lastResponse.getCauseMessage());
