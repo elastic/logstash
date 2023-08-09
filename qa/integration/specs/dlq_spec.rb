@@ -64,7 +64,7 @@ describe "Test Dead Letter Queue" do
   let!(:settings_dir) { Stud::Temporary.directory }
   let(:serverless_es_config) do
     if serverless?
-      " hosts => '${ES_ENDPOINT}' user => '${ES_USER}' password => '${ES_PW}' "
+      " hosts => '${ES_ENDPOINT}' api_key => '${LS_PLUGIN_API_KEY}'"
     else
       ""
     end
