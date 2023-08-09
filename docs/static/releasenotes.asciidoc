@@ -44,46 +44,22 @@ This section summarizes the changes in the following releases:
 [[logstash-8-9-1]]
 === Logstash 8.9.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.9.1
+[[notable-8.9.1]]
+==== Notable issues fixed
 
-* [Doc] Add monitoring/management SSL regression note on release 8.8.0 https://github.com/elastic/logstash/pull/15090[#15090]
-* Pipeline to pipeline communication acked queue improvements. https://github.com/elastic/logstash/pull/15173[#15173]
-* Backport PR #15090 to 8.9: [Doc] Add monitoring/management SSL regression note on release 8.8.0 https://github.com/elastic/logstash/pull/15228[#15228]
-* doc: remove breaking change tags https://github.com/elastic/logstash/pull/15231[#15231]
-* Backport PR #15215 to 8.9: Update JDK to 17.0.8+7 https://github.com/elastic/logstash/pull/15237[#15237]
-* Backport PR #15233 to 8.9: Fix DeadLetterQueueWriter unable to finalize segment error https://github.com/elastic/logstash/pull/15241[#15241]
-* Backport PR #15173 to 8.9: Pipeline to pipeline communication acked queue improvements. https://github.com/elastic/logstash/pull/15243[#15243]
+* Fix pipeline to pipeline communication when upstream pipeline is terminated and events is written to a closed queue in downstream. https://github.com/elastic/logstash/pull/15173[#15173]
+* Fix DLQ unable to finalize segment error https://github.com/elastic/logstash/pull/15241[#15241]
 
-=== Logstash Commits between 8.9 and 8.9.0
+[[dependencies-8.9.1]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.9.0..8.9"
-
-acaec2777 - (HEAD -> 8.9, origin/8.9) Pipeline to pipeline communication acked queue improvements. (#15173) (#15243) (14 hours ago) <github-actions[bot]>
-de4241ad0 - Fix DeadLetterQueueWriter unable to finalize segment error (#15233) (#15241) (21 hours ago) <github-actions[bot]>
-36c75c11a - Update patch plugin versions in gemfile lock (#15238) (26 hours ago) <github-actions[bot]>
-f90f29dc7 - Update JDK to 17.0.8+7 (#15215) (#15237) (5 days ago) <github-actions[bot]>
-e32271e5a - [8.9] doc: remove breaking change tags (#15231) (#15232) (7 days ago) <James Rodewig>
-dff265b2a - [Doc] Add monitoring/management SSL regression note on release 8.8.0 (#15090) (#15228) (8 days ago) <github-actions[bot]>
-eed63bb86 - 8.9 Release notes updated. (#15221) (2 weeks ago) <Mashhur>
-d1fdb9c56 - Version Bump to 8.9.1 (#15217) (2 weeks ago) <Rob Bavey>
-40744eb48 - Release notes for 8.9.0 (#15162) (2 weeks ago) <github-actions[bot]>
-adba41637 - Fix typo that caused subtitle not to show (#15202) (#15205) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.9.0..8.9 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 3.15.1 -> 3.15.2
-logstash-input-snmp: 1.3.2 -> 1.3.3
-logstash-integration-aws: 7.1.4 -> 7.1.5
----------- GENERATED CONTENT ENDS HERE ------------
+* Update JDK to 17.0.8+7 https://github.com/elastic/logstash/pull/15237[#15237]
 
 ==== Plugins
 
 *Elasticsearch Filter - 3.15.2*
 
-* Added checking for `query` and `query_template`. https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/171[#171]
-  
+* Added checking to ensure either `query` or `query_template` is non empty https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/171[#171]
 
 *Snmp Input - 1.3.3*
 
