@@ -14,14 +14,16 @@ The test cases against serverless Elasticsearch cover the following scenarios
 1. Go to https://console.qa.cld.elstc.co
 2. Create deployment. Choose AWS as cloud provider.
 3. [Create fully-managed project](https://docs.elastic.dev/serverless/create-project)
+   - save the credentials of superuser
 4. [Create API key](#create-api-key)
-5. [Save credentials to Vault](#save-credentials-to-vault). [Setup Vault](https://github.com/elastic/infra/tree/master/docs/vault) if you haven't.
-   - vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" " kb_host="REDACTED" ls_role_api_key_encoded="REDACTED" ls_plugin_api_key="REDACTED"
+   - save the api keys for metricbeat and elasticsearch
+   - get the elasticsearch and kibana endpoint from UI or [API](https://docs.elastic.dev/serverless/create-project#get-project)
+5. [Save credentials to Vault](#save-credentials-to-vault)
+
 
 ### Create API key
 
 #### Logstash
-Use limited privileges instead of using superuser `elastic`.
 
 ```
 POST /_security/api_key
@@ -65,15 +67,20 @@ POST /_security/api_key
 
 ### Save credentials to Vault
 
-The username, password, API key and hosts are stored in Vault `secret/ci/elastic-logstash/serverless-test`.
+[Setup Vault](https://github.com/elastic/infra/tree/master/docs/vault) if you haven't.
 
-| Vault field             |                                       |
-|-------------------------|---------------------------------------|
-| es_host                 | Elasticsearch endpoint with port      |
-| es_superuser            | username of superuser                 |
-| es_superuser_pw         | password of superuser                 |
-| kb_host                 | Kibana endpoint with port             |
-| ls_role_api_key_encoded | base64 api_key for integration-filter |
-| ls_plugin_api_key       | id:api_key for Logstash plugins       |
-| mb_api_key              | api key for beats to elasticsearch    |  
+The username, password, API key and hosts are stored in `secret/ci/elastic-logstash/serverless-test`.
 
+| Vault field             |                                  |
+|-------------------------|----------------------------------|
+| es_host                 | Elasticsearch endpoint with port |
+| es_superuser            | username of superuser            |
+| es_superuser_pw         | password of superuser            |
+| kb_host                 | Kibana endpoint with port        |
+| ls_role_api_key_encoded | base64 of api_key                |
+| ls_plugin_api_key       | id:api_key for Logstash plugins  |
+| mb_api_key              | id:api_key for for beats         |  
+
+```bash
+vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" " kb_host="REDACTED" ls_role_api_key_encoded="REDACTED" ls_plugin_api_key="REDACTED" mb_api_key="REDACTED"
+```
