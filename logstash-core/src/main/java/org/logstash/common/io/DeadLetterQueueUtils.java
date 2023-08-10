@@ -27,6 +27,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +50,11 @@ class DeadLetterQueueUtils {
 
     static Stream<Path> listSegmentPaths(Path path) throws IOException {
         return listFiles(path, ".log");
+    }
+
+    static Stream<Path> listSegmentPathsSortedBySegmentId(Path path) throws IOException {
+        return listSegmentPaths(path)
+                .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
     }
 
     /**
