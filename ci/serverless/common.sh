@@ -83,7 +83,7 @@ check_logstash_readiness() {
   }
   add_check check_readiness "Failed readiness check."
 
-  [[ "${CHECKS[-1]}" -eq "1" ]] && exit 1
+  [[ "${CHECKS[*]: -1}" -eq "1" ]] && exit 1
 
   echo "Logstash is Up !"
   return 0
