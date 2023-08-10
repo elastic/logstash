@@ -6,8 +6,8 @@ source ./$(dirname "$0")/common.sh
 get_cpu_arch() {
   local arch=$(uname -m)
 
-  if [ "$arch" == "aarch64" ]; then
-    echo "arm64"
+  if [ "$arch" == "arm64" ]; then
+    echo "aarch64"
   else
     echo "$arch"
   fi
