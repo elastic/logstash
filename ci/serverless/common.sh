@@ -12,6 +12,8 @@ setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
   set +x
   export ES_ENDPOINT=$(vault read -field=es_host "${vault_path}")
+  export ES_USER=$(vault read -field=es_superuser "${vault_path}")
+  export ES_PW=$(vault read -field=es_superuser_pw "${vault_path}")
   export KB_ENDPOINT=$(vault read -field=kb_host "${vault_path}")
   export LS_ROLE_API_KEY_ENCODED=$(vault read -field=ls_role_api_key_encoded "${vault_path}")
   export LS_PLUGIN_API_KEY=$(vault read -field=ls_plugin_api_key "${vault_path}")
