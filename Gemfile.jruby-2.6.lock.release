@@ -15,18 +15,19 @@ PATH
       filesize (~> 0.2)
       gems (~> 1)
       i18n (~> 1)
-      jrjackson (= 0.4.17)
+      jrjackson (= 0.4.18)
       jruby-openssl (~> 0.11)
       manticore (~> 0.6)
       minitar (~> 0.8)
       pry (~> 0.12)
-      puma (~> 5, >= 5.6.2)
+      puma (~> 6.3, >= 6.0.0)
       racc (~> 1.5.2)
       rack (~> 2)
       rubyzip (~> 1)
       sinatra (~> 2)
       stud (~> 0.0.19)
       thread_safe (~> 0.3.6)
+      thwait
       treetop (~> 1)
       tzinfo-data
 
@@ -37,44 +38,46 @@ GEM
       public_suffix (>= 2.0.2, < 6.0)
     amazing_print (1.5.0)
     arr-pm (0.0.12)
+    ast (2.4.2)
     atomic (1.1.101-java)
     avl_tree (1.2.1)
       atomic (~> 1.1)
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.2.0)
-    aws-partitions (1.781.0)
-    aws-sdk-cloudfront (1.78.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-partitions (1.804.0)
+    aws-sdk-cloudfront (1.82.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-cloudwatch (1.75.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-sdk-cloudwatch (1.78.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.175.0)
+    aws-sdk-core (3.180.3)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
       jmespath (~> 1, >= 1.6.1)
-    aws-sdk-kms (1.67.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-sdk-kms (1.71.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-resourcegroups (1.50.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-sdk-resourcegroups (1.53.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.126.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-sdk-s3 (1.132.1)
+      aws-sdk-core (~> 3, >= 3.179.0)
       aws-sdk-kms (~> 1)
-      aws-sigv4 (~> 1.4)
-    aws-sdk-sns (1.62.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+      aws-sigv4 (~> 1.6)
+    aws-sdk-sns (1.65.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-sqs (1.58.0)
-      aws-sdk-core (~> 3, >= 3.174.0)
+    aws-sdk-sqs (1.62.0)
+      aws-sdk-core (~> 3, >= 3.177.0)
       aws-sigv4 (~> 1.1)
-    aws-sigv4 (1.5.2)
+    aws-sigv4 (1.6.0)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
     backports (3.24.1)
+    base64 (0.1.1)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.12.0)
@@ -101,6 +104,7 @@ GEM
     dotenv (2.8.1)
     down (5.2.4)
       addressable (~> 2.8)
+    e2mmap (0.1.0)
     edn (1.1.1)
     elastic-app-search (7.8.0)
       jwt (>= 1.5, < 3.0)
@@ -182,7 +186,7 @@ GEM
     jls-lumberjack (0.0.26)
       concurrent-ruby
     jmespath (1.6.2)
-    jrjackson (0.4.17-java)
+    jrjackson (0.4.18-java)
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
@@ -192,7 +196,9 @@ GEM
     json-schema (2.8.1)
       addressable (>= 2.4)
     jwt (2.7.1)
-    kramdown (1.14.0)
+    kramdown (2.4.0)
+      rexml
+    language_server-protocol (3.17.0.3)
     logstash-codec-avro (3.4.0-java)
       avro (~> 1.10.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -272,10 +278,10 @@ GEM
     logstash-codec-rubydebug (3.1.0)
       amazing_print (~> 1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-devutils (2.4.0-java)
+    logstash-devutils (2.5.0-java)
       fivemat
       gem_publisher
-      kramdown (= 1.14.0)
+      kramdown (~> 2)
       logstash-codec-plain
       logstash-core (>= 6.3)
       minitar
@@ -413,6 +419,12 @@ GEM
       logstash-codec-plain
       logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
+    logstash-input-elastic_serverless_forwarder (0.1.2-java)
+      logstash-codec-json_lines
+      logstash-core-plugin-api (>= 1.60, <= 2.99)
+      logstash-input-http
+      logstash-mixin-ecs_compatibility_support (~> 1.2)
+      logstash-mixin-plugin_factory_support
     logstash-input-elasticsearch (4.17.2)
       elasticsearch (>= 7.17.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -528,7 +540,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.3.5-java)
+    logstash-input-tcp (6.4.0-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -538,6 +550,7 @@ GEM
       logstash-core (>= 8.1.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
+      logstash-mixin-normalize_config_support (~> 1.0)
     logstash-input-twitter (4.1.0)
       http-form_data (~> 2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -590,7 +603,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.2.1-java)
+    logstash-integration-kafka (11.3.0-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -631,7 +644,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.15.9-java)
+    logstash-output-elasticsearch (11.16.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -712,13 +725,17 @@ GEM
       ruby2_keywords (~> 0.0.1)
     naught (1.1.0)
     nio4r (2.5.9-java)
-    nokogiri (1.13.10-java)
+    nokogiri (1.15.4-java)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
+    parallel (1.23.0)
+    parser (3.2.2.3)
+      ast (~> 2.4.1)
+      racc
     pleaserun (0.0.32)
       cabin (> 0)
       clamp
@@ -734,7 +751,7 @@ GEM
     psych (5.1.0-java)
       jar-dependencies (>= 0.1.7)
     public_suffix (3.1.1)
-    puma (5.6.6-java)
+    puma (6.3.0-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.5.2-java)
@@ -743,8 +760,10 @@ GEM
       rack
     rack-test (2.1.0)
       rack (>= 1.3)
+    rainbow (3.1.1)
     rake (12.3.3)
     redis (4.8.1)
+    regexp_parser (2.8.1)
     rexml (3.2.6)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
@@ -761,6 +780,20 @@ GEM
     rspec-support (3.12.1)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
+    rubocop (1.56.0)
+      base64 (~> 0.1.1)
+      json (~> 2.3)
+      language_server-protocol (>= 3.17.0)
+      parallel (~> 1.10)
+      parser (>= 3.2.2.3)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.28.1, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.29.0)
+      parser (>= 3.2.1.0)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
     rubyzip (1.3.0)
@@ -771,7 +804,7 @@ GEM
       faraday (>= 0.17.3, < 3)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.69.0)
+    sequel (5.71.0)
     simple_oauth (0.3.1)
     sinatra (2.2.4)
       mustermann (~> 2.0)
@@ -786,6 +819,8 @@ GEM
       ffi
     stud (0.0.23)
     thread_safe (0.3.6-java)
+    thwait (0.2.0)
+      e2mmap
     tilt (2.2.0)
     treetop (1.6.12)
       polyglot (~> 0.3)
@@ -805,6 +840,7 @@ GEM
     tzinfo-data (1.2023.3)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
+    unicode-display_width (2.4.2)
     webhdfs (0.10.2)
       addressable
     webmock (3.18.1)
@@ -885,6 +921,7 @@ DEPENDENCIES
   logstash-input-beats
   logstash-input-couchdb_changes
   logstash-input-dead_letter_queue
+  logstash-input-elastic_serverless_forwarder
   logstash-input-elasticsearch
   logstash-input-exec
   logstash-input-file
@@ -935,11 +972,13 @@ DEPENDENCIES
   rack-test
   rake (~> 12)
   rspec (~> 3.5)
+  rubocop
   ruby-progressbar (~> 1)
   rubyzip (~> 1)
   stud (~> 0.0.22)
+  thwait
   treetop
   webmock (~> 3)
 
 BUNDLED WITH
-   2.4.13
+   2.3.26
