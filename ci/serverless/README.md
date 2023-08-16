@@ -25,6 +25,7 @@ The test cases against serverless Elasticsearch cover the following scenarios
 
 #### Logstash
 
+Create Logstash API key for test setup/teardown and elastic_integration filter
 ```
 POST /_security/api_key
 {
