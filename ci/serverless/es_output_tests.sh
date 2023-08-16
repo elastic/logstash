@@ -9,7 +9,7 @@ check_named_index() {
 }
 
 get_data_stream_count() {
-  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/logs-$INDEX_NAME.001-default/_count" | jq '.count'
+  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/logs-$INDEX_NAME.001-default/_count" | jq '.count'
 }
 
 compare_data_stream_count() {

@@ -20,7 +20,8 @@ def es_allow_wildcard_deletes(es_client)
 end
 
 def clean_es(es_client)
-  es_client.indices.delete_template(:name => "*")
+  es_client.indices.delete_template(:name => "*") rescue nil
+  es_client.indices.delete_index_template(:name => "*") rescue nil
   es_client.indices.delete(:index => "*")
   es_client.indices.refresh
 end

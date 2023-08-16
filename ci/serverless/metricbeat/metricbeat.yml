@@ -6,8 +6,7 @@ metricbeat.config:
 output.elasticsearch:
   hosts: ["${ES_ENDPOINT}"]
   protocol: "https"
-  username: "${ES_USER}"
-  password: "${ES_PW}"
+  api_key: "${MB_API_KEY}"
 
 metricbeat.modules:
   - module: logstash

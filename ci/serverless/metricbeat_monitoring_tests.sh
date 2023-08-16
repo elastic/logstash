@@ -6,8 +6,8 @@ source ./$(dirname "$0")/common.sh
 get_cpu_arch() {
   local arch=$(uname -m)
 
-  if [ "$arch" == "aarch64" ]; then
-    echo "arm64"
+  if [ "$arch" == "arm64" ]; then
+    echo "aarch64"
   else
     echo "$arch"
   fi
@@ -40,7 +40,7 @@ stop_metricbeat() {
 }
 
 get_monitor_count() {
-  curl -s -u "$ES_USER:$ES_PW" "$ES_ENDPOINT/$INDEX_NAME/_count" | jq '.count'
+  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_count" | jq '.count'
 }
 
 compare_monitor_count() {

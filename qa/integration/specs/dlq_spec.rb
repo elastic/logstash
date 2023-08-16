@@ -25,7 +25,9 @@ require "logstash/devutils/rspec/spec_helper"
 
 describe "Test Dead Letter Queue" do
   # template with an ip field
-  let(:template) { { "index_patterns": ["te*"], "mappings": { "properties": { "ip": { "type": "ip" }}}} }
+  let(:template) { serverless? ? { "index_patterns": ["te*"], "template": {"mappings": { "properties": { "ip": { "type": "ip" }}}} } :
+                     { "index_patterns": ["te*"], "mappings": { "properties": { "ip": { "type": "ip" }}}} }
+  let(:template_api) { serverless? ? "_index_template": "_template" }
   # a message that is incompatible with the template
   let(:message) { {"message": "hello", "ip": 1}.to_json }
 
@@ -43,7 +45,7 @@ describe "Test Dead Letter Queue" do
     IO.write(config_yaml_file, config_yaml)
     es_client = @fixture.get_service("elasticsearch").get_client
     clean_es(es_client)
-    es_client.perform_request("PUT", "_template/ip-template", {}, template)
+    es_client.perform_request("PUT", "#{template_api}/ip-template", {}, template)
   }
 
   after(:each) do
@@ -64,7 +66,7 @@ describe "Test Dead Letter Queue" do
   let!(:settings_dir) { Stud::Temporary.directory }
   let(:serverless_es_config) do
     if serverless?
-      " hosts => '${ES_ENDPOINT}' user => '${ES_USER}' password => '${ES_PW}' "
+      " hosts => '${ES_ENDPOINT}' api_key => '${LS_PLUGIN_API_KEY}'"
     else
       ""
     end
