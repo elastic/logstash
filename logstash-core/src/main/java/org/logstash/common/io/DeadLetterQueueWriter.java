@@ -49,7 +49,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -71,6 +70,7 @@ import org.logstash.Timestamp;
 
 import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
 import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
+import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPathsSortedBySegmentId;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -408,9 +408,8 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void updateOldestSegmentReference() throws IOException {
         final Optional<Path> previousOldestSegmentPath = oldestSegmentPath;
-        oldestSegmentPath = listSegmentPaths(this.queuePath)
+        oldestSegmentPath = listSegmentPathsSortedBySegmentId(this.queuePath)
                 .filter(p -> p.toFile().length() > 1) // take the files that have content to process
-                .sorted()
                 .findFirst();
         if (!oldestSegmentPath.isPresent()) {
             oldestSegmentTimestamp = Optional.empty();
@@ -466,8 +465,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = listSegmentPaths(queuePath)
-                .min(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
+        final Optional<Path> oldestSegment = listSegmentPathsSortedBySegmentId(queuePath).findFirst();
         if (oldestSegment.isPresent()) {
             final Path beheadedSegment = oldestSegment.get();
             deleteTailSegment(beheadedSegment, "dead letter queue size exceeded dead_letter_queue.max_bytes size(" + maxQueueSize + ")");
