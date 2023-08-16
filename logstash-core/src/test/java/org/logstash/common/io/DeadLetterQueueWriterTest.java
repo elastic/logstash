@@ -406,6 +406,60 @@ public class DeadLetterQueueWriterTest {
     }
 
     @Test
+    public void testUpdateOldestSegmentReferenceWithAllDeletedSegments() throws IOException {
+        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 20 * MB)
+                .build()) {
+
+            final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
+            final String[] allSegments = {"1.log", "2.log"};
+            for (String segment : allSegments) {
+                try(RecordIOWriter writer = new RecordIOWriter(dir.resolve(segment))){
+                    writer.writeEvent(eventBytes);
+                }
+            }
+
+            // Update with segment files
+            sut.updateOldestSegmentReference();
+            assertEquals("1.log",sut.getOldestSegmentPath().get().getFileName().toString());
+
+            // Delete all segments
+            for (String segment : allSegments) {
+                Files.delete(dir.resolve(segment));
+            }
+
+            // Update with no segment files
+            sut.updateOldestSegmentReference();
+
+            // Verify
+            assertTrue(sut.getOldestSegmentPath().isEmpty());
+        }
+    }
+
+    @Test
+    public void testUpdateOldestSegmentReferenceWithNonLexicographicallySortableFileNames() throws IOException {
+        try (DeadLetterQueueWriter sut = DeadLetterQueueWriter
+                .newBuilderWithoutFlusher(dir, 10 * MB, 20 * MB)
+                .build()) {
+
+            final byte[] eventBytes = new DLQEntry(new Event(), "", "", "").serialize();
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("2.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            try(RecordIOWriter writer = new RecordIOWriter(dir.resolve("10.log"))){
+                writer.writeEvent(eventBytes);
+            }
+
+            // Exercise
+            sut.updateOldestSegmentReference();
+
+            // Verify
+            assertEquals("2.log",sut.getOldestSegmentPath().get().getFileName().toString());
+        }
+    }
+
+    @Test
     public void testReadTimestampOfLastEventInSegment() throws IOException {
         final Timestamp expectedTimestamp = Timestamp.now();
         final byte[] eventBytes = new DLQEntry(new Event(), "", "", "", expectedTimestamp).serialize();
