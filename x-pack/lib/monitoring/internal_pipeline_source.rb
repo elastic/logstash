@@ -30,9 +30,9 @@ module LogStash module Monitoring
       valid_basic_license?
     end
 
-    def update_license_state(xpack_info)
+    def update_license_state(xpack_info, is_serverless)
       return if valid_basic_license?
-      super(xpack_info) if xpack_info
+      super(xpack_info, is_serverless) if xpack_info
       if valid_basic_license?
         logger.info("Validated license for monitoring. Enabling monitoring pipeline.")
         enable_monitoring
@@ -48,7 +48,7 @@ module LogStash module Monitoring
       @agent.converge_state_and_update_if_running
     end
 
-    def populate_license_state(xpack_info)
+    def populate_license_state(xpack_info, is_serverless)
       if xpack_info.failed?
         {
             :state => :error,
@@ -72,6 +72,12 @@ module LogStash module Monitoring
             :state => :error,
             :log_level => :error,
             :log_message => "Monitoring is not available: #{xpack_info.license_type} is not a valid license for this feature."
+        }
+      elsif !xpack_info.feature_enabled?(FEATURE) && is_serverless
+        {
+          :state => :error,
+          :log_level => :error,
+          :log_message => "Monitoring installed and enabled in Logstash, but not supported in Elasticsearch"
         }
       elsif !xpack_info.license_active?
         {
