@@ -25,18 +25,62 @@ The test cases against serverless Elasticsearch cover the following scenarios
 
 #### Logstash
 
-Create Logstash API key for test setup/teardown and elastic_integration filter
+Plugin user
 ```
-POST /_security/api_key
 {
-  "name": "logstash_user",
+  "name": "plugin_user",
   "expiration": "365d",   
   "role_descriptors": { 
-    "logstash_user_role": {
-      "cluster": ["monitor", "manage_index_templates", "manage_logstash_pipelines", "cluster:admin/ingest/pipeline/get", "read_pipeline"], 
+    "plugin_user_role": {
+      "cluster": ["manage_index_templates", "monitor"], 
       "indices": [
         {
           "names": [ "logstash", "logstash-*", "ecs-logstash", "ecs-logstash-*", "serverless*", "logs-*", "metrics-*", "synthetics-*", "traces-*" ], 
+          "privileges": ["manage", "write", "create_index", "read", "view_index_metadata"]  
+        }
+      ]
+    }
+  }
+}
+```
+
+Integration User
+```
+{
+  "name": "integration_user",
+  "expiration": "365d",   
+  "role_descriptors": { 
+    "integration_user_role": {
+      "cluster": ["manage_index_templates", "read_pipeline", "monitor"]
+    }
+  }
+}
+```
+
+CPM User
+```
+{
+  "name": "cpm_user",
+  "expiration": "365d",   
+  "role_descriptors": { 
+    "cpm_user_role": {
+      "cluster": ["manage_logstash_pipelines", "monitor"]
+    }
+  }
+}
+```
+
+Tester 
+```
+{
+  "name": "tester_user",
+  "expiration": "365d",   
+  "role_descriptors": { 
+    "tester_user_role": {
+      "cluster": ["manage_index_templates", "manage_logstash_pipelines","manage_ingest_pipelines"], 
+      "indices": [
+        {
+          "names": [ "logstash", "logstash-*", "ecs-logstash", "ecs-logstash-*", "serverless*", "logs-*", "metrics-*", "synthetics-*", "traces-*", "*test*" ], 
           "privileges": ["manage", "write", "create_index", "read", "view_index_metadata"]  
         }
       ]
@@ -72,16 +116,19 @@ POST /_security/api_key
 
 The username, password, API key and hosts are stored in `secret/ci/elastic-logstash/serverless-test`.
 
-| Vault field             |                                  |
-|-------------------------|----------------------------------|
-| es_host                 | Elasticsearch endpoint with port |
-| es_superuser            | username of superuser            |
-| es_superuser_pw         | password of superuser            |
-| kb_host                 | Kibana endpoint with port        |
-| ls_role_api_key_encoded | base64 of api_key                |
-| ls_plugin_api_key       | id:api_key for Logstash plugins  |
-| mb_api_key              | id:api_key for for beats         |  
+| Vault field                 |                                                         |
+|-----------------------------|---------------------------------------------------------|
+| es_host                     | Elasticsearch endpoint with port                        |
+| es_superuser                | username of superuser                                   |
+| es_superuser_pw             | password of superuser                                   |
+| kb_host                     | Kibana endpoint with port                               |
+| mb_api_key                  | id:api_key for for beats                                |  
+| plugin_api_key              | id:api_key for es-output/filter/input                   |
+| integration_api_key_encoded | base64 of api_key for elastic integration               |
+| tester_api_key_encoded      | base64 of api_key for the script to update testing data |
+| cpm_api_key                 | id:api_key for central pipeline management              |
+
 
 ```bash
-vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" " kb_host="REDACTED" ls_role_api_key_encoded="REDACTED" ls_plugin_api_key="REDACTED" mb_api_key="REDACTED"
+vault write secret/ci/elastic-logstash/serverless-test es_host="REDACTED" es_superuser="REDACTED" es_superuser_pw="REDACTED" " kb_host="REDACTED" mb_api_key="REDACTED" plugin_api_key="REDACTED" integration_api_key_encoded="REDACTED" tester_api_key_encoded="REDACTED" cpm_api_key="REDACTED"
 ```

@@ -1,9 +1,4 @@
 xpack.management.enabled: true
 xpack.management.pipeline.id: ["gen_es"]
-xpack.management.elasticsearch.api_key: ${LS_PLUGIN_API_KEY}
+xpack.management.elasticsearch.api_key: ${CPM_API_KEY}
 xpack.management.elasticsearch.hosts: ["${ES_ENDPOINT}"]
-
-# Legacy monitoring is disabled.
-#xpack.monitoring.enabled: true
-#xpack.monitoring.elasticsearch.api_key: ${LS_PLUGIN_API_KEY}
-#xpack.monitoring.elasticsearch.hosts: ["${ES_ENDPOINT}"]

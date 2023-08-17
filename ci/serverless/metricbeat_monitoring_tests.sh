@@ -40,7 +40,7 @@ stop_metricbeat() {
 }
 
 get_monitor_count() {
-  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_count" | jq '.count'
+  curl -s -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_count" | jq '.count // 0'
 }
 
 compare_monitor_count() {
