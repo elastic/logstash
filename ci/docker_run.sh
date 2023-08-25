@@ -1,10 +1,7 @@
 #!/bin/bash
 # Syntax is docker_run.sh IMAGE_NAME SCRIPT_NAME *EXTRA_DOCKER_OPTS
 
-set -x # We want verbosity here, this mostly runs on CI and we want to easily debug stuff
-
 #Note - ensure that the -e flag is NOT set, and explicitly check the $? status to allow for clean up
-
 REMOVE_IMAGE=false
 DOCKER_EXTERNAL_JDK=""
 if [ -z "$branch_specifier" ]; then
@@ -16,7 +13,7 @@ else
 fi
 
 if [ "$OSS" == "true" ]; then
-  DOCKER_ENV_OPTS="${DOCKER_ENV_OPTS} --env OSS=true"
+  DOCKER_ENV_OPTS="${DOCKER_ENV_OPTS} -e OSS=true"
 fi
 
 echo "Running Docker CI build for '$IMAGE_NAME' "

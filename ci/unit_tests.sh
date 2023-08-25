@@ -19,11 +19,19 @@ SELECTED_TEST_SUITE=$1
 
 if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java Tests"
-  ./gradlew javaTests --console=plain --warning-mode all
+  ./gradlew javaTests jacocoTestReport sonar -Dsonar.token="${SONAR_TOKEN}" \
+    -Dsonar.host.url=https://sonar.elastic.dev \
+    -Dsonar.projectKey=elastic_logstash_AYm_nEbQaV3I-igkX1q9 \
+    -Dsonar.projectName=logstash \
+    -Dsonar.pullrequest.key=$PULL_ID \
+    -Dsonar.pullrequest.branch=$SOURCE_BRANCH \
+    -Dsonar.pullrequest.base=$TARGET_BRANCH \
+    -Dsonar.scm.revision=$COMMIT_SHA \
+    --console=plain --warning-mode all
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
   echo "Running Ruby unit tests"
   ./gradlew rubyTests --console=plain --warning-mode all
 else
   echo "Running Java and Ruby unit tests"
-  ./gradlew test --console=plain
+  ./gradlew test jacocoTestReport sonar -Dsonar.token="${SONAR_TOKEN}" --console=plain --warning-mode all
 fi
