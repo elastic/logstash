@@ -105,7 +105,6 @@ tasks.register("javaTests", Test) {
 }
 
 tasks.register("rubyTests", Test) {
-    dependsOn ':bootstrap'
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.root.dir', projectDir.parent
