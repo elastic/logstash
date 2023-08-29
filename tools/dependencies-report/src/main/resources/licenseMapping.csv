@@ -68,7 +68,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "faraday-rack",https://github.com/lostisland/faraday,MIT
 "faraday-retry",https://github.com/lostisland/faraday,MIT
 "ffi:",https://github.com/ffi/ffi,BSD-3-CLAUSE
-"ffi-binary-libfixposix:",https://github.com/byteit101/subspawn,EPL-2.0
+"ffi-binary-libfixposix:",https://github.com/byteit101/subspawn,Ruby
 "filesize:",https://github.com/dominikh,MIT
 "fugit:",https://github.com/floraison/fugit,MIT
 "gelfd2:",https://github.com/ptqa/gelfd2,Apache-2.0
