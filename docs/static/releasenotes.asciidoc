@@ -55,7 +55,7 @@ This section summarizes the changes in the following releases:
 [[dependencies-8.10.0]]
 ==== Updates to dependencies
 
-* Update JDK to 17.0.8+7 https://github.com/elastic/logstash/pull/15215[#15215]
+* Updated JRuby to 9.4.2.0 https://github.com/elastic/logstash/pull/15283[#15283]
 * Removed custom bundler and used JRuby bundled bundler https://github.com/elastic/logstash/pull/15066[#15066]
 
 ==== Plugins
