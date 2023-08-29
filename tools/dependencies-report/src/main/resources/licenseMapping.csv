@@ -22,6 +22,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "builder:",http://onestepback.org,MIT
 "bundler:",https://bundler.io/,MIT
 "cabin:",https://github.com/jordansissel/ruby-cabin,Apache-2.0
+"cgi:",https://github.com/ruby/cgi,BSD-2-Clause
 "clamp:",http://github.com/mdub/clamp,MIT
 "coderay:",http://coderay.rubychan.de,MIT
 "com.fasterxml.jackson.core:jackson-annotations:",https://github.com/FasterXML/jackson-annotations,Apache-2.0
@@ -41,6 +42,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "concurrent-ruby:",http://www.concurrent-ruby.com,MIT
 "csv:",https://github.com/ruby/csv,BSD-2-Clause
 "dalli:",https://github.com/petergoldstein/dalli,MIT
+"date:",https://github.com/ruby/date,BSD-2-Clause
 "domain_name:",https://github.com/knu/ruby-domain_name,BSD-2-Clause
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
 "down",https://github.com/janko/down,MIT
@@ -66,6 +68,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "faraday-rack",https://github.com/lostisland/faraday,MIT
 "faraday-retry",https://github.com/lostisland/faraday,MIT
 "ffi:",https://github.com/ffi/ffi,BSD-3-CLAUSE
+"ffi-binary-libfixposix:",https://github.com/byteit101/subspawn,EPL-2.0
 "filesize:",https://github.com/dominikh,MIT
 "fugit:",https://github.com/floraison/fugit,MIT
 "gelfd2:",https://github.com/ptqa/gelfd2,Apache-2.0
@@ -78,6 +81,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "http:",https://github.com/httprb/http,MIT
 "http_parser.rb:",https://github.com/tmm1/http_parser.rb,MIT
 "i18n:",https://github.com/svenfuchs/i18n,MIT
+"io-console:",https://github.com/ruby/io-console,BSD-2-Clause
 "io.netty:netty-all:",https://github.com/netty/netty,Apache-2.0
 "insist:",https://github.com/jordansissel/ruby-insist,Apache-2.0
 "jar-dependencies:",https://github.com/mkristian/jar-dependencies,MIT
@@ -107,6 +111,8 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "mustermann:","https://github.com/sinatra/mustermann",MIT
 "mustache:","https://github.com/mustache/mustache",MIT
 "naught:","https://github.com/avdi/naught/",MIT
+"net-http:",https://github.com/ruby/net-http,BSD-2-Clause
+"net-protocol:",https://github.com/ruby/net-protocol,BSD-2-Clause
 "nio4r:","https://github.com/socketry/nio4r",MIT
 "nokogiri:","http://nokogiri.org/",MIT
 "openssl_pkcs8_pure:",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
@@ -154,6 +160,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "rake:",https://github.com/ruby/rake,MIT
 "Red Hat Universal Base Image minimal:",https://catalog.redhat.com/software/containers/ubi8/ubi-minimal/5c359a62bed8bd75a2c3fba8,Custom;https://www.redhat.com/licenses/EULA_Red_Hat_Universal_Base_Image_English_20190422.pdf,,https://oss-dependencies.elastic.co/red-hat-universal-base-image-minimal/8/ubi-minimal-8-source.tar.gz
 "redis:",https://github.com/redis/redis-rb,MIT
+"reline:",https://github.com/ruby/reline,BSD-2-Clause
 "rexml:",https://github.com/ruby/rexml,MIT
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
@@ -171,10 +178,13 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "thread_safe:",https://github.com/ruby-concurrency/thread_safe,Apache-2.0
 "thwait:",https://github.com/ruby/thwait,BSD-2-Clause
 "tilt:",https://github.com/rtomayko/tilt,MIT
+"time:",https://github.com/ruby/time,BSD-2-Clause
+"timeout:",https://github.com/ruby/timeout,BSD-2-Clause
 "treetop:",https://github.com/cjheath/treetop,MIT
 "twitter:",https://github.com/sferik/twitter,MIT
 "tzinfo-data:",https://github.com/tzinfo/tzinfo-data,MIT
 "tzinfo:",https://github.com/tzinfo/tzinfo,MIT,Philip Ross
 "unf:",https://github.com/knu/ruby-unf,BSD-2-Clause
+"uri:",https://github.com/ruby/uri,BSD-2-Clause
 "webhdfs:",https://github.com/kzk/webhdfs,Apache-2.0
 "xml-simple:",https://github.com/maik/xml-simple,BSD-2-Clause
