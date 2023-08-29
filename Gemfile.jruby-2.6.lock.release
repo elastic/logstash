@@ -734,7 +734,7 @@ GEM
     psych (5.1.0-java)
       jar-dependencies (>= 0.1.7)
     public_suffix (3.1.1)
-    puma (5.6.6-java)
+    puma (5.6.7-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.5.2-java)
