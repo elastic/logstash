@@ -53,7 +53,7 @@ module LogStash
       def fetch_license
         fetch_cluster_info
         if serverless?
-          update_xpack_info XPackInfo::SERVERLESS_20231031
+          update_xpack_info XPackInfo.serverless_response
         else
           fetch_xpack_info
         end

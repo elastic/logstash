@@ -99,6 +99,10 @@ module LogStash
         XPackInfo.new(nil, nil, false, true)
       end
 
+      def self.serverless_response
+        SERVERLESS_20231031
+      end
+
       # "Elastic-Api-Version": "2023-10-31" is the first API version available in serverless
       SERVERLESS_20231031 = XPackInfo.from_es_response(
         {
