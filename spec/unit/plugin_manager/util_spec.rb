@@ -75,7 +75,7 @@ describe LogStash::PluginManager do
 
     it "should load all available sources" do
       expect(subject).to receive(:plugin_file?).and_return(false)
-      expect(Gem::Dependency).to receive(:new).and_return(dep)
+      expect(subject).to receive(:_gem_dependency).with(plugin, version).and_return(dep).once
       expect(Gem::SpecFetcher).to receive(:fetcher).and_return(fetcher)
 
       subject.logstash_plugin?(plugin, version, options)
