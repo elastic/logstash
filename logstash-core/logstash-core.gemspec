@@ -93,7 +93,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "net-http", "~> 0.3.0"
   gem.add_runtime_dependency "net-protocol", "~> 0.1.2"
   gem.add_runtime_dependency "reline", "~> 0.3.5"
-  gem.add_runtime_dependency "ffi-binary-libfixposix", "~> 0.5.1.1"
   gem.add_runtime_dependency "time", "~> 0.2.2"
   gem.add_runtime_dependency "timeout", "~> 0.3.2"
   gem.add_runtime_dependency "uri", "~> 0.12.1"
