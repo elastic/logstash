@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 ELASTIC_REGISTRY ?= docker.elastic.co
-PY_VERSION ?= 3.6.13
+PY_VERSION ?= 3.11.5
 export PATH := ./bin:$(HOME)/.pyenv/bin:$(HOME)/.pyenv/shims:./venv/bin:$(PATH)
 
 # Determine the version to build.
