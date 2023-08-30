@@ -76,29 +76,11 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-13]]
 === Logstash 7.17.13 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.13
+[[dependencies-7-17-13]]
+==== Updates to dependencies
 
-* Update JDK to 11.0.20+8 https://github.com/elastic/logstash/pull/15216[#15216]
-* Update Puma on 7.17 https://github.com/elastic/logstash/pull/15274[#15274]
-
-=== Logstash Commits between 7.17 and 7.17.12
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.12..7.17"
-
-5da87b98c - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#15285) (24 hours ago) <github-actions[bot]>
-73a43a9b7 - Update Puma on 7.17 (#15274) (7 days ago) <Andrea Selva>
-81e5ddb04 - Version Bump to 7.17.13 (#15218) (5 weeks ago) <Rob Bavey>
-8ba25a9d9 - Update JDK to 11.0.20+8 (#15216) (5 weeks ago) <João Duarte>
-fce9da92d - Release notes for 7.17.12 (#15199) (5 weeks ago) <github-actions[bot]>
-3a4bd272c - Fix typo that caused subtitle not to show (#15202) (#15203) (6 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.12..7.17 *.release"
-Changed plugin versions:
-logstash-input-s3: 3.8.3 -> 3.8.4
-logstash-input-snmp: 1.3.2 -> 1.3.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Update JDK to 11.0.20 https://github.com/elastic/logstash/pull/15216[#15216]
+* Update Puma to 6.5.7 https://github.com/elastic/logstash/pull/15274[#15274]
 
 ==== Plugins
 
