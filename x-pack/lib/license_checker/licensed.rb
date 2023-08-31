@@ -35,7 +35,8 @@ module LogStash
 
         license_manager = LogStash::LicenseChecker::LicenseManager.new(license_reader, feature, refresh_period, refresh_unit)
         xpack_info = license_manager.current_xpack_info
-        update_license_state(xpack_info)
+        is_serverless = license_manager.serverless?
+        update_license_state(xpack_info, is_serverless)
 
         license_manager.add_observer(self, :update_license_state)
       end
@@ -43,12 +44,13 @@ module LogStash
       # Classes that include Licensed mixin should override this method, populating the values of state, log_level and log_message
       # appropriately for how the license is to be enforced for that feature.
       # @param [LogStash::LicenseChecker::XPackInfo] License Info object
+      # @param Boolean is_serverless
       # @return [Hash] The overriding class should construct an hash populated as follows:
       #                :state       - State of the license, should a license check succeed or fail. :ok or :error
       #                :log_message - Message to be logged when the license changes for this feature
       #                :log_level   - Level to log the license change message at - symbolized version of method names
       #                               for [LogStash::Logging::Logger] - eg :info, :warn, :error, etc
-      def populate_license_state(xpack_info)
+      def populate_license_state(xpack_info, is_serverless)
         { :state => :error, :log_level => :error, :log_message => "Licensing is not currently setup for #{@feature}, please contact support"}
       end
 
@@ -74,9 +76,9 @@ module LogStash
         LogStash::LicenseChecker::LicenseReader.new(@settings, @feature, @es_options)
       end
 
-      def update_license_state(xpack_info)
+      def update_license_state(xpack_info, is_serverless)
         logger.debug("updating licensing state #{xpack_info}")
-        @license_state = populate_license_state(xpack_info)
+        @license_state = populate_license_state(xpack_info, is_serverless)
       end
 
       private

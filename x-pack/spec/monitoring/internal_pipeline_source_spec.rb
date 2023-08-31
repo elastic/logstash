@@ -79,11 +79,13 @@ describe LogStash::Monitoring::InternalPipelineSource do
     end
 
     describe 'with licensing' do
+      let(:is_serverless) { false }
+
       context 'when xpack has not been installed on es 6' do
         let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.xpack_not_installed }
         it "does not start the pipeline" do
           expect(subject).to_not receive(:enable_monitoring)
-          subject.update_license_state(xpack_info)
+          subject.update_license_state(xpack_info, is_serverless)
         end
       end
       context 'when the license has expired' do
@@ -93,14 +95,14 @@ describe LogStash::Monitoring::InternalPipelineSource do
         let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.new(license, nil) }
         it "still starts the pipeline" do
           expect(subject).to receive(:enable_monitoring)
-          subject.update_license_state(xpack_info)
+          subject.update_license_state(xpack_info, is_serverless)
         end
       end
       context 'when the license server is not available' do
         let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.new(nil, nil, nil, true) }
         it "does not start the pipeline" do
           expect(subject).to_not receive(:enable_monitoring)
-          subject.update_license_state(xpack_info)
+          subject.update_license_state(xpack_info, is_serverless)
         end
       end
 
@@ -111,13 +113,25 @@ describe LogStash::Monitoring::InternalPipelineSource do
             { "status" => "active", "type" => license_type }
           end
           let(:features) do
-            { "monitoring" => { "enabled" => true } }
+            { "monitoring" => { "available" => true, "enabled" => true } }
           end
           let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.new(license, features) }
           it "starts the pipeline" do
             expect(subject).to receive(:enable_monitoring)
-            subject.update_license_state(xpack_info)
+            subject.update_license_state(xpack_info, is_serverless)
           end
+        end
+      end
+    end
+
+    describe 'with serverless' do
+      let(:is_serverless) { true }
+
+      context 'when ES does not support monitoring API' do
+        let(:xpack_info) { LogStash::LicenseChecker::XPackInfo::SERVERLESS_20231031 }
+        it "does not start the pipeline" do
+          expect(subject).to_not receive(:enable_monitoring)
+          subject.update_license_state(xpack_info, is_serverless)
         end
       end
     end
