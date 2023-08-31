@@ -36,7 +36,7 @@ module LogStash
         @setup = true
       end
 
-      def populate_license_state(xpack_info)
+      def populate_license_state(xpack_info, is_serverless)
         if xpack_info.failed?
           {
               :state => :error,

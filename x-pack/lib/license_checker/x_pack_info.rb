@@ -55,6 +55,7 @@ module LogStash
       end
 
       def feature_enabled?(feature)
+        return false if @features.nil?
         return false unless @features.include?(feature)
         return false unless @features[feature].fetch('available', false)
 
@@ -97,6 +98,145 @@ module LogStash
       def self.failed_to_fetch
         XPackInfo.new(nil, nil, false, true)
       end
+
+      def self.serverless_response
+        SERVERLESS_20231031
+      end
+
+      # "Elastic-Api-Version": "2023-10-31" is the first API version available in serverless
+      SERVERLESS_20231031 = XPackInfo.from_es_response(
+        {
+          "license" =>
+            {
+              "type" => "enterprise",
+              "mode" => "enterprise",
+              "status" => "active"
+            },
+          "features" =>
+            {
+              "aggregate_metric" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "analytics" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "archive" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "ccr" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "cluster =>monitor/xpack/info/ilm" =>
+                {
+                  "available" => false,
+                  "enabled" => false
+                },
+              "cluster =>monitor/xpack/info/monitoring" =>
+                {
+                  "available" => false,
+                  "enabled" => false
+                },
+              "cluster =>monitor/xpack/info/searchable_snapshots" =>
+                {
+                  "available" => false,
+                  "enabled" => false
+                },
+              "cluster =>monitor/xpack/info/voting_only" =>
+                {
+                  "available" => false,
+                  "enabled" => false
+                },
+              "cluster =>monitor/xpack/info/watcher" =>
+                {
+                  "available" => false,
+                  "enabled" => false
+                },
+              "data_streams" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "data_tiers" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "enrich" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "enterprise_search" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "eql" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "frozen_indices" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "graph" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "logstash" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "ml" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "rollup" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "security" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "slm" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "spatial" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "sql" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                },
+              "transform" =>
+                {
+                  "available" => true,
+                  "enabled" => true
+                }
+            }
+        }
+      ).freeze
     end
   end
 end

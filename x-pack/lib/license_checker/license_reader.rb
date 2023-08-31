@@ -48,6 +48,20 @@ module LogStash
         XPackInfo.failed_to_fetch
       end
 
+      def fetch_cluster_info
+        retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch Elasticsearch cluster info')
+        begin
+          response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) {
+            client.get("/")
+          }
+          return response
+        rescue => e
+          logger.error("Unable to retrieve Elasticsearch cluster info.", message: e.message, exception: e.class)
+        end
+
+        {}
+      end
+
       ##
       # @api private
       def client
