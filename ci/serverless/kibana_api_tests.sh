@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# This test is always fail because the APIs are not ready and return "method [...] exists but is not available with the current configuration"
 set -ex
 
 source ./$(dirname "$0")/common.sh

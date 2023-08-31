@@ -27,6 +27,7 @@ The test cases against serverless Elasticsearch cover the following scenarios
 
 Plugin user
 ```
+POST /_security/api_key
 {
   "name": "plugin_user",
   "expiration": "365d",   
@@ -46,6 +47,7 @@ Plugin user
 
 Integration User
 ```
+POST /_security/api_key
 {
   "name": "integration_user",
   "expiration": "365d",   
@@ -59,6 +61,7 @@ Integration User
 
 CPM User
 ```
+POST /_security/api_key
 {
   "name": "cpm_user",
   "expiration": "365d",   
@@ -72,6 +75,7 @@ CPM User
 
 Tester 
 ```
+POST /_security/api_key
 {
   "name": "tester_user",
   "expiration": "365d",   
