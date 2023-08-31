@@ -78,7 +78,7 @@ module LogStash module Monitoring
           :state => :error,
           :log_level => :error,
           :log_message => "Internal collection for monitoring is enabled in Logstash, but is not supported in the configured version of Elasticsearch.\n"\
-            "Please configure Elastic Agent to monitor Logstash. Documentation can be found at: \n"\
+            "This instance of Logstash will NOT send its monitoring data to Elasticsearch. Please configure Elastic Agent to monitor Logstash. Documentation can be found at: \n"\
             "https://www.elastic.co/guide/en/logstash/current/monitoring-with-elastic-agent.html"
         }
       elsif !xpack_info.license_active?
