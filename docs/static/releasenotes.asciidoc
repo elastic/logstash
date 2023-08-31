@@ -86,7 +86,7 @@ This section summarizes the changes in the following releases:
 
 *S3 Input - 3.8.4*
 
-* Refactoring, reuse code to manage `additional_settings` from mixin-aws [#n](https://github.com/logstash-plugins/logstash-input-s3/pull/n)
+* Refactoring, reuse code to manage `additional_settings` from mixin-aws [#237](https://github.com/logstash-plugins/logstash-input-s3/pull/237)
 
 *Snmp Input - 1.3.3*
 
