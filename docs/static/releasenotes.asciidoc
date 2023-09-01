@@ -64,7 +64,7 @@ This section summarizes the changes in the following releases:
 
 * Added support to Serverless Elasticsearch https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1145[#114]
 
-*Elastic Serverless Forwarder 0.1.2*
+*Elastic_serverless_forwarder input 0.1.2*
 
 * Introduces a dedicated input plugin for receiving events from Elastic Serverless Forwarder. This plugin is in late Technical Preview, which means that as we iterate toward a stable API both configuration options and implementation details may change in subsequent releases without the usual deprecation warnings. If you use this plugin, please keep your eye on the relevant changelogs when upgrading. https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/4[#4]
 
