@@ -48,9 +48,9 @@ This section summarizes the changes in the following releases:
 [[notable-8.10.0]]
 ==== Notable issues fixed
 
-* Fixed bugs in DLQ 
-** throwing `java.nio.file.NoSuchFileException` when finalize the segment https://github.com/elastic/logstash/pull/15233[15233]
-** sorting DLQ file in wrong order https://github.com/elastic/logstash/pull/15246[#15246]
+* Fixed issues in Dead Letter Queue (DLQ): 
+** `java.nio.file.NoSuchFileException` when finalizing the segment https://github.com/elastic/logstash/pull/15233[#15233]
+** DLQ file using wrong sort order https://github.com/elastic/logstash/pull/15246[#15246]
 
 [[dependencies-8.10.0]]
 ==== Updates to dependencies
