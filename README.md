@@ -82,30 +82,22 @@ export LOGSTASH_SOURCE=1
 export LOGSTASH_PATH=/YOUR/LOGSTASH/DIRECTORY
 ```
 
-* After cloning the Logstash repo you must first install dependencies:
-  - If you are using a gradle:
-    ```sh
-    ./gradlew installDevelopmentGems
-    ``` 
-  - If you want to build with bundle, you need to set the local bundle and install dependencies:
-    ```sh
-    bundle config set --local path vendor/bundle
-    bundle install 
-    ```
-* Before running the Logstash, you must also bootstrap the environment:
+#### Install dependencies with `gradle` **(recommended)**[^1]
+
+* Install development dependencies
 ```sh
-rake bootstrap
+./gradlew installDevelopmentGems
 ```
 
-* You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
+* Install default plugins and other dependencies
 
 ```sh
-rake plugin:install-default
+./gradlew installDefaultGems
 ```
 
-This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinations.
+### Verify the installation
 
-To verify your environment, run the following to send your first event:
+To verify your environment, run the following to start Logstash and send your first event:
 
 ```sh
 bin/logstash -e 'input { stdin { } } output { stdout {} }'
@@ -178,10 +170,10 @@ Most of the unit tests in Logstash are written using [rspec](http://rspec.info/)
 3- To execute the complete test-suite including the integration tests run:
 
     ./gradlew check
-    
+
 4- To execute a single Ruby test run:
 
-    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests    
+    SPEC_OPTS="-fd -P logstash-core/spec/logstash/api/commands/default_metadata_spec.rb" ./gradlew :logstash-core:rubyTests --tests org.logstash.RSpecTests
 
 5- To execute single spec for integration test, run:
 
@@ -240,7 +232,7 @@ rake artifact:deb_oss
 
 ## Using a Custom JRuby Distribution
 
-If you want the build to use a custom JRuby you can do so by setting a path to a custom 
+If you want the build to use a custom JRuby you can do so by setting a path to a custom
 JRuby distribution's source root via the `custom.jruby.path` Gradle property.
 
 E.g.
@@ -268,3 +260,31 @@ It is more important to me that you are able to contribute.
 
 For more information about contributing, see the
 [CONTRIBUTING](./CONTRIBUTING.md) file.
+
+## Footnotes
+
+[^1]: <details><summary>Use bundle instead of gradle to install dependencies</summary>
+
+    #### Alternatively, instead of using `gradle` you can also use `bundle`:
+
+    * Install development dependencies
+
+        ```sh
+        bundle config set --local path vendor/bundle
+        bundle install
+        ```
+
+    * Bootstrap the environment:
+
+        ```sh
+        rake bootstrap
+        ```
+
+    * You can then use `bin/logstash` to start Logstash, but there are no plugins installed. To install default plugins, you can run:
+
+        ```sh
+        rake plugin:install-default
+        ```
+
+    This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinations.
+    </details>
