@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-13,Logstash 7.17.13>>
 * <<logstash-7-17-12,Logstash 7.17.12>>
 * <<logstash-7-17-11,Logstash 7.17.11>>
 * <<logstash-7-17-10,Logstash 7.17.10>>
@@ -70,6 +71,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-13]]
+=== Logstash 7.17.13 Release Notes
+
+[[dependencies-7-17-13]]
+==== Updates to dependencies
+
+* Update JDK to 11.0.20 https://github.com/elastic/logstash/pull/15216[#15216]
+* Update Puma to 6.5.7 https://github.com/elastic/logstash/pull/15274[#15274]
+
+==== Plugins
+
+*S3 Input - 3.8.4*
+
+* Refactoring, reuse code to manage `additional_settings` from mixin-aws https://github.com/logstash-plugins/logstash-input-s3/pull/237[#237]
+
+*Snmp Input - 1.3.3*
+
+* Silence warnings when loading dictionary MIB files https://github.com/logstash-plugins/logstash-input-snmp/pull/118[#118]
 
 
 [[logstash-7-17-12]]
