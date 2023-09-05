@@ -1,7 +1,7 @@
 ---
 # alpha and beta qualifiers are now added via VERSION_QUALIFIER environment var
-logstash: 7.17.13
-logstash-core: 7.17.13
+logstash: 7.17.14
+logstash-core: 7.17.14
 logstash-core-plugin-api: 2.1.16
 
 bundled_jdk:
