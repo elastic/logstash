@@ -45,7 +45,7 @@ spec:
           access_level: READ_ONLY
       schedules:
         Daily serverless test on core_serverless_test branch:
-          branch: core_serverless_test
+          branch: main
           cronline: "@daily"
           message: "Run the serverless integration test every day."
 
