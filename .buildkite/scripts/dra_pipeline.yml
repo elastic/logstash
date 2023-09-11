@@ -8,6 +8,5 @@ agents:
 steps:
   - label: ":wave: Greetings"
     command: "echo 'TODO: run DRA Logstash'"
-    # TODO once https://github.com/elastic/ci-agent-images/pull/356 has been merged
-    # agents:
-    #   image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.1"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.1"
