@@ -14,6 +14,7 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
   shared_examples "can not get a license" do
     before(:each) {
       expect(subject).to receive(:license_reader).and_return(mock_reader)
+      expect(mock_reader).to receive(:fetch_cluster_info).and_return({})
       expect(mock_reader).to receive(:fetch_xpack_info).and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
     }
     let(:mock_reader) {double("reader")}
@@ -26,6 +27,7 @@ describe LogStash::LicenseChecker::ModuleLicenseChecker do
   shared_examples "can get a license" do
     before(:each) {
       expect(subject).to receive(:license_reader).and_return(mock_reader)
+      expect(mock_reader).to receive(:fetch_cluster_info).and_return(cluster_info)
       expect(mock_reader).to receive(:fetch_xpack_info).and_return(xpack_info)
     }
     let(:mock_reader) {double("reader")}

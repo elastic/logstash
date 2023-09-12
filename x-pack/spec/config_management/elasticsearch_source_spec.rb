@@ -62,26 +62,21 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   }
 
   let(:no_xpack_response) {
-    LogStash::Json.load("{
-          \"error\": {
-            \"root_cause\": [
-              {
-                \"type\": \"index_not_found_exception\",
-                \"reason\": \"no such index\",
-                \"resource.type\": \"index_or_alias\",
-                \"resource.id\": \"_xpack\",
-                \"index_uuid\": \"_na_\",
-                \"index\": \"_xpack\"
-              }],
-            \"type\": \"index_not_found_exception\",
-            \"reason\": \"no such index\",
-            \"resource.type\": \"index_or_alias\",
-            \"resource.id\": \"_xpack\",
-            \"index_uuid\": \"_na_\",
-            \"index\": \"_xpack\"
-          },
-          \"status\": 404
-        }")
+    {"error" =>
+       {"root_cause" =>
+          [{"type" => "index_not_found_exception",
+            "reason" => "no such index",
+            "resource.type" => "index_or_alias",
+            "resource.id" => "_xpack",
+            "index_uuid" => "_na_",
+            "index" => "_xpack"}],
+        "type" => "index_not_found_exception",
+        "reason" => "no such index",
+        "resource.type" => "index_or_alias",
+        "resource.id" => "_xpack",
+        "index_uuid" => "_na_",
+        "index" => "_xpack"},
+     "status" => 404}
   }
 
   let(:settings) do
@@ -95,8 +90,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
   end
 
   let(:es_version_response) { es_version_8_response }
-  let(:es_version_8_response) { generate_es_version_response("8.0.0-SNAPSHOT") }
-  let(:es_version_7_9_response) { generate_es_version_response("7.9.1") }
+  let(:es_version_8_response) { cluster_info("8.0.0-SNAPSHOT") }
+  let(:es_version_7_9_response) { cluster_info("7.9.1") }
 
   let(:elasticsearch_7_9_err_response) {
     {"error" =>
@@ -479,6 +474,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
       allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
       allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
+      allow(mock_license_client).to receive(:get).with('/').and_return(cluster_info(LOGSTASH_VERSION))
+
       allow_any_instance_of(LogStash::LicenseChecker::LicenseReader).to receive(:client).and_return(mock_license_client)
     end
 
@@ -569,6 +566,16 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
             it 'should raise an error' do
               expect {subject.pipeline_configs}.to raise_error(LogStash::LicenseChecker::LicenseError)
+            end
+          end
+
+          context "when ES is serverless" do
+            before do
+              expect(mock_license_client).to receive(:get).with('/').and_return(cluster_info(LOGSTASH_VERSION, 'serverless'))
+            end
+
+            it "passes license check" do
+              expect(subject.license_check).to be_truthy
             end
           end
 
@@ -751,13 +758,14 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
     before do
       expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
+      allow(mock_license_client).to receive(:get).with('/').and_return(cluster_info(LOGSTASH_VERSION))
       allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
       allow_any_instance_of(LogStash::LicenseChecker::LicenseReader).to receive(:client).and_return(mock_license_client)
     end
 
     it "responses [7.10] ES version" do
       expected_version = { major: 7, minor: 10 }
-      allow(mock_client).to receive(:get).with("/").and_return(generate_es_version_response("7.10.0-SNAPSHOT"))
+      allow(mock_client).to receive(:get).with("/").and_return(cluster_info("7.10.0-SNAPSHOT"))
       expect(subject.get_es_version).to eq expected_version
     end
 
@@ -773,20 +781,4 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
     end
   end
 
-  def generate_es_version_response(version)
-    {"name" => "MacBook-Pro",
-     "cluster_name" => "elasticsearch",
-     "cluster_uuid" => "YgpKq8VkTJuGTSb9aidlIA",
-     "version" =>
-         {"number" => "#{version}",
-          "build_flavor" => "default",
-          "build_type" => "tar",
-          "build_hash" => "26eb422dc55236a1c5625e8a73e5d866e54610a2",
-          "build_date" => "2020-09-24T09:37:06.459350Z",
-          "build_snapshot" => true,
-          "lucene_version" => "8.7.0",
-          "minimum_wire_compatibility_version" => "7.10.0",
-          "minimum_index_compatibility_version" => "7.0.0"},
-     "tagline" => "You Know, for Search"}
-  end
 end

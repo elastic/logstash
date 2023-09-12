@@ -124,6 +124,51 @@ describe LogStash::LicenseChecker::LicenseReader do
     end
   end
 
+  describe 'fetch_cluster_info' do
+    let(:mock_client) { double('Client') }
+    before(:each) { expect(subject).to receive(:client).and_return(mock_client).at_most(:twice) }
+
+    context 'when client fetches cluster info' do
+      before(:each) do
+        expect(mock_client).to receive(:get).with('/').and_return(cluster_info)
+      end
+      it 'returns cluster info' do
+        expect(subject.fetch_cluster_info).to eq(cluster_info)
+      end
+    end
+
+    context 'and receives HostUnreachableError' do
+      let(:host_not_reachable) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError.new(StandardError.new("original error"), "http://localhost:19200") }
+      before(:each) do
+        expect(mock_client).to receive(:get).with('/').and_raise(host_not_reachable).once
+        expect(mock_client).to receive(:get).with('/').and_return(cluster_info)
+      end
+      it 'continues to fetch and return cluster info' do
+        expect(subject.fetch_cluster_info).to eq(cluster_info)
+      end
+    end
+
+    context 'and receives ConnectionError' do
+      before(:each) do
+        expect(mock_client).to receive(:get).with('/').and_raise(LogStash::Outputs::ElasticSearch::HttpClient::Pool::NoConnectionAvailableError.new)
+      end
+      it 'returns empty map' do
+        expect(subject.fetch_cluster_info).to eq({})
+      end
+    end
+
+    context 'when client raises a 5XX' do
+      let(:exception_500) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError.new(500, '', '', '') }
+      before(:each) do
+        expect(mock_client).to receive(:get).with('/').and_raise(exception_500)
+      end
+      it 'returns empty map' do
+        expect(subject.fetch_cluster_info).to eq({})
+      end
+    end
+
+  end
+
   it "builds ES client" do
     expect(subject.client.options[:hosts].size).to eql 1
     expect(subject.client.options[:hosts][0].to_s).to eql elasticsearch_url # URI#to_s
