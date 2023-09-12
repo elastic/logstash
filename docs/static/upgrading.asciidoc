@@ -67,7 +67,9 @@ This procedure uses <<package-repositories,package managers>> to upgrade Logstas
 . Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 . Using the directions in the <<package-repositories>> section, update your repository
 links to point to the 8.x repositories.
+. List the installed plugins `bin/logstash-plugin list --installed --verbose` and save it.
 . Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
+. List the installed plugins and find the ones that weren't part of Logstash package. Install them manually with `bin/logstash-plugin install`.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
 some Logstash plugins have changed in the 8.x release.
 . Restart your Logstash pipeline after you have updated your configuration file.
@@ -80,9 +82,11 @@ This procedure downloads the relevant Logstash binaries directly from Elastic.
 . Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 . Download the https://www.elastic.co/downloads/logstash[Logstash installation file] that matches your host environment.
 . Backup your `config/` and `data/` folders in a temporary space.
+. List the installed plugins `bin/logstash-plugin list --installed --verbose` and save it.
 . Delete your Logstash directory.
 . Unpack the installation file into the folder that contained the Logstash directory that you just deleted.
 . Restore the `config/` and `data/` folders that were previously saved, overwriting the folders created during the unpack operation.
+. List the installed plugins and find the ones that weren't part of Logstash package. Install them manually with `bin/logstash-plugin install`.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command.
 Configuration options for
 some Logstash plugins have changed.
