@@ -55,8 +55,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "sinatra", '~> 2'
-  gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.0.0'
-  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
+  gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.3.1'
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.14.1"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
@@ -86,7 +86,15 @@ Gem::Specification.new do |gem|
   # https://github.com/logstash-plugins/logstash-mixin-scheduler/blob/v1.0.1/lib/logstash/plugin_mixins/scheduler/rufus_impl.rb#L85=
   # and https://github.com/elastic/logstash/issues/13773
 
-  # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
-  # SEE: https://github.com/ruby/racc/issues/172
-  gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
+  # TEMPORARY: delta between JRuby 9.4.2.0 and 9.4.3.0
+  gem.add_runtime_dependency "cgi", "~> 0.3.6"
+  gem.add_runtime_dependency "date", "~> 3.3.3"
+  gem.add_runtime_dependency "ffi", "~> 1.15.5"
+  gem.add_runtime_dependency "net-http", "~> 0.3.0"
+  gem.add_runtime_dependency "net-protocol", "~> 0.1.2"
+  gem.add_runtime_dependency "reline", "~> 0.3.5"
+  gem.add_runtime_dependency "ffi-binary-libfixposix", "~> 0.5.1.1"
+  gem.add_runtime_dependency "time", "~> 0.2.2"
+  gem.add_runtime_dependency "timeout", "~> 0.3.2"
+  gem.add_runtime_dependency "uri", "~> 0.12.1"
 end
