@@ -23,6 +23,10 @@ steps:
           ephemeralStorage: "20Gi"
         command: |
           export WORKFLOW_TYPE=snapshot
+          export PATH="/root/.rbenv/bin:$PATH"
+          eval "$(rbenv init -)"
+          echo "Where is ruby: $(which ruby)"
+          echo "Where is rake: $(which rake)"
           .buildkite/scripts/dra_x86_64.sh
       
       # - label: "DRA docker x86_64 docker artifact build"
