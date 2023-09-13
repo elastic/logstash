@@ -10,12 +10,14 @@ require 'monitoring/monitoring'
 class Observer
   attr_reader :xpack_info
 
-  def initialize(xpack_info)
+  def initialize(xpack_info, is_serverless)
     @xpack_info = xpack_info
+    @is_serverless = is_serverless
   end
 
-  def update(xpack_info)
+  def update(xpack_info, is_serverless)
     @xpack_info = xpack_info
+    @is_serverless = is_serverless
   end
 end
 
@@ -57,29 +59,6 @@ describe LogStash::LicenseChecker::LicenseManager do
             }")
   }
 
-  let(:no_xpack_response) {
-    LogStash::Json.load("{
-   \"error\": {
-      \"root_cause\":
-        [{
-          \"type\":\"index_not_found_exception\",
-          \"reason\": \"no such index\",
-          \"resource.type\": \"index_or_alias\",
-          \"resource.id\": \"_xpack\",
-          \"index_uuid\": \"_na_\",
-          \"index\": \"_xpack\"
-        }],
-        \"type\": \"index_not_found_exception\",
-        \"reason\": \"no such index\",
-        \"resource.type\": \"index_or_alias\",
-        \"resource.id\": \"_xpack\",
-        \"index_uuid\": \"_na_\",
-        \"index\": \"_xpack\"
-      },
-      \"status\": 404}
-    }")
-  }
-
   let(:settings) do
     {
         "xpack.monitoring.enabled" => true,
@@ -113,10 +92,12 @@ describe LogStash::LicenseChecker::LicenseManager do
   end
 
   context 'observers' do
-    let(:observer) { Observer.new(xpack_info) }
+    let(:observer) { Observer.new(xpack_info, is_serverless) }
+    let(:is_serverless) { false }
     let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.from_es_response(license) }
 
     before(:each) do
+      expect(license_reader).to receive(:fetch_cluster_info).and_return(cluster_info)
       expect(license_reader).to receive(:fetch_xpack_info).and_return(xpack_info)
       subject.add_observer(observer)
     end
@@ -169,6 +150,38 @@ describe LogStash::LicenseChecker::LicenseManager do
         expect(observer.xpack_info).to eq LogStash::LicenseChecker::XPackInfo.from_es_response(license)
         subject.fetch_xpack_info
         expect(observer.xpack_info).to eq LogStash::LicenseChecker::XPackInfo.xpack_not_installed
+      end
+    end
+  end
+
+  context "serverless" do
+    context 'when fetch cluster info successfully' do
+      let(:build_flavour) { 'serverless' }
+
+      before(:each) do
+        expect(license_reader).to receive(:fetch_cluster_info).and_return(cluster_info(LOGSTASH_VERSION, build_flavour)).at_most(:twice)
+        expect(license_reader).not_to receive(:fetch_xpack_info)
+      end
+
+      it 'does not fetch xpack info' do
+        subject.fetch_license
+      end
+
+      it 'checks build flavour' do
+        expect(subject.serverless?).to be_truthy
+      end
+    end
+
+    context 'when it fails to fetch cluster info' do
+      let(:xpack_info) { LogStash::LicenseChecker::XPackInfo.from_es_response(license) }
+
+      before(:each) do
+        expect(license_reader).to receive(:fetch_cluster_info).and_return({})
+        expect(license_reader).to receive(:fetch_xpack_info).and_return(xpack_info)
+      end
+
+      it 'checks build flavour' do
+        expect(subject.serverless?).to be_falsey
       end
     end
   end

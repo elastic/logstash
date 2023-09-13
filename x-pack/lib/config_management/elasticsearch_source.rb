@@ -132,7 +132,7 @@ module LogStash
         es.build_client
       end
 
-      def populate_license_state(xpack_info)
+      def populate_license_state(xpack_info, is_serverless)
         if xpack_info.failed?
           {
               :state => :error,
@@ -171,7 +171,7 @@ module LogStash
           }
         else
           unless xpack_info.feature_enabled?(FEATURE_EXTERNAL)
-            logger.warn('Monitoring installed and enabled in Logstash, but not enabled in Elasticsearch')
+            logger.warn('Central Pipeline Management is enabled in Logstash, but not enabled in Elasticsearch')
           end
 
           { :state => :ok, :log_level => :info, :log_message => 'Configuration Management License OK' }

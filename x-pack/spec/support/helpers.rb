@@ -90,3 +90,20 @@ module LogStash
     end
   end
 end
+
+def cluster_info(version = LOGSTASH_VERSION, build_flavour = "default")
+  {"name" => "MacBook-Pro",
+   "cluster_name" => "elasticsearch",
+   "cluster_uuid" => "YgpKq8VkTJuGTSb9aidlIA",
+   "version" =>
+     {"number" => "#{version}",
+      "build_flavor" => "#{build_flavour}",
+      "build_type" => "tar",
+      "build_hash" => "26eb422dc55236a1c5625e8a73e5d866e54610a2",
+      "build_date" => "2020-09-24T09:37:06.459350Z",
+      "build_snapshot" => true,
+      "lucene_version" => "8.7.0",
+      "minimum_wire_compatibility_version" => "7.17.0",
+      "minimum_index_compatibility_version" => "7.0.0"},
+   "tagline" => "You Know, for Search"}
+end

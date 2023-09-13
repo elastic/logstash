@@ -7,7 +7,7 @@ export PIPELINE_NAME='gen_es'
 
 # update pipeline and check response code
 index_pipeline() {
-  RESP_CODE=$(curl -s -w "%{http_code}" -X PUT -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/_logstash/pipeline/$1"  -H 'Content-Type: application/json' -d "$2")
+  RESP_CODE=$(curl -s -w "%{http_code}" -X PUT -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/_logstash/pipeline/$1"  -H 'Content-Type: application/json' -d "$2")
   if [[ $RESP_CODE -ge '400' ]]; then
     echo "failed to update pipeline for Central Pipeline Management. Got $RESP_CODE from Elasticsearch"
     exit 1
@@ -17,7 +17,7 @@ index_pipeline() {
 # index pipeline to serverless ES
 index_cpm_pipelines() {
   index_pipeline "$PIPELINE_NAME" '{
-    "pipeline": "input { generator { count => 100 } } output { elasticsearch { hosts => \"${ES_ENDPOINT}\" api_key => \"${LS_PLUGIN_API_KEY}\" index=> \"${INDEX_NAME}\" } }",
+    "pipeline": "input { generator { count => 100 } } output { elasticsearch { hosts => \"${ES_ENDPOINT}\" api_key => \"${PLUGIN_API_KEY}\" index=> \"${INDEX_NAME}\" } }",
     "last_modified": "2023-07-04T22:22:22.222Z",
     "pipeline_metadata": { "version": "1"},
     "username": "log.stash",
@@ -34,7 +34,7 @@ check_plugin() {
 }
 
 delete_pipeline() {
-  curl -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" -X DELETE "$ES_ENDPOINT/_logstash/pipeline/$PIPELINE_NAME"  -H 'Content-Type: application/json';
+  curl -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" -X DELETE "$ES_ENDPOINT/_logstash/pipeline/$PIPELINE_NAME"  -H 'Content-Type: application/json';
 }
 
 cpm_clean_up_and_get_result() {

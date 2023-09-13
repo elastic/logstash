@@ -3,6 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-10-0,Logstash 8.10.0>>
+* <<logstash-8-9-2,Logstash 8.9.2>>
 * <<logstash-8-9-1,Logstash 8.9.1>>
 * <<logstash-8-9-0,Logstash 8.9.0>>
 * <<logstash-8-8-2,Logstash 8.8.2>>
@@ -40,6 +42,49 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-10-0]]
+=== Logstash 8.10.0 Release Notes
+
+[[notable-8.10.0]]
+==== Notable issues fixed
+
+* Fixed issues in Dead Letter Queue (DLQ): 
+** `java.nio.file.NoSuchFileException` when finalizing the segment https://github.com/elastic/logstash/pull/15233[#15233]
+** DLQ file using wrong sort order https://github.com/elastic/logstash/pull/15246[#15246]
+
+[[dependencies-8.10.0]]
+==== Updates to dependencies
+
+* Updated JRuby to 9.4.2.0 https://github.com/elastic/logstash/pull/15283[#15283]
+* Removed custom bundler and used JRuby bundled bundler https://github.com/elastic/logstash/pull/15066[#15066]
+
+==== Plugins
+
+*Elasticsearch Output - 11.16.0*
+
+* Added support to Serverless Elasticsearch https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1145[#114]
+
+*Elastic_serverless_forwarder input 0.1.2*
+
+* Introduces a dedicated input plugin for receiving events from Elastic Serverless Forwarder. This plugin is in late Technical Preview, which means that as we iterate toward a stable API both configuration options and implementation details may change in subsequent releases without the usual deprecation warnings. If you use this plugin, please keep your eye on the relevant changelogs when upgrading. https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/4[#4]
+
+*Kafka Integration - 11.3.0*
+
+* Changed Kafka client to 3.4.1 https://github.com/logstash-plugins/logstash-integration-kafka/pull/145[#145]
+
+*Tcp Input - 6.3.5*
+
+* Standardized SSL settings https://github.com/logstash-plugins/logstash-input-tcp/pull/213[#213]
+** deprecated `ssl_enable` in favor of `ssl_enabled`
+** deprecated `ssl_cert` in favor of `ssl_certificate`
+** deprecated `ssl_verify` in favor of `ssl_client_authentication` when mode is `server`
+** deprecated `ssl_verify` in favor of `ssl_verification_mode` when mode is `client`
+
+[[logstash-8-9-2]]
+=== Logstash 8.9.2 Release Notes
+
+No user-facing changes in Logstash core and plugins.
 
 [[logstash-8-9-1]]
 === Logstash 8.9.1 Release Notes

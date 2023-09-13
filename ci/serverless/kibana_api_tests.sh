@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# This test is always fail because the APIs are not ready and return "method [...] exists but is not available with the current configuration"
 set -ex
 
 source ./$(dirname "$0")/common.sh
@@ -7,7 +9,7 @@ export PIPELINE_NAME="stdin_stdout"
 export EXIT_CODE="0"
 
 create_pipeline() {
-    RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME" \
+    RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME" \
       -H 'Content-Type: application/json' -H 'kbn-xsrf: logstash' \
       --data-binary @"$CURRENT_DIR/test_data/$PIPELINE_NAME.json")
 
@@ -18,7 +20,7 @@ create_pipeline() {
 }
 
 get_pipeline() {
-    RESP_BODY=$(curl -s -X GET -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME")
+    RESP_BODY=$(curl -s -X GET -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME")
     SOURCE_BODY=$(cat "$CURRENT_DIR/test_data/$PIPELINE_NAME.json")
 
     RESP_PIPELINE_NAME=$(echo "$RESP_BODY" | jq -r '.id')
@@ -39,7 +41,7 @@ get_pipeline() {
 }
 
 list_pipeline() {
-    RESP_BODY=$(curl -s -X GET -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipelines" | jq --arg name "$PIPELINE_NAME" '.pipelines[] | select(.id==$name)' )
+    RESP_BODY=$(curl -s -X GET -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipelines" | jq --arg name "$PIPELINE_NAME" '.pipelines[] | select(.id==$name)' )
     if [[ -z "$RESP_BODY" ]]; then
       EXIT_CODE=$(( EXIT_CODE + 1 ))
       echo "Fail to list pipeline."
@@ -47,7 +49,7 @@ list_pipeline() {
 }
 
 delete_pipeline() {
-    RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X DELETE -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME" \
+    RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X DELETE -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$KB_ENDPOINT/api/logstash/pipeline/$PIPELINE_NAME" \
       -H 'Content-Type: application/json' -H 'kbn-xsrf: logstash' \
       --data-binary @"$CURRENT_DIR/test_data/$PIPELINE_NAME.json")
 

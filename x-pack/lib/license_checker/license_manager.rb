@@ -21,11 +21,11 @@ module LogStash
         @license_reader = reader
         @feature = feature
 
-        fetch_xpack_info
+        fetch_license
 
         if @executor.nil?
             @executor = Executors.new_single_thread_scheduled_executor { |runnable| create_daemon_thread (runnable)}
-            @executor.schedule_at_fixed_rate(Proc.new {fetch_xpack_info}, refresh_period, refresh_period, refresh_unit)
+            @executor.schedule_at_fixed_rate(Proc.new {fetch_license}, refresh_period, refresh_period, refresh_unit)
         end
       end
 
@@ -39,6 +39,26 @@ module LogStash
         update_xpack_info(xpack_info)
       end
 
+      def fetch_cluster_info
+        @cluster_info = @license_reader.fetch_cluster_info
+      end
+
+      def build_flavor
+        @cluster_info&.dig('version', 'build_flavor')
+      end
+      def serverless?
+        build_flavor == 'serverless'
+      end
+
+      def fetch_license
+        fetch_cluster_info
+        if serverless?
+          update_xpack_info XPackInfo.serverless_response
+        else
+          fetch_xpack_info
+        end
+      end
+
       private
       def update_xpack_info(xpack_info)
         return if xpack_info == @xpack_info
@@ -46,7 +66,7 @@ module LogStash
         @xpack_info = xpack_info
         logger.debug('updating observers of xpack info change') if logger.debug?
         changed
-        notify_observers(current_xpack_info)
+        notify_observers(current_xpack_info, serverless?)
       end
 
       # Create a daemon thread for the license checker to stop this thread from keeping logstash running in the

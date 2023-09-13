@@ -4,11 +4,11 @@ set -ex
 source ./$(dirname "$0")/common.sh
 
 deploy_ingest_pipeline() {
-  PIPELINE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/_ingest/pipeline/integration-logstash_test.events-default" \
+  PIPELINE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/_ingest/pipeline/integration-logstash_test.events-default" \
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/ingest_pipeline.json")
 
-  TEMPLATE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/_index_template/logs-serverless-default-template" \
+  TEMPLATE_RESP_CODE=$(curl -s -w "%{http_code}" -o /dev/null -X PUT -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/_index_template/logs-serverless-default-template" \
     -H 'Content-Type: application/json' \
     --data-binary @"$CURRENT_DIR/test_data/index_template.json")
 
@@ -29,7 +29,7 @@ check_integration_filter() {
 }
 
 get_doc_msg_length() {
-  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/logs-$INDEX_NAME.004-default/_search?size=1" | jq '.hits.hits[0]._source.message | length'
+  curl -s -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/logs-$INDEX_NAME.004-default/_search?size=1" | jq '.hits.hits[0]._source.message | length'
 }
 
 # ensure no double run of ingest pipeline

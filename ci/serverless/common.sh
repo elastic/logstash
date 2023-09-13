@@ -12,10 +12,14 @@ setup_vault() {
   vault_path=secret/ci/elastic-logstash/serverless-test
   set +x
   export ES_ENDPOINT=$(vault read -field=es_host "${vault_path}")
+  export ES_USER=$(vault read -field=es_superuser "${vault_path}") # dlq test
+  export ES_PW=$(vault read -field=es_superuser_pw "${vault_path}")
   export KB_ENDPOINT=$(vault read -field=kb_host "${vault_path}")
-  export LS_ROLE_API_KEY_ENCODED=$(vault read -field=ls_role_api_key_encoded "${vault_path}")
-  export LS_PLUGIN_API_KEY=$(vault read -field=ls_plugin_api_key "${vault_path}")
   export MB_API_KEY=$(vault read -field=mb_api_key "${vault_path}")
+  export PLUGIN_API_KEY=$(vault read -field=plugin_api_key "${vault_path}")
+  export INTEGRATION_API_KEY_ENCODED=$(vault read -field=integration_api_key_encoded "${vault_path}")
+  export TESTER_API_KEY_ENCODED=$(vault read -field=tester_api_key_encoded "${vault_path}")
+  export CPM_API_KEY=$(vault read -field=cpm_api_key "${vault_path}")
   set -x
 }
 
@@ -24,7 +28,7 @@ build_logstash() {
 }
 
 index_test_data() {
-  curl -X POST -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
+  curl -X POST -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
 }
 
 # $1: check function
