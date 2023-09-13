@@ -23,9 +23,7 @@ steps:
           ephemeralStorage: "100Gi"
         command: |
           export WORKFLOW_TYPE=snapshot
-          export PATH="/usr/local/rbenv/bin/rbenv:$PATH"
-          ls -la /root
-          ls -la /usr/local/rbenv/bin
+          export PATH="/usr/local/rbenv/bin:$PATH"
           echo "Whoami: $(whoami)"
           eval "$(rbenv init -)"
           echo "Where is ruby: $(which ruby)"
