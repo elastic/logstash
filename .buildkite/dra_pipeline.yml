@@ -23,11 +23,11 @@ steps:
           ephemeralStorage: "100Gi"
         command: |
           export WORKFLOW_TYPE=snapshot
-          export PATH="/root/.rbenv/bin:$PATH"
+          export PATH="/usr/local/rbenv/bin/rbenv:$PATH"
           ls -la /root
-          ls -la $HOME
+          ls -la /usr/local/rbenv/bin
           echo "Whoami: $(whoami)"
-          eval "$(/root/.rbenv/bin/rbenv init -)"
+          eval "$(rbenv init -)"
           echo "Where is ruby: $(which ruby)"
           echo "Where is rake: $(which rake)"
           .buildkite/scripts/dra_x86_64.sh
