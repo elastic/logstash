@@ -24,11 +24,10 @@ steps:
         command: |
           export WORKFLOW_TYPE=snapshot
           export PATH="/usr/local/rbenv/bin:$PATH"
-          echo "Whoami: $(whoami)"
           eval "$(rbenv init -)"
-          echo "Where is ruby: $(which ruby)"
-          echo "Where is rake: $(which rake)"
           .buildkite/scripts/dra_x86_64.sh
+        artifact_paths:
+          - "build/**/*"
       
       # - label: "DRA docker x86_64 docker artifact build"
       #   key: logstash_x86_64_docker_dra
@@ -36,3 +35,15 @@ steps:
       #   agents:
       #     provider: "gcp"
       #     image: family/platform-ingest-logstash-ubuntu-2204-1694606629
+
+- label: ":elastic-stack: Publishing to DRA"
+  key: dra-public
+  depends_on: package
+  command: |
+      echo "+++ Restoring Artifacts"
+      buildkite-agent artifact download "build/**/*" .
+      echo "+++ Changing permissions for the release manager"
+      sudo chown -R :1000 build/distributions/
+      echo "+++ Running DRA publish step"
+      ls -laRt build
+      
