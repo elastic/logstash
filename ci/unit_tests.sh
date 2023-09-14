@@ -33,5 +33,5 @@ elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
   ./gradlew rubyTests --console=plain --warning-mode all
 else
   echo "Running Java and Ruby unit tests"
-  ./gradlew test jacocoTestReport sonar -Dsonar.token="${SONAR_TOKEN}" --console=plain --warning-mode all
+  ./gradlew test --console=plain
 fi
