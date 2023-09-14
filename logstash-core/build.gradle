@@ -17,6 +17,39 @@
  * under the License.
  */
 
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
+    }
+}
+
+plugins {
+    id "jacoco"
+    id "org.sonarqube" version "4.3.0.3225"
+}
+
+apply plugin: 'jacoco'
+apply plugin: "org.sonarqube"
+
+repositories {
+    mavenCentral()
+}
+
+sonarqube {
+    properties {
+        property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+}
+
+
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's main versions.yml file
@@ -29,19 +62,6 @@ String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
 
 String log4jVersion = '2.17.1'
-
-repositories {
-    mavenCentral()
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    }
-}
 
 tasks.register("sourcesJar", Jar) {
     dependsOn classes
@@ -102,7 +122,22 @@ tasks.register("javaTests", Test) {
     exclude '/org/logstash/plugins/CounterMetricImplTest.class'
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
+
+    jacoco {
+        enabled = true
+        destinationFile = layout.buildDirectory.file('jacoco/test.exec').get().asFile
+        classDumpDir = layout.buildDirectory.dir('jacoco/classpathdumps').get().asFile
+    }
 }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
+
+javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
     inputs.files fileTree("${projectDir}/lib")
