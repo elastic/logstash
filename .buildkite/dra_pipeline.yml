@@ -36,14 +36,14 @@ steps:
       #     provider: "gcp"
       #     image: family/platform-ingest-logstash-ubuntu-2204-1694606629
 
-- label: ":elastic-stack: Publishing to DRA"
-  key: dra-public
-  depends_on: package
-  command: |
-      echo "+++ Restoring Artifacts"
-      buildkite-agent artifact download "build/**/*" .
-      echo "+++ Changing permissions for the release manager"
-      sudo chown -R :1000 build/distributions/
-      echo "+++ Running DRA publish step"
-      ls -laRt build
-      
+  - label: ":elastic-stack: Publishing to DRA"
+    key: dra-public
+    depends_on: package
+    command: |
+        echo "+++ Restoring Artifacts"
+        buildkite-agent artifact download "build/**/*" .
+        echo "+++ Changing permissions for the release manager"
+        sudo chown -R :1000 build/distributions/
+        echo "+++ Running DRA publish step"
+        ls -laRt build
+        
