@@ -26,9 +26,10 @@ steps:
           export PATH="/usr/local/rbenv/bin:$PATH"
           eval "$(rbenv init -)"
           .buildkite/scripts/dra_x86_64.sh
-        artifact_paths:
-          - "build/**/*"
-      
+          buildkite-agent artifact upload --job "$BUILDKITE_JOB_ID" "build/logstash*;build/distributions/**/*"
+        # artifact_paths:
+        #   - "build/logstash*"
+        #   - "build/distributions/**/*"
       # - label: "DRA docker x86_64 docker artifact build"
       #   key: logstash_x86_64_docker_dra
       #   command: bash .buildkite/scripts/dra_x86_64.sh
@@ -39,11 +40,15 @@ steps:
   - label: ":elastic-stack: Publishing to DRA"
     key: dra-public
     depends_on: package
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.1"
+      cpu: "4"
+      memory: "8Gi"
+      ephemeralStorage: "100Gi"
     command: |
         echo "+++ Restoring Artifacts"
-        buildkite-agent artifact download "build/**/*" .
+        buildkite-agent artifact download "build/logstash*;build/distributions/**/*" . --step "logstash_x86_64_dra" --build "$BUILDKITE_BUILD_ID"
         echo "+++ Changing permissions for the release manager"
-        sudo chown -R :1000 build/distributions/
+        sudo chown -R :1000 build
         echo "+++ Running DRA publish step"
         ls -laRt build
-        
