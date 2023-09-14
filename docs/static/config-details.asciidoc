@@ -72,9 +72,8 @@ the higher percentage you can use.
 value to prevent the heap from resizing at runtime, which is a very costly
 process.
 
-* If you plan to use some plugins that leverages direct memory, like Beats, TCP or HTTP input,
- set the direct memory size (-XX:MaxDirectMemorySize) accordingly to the scale of load
- they need to sustain.
+* Some input plugins, such as Elastic Agent, Beats, TCP, and HTTP inputs, use direct memory. 
+Set the direct memory size (-XX:MaxDirectMemorySize) to accommodate the load you expect these plugins to handle.
 
 * You can make more accurate measurements of the JVM heap by using either the
 `jmap` command line utility distributed with Java or by using VisualVM. For more
@@ -91,27 +90,34 @@ Keep the overall memory requirements in mind when you allocate memory.
 By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
 Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
 
-The total amount of memory used by the JVM comprises native memory allocated for internal JVM data structures, thread stacks,
-memory mapped files, the direct memory used for IO operations and the Java heap used to execute Logstash.
-For a Logstash instance running a certain number of pipelines, all with PQ enabled we could
-estimate a memory consumption as follow:
-+
-[source,text]
--------------------------------------
-pipelines number * (workers * stack size + 2 * PQ page size) + direct memory + Java heap
--------------------------------------
+Internal JVM data structures, thread stacks, memory mapped files, direct memory for input/output (IO) operations, and the Java heap used to execute Logstash all use JVM memory. 
+Keep the memory requirements for these processes in mind as you calculate your ideal memory allocation.
+In addition to Java heap and direct memory, you must account for native memory as part of the overall memory consumption for {ls} processes.
 
-As an example, considering a Logstash instance running 10 pipelines and that JVM by default allocates as much direct memory as Java heap,
-we could end with:
-* native memory: 10 * (12 * 1Mb + 128Mb), 1.4Gb
+Java heap can be controlled by Xmx and Xms settings. 
+Direct memory space is controlled by the `-XX:MaxDirectMemorySize` setting. 
+Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
+
+As you make your capacity calculations, keep in mind that the JVM can't consume more than 70% of the host memory available.
+
+For a {ls} instance with persistent queue (PQ) enabled on multiple pipelines, we could
+estimate memory consumption using:
+
+[source,text]
+-----
+pipelines number * (workers * stack size + 2 * PQ page size) + direct memory + Java heap
+-----
+
+**Example**
+
+Consider a {ls} instance running 10 pipelines.
+Keep in mind that, by default, JVM allocates direct memory equal to memory allocated for Java heap.
+
+The calculation results in:
+
+* native memory: 1.4Gb  [derived from 10 * (12 * 1Mb + 128Mb)]
 * direct memory: 4Gb
 * Java heap: 4Gb
-There is an amount of native memory, other than Java heap and direct memory, that has to be accounted to size
-the overall memory consumption of Logstash process and that could only be estimated and doesn't have a direct control.
-In general the total memory consumed by a JVM running Logstash can only be estimated. Java heap can be controlled
-by Xmx and Xms settings, direct memory space is controlled by the `-XX:MaxDirectMemorySize` setting; but a general rule
-the JVM can't consume more than 70% of the host available memory, so some capacity calculations has to be done to avoid
-memory pages get swapped on disk.
 
 
 [[stacks-size]]
