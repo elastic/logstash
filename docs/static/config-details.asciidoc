@@ -85,17 +85,19 @@ info, see <<profiling-the-heap>>.
 ==== Setting the off-heap size
 
 The operating system, persistent queue mmap pages, direct memory, and other processes require memory in addition to memory allocated to heap size.
-Keep the overall memory requirements in mind when you allocate memory.
 
+Internal JVM data structures, thread stacks, memory mapped files, direct memory for input/output (IO) operations, and the Java heap used to execute Logstash all use JVM memory.
+Thread stacks zone contains the list of stack frames for each Java thread spinned by the JVM; each frame keeps the local arguments passed during method calls.
+Memory mapped files is not part of direct IO memory, but contains part of RAM that's mapped for direct access to files, avoiding the common filesystem operations (read, write, seek and  append).
+These mapped files are used to speed up the access to Persistent Queues, in particular each PQ file can be mapped and unmapped from memory.
+Direct memory is instead that part of native memory which contains byte buffers to be exchanged with the networking part, and are used to avoid copying of buffers between network sockets.
+All these different kind of memories fall under the term "native memory" or JVM's off-heap memory.
+
+Keep the memory requirements for these processes in mind as you calculate your ideal memory allocation.
+
+Java heap can be controlled by Xmx and Xms settings.
 By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
 Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
-
-Internal JVM data structures, thread stacks, memory mapped files, direct memory for input/output (IO) operations, and the Java heap used to execute Logstash all use JVM memory. 
-Keep the memory requirements for these processes in mind as you calculate your ideal memory allocation.
-In addition to Java heap and direct memory, you must account for native memory as part of the overall memory consumption for {ls} processes.
-
-Java heap can be controlled by Xmx and Xms settings. 
-Direct memory space is controlled by the `-XX:MaxDirectMemorySize` setting. 
 Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
 
 As you make your capacity calculations, keep in mind that the JVM can't consume the total amount of the host's memory available, as the Operation System and other processes will require memory too.
