@@ -49,7 +49,7 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.10.1]]
 ==== Notable issues fixed
-* Fix NPE when getting native thread id during shutdown https://github.com/elastic/logstash/pull/15321[#15321]
+* Fix NPE when getting a native thread's id during shutdown https://github.com/elastic/logstash/pull/15321[#15321]
 
 [[logstash-8-10-0]]
 === Logstash 8.10.0 Release Notes
