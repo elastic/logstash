@@ -72,7 +72,7 @@ the higher percentage you can use.
 value to prevent the heap from resizing at runtime, which is a very costly
 process.
 
-* Some input plugins, such as Elastic Agent, Beats, TCP, and HTTP inputs, use direct memory. 
+* Some input plugins, such as Elastic Agent, Beats, TCP, and HTTP inputs, use direct memory, allocated outside the JVM heap.
 Set the direct memory size (-XX:MaxDirectMemorySize) to accommodate the load you expect these plugins to handle.
 
 * You can make more accurate measurements of the JVM heap by using either the
@@ -98,7 +98,7 @@ Java heap can be controlled by Xmx and Xms settings.
 Direct memory space is controlled by the `-XX:MaxDirectMemorySize` setting. 
 Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
 
-As you make your capacity calculations, keep in mind that the JVM can't consume more than 70% of the host memory available.
+As you make your capacity calculations, keep in mind that the JVM can't consume the total amount of the host's memory available, as the Operation System and other processes will require memory too.
 
 For a {ls} instance with persistent queue (PQ) enabled on multiple pipelines, we could
 estimate memory consumption using:
