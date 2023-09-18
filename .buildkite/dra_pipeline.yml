@@ -26,10 +26,9 @@ steps:
           export PATH="/usr/local/rbenv/bin:$PATH"
           eval "$(rbenv init -)"
           .buildkite/scripts/dra_x86_64.sh
-          buildkite-agent artifact upload --job "$BUILDKITE_JOB_ID" "build/logstash*;build/distributions/**/*"
-        # artifact_paths:
-        #   - "build/logstash*"
-        #   - "build/distributions/**/*"
+        artifact_paths:
+          - "build/logstash*"
+          - "build/distributions/**/*"
       # - label: "DRA docker x86_64 docker artifact build"
       #   key: logstash_x86_64_docker_dra
       #   command: bash .buildkite/scripts/dra_x86_64.sh
