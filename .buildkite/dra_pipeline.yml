@@ -46,7 +46,8 @@ steps:
       ephemeralStorage: "100Gi"
     command: |
         echo "+++ Restoring Artifacts"
-        buildkite-agent artifact download "build/logstash*;build/distributions/**/*" .
+        buildkite-agent artifact download "build/logstash*" .
+        buildkite-agent artifact download "build/distributions/**/*" .
         echo "+++ Changing permissions for the release manager"
         sudo chown -R :1000 build
         echo "+++ Running DRA publish step"
