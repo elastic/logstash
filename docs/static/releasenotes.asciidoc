@@ -47,29 +47,9 @@ This section summarizes the changes in the following releases:
 [[logstash-8-10-1]]
 === Logstash 8.10.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.10.1
-
-* Backport PR #15277 to 8.10: disable xpack API and monitoring pipeline for serverless https://github.com/elastic/logstash/pull/15296[#15296]
-* Fix NPE when getting native thread id https://github.com/elastic/logstash/pull/15301[#15301]
-* Backport PR #15301 to 8.10: Fix NPE when getting native thread id https://github.com/elastic/logstash/pull/15321[#15321]
-
-=== Logstash Commits between 8.10 and 8.10.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.10.0..8.10"
-
-745225ec7 - (HEAD -> 8.10, origin/8.10) fix NPE when getting native thread id (#15301) (#15321) (4 days ago) <github-actions[bot]>
-d040e8865 - disable xpack API and monitoring pipeline for serverless (#15277) (#15296) (6 days ago) <github-actions[bot]>
-82daae80b - bump 8.10.1 (#15314) (6 days ago) <kaisecheng>
-0e1d1af9c - Release notes for 8.10.0 (#15265) (7 days ago) <github-actions[bot]>
-7dff37bff - Forward port 8.9.2 release notes to 8.10 (#15311) (10 days ago) <Andrea Selva>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.10.0..8.10 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+[[notable-8.10.1]]
+==== Notable issues fixed
+* Fix NPE when getting native thread id during shutdown https://github.com/elastic/logstash/pull/15321[#15321]
 
 [[logstash-8-10-0]]
 === Logstash 8.10.0 Release Notes
