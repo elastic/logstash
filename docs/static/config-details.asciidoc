@@ -107,21 +107,29 @@ estimate memory consumption using:
 
 [source,text]
 -----
-pipelines number * (workers * stack size + 2 * PQ page size) + direct memory + Java heap
+pipelines number * (pipeline threads * stack size + 2 * PQ page size) + direct memory + Java heap
 -----
 
 NOTE: Each Persistent Queue requires that at least head and tail pages are present and accessible in memory.
 The default page size is 64 MB so each PQ needs at least 128 MB, this is certainly one of the primary sources
 of memory consumption per pipeline.
 
+Calculating pipeline threads could be not a straightforward task.
+By default each pipeline has an agent thread that's the supervisor of the pipeline itself.
+Other than this, every input plugin runs in its own thread and could potentially spawn others. For example each JDBC input
+plugin launch a scheduler thread, or spawn a thread pool that's twice the number of cores, like Netty based plugins like TCP, Beats or HTTP input.
+Output plugins can also start helper threads, like the a connection management thread for each
+{es} output instance.
+
 **Example**
 
-Consider a {ls} instance running 10 pipelines.
+Consider a {ls} instance running 10 pipelines, with simple input and output plugins that doesn't start additional threads,
+it has 1 pipelines thread, 1 input plugin thread and 12 workers, summing up to 14.
 Keep in mind that, by default, JVM allocates direct memory equal to memory allocated for Java heap.
 
 The calculation results in:
 
-* native memory: 1.4Gb  [derived from 10 * (12 * 1Mb + 128Mb)]
+* native memory: 1.4Gb  [derived from 10 * (14 * 1Mb + 128Mb)]
 * direct memory: 4Gb
 * Java heap: 4Gb
 
