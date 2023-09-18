@@ -110,6 +110,10 @@ estimate memory consumption using:
 pipelines number * (workers * stack size + 2 * PQ page size) + direct memory + Java heap
 -----
 
+NOTE: Each Persistent Queue requires that at least head and tail pages are present and accessible in memory.
+The default page size is 64 MB so each PQ needs at least 128 MB, this is certainly one of the primary sources
+of memory consumption per pipeline.
+
 **Example**
 
 Consider a {ls} instance running 10 pipelines.
