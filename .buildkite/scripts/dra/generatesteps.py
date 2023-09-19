@@ -76,6 +76,7 @@ def publish_dra_step(branch, version_qualifier, workflow_type, depends_on):
 def build_steps_to_yaml(branch, version_qualifier, workflow_type):
     steps = []
     steps.extend(yaml.safe_load(package_x86_step(branch, version_qualifier, workflow_type)))
+    steps.extend(yaml.safe_load(package_x86_docker_step(branch, version_qualifier, workflow_type)))
 
     return steps
 
@@ -104,7 +105,7 @@ if __name__ == "__main__":
 
     # Final step: pull artifacts built above and publish them via the release-manager
     structure["steps"].extend(
-        yaml.safe_load(publish_dra_step(branch, version_qualifier, workflow_type, depends_on=group_key))
+        yaml.safe_load(publish_dra_step(branch, version_qualifier, workflow_type, depends_on=group_key)),
     )
 
     print(yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
