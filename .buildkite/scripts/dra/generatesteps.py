@@ -44,7 +44,8 @@ def package_x86_docker_step(branch, version_qualifier, workflow_type):
   command: |
     export VERSION_QUALIFIER_OPT={version_qualifier}
     export WORKFLOW_TYPE={workflow_type}
-    export PATH="/usr/local/rbenv/bin:$PATH"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    export ARCH="x86_64"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/dra_docker.sh
 '''
