@@ -63,10 +63,10 @@ esac
 info "Saving tar.gz for docker images"
 save_docker_tarballs "${ARCH}" "${STACK_VERSION}"
 
-info "GENERATED ARTIFACTS"
+info "Generated Artifacts"
 for file in build/logstash-*; do shasum $file;done
 
-info "UPLOADING TO INTERMEDIATE BUCKET"
+info "Uploading DRA artifacts in buildkite's artifact store ..."
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the dra_x86_64.sh
 images="logstash logstash-oss"
 if [ "$ARCH" != "aarch64" ]; then
@@ -74,14 +74,14 @@ if [ "$ARCH" != "aarch64" ]; then
     images="logstash logstash-oss logstash-ubi8"
 fi
 for image in ${images}; do
-    upload_to_bucket "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz" ${STACK_VERSION}
+    buildkite-agent artifact upload "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz"
 done
 
 # Upload 'docker-build-context.tar.gz' files only when build x86_64, otherwise they will be
 # overwritten when building aarch64 (or viceversa).
 if [ "$ARCH" != "aarch64" ]; then
     for image in logstash logstash-oss logstash-ubi8 logstash-ironbank; do
-        upload_to_bucket "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz" ${STACK_VERSION}
+        buildkite-agent artifact upload "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz"
     done
 fi
 

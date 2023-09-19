@@ -32,6 +32,25 @@ def package_x86_step(branch, version_qualifier, workflow_type):
 
     return step
 
+def package_x86_docker_step(branch, version_qualifier, workflow_type):
+    step = f'''
+- label: ":package: Build x86_64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
+  key: "logstash_build_x86_64_docker_dra"
+  agents:
+    image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
+    cpu: "8"
+    memory: "8Gi"
+    ephemeralStorage: "100Gi"
+  command: |
+    export VERSION_QUALIFIER_OPT={version_qualifier}
+    export WORKFLOW_TYPE={workflow_type}
+    export PATH="/usr/local/rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/dra_docker.sh
+'''
+
+    return step
+
 def publish_dra_step(branch, version_qualifier, workflow_type, depends_on):
     step = f'''
 - label: ":elastic-stack: Publish {branch}-{workflow_type.upper()} DRA artifacts"
@@ -44,8 +63,8 @@ def publish_dra_step(branch, version_qualifier, workflow_type, depends_on):
     machineType: "n2-standard-16"
   command: |
     echo "+++ Restoring Artifacts"
-    buildkite-agent artifact download "build/logstash*" . --step logstash_x86_64_dra_{branch}_{workflow_type}
-    buildkite-agent artifact download "build/distributions/**/*" . --step logstash_x86_64_dra_{branch}_{workflow_type}
+    buildkite-agent artifact download "build/logstash*" .
+    buildkite-agent artifact download "build/distributions/**/*" .
     echo "+++ Changing permissions for the release manager"
     sudo chown -R :1000 build
     echo "+++ Running DRA publish step"
