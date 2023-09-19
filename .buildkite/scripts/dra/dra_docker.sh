@@ -6,6 +6,17 @@ echo "####################################################################"
 
 source ./$(dirname "$0")/dra_common.sh
 
+export PY_VERSION=3.10.11
+## START: TO REMOVE
+export PATH="./bin:$HOME/.pyenv/bin:$HOME/.pyenv/shims:./venv/bin:$PATH"
+LOCAL_PY_VER=`python3 --version 2>&1` && \
+echo "Was using $LOCAL_PY_VER" && \
+eval "$(pyenv init -)" && eval "$(pyenv init --path)" && \
+pyenv install --skip-existing $PY_VERSION && \
+pyenv local $PY_VERSION && \
+python3 -mvenv venv 
+## END: TO REMOVE
+
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
