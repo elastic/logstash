@@ -20,4 +20,6 @@ steps:
       export WORKFLOW_TYPE="snapshot"
       python3 -m pip install pyyaml
       echo "Generating dynamic pipeline steps:"
-      python3 .buildkite/scripts/dra/generatesteps.py | tee buildkite-agent pipeline upload
+      python3 .buildkite/scripts/dra/generatesteps.py
+      
+      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
