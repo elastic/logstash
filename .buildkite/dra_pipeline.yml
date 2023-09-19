@@ -5,25 +5,26 @@ steps:
   - input: "Build parameters"
     if: build.source != "schedule"
     fields:
-      - text: "VERSION_QUALIFIER"
-        key: "VERSION_QUALIFIER"
-        default: ""
-        required: false
-        hint: "optional version qualifier for built artifacts e.g.: alpha1,beta1"
-
       - text: "BRANCH"
         key: "BRANCH"
         default: ""
         required: false
         hint: "Specify branch e.g. 7.17 if you want to build DRA artifacts for a specific branch"
 
+      - text: "VERSION_QUALIFIER"
+        key: "VERSION_QUALIFIER"
+        default: ""
+        required: false
+        hint: "Optional version qualifier for built artifacts e.g.: alpha1,beta1"
+
+
   - wait
   - label: ":pipeline: Generate steps"
     command: |
       set -eo pipefail
 
-      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER)
+      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER -- default "")
       export WORKFLOW_TYPE="snapshot"
-      export BRANCH=$(buildkite-agent meta-data get BRANCH)
+      export BRANCH=$(buildkite-agent meta-data get BRANCH -- default "")
       python3 -m pip install pyyaml
       python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
