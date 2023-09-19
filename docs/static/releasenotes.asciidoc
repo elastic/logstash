@@ -47,9 +47,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-10-1]]
 === Logstash 8.10.1 Release Notes
 
-[[notable-8.10.1]]
-==== Notable issues fixed
-* Fix Null Pointer Exception (NPE) when getting a native thread's id during shutdown https://github.com/elastic/logstash/pull/15321[#15321]
+No user-facing changes in Logstash core and plugins.
 
 [[logstash-8-10-0]]
 === Logstash 8.10.0 Release Notes
