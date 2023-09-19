@@ -50,11 +50,6 @@ bin/dependencies-report --csv=build/distributions/dependencies-reports/logstash-
 info "GENERATED DEPENDENCIES REPORT"
 shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
-info "UPLOADING TO INTERMEDIATE BUCKET"
-for file in build/logstash-*; do
-  upload_to_bucket $file ${STACK_VERSION}
-done
-
 # Upload Dependencies Report
 upload_to_bucket "build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv" ${STACK_VERSION}
 

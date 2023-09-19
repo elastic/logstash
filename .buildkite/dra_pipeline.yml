@@ -1,55 +1,26 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+## TODO rename this file to dra_pipeline_snapshot (and change the respective definition in .pipelines.yaml)
 steps:
-  # - input: "Build parameters"
-  #   fields:
-  #   - select: "DRA Workflow Type"
-  #     key: "WORKFLOW_TYPE"
-  #     required: "true"
-  #     options:
-  #       - label: "snapshot"
-  #         value: "snapshot"
-  #       - label: "staging"
-  #         value: "staging"
+  - input: "Build parameters"
+    fields:
+      - text: "VERSION_QUALIFIER"
+        key: "VERSION_QUALIFIER"
+        default: ""
+        hint: "optional version qualifier for built artifacts e.g.: alpha1,beta1"
 
-  - group: ":Build Artifacts"
-    key: "package"
-    steps:
-      - label: ":package: DRA x86_64 artifact build"
-        key: logstash_x86_64_dra
-        agents:
-          image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.1"
-          cpu: "4"
-          memory: "8Gi"
-          ephemeralStorage: "100Gi"
-        command: |
-          export WORKFLOW_TYPE=snapshot
-          export PATH="/usr/local/rbenv/bin:$PATH"
-          eval "$(rbenv init -)"
-          .buildkite/scripts/dra_x86_64.sh
-        artifact_paths:
-          - "build/logstash*"
-          - "build/distributions/**/*"
-      # - label: "DRA docker x86_64 docker artifact build"
-      #   key: logstash_x86_64_docker_dra
-      #   command: bash .buildkite/scripts/dra_x86_64.sh
-      #   agents:
-      #     provider: "gcp"
-      #     imageProject: elastic-images-qa
-      #     image: family/platform-ingest-logstash-ubuntu-2204
+      - text: "BRANCH"
+        key: "BRANCH"
+        default: ""
+        hint: "Specify branch e.g. 7.17 if you want to build DRA artifacts for a specific branch"
 
-  - label: ":elastic-stack: Publishing to DRA"
-    key: dra-public
-    depends_on: package
-    agents:
-      provider: gcp
-      imageProject: elastic-images-qa
-      image: family/platform-ingest-logstash-ubuntu-2204
-      machineType: "n2-standard-16"
+  - wait
+  - label: ":pipeline: Generate steps"
     command: |
-        echo "+++ Restoring Artifacts"
-        buildkite-agent artifact download "build/logstash*" .
-        buildkite-agent artifact download "build/distributions/**/*" .
-        echo "+++ Changing permissions for the release manager"
-        sudo chown -R :1000 build
-        echo "+++ Running DRA publish step"
-        ls -laRt build
+      set -eo pipefail
+
+      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER)
+      export WORKFLOW_TYPE="SNAPSHOT"
+      export BRANCH=export VERSION_QUALIFIER=$(buildkite-agent meta-data get BRANCH)
+      python3 -m pip install pyyaml
+      python3 .buildkite/scripts/dra/generatesteps.py $WORKFLOW_TYPE $BRANCH | buildkite-agent pipeline upload
