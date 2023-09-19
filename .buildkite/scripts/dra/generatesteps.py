@@ -37,10 +37,10 @@ def package_x86_docker_step(branch, version_qualifier, workflow_type):
 - label: ":package: Build x86_64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_x86_64_docker_dra"
   agents:
-    image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
-    cpu: "8"
-    memory: "8Gi"
-    ephemeralStorage: "100Gi"
+    provider: gcp
+    imageProject: elastic-images-qa
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-16"
   command: |
     export VERSION_QUALIFIER_OPT={version_qualifier}
     export WORKFLOW_TYPE={workflow_type}
