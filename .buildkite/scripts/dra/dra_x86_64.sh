@@ -40,18 +40,18 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
-info "GENERATED ARTIFACTS"
+info "Generated Artifacts"
 for file in build/logstash-*; do shasum $file;done
 
 info "Creating dependencies report for ${STACK_VERSION}"
 mkdir -p build/distributions/dependencies-reports/
 bin/dependencies-report --csv=build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
-info "GENERATED DEPENDENCIES REPORT"
+info "Generated dependencies report"
 shasum build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv
 
-# Upload Dependencies Report
-upload_to_bucket "build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv" ${STACK_VERSION}
+info "Uploading DRA artifacts in buildkite's artifact store ..."
+buildkite-agent artifact upload "build/logstash*;build/distributions/dependencies-reports/logstash*"
 
 echo "####################################################################"
 echo "##################### Finishing $0"

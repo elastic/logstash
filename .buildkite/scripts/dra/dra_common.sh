@@ -1,9 +1,9 @@
 function info {
-    echo "INFO: $1"
+    echo "--- INFO: $1"
 }
 
 function error {
-    echo "ERROR: $1"
+    echo "--- ERROR: $1"
     exit 1
 }
 
@@ -24,14 +24,6 @@ function save_docker_tarballs {
         # NOTE: if docker save exited with non-zero the error log already exited the script
         gzip "build/${tar_file}"
     done
-}
-
-function upload_to_bucket {
-    local file="${1:?file required}"
-    local version="${2:?stack-version required}"
-    info "Uploading ${file}..."
-    echo "Running in dry-run for now:"
-    echo "gsutil cp \"${file}\" \"gs://logstash-ci-artifacts/dra/${version}/\""
 }
 
 # Since we are using the system jruby, we need to make sure our jvm process
