@@ -3,15 +3,18 @@
 ## TODO rename this file to dra_pipeline_snapshot (and change the respective definition in .pipelines.yaml)
 steps:
   - input: "Build parameters"
+    if: build.source != "schedule"
     fields:
       - text: "VERSION_QUALIFIER"
         key: "VERSION_QUALIFIER"
         default: ""
+        required: false
         hint: "optional version qualifier for built artifacts e.g.: alpha1,beta1"
 
       - text: "BRANCH"
         key: "BRANCH"
         default: ""
+        required: false
         hint: "Specify branch e.g. 7.17 if you want to build DRA artifacts for a specific branch"
 
   - wait
@@ -20,7 +23,7 @@ steps:
       set -eo pipefail
 
       export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER)
-      export WORKFLOW_TYPE="SNAPSHOT"
-      export BRANCH=export VERSION_QUALIFIER=$(buildkite-agent meta-data get BRANCH)
+      export WORKFLOW_TYPE="snapshot"
+      export BRANCH=$(buildkite-agent meta-data get BRANCH)
       python3 -m pip install pyyaml
-      python3 .buildkite/scripts/dra/generatesteps.py $WORKFLOW_TYPE $BRANCH | buildkite-agent pipeline upload
+      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload

@@ -52,14 +52,14 @@ def build_steps_to_yaml(branch, version_qualifier, workflow_type):
     return steps
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(f"Missing required cli argument for workflow type. Use:\n{sys.argv[0]} <STAGING|SNAPSHOT>\n.Exiting.")
-        os.exit(1)
-
-    WORKFLOW_TYPE = sys.argv[1]
     try:
-        BRANCHES = [sys.argv[2]]
-    except IndexError:
+        WORKFLOW_TYPE = os.environ["WORKFLOW_TYPE"]
+    except ImportError:
+        print(f"Missing required cli argument for workflow type. Use:\n{sys.argv[0]} <staging|snapshot>\n.Exiting.")
+        exit(1)
+
+    BRANCHES = [os.environ.get("BRANCH")]
+    if not BRANCHES[0].strip():
         BRANCHES = ["main", "8.10", "7.17"]
 
     # these come from input: fields in the buildkite pipeline definition
