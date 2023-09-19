@@ -7,7 +7,7 @@ echo "####################################################################"
 source ./$(dirname "$0")/dra_common.sh
 
 ## TODO remove once it's bundled in the VM
-export PATH="~/.pyenv/bin:$PATH"
+export PATH="~/.pyenv/bin:~/.rbenv/bin/$PATH"
 eval "$(pyenv init -)" && eval "$(pyenv init --path)"
 CC=clang retry -t 5 -- pyenv install 3.6.13
 ## END TODO
