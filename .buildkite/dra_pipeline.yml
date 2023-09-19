@@ -23,8 +23,8 @@ steps:
     command: |
       set -eo pipefail
 
-      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER -- default "")
+      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER --default "")
       export WORKFLOW_TYPE="snapshot"
-      export BRANCH=$(buildkite-agent meta-data get BRANCH -- default "")
+      export BRANCH=$(buildkite-agent meta-data get BRANCH --default "")
       python3 -m pip install pyyaml
       python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
