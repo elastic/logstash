@@ -3,10 +3,22 @@ import sys
 
 import yaml
 
+def to_bk_key_friendly_string(key):
+    """
+    Convert and return key to an acceptable format for Buildkite's key: field
+    Only alphanumerics, dashes and underscores are allowed.
+    """
+
+    mapping_table = str.maketrans({'.': '_'})
+
+    return key.translate(mapping_table)
+
 def package_x86_step(branch, version_qualifier, workflow_type):
+    step_key = to_bk_key_friendly_string(f"logstash_build_x86_64_dra_{branch}_{workflow_type}")
+
     step = f'''
-- label: ":package: DRA x86_64 artifact build - {branch}-{workflow_type}"
-  key: logstash_x86_64_dra_{branch}_{workflow_type}
+- label: ":package: Build x86_64 {branch}-{workflow_type.upper()} DRA artifacts"
+  key: "{step_key}"
   agents:
     image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
     cpu: "8"
@@ -19,15 +31,18 @@ def package_x86_step(branch, version_qualifier, workflow_type):
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/dra_x86_64.sh
     buildkite-agent artifact upload "build/logstash*;build/distributions/**/*"
+  branches: "{branch}"
 '''
 
     return step
 
 def publish_dra_step(branch, version_qualifier, workflow_type):
+    step_key = to_bk_key_friendly_string(f"logstash_publish_dra_{branch}_{workflow_type}")
+
     step = f'''
-- label: ":elastic-stack: Publishing to DRA"
-  key: dra-public
-  depends_on: package_{branch}
+- label: ":elastic-stack: Publish {branch}-{workflow_type.upper()} DRA artifacts"
+  key: {step_key}
+  depends_on: "package_{branch}"
   agents:
     provider: gcp
     imageProject: elastic-images-qa
@@ -41,6 +56,7 @@ def publish_dra_step(branch, version_qualifier, workflow_type):
     sudo chown -R :1000 build
     echo "+++ Running DRA publish step"
     ls -laRt build
+  branches: "{branch}"
     '''
 
     return step
@@ -58,7 +74,7 @@ if __name__ == "__main__":
         print(f"Missing required cli argument for workflow type. Use:\n{sys.argv[0]} <staging|snapshot>\n.Exiting.")
         exit(1)
 
-    BRANCHES = [os.environ.get("BRANCH")]
+    BRANCHES = [os.environ["BRANCH"]]
     if not BRANCHES[0].strip():
         BRANCHES = ["main", "8.10", "7.17"]
 
@@ -69,9 +85,11 @@ if __name__ == "__main__":
 
     for branch in BRANCHES:
         # Group defining parallel steps that build and save artifacts
+        group_key = to_bk_key_friendly_string(f"logstash_dra_{branch}_{WORKFLOW_TYPE}")
+
         structure["steps"].append({
-            "group": f":Build Artifacts - {branch}",
-            "key": f"package_{branch}",
+            "group": f":Build Artifacts - {branch}-{WORKFLOW_TYPE.upper()}",
+            "key": group_key,
             "steps": build_steps_to_yaml(branch, VERSION_QUALIFIER, WORKFLOW_TYPE),
         })
 

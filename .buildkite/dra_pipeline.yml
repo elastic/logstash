@@ -27,4 +27,5 @@ steps:
       export WORKFLOW_TYPE="snapshot"
       export BRANCH=$(buildkite-agent meta-data get BRANCH --default "")
       python3 -m pip install pyyaml
-      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
+      echo "Generating dynamic pipeline steps:"
+      python3 .buildkite/scripts/dra/generatesteps.py | tee buildkite-agent pipeline upload
