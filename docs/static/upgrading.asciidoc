@@ -64,6 +64,10 @@ If you use your own custom template with Logstash, then this issue can be ignore
 
 This procedure uses <<package-repositories,package managers>> to upgrade Logstash.
 
+NOTE: Upgrading {ls} installations on which were installed some plugins not shipped with {ls} distribution
+cause the removal of such plugins. To solve this problem the user has list and identify the plugins that
+aren't reinstalled and manually reinstall those.
+
 . Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 . Using the directions in the <<package-repositories>> section, update your repository
 links to point to the 8.x repositories.
