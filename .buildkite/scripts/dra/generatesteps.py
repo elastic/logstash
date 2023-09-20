@@ -68,6 +68,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
     sudo chown -R :1000 build
     echo "+++ Running DRA publish step"
     ls -laRt build
+    .buildkite/scripts/dra/dra_upload.sh
     '''
 
     return step
