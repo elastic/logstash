@@ -36,7 +36,4 @@ export JRUBY_OPTS="-J-Xmx1g"
 # The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
-# ARCH is a Environment variable set in Jenkins
-if [ -z "$ARCH" ]; then
-	ARCH=aarch64
-fi
+info "Agent is running on architecture [$(uname -i)]"

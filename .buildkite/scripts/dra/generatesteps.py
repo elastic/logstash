@@ -20,8 +20,8 @@ def package_x86_step(branch, workflow_type):
   agents:
     image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
     cpu: "8"
-    memory: "8Gi"
-    ephemeralStorage: "100Gi"
+    memory: "16Gi"
+    ephemeralStorage: "200Gi"
   command: |
     export WORKFLOW_TYPE={workflow_type}
     export PATH="/usr/local/rbenv/bin:$PATH"
@@ -40,6 +40,7 @@ def package_x86_docker_step(branch, workflow_type):
     imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
+    diskSizeGb: 200
   command: |
     export WORKFLOW_TYPE={workflow_type}
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
@@ -52,13 +53,14 @@ def package_x86_docker_step(branch, workflow_type):
 
 def package_aarch64_docker_step(branch, workflow_type):
     step = f'''
-- label: ":package: Build x86_64 aarch64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
+- label: ":package: Build aarch64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: gcp
     imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204-aarch64
     machineType: "t2a-standard-8"
+    diskSizeGb: 200
   command: |
     export WORKFLOW_TYPE={workflow_type}
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
@@ -79,6 +81,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
     imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
+    diskSizeGb: 200
   command: |
     echo "+++ Restoring Artifacts"
     buildkite-agent artifact download "build/logstash*" .
