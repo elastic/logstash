@@ -50,6 +50,25 @@ def package_x86_docker_step(branch, workflow_type):
 
     return step
 
+def package_aarch64_docker_step(branch, workflow_type):
+    step = f'''
+- label: ":package: Build x86_64 aarch64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
+  key: "logstash_build_aarch64_docker_dra"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-qa
+    image: family/platform-ingest-logstash-ubuntu-2204-aarch64
+    machineType: "t2a-standard-8"
+  command: |
+    export WORKFLOW_TYPE={workflow_type}
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    export ARCH="aarch64"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/dra_docker.sh
+'''
+
+    return step
+
 def publish_dra_step(branch, workflow_type, depends_on):
     step = f'''
 - label: ":elastic-stack: Publish {branch}-{workflow_type.upper()} DRA artifacts"
@@ -77,6 +96,7 @@ def build_steps_to_yaml(branch, workflow_type):
     steps = []
     steps.extend(yaml.safe_load(package_x86_step(branch, workflow_type)))
     steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type)))
+    steps.extend(yaml.safe_load(package_aarch64_docker_step(branch, workflow_type)))
 
     return steps
 
