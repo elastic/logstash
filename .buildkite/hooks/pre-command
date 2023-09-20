@@ -29,7 +29,7 @@ if [[ "$BUILDKITE_PIPELINE_SLUG" == "logstash-dra-pipeline-ci" ]]; then
   if [[ ! -z "$vq" ]]; then
     echo "Detected extra version qualifier opt, value is [$vq]"
     export VERSION_QUALIFIER_OPT=$vq
-  else;
+  else
     echo "Didn't detect extra version qualifier opt, value is [$vq]"
   fi
 
