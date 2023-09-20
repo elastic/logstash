@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -euo pipefail
+
+DOCKER_REGISTRY="docker.elastic.co"
+DOCKER_REGISTRY_SECRET_PATH="kv/ci-shared/platform-ingest/docker_registry_prod"
+CI_DRA_ROLE_PATH="kv/ci-shared/release/dra-role"
+
+
+function docker_login {
+  DOCKER_USERNAME_SECRET=$(retry -t 5 -- vault kv get -field user "${DOCKER_REGISTRY_SECRET_PATH}")
+  DOCKER_PASSWORD_SECRET=$(retry -t 5 -- vault kv get -field password "${DOCKER_REGISTRY_SECRET_PATH}")
+  docker login -u "${DOCKER_USERNAME_SECRET}" -p "${DOCKER_PASSWORD_SECRET}" "${DOCKER_REGISTRY}" 2>/dev/null
+  unset DOCKER_USERNAME_SECRET DOCKER_PASSWORD_SECRET
+}
+
+function release_manager_login {
+  DRA_CREDS_SECRET=$(retry -t 5 -- vault kv get -field=data -format=json ${CI_DRA_ROLE_PATH})
+  VAULT_ADDR_SECRET=$(echo ${DRA_CREDS_SECRET} | jq -r '.vault_addr')
+  VAULT_ROLE_ID_SECRET=$(echo ${DRA_CREDS_SECRET} | jq -r '.role_id')
+  VAULT_SECRET=$(echo ${DRA_CREDS_SECRET} | jq -r '.secret_id')
+  export VAULT_ADDR_SECRET VAULT_ROLE_ID_SECRET VAULT_SECRET
+}
+
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "logstash-dra-pipeline-ci" ]]; then
+
+  echo "+++ Exporting VERSION_QUALIFIER_OPT if set"
+  vq=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
+  if [[ ! -z "$vq" ]]; then
+    echo "Detected extra version qualifier opt, value is [$vq]"
+    export VERSION_QUALIFIER_OPT=$vq
+  else;
+    echo "Didn't detect extra version qualifier opt, value is [$vq]"
+  fi
+
+
+  if [[ "$BUILDKITE_STEP_KEY" == "logstash_publish_dra" ]]; then
+    echo "+++ Setting DRA params"
+    release_manager_login
+  fi
+fi
