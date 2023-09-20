@@ -11,14 +11,16 @@ steps:
         required: false
         hint: "Optional version qualifier for built artifacts e.g.: alpha1,beta1"
 
-  - wait
+  - wait: ~
+    if: build.source != "schedule"
+
   - label: ":pipeline: Generate steps"
     command: |
       set -eo pipefail
 
       export WORKFLOW_TYPE="snapshot"
       python3 -m pip install pyyaml
-      echo "Generating dynamic pipeline steps:"
+      echo "--- Generating dynamic pipeline steps:"
       python3 .buildkite/scripts/dra/generatesteps.py
       
       python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
