@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -eo pipefail
+
+source .buildkite/scripts/unset-secrets.sh
+
+if command -v docker &>/dev/null; then
+  DOCKER_REGISTRY="docker.elastic.co"
+  docker logout $DOCKER_REGISTRY
+fi

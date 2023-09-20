@@ -24,15 +24,13 @@ function release_manager_login {
 
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "logstash-dra-pipeline-ci" ]]; then
 
-  echo "+++ Exporting VERSION_QUALIFIER_OPT if set"
   vq=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
   if [[ ! -z "$vq" ]]; then
-    echo "Detected extra version qualifier opt, value is [$vq]"
+    echo "+++ Exporting VERSION_QUALIFIER_OPT to value [$vq]"
     export VERSION_QUALIFIER_OPT=$vq
   else
-    echo "Didn't detect extra version qualifier opt, value is [$vq]"
+    echo "+++ No value provided for VERSION_QUALIFIER_OPT leaving unset"
   fi
-
 
   if [[ "$BUILDKITE_STEP_KEY" == "logstash_publish_dra" ]]; then
     echo "+++ Setting DRA params"
