@@ -13,7 +13,7 @@ def to_bk_key_friendly_string(key):
 
     return key.translate(mapping_table)
 
-def package_x86_step(branch, version_qualifier, workflow_type):
+def package_x86_step(branch, workflow_type):
     step = f'''
 - label: ":package: Build x86_64 {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_x86_64_dra"
@@ -23,7 +23,6 @@ def package_x86_step(branch, version_qualifier, workflow_type):
     memory: "8Gi"
     ephemeralStorage: "100Gi"
   command: |
-    export VERSION_QUALIFIER_OPT={version_qualifier}
     export WORKFLOW_TYPE={workflow_type}
     export PATH="/usr/local/rbenv/bin:$PATH"
     eval "$(rbenv init -)"
@@ -32,7 +31,7 @@ def package_x86_step(branch, version_qualifier, workflow_type):
 
     return step
 
-def package_x86_docker_step(branch, version_qualifier, workflow_type):
+def package_x86_docker_step(branch, workflow_type):
     step = f'''
 - label: ":package: Build x86_64 Docker {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_x86_64_docker_dra"
@@ -42,7 +41,6 @@ def package_x86_docker_step(branch, version_qualifier, workflow_type):
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
   command: |
-    export VERSION_QUALIFIER_OPT={version_qualifier}
     export WORKFLOW_TYPE={workflow_type}
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
     export ARCH="x86_64"
@@ -52,7 +50,7 @@ def package_x86_docker_step(branch, version_qualifier, workflow_type):
 
     return step
 
-def publish_dra_step(branch, version_qualifier, workflow_type, depends_on):
+def publish_dra_step(branch, workflow_type, depends_on):
     step = f'''
 - label: ":elastic-stack: Publish {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_publish_dra"
@@ -74,10 +72,10 @@ def publish_dra_step(branch, version_qualifier, workflow_type, depends_on):
 
     return step
 
-def build_steps_to_yaml(branch, version_qualifier, workflow_type):
+def build_steps_to_yaml(branch, workflow_type):
     steps = []
-    steps.extend(yaml.safe_load(package_x86_step(branch, version_qualifier, workflow_type)))
-    steps.extend(yaml.safe_load(package_x86_docker_step(branch, version_qualifier, workflow_type)))
+    steps.extend(yaml.safe_load(package_x86_step(branch, workflow_type)))
+    steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type)))
 
     return steps
 
@@ -90,9 +88,6 @@ if __name__ == "__main__":
 
     branch = os.environ["BUILDKITE_BRANCH"]
 
-    # these come from input: fields in the buildkite pipeline definition
-    version_qualifier = os.environ["VERSION_QUALIFIER"]
-
     structure = {"steps": []}
 
     # Group defining parallel steps that build and save artifacts
@@ -101,12 +96,12 @@ if __name__ == "__main__":
     structure["steps"].append({
         "group": f":Build Artifacts - {workflow_type.upper()}",
         "key": group_key,
-        "steps": build_steps_to_yaml(branch, version_qualifier, workflow_type),
+        "steps": build_steps_to_yaml(branch, workflow_type),
     })
 
     # Final step: pull artifacts built above and publish them via the release-manager
     structure["steps"].extend(
-        yaml.safe_load(publish_dra_step(branch, version_qualifier, workflow_type, depends_on=group_key)),
+        yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
     )
 
     print(yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))

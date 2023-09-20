@@ -5,8 +5,8 @@ steps:
   - input: "Build parameters"
     if: build.source != "schedule"
     fields:
-      - text: "VERSION_QUALIFIER"
-        key: "VERSION_QUALIFIER"
+      - text: "VERSION_QUALIFIER_OPT"
+        key: "VERSION_QUALIFIER_OPT"
         default: ""
         required: false
         hint: "Optional version qualifier for built artifacts e.g.: alpha1,beta1"
@@ -16,7 +16,12 @@ steps:
     command: |
       set -eo pipefail
 
-      export VERSION_QUALIFIER=$(buildkite-agent meta-data get VERSION_QUALIFIER --default "")
+      local vq=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
+      if [[ ! -z $vq ]]; then
+        echo "--- Detected extra version qualifier opt"
+        echo "VERSION_QUALIFIER_OPT=$VERSION_QUALIFIER_OPT"
+        export VERSION_QUALIFIER_OPT=$vq
+      fi
       export WORKFLOW_TYPE="snapshot"
       python3 -m pip install pyyaml
       echo "Generating dynamic pipeline steps:"
