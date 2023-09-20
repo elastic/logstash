@@ -16,7 +16,7 @@ steps:
     command: |
       set -eo pipefail
 
-      local vq=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
+      vq=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
       if [[ ! -z $vq ]]; then
         echo "--- Detected extra version qualifier opt"
         echo "VERSION_QUALIFIER_OPT=$VERSION_QUALIFIER_OPT"
