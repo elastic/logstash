@@ -18,9 +18,3 @@ Add and configure the logstash-filter-elastic_integration filter as the _first_ 
 // ToDo: Add link to plugin doc for settings and additional instructions after those docs are published.
 // For now: https://github.com/elastic/logstash-filter-elastic_integration
 
-Can set at the logstash or pipeline level 
-
-As with other plugins, you can set up ingest pipelines at the {ls} level in {logstash-ref}/logstash-settings-file.html[`logstash.yml`], or at the pipeline level in {logstash-ref}/logstash-settings-file.html[`pipelines.yml`]. 
-
-TIP: Check out {integrations-docs}[{agent} integrations] to see the list of available integrations. 
-
