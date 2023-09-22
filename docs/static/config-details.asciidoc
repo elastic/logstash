@@ -110,11 +110,13 @@ Every pipeline, also, has its own thread responsible to manage the pipeline life
 
 To summarize, we have 3 categories of memory usage, where 2 can be limited by the JVM and the other relies on available, free memory:
 
-| Memory Type | Configured using | Used by |
-| :---------------- | :------: | ----: |
-| JVM Heap  |   -Xmx   | any normal object allocation |
-| JVM direct memory |   -XX:MaxDirectMemorySize   | beats, tcp and http inputs |
-| Native memory  |  N/A   | Persistent Queue Pages, Thread Stacks |
+[cols="<,<,<",options="header",]
+|=====
+| Memory Type | Configured using | Used by
+| JVM Heap  |   -Xmx   | any normal object allocation
+| JVM direct memory |   -XX:MaxDirectMemorySize   | beats, tcp and http inputs
+| Native memory  |  N/A   | Persistent Queue Pages, Thread Stacks
+|=====
 
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
