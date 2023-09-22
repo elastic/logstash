@@ -82,14 +82,10 @@ the higher percentage you can use.
 value to prevent the heap from resizing at runtime, which is a very costly
 process.
 
-* Some input plugins, such as Elastic Agent, Beats, TCP, and HTTP inputs, use direct memory, allocated outside the JVM heap.
-Set the direct memory size (-XX:MaxDirectMemorySize) to accommodate the load you expect these plugins to handle.
-
 * You can make more accurate measurements of the JVM heap by using either the
 `jmap` command line utility distributed with Java or by using VisualVM. For more
 info, see <<profiling-the-heap>>.
 // end::heap-size-tips[]
-
 
 [[off-heap-size]]
 ===== Setting the off-heap size
@@ -101,7 +97,16 @@ Thread stacks zone contains the list of stack frames for each Java thread spinne
 Read on <<stacks-size>> if the size needs to be adapted to the processing needs.
 Memory mapped files are not part of the Logstash's process off-heap memory, but consume RAM when paging files from disk.
 These mapped files speed up the access to Persistent Queues pages, a performance improvement - or trade off - to reduce expensive disk operations such as read, write, and seek.
-Some network I/O operations also resort to in-process direct memory usage to avoid, for example, copying of buffers between network sockets.
+Some network I/O operations also resort to in-process direct memory usage to avoid, for example, copying of buffers between network sockets,
+in particular, some input plugins such as Elastic Agent, Beats, TCP, and HTTP inputs, use direct memory.
+
+Another component of memory consumption is the thread stack size, allocated per thread.
+Plugins, depending on their type (inputs, filters, and outputs), have different thread models.
+Every input plugin runs in its own thread and can potentially spawn others. For example, each JDBC input
+plugin launches a scheduler thread. Netty based plugins like TCP, Beats or HTTP input spawn a thread pool with 2 * number_of_cores threads.
+Output plugins may also start helper threads, such as a connection management thread for each
+{es} output instance.
+Every pipeline, also, has its own thread responsible to manage the pipeline lifecycle.
 
 To summarize, we have 3 categories of memory usage, where 2 can be limited by the JVM and the other relies on available, free memory:
 
@@ -116,9 +121,9 @@ Keep these memory requirements in mind as you calculate your ideal memory alloca
 [[memory-size-calculation]]
 ===== Memory sizing
 
-By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
-Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
 Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
+By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
+Consider setting `-XX:MaxDirectMemorySize` to half of the heap size or any value that can accommodate the load you expect these plugins to handle.
 
 As you make your capacity calculations, keep in mind that the JVM can't consume the total amount of the host's memory available,
 as the Operating System and other processes will require memory too.
@@ -133,15 +138,11 @@ pipelines number * (pipeline threads * stack size + 2 * PQ page size) + direct m
 
 NOTE: Each Persistent Queue requires that at least head and tail pages are present and accessible in memory.
 The default page size is 64 MB so each PQ requires at least 128 MB of heap memory, which can be a significant source
-of memory consumption per pipeline.
+of memory consumption per pipeline. Note that the size of memory mapped file can't be limited with an upper bound.
 
-Another component of memory consumption is the thread stack size, allocated per thread.
-Plugins, depending on their type (inputs, filters, and outputs), have different thread models.
-Every input plugin runs in its own thread and can potentially spawn others. For example, each JDBC input
-plugin launches a scheduler thread. Netty based plugins like TCP, Beats or HTTP input spawn a thread pool with 2 * number_of_cores threads.
-Output plugins may also start helper threads, such as a connection management thread for each
-{es} output instance.
-Every pipeline, also, has its own thread responsible to manage the pipeline lifecycle.
+NOTE: Stack size is a setting that depends on the JVM used, but could be customized with `-Xss` setting.
+
+NOTE: Direct memory space by default is big as much as Java heap, but can be customized with the `-XX:MaxDirectMemorySize` setting.
 
 **Example**
 
