@@ -49,9 +49,19 @@ JVM falls in the inclusive range of the two numbers
 
 * all other lines are rejected
 
+[[memory-size]]
+==== Setting the memory size
+
+The memory of the JVM executing {ls} can be divided in two zones: heap and off-heap memory.
+In the heap refers to Java heap, which contains all the Java objects created by {ls} during it's operation, see <<heap-size>> for
+description on how to size it.
+What's not part of the heap is named off-heap and consist in memory that can be used and controlled by {ls}, generally
+thread stacks, direct memory and memory mapped pages, check <<off-heap-size>> for comprehensive descriptions.
+In off-heap space there is some space which is used by JVM and contains all the data structures functional to the execution
+of the virtual machine. This memory can't be controlled by {ls} and the settings are rarely customized.
 
 [[heap-size]]
-==== Setting the JVM heap size
+===== Setting the JVM heap size
 
 Here are some tips for adjusting the JVM heap size:
 
@@ -82,23 +92,28 @@ info, see <<profiling-the-heap>>.
 
 
 [[off-heap-size]]
-==== Setting the off-heap size
+===== Setting the off-heap size
 
 The operating system, persistent queue mmap pages, direct memory, and other processes require memory in addition to memory allocated to heap size.
 
 Internal JVM data structures, thread stacks, memory mapped files and direct memory for input/output (IO) operations are all parts of the off-heap JVM memory.
 Thread stacks zone contains the list of stack frames for each Java thread spinned by the JVM; each frame keeps the local arguments passed during method calls.
+Read on <<stacks-size>> if the size needs to be adapted to the processing needs.
 Memory mapped files are not part of the Logstash's process off-heap memory, but consume RAM when paging files from disk.
 These mapped files speed up the access to Persistent Queues pages, a performance improvement - or trade off - to reduce expensive disk operations such as read, write, and seek.
 Some network I/O operations also resort to in-process direct memory usage to avoid, for example, copying of buffers between network sockets.
 
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
+[[memory-size-calculation]]
+===== Memory sizing
+
 By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
 Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
 Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
 
-As you make your capacity calculations, keep in mind that the JVM can't consume the total amount of the host's memory available, as the Operation System and other processes will require memory too.
+As you make your capacity calculations, keep in mind that the JVM can't consume the total amount of the host's memory available,
+as the Operating System and other processes will require memory too.
 
 For a {ls} instance with persistent queue (PQ) enabled on multiple pipelines, we could
 estimate memory consumption using:
