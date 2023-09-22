@@ -86,15 +86,14 @@ info, see <<profiling-the-heap>>.
 
 The operating system, persistent queue mmap pages, direct memory, and other processes require memory in addition to memory allocated to heap size.
 
-Internal JVM data structures, thread stacks, memory mapped files, direct memory for input/output (IO) operations, and the Java heap used to execute Logstash all use JVM memory.
+Internal JVM data structures, thread stacks, memory mapped files and direct memory for input/output (IO) operations are all parts of the off-heap JVM memory.
 Thread stacks zone contains the list of stack frames for each Java thread spinned by the JVM; each frame keeps the local arguments passed during method calls.
 Memory mapped files are not part of the Logstash's process off-heap memory, but consume RAM when paging files from disk.
 These mapped files speed up the access to Persistent Queues pages, a performance improvement - or trade off - to reduce expensive disk operations such as read, write, and seek.
 Some network I/O operations also resort to in-process direct memory usage to avoid, for example, copying of buffers between network sockets.
 
-Keep the memory requirements for these processes in mind as you calculate your ideal memory allocation.
+Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
-Java heap can be controlled by Xmx and Xms settings.
 By default, a JVM's off-heap direct memory limit is the same as the heap size. Check out <<plugins-inputs-beats-memory,beats input memory usage>>.
 Consider setting `-XX:MaxDirectMemorySize` to half of the heap size.
 Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings.
