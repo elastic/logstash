@@ -113,12 +113,13 @@ NOTE: Each Persistent Queue requires that at least head and tail pages are prese
 The default page size is 64 MB so each PQ requires at least 128 MB of heap memory, which can be a significant source
 of memory consumption per pipeline.
 
-Calculating pipeline threads could be not a straightforward task.
-By default each pipeline has an agent thread that's the supervisor of the pipeline itself.
-Other than this, every input plugin runs in its own thread and could potentially spawn others. For example each JDBC input
-plugin launch a scheduler thread, or spawn a thread pool that's twice the number of cores, like Netty based plugins like TCP, Beats or HTTP input.
-Output plugins can also start helper threads, like the a connection management thread for each
+Another component of memory consumption is the thread stack size, allocated per thread.
+Plugins, depending on their type (inputs, filters, and outputs), have different thread models.
+Every input plugin runs in its own thread and can potentially spawn others. For example, each JDBC input
+plugin launches a scheduler thread. Netty based plugins like TCP, Beats or HTTP input spawn a thread pool with 2 * number_of_cores threads.
+Output plugins may also start helper threads, such as a connection management thread for each
 {es} output instance.
+Every pipeline, then, has its own thread responsible to manage the pipeline lifecycle.
 
 **Example**
 
