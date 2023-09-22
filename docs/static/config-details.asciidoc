@@ -103,6 +103,14 @@ Memory mapped files are not part of the Logstash's process off-heap memory, but 
 These mapped files speed up the access to Persistent Queues pages, a performance improvement - or trade off - to reduce expensive disk operations such as read, write, and seek.
 Some network I/O operations also resort to in-process direct memory usage to avoid, for example, copying of buffers between network sockets.
 
+To summarize, we have 3 categories of memory usage, where 2 can be limited by the JVM and the other relies on available, free memory:
+
+| Memory Type | Configured using | Used by |
+| :---------------- | :------: | ----: |
+| JVM Heap  |   -Xmx   | any normal object allocation |
+| JVM direct memory |   -XX:MaxDirectMemorySize   | beats, tcp and http inputs |
+| Native memory  |  N/A   | Persistent Queue Pages, Thread Stacks |
+
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
 [[memory-size-calculation]]
@@ -133,7 +141,7 @@ Every input plugin runs in its own thread and can potentially spawn others. For 
 plugin launches a scheduler thread. Netty based plugins like TCP, Beats or HTTP input spawn a thread pool with 2 * number_of_cores threads.
 Output plugins may also start helper threads, such as a connection management thread for each
 {es} output instance.
-Every pipeline, then, has its own thread responsible to manage the pipeline lifecycle.
+Every pipeline, also, has its own thread responsible to manage the pipeline lifecycle.
 
 **Example**
 
