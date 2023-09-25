@@ -4,9 +4,7 @@
 HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for Logstash-to-Logstash communication. 
 This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
 
-NOTE: Check out these <<http-considerations,considerations>> before you implement {ls}-to-{ls} using HTTP. 
-
-For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
+NOTE: {ls}-to-{ls} using HTTP input/output plugins is now being deprecated in favor of <<ls-to-ls-native>>.
 
 [[overview-http-http]]
 ==== Configuration overview
@@ -60,7 +58,7 @@ output {
 }
 ----
 
-[[securing-logstash-to-logstash]]
+[[securing-logstash-to-logstash-http]]
 ===== Secure Logstash to Logstash
 
 It is important that you secure the communication between Logstash instances. 
