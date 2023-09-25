@@ -26,8 +26,8 @@ spec:
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
     - resource:logstash-snyk-report
-    - resource:logstash-dra-pipeline
-
+    - logstash-dra-snapshot-pipeline
+    - logstash-dra-staging-pipeline
 
 # ***********************************
 # Declare serverless IT pipeline
@@ -110,18 +110,19 @@ spec:
           message: "Run the Logstash Snyk report every day."
 
 # ***********************************
-# Declare DRA pipelines
+# SECTION START: DRA pipelines
 # ***********************************
+
 ---
 # yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/e57ee3bed7a6f73077a3f55a38e76e40ec87a7cf/rre.schema.json
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: logstash-dra-pipeline
-  description: 'The logstash DRA pipeline.'
+  name: logstash-dra-snapshot-pipeline
+  description: Logstash Snapshot DRA pipeline
   links:
-    - title: Pipeline
-      url: https://buildkite.com/elastic/logstash-dra
+    - title: Logstash Snapshot DRA pipeline
+      url: https://buildkite.com/elastic/logstash-dra-snapshot-pipeline
 spec:
   type: buildkite-pipeline
   owner: group:ingest-fp
@@ -130,14 +131,30 @@ spec:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
     metadata:
-      name: logstash-dra-pipeline-ci
-      description: ':logstash: The DRA :pipeline:'
+      name: logstash-dra-snapshot-pipeline
+      description: ':logstash: The DRA snapshot :pipeline:'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
+      # TODO: uncomment out the schedule after testing + disabling Jenkins Job
+      # schedules:
+      #   Daily 7_17:
+      #     branch: '7.17'
+      #     cronline: 30 01 * * *
+      #     message: Daily SNAPSHOT build for 7.17 
+      #   Daily 8_10:
+      #     branch: '8.10'
+      #     cronline: 30 01 * * *
+      #     message: Daily SNAPSHOT build for 8.10 
+      #   Daily main:
+      #     branch: main
+      #     cronline: 30 01 * * *
+      #     message: Daily SNAPSHOT build for main
+      skip_intermediate_builds: true
       provider_settings:
         trigger_mode: none
       env:
+        WORKFLOW_TYPE: 'snapshot'
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
@@ -146,3 +163,44 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
+
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/e57ee3bed7a6f73077a3f55a38e76e40ec87a7cf/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-dra-staging-pipeline
+  description: 'The logstash DRA staging pipeline.'
+  links:
+    - title: Logstash Staging DRA pipeline
+      url: https://buildkite.com/elastic/logstash-dra-staging-pipeline
+spec:
+  type: buildkite-pipeline
+  owner: group:ingest-fp
+  system: buildkite
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-dra-staging-pipeline
+      description: ':logstash: The DRA staging :pipeline:'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/dra_pipeline.yml"
+      skip_intermediate_builds: true
+      provider_settings:
+        trigger_mode: none
+      env:
+        WORKFLOW_TYPE: 'staging'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+
+# ***********************************
+# SECTION END: DRA pipelines
+# ***********************************

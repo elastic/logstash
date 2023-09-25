@@ -1,6 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
-## TODO rename this file to dra_pipeline_snapshot (and change the respective definition in .pipelines.yaml)
 steps:
   - input: "Build parameters"
     if: build.source != "schedule"
@@ -26,11 +25,9 @@ steps:
 
   - label: ":pipeline: Generate steps"
     command: |
-      set -eo pipefail
+      set -euo pipefail
 
-      export WORKFLOW_TYPE="snapshot"
+      echo "--- Building [${WORKFLOW_TYPE}] artifacts"
       python3 -m pip install pyyaml
-      echo "--- Generating dynamic pipeline steps:"
-      python3 .buildkite/scripts/dra/generatesteps.py
-      
+      echo "--- Building dynamic pipeline steps"
       python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
