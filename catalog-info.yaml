@@ -121,7 +121,7 @@ metadata:
   description: 'The logstash DRA pipeline.'
   links:
     - title: Pipeline
-      url: https://buildkite.com/elastic/logstash-dra
+      url: https://buildkite.com/elastic/logstash-dra-pipeline-ci
 spec:
   type: buildkite-pipeline
   owner: group:ingest-fp
