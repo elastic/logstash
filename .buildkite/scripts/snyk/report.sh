@@ -13,13 +13,30 @@ install_java() {
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source snyk/resolve_stack_version.sh
+  cd logstash
   for SNAPSHOT_VERSION in "${SNAPSHOT_VERSIONS[@]}"
   do
     IFS='.'
     read -a versions <<< "$SNAPSHOT_VERSION"
     version=${versions[0]}.${versions[1]}
+    echo "Checking if $version branch exists."
+
+    git reset --hard HEAD
+    if ! (git checkout "$version") then
+      # there are cases ex: 8.10 released and bumped to 8.11 but 8.11 branch doesn't exist
+      # for such cases, we align on current release branch
+      release_versions=$(echo $VERSIONS | jq '.releases."'"${versions[0]}"' x"')
+
+      IFS=' '
+      read -a versions <<< "$release_versions"
+      version=${versions[0]:1}.${versions[1]}
+      echo "Resolved $version branch from releases."
+    else
+      echo "Resolved $version branch from snapshots."
+    fi
     TARGET_BRANCHES+=("$version")
   done
+  cd ..
 }
 
 # Clones the Logstash repo
@@ -34,6 +51,24 @@ build_logstash() {
   git reset --hard HEAD # reset if any generated files appeared
   git checkout "$1"
   ./gradlew clean bootstrap assemble installDefaultGems && cd ..
+}
+
+# Install plugin dependencies with `bundle install` which creates Gemfile.lock
+install_plugin_dependencies() {
+  cd logstash
+  LOGSTASH_PATH="$PWD"
+  LOGSTASH_SOURCE="1"
+  export LOGSTASH_PATH
+  export LOGSTASH_SOURCE
+
+  plugin_dirs=$(find vendor/bundle/jruby/*/gems -name 'logstash-*' -type d -maxdepth 1)
+  while IFS= read -r plugin; do
+    echo "Installing dependencies for: $plugin"
+    cd "$plugin"
+    bundle install && true
+    cd "$LOGSTASH_PATH"
+  done <<< "$plugin_dirs"
+  cd ..
 }
 
 # Downloads snyk distribution
@@ -62,13 +97,13 @@ report() {
 
   # adding git commit hash to Snyk tag to improve visibility
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
-  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
+  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=10 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
   cd ..
 }
 
 install_java
-resolve_latest_branches
 clone_logstash_repo
+resolve_latest_branches
 download_auth_snyk
 
 # clone Logstash repo, build and report
@@ -76,6 +111,11 @@ for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
   echo "Using $TARGET_BRANCH branch."
   build_logstash "$TARGET_BRANCH"
+
+  # without `bundle install` we don't get Gemfile.lock and Snyk doesn't scan plugin dependencies
+  install_plugin_dependencies
+
+  # report to Snyk, result can be seen on Snyk dashboard
   report "$TARGET_BRANCH"
 done
 
@@ -139,5 +179,5 @@ REPOSITORY_BASE_URL="docker.elastic.co/logstash/"
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
   echo "Using $TARGET_BRANCH branch for docker images."
-  resolve_version_and_report_docker_images "$TARGET_BRANCH"
+  #resolve_version_and_report_docker_images "$TARGET_BRANCH"
 done
