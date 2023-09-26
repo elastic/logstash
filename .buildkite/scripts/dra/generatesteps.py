@@ -39,6 +39,7 @@ def package_x86_docker_step(branch, workflow_type):
     provider: gcp
     imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
+    region: 'europe-west4'
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -61,9 +62,9 @@ def package_aarch64_docker_step(branch, workflow_type):
     image: family/platform-ingest-logstash-ubuntu-2204-aarch64
     machineType: "t2a-standard-8"
     diskSizeGb: 200
-    region: 'us-central1'
+    region: 'europe-west4'
     # so far only these regions support t2a instance types
-    zones: "us-central1-a,us-central1-b,us-central1-f"
+    zones: "europe-west4-a,europe-west4-b,europe-west4-c"
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
@@ -83,6 +84,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
     provider: gcp
     imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
+    region: 'europe-west4'
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
