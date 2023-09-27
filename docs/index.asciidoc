@@ -112,9 +112,6 @@ include::static/config-management.asciidoc[]
 
 include::static/management/configuring-centralized-pipelines.asciidoc[]
 
-// Geoip Database Manger
-include::static/geoip/database-manager.asciidoc[]
-
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
 
@@ -144,6 +141,9 @@ include::static/transforming-data.asciidoc[]
 
 // Deploying & Scaling
 include::static/deploying.asciidoc[]
+
+// GeoIP Database Management
+include::static/geoip-database-management.asciidoc[]
 
 // Troubleshooting performance
 include::static/performance-checklist.asciidoc[]

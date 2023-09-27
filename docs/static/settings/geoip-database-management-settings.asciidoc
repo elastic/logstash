@@ -1,11 +1,11 @@
 [role="xpack"]
-[[geoip-database-manager-settings]]
-==== Geoip database manager settings in {ls}
+[[geoip-database-management-settings]]
+==== GeoIP database Management settings in {ls}
 ++++
-<titleabbrev>Geoip Database Manager Settings</titleabbrev>
+<titleabbrev>GeoIP Database Management Settings</titleabbrev>
 ++++
 
-You can set the folowing `xpack.geoip` settings in `logstash.yml` to configure the <<logstash-geoip-database-management, geoip database manager>>.
+You can set the following `xpack.geoip` settings in `logstash.yml` to configure the <<logstash-geoip-database-management, geoip database manager>>.
 For more information about configuring Logstash, see <<logstash-settings-file>>.
 
 `xpack.geoip.downloader.enabled`::
