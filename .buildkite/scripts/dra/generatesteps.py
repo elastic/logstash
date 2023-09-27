@@ -57,7 +57,7 @@ def package_aarch64_docker_step(branch, workflow_type):
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: aws
-    imagePrefix: platform-ingest-logstash-linux-arm64-ubuntu-2204-aarch64
+    image: ami-01605dfc76c2bee47
     instanceType: "m6g.4xlarge"
     diskSizeGb: 200
   command: |
