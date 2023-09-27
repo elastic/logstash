@@ -56,14 +56,10 @@ def package_aarch64_docker_step(branch, workflow_type):
 - label: ":package: Build aarch64 Docker / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_aarch64_docker_dra"
   agents:
-    provider: gcp
-    imageProject: elastic-images-qa
-    image: family/platform-ingest-logstash-ubuntu-2204-aarch64
-    machineType: "t2a-standard-8"
+    provider: aws
+    imagePrefix: platform-ingest-logstash-linux-arm64-ubuntu-2204-aarch64
+    instanceType: "m6g.4xlarge"
     diskSizeGb: 200
-    region: 'us-central1'
-    # so far only these regions support t2a instance types
-    zones: "us-central1-a,us-central1-b,us-central1-f"
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
