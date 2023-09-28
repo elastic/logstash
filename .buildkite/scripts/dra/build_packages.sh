@@ -6,6 +6,8 @@ echo "####################################################################"
 
 source ./$(dirname "$0")/common.sh
 
+info "umask value is [$(umask)]"
+
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
 case "$WORKFLOW_TYPE" in
     snapshot)
