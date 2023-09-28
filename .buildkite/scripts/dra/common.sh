@@ -44,6 +44,3 @@ export DRA_DRY_RUN=$(buildkite-agent meta-data get DRA_DRY_RUN --default "")
 if [[ ! -z $DRA_DRY_RUN && $BUILDKITE_STEP_KEY == "logstash_publish_dra" ]]; then
     info "Release manager will run in dry-run mode [$DRA_DRY_RUN]"
 fi
-
-# Replicate same default umask used on Jenkins workers
-umask 0022
