@@ -18,13 +18,14 @@ def package_x86_step(branch, workflow_type):
 - label: ":package: Build packages / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_packages_dra"
   agents:
-    image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
-    cpu: "8"
-    memory: "16Gi"
-    ephemeralStorage: "200Gi"
+    provider: gcp
+    imageProject: elastic-images-qa
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-16"
+    diskSizeGb: 200
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
-    export PATH="/usr/local/rbenv/bin:$PATH"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/build_packages.sh
 '''
