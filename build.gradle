@@ -325,9 +325,17 @@ tasks.register("bootstrap"){
 
 tasks.register("installDefaultGems") {
     dependsOn bootstrap
-  doLast {
+    doLast {
       rake(projectDir, buildDir, 'plugin:install-default')
-  }
+
+      // overwrites Xerces bundled with nokogiri 1.12.5
+      String xercesDownloadUrl = "https://repo1.maven.org/maven2/xerces/xercesImpl/2.12.2/xercesImpl-2.12.2.jar"
+      download {
+          description "Download Xerces from ${xercesDownloadUrl}"
+          src xercesDownloadUrl
+          dest new File("${projectDir}/vendor/bundle/jruby/2.5.0/gems/nokogiri-1.12.5-java/lib/", "xercesImpl.jar")
+      }
+    }
 }
 
 tasks.register("installTestGems") {
