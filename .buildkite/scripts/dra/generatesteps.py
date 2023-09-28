@@ -26,7 +26,6 @@ def package_x86_step(branch, workflow_type):
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
-    export ARCH="x86_64"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/build_packages.sh
 '''
