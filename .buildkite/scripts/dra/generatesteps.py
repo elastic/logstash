@@ -24,10 +24,12 @@ def package_x86_step(branch, workflow_type):
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
+    umask 0022
+    echo "--- umask is [$(umask)]"
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
     eval "$(rbenv init -)"
-    .buildkite/scripts/dra/build_packages.sh
+    umask 0022; .buildkite/scripts/dra/build_packages.sh
 '''
 
     return step
