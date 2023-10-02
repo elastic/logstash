@@ -126,7 +126,21 @@ describe LogStash::GeoipDatabaseManagement::Manager, aggregate_failures: true, v
     end
   end
 
-  context "subscribe_database_path" do
+  context "#supported_database_types" do
+    subject(:supported_database_types) { manager_instance.supported_database_types }
+    it 'includes City' do
+      expect(supported_database_types).to include(constants::CITY)
+    end
+    it 'includes ASN' do
+      expect(supported_database_types).to include(constants::ASN)
+    end
+    it 'returns only frozen strings' do
+      expect(supported_database_types).to all( be_a_kind_of String )
+      expect(supported_database_types).to all( be_frozen )
+    end
+  end
+
+  context "#subscribe_database_path" do
 
     context "and manager is not enabled" do
       let(:settings_overrides) { super().merge('xpack.geoip.downloader.enabled' => false) }

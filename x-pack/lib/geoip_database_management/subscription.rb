@@ -5,6 +5,8 @@
 require "logstash/util/loggable"
 require "thread"
 
+require_relative "subscription_observer"
+
 require 'observer'
 require 'concurrent/atomic/reentrant_read_write_lock'
 
@@ -51,29 +53,25 @@ module LogStash module GeoipDatabaseManagement
     #
     # @note: interacting with this Subscription or the Manager in any way in the provided hooks is
     # not advised, as it may cause deadlocks.
-    #
-    # @param construct [Proc(DbInfo)->void]: a single-arity Proc that will receive the current
-    #                                        DbInfo at the beginning of observation
-    # @param on_update [Proc(DbInfo)->void]: a single-arity Proc that will receive notifications
-    #                                        of each subsequent `DBInfo`
-    # @param on_expire [Proc()->void]: a zero-arity Proc that will receive notifications of the
-    #                                  current value expiring.
-    # @return [Subscription]
-    def observe(construct:, on_update:, on_expire:)
-      fail ArgumentError unless construct.lambda? && construct.arity == 1
-      fail ArgumentError unless on_update.lambda? && on_update.arity == 1
-      fail ArgumentError unless on_expire.lambda? && on_expire.arity == 0
+    # @overload observe(observer)
+    #   @param observer [SubscriptionObserver]
+    #   @return [Subscription]
+    # @overload observe(observer_spec)
+    #   @param observer_spec [Hash]: (@see SubscriptionObserver::coerce)
+    #   @return [Subscription]
+    def observe(observer_spec)
+      observer = SubscriptionObserver.coerce(observer_spec)
 
       @lock.with_write_lock do
         fail "Subscription has been released!" unless @observable
 
-        construct.call(@value)
+        observer.construct(@value)
         self.add_observer do |new_value|
           @lock.with_read_lock do
             if new_value.expired?
-              on_expire.call
+              observer.on_expire
             else
-              on_update.call(new_value)
+              observer.on_update(new_value)
             end
           end
         end

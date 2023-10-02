@@ -78,8 +78,16 @@ module LogStash module GeoipDatabaseManagement class Manager
     @states.fetch(database_type).subscribe
   end
 
+  ##
+  # @return [Boolean] true unless the database management feature has been disabled
   def enabled?
     @enabled
+  end
+
+  ##
+  # @return [Enumerable<String>] the types of databases that can be subscribed to
+  def supported_database_types
+    DB_TYPES
   end
 
   ##
