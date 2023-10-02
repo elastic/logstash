@@ -32,7 +32,7 @@ module LogStash module GeoipDatabaseManagement
     #   @return [SubscriptionObserver::Proxy]
     # @api public
     def self.coerce(observer_spec)
-      return observer_spec if Observer === observer_spec
+      return observer_spec if SubscriptionObserver === observer_spec
       return Proxy.new(**observer_spec) if observer_spec.kind_of?(Hash)
 
       fail ArgumentError, "Could not make a SubscriptionObserver from #{observer_spec.inspect}"
