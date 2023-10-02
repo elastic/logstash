@@ -125,7 +125,7 @@ metadata:
       url: https://buildkite.com/elastic/logstash-dra-snapshot-pipeline
 spec:
   type: buildkite-pipeline
-  owner: group:ingest-fp
+  owner: group:logstash
   system: buildkite
   implementation:
     apiVersion: buildkite.elastic.dev/v1
@@ -161,6 +161,10 @@ spec:
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
 
@@ -176,7 +180,7 @@ metadata:
       url: https://buildkite.com/elastic/logstash-dra-staging-pipeline
 spec:
   type: buildkite-pipeline
-  owner: group:ingest-fp
+  owner: group:logstash
   system: buildkite
   implementation:
     apiVersion: buildkite.elastic.dev/v1
@@ -197,6 +201,10 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
