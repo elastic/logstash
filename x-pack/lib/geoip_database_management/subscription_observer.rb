@@ -18,9 +18,10 @@ module LogStash module GeoipDatabaseManagement
   module SubscriptionObserver
 
     ##
-    # Coerce an object into an SubscriptionObserver, if necessary
+    # Coerce an object into an `SubscriptionObserver`, if necessary
     # @overload coerce(observer)
-    #   @param observer [SubscriptionObserver]
+    #   @param observer [SubscriptionObserver]: an object that "quacks like" a `SubscriptionObserver`
+    #                                           as defined by `SubscriptionObserver::===`
     #   @return [SubscriptionObserver]
     # @overload coerce(construct:, :on_update, :on_expire)
     #   @param construct [Proc(DbInfo)->void]: a single-arity Proc that will receive the current
@@ -32,10 +33,25 @@ module LogStash module GeoipDatabaseManagement
     #   @return [SubscriptionObserver::Proxy]
     # @api public
     def self.coerce(observer_spec)
-      return observer_spec if SubscriptionObserver === observer_spec
-      return Proxy.new(**observer_spec) if observer_spec.kind_of?(Hash)
+      case observer_spec
+      when SubscriptionObserver then observer_spec
+      when Hash                 then Proxy.new(**observer_spec)
+      else
+        fail ArgumentError, "Could not make a SubscriptionObserver from #{observer_spec.inspect}"
+      end
+    end
 
-      fail ArgumentError, "Could not make a SubscriptionObserver from #{observer_spec.inspect}"
+    ##
+    # Quacks-like check, to simplify consuming from Java where the ruby module can't be
+    # directly mixed into a Java class
+    def self.===(candidate)
+      return true if super
+
+      return false unless candidate.respond_to?(:construct)
+      return false unless candidate.respond_to?(:on_update)
+      return false unless candidate.respond_to?(:on_expire)
+
+      true
     end
 
     ##
@@ -63,9 +79,9 @@ module LogStash module GeoipDatabaseManagement
       include SubscriptionObserver
 
       def initialize(construct:, on_update:, on_expire:)
-        fail ArgumentError unless construct.lambda? && construct.arity == 1
-        fail ArgumentError unless on_update.lambda? && on_update.arity == 1
-        fail ArgumentError unless on_expire.lambda? && on_expire.arity == 0
+        fail ArgumentError unless construct.respond_to?(:call) && construct.arity == 1
+        fail ArgumentError unless on_update.respond_to?(:call) && on_update.arity == 1
+        fail ArgumentError unless on_expire.respond_to?(:call) && on_expire.arity == 0
 
         @construct = construct
         @on_update = on_update

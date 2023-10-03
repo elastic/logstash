@@ -155,48 +155,69 @@ describe LogStash::GeoipDatabaseManagement::Subscription, :aggregate_failures do
   end
 
   context "#observe" do
-    def observe_to_log(subscription, log)
-      subscription.observe(construct: ->(v) { log << [:construct, v]},
-                           on_update: ->(v) { log << [:on_update, v]},
-                           on_expire: ->( ) { log << [:on_expire]   })
-    end
+    shared_examples "observation" do
+      let!(:log) { Queue.new }
 
-    it 'basic functionality' do
-      log = Queue.new
-
-      current_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/one/two")
-      subscription.notify(current_value)
-
-      observe_to_log(subscription, log)
-
-      expect(log.size).to eq(1)
-      expect(log.pop(true)).to eq([:construct, current_value])
-
-      updated_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/three/four")
-      subscription.notify(updated_value)
-      expect(log.size).to eq(1)
-      expect(log.pop(true)).to eq([:on_update, updated_value])
-
-      expired_value = LogStash::GeoipDatabaseManagement::DbInfo::EXPIRED
-      subscription.notify(expired_value)
-
-      expect(log.size).to eq(1)
-      expect(log.pop(true)).to eq([:on_expire])
-
-      another_updated_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/five/six")
-      subscription.notify(another_updated_value)
-      expect(log.size).to eq(1)
-      expect(log.pop(true)).to eq([:on_update, another_updated_value])
-    end
-
-    context 'when subscription was previously released' do
-      before(:each) { subscription.release! }
-      it 'prevents new observation' do
-        log = Queue.new
-
-        expect { observe_to_log(subscription, log) }.to raise_exception(/released/)
+      it "observes construct, update, and expiry" do
+        current_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/one/two")
+        subscription.notify(current_value)
         expect(log).to be_empty
+
+        subscription.observe(observer_spec)
+
+        expect(log.size).to eq(1)
+        expect(log.pop(true)).to eq([:construct, current_value])
+
+        updated_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/three/four")
+        subscription.notify(updated_value)
+        expect(log.size).to eq(1)
+        expect(log.pop(true)).to eq([:on_update, updated_value])
+
+        expired_value = LogStash::GeoipDatabaseManagement::DbInfo::EXPIRED
+        subscription.notify(expired_value)
+
+        expect(log.size).to eq(1)
+        expect(log.pop(true)).to eq([:on_expire])
+
+        another_updated_value = LogStash::GeoipDatabaseManagement::DbInfo.new(path: "/five/six")
+        subscription.notify(another_updated_value)
+        expect(log.size).to eq(1)
+        expect(log.pop(true)).to eq([:on_update, another_updated_value])
       end
+
+      context 'when subscription was previously released' do
+        before(:each) { subscription.release! }
+        it 'prevents new observation' do
+          expect { subscription.observe(observer_spec) }.to raise_exception(/released/)
+          expect(log).to be_empty
+        end
+      end
+    end
+
+    context "when given a components hash" do
+      let(:observer_spec) {
+        {
+          construct: ->(v) { log << [:construct, v]},
+          on_update: ->(v) { log << [:on_update, v]},
+          on_expire: ->( ) { log << [:on_expire]   },
+        }
+      }
+
+      include_examples "observation"
+    end
+
+    context "when given an object that quacks like a SubscriptionObserver instance" do
+      let(:observer_class) do
+        Class.new do
+          def initialize(log); @log = log; end
+          def construct(v); @log << [:construct, v]; end
+          def on_update(v); @log << [:on_update, v]; end
+          def on_expire;    @log << [:on_expire];    end
+        end
+      end
+      let(:observer_spec) { observer_class.new(log) }
+
+      include_examples "observation"
     end
   end
 end
