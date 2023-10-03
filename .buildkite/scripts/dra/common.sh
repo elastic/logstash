@@ -38,9 +38,10 @@ STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*
 
 info "Agent is running on architecture [$(uname -i)]"
 
-export VERSION_QUALIFIER_OPT=${VERSION_QUALIFIER_OPT:-""}
-export DRA_DRY_RUN=${DRA_DRY_RUN:-""}
+export VERSION_QUALIFIER_OPT=$(buildkite-agent meta-data get VERSION_QUALIFIER_OPT --default "")
+export DRA_DRY_RUN=$(buildkite-agent meta-data get DRA_DRY_RUN --default "")
 
 if [[ ! -z $DRA_DRY_RUN && $BUILDKITE_STEP_KEY == "logstash_publish_dra" ]]; then
     info "Release manager will run in dry-run mode [$DRA_DRY_RUN]"
 fi
+
