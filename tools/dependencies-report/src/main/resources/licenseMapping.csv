@@ -17,6 +17,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "aws-sdk-sqs:1.51.1",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-sdk-sqs,Apache-2.0
 "aws-sigv4:1.5.1",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-sigv4,Apache-2.0
 "back_pressure:",https://github.com/yaauie/ruby_back_pressure,Apache-2.0
+"bigdecimal:",https://github.com/ruby/bigdecimal,BSD-2-Clause
 "bindata:",http://github.com/dmendel/bindata,BSD-2-Clause
 "buftok:",https://github.com/sferik/buftok,MIT
 "builder:",http://onestepback.org,MIT
@@ -103,6 +104,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "method_source:","https://github.com/banister/method_source/",MIT
 "metriks:","https://github.com/eric/metriks/",MIT
 "mime-types:",https://github.com/mime-types/ruby-mime-types/,MIT
+"mini_mime:",https://github.com/discourse/mini_mime,MIT
 "minitar:",https://github.com/halostatue/minitar/,RUBY|BSD-2-Clause
 "msgpack:","https://github.com/msgpack/msgpack-ruby",Apache-2.0
 "multi_json:","https://github.com/intridea/multi_json",MIT
@@ -112,7 +114,10 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "mustache:","https://github.com/mustache/mustache",MIT
 "naught:","https://github.com/avdi/naught/",MIT
 "net-http:",https://github.com/ruby/net-http,BSD-2-Clause
+"net-imap:",https://github.com/ruby/net-imap,BSD-2-Clause
+"net-pop:",https://github.com/ruby/net-pop,BSD-2-Clause
 "net-protocol:",https://github.com/ruby/net-protocol,BSD-2-Clause
+"net-smtp:",https://github.com/ruby/net-smtp,BSD-2-Clause
 "nio4r:","https://github.com/socketry/nio4r",MIT
 "nokogiri:","http://nokogiri.org/",MIT
 "openssl_pkcs8_pure:",http://github.com/cielavenir/openssl_pkcs8_pure,Ruby
