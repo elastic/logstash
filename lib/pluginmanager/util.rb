@@ -66,7 +66,7 @@ module LogStash::PluginManager
         return false
       end
     else
-      dep = ::Gem::Dependency.new(plugin, version || ::Gem::Requirement.default)
+      dep = _gem_dependency(plugin, version)
       ::Gem.sources = ::Gem::SourceList.from(options[:rubygems_source]) if options[:rubygems_source]
       specs, errors = ::Gem::SpecFetcher.fetcher.spec_for_dependency(dep)
 
@@ -85,6 +85,12 @@ module LogStash::PluginManager
         return false
       end
     end
+  end
+
+  # This test injection point allows us to avoid mocking the ::Gem::Dependency
+  # that is used by ruby internals for finding dependencies on the load path
+  def self._gem_dependency(gem_name, version = nil)
+    ::Gem::Dependency.new(gem_name, version || ::Gem::Requirement.default)
   end
 
   # Fetch latest version information as in rubygems
