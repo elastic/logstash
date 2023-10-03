@@ -119,9 +119,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
   name: logstash-dra-snapshot-pipeline
-  description: Logstash Snapshot DRA pipeline
+  description: 'Logstash DRA SNAPSHOT (Daily, Auto) pipeline'
   links:
-    - title: Logstash Snapshot DRA pipeline
+    - title: 'Logstash DRA SNAPSHOT (Daily, Auto) pipeline'
       url: https://buildkite.com/elastic/logstash-dra-snapshot-pipeline
 spec:
   type: buildkite-pipeline
@@ -132,7 +132,7 @@ spec:
     kind: Pipeline
     metadata:
       name: logstash-dra-snapshot-pipeline
-      description: ':logstash: The DRA snapshot :pipeline:'
+      description: ':logstash: The DRA SNAPSHOT (Daily, Auto) pipeline'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
@@ -174,9 +174,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
   name: logstash-dra-staging-pipeline
-  description: 'The logstash DRA staging pipeline.'
+  description: 'Logstash DRA RELEASE (Staging) pipeline'
   links:
-    - title: Logstash Staging DRA pipeline
+    - title: 'Logstash DRA RELEASE (Staging) pipeline'
       url: https://buildkite.com/elastic/logstash-dra-staging-pipeline
 spec:
   type: buildkite-pipeline
@@ -187,7 +187,7 @@ spec:
     kind: Pipeline
     metadata:
       name: logstash-dra-staging-pipeline
-      description: ':logstash: The DRA staging :pipeline:'
+      description: ':logstash: The DRA RELEASE (Staging) pipeline'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
