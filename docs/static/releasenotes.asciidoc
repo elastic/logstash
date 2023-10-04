@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-14,Logstash 7.17.14>>
 * <<logstash-7-17-13,Logstash 7.17.13>>
 * <<logstash-7-17-12,Logstash 7.17.12>>
 * <<logstash-7-17-11,Logstash 7.17.11>>
@@ -71,6 +72,40 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-14]]
+=== Logstash 7.17.14 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.14
+
+* Fix NPE when getting native thread id https://github.com/elastic/logstash/pull/15301[#15301]
+* Backport PR #15301 to 7.17: Fix NPE when getting native thread id https://github.com/elastic/logstash/pull/15322[#15322]
+* Updates installDefaultGems task to replace Xerces https://github.com/elastic/logstash/pull/15357[#15357]
+
+=== Logstash Commits between 7.17 and 7.17.13
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.13..7.17"
+
+bec46248d - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#15388) (3 hours ago) <github-actions[bot]>
+694ef69c4 - Updates installDefaultGems task to replace Xerces (#15357) (6 days ago) <Andrea Selva>
+b5d03c5e8 - fix NPE when getting native thread id (#15301) (#15322) (3 weeks ago) <github-actions[bot]>
+449b771e0 - Update .ruby-version to jruby-9.2.20.1 (#15309) (4 weeks ago) <João Duarte>
+5c9324973 - Bump 7.17.14 (#15292) (4 weeks ago) <Andrea Selva>
+e2047573f - Release notes for 7.17.13 (#15289) (4 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.13..7.17 *.release"
+Changed plugin versions:
+logstash-filter-useragent: 3.3.4 -> 3.3.5
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Useragent Filter - 3.3.5*
+
+* Upgrade `snakeyaml` dependency https://github.com/logstash-plugins/logstash-filter-useragent/pull/89[#89]
 
 
 [[logstash-7-17-13]]
