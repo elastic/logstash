@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 env:
-  BUILDKITE_REFSPEC: '+refs/pull/*/head:refs/remotes/origin/pr/*'
+  BUILDKITE_REFSPEC: '+refs/pull/*:refs/remotes/origin/pr/*'
 
 steps:
   - input: "Build parameters"
