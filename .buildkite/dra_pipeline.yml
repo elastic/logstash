@@ -1,12 +1,33 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
-agents:
-  cpu: "2"
-  memory: "4Gi"
-  ephemeralStorage: "20Gi"
-
 steps:
-  - label: ":wave: Greetings"
-    command: "echo 'TODO: run DRA Logstash'"
-    agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.1"
+  - input: "Build parameters"
+    if: build.source != "schedule"
+    fields:
+      - text: "VERSION_QUALIFIER_OPT"
+        key: "VERSION_QUALIFIER_OPT"
+        default: ""
+        required: false
+        hint: "Optional version qualifier for built artifacts e.g.: alpha1,beta1"
+      - select: "DRA DRY-RUN"
+        key: "DRA_DRY_RUN"
+        required: false
+        default: ""
+        options:
+          - label: "True"
+            value: "--dry-run"
+          - label: "False"
+            value: ""
+        hint: "Whether the DRA release manager will actually publish artifacts, or run in dry-run mode."
+
+  - wait: ~
+    if: build.source != "schedule"
+
+  - label: ":pipeline: Generate steps"
+    command: |
+      set -euo pipefail
+
+      echo "--- Building [${WORKFLOW_TYPE}] artifacts"
+      python3 -m pip install pyyaml
+      echo "--- Building dynamic pipeline steps"
+      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload

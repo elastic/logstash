@@ -420,6 +420,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-logstash": {
+    "default-plugins": true,
+    "skip-list": false
+  },
   "logstash-integration-rabbitmq": {
     "default-plugins": true,
     "skip-list": false
