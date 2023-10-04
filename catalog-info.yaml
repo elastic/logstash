@@ -221,8 +221,8 @@ spec:
 apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
-  name: logstash-supported-plugins-test-pipeline
-  description: 'Logstash supported plugins test pipeline'
+  name: Logstash supported plugins test pipeline
+  description: 'Execute spec tests af all supported tier1 and tier2 plugins using the current branch''s Logstash'
   links:
     - title: 'Logstash supported plugins test pipeline'
       url: https://buildkite.com/elastic/logstash-supported-plugins-test-pipeline
@@ -234,7 +234,7 @@ spec:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
     metadata:
-      name: logstash-supported-plugins-test-pipeline
+      name: Logstash supported plugins test pipeline
       description: ':logstash: Supported plugins test pipeline'
     spec:
       repository: elastic/logstash
