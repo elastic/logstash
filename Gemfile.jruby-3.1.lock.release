@@ -618,7 +618,7 @@ GEM
       sequel (< 5.72.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.3.0-java)
+    logstash-integration-kafka (11.3.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -752,7 +752,7 @@ GEM
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     parallel (1.23.0)
-    parser (3.2.2.3)
+    parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.32)
@@ -877,6 +877,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
