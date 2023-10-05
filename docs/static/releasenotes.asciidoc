@@ -101,6 +101,16 @@ No user-facing changes in Logstash core and plugins.
 ** `java.nio.file.NoSuchFileException` when finalizing the segment https://github.com/elastic/logstash/pull/15233[#15233]
 ** DLQ file using wrong sort order https://github.com/elastic/logstash/pull/15246[#15246]
 
+==== Notable plugin issues
+
+*Imap input plugin*
+
+** Due to JRuby upgrade, the plugin is broken and it will be unbundled. See the issue details https://github.com/logstash-plugins/logstash-input-imap/issues/61[here].
+
+*Email output plugin*
+
+** Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and solution https://github.com/logstash-plugins/logstash-output-email/issues/68[here].
+
 [[dependencies-8.10.0]]
 ==== Updates to dependencies
 
