@@ -1,28 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 steps:
-  - input: "Build parameters"
-    if: build.source != "schedule"
-    fields:
-      - text: "VERSION_QUALIFIER_OPT"
-        key: "VERSION_QUALIFIER_OPT"
-        default: ""
-        required: false
-        hint: "Optional version qualifier for built artifacts e.g.: alpha1,beta1"
-      - select: "DRA DRY-RUN"
-        key: "DRA_DRY_RUN"
-        required: false
-        default: ""
-        options:
-          - label: "True"
-            value: "--dry-run"
-          - label: "False"
-            value: ""
-        hint: "Whether the DRA release manager will actually publish artifacts, or run in dry-run mode."
-
-  - wait: ~
-    if: build.source != "schedule"
-
   - label: ":pipeline: Generate steps"
     command: |
       set -euo pipefail
