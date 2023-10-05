@@ -1,7 +1,8 @@
 agents:
-  provider: "gcp"
-  machineType: "n1-standard-4"
-  image: family/core-ubuntu-2204
+  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
+  cpu: "8"
+  memory: "16Gi"
+  ephemeralStorage: "200Gi"
 
 steps:
   - label: "Test Tier1 inputs"
