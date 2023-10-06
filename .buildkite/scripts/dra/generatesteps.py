@@ -20,7 +20,7 @@ def package_x86_step(branch, workflow_type):
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: family/platform-ingest-logstash-ubuntu-2004
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -39,7 +39,7 @@ def package_x86_docker_step(branch, workflow_type):
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: family/platform-ingest-logstash-ubuntu-2004
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -58,7 +58,7 @@ def package_aarch64_docker_step(branch, workflow_type):
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: aws
-    imagePrefix: platform-ingest-logstash-ubuntu-2204-aarch64
+    imagePrefix: platform-ingest-logstash-ubuntu-2004-aarch64
     instanceType: "m6g.4xlarge"
     diskSizeGb: 200
   command: |
@@ -79,7 +79,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: family/platform-ingest-logstash-ubuntu-2004
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
