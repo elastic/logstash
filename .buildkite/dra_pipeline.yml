@@ -1,0 +1,11 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Generate steps"
+    command: |
+      set -euo pipefail
+
+      echo "--- Building [${WORKFLOW_TYPE}] artifacts"
+      python3 -m pip install pyyaml
+      echo "--- Building dynamic pipeline steps"
+      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
