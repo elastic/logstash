@@ -13,14 +13,14 @@ def to_bk_key_friendly_string(key):
 
     return key.translate(mapping_table)
 
-def package_x86_step(branch, workflow_type):
+def package_x86_step(branch, workflow_type, image):
     step = f'''
 - label: ":package: Build packages / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_packages_dra"
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: "{image['gcp']}"
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -32,14 +32,14 @@ def package_x86_step(branch, workflow_type):
 
     return step
 
-def package_x86_docker_step(branch, workflow_type):
+def package_x86_docker_step(branch, workflow_type, image):
     step = f'''
 - label: ":package: Build x86_64 Docker / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_x86_64_docker_dra"
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: "{image['gcp']}"
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -52,13 +52,14 @@ def package_x86_docker_step(branch, workflow_type):
 
     return step
 
-def package_aarch64_docker_step(branch, workflow_type):
+def package_aarch64_docker_step(branch, workflow_type, image):
     step = f'''
 - label: ":package: Build aarch64 Docker / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: aws
     imagePrefix: platform-ingest-logstash-ubuntu-2204-aarch64
+    image: "{image['aws']}"
     instanceType: "m6g.4xlarge"
     diskSizeGb: 200
   command: |
@@ -71,7 +72,7 @@ def package_aarch64_docker_step(branch, workflow_type):
 
     return step
 
-def publish_dra_step(branch, workflow_type, depends_on):
+def publish_dra_step(branch, workflow_type, depends_on, image):
     step = f'''
 - label: ":elastic-stack: Publish  / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_publish_dra"
@@ -79,7 +80,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
   agents:
     provider: gcp
     imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2204
+    image: "{image['gcp']}"
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -97,9 +98,9 @@ def publish_dra_step(branch, workflow_type, depends_on):
 
 def build_steps_to_yaml(branch, workflow_type):
     steps = []
-    steps.extend(yaml.safe_load(package_x86_step(branch, workflow_type)))
-    steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type)))
-    steps.extend(yaml.safe_load(package_aarch64_docker_step(branch, workflow_type)))
+    steps.extend(yaml.safe_load(package_x86_step(branch, workflow_type, image)))
+    steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type, image)))
+    steps.extend(yaml.safe_load(package_aarch64_docker_step(branch, workflow_type, image)))
 
     return steps
 
@@ -111,21 +112,30 @@ if __name__ == "__main__":
         exit(1)
 
     branch = os.environ["BUILDKITE_BRANCH"]
-
+    effective_branch = os.environ.get("EFFECTIVE_BRANCH", "")  # used for testing PRs where the actual branch name is `pull/prId/merge`
     structure = {"steps": []}
 
     # Group defining parallel steps that build and save artifacts
     group_key = to_bk_key_friendly_string(f"logstash_dra_{workflow_type}")
+    image = {
+        "aws": "platform-ingest-logstash-ubuntu-2204-aarch64",
+        "gcp": "family/platform-ingest-logstash-ubuntu-2204",
+    }
+    if branch == "7.17" or "7.17" in effective_branch:
+        # jruby 9.2 / 9.3 have issues with FileUtils with Gblic >=2.35 (e.g. on Ubuntu 22.04)
+        # https://github.com/jruby/jruby/pull/7611#issuecomment-1750387837
+        image["gcp"] = "family/platform-ingest-logstash-ubuntu-2004"
+        image["aws"] = "platform-ingest-logstash-ubuntu-2004-aarch64"
 
     structure["steps"].append({
         "group": f":Build Artifacts - {workflow_type.upper()}",
         "key": group_key,
-        "steps": build_steps_to_yaml(branch, workflow_type),
+        "steps": build_steps_to_yaml(branch, workflow_type, image),
     })
 
     # Final step: pull artifacts built above and publish them via the release-manager
     structure["steps"].extend(
-        yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
+        yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key, image=image)),
     )
 
     print(yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
