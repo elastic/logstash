@@ -877,6 +877,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
