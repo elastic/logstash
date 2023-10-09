@@ -52,7 +52,7 @@ This section summarizes the changes in the following releases:
 [[known-issues-8.10.3]]
 ==== Known issues
 
-Following plugins may fail in Logstash 8.10.3:
+These plugins may fail in Logstash 8.10.3:
 
 *Imap input plugin*
 
@@ -100,7 +100,7 @@ Following plugins may fail in Logstash 8.10.3:
 [[known-issues-8.10.2]]
 ==== Known issues
 
-Following plugins may fail in Logstash 8.10.2:
+These plugins may fail in Logstash 8.10.2:
 
 *Imap input plugin*
 
@@ -116,7 +116,7 @@ Following plugins may fail in Logstash 8.10.2:
 [[known-issues-8.10.1]]
 ==== Known issues
 
-Following plugins may fail in Logstash 8.10.1:
+These plugins may fail in Logstash 8.10.1:
 
 *Imap input plugin*
 
@@ -132,7 +132,7 @@ Following plugins may fail in Logstash 8.10.1:
 [[known-issues-8.10.0]]
 ==== Known issues
 
-Following plugins may fail in Logstash 8.10.0:
+These plugins may fail in Logstash 8.10.0:
 
 *Imap input plugin*
 
