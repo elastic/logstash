@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-14,Logstash 7.17.14>>
 * <<logstash-7-17-13,Logstash 7.17.13>>
 * <<logstash-7-17-12,Logstash 7.17.12>>
 * <<logstash-7-17-11,Logstash 7.17.11>>
@@ -71,6 +72,16 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-14]]
+=== Logstash 7.17.14 Release Notes
+
+==== Plugins
+
+*Useragent Filter - 3.3.5*
+
+* Upgrade `snakeyaml` dependency https://github.com/logstash-plugins/logstash-filter-useragent/pull/89[#89]
 
 
 [[logstash-7-17-13]]
