@@ -239,7 +239,6 @@ spec:
       description: ':logstash: Testing for Logstash Pull Requests'
     spec:
       pipeline_file: ".buildkite/pull_request_pipeline.yml"
-      branch_configuration: "main 7.* 8.* v7.* v8.* feature/.*"
       provider_settings:
         build_pull_request_forks: false
         build_pull_requests: true # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
@@ -248,9 +247,7 @@ spec:
         filter_condition: >-
           build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
       cancel_intermediate_builds: true
-      cancel_intermediate_builds_branch_filter: '!main !7.* !8.*'
       skip_intermediate_builds: true
-      skip_intermediate_builds_branch_filter: '!main !7.* !8.*'
       env:
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
