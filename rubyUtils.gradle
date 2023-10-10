@@ -234,6 +234,7 @@ tasks.register("downloadJRuby", Download) {
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
+    retry 10
     inputs.file(versionsPath)
     outputs.file(jrubyTarPath)
     dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
