@@ -236,6 +236,7 @@ tasks.register("downloadJRuby", Download) {
     onlyIfNewer true
     inputs.file(versionsPath)
     outputs.file(jrubyTarPath)
+    retries(10)
     dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
 }
 
