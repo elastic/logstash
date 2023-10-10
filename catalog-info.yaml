@@ -238,6 +238,7 @@ spec:
       name: logstash-pull-request-pipeline
       description: ':logstash: Testing for Logstash Pull Requests'
     spec:
+      repository: elastic/logstash
       pipeline_file: ".buildkite/pull_request_pipeline.yml"
       provider_settings:
         build_pull_request_forks: false
