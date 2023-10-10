@@ -5,25 +5,31 @@ agents:
   ephemeralStorage: "200Gi"
 
 steps:
-  - label: "Test Tier1 inputs"
-    command: ./ci/test_supported_plugins.sh -t tier1 -k input
-  - label: "Test Tier1 filters"
-    command: ./ci/test_supported_plugins.sh -t tier1 -k filter
-  - label: "Test Tier1 codecs"
-    command: ./ci/test_supported_plugins.sh -t tier1 -k codec
-  - label: "Test Tier1 outputs"
-    command: ./ci/test_supported_plugins.sh -t tier1 -k output
-  - label: "Test Tier1 integrations"
-    command: ./ci/test_supported_plugins.sh -t tier1 -k integration
+  - group: "Tier1 plugins test group"
+    key: "tier1_plugins"
+    steps:
+      - label: "Test Tier1 inputs"
+        command: ./ci/test_supported_plugins.sh -t tier1 -k input
+      - label: "Test Tier1 filters"
+        command: ./ci/test_supported_plugins.sh -t tier1 -k filter
+      - label: "Test Tier1 codecs"
+        command: ./ci/test_supported_plugins.sh -t tier1 -k codec
+      - label: "Test Tier1 outputs"
+        command: ./ci/test_supported_plugins.sh -t tier1 -k output
+      - label: "Test Tier1 integrations"
+        command: ./ci/test_supported_plugins.sh -t tier1 -k integration
 
-  # Wait all tier1 plugins testing ends before going on tier2
-  - wait:
-
-  - label: "Test Tier2 inputs"
-    command: ./ci/test_supported_plugins.sh -t tier2 -k input
-  - label: "Test Tier2 filters"
-    command: ./ci/test_supported_plugins.sh -t tier2 -k filter
-  - label: "Test Tier2 codecs"
-    command: ./ci/test_supported_plugins.sh -t tier2 -k codec
-  - label: "Test Tier2 outputs"
-    command: ./ci/test_supported_plugins.sh -t tier2 -k output
+  - group: "Tier2 plugins test group"
+    key: "tier2_plugins"
+    # Wait all tier1 plugins testing ends before going on tier2
+    depends_on: "tier1_plugins"
+    steps:
+      - label: "Test Tier2 inputs"
+        command: ./ci/test_supported_plugins.sh -t tier2 -k input
+      - label: "Test Tier2 filters"
+        command: ./ci/test_supported_plugins.sh -t tier2 -k filter
+      - label: "Test Tier2 codecs"
+        command: ./ci/test_supported_plugins.sh -t tier2 -k codec
+      - label: "Test Tier2 outputs"
+        command: ./ci/test_supported_plugins.sh -t tier2 -k output
+    
