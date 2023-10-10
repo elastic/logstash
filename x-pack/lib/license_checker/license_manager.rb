@@ -46,6 +46,7 @@ module LogStash
       def build_flavor
         @cluster_info&.dig('version', 'build_flavor')
       end
+
       def serverless?
         build_flavor == 'serverless'
       end

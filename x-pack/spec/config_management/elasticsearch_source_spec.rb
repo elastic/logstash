@@ -780,5 +780,4 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       expect { subject.get_es_version }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
     end
   end
-
 end
