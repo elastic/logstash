@@ -1,5 +1,5 @@
 agents:
-  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci:0.2"
+  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
   cpu: "8"
   memory: "16Gi"
   ephemeralStorage: "200Gi"
