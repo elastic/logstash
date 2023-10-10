@@ -6,24 +6,24 @@ agents:
 
 steps:
   - label: "Test Tier1 inputs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier1 -k input
+    command: ./ci/test_supported_plugins.sh -t tier1 -k input
   - label: "Test Tier1 filters"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier1 -k filter
+    command: ./ci/test_supported_plugins.sh -t tier1 -k filter
   - label: "Test Tier1 codecs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier1 -k codec
+    command: ./ci/test_supported_plugins.sh -t tier1 -k codec
   - label: "Test Tier1 outputs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier1 -k output
+    command: ./ci/test_supported_plugins.sh -t tier1 -k output
   - label: "Test Tier1 integrations"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier1 -k integration
+    command: ./ci/test_supported_plugins.sh -t tier1 -k integration
 
   # Wait all tier1 plugins testing ends before going on tier2
   - wait:
 
   - label: "Test Tier2 inputs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier2 -k input
+    command: ./ci/test_supported_plugins.sh -t tier2 -k input
   - label: "Test Tier2 filters"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier2 -k filter
+    command: ./ci/test_supported_plugins.sh -t tier2 -k filter
   - label: "Test Tier2 codecs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier2 -k codec
+    command: ./ci/test_supported_plugins.sh -t tier2 -k codec
   - label: "Test Tier2 outputs"
-    command: ./.buildkite/scripts/setup_java.sh && ./ci/test_supported_plugins.sh -t tier2 -k output
+    command: ./ci/test_supported_plugins.sh -t tier2 -k output
