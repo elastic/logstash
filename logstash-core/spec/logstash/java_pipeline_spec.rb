@@ -492,7 +492,7 @@ describe LogStash::JavaPipeline do
           msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
           pipeline = mock_java_pipeline_from_string(test_config_with_filters)
           expect(pipeline.logger).to receive(:warn).with(msg,
-            hash_including({:count_was => worker_thread_count, :filters => ["dummyfilter"]}))
+                                                         hash_including({:count_was => worker_thread_count, :filters => ["dummyfilter"]}))
           pipeline.start
           expect(pipeline.worker_threads.size).to eq(safe_thread_count)
           pipeline.shutdown

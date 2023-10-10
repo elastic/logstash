@@ -36,7 +36,7 @@ describe LogStash::Instrument::Collector do
       it "logs an error but dont crash" do
         expect(subject.logger).to receive(:error)
           .with("Collector: Cannot create concrete class for this metric type",
-        hash_including({ :type => wrong_type, :namespaces_path => namespaces_path }))
+                hash_including({ :type => wrong_type, :namespaces_path => namespaces_path }))
 
           subject.push(namespaces_path, key, wrong_type, :increment)
       end
@@ -50,7 +50,7 @@ describe LogStash::Instrument::Collector do
 
         expect(subject.logger).to receive(:error)
           .with("Collector: Cannot record metric",
-          hash_including({ :exception => instance_of(LogStash::Instrument::MetricStore::NamespacesExpectedError) }))
+                hash_including({ :exception => instance_of(LogStash::Instrument::MetricStore::NamespacesExpectedError) }))
 
           subject.push(conflicting_namespaces, :random_key, :counter, :increment)
       end

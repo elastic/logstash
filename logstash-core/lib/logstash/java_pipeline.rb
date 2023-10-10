@@ -416,10 +416,10 @@ module LogStash; class JavaPipeline < AbstractPipeline
       if plugin.stop?
         @logger.debug(
           "Input plugin raised exception during shutdown, ignoring it.",
-           default_logging_keys(
-             :plugin => plugin.class.config_name,
-             :exception => e.message,
-             :backtrace => e.backtrace))
+          default_logging_keys(
+            :plugin => plugin.class.config_name,
+            :exception => e.message,
+            :backtrace => e.backtrace))
         return
       end
 
