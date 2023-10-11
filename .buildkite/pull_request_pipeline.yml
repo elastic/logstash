@@ -4,17 +4,15 @@ steps:
   - label: ":passport_control: License check"
     key: "license-check"
     agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
-      cpu: "4"
-      memory: "6Gi"
-      ephemeralStorage: "100Gi"
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-8"
+      diskSizeGb: 200
     command: |
       set -euo pipefail
 
-      source .buildkite/scripts/common/container-agent.sh
-      export JRUBY_OPTS="-J-Xmx1g"
-      export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
-      ci/license_check.sh -m 4G
+      if [[ -f ci/docker_license_check.sh ]]; then ci/docker_license_check.sh; else echo "No license check on this branch"; fi
 
   - label: ":rspec: Ruby unit tests"
     key: "ruby-unit-tests"
