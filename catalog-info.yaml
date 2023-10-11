@@ -243,7 +243,8 @@ spec:
       provider_settings:
         build_pull_request_forks: false
         build_pull_requests: true # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
-        build_tags: true
+        build_branches: false
+        build_tags: false
         filter_enabled: true
         filter_condition: >-
           build.pull_request.id == null || (build.creator.name == 'elasticmachine' && build.pull_request.id != null)
