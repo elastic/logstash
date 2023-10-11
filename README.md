@@ -146,7 +146,7 @@ Run the doc build script from within the `docs` repo. For example:
 
 ## Testing
 
-Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
+Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use [junit](https://junit.org). For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
 
 ### Core tests
 
