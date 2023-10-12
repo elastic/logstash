@@ -27,6 +27,37 @@ include::monitoring-mb.asciidoc[tag=disable-default-collection]
 include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 
 [float]
+[[configure-elastic-agent-logstash-dashboards]]
+
+==== Install and configure {agent} to use Logstash Dashboards (Technical Preview)
+
+Prerequisites:
+
+* Create a fully managed Project, and select Observability
+* Open the project from your cloud console
+* Select observability->Add Data
+* Navigate to the Integrations section at the bottom, and  click "start exploring"
+* In the query bar, search for and select the **Logstash** integration for
+{agent}.
+* Read the overview to make sure you understand integration requirements and
+other considerations.
+* Click **Add Logstash**.
+* Configure the integration name and optionally add a description. Make sure you
+configure all required settings:
+* To collect and visualize logs, ensure the **Logs** section is enabled, and modify the log paths
+to match your {ls} environment.
+* Uncheck the **Metrics (Stack Monitoring)** section - this is used to send data to populate the Stack monitoring UI, and not the Logstash Dashboards
+* Check the **Metrics (Technical Preview)** section. Make sure the Logstash URL setting
+points to your {ls} host URL. By default, the integration collects {ls}
+monitoring metrics from `http://localhost:9600`. If that host and port number are not
+correct, update the `Logstash URL` setting. If you configured {ls} to use encrypted
+communications, you must access it via HTTPS. For example, use a `Logstash URL` setting
+like `https://localhost:9600`. If using HTTPS and/or basic auth based username and password, be sure to also fill in the advanced options appropriately. See https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config for how to configure the SSL section
+
+
+
+
+[float]
 [[configure-elastic-agent]]
 ==== Install and configure {agent}
 
