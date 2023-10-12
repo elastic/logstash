@@ -32,7 +32,7 @@ steps:
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
     agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
@@ -45,7 +45,7 @@ steps:
   - label: ":lab_coat: Integration Tests / part 2"
     key: "integration-tests-part-2"
     agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
