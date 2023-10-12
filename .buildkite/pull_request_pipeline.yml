@@ -42,9 +42,9 @@ steps:
       source .buildkite/scripts/common/container-agent.sh
       source .buildkite/scripts/pull-requests/sonar-env.sh
       echo "--- Debug"
-      echo "SOURCE_BRANCH=$SOURCE_BRANCH"
-      echo "TARGET_BRANCH=$TARGET_BRANCH"
-      echo "PULL_ID=$PULL_ID"
-      echo "COMMIT_SHA=$COMMIT_SHA"
+      echo "SOURCE_BRANCH=$$SOURCE_BRANCH"
+      echo "TARGET_BRANCH=$$TARGET_BRANCH"
+      echo "PULL_ID=$$PULL_ID"
+      echo "COMMIT_SHA=$$COMMIT_SHA"
       echo "--- Run unit tests"
       ci/unit_tests.sh java
