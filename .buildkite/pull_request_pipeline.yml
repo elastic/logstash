@@ -37,7 +37,7 @@ steps:
       memory: "16Gi"
       ephemeralStorage: "100Gi"
       # Run as a non-root user
-      imageUID: "1000"
+      imageUID: "1002"
     command: |
       set -euo pipefail
 
@@ -52,7 +52,7 @@ steps:
       memory: "16Gi"
       ephemeralStorage: "100Gi"
       # Run as a non-root user
-      imageUID: "1000"
+      imageUID: "1002"
     command: |
       set -euo pipefail
 
