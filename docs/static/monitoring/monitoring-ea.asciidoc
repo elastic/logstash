@@ -29,7 +29,7 @@ include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 [float]
 [[configure-elastic-agent-logstash-dashboards]]
 
-==== Install and configure {agent} to use Logstash Dashboards (Technical Preview)
+==== Install and configure {agent}
 
 
 [discrete]
@@ -55,23 +55,46 @@ details about it.
 . Click **Add Logstash**.
 
 . Configure the integration name and optionally add a description.
-Make sure that **Logs** and
-**Metrics (Technical Preview)** are turned on, and **Metrics (Stack Monitoring)** is turned off
-+
---
-[role="screenshot"]
-image::images/integration-configure-collectors.png[{kib} home page]
---
 
-. Configure the integration name and optionally add a description. Make sure you
-configure all required settings:
-* Under **Logs**, modify the log paths
-to match your {ls} environment.
+=== Configure {agent} to collect {ls} Logs
 
+Make sure that **Logs** is turned on.
 +
 --
 [role="screenshot"]
 image::images/integration-configure-logs.png[{kib} home page]
+--
+
+. Make sure you configure all required settings:
+* Under **Logs**, modify the log paths
+to match your {ls} environment.
+
+
+=== Configure {agent} with Stack Monitoring
+
+Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off.
++
+--
+[role="screenshot"]
+image::images/integration-configure-stack-monitoring.png[{kib} home page]
+--
+
+* Under **Metrics (Stack Monitoring)**, make sure the hosts setting
+points to your {ls} host URLs. By default, the integration collects {ls}
+monitoring metrics from `localhost:9600`. If that host and port number are not
+correct, update the `hosts` setting. If you configured {ls} to use encrypted
+communications, you must access it via HTTPS. For example, use a `hosts` setting
+like
+`https://localhost:9600`.
+
+
+=== Configure {agent} with Logstash Dashboards (Technical Preview)
+
+Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
++
+--
+[role="screenshot"]
+image::images/integration-configure-dashboards.png[{kib} home page]
 --
 
 * Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
@@ -131,8 +154,14 @@ configuration specified in the policy you just created, and start collecting
 data.
 
 [discrete]
-[[view-data]]
-== Step 3: Monitor Logstash logs and metrics
+[[view-data-stack-monitoring]]
+== Step 3: Monitor Logstash logs and metrics (Stack Monitoring)
+
+{kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, {monitoring} UI>>
+
+[discrete]
+[[view-data-dashboard]]
+== Step 3: Monitor Logstash logs and metrics (Logstash Metrics Dashboard Technical Preview)
 
 . Verify that data is flowing. Wait until agent enrollment is confirmed and
 incoming data is received, then click **View assets** to access dashboards
