@@ -43,7 +43,6 @@ steps:
       source .buildkite/scripts/pull-requests/sonar-env.sh
       ci/unit_tests.sh java
 
-  # Steps below use a no-root variant of the image because they invoke Elasticsearch which doesn't start as root.
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
     agents:
@@ -51,7 +50,7 @@ steps:
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
-      # Run as non root (logstash) user. UID is hardcoded in image.
+      # Run as a non-root user
       imageUID: "1002"
     command: |
       set -euo pipefail
@@ -66,7 +65,7 @@ steps:
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
-      # Run as non root (logstash) user. UID is hardcoded in image.
+      # Run as a non-root user
       imageUID: "1002"
     command: |
       set -euo pipefail
