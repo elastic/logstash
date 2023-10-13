@@ -7,5 +7,11 @@
 
 set -euo pipefail
 
-export PATH="/usr/local/rbenv/bin:$PATH"
-eval "$(rbenv init -)"
+if [[ $(whoami) == "logstash" ]]
+then
+    export PATH="/home/logstash/.rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+else
+    export PATH="/usr/local/rbenv/bin:$PATH"
+    eval "$(rbenv init -)"
+fi
