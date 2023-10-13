@@ -29,12 +29,12 @@ include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 [float]
 [[configure-elastic-agent-logstash-dashboards]]
 
-==== Install and configure {agent}
+== Install and configure {agent}
 
 
 [discrete]
 [[add-system-integration]]
-== Step 1: Add the {agent} Logstash integration
+==== Step 1: Add the {agent} Logstash integration
 
 {agent} is a single, unified way to add monitoring for logs, metrics, and other
 types of data to a host. Each agent has a single policy you can update to add
@@ -56,7 +56,7 @@ details about it.
 
 . Configure the integration name and optionally add a description.
 
-=== Configure {agent} to collect {ls} Logs
+===== Configure {agent} to collect {ls} Logs
 
 Make sure that **Logs** is turned on.
 +
@@ -70,7 +70,7 @@ image::images/integration-configure-logs.png[{kib} home page]
 to match your {ls} environment.
 
 
-=== Configure {agent} with Stack Monitoring
+===== Configure {agent} with Stack Monitoring
 
 Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off.
 +
@@ -88,14 +88,16 @@ like
 `https://localhost:9600`.
 
 
-=== Configure {agent} with Logstash Dashboards (Technical Preview)
+===== Configure {agent} with Logstash Dashboards (Technical Preview)
 
 Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
+
 +
 --
 [role="screenshot"]
-image::images/integration-configure-dashboards.png[{kib} home page]
+image::images/integration-configure-tech-preview.png[Configuration page for adding log paths to the {agent} System integration]
 --
+
 
 * Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
 points to your {ls} instance URLs. By default, the integration collects {ls}
@@ -103,11 +105,6 @@ monitoring metrics from `https://localhost:9600`. If that host and port number a
 correct, update the `Logstash URL` setting. If you configured {ls} to use encrypted
 communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {ls} instance.
 
-+
---
-[role="screenshot"]
-image::images/integration-configure-tech-preview.png[Configuration page for adding log paths to the {agent} System integration]
---
 
 . Click **Save and continue**. This step takes a minute or two to complete. When
 it's done, you'll have an agent policy that contains a system integration policy
@@ -126,7 +123,7 @@ TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 
 [discrete]
 [[add-agent-to-fleet]]
-== Step 2: Install and run an {agent} on your machine
+==== Step 2: Install and run an {agent} on your machine
 
 The **Add agent** flyout has two options: **Enroll in {fleet}** and
 **Run standalone**. The default is to enroll the agents in {fleet}, as this
@@ -155,13 +152,13 @@ data.
 
 [discrete]
 [[view-data-stack-monitoring]]
-== Step 3: Monitor Logstash logs and metrics (Stack Monitoring)
+==== Step 3: Monitor Logstash logs and metrics (Stack Monitoring)
 
 {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, {monitoring} UI>>
 
 [discrete]
 [[view-data-dashboard]]
-== Step 3: Monitor Logstash logs and metrics (Logstash Metrics Dashboard Technical Preview)
+==== Step 3: Monitor Logstash logs and metrics (Logstash Metrics Dashboard Technical Preview)
 
 . Verify that data is flowing. Wait until agent enrollment is confirmed and
 incoming data is received, then click **View assets** to access dashboards
