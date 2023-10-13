@@ -60,7 +60,7 @@ details about it.
 ==== Configure {agent} to collect {ls} Logs
 
 Make sure that **Logs** is turned on.
-+
+
 --
 [role="screenshot"]
 image::images/integration-configure-logs.png[{kib} home page]
@@ -74,7 +74,8 @@ to match your {ls} environment.
 ==== Configure {agent} with Stack Monitoring
 
 Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off.
-+
+
+
 --
 [role="screenshot"]
 image::images/integration-configure-stack-monitoring.png[{kib} home page]
@@ -93,7 +94,7 @@ like
 
 Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
 
-+
+
 --
 [role="screenshot"]
 image::images/integration-configure-tech-preview.png[Configuration page for adding log paths to the {agent} System integration]
@@ -146,10 +147,32 @@ step.
 [role="screenshot"]
 image::images/integration-agent-add.png[Add agent flyout in {kib}]
 --
-+
+
 It takes about a minute for {agent} to enroll in {fleet}, download the
 configuration specified in the policy you just created, and start collecting
 data.
+
+
+--
+[role="screenshot"]
+image::images/integration-agent-confirm.png[Agent confirm data]
+--
+
+* Once enrollment is confirmed and incoming data is received,  click **View assets** to access dashboards related to the Logstash integration.
+* For traditional Stack Monitoring UI, the dashboards marked **[Logs Logstash]** are used to visualize the logs
+produced by your Logstash Instances, with those marked **[Metrics Logstash]** for the technical preview metrics
+dashboards.
+** Note that these will only be populated with data if the **Metrics (Technical Preview)** checkbox was
+selected.
+
+--
+[role="screenshot"]
+image::images/integration-assets-dashboards.png[Integration assets]
+--
+
+A number of dashboards are included to view Logstash as a whole, and dashboards that allow you to drill-down
+into how Logstash is performing on a node, pipeline and plugin basis.
+
 
 [discrete]
 [[view-data-stack-monitoring]]
@@ -161,24 +184,10 @@ data.
 [[view-data-dashboard]]
 === Step 3: Monitor Logstash logs and metrics (Logstash Metrics Dashboard Technical Preview)
 
-. Verify that data is flowing. Wait until agent enrollment is confirmed and
-incoming data is received, then click **View assets** to access dashboards
-related to the System integration.
-+
---
-[role="screenshot"]
-image::images/integration-agent-confirm.png[Agent confirm data]
---
 
-. A number of dashboards are included to view Logstash as a whole, and dashboards that allow you to drill-down
-into how Logstash is performing on a node, pipeline and plugin basis.
-+
---
-[role="screenshot"]
-image::images/integration-assets-dashboards.png[Integration assets]
---
 
-. Open the **[Metrics Logstash] Logstash overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into Logstash performance.
+
+. From the list of assets, open the **[Metrics Logstash] Logstash overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into Logstash performance.
 +
 [role="screenshot"]
 image::images/integration-dashboard-overview.png[The Logstash Overview dashboard in {kib} with various metrics from your monitored Logstash]
