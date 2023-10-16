@@ -54,6 +54,10 @@ This section summarizes the changes in the following releases:
 ==== Known issues
 
 These plugins may fail in Logstash 8.10.4:
+*Avro codec plugin*
+
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43.
 
 *Imap input plugin*
 
