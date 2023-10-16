@@ -154,7 +154,7 @@ Run the doc build script from within the `docs` repo. For example:
 
 ## Testing
 
-Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use junit. For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
+Most of the unit tests in Logstash are written using [rspec](http://rspec.info/) for the Ruby parts. For the Java parts, we use [junit](https://junit.org). For testing you can use the *test* `rake` tasks and the `bin/rspec` command, see instructions below:
 
 ### Core tests
 
@@ -261,10 +261,10 @@ All contributions are welcome: ideas, patches, documentation, bug reports,
 complaints, and even something you drew up on a napkin.
 
 Programming is not a required skill. Whatever you've seen about open source and
-maintainers or community members  saying "send patches or die" - you will not
+maintainers or community members saying "send patches or die" - you will not
 see that here.
 
-It is more important to me that you are able to contribute.
+It is more important that you are able to contribute.
 
 For more information about contributing, see the
 [CONTRIBUTING](./CONTRIBUTING.md) file.
