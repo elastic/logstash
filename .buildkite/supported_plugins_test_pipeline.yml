@@ -21,8 +21,6 @@ steps:
 
   - group: "Tier2 plugins test group"
     key: "tier2_plugins"
-    # Wait all tier1 plugins testing ends before going on tier2
-    depends_on: "tier1_plugins"
     steps:
       - label: "Test Tier2 inputs"
         command: ./ci/test_supported_plugins.sh -t tier2 -k input
@@ -32,4 +30,3 @@ steps:
         command: ./ci/test_supported_plugins.sh -t tier2 -k codec
       - label: "Test Tier2 outputs"
         command: ./ci/test_supported_plugins.sh -t tier2 -k output
-    
