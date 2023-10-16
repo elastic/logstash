@@ -255,7 +255,7 @@ spec:
       skip_intermediate_builds: true
       env:
         ELASTIC_PR_COMMENTS_ENABLED: 'true'
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
