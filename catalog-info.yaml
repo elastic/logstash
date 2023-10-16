@@ -136,27 +136,30 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/dra_pipeline.yml"
-      # TODO: uncomment out the schedule after testing + disabling Jenkins Job
-      # schedules:
-      #   Daily 7_17:
-      #     branch: '7.17'
-      #     cronline: 30 01 * * *
-      #     message: Daily SNAPSHOT build for 7.17 
-      #   Daily 8_10:
-      #     branch: '8.10'
-      #     cronline: 30 01 * * *
-      #     message: Daily SNAPSHOT build for 8.10 
-      #   Daily main:
-      #     branch: main
-      #     cronline: 30 01 * * *
-      #     message: Daily SNAPSHOT build for main
+      schedules:
+        Daily 7_17:
+          branch: '7.17'
+          cronline: 30 02 * * *
+          message: Daily SNAPSHOT build for 7.17
+        Daily 8_10:
+          branch: '8.10'
+          cronline: 30 02 * * *
+          message: Daily SNAPSHOT build for 8.10
+        Daily 8_11:
+          branch: '8.11'
+          cronline: 30 02 * * *
+          message: Daily SNAPSHOT build for 8.11
+        Daily main:
+          branch: main
+          cronline: 30 02 * * *
+          message: Daily SNAPSHOT build for main
       skip_intermediate_builds: true
       provider_settings:
         trigger_mode: none
       env:
         WORKFLOW_TYPE: 'snapshot'
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
@@ -196,8 +199,8 @@ spec:
         trigger_mode: none
       env:
         WORKFLOW_TYPE: 'staging'
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false' # don't alert during development
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
