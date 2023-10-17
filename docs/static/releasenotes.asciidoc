@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-11-0,Logstash 8.11.0>>
 * <<logstash-8-10-4,Logstash 8.10.4>>
 * <<logstash-8-10-3,Logstash 8.10.3>>
 * <<logstash-8-10-2,Logstash 8.10.2>>
@@ -45,6 +46,201 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-11-0]]
+=== Logstash 8.11.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.11.0
+
+* Expanded the description how to size the memory of the JVM https://github.com/elastic/logstash/pull/15210[#15210]
+* Update .ruby-version to 9.3.10.0 https://github.com/elastic/logstash/pull/15303[#15303]
+* Backport PR #15303 to main: Update .ruby-version to 9.3.10.0 https://github.com/elastic/logstash/pull/15305[#15305]
+* Release notes for 8.10.1 https://github.com/elastic/logstash/pull/15326[#15326]
+* Fix releasenotes.asciidoc for 8.10.1 https://github.com/elastic/logstash/pull/15327[#15327]
+* Backport PR #15326 to main: Release notes for 8.10.1 https://github.com/elastic/logstash/pull/15330[#15330]
+* Backport PR #15327 to main: Fix releasenotes.asciidoc for 8.10.1 https://github.com/elastic/logstash/pull/15331[#15331]
+* Release notes for 8.10.2 https://github.com/elastic/logstash/pull/15336[#15336]
+* Backport PR #15336 to main: Release notes for 8.10.2 https://github.com/elastic/logstash/pull/15340[#15340]
+* [DRA] Remove wait step in buildkite https://github.com/elastic/logstash/pull/15366[#15366]
+* deps: downgrade jruby, keep updated default-gem dependencies (forward-port #15283) https://github.com/elastic/logstash/pull/15369[#15369]
+* Backport PR #15369 to 8.11: deps: downgrade jruby, keep updated default-gem dependencies (forward-port #15283) https://github.com/elastic/logstash/pull/15370[#15370]
+* Release notes for 8.10.3 https://github.com/elastic/logstash/pull/15390[#15390]
+* Backport PR #15366 to 8.11: [DRA] Remove wait step in buildkite https://github.com/elastic/logstash/pull/15391[#15391]
+* Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15394[#15394]
+* Backport PR #15390 to 8.11: Release notes for 8.10.3 https://github.com/elastic/logstash/pull/15408[#15408]
+* Backport PR #15394 to 8.11: Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15420[#15420]
+* [docs] Small typo fixes in README https://github.com/elastic/logstash/pull/15429[#15429]
+* [ci] Backport Buildkite PR pipeline to 8.11 https://github.com/elastic/logstash/pull/15430[#15430]
+* pin psych 5.1.0 due to ruby/psych#655 https://github.com/elastic/logstash/pull/15433[#15433]
+* Backport PR #15433 to 8.11: pin psych 5.1.0 due to ruby/psych#655 https://github.com/elastic/logstash/pull/15434[#15434]
+* [ci] Commit PR based Java unit tests for Buildkite https://github.com/elastic/logstash/pull/15437[#15437]
+* [ci] Add PR it-tests (part 1+2) to Buildkite https://github.com/elastic/logstash/pull/15438[#15438]
+* Backport PR #15437 to 8.11: [ci] Commit PR based Java unit tests for Buildkite https://github.com/elastic/logstash/pull/15441[#15441]
+* Migrate remaining PR jobs to Buildkite https://github.com/elastic/logstash/pull/15444[#15444]
+* Backport PR #15438 to 8.11: [ci] Add PR it-tests (part 1+2) to Buildkite https://github.com/elastic/logstash/pull/15445[#15445]
+* Backport PR #15444 to 8.11: Migrate remaining PR jobs to Buildkite https://github.com/elastic/logstash/pull/15450[#15450]
+* Backport PR #15429 to 8.11: [docs] Small typo fixes in README https://github.com/elastic/logstash/pull/15455[#15455]
+
+=== Logstash Commits between 8.11 and 8.10.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.10.4..8.11"
+
+2f2324d2e - (HEAD -> 8.11, origin/8.11) Release notes for 8.10.4 (#15435) (#15464) (7 hours ago) <Rob Bavey>
+07e07fc3a - [docs] Small typo fixes in README (#15429) (#15455) (14 hours ago) <github-actions[bot]>
+6d0d63677 - Migrate remaining PR jobs to Buildkite #15444 (#15450) (2 days ago) <github-actions[bot]>
+13962d855 - [ci] Add PR it-tests (part 1+2) to Buildkite (#15438) (#15445) (4 days ago) <github-actions[bot]>
+761aa8646 - [ci] Commit PR based Java unit tests for Buildkite (#15437) (#15441) (5 days ago) <github-actions[bot]>
+4708a48d1 - [ci] Backport Buildkite PR pipeline to 8.11 (#15430) (5 days ago) <Dimitrios Liappis>
+af19604d5 - pin psych 5.1.0 due to ruby/psych#655 (#15433) (#15434) (6 days ago) <github-actions[bot]>
+be441f034 - Update Guava dependency to 32.1.2 (#15394) (#15420) (7 days ago) <github-actions[bot]>
+9f6d4ed21 - Release notes for 8.10.3 (#15390) (#15408) (7 days ago) <github-actions[bot]>
+09c70df7a - [DRA] Remove wait step in buildkite (#15366) (#15391) (12 days ago) <github-actions[bot]>
+a7f4e7806 - bump lock file for 8.11 (#15386) (13 days ago) <github-actions[bot]>
+9680bbd82 - Add bigdecimal > 3.1 dependency. (#15377) (2 weeks ago) <Mashhur>
+deea26cc7 - Copy Gemfile.lock from 8.10 branch. (#15375) (2 weeks ago) <Mashhur>
+13309ad4f - deps: downgrade jruby, keep updated default-gem dependencies (forward-port #15283) (#15369) (#15370) (2 weeks ago) <github-actions[bot]>
+2b091432c - Add native Logstash to Logstash documentation (#15346) (2 weeks ago) <Andres Rodriguez>
+9307c4de1 - [DRA] Rename Buildkite metadata for DRA pipelines (#15365) (2 weeks ago) <Dimitrios Liappis>
+7ed8d3763 - Bundle  plugin. (#15359) (2 weeks ago) <Mashhur>
+da51a6ac5 - [buildkite] DRA staging + snapshot pipelines (#15344) (2 weeks ago) <Dimitrios Liappis>
+05c262712 - [DRA, buildkite] Use GCP vms for package build step (#15356) (3 weeks ago) <Dimitrios Liappis>
+ad3b89a2b - Clarify Env Variable usage for list-type URI params (#15345) (3 weeks ago) <Andres Rodriguez>
+12a98250c - [DRA,buildkite] Use AWS aarch64 instance type (#15352) (3 weeks ago) <Dimitrios Liappis>
+dd77c9f92 - [ci] Commit DRA -SNAPSHOT buildkite pipeline (#15337) (3 weeks ago) <Dimitrios Liappis>
+b31c429d1 - Expanded the description how to size the memory of the JVM (#15210) (3 weeks ago) <Andrea Selva>
+9af39e8b6 - [ci, buildkite] Fix backstage link to logstash ... (#15343) (3 weeks ago) <Dimitrios Liappis>
+03e0b1a30 - Updates CI versions after 8.10.2 (#15339) (4 weeks ago) <Andrea Selva>
+23ccdda4f - Release notes for 8.10.2 (#15336) (#15340) (4 weeks ago) <github-actions[bot]>
+c33af94fa - Update logstash_releases.json to include 8.10.1 (4 weeks ago) <João Duarte>
+0c31ea452 - Fix releasenotes.asciidoc for 8.10.1 (#15327) (#15331) (4 weeks ago) <github-actions[bot]>
+48156077b - Release notes for 8.10.1 (#15326) (#15330) (4 weeks ago) <github-actions[bot]>
+f90647d98 - Sonar integration with Java Tests code coverage (#15279) (5 weeks ago) <Pavel Zorin>
+cd7855812 - fix NPE when getting native thread id (#15301) (5 weeks ago) <kaisecheng>
+4bddfd7d0 - Update CI releases after 7.17.13 (#15293) (5 weeks ago) <Andrea Selva>
+03f1a18a7 - Update CI releases after 8.10.0 (#15319) (5 weeks ago) <kaisecheng>
+c204f3871 - Release notes for 8.10.0 (#15265) (#15316) (5 weeks ago) <kaisecheng>
+236b8cb8c - bump_ci_8.10.0 (#15315) (5 weeks ago) <kaisecheng>
+77d2ec31f - [CI] Add initial buildkite pipeline for DRA (#15312) (5 weeks ago) <Dimitrios Liappis>
+a62337708 - Forward port 8.9.2 release notes to main (#15310) (6 weeks ago) <Andrea Selva>
+3d67f8238 - Update CI releases after 8.9.2 (#15295) (6 weeks ago) <Andrea Selva>
+fde473d97 - buildkite serverless test against main (#15306) (6 weeks ago) <kaisecheng>
+0f3330eba - Update .ruby-version to 9.3.10.0 (#15303) (#15305) (6 weeks ago) <github-actions[bot]>
+bee674907 - [Docs] Update build from source instructions in README.md (#15302) (6 weeks ago) <Dimitrios Liappis>
+0286f671d - serverless test use minimum privileges per case (#15264) (7 weeks ago) <kaisecheng>
+6b2fa2062 - disable xpack API and monitoring pipeline for serverless (#15277) (7 weeks ago) <kaisecheng>
+da4c91812 - bump to 8.11.0 (#15276) (8 weeks ago) <kaisecheng>
+8e00989a3 - Remove unnecessary whitespace from logstash.yml (#15262) (8 weeks ago) <vodorok>
+58e23fbdc - Fix the update of Puma (#15271) (8 weeks ago) <Andrea Selva>
+fe1b1ed1d - Remove DepProxy patch, as Bundler::DepProxy is removed in Bundler 2.4.0 (#15269) (8 weeks ago) <Rob Bavey>
+afc50eb67 - Update Puma (#15267) (8 weeks ago) <Andrea Selva>
+9e48f9cfd - update release version (#15263) (9 weeks ago) <kaisecheng>
+710905248 - Release notes for 8.9.1 (#15244) (#15261) (9 weeks ago) <github-actions[bot]>
+a51c788e0 - [doc] serverless setup endpoint for test (#15249) (9 weeks ago) <kaisecheng>
+fb66e9888 - Fix serverless test for api protection (#15252) (9 weeks ago) <kaisecheng>
+499091824 - Fix update oldest segment reference order (#15246) (9 weeks ago) <Edmo Vamerlatti Costa>
+04fd0840f - bump rake 13 for jruby 9.4 compatibility (#15256) (9 weeks ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.10.4..8.11 *.release"
+Changed plugin versions:
+logstash-filter-elasticsearch: 3.15.3 -> 3.16.1
+logstash-filter-http: 1.4.3 -> 1.5.0
+logstash-input-beats: 6.6.4 -> 6.7.0
+logstash-input-elasticsearch: 4.17.2 -> 4.18.0
+logstash-input-http_poller: 5.4.0 -> 5.5.0
+logstash-input-imap: 3.2.0 -> 3.2.1
+logstash-integration-jdbc: 5.4.5 -> 5.4.6
+logstash-integration-logstash: 0.0.5 -> 0.0.5
+logstash-mixin-http_client: 7.2.0 -> 7.3.0
+logstash-mixin-validator_support: 1.0.2 -> 1.1.0
+logstash-output-elasticsearch: 11.16.0 -> 11.18.0
+logstash-output-email: 4.1.2 -> 4.1.3
+logstash-output-http: 5.5.0 -> 5.6.0
+logstash-output-webhdfs: 3.0.6 -> 3.1.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elasticsearch Filter - 3.16.1*
+
+* Version bump to pick up doc fix in https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/172[#172]
+
+* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/174[#174]
+
+*Http Filter - 1.5.0*
+
+* Added standardized SSL settings and deprecates their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-filter-http/pull/49[#49]
+* Added new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+* Added new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
+* Added new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+* Added new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
+* Added the `ssl_cipher_suites` option
+
+*Beats Input - 6.7.0*
+
+* PROTOCOL: adds explicit support for receiving a 0-length window to encapsulate an empty batch. Empty batches are acknowledged with the same 0-sequence ACK's that are used as keep-alives during processing. https://github.com/logstash-plugins/logstash-input-beats/pull/479[#479]  
+
+*Elasticsearch Input - 4.18.0*
+
+* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/195[#195]
+
+*Http_poller Input - 5.5.0*
+
+* Added standardized SSL settings and deprecates their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-input-http_poller/pull/141[#141]
+* Added new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+* Added new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
+* Added new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+* Added new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts. 
+* Added the `ssl_cipher_suites` option
+
+*Imap Input - 3.2.1*
+
+* Upgrade `email` dependency so that supports Ruby 3.1. This also fixes the `net-smtp` load regression https://github.com/logstash-plugins/logstash-input-imap/pull/60[#60]
+
+*Jdbc Integration - 5.4.6*
+
+* Update sequel version to >= 5.73.0. The ibmdb and jdbc/db2 adapters were fixed to properly handle disconnect errors, removing the related connection from the pool https://github.com/logstash-plugins/logstash-integration-jdbc/pull/144[#144]
+
+*Logstash Integration - 0.0.5*
+
+*Http_client Mixin - 7.3.0*
+
+* Adds standardized SSL settings and deprecates their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
+* Adds new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+* Adds new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecating its `cacert` counterpart.
+* Adds new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+* Adds new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts. 
+* Added a way for plugin maintainers to include this mixin _without_ supporting the now-deprecated SSL options.
+* Added the `ssl_cipher_suites` option
+
+*Validator_support Mixin - 1.1.0*
+
+* Introduces `:required_host_optional_port` validator https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/4[#4]
+
+*Elasticsearch Output - 11.18.0*
+
+* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1147[#1147]
+
+* Added support to http compression level. Deprecated `http_compression` in favour of `compression_level` and enabled compression level 1 by default. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1148[#1148]
+
+*Email Output - 4.1.3*
+
+* Upgrade `email` dependency so that supports Ruby 3.1. This also fixes the `net-smtp` load regression https://github.com/logstash-plugins/logstash-output-email/pull/69[#69]
+
+*Http Output - 5.6.0*
+
+* Added standardized SSL settings and deprecates their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-output-http/pull/140[#140]
+* Added new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+* Added new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
+* Added new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+* Added new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts. 
+* Added the `ssl_cipher_suites` option
+
+*Webhdfs Output - 3.1.0*
+
+* Fix: remove snappy gem as a dependency in favor of directly vendoring the snappy jar. https://github.com/logstash-plugins/logstash-output-webhdfs/pull/46[#46]
 
 
 [[logstash-8-10-4]]
