@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-10-4,Logstash 8.10.4>>
 * <<logstash-8-10-3,Logstash 8.10.3>>
 * <<logstash-8-10-2,Logstash 8.10.2>>
 * <<logstash-8-10-1,Logstash 8.10.1>>
@@ -46,6 +47,30 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
 
+[[logstash-8-10-4]]
+=== Logstash 8.10.4 Release Notes
+
+[[known-issues-8.10.4]]
+==== Known issues
+
+These plugins may fail in Logstash 8.10.4:
+
+* *Avro codec plugin.*
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43[#43].
+
+* *Imap input plugin.*
+Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
+
+* *Email output plugin.*
+Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
+
+[[dependencies-8.10.4]]
+==== Updates to dependencies
+
+* Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15419[#15419]
+
+
 [[logstash-8-10-3]]
 === Logstash 8.10.3 Release Notes
 
@@ -54,13 +79,15 @@ This section summarizes the changes in the following releases:
 
 These plugins may fail in Logstash 8.10.3:
 
-*Imap input plugin*
+* *Avro codec plugin.*
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43[#43].
 
-** Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
+* *Imap input plugin.*
+Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
 
-*Email output plugin*
-
-** Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
+* *Email output plugin.*
+Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
 
 ==== Plugins
 
@@ -102,13 +129,15 @@ These plugins may fail in Logstash 8.10.3:
 
 These plugins may fail in Logstash 8.10.2:
 
-*Imap input plugin*
+* *Avro codec plugin.*
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43[#43].
 
-** Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
+* *Imap input plugin.*
+Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
 
-*Email output plugin*
-
-** Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
+* *Email output plugin.*
+Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
 
 [[logstash-8-10-1]]
 === Logstash 8.10.1 Release Notes
@@ -118,13 +147,15 @@ These plugins may fail in Logstash 8.10.2:
 
 These plugins may fail in Logstash 8.10.1:
 
-*Imap input plugin*
+* *Avro codec plugin.*
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43[#43].
 
-** Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
+* *Imap input plugin.*
+Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
 
-*Email output plugin*
-
-** Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
+* *Email output plugin.*
+Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
 
 [[logstash-8-10-0]]
 === Logstash 8.10.0 Release Notes
@@ -134,13 +165,15 @@ These plugins may fail in Logstash 8.10.1:
 
 These plugins may fail in Logstash 8.10.0:
 
-*Imap input plugin*
+* *Avro codec plugin.*
+The avro codec plugin may fail with an `(Errno::ENOENT) No such file or directory` error https://github.com/logstash-plugins/logstash-codec-avro/issues/42[#42].
+This issue has been resolved in plugin v3.4.1 https://github.com/logstash-plugins/logstash-codec-avro/pull/43[#43].
 
-** Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
+* *Imap input plugin.*
+Due to JRuby upgrade, the plugin is broken and will be unbundled. Details and updates are available in https://github.com/logstash-plugins/logstash-input-imap/issues/61[GitHub issue #61].
 
-*Email output plugin*
-
-** Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
+* *Email output plugin.*
+Plugin raises `LoadError: no such file to load -- net/smtp` runtime error. See the issue details and work around in https://github.com/logstash-plugins/logstash-output-email/issues/68[GitHub issue #68].
 
 [[notable-8.10.0]]
 ==== Notable issues fixed
