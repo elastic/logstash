@@ -299,6 +299,7 @@ spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/supported_plugins_test_pipeline.yml"
       skip_intermediate_builds: true
+      maximum_timeout_in_minutes: 120  # https://registry.terraform.io/providers/buildkite/buildkite/latest/docs/resources/pipeline#optional
       provider_settings:
         trigger_mode: none
       teams:
