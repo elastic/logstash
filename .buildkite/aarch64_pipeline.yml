@@ -76,7 +76,7 @@ steps:
           x-pack/ci/integration_tests.sh
 
   - group: "Acceptance Phase"
-    depends: "testing-phase"
+    depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
       - label: "Acceptance tests will go here"
