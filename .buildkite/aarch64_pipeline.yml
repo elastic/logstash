@@ -1,0 +1,3 @@
+steps:
+  - label: "Test aarch64"
+    command: "echo 'Hello world'"
