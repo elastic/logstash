@@ -1,3 +1,84 @@
-steps:
-  - label: "Test aarch64"
-    command: "echo 'Hello world'"
+agents:
+  provider: aws
+  imagePrefix: platform-ingest-logstash-ubuntu-2204-aarch64
+  instanceType: "m6g.4xlarge"
+  diskSizeGb: 200
+
+group:
+  label: "Testing Phase"
+  key: "testing-phase"
+  steps:
+  - label: ":rspec: Ruby unit tests"
+    key: "ruby-unit-tests"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      ci/unit_tests.sh ruby
+
+  - label: ":java: Java unit tests"
+    key: "java-unit-tests"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      source .buildkite/scripts/pull-requests/sonar-env.sh
+      ci/unit_tests.sh java
+
+  - label: ":lab_coat: Integration Tests / part 1"
+    key: "integration-tests-part-1"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      ci/integration_tests.sh split 0
+
+  - label: ":lab_coat: Integration Tests / part 2"
+    key: "integration-tests-part-2"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      ci/integration_tests.sh split 1
+
+  - label: ":lab_coat: IT Persistent Queues / part 1"
+    key: "integration-tests-qa-part-1"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 0
+
+  - label: ":lab_coat: IT Persistent Queues / part 2"
+    key: "integration-tests-qa-part-2"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 1
+
+  - label: ":lab_coat: x-pack unit tests"
+    key: "x-pack-unit-tests"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      x-pack/ci/unit_tests.sh
+
+  - label: ":lab_coat: x-pack integration"
+    key: "integration-tests-x-pack"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      x-pack/ci/integration_tests.sh
+
+group:
+  label: "Acceptance Phase"
+  depends: "testing-phase"
+  key: "acceptance-phase"
+  steps:
+    - label: "Acceptance tests will go here"
+      command: "echo 'Hello world'"
