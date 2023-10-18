@@ -54,14 +54,14 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.2.0)
-    aws-partitions (1.832.0)
+    aws-partitions (1.837.0)
     aws-sdk-cloudfront (1.83.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-cloudwatch (1.81.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.185.0)
+    aws-sdk-core (3.185.1)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
@@ -214,7 +214,7 @@ GEM
     kramdown (2.4.0)
       rexml
     language_server-protocol (3.17.0.3)
-    logstash-codec-avro (3.4.0-java)
+    logstash-codec-avro (3.4.1-java)
       avro (~> 1.10.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
@@ -414,7 +414,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.7.0-java)
+    logstash-input-beats (6.7.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -459,7 +459,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-scheduler (~> 1.0)
       stud (~> 0.0.22)
-    logstash-input-file (4.4.4)
+    logstash-input-file (4.4.5)
       addressable
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (~> 3.0)
@@ -489,7 +489,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.7.2-java)
+    logstash-input-http (3.7.3-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -547,7 +547,7 @@ GEM
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
-    logstash-input-syslog (3.6.0)
+    logstash-input-syslog (3.7.0)
       concurrent-ruby
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -555,7 +555,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.4.0-java)
+    logstash-input-tcp (6.4.1-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -618,7 +618,7 @@ GEM
       sequel (>= 5.73.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.3.1-java)
+    logstash-integration-kafka (11.3.2-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -738,7 +738,7 @@ GEM
       atomic (~> 1.0)
       avl_tree (~> 1.2.0)
       hitimes (~> 1.1)
-    mini_mime (0.1.4)
+    mini_mime (1.1.5)
     minitar (0.9)
     msgpack (1.7.2-java)
     multi_json (1.15.0)
@@ -750,7 +750,7 @@ GEM
     naught (1.1.0)
     net-http (0.3.2)
       uri
-    net-imap (0.4.0)
+    net-imap (0.4.1)
       date
       net-protocol
     net-pop (0.1.2)
@@ -798,7 +798,7 @@ GEM
     rainbow (3.1.1)
     rake (13.0.6)
     redis (4.8.1)
-    regexp_parser (2.8.1)
+    regexp_parser (2.8.2)
     reline (0.3.9)
       io-console (~> 0.5)
     rexml (3.2.6)
@@ -817,12 +817,12 @@ GEM
     rspec-support (3.12.1)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
-    rubocop (1.56.4)
+    rubocop (1.57.1)
       base64 (~> 0.1.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
-      parser (>= 3.2.2.3)
+      parser (>= 3.2.2.4)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 1.8, < 3.0)
       rexml (>= 3.2.5, < 4.0)
@@ -891,6 +891,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
@@ -1009,6 +1010,7 @@ DEPENDENCIES
   paquet (~> 0.2)
   pleaserun (~> 0.0.28)
   polyglot
+  psych (= 5.1.0)
   rack-test
   rake (~> 13)
   rspec (~> 3.5)
