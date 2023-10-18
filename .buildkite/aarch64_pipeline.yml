@@ -85,9 +85,7 @@ steps:
           set -euo pipefail
 
           source .buildkite/scripts/common/vm-agent.sh
-          ci/docker_acceptance_tests.sh ${flavor}
-        env:
-          flavor: "{{matrix}}"
+          ci/docker_acceptance_tests.sh {{matrix}}
         matrix:
           - "full"
           - "oss"
