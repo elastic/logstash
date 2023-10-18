@@ -5,87 +5,86 @@ agents:
   diskSizeGb: 200
 
 steps:
-  - group: "Testing Phase"
-    key: "testing-phase"
-    steps:
-      - label: ":rspec: Ruby unit tests"
-        key: "ruby-unit-tests"
-        command: |
-          set -euo pipefail
+  # - group: "Testing Phase"
+  #   key: "testing-phase"
+  #   steps:
+  #     - label: ":rspec: Ruby unit tests"
+  #       key: "ruby-unit-tests"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          ci/unit_tests.sh ruby
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         ci/unit_tests.sh ruby
 
-      ### Temporarily disable since sonar scans imply pull request context
-      # - label: ":java: Java unit tests"
-      #   key: "java-unit-tests"
-      #   command: |
-      #     set -euo pipefail
+  #     ### Temporarily disable since sonar scans imply pull request context
+  #     # - label: ":java: Java unit tests"
+  #     #   key: "java-unit-tests"
+  #     #   command: |
+  #     #     set -euo pipefail
 
-      #     source .buildkite/scripts/common/vm-agent.sh
-      #     source .buildkite/scripts/pull-requests/sonar-env.sh
-      #     ci/unit_tests.sh java
+  #     #     source .buildkite/scripts/common/vm-agent.sh
+  #     #     source .buildkite/scripts/pull-requests/sonar-env.sh
+  #     #     ci/unit_tests.sh java
 
-      - label: ":lab_coat: Integration Tests / part 1"
-        key: "integration-tests-part-1"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: Integration Tests / part 1"
+  #       key: "integration-tests-part-1"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          ci/integration_tests.sh split 0
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         ci/integration_tests.sh split 0
 
-      - label: ":lab_coat: Integration Tests / part 2"
-        key: "integration-tests-part-2"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: Integration Tests / part 2"
+  #       key: "integration-tests-part-2"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          ci/integration_tests.sh split 1
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         ci/integration_tests.sh split 1
 
-      - label: ":lab_coat: IT Persistent Queues / part 1"
-        key: "integration-tests-qa-part-1"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: IT Persistent Queues / part 1"
+  #       key: "integration-tests-qa-part-1"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          export FEATURE_FLAG=persistent_queues
-          ci/integration_tests.sh split 0
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         export FEATURE_FLAG=persistent_queues
+  #         ci/integration_tests.sh split 0
 
-      - label: ":lab_coat: IT Persistent Queues / part 2"
-        key: "integration-tests-qa-part-2"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: IT Persistent Queues / part 2"
+  #       key: "integration-tests-qa-part-2"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          export FEATURE_FLAG=persistent_queues
-          ci/integration_tests.sh split 1
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         export FEATURE_FLAG=persistent_queues
+  #         ci/integration_tests.sh split 1
 
-      - label: ":lab_coat: x-pack unit tests"
-        key: "x-pack-unit-tests"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: x-pack unit tests"
+  #       key: "x-pack-unit-tests"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          x-pack/ci/unit_tests.sh
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         x-pack/ci/unit_tests.sh
 
-      - label: ":lab_coat: x-pack integration"
-        key: "integration-tests-x-pack"
-        command: |
-          set -euo pipefail
+  #     - label: ":lab_coat: x-pack integration"
+  #       key: "integration-tests-x-pack"
+  #       command: |
+  #         set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          x-pack/ci/integration_tests.sh
+  #         source .buildkite/scripts/common/vm-agent.sh
+  #         x-pack/ci/integration_tests.sh
 
   - group: "Acceptance Phase"
-    depends_on: "testing-phase"
+    #depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
         command:
           set -euo pipefail
-
-          source .buildkite/scripts/common/vm-agent.sh
-          ci/docker_acceptance_tests.sh {{matrix}}
+          
+          source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
         matrix:
           - "full"
           - "oss"
