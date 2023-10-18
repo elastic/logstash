@@ -1009,7 +1009,6 @@ DEPENDENCIES
   paquet (~> 0.2)
   pleaserun (~> 0.0.28)
   polyglot
-  psych (= 5.1.0)
   rack-test
   rake (~> 13)
   rspec (~> 3.5)
