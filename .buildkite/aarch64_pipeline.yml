@@ -80,5 +80,14 @@ steps:
     depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
-      - label: "Acceptance tests will go here"
-        command: "echo 'Hello world'"
+      - label: "Docker [{{matrix}}] flavor acceptance"
+        command:
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/docker_acceptance_tests.sh ${flavor}
+        env:
+          flavor: "{{matrix}}"
+        matrix:
+          - "full"
+          - "oss"
