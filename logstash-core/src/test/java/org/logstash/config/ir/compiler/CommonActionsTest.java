@@ -49,7 +49,7 @@ public class CommonActionsTest {
         CommonActions.addField(e, Collections.singletonMap(testField, testStringValue));
         Object value = e.getField(testField);
         Assert.assertTrue(value instanceof List);
-        Assert.assertEquals(2, ((List) value).size());
+        Assert.assertEquals(3, ((List) value).size());  // deliberate test bug here
         Assert.assertEquals(testStringValue, ((List) value).get(0));
         Assert.assertEquals(testStringValue, ((List) value).get(1));
 

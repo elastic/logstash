@@ -171,6 +171,6 @@ describe "LogStash::Inputs::Base#fix_streaming_codecs" do
     tcp = LogStash::Inputs::Tcp.new("codec" => "json", "port" => 0)
     tcp.register
 
-    expect(tcp.codec.class.name).to eq("LogStash::Codecs::JSONLines")
+    expect(tcp.codec.class.name).to eq("LogStash::Codecs::JSONLinesTYPOHERE")
   end
 end
