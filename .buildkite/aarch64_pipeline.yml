@@ -81,8 +81,6 @@ steps:
     key: "acceptance-phase"
     steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
-        env:
-          JAVA_HOME: "/opt/buildkite-agent/.java"
         command:
           set -euo pipefail
           
