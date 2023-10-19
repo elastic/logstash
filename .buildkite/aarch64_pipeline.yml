@@ -82,7 +82,7 @@ steps:
     steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
         env:
-          JAVA_HOME: "/opt/buildkite-agent/.java/bin/java"
+          JAVA_HOME: "/opt/buildkite-agent/.java"
         command:
           set -euo pipefail
           
