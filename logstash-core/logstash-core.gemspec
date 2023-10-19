@@ -87,14 +87,14 @@ Gem::Specification.new do |gem|
   # and https://github.com/elastic/logstash/issues/13773
 
   # TEMPORARY: delta between JRuby 9.4.2.0 and 9.4.3.0
-  gem.add_runtime_dependency "cgi", "~> 0.3.6"
-  gem.add_runtime_dependency "date", "~> 3.3.3"
-  gem.add_runtime_dependency "ffi", "~> 1.15.5"
-  gem.add_runtime_dependency "net-http", "~> 0.3.0"
-  gem.add_runtime_dependency "net-protocol", "~> 0.1.2"
-  gem.add_runtime_dependency "reline", "~> 0.3.5"
-  gem.add_runtime_dependency "ffi-binary-libfixposix", "~> 0.5.1.1"
-  gem.add_runtime_dependency "time", "~> 0.2.2"
-  gem.add_runtime_dependency "timeout", "~> 0.3.2"
-  gem.add_runtime_dependency "uri", "~> 0.12.1"
+  # gem.add_runtime_dependency "cgi", "~> 0.3.6"
+  # gem.add_runtime_dependency "date", "~> 3.3.3"
+  # gem.add_runtime_dependency "ffi", "~> 1.15.5"
+  # gem.add_runtime_dependency "net-http", "~> 0.3.0"
+  # gem.add_runtime_dependency "net-protocol", "~> 0.1.2"
+  # gem.add_runtime_dependency "reline", "~> 0.3.5"
+  # gem.add_runtime_dependency "ffi-binary-libfixposix", "~> 0.5.1.1"
+  # gem.add_runtime_dependency "time", "~> 0.2.2"
+  # gem.add_runtime_dependency "timeout", "~> 0.3.2"
+  # gem.add_runtime_dependency "uri", "~> 0.12.1"
 end
