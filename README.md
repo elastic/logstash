@@ -235,7 +235,7 @@ rake artifact:deb_oss
 If you want the build to use a custom JRuby you can do so by setting a path to a custom
 JRuby distribution's source root via the `custom.jruby.path` Gradle property.
 
-E.g.
+e.g.
 
 ```sh
 ./gradlew clean test -Pcustom.jruby.path="/path/to/jruby"
