@@ -92,7 +92,7 @@ steps:
       - label: "Acceptance tests on {{matrix.distribution}}"
         agents:
           provider: aws
-          imagePrefix: platform-ingest-logstash-{{matrix.distribution}}
+          imagePrefix: platform-ingest-logstash-{{matrix.distribution}}-aarch64
           instanceType: "m6g.4xlarge"
           diskSizeGb: 200
         command:
