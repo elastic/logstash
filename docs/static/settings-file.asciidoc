@@ -135,12 +135,9 @@ Possible values are:
 * `v1`
 * `v8`
 
-This option allows the <<ecs-ls,early opt-in (or preemptive opt-out) of ECS compatibility>> modes in plugins,
-which is scheduled to be on-by-default in a future major release of {ls}.
+This option allows you to <<ecs-ls, opt-out of ECS compatibility>> modes for all plugins in a pipeline, which will make them behave as they did in Logstash 7.
 
-Values other than `disabled` are currently considered BETA, and may produce unintended consequences when upgrading {ls}.
-
-| `disabled`
+| `v8`
 
 | `path.config`
 | The path to the Logstash config for the main pipeline. If you specify a directory or wildcard,
