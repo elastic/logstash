@@ -96,11 +96,11 @@ This section summarizes the changes in the following releases:
 *Http_poller Input - 5.5.0*
 
 * Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-input-http_poller/pull/141[#141]
-* Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-* Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
-* Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-* Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-* Introduced the `ssl_cipher_suites` option.
+** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
+** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
+** Introduced the `ssl_cipher_suites` option.
 
 *Imap Input - 3.2.1*
 
@@ -117,12 +117,12 @@ This section summarizes the changes in the following releases:
 *Http_client Mixin - 7.3.0*
 
 * Dtandardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
-* Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-* Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecating its `cacert` counterpart.
-* Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-* Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-* Introduced a way for plugin maintainers to include this mixin _without_ supporting the now-deprecated SSL options.
-* Introduced the `ssl_cipher_suites` option.
+** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecating its `cacert` counterpart.
+** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
+** Introduced a way for plugin maintainers to include this mixin _without_ supporting the now-deprecated SSL options.
+** Introduced the `ssl_cipher_suites` option.
 
 *Validator_support Mixin - 1.1.0*
 
@@ -140,11 +140,11 @@ This section summarizes the changes in the following releases:
 *Http Output - 5.6.0*
 
 * Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-output-http/pull/140[#140]
-* Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-* Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
-* Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-* Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-* Introduced the `ssl_cipher_suites` option.
+** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
+** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
+** Introduced the `ssl_cipher_suites` option.
 
 *Webhdfs Output - 3.1.0*
 
