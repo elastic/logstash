@@ -16,15 +16,16 @@ steps:
           source .buildkite/scripts/common/vm-agent.sh
           ci/unit_tests.sh ruby
 
-      ### Temporarily disable since sonar scans imply pull request context
-      # - label: ":java: Java unit tests"
-      #   key: "java-unit-tests"
-      #   command: |
-      #     set -euo pipefail
+      - label: ":java: Java unit tests"
+        key: "java-unit-tests"
+        env:
+          # https://github.com/elastic/logstash/pull/15486 for background
+          ENABLE_SONARQUBE: "false"
+        command: |
+          set -euo pipefail
 
-      #     source .buildkite/scripts/common/vm-agent.sh
-      #     source .buildkite/scripts/pull-requests/sonar-env.sh
-      #     ci/unit_tests.sh java
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/unit_tests.sh java
 
       - label: ":lab_coat: Integration Tests / part 1"
         key: "integration-tests-part-1"
