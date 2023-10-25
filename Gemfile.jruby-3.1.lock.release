@@ -54,7 +54,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.2.0)
-    aws-partitions (1.837.0)
+    aws-partitions (1.841.0)
     aws-sdk-cloudfront (1.83.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
@@ -172,7 +172,7 @@ GEM
       pleaserun (~> 0.0.29)
       rexml
       stud
-    fugit (1.8.1)
+    fugit (1.9.0)
       et-orbi (~> 1, >= 1.2.7)
       raabro (~> 1.4)
     gelfd2 (0.4.1)
@@ -667,7 +667,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.18.0-java)
+    logstash-output-elasticsearch (11.19.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -750,7 +750,7 @@ GEM
     naught (1.1.0)
     net-http (0.3.2)
       uri
-    net-imap (0.4.1)
+    net-imap (0.4.2)
       date
       net-protocol
     net-pop (0.1.2)
@@ -783,7 +783,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
-    psych (5.1.0-java)
+    psych (5.1.1.1-java)
       jar-dependencies (>= 0.1.7)
     public_suffix (3.1.1)
     puma (6.4.0-java)
