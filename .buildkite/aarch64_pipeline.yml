@@ -81,5 +81,29 @@ steps:
     depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
-      - label: "Acceptance tests will go here"
-        command: "echo 'Hello world'"
+      - label: "Docker [{{matrix}}] flavor acceptance"
+        command:
+          set -euo pipefail
+          
+          source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
+        matrix:
+          - "full"
+          - "oss"
+
+      # *** TODO: enable after clarifying if acceptance tests really need vagrant on aarch64
+      # - label: "Acceptance tests on {{matrix.distribution}}"
+      #   agents:
+      #     provider: aws
+      #     imagePrefix: platform-ingest-logstash-{{matrix.distribution}}-aarch64
+      #     instanceType: "m6g.4xlarge"
+      #     diskSizeGb: 200
+      #   command:
+      #     set -euo pipefail
+          
+      #     source .buildkite/scripts/common/vm-agent.sh && ci/acceptance_tests.sh {{matrix.suite}}
+      #   matrix:
+      #     setup:
+      #       suite:
+      #         - "debian"
+      #       distribution:
+      #         - "ubuntu-2204"
