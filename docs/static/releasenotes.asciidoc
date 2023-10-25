@@ -51,6 +51,11 @@ This section summarizes the changes in the following releases:
 [[logstash-8-11-0]]
 === Logstash 8.11.0 Release Notes
 
+[[known-issues-8.11.0]]
+==== Known issues
+
+* Input imap plugin's behaviour with Logstash 8.10+ versions, is broken after upgrading its `mail` dependency https://github.com/logstash-plugins/logstash-input-imap/issues/61[#61]
+
 [[docs-8.11.0]]
 ==== Documentation enhancements
 
@@ -63,11 +68,6 @@ This section summarizes the changes in the following releases:
 * Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15394[#15394]
 * Downgrade jruby, keep updated default-gem dependencies https://github.com/elastic/logstash/pull/15369[#15369]
 * Pin psych 5.1.0 https://github.com/elastic/logstash/pull/15433[#15433]
-
-[[known-issues-8.11.0]]
-==== Known issues
-
-* Input imap plugin's behaviour with Logstash 8.10+ versions, is broken after upgrading its `mail` dependency https://github.com/logstash-plugins/logstash-input-imap/issues/61[#61]
 
 ==== Plugins
 
