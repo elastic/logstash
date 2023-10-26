@@ -304,7 +304,7 @@ spec:
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
       env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'  # disabled during development
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
