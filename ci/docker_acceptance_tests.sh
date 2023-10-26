@@ -32,44 +32,44 @@ echo "Building Logstash artifacts"
 cd $LS_HOME
 
 if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
-  echo "building oss docker images"
+  echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
   rake artifact:docker_oss
-  echo "Acceptance: Installing dependencies"
+  echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
 
-  echo "Acceptance: Running the tests"
+  echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/oss/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
-  echo "building full docker images"
+  echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
   rake artifact:docker
-  echo "Acceptance: Installing dependencies"
+  echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
 
-  echo "Acceptance: Running the tests"
+  echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/full/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
-  echo "building ubi8 docker images"
+  echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
   rake artifact:docker_ubi8
-  echo "Acceptance: Installing dependencies"
+  echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
 
-  echo "Acceptance: Running the tests"
+  echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/ubi8/*_spec.rb
 else
-  echo "Building all docker images"
+  echo "--- Building all docker images"
   cd $LS_HOME
   rake artifact:docker_only
 
-  echo "Acceptance: Installing dependencies"
+  echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
 
-  echo "Acceptance: Running the tests"
+  echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/**/*_spec.rb
 fi
