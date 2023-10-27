@@ -36,15 +36,13 @@ input {
 
 In order to obtain the best performance when sending data from one Logstash to another, the data is batched and compressed. As such, the upstream Logstash (the sending Logstash) only needs to be concerned about configuring the receiving endpoint with these options:
 
-* `hosts` - The receiving Logstash and port. If no port specified, 9800 will be used.
-
-NOTE: In the future, {ls} will support multiple output hosts.
+* `hosts` - The receiving Logstash host and port pairs. If no port specified, 9800 will be used.
 
 [source,json]
 ----
 output {
     logstash {
-        hosts => '10.0.0.123:9800'
+        hosts => ["10.0.0.123", "10.0.1.123:9800"]
     }
 }
 ----
