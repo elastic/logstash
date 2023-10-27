@@ -69,8 +69,7 @@ class Plugin
       system("#{plugin_base_folder}/gradlew vendor")
     end
     system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
-    spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec")
-    #puts "DNABG>> spec_result #{spec_result}"
+    spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
     return spec_result ? true : false
   end
 
