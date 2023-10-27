@@ -114,7 +114,7 @@ PLUGIN_DEFINITIONS = {
   :tier1 => {
     :input => ["logstash-input-azure_event_hubs", "logstash-input-beats", "logstash-input-elasticsearch", "logstash-input-file",
                "logstash-input-generator", "logstash-input-heartbeat", "logstash-input-http", "logstash-input-http_poller",
-               "logstash-input-redis", "logstash-input-s3", "logstash-input-stdin", "logstash-input-syslog", "logstash-input-udp",
+               "logstash-input-redis", "logstash-input-stdin", "logstash-input-syslog", "logstash-input-udp",
                "logstash-input-elastic_agent"],
     :codec => ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
                "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
@@ -129,7 +129,7 @@ PLUGIN_DEFINITIONS = {
     :output => ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
                 "logstash-output-redis", "logstash-output-s3", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
     :integration => ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
-                     "logstash-integration-elastic_enterprise_search"]
+                     "logstash-integration-elastic_enterprise_search", "logstash-integration-aws"]
   },
   :tier2 => {
     :input => ["logstash-input-couchdb_changes", "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
