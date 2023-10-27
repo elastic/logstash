@@ -115,7 +115,8 @@ PLUGIN_DEFINITIONS = {
     :input => ["logstash-input-azure_event_hubs", "logstash-input-beats", "logstash-input-elasticsearch", "logstash-input-file",
                "logstash-input-generator", "logstash-input-heartbeat", "logstash-input-http", "logstash-input-http_poller",
                "logstash-input-redis", "logstash-input-stdin", "logstash-input-syslog", "logstash-input-udp",
-               "logstash-input-elastic_agent"],
+               # "logstash-input-elastic_agent" placeholder repo as alis for input beats
+             ],
     :codec => ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
                "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
                "logstash-codec-rubydebug"],
