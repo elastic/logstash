@@ -707,8 +707,35 @@ class JDKDetails {
     }
 
     String createDownloadUrl() {
+        return createElasticCatalogDownloadUrl()
+    }
+
+    private String createElasticCatalogDownloadUrl() {
+        // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
+
+        // arch x86_64 never used, only aarch64 if macos
+        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
+
+        // Append the cpu's arch only if Mac on aarch64, all the other OSes doesn't have CPU extension
+        if (arch == "aarch64") {
+            url += "_${arch}"
+        }
+        println "Retrieving JDK from catalog..."
+        def catalogMetadataUrl = new URL(url)
+        def catalogConnection = catalogMetadataUrl.openConnection()
+        catalogConnection.requestMethod = 'GET'
+        assert catalogConnection.responseCode == 200
+
+        def metadataRetrieved = catalogConnection.content.text
+        println "Retrieved!"
+
+        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
+        return catalogMetadata.url
+    }
+
+    private String createAdoptDownloadUrl() {
         String releaseName = major > 8 ?
-                "jdk-${revision}+${build}":
+                "jdk-${revision}+${build}" :
                 "jdk${revision}u${build}"
         String vendorOsName = vendorOsName(osName)
         switch (vendor) {
@@ -772,6 +799,7 @@ tasks.register("downloadJdk", Download) {
     src project.ext.jdkURL
     onlyIfNewer true
     overwrite false
+    quiet true
     inputs.file("${projectDir}/versions.yml")
     outputs.file(project.ext.jdkDownloadLocation)
     dest new File(project.ext.jdkDownloadLocation)
