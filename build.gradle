@@ -720,6 +720,7 @@ class JDKDetails {
         if (arch == "aarch64") {
             url += "_${arch}"
         }
+        println "Retrieving JDK from catalog..."
         def catalogMetadataUrl = new URL(url)
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
@@ -798,6 +799,7 @@ tasks.register("downloadJdk", Download) {
     src project.ext.jdkURL
     onlyIfNewer true
     overwrite false
+    quiet true
     inputs.file("${projectDir}/versions.yml")
     outputs.file(project.ext.jdkDownloadLocation)
     dest new File(project.ext.jdkDownloadLocation)
