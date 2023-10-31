@@ -90,7 +90,7 @@ module LogStash module GeoipDatabaseManagement
       db_types.each do |database_type|
         db_info = service_resp.find { |db| db['name'].eql?("#{GEOLITE}#{database_type}.#{GZ_EXT}") }
         if db_info.nil?
-          logger.warn("Database service did not include #{database_type}")
+          logger.debug("Database service did not include #{database_type}")
         elsif @metadata.database_path(database_type).nil?
           logger.debug("Local #{database_type} database is not present.")
           yield(database_type, db_info)
