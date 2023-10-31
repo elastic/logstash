@@ -20,6 +20,7 @@ describe LogStash::Filters::Geoip do
     let(:mock_eula_manager) do
       double('LogStash::GeoipDatabaseManagement::Manager').tap do |c|
         allow(c).to receive(:enabled?).and_return(eula_manager_enabled)
+        allow(c).to receive(:supported_database_types).and_return([CITY, ASN])
         allow(c).to receive(:subscribe_database_path) do |type|
           LogStash::GeoipDatabaseManagement::Subscription.new(eula_database_infos[type])
         end
@@ -44,9 +45,8 @@ describe LogStash::Filters::Geoip do
       allow(mock_geoip_plugin).to receive(:update_filter)
     end
 
-    CITY = LogStash::GeoipDatabaseManagement::Constants::CITY
-    ASN = LogStash::GeoipDatabaseManagement::Constants::ASN
-    CC = LogStash::Filters::Geoip::DatabaseManager::CC
+    self::CITY = LogStash::GeoipDatabaseManagement::Constants::CITY
+    self::ASN = LogStash::GeoipDatabaseManagement::Constants::ASN
 
     shared_examples "not subscribed to the EULA manager" do
       it "is not subscribed to the EULA manager" do

@@ -27,14 +27,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   include LogStash::Util::Loggable
   include Singleton
 
-  DB_EXT = 'mmdb'.freeze
-  GEOLITE = 'GeoLite2-'.freeze
-
-  CITY = "City".freeze
-  ASN = "ASN".freeze
-  DB_TYPES = [ASN, CITY].freeze
-
-  CC = "CC".freeze
+  CC_DB_TYPES = %w(City ASN).map(&:freeze).freeze
 
   java_import org.apache.logging.log4j.ThreadContext
 
@@ -51,7 +44,7 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def setup
-    @eula_subscriptions = DB_TYPES.each_with_object({}) do |database_type, memo|
+    @eula_subscriptions = eula_manager.supported_database_types.each_with_object({}) do |database_type, memo|
       memo[database_type] = eula_manager.subscribe_database_path(database_type).observe(
         construct: -> (initial_db_info) { create!(database_type, initial_db_info) },
         on_update: -> (updated_db_info) { update!(database_type, updated_db_info) },
@@ -74,12 +67,12 @@ module LogStash module Filters module Geoip class DatabaseManager
     geoip_filter_plugin_path = Gem.loaded_specs['logstash-filter-geoip']&.full_gem_path or fail("geoip filter plugin library not found")
     vendored_cc_licensed_dbs = ::File.expand_path('vendor', geoip_filter_plugin_path)
 
-    @cc_dbs = DB_TYPES.each_with_object({}) do |database_type, memo|
-      database_filename = "#{GEOLITE}#{database_type}.#{DB_EXT}"
+    @cc_dbs = CC_DB_TYPES.each_with_object({}) do |database_type, memo|
+      database_filename = "GeoLite2-#{database_type}.mmdb"
       vendored_database_path = ::File.expand_path(database_filename, vendored_cc_licensed_dbs)
       fail("vendored #{database_type} database not present in #{vendored_cc_licensed_dbs}") unless ::File::exists?(vendored_database_path)
 
-      cc_dir_path = ::File.expand_path(CC, @data_dir_path)
+      cc_dir_path = ::File.expand_path("CC", @data_dir_path)
       FileUtils.mkdir_p(cc_dir_path)
       FileUtils.cp_r(vendored_database_path, cc_dir_path)
 
