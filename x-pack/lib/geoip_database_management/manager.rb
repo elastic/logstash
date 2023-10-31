@@ -180,7 +180,7 @@ module LogStash module GeoipDatabaseManagement class Manager
         metadata.save_metadata(database_type, dirname, gz_md5: md5(data_path.gz(database_type, dirname)))
 
         @states[database_type].update!(new_database_path) do |previous_db_info|
-          logger.info("managed geoip database has been updated; subscribers will be notified",
+          logger.info("managed geoip database has been updated on disk",
                       :database_type => database_type, :database_path => new_database_path)
         end
 
