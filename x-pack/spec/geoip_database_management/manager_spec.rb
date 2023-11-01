@@ -210,7 +210,7 @@ describe LogStash::GeoipDatabaseManagement::Manager, aggregate_failures: true, v
       context "and metadata does not contain an entry for the specified DB" do
         let(:metadata_contents) do
           <<~EOMETA
-            #{ASN},#{existing_asn_db_check_at},#{existing_asn_gzmd5},#{existing_dirname}
+            #{constants::ASN},#{existing_asn_db_check_at},#{existing_asn_gzmd5},#{existing_dirname}
           EOMETA
         end
         context "the returned subscription" do
