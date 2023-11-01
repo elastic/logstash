@@ -1,0 +1,40 @@
+[[ea-integrations]]
+== Using {ls} with Elastic {integrations} (Beta)
+
+You can take advantage of the extensive, built-in capabilities of Elastic {integrations}--such as managing data collection, transformation, and visualization--and then use {ls} for additional data processing and output options. 
+{ls} can further expand capabilities for use cases where you need additional processing, or if you need your data delivered to multiple destinations. 
+
+[discrete]
+[[integrations-value]]
+=== Elastic {integrations}: ingesting to visualizing 
+
+https://docs.elastic.co/integrations[Elastic {integrations}] provide quick, end-to-end solutions for:
+
+* ingesting data from a variety of data sources
+* getting the data into the {stack}, and 
+* visualizing it with purpose-built dashboards.
+
+{integrations} are available for https://docs.elastic.co/integrations/all_integrations[popular services and platforms], such as Nginx, AWS, and MongoDB, as well as many generic input types like log files.
+Each integration includes pre-packaged assets to help reduce the time between ingest and insights. 
+
+To see available integrations, go to the {kib} home page, and click **Add {integrations}**. 
+You can use the query bar to search for integrations you may want to use. 
+When you find an integration for your data source, the UI walks you through adding and configuring it. 
+
+[discrete]
+[[integrations-and-ls]]
+=== Extend {integrations} with {ls} (Beta)
+
+Logstash can run the ingest pipeline component of your integration when you use the Logstash filter-elastic_integration plugin. 
+
+.How to
+
+****
+Create a {ls} pipeline that uses the <<plugins-inputs-elastic_agent,elastic_agent input>> plugin, and the https://github.com/elastic/logstash-filter-elastic_integration[logstash-filter-elastic_integration] plugin as the _first_ filter in your {ls} pipeline.
+You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. 
+Add an output plugin to complete your pipeline. 
+**** 
+
+// ToDo: Add code sample (work in progress)
+// ToDo: Add link to plugin doc for settings and additional instructions after those docs are published.
+// For now: https://github.com/elastic/logstash-filter-elastic_integration
