@@ -59,13 +59,13 @@ This section summarizes the changes in the following releases:
 [[notable-8.11.0]]
 ==== Notable issues fixed
 
-* Callsite syntax for i18n.t method is updated to avoid deprecated and prohibited format https://github.com/elastic/logstash/pull/15500[#15500]
+* Update callsite syntax for i18n.t method to avoid deprecated and prohibited format https://github.com/elastic/logstash/pull/15500[#15500]
 
 [[docs-8.11.0]]
 ==== Documentation enhancements
 
 * Add native Logstash to Logstash documentation https://github.com/elastic/logstash/pull/15346[#15346]
-* Expanded description of how to size the JVM memory https://github.com/elastic/logstash/pull/15210[#15210]
+* Expand description of how to size the JVM memory https://github.com/elastic/logstash/pull/15210[#15210]
 
 [[dependencies-8.11.0]]
 ==== Updates to dependencies
@@ -80,33 +80,33 @@ This section summarizes the changes in the following releases:
 *Elasticsearch Filter - 3.16.1*
 
 * Version bump to pick up doc fix in https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/172[#172]
-* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/174[#174]
+* Add request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/174[#174]
 
 *Http Filter - 1.5.0*
 
-* Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-filter-http/pull/49[#49]
-** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
-** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-** Introduced the `ssl_cipher_suites` option.
+* Standardize SSL settings and deprecate their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-filter-http/pull/49[#49]
+** Introduce new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecate their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduce new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecate its `cacert` counterpart.
+** Introduce new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecate their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduce new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecate their `client_cert` and `client_key` counterparts.
+** Introduce the `ssl_cipher_suites` option.
 
 *Beats Input - 6.7.0*
 
-* Adds explicit support for receiving a 0-length window to encapsulate an empty batch. Empty batches are acknowledged with the same 0-sequence ACK's that are used as keep-alives during processing https://github.com/logstash-plugins/logstash-input-beats/pull/479[#479]
+* Add explicit support for receiving a 0-length window to encapsulate an empty batch. Empty batches are acknowledged with the same 0-sequence ACK's that are used as keep-alives during processing https://github.com/logstash-plugins/logstash-input-beats/pull/479[#479]
 
 *Elasticsearch Input - 4.18.0*
 
-* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/195[#195]
+* Add request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/195[#195]
 
 *Http_poller Input - 5.5.0*
 
-* Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-input-http_poller/pull/141[#141]
-** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
-** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-** Introduced the `ssl_cipher_suites` option.
+* Standardize SSL settings and deprecate their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-input-http_poller/pull/141[#141]
+** Introduce new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecate their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduce new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecate its `cacert` counterpart.
+** Introduce new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecate their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduce new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecate their `client_cert` and `client_key` counterparts.
+** Introduce the `ssl_cipher_suites` option.
 
 *Imap Input - 3.2.1*
 
@@ -122,22 +122,22 @@ This section summarizes the changes in the following releases:
 
 *Http_client Mixin - 7.3.0*
 
-* Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
-** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecating its `cacert` counterpart.
-** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-** Introduced a way for plugin maintainers to include this mixin _without_ supporting the now-deprecated SSL options.
-** Introduced the `ssl_cipher_suites` option.
+* Standardize SSL settings and deprecate their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
+** Introduce new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecate their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduce new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecate its `cacert` counterpart.
+** Introduce new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecate their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduce new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecate their `client_cert` and `client_key` counterparts.
+** Introduce a way for plugin maintainers to include this mixin _without_ supporting the now-deprecated SSL options.
+** Introduce the `ssl_cipher_suites` option.
 
 *Validator_support Mixin - 1.1.0*
 
-* Introduces `:required_host_optional_port` validator https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/4[#4]
+* Introduce `:required_host_optional_port` validator https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/4[#4]
 
 *Elasticsearch Output - 11.18.0*
 
-* Added request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1147[#1147]
-* Added support to http compression level. Deprecated `http_compression` in favour of `compression_level` and enabled compression level 1 by default. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1148[#1148]
+* Add request header `Elastic-Api-Version` for serverless https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1147[#1147]
+* Add support to http compression level. Deprecate `http_compression` in favour of `compression_level` and enable compression level 1 by default https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1148[#1148]
 
 *Email Output - 4.1.3*
 
@@ -145,12 +145,12 @@ This section summarizes the changes in the following releases:
 
 *Http Output - 5.6.0*
 
-* Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-output-http/pull/140[#140]
-** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
-** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecating its `cacert` counterpart.
-** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
-** Introduced new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecating their `client_cert` and `client_key` counterparts.
-** Introduced the `ssl_cipher_suites` option.
+* Standardize SSL settings and deprecate their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-output-http/pull/140[#140]
+** Introduce new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecate their `truststore`, `truststore_password`, and `truststore_type` counterparts.
+** Introduce new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formatted list certificate authorities, deprecate its `cacert` counterpart.
+** Introduce new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecate their `keystore`, `keystore_password`, and `keystore_type` counterparts.
+** Introduce new `ssl_certificate` and `ssl_key` settings for configuring SSL-identity using a PEM-formatted certificate/key pair, deprecate their `client_cert` and `client_key` counterparts.
+** Introduce the `ssl_cipher_suites` option.
 
 *Webhdfs Output - 3.1.0*
 
