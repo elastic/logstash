@@ -35,6 +35,45 @@ You can add more filters for additional processing, but they must come after the
 Add an output plugin to complete your pipeline. 
 **** 
 
-// ToDo: Add code sample (work in progress)
-// ToDo: Add link to plugin doc for settings and additional instructions after those docs are published.
-// For now: https://github.com/elastic/logstash-filter-elastic_integration
+
+**Sample pipeline configuration**
+
+[source,ruby]
+-----
+input {
+  elastic_agent { 
+    port => 5044
+  }
+}
+
+filter {
+  elastic_integration{ <1>
+    cloud_id => "<cloud id>"
+    cloud_auth => "<your_cloud-auth"    
+  }
+
+  translate { <2>
+    source => "[http][host]"
+    target => "[@metadata][tenant]"
+    dictionary_path => "/etc/conf.d/logstash/tenants.yml"
+  }
+}
+
+output { <3>
+  if [@metadata][tenant] == "tenant01" {
+    elasticsearch {
+      cloud_id => "<cloud id>"
+      api_key => "<api key>"
+    }
+  } else if [@metadata][tenant] == "tenant02" {
+    elasticsearch {
+      cloud_id => "<cloud id>"
+      api_key => "<api key>"
+    }
+  }
+}
+-----
+
+<1> Use `filter-elastic_agent` as the first filter in your pipeline 
+<2> You can use additional filters as long as they follow `filter-elastic_agent`
+<3> Sample config to output data to multiple destinations
