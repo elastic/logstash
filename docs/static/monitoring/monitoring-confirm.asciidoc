@@ -1,0 +1,19 @@
+[float]
+[[confirm-enrollment]]
+//tag::confirm-enrollment-widget[]
+
+* Once enrollment is confirmed and incoming data is received,  click **View assets** to access dashboards related to the Logstash integration.
+* For traditional Stack Monitoring UI, the dashboards marked **[Logs Logstash]** are used to visualize the logs
+produced by your Logstash Instances, with those marked **[Metrics Logstash]** for the technical preview metrics
+dashboards.
+** Note that these will only be populated with data if the **Metrics (Technical Preview)** checkbox was
+selected.
+
+--
+[role="screenshot"]
+image::images/integration-assets-dashboards.png[Integration assets]
+--
+
+A number of dashboards are included to view Logstash as a whole, and dashboards that allow you to drill-down
+into how Logstash is performing on a node, pipeline and plugin basis.
+//end::confirm-enrollment-widget[]
