@@ -12,17 +12,17 @@ monitoring agents from a central location in {fleet}.
 
 To collect and ship monitoring data:
 
-. <<disable-default-include,Disable default collection of monitoring metrics>>
-. <<define-cluster__uuid-include,Specify the target `cluster_uuid` (optional)>>
+. <<disable-default-include-ead,Disable default collection of monitoring metrics>>
+. <<define-cluster__uuid-include-ead,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {agent} to collect monitoring data>>
 
 [float]
-[[disable-default-include]]
+[[disable-default-include-ead]]
 //include section about disabling default collection from the metricbeat topic
 include::monitoring-mb.asciidoc[tag=disable-default-collection]
 
 [float]
-[[define-cluster__uuid-include]]
+[[define-cluster__uuid-include-ead]]
 //include section about defining cluster_uuid from the metricbeat topic
 include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 
@@ -33,7 +33,7 @@ include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 
 
 [discrete]
-[[add-logstash-integration]]
+[[add-logstash-integration-ead]]
 === Step 1: Add the {agent} Logstash integration
 
 {agent} is a single, unified way to add monitoring for logs, metrics, and other
@@ -56,7 +56,7 @@ details about it.
 
 . Configure the integration name and optionally add a description.
 
-[[configure-logstash-logs]]
+[[configure-logstash-logs-ead]]
 ==== Configure {agent} to collect {ls} Logs
 
 Make sure that **Logs** is turned on.
@@ -107,7 +107,7 @@ TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 
 
 [discrete]
-[[add-agent-to-fleet]]
+[[add-agent-to-fleet-ead]]
 
 === Step 2: Install and run an {agent} on your machine
 // Include section about installing agents
