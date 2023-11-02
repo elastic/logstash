@@ -2,7 +2,7 @@
 === Collect {ls} monitoring data with {agent}
 [subs="attributes"]
 ++++
-<titleabbrev>{agent} collection</titleabbrev>
+<titleabbrev>{agent} collection for Stack Monitoring</titleabbrev>
 ++++
 
 You can use {agent} to collect data about {ls} and ship it to the monitoring
