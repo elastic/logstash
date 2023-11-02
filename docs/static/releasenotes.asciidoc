@@ -56,6 +56,11 @@ This section summarizes the changes in the following releases:
 
 * Input imap plugin's behavior with Logstash 8.10+ versions, is broken after upgrading its `mail` dependency https://github.com/logstash-plugins/logstash-input-imap/issues/61[#61]
 
+[[notable-8.11.0]]
+==== Notable issues fixed
+
+* Callsite syntax for i18n.t method is updated to avoid deprecated and prohibited format https://github.com/elastic/logstash/pull/15500[#15500]
+
 [[docs-8.11.0]]
 ==== Documentation enhancements
 
@@ -68,6 +73,7 @@ This section summarizes the changes in the following releases:
 * Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15394[#15394]
 * Downgrade jruby, keep updated default-gem dependencies https://github.com/elastic/logstash/pull/15369[#15369]
 * Pin psych 5.1.0 https://github.com/elastic/logstash/pull/15433[#15433]
+* Update JDK to 17.0.9+9 and jackson to 2.15.3 https://github.com/elastic/logstash/pull/15510[#15510]
 
 ==== Plugins
 
