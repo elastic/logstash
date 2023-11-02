@@ -54,7 +54,7 @@ This section summarizes the changes in the following releases:
 [[known-issues-8.11.0]]
 ==== Known issues
 
-* Input imap plugin's behaviour with Logstash 8.10+ versions, is broken after upgrading its `mail` dependency https://github.com/logstash-plugins/logstash-input-imap/issues/61[#61]
+* Input imap plugin's behavior with Logstash 8.10+ versions, is broken after upgrading its `mail` dependency https://github.com/logstash-plugins/logstash-input-imap/issues/61[#61]
 
 [[docs-8.11.0]]
 ==== Documentation enhancements
@@ -116,7 +116,7 @@ This section summarizes the changes in the following releases:
 
 *Http_client Mixin - 7.3.0*
 
-* Dtandardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
+* Standardized SSL settings and deprecated their non-standard counterparts. Deprecated settings will continue to work, and will provide pipeline maintainers with guidance toward using their standardized counterparts https://github.com/logstash-plugins/logstash-mixin-http_client/pull/42[#42]
 ** Introduced new `ssl_truststore_path`, `ssl_truststore_password`, and `ssl_truststore_type` settings for configuring SSL-trust using a PKCS-12 or JKS trust store, deprecating their `truststore`, `truststore_password`, and `truststore_type` counterparts.
 ** Introduced new `ssl_certificate_authorities` setting for configuring SSL-trust using a PEM-formated list certificate authorities, deprecating its `cacert` counterpart.
 ** Introduced new `ssl_keystore_path`, `ssl_keystore_password`, and `ssl_keystore_type` settings for configuring SSL-identity using a PKCS-12 or JKS key store, deprecating their `keystore`, `keystore_password`, and `keystore_type` counterparts.
