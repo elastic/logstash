@@ -11,12 +11,12 @@ For an introduction to monitoring your Elastic stack, see
 
 [float]
 [[configuring-logstash-xpack]]
-=== Configuring monitoring for {ls} (Beta)
+=== Configuring monitoring for {ls} Dashboards (Beta)
 
 Make sure that monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
-* <<dashboard-monitoring-with-elastic-agent, {agent} collection>>. {agent} collects
+* <<dashboard-monitoring-with-elastic-agent, {agent} collection for Dashboards>>. {agent} collects
 monitoring data from your {ls} instance and sends it directly to your monitoring
 cluster, and shows the data in Logstash Dashboards.
 The benefit of {agent} collection is that the monitoring agent remains
@@ -27,15 +27,13 @@ Plus, you can monitor an expanded set of metrics, includng
 
 [float]
 [[configuring-logstash-xpack-legacy]]
-=== Configuring monitoring for {ls} (legacy)
-* <<monitoring-with-elastic-agent, {agent} collection>>. {agent} collects
+=== Configuring monitoring for {ls} Stack Monitoring
+* <<monitoring-with-elastic-agent, {agent} collection for Stack Monitoring>>. {agent} collects
 monitoring data from your {ls} instance and sends it directly to your monitoring
 cluster, and shows the data in Logstash Dashboards.
 The benefit of {agent} collection is that the monitoring agent remains
 active even if the {ls} instance does not, you can manage all your
 monitoring agents from a central location in {fleet}.
-Plus, you can monitor an expanded set of metrics, includng
-
 
 * <<monitoring-with-metricbeat, {metricbeat} collection>>. Metricbeat collects
 monitoring data from your {ls} instance and sends it directly to your monitoring
