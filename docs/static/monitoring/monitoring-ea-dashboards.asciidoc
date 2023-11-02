@@ -56,54 +56,25 @@ details about it.
 
 . Configure the integration name and optionally add a description.
 
-[[configure-logstash-logs-ead]]
-==== Configure {agent} to collect {ls} Logs
-
-Make sure that **Logs** is turned on.
-
---
-[role="screenshot"]
-image::images/integration-configure-logs.png[{kib} home page]
---
-
-. Make sure you configure all required settings:
-* Under **Logs**, modify the log paths
+. Configure the integration to collect logs
+* Make sure that **Logs** is turned on if you want to collect logs from your logstash instance, ensuring that the required settings are correctly configured:
+** Under **Logs**, modify the log paths
 to match your {ls} environment.
-
-[[configure-logstash-dashboards]]
-==== Configure {agent} with Logstash Dashboards
-
-Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
-
-
---
-[role="screenshot"]
-image::images/integration-configure-tech-preview.png[Configuration page for adding log paths to the {agent} System integration]
---
-
-
-* Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
+. Configure the integration to collect metrics
+* Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
+** Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
 points to your {ls} instance URLs. By default, the integration collects {ls}
 monitoring metrics from `https://localhost:9600`. If that host and port number are not
 correct, update the `Logstash URL` setting. If you configured {ls} to use encrypted
 communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {ls} instance.
-
-
 . Click **Save and continue**. This step takes a minute or two to complete. When
 it's done, you'll have an agent policy that contains a system integration policy
 for the configuration you just specified.
-+
---
-[role="screenshot"]
-image::images/integration-configure-save.png[Configuration page for adding the {agent} System integration]
---
-
 . In the popup, click **Add {agent} to your hosts** to open the **Add agent**
 flyout.
 +
 TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 **Add agent** to access the flyout.
-
 
 
 [discrete]
