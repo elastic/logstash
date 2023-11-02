@@ -119,8 +119,7 @@ include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
 [discrete]
 [[view-data-dashboard]]
-=== Step 4: Monitor Logstash logs and metrics (Logstash Metrics Dashboard Technical Preview)
-
+=== Step 4: Monitor Logstash logs and metrics
 
 . From the list of assets, open the **[Metrics Logstash] Logstash overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into Logstash performance.
 +
