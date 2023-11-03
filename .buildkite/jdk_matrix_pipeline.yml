@@ -1,3 +1,214 @@
+common:
+  linuxjdks: &linuxjdklist
+    # - "openjdk_11"
+    # - "openjdk_17"
+    # - "adoptopenjdk_11"
+    # - "adoptiumjdk_17"
+    # - "zulu_11"
+    - "zulu_17"
+
+  linuxoses: &linuxoslist
+    - "ubuntu-2204"
+    # - "ubuntu-2004"
+
+  windowsoses: &windowsoslist
+    # - "windows-2016"
+    # - "windows-2019"
+    - "windows-2022"
+
+  windowsjdks: &windowsjdklist
+    # - "openjdk_17"
+    # - "adoptiumjdk_17"
+    - "zulu_17"
+
 steps:
-  - label: "Test JDK matrix pipeline"
-    command: "echo 'Hello world'"
+  - label: Define table metadata
+    key: init-table-metadata
+    commands: |
+      buildkite-agent meta-data set matrixtable "{}"
+      TABLE=$(cat <<-EOF
+      | **Test Name** | **Operating System** | **JDK** |
+      | --------- | ---------------- | --- |
+      EOF
+      )
+
+      echo "$$TABLE" | buildkite-agent annotate --style="info" --context=statustable
+
+  - group: "Linux JDK matrix tests"
+    key: "linux-jdk-matrix"
+    depends_on: "init-table-metadata"
+    steps:
+      - label: "{{matrix.os}}-{{matrix.jdk}} Java unit test"
+        command: |
+          set -exuo pipefail
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+
+          export ENABLE_SONARQUBE="false"
+          buildkite-agent annotate ":bk-status-running: **Java unit test** / **{{ matrix.os }}** / **{{ matrix.jdk }}**" --context=linux-java-unit-test-{{ matrix.os }}-{{matrix.jdk}}
+          #echo "| Java unit test | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+          ci/unit_tests.sh java
+          buildkite-agent annotate ":bk-status-passed: **Java unit test** / **{{ matrix.os }}** / **{{ matrix.jdk }}**" --context=linux-java-unit-test-{{ matrix.os }}-{{matrix.jdk}}
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+      - label: "{{matrix.os}}-{{matrix.jdk}} Ruby unit test"
+        command: |
+          set -exuo pipefail
+          echo "| Ruby unit test | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+          ci/unit_tests.sh ruby
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+      ## Disabled due to https://github.com/elastic/logstash/issues/15529
+      # - label: "{{matrix.os}}-{{matrix.jdk}} Integration Tests - 1"
+      #   command: |
+      #     set -euo pipefail
+      #     echo "| Integration Tests - 1 | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+      #     source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+      #     ci/integration_tests.sh split 0
+      #   agents:
+      #     provider: gcp
+      #     imageProject: 'elastic-images-qa'
+      #     image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+      #     machineType: "n2-standard-4"
+      #     diskSizeGb: 200
+      #   matrix:
+      #     setup:
+      #       os: *linuxoslist
+      #       jdk: *linuxjdklist
+
+      - label: "{{matrix.os}}-{{matrix.jdk}} Integration Tests - 2"
+        command: |
+          set -euo pipefail
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+          echo "| Integration Tests - 2 | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+          ci/integration_tests.sh split 1
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+      ## Disabled due to https://github.com/elastic/logstash/issues/15529
+      # - label: "{{matrix.os}}-{{matrix.jdk}} IT Persistent Queues - 1"
+      #   command: |
+      #     set -euo pipefail
+      #     echo "| IT Persistent Queues - 1 | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+
+      #     source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+      #     export FEATURE_FLAG=persistent_queues
+      #     ci/integration_tests.sh split 0
+      #   agents:
+      #     provider: gcp
+      #     imageProject: 'elastic-images-qa'
+      #     image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+      #     machineType: "n2-standard-4"
+      #     diskSizeGb: 200
+      #     diskType: "pd-ssd"
+      #   matrix:
+      #     setup:
+      #       os: *linuxoslist
+      #       jdk: *linuxjdklist
+
+      - label: "{{matrix.os}}-{{matrix.jdk}} IT Persistent Queues - 2"
+        command: |
+          set -euo pipefail
+          echo "| IT Persistent Queues - 2 | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+          export FEATURE_FLAG=persistent_queues
+          ci/integration_tests.sh split 1
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+      - label: "{{matrix.os}}-{{matrix.jdk}} x-pack unit tests"
+        command: |
+          set -euo pipefail
+          echo "| x-pack unit tests | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+          x-pack/ci/unit_tests.sh
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+      - label: "{{matrix.os}}-{{matrix.jdk}} x-pack integration"
+        command: |
+          set -euo pipefail
+          echo "| x-pack unit integration | {{ matrix.os }} | {{ matrix.jdk }} |" | buildkite-agent annotate --style="info" --append --context=statustable
+
+          source .buildkite/scripts/jdk-matrix-tests/vm-agent.sh {{matrix.jdk}}
+          x-pack/ci/integration_tests.sh
+        agents:
+          provider: gcp
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-{{matrix.os}}'
+          machineType: "n2-standard-4"
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            os: *linuxoslist
+            jdk: *linuxjdklist
+
+  - group: "Windows JDK matrix tests"
+    key: "windows-jdk-matrix"
+    depends_on: "init-table-metadata"
+    steps:
+      - label: "windows-2022-{{matrix.jdk}} unit tests"
+        command: ".\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK {{matrix.jdk}} -OS {{windows-2022}} -TestNameHuman \"Unit Tests\" -CIScript .\\ci\\unit_tests.bat -TestNameSlug unit-tests"
+        agents:
+          provider: gcp
+          # for testing
+          # image: 'family/core-windows-2022'
+          imageProject: 'elastic-images-qa'
+          image: 'family/platform-ingest-logstash-multi-jdk-windows-2022'
+          machineType: "e2-standard-8"  # provide a little more RAM for Windows VMs
+          diskSizeGb: 200
+          diskType: "pd-ssd"
+        matrix:
+          setup:
+            # os: *windowsoslist
+            jdk: *windowsjdklist
