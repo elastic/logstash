@@ -260,12 +260,13 @@ end
 # restore original git status to avoid to accidentally commit build artifacts
 cleanup_logstash_snapshot
 
-if failed_plugins
+if !failed_plugins.empty?
   puts "########################################"
   puts " Failed plugins:"
   puts "----------------------------------------"
   failed_plugins.each {|failure| puts "- #{failure}"}
   puts "########################################"
+  exit 1
 else
   puts "NO ERROR ON PLUGINS!"
 end
