@@ -1,0 +1,70 @@
+[[monitoring-with-ea]]
+== Monitoring {ls} with {agent}
+
+You can use {agent} to collect data about {ls} and ship it to the monitoring
+cluster. 
+When you use {agent} collection, the monitoring agent remains
+active even if the {ls} instance does not. 
+Plus you have the option to manage all of your monitoring agents from a central location in {fleet}.
+
+{agent} gives you a single, unified way to add monitoring for logs, metrics, and other
+types of data to a host. Each agent has a single policy you can update to add
+integrations for new data sources, security protections, and more.
+
+You can use {agent} to collect monitoring data for:
+
+- dashboard. <Brief description with link>
+- stack. <Brief description with link> 
+
+[discrete]
+[[monitoring-prereqs]]
+== Prerequisites
+
+Complete these steps as you prepare to collect and ship monitoring data:
+
+. <<disable-default-include-ea,Disable default collection of monitoring metrics>>
+. <<define-cluster__uuid-include-ea,Specify the target `cluster_uuid` (optional)>>
+
+If you are using {agent} collection for stack monitoring, also: 
+
+[start=3]
+. <<set-up-monitoring>>
+. <<create-user>>
+
+
+[discrete]
+[[disable-default-include-ea]]
+//include section about disabling default collection from the metricbeat topic
+include::monitoring-mb.asciidoc[tag=disable-default-collection]
+
+[discrete]
+[[define-cluster__uuid-include-ea]]
+//include section about defining cluster_uuid from the metricbeat topic
+include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
+
+[discrete]
+[[set-up-monitoring]]
+=== Set up {es} monitoring (stack monitoring only)
+
+Set up {ref}/monitoring-overview.html[{es} monitoring].
+If you would like to create a dedicated monitoring cluster (optional), check out {ref}/monitoring-production.html[{es} monitoring documentation].
+
+[discrete]
+[[create-user]]
+=== Create a monitoring user (stack monitoring only)
+
+Create a user on the production cluster that has the
+`remote_monitoring_collector` {ref}/built-in-roles.html[built-in role].
+
+
+[discrete]
+[[next-install]]
+== Next steps
+
+When you've completed the prerequisites, you're ready to install and configure {agent} for your monitoring use case. 
+
+- dashboard. <Brief description with link>
+- stack. <Brief description with link> 
+
+include::monitoring-ea-dashboards.asciidoc[]
+include::monitoring-ea.asciidoc[]
