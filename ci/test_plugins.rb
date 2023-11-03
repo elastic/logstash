@@ -139,6 +139,9 @@ PLUGIN_DEFINITIONS = {
                   "logstash-codec-msgpack", "logstash-codec-netflow"],
     :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
     :output => ["logstash-output-csv", "logstash-output-graphite"]
+  },
+  :unsupported => {
+    :input => ["logstash-input-rss"]
   }
 }
 
@@ -148,7 +151,7 @@ def validate_options!(options)
   options[:tiers].map! { |v| v.to_sym } if options[:tiers]
   options[:kinds].map! { |v| v.to_sym } if options[:kinds]
 
-  raise "Invalid tier name expected tier1 or tier2" if options[:tiers] && !(options[:tiers] - [:tier1, :tier2]).empty?
+  raise "Invalid tier name expected tier1, tier2 or unsupported" if options[:tiers] && !(options[:tiers] - [:tier1, :tier2, :unsupported]).empty?
   raise "Invalid kind name expected input, codec, filter, output, integration" if options[:kinds] && !(options[:kinds] - [:input, :codec, :filter, :output, :integration]).empty?
 end
 
@@ -169,7 +172,7 @@ def select_plugins_by_opts(options)
   if options[:plugin]
     select_plugins << options[:plugin]
   else
-    selected_tiers = options.fetch(:tiers, [:tier1, :tier2])
+    selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
     selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
     select_plugins = select_plugins + select_by_tiers_and_kinds(selected_tiers, selected_kinds)
   end
@@ -199,7 +202,7 @@ def setup_logstash_for_development
 end
 
 option_parser = OptionParser.new do |opts|
-  opts.on '-t', '--tiers tier1, tier2', Array, 'Use to select which tier to test. If no provided mean "all"'
+  opts.on '-t', '--tiers tier1, tier2, unsupported', Array, 'Use to select which tier to test. If no provided mean "all"'
   opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
   opts.on '-pPLUGIN', '--plugin=PLUGIN', 'Use to select a specific plugin, conflict with either -t and -k'
   opts.on '-h', '--halt', 'Halt immediately on first error'
