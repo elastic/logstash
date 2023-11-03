@@ -266,6 +266,7 @@ if failed_plugins
   puts "----------------------------------------"
   failed_plugins.each {|failure| puts "- #{failure}"}
   puts "########################################"
+  exit 1
 else
   puts "NO ERROR ON PLUGINS!"
 end
