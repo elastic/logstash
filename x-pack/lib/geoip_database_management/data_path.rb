@@ -13,11 +13,11 @@ module LogStash module GeoipDatabaseManagement
     attr_reader :root
 
     def gz(database_type, dirname)
-      ::File.expand_path("#{GEOLITE}#{database_type}.#{GZ_EXT}", resolve(dirname))
+      resolve(dirname, "#{GEOLITE}#{database_type}.#{GZ_EXT}")
     end
 
     def db(database_type, dirname)
-      ::File.expand_path("#{GEOLITE}#{database_type}.#{DB_EXT}", resolve(dirname))
+      resolve(dirname, "#{GEOLITE}#{database_type}.#{DB_EXT}")
     end
 
     def resolve(relative_path, *more)
