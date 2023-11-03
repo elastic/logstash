@@ -139,7 +139,7 @@ PLUGIN_DEFINITIONS = {
                   "logstash-codec-msgpack", "logstash-codec-netflow"],
     :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
     :output => ["logstash-output-csv", "logstash-output-graphite"]
-  }
+  },
   :unsupported => {
     :input => ["logstash-input-rss"]
   }
