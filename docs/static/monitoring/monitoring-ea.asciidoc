@@ -1,47 +1,27 @@
 [[monitoring-with-elastic-agent]]
-=== Collect {ls} monitoring data with {agent}
+=== Collect {ls} monitoring data for stack monitoring
 [subs="attributes"]
 ++++
-<titleabbrev>{agent} collection for Stack Monitoring</titleabbrev>
+<titleabbrev>Collect monitoring data for stack monitoring</titleabbrev>
 ++++
 
-You can use {agent} to collect data about {ls} and ship it to the monitoring
-cluster. The benefit of {agent} collection is that the monitoring agent remains
-active even if the {ls} instance does not. Plus you can manage all your
-monitoring agents from a central location in {fleet}.
+ToDo: Add brief intro describing the feature and value prop. 
+So far, we haven't differentiated between the two. 
+Add info to help them decide which one they want to use.  
 
-To collect and ship monitoring data:
+When you have completed the <<monitoring-prereqs>>, install and configure {agent} to monitor host logs and metrics.
+We'll walk you through the process in these steps:
 
-. <<disable-default-include-ea,Disable default collection of monitoring metrics>>
-. <<define-cluster__uuid-include-ea,Specify the target `cluster_uuid` (optional)>>
-. <<configure-metricbeat,Install and configure {agent} to collect monitoring data>>
-
-[float]
-[[disable-default-include-ea]]
-//include section about disabling default collection from the metricbeat topic
-include::monitoring-mb.asciidoc[tag=disable-default-collection]
-
-[float]
-[[define-cluster__uuid-include-ea]]
-//include section about defining cluster_uuid from the metricbeat topic
-include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
-
-[float]
-[[configure-elastic-agent-logstash]]
-== Install and configure {agent}
-
+. <<add-logstash-integration-ea>>
+. <<add-agent-to-fleet-ea>>
+. <<confirm-ea>>
+. <<view-data-stack>>
 
 [discrete]
 [[add-logstash-integration-ea]]
-=== Step 1: Add the {agent} Logstash integration
+==== Add the {agent} {ls} integration
 
-{agent} is a single, unified way to add monitoring for logs, metrics, and other
-types of data to a host. Each agent has a single policy you can update to add
-integrations for new data sources, security protections, and more.
-
-In this step, add the {ls} integration to monitor host logs and metrics.
-
-. Go to the {kib} home page and click **Add integrations**.
+. Go to the {kib} home page, and click **Add integrations**.
 +
 --
 [role="screenshot"]
@@ -51,47 +31,48 @@ image::images/kibana-home.png[{kib} home page]
 . In the query bar, search for **Logstash** and select the integration to see more
 details about it.
 
-. Click **Add Logstash**.
+. Click **Add {ls}**.
 
 . Configure the integration name and optionally add a description.
 
-. Configure the integration to collect logs
-* Make sure that **Logs** is turned on if you want to collect logs from your logstash instance, ensuring that the required settings are correctly configured:
-** Under **Logs**, modify the log paths
+. Configure the integration to collect logs.
+* Make sure that **Logs** is turned on if you want to collect logs from your {ls} instance, ensuring that the required settings are correctly configured:
+* Under **Logs**, modify the log paths
 to match your {ls} environment.
+
 . Configure the integration to collect metrics
 * Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off, if you
 want to collect metrics from your Logstash instance
-** Under **Metrics (Stack Monitoring)**, make sure the hosts setting
+* Under **Metrics (Stack Monitoring)**, make sure the hosts setting
 points to your {ls} host URLs. By default, the integration collects {ls}
 monitoring metrics from `localhost:9600`. If that host and port number are not
 correct, update the `hosts` setting. If you configured {ls} to use encrypted
 communications, you must access it via HTTPS. For example, use a `hosts` setting
 like
 `https://localhost:9600`.
-. Choose where to add the integration policy.
-* Click **New hosts** to add it to new agent policy or **Existing hosts** to add it to an existing agent policy.
+
+. Choose where to add the integration policy. +
+Click **New hosts** to add it to new agent policy or **Existing hosts** to add it to an existing agent policy.
 . In the popup, click **Add {agent} to your hosts** to open the **Add agent**
 flyout.
 +
 TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 **Add agent** to access the flyout.
 
-
-
 [discrete]
 [[add-agent-to-fleet-ea]]
-=== Step 2: Install and run an {agent} on your machine
+==== Install and run an {agent} on your machine
 // Include section about installing agents
 include::monitoring-install.asciidoc[tag=install-agent-widget]
 
-==== Step 3: Confirm Enrollment
+[discrete]
+[[confirm-ea]]
+=== Confirm Enrollment
 // Include section about confirming enrollment
 include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
-
 [discrete]
-[[view-data-stack-monitoring]]
-=== Step 4: Monitor Logstash logs and metrics (Stack Monitoring)
+[[view-data-stack]]
+==== Monitor Logstash logs and metrics (Stack Monitoring)
 
-{kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, {monitoring} UI>>
+{kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, monitoring UI>>.

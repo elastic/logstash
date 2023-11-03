@@ -3,9 +3,9 @@
 //tag::install-agent-widget[]
 
 The **Add agent** flyout has two options: **Enroll in {fleet}** and
-**Run standalone**. The default is to enroll the agents in {fleet}, as this
-reduces the amount of work on the person managing the hosts by providing
-a centralized management tool in {kib}.
+**Run standalone**. 
+Enrolling agents in {fleet} (default) provides a centralized management tool in {kib},
+reducing management overhead. 
 
 include::{tab-widget-dir}/install-agent-widget.asciidoc[]
 //end::install-agent-widget[]

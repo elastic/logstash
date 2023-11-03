@@ -1,6 +1,6 @@
 [role="xpack"]
 [[configuring-logstash]]
-== Monitoring {ls}
+== Monitoring {ls} (legacy)
 
 Use the {stack} {monitor-features} to gain insight into the health of
 {ls} instances running in your environment.
@@ -44,8 +44,6 @@ agent remains active even if the {ls} instance does not.
 * <<monitoring-internal-collection-legacy,Legacy collection (deprecated)>>. 
 Legacy collectors send monitoring data to your production cluster.
 
-include::monitoring-ea-dashboards.asciidoc[]
-include::monitoring-ea.asciidoc[]
 include::monitoring-mb.asciidoc[]
 include::monitoring-internal-legacy.asciidoc[]
 include::monitoring-ui.asciidoc[]

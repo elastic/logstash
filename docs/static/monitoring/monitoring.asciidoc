@@ -2,7 +2,7 @@
 == Monitoring Logstash with APIs
 
 When you run Logstash, it automatically captures runtime metrics that you can
-= use to monitor the health and performance of your Logstash deployment.
+use to monitor the health and performance of your Logstash deployment.
 
 The metrics collected by Logstash include:
 
