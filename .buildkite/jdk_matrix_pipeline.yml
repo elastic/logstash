@@ -10,11 +10,11 @@ steps:
         default: "ubuntu-22.04"
         options:
           - label: "Ubuntu 22.04"
-            value: "ubuntu-22.04"
+            value: "ubuntu-2204"
           - label: "Ubuntu 20.04"
-            value: "ubuntu-20.04"
+            value: "ubuntu-2004"
           - label: "Ubuntu 18.04"
-            value: "ubuntu-18.04"
+            value: "ubuntu-1804"
           - label: "Debian 11"
             value: "debian-11"
           - label: "Debian 10"
@@ -54,16 +54,20 @@ steps:
           - label: "OpenJDK 11"
             value: "openjdk_11"
           - label: "Zulu 17"
-            value: "Zulu 11"
+            value: "zulu_17"
+          - label: "Zulu 11"
+            value: "zulu_11"
 
   - wait: ~
     if: build.source != "schedule"
 
   - command: |
-      OSES=$$(buildkite-agent meta-data get matrix-os)
-      JDKS=$$(buildkite-agent meta-data get matrix-jdk)
+      set -euo pipefail
 
-      echo "You've selected the following OSes:"
-      echo $$OSES
-      echo "You've selected the following JDKs:"
-      echo $$JDKS
+      apt-get install -y yq
+
+      echo "--- Emitting generated dynamic steps"
+      python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py | yq .
+
+      echo "--- Uploading steps to buildkite"
+      python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py | buildkite-agent pipeline upload
