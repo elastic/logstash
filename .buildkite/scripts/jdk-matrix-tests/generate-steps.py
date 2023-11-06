@@ -6,7 +6,7 @@ import typing
 import yaml
 
 def get_bk_metadata(key: str) -> typing.List[str]:
-    return os.environ[key]
+    return os.environ[key].split()
     # res = subprocess.run(["buildkite-agent", "meta-data", "get", key], capture_output=True, shell=True, env=os.environ.copy())
     # if res.returncode != 0:
     #     print(f"Failed to retrieve buildkite key [{key}]. Error:\n{res.stderr.decode('utf-8')}\nExiting.")
