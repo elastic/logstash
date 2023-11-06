@@ -7,7 +7,7 @@ steps:
         hint: "The operating system variant(s) to run on:"
         required: true
         multiple: true
-        default: "ubuntu-22.04"
+        default: "ubuntu-2204"
         options:
           - label: "Ubuntu 22.04"
             value: "ubuntu-2204"
@@ -64,7 +64,7 @@ steps:
   - command: |
       set -euo pipefail
 
-      apt-get install -y yq
+      apt-get update && apt-get install -y yq
 
       echo "--- Emitting generated dynamic steps"
       python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py | yq .
