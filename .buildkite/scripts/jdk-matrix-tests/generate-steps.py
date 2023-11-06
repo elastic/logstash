@@ -7,15 +7,6 @@ import yaml
 
 def get_bk_metadata(key: str) -> typing.List[str]:
     return os.environ[key].split()
-    # res = subprocess.run(["buildkite-agent", "meta-data", "get", key], capture_output=True, shell=True, env=os.environ.copy())
-    # if res.returncode != 0:
-    #     print(f"Failed to retrieve buildkite key [{key}]. Error:\n{res.stderr.decode('utf-8')}\nExiting.")
-    #     exit(1)
-    # elif len(res.stdout) == 0:
-    #     print(f"The value of the buildkite key [{key}] was empty. Did you select at least one value? Exiting.")
-    #     exit(1)
-
-    return res.stdout.decode("utf-8").split()
 
 def bk_annotate(job_name_human: str, job_name_slug: str, os: str, jdk: str, status: str) -> str:
   return f"""buildkite-agent annotate "{status} **{job_name_human}** / **{os}** / **{jdk}**" --context={job_name_slug}-{os}-{jdk}"""
