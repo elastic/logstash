@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 import subprocess
+import os
 import typing
 
 import yaml
 
 def get_bk_metadata(key: str) -> typing.List[str]:
-    res = subprocess.run(["buildkite-agent", "meta-data", "get", key], capture_output=True, shell=True)
+    res = subprocess.run(["buildkite-agent", "meta-data", "get", key], capture_output=True, shell=True, env=os.environ.copy())
     if res.returncode != 0:
         print(f"Failed to retrieve buildkite key [{key}]. Error:\n{res.stderr.decode('utf-8')}\nExiting.")
         exit(1)

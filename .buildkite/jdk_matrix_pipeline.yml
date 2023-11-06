@@ -64,13 +64,12 @@ steps:
   - command: |
       set -euo pipefail
 
+      echo "--- Downloading prerequisites"
       curl -L https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 -o ./yq
       chmod +x ./yq
-
-      which buildkite-agent
-      echo "--- Emitting generated dynamic steps"
       python3 -m pip install pyyaml
 
+      echo "--- Emitting generated dynamic steps"
       python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py
 
       echo "--- Uploading steps to buildkite"
