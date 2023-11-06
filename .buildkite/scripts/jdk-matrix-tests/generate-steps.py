@@ -61,7 +61,6 @@ eval "$(rbenv init -)"
         job_name_human = "Java Unit Test"
         job_name_slug = "java-unit-test"
         shell_command = f"""
-#!/usr/bin/env bash
 {self.prepare_shell()}
 export ENABLE_SONARQUBE="false"
 {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.running_emoji)}
@@ -75,7 +74,6 @@ ci/unit_tests.sh java
         job_name_human = "Ruby Unit Test"
         job_name_slug = "ruby-unit-test"
         shell_command = f"""
-#!/usr/bin/env bash
 {self.prepare_shell()}
 {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.running_emoji)}
 ci/unit_tests.sh ruby
