@@ -7,7 +7,7 @@ import yaml
 def get_bk_metadata(key: str) -> typing.List[str]:
     res = subprocess.run(["buildkite-metadata", "get", key], capture_output=True, shell=True)
     if res.returncode != 0:
-        print(f"Failed to retrieve buildkite key [{key}]. Probably something wrong with the pipeline. Exiting.")
+        print(f"Failed to retrieve buildkite key [{key}]. Error:\n{res.stderr.decode('utf-8')}\nExiting.")
         exit(1)
     elif len(res.stdout) == 0:
         print(f"The value of the buildkite key [{key}] was empty. Did you select at least one value? Exiting.")
