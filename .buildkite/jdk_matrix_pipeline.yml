@@ -68,6 +68,8 @@ steps:
       chmod +x ./yq
 
       echo "--- Emitting generated dynamic steps"
+      python3 -m pip install pyyaml
+
       python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py | yq .
 
       echo "--- Uploading steps to buildkite"
