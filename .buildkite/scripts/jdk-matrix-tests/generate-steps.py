@@ -147,8 +147,8 @@ x-pack/ci/integration_tests.sh
 
 
 if __name__ == "__main__":
-    matrix_oses = get_bk_metadata(key="matrix-os")
-    matrix_jdkes = get_bk_metadata(key="matrix-jdk")
+    matrix_oses = get_bk_metadata(key="MATRIX_OSES")
+    matrix_jdkes = get_bk_metadata(key="MATRIX_JDKS")
 
     structure = {"steps": []}
 
