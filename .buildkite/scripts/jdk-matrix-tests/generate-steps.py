@@ -5,7 +5,7 @@ import typing
 import yaml
 
 def get_bk_metadata(key: str) -> typing.List[str]:
-    res = subprocess.run(["buildkite-metadata", "get", key], capture_output=True)
+    res = subprocess.run(["buildkite-metadata", "get", key], capture_output=True, shell=True)
     if res.returncode != 0:
         print(f"Failed to retrieve buildkite key [{key}]. Probably something wrong with the pipeline. Exiting.")
         exit(1)
