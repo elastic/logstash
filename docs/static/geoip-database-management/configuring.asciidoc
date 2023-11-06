@@ -1,0 +1,68 @@
+[role="xpack"]
+[[configuring-geoip-database-management]]
+=== Configure GeoIP Database Management
+
+To configure
+<<logstash-geoip-database-management>>:
+
+. Verify that you are using a license that includes the geoip database management
+feature.
++
+--
+For more information, see https://www.elastic.co/subscriptions and
+{kibana-ref}/managing-licenses.html[License management].
+--
+
+. Specify
+<<geoip-database-management-settings,geoip database management settings>> in the
+`logstash.yml` file to tune the configuration as-needed.
+
+include::../settings/geoip-database-management-settings.asciidoc[]
+
+[[configuring-geoip-database-management-offline]]
+==== Offline and air-gapped environments
+
+If Logstash does not have access to the internet, or if you want to disable the database manager, set the `xpack.geoip.downloader.enabled` value to `false` in `logstash.yml`.
+When the database manager is disabled, plugins that require GeoIP lookups must be configured with their own source of GeoIP databases.
+
+===== Using an HTTP proxy
+
+If you can't connect directly to the Elastic GeoIP endpoint, consider setting up an HTTP proxy server.
+You can then specify the proxy with `http_proxy` environment variable.
+
+[source,sh]
+----
+export http_proxy="http://PROXY_IP:PROXY_PORT"
+----
+
+===== Using a custom endpoint
+
+If you work in an air-gapped environment and can't update your databases from the Elastic endpoint,
+You can then download databases from MaxMind and bootstrap the service.
+
+. Download both `GeoLite2-ASN.mmdb` and `GeoLite2-City.mmdb` database files from the
+http://dev.maxmind.com/geoip/geoip2/geolite2[MaxMind site].
+
+. Copy both database files to a single directory.
+
+. https://www.elastic.co/downloads/elasticsearch[Download {es}].
+
+. From your {es} directory, run:
++
+[source,sh]
+----
+./bin/elasticsearch-geoip -s my/database/dir
+----
+
+. Serve the static database files from your directory. For example, you can use
+Docker to serve the files from nginx server:
++
+[source,sh]
+----
+docker run -p 8080:80 -v my/database/dir:/usr/share/nginx/html:ro nginx
+----
+
+. Specify the service's endpoint URL in Logstash using the
+`xpack.geoip.download.endpoint=http://localhost:8080/overview.json` setting in `logstash.yml`.
+
+Logstash gets automatic updates from this service.

@@ -609,9 +609,9 @@ class LogStash::Agent
 
   def initialize_geoip_database_metrics(metric)
     begin
-      relative_path = ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "filters", "geoip")
-      require_relative ::File.join(relative_path, "database_manager")
-      require_relative ::File.join(relative_path, "database_metric")
+      relative_path = ::File.join(LogStash::Environment::LOGSTASH_HOME, "x-pack", "lib", "geoip_database_management")
+      require_relative ::File.join(relative_path, "manager")
+      require_relative ::File.join(relative_path, "metric")
 
       geoip_metric = metric.namespace([:geoip_download_manager]).tap do |n|
         db = n.namespace([:database])
@@ -629,11 +629,11 @@ class LogStash::Agent
         dl.gauge(:status, nil)
       end
 
-      database_metric = LogStash::Filters::Geoip::DatabaseMetric.new(geoip_metric)
-      database_manager = LogStash::Filters::Geoip::DatabaseManager.instance
+      database_metric = LogStash::GeoipDatabaseManagement::Metric.new(geoip_metric)
+      database_manager = LogStash::GeoipDatabaseManagement::Manager.instance
       database_manager.database_metric = database_metric
     rescue LoadError => e
-      @logger.trace("DatabaseManager is not in classpath")
+      @logger.trace("DatabaseManager is not in classpath", exception: e.message, backtrace: e.backtrace)
     end
   end
 end # class LogStash::Agent
