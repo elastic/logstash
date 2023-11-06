@@ -161,7 +161,6 @@ if __name__ == "__main__":
             job_name_human, job_name_slug, shell_command = job()
             step = {
               "label": f"{matrix_os} / {matrix_jdk} / {job_name_human}",
-              "key": job_name_slug,
               "agents": {
                   "provider": "gcp",
                   "imageProject": "elastic-images-qa",
