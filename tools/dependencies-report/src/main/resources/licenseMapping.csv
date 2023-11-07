@@ -44,6 +44,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "csv:",https://github.com/ruby/csv,BSD-2-Clause
 "dalli:",https://github.com/petergoldstein/dalli,MIT
 "date:",https://github.com/ruby/date,BSD-2-Clause
+"diff-lcs:",https://github.com/halostatue/diff-lcs,MIT
 "domain_name:",https://github.com/knu/ruby-domain_name,BSD-2-Clause
 "dotenv:",https://github.com/bkeepers/dotenv,MIT
 "down",https://github.com/janko/down,MIT
@@ -51,6 +52,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "edn:",https://github.com/relevance/edn-ruby,MIT
 "elastic-app-search:",https://github.com/elastic/app-search-ruby,Apache-2.0
 "elastic-enterprise-search:",https://github.com/elastic/enterprise-search-ruby,Apache-2.0
+"elastic-transport:",https://github.com/elastic/elastic-transport-ruby,Apache-2.0
 "elastic-workplace-search:",https://github.com/elastic/workplace-search-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
@@ -167,6 +169,13 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "redis:",https://github.com/redis/redis-rb,MIT
 "reline:",https://github.com/ruby/reline,BSD-2-Clause
 "rexml:",https://github.com/ruby/rexml,MIT
+"rspec:",https://github.com/rspec/rspec-metagem,MIT
+"rspec-collection_matchers:",https://github.com/rspec/rspec-collection_matchers,MIT
+"rspec-core:",https://github.com/rspec/rspec-core,MIT
+"rspec-expectations:",https://github.com/rspec/rspec-expectations,MIT
+"rspec-mocks:",https://github.com/rspec/rspec-mocks,MIT
+"rspec-support:",https://github.com/rspec/rspec-support,MIT
+"rspec-wait:",https://github.com/laserlemon/rspec-wait,MIT
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
@@ -192,4 +201,5 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "unf:",https://github.com/knu/ruby-unf,BSD-2-Clause
 "uri:",https://github.com/ruby/uri,BSD-2-Clause
 "webhdfs:",https://github.com/kzk/webhdfs,Apache-2.0
+"webrick:",https://github.com/ruby/webrick,BSD-2-Clause
 "xml-simple:",https://github.com/maik/xml-simple,BSD-2-Clause
