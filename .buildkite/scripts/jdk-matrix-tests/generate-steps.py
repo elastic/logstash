@@ -1,7 +1,11 @@
+from dataclasses import dataclass
 import os
+import sys
 import typing
 
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.scalarstring import LiteralScalarString
+
 
 def get_bk_metadata(key: str) -> typing.List[str]:
     try:
@@ -14,11 +18,33 @@ def bk_annotate(job_name_human: str, job_name_slug: str, os: str, jdk: str, stat
   return f"""buildkite-agent annotate "{status} **{job_name_human}** / **{os}** / **{jdk}**" --context={job_name_slug}-{os}-{jdk}"""
 
 
+@dataclass
+class BuildkiteEmojis:
+  running: str = ":bk-status-running:"
+  success: str = ":bk-status-passed:"
+  failed: str = ":bk-status-failed:"
+
+
+class WindowsJobs:
+    def __init__(self, os: str, jdk: str):
+      self.os = os
+      self.jdk = jdk
+
+    def all_jobs(self) -> list[typing.Callable[[], typing.Tuple[str, str]]]:
+        return [
+          self.unit_tests,
+        ]
+
+    def unit_tests(self) -> typing.Tuple[str, str]:
+        job_name_human = "Java Unit Test"
+        job_name_slug = "java-unit-test"
+        test_command = "# TODO"
+
+        return job_name_human, test_command
+      
+
 class LinuxJobs:
     def __init__(self, os: str, jdk: str):
-      self.running_emoji: str = ":bk-status-running:"
-      self.success_emoji: str = ":bk-status-passed:"
-      self.failed_emoji: str = ":bk-status-failed:"
       self.os = os
       self.jdk = jdk
 
@@ -54,19 +80,20 @@ eval "$(rbenv init -)"
 """
 
     def emit_command(self, job_name_human, job_name_slug, test_command: str) -> str:
-      return f"""
+      return LiteralScalarString(f"""
 {self.prepare_shell()}
-{bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.running_emoji)}
-# temporarily disable immediately failure on error, so that we can update the BK annotation
+{bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.running)}
+# temporarily disable immediate failure on errors, so that we can update the BK annotation
 set +eo pipefail
 {test_command}
 if [[ $$? -ne 0 ]]; then
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.failed_emoji)}
+  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.failed)}
   exit 1
 else
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.success_emoji)}
+  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.success)}
 fi
-      """        
+      """)
+
     def java_unit_test(self) -> typing.Tuple[str, str]:
         job_name_human = "Java Unit Test"
         job_name_slug = "java-unit-test"
@@ -140,12 +167,17 @@ if __name__ == "__main__":
     matrix_oses = get_bk_metadata(key="MATRIX_OSES")
     matrix_jdkes = get_bk_metadata(key="MATRIX_JDKS")
 
+    pipeline_name = os.environ.get("BUILDKITE_PIPELINE_NAME", "").lower()
+
     structure = {"steps": []}
 
 
     for matrix_os in matrix_oses:
         for matrix_jdk in matrix_jdkes:
-          jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk)
+          if "windows" in pipeline_name:
+            jobs = WindowsJobs(os=matrix_os, jdk=matrix_jdk)
+          else:
+            jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk)
 
           for job in jobs.all_jobs():
             job_name_human, shell_command = job()
@@ -164,4 +196,4 @@ if __name__ == "__main__":
 
             structure["steps"].append(step)
 
-    print(yaml.dump(data=structure, Dumper=yaml.Dumper, sort_keys=False))
+    YAML().dump(structure, sys.stdout)

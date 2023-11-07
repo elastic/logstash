@@ -65,9 +65,7 @@ steps:
       set -euo pipefail
 
       echo "--- Downloading prerequisites"
-      curl -L https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 -o ./yq
-      chmod +x ./yq
-      python3 -m pip install pyyaml
+      python3 -m pip install ruamel.yaml
 
       echo "--- Printing generated dynamic steps"
       export MATRIX_OSES="$(buildkite-agent meta-data get matrix-os)"
@@ -82,7 +80,7 @@ steps:
         exit 1
       else
         set -eo pipefail
-        cat pipeline_steps.yml | ./yq .
+        cat pipeline_steps.yml
       fi
 
       echo "--- Uploading steps to buildkite"
