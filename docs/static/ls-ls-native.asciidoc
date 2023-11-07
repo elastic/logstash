@@ -36,15 +36,15 @@ input {
 
 In order to obtain the best performance when sending data from one Logstash to another, the data is batched and compressed. As such, the upstream Logstash (the sending Logstash) only needs to be concerned about configuring the receiving endpoint with these options:
 
-* `hosts` - The receiving Logstash and port. If no port specified, 9800 will be used.
+* `hosts` - The receiving one or more Logstash host and port pairs. If no port specified, 9800 will be used.
 
-NOTE: In the future, {ls} will support multiple output hosts.
+NOTE: {ls} load balances batched events to _all_ of its configured downstream hosts. Any failures caused by network issues, back-pressure or other conditions, will result in the downstream host being isolated from load balancing for at least 60 seconds.
 
 [source,json]
 ----
 output {
     logstash {
-        hosts => '10.0.0.123:9800'
+        hosts => ["10.0.0.123", "10.0.1.123:9800"]
     }
 }
 ----

@@ -18,8 +18,7 @@ Logstash-to-Logstash communication can be achieved in one of two ways:
 This is the preferred method to implement Logstash-to-Logstash. It replaces <<ls-to-ls-http>> and has these considerations:
 
 * It relies on HTTP as the communication protocol between the Input and Output.
-* It does not provide built-in high availability. You will need to implement your own load balancer in between the Logstash output and the Logstash input.
-* If you need a proxy between the Logstash instances, you can use any HTTP proxy.
+* It supports multiple hosts, providing high availability by load balancing equally amongst the multiple destination hosts.
 * No connection information is added to events.
 
 Ready to see more configuration details? See <<ls-to-ls-native>>.
