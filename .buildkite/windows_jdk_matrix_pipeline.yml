@@ -1,0 +1,3 @@
+steps:
+  - label: "Test Windows JDK matrix pipeline"
+    command: "echo 'Hello world'"
