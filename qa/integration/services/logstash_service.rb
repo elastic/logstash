@@ -46,7 +46,7 @@ class LogstashService < Service
   attr_reader :default_settings_file
   attr_writer :env_variables
 
-  def initialize(settings)
+  def initialize(settings, api_port = 9600)
     super("logstash", settings)
 
     # if you need to point to a LS in different path
@@ -66,7 +66,7 @@ class LogstashService < Service
     end
 
     @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
-    @monitoring_api = MonitoringAPI.new
+    @monitoring_api = MonitoringAPI.new(api_port)
   end
 
   def alive?

@@ -1,0 +1,95 @@
+---
+services:
+  - logstash
+config:
+  ls_input_baseline: |-
+    input {
+      logstash {
+        ssl_enabled => false
+      }
+    }
+    output {
+      file {
+        path => '<%=options[:output_file_path]%>'
+        flush_interval => 0
+        codec => line { format => "%{message}" }
+      }
+    }
+  ls_output_baseline: |-
+    input {
+      generator {
+        count => '<%=options[:generator_count]%>'
+      }
+    }
+    output {
+      logstash {
+        ssl_enabled => false
+        hosts => ["127.0.0.1:9800"]
+      }
+    }
+
+  ls_input_basic_auth: |-
+    input {
+      logstash {
+        ssl_enabled => false
+        username => "logstash"
+        password => "$e0re!"
+      }
+    }
+    output {
+      file {
+        path => '<%=options[:output_file_path]%>'
+        flush_interval => 0
+        codec => line { format => "%{message}" }
+      }
+    }
+  ls_output_basic_auth: |-
+    input {
+      generator {
+        count => '<%=options[:generator_count]%>'
+      }
+    }
+    output {
+      logstash {
+        ssl_enabled => false
+        hosts => ["127.0.0.1:9800"]
+        username => "logstash"
+        password => "$e0re!"
+      }
+    }
+
+  ls_input_ssl: |-
+    input {
+      logstash {
+        ssl_enabled => true
+        ssl_certificate => '<%=options[:ssl_certificate]%>'
+        ssl_key => '<%=options[:ssl_key]%>'
+        ssl_key_passphrase => '<%=options[:ssl_key_passphrase]%>'
+        ssl_certificate_authorities => '<%=options[:ssl_certificate_authorities]%>'
+        ssl_client_authentication => "required"
+      }
+    }
+    output {
+      file {
+        path => '<%=options[:output_file_path]%>'
+        flush_interval => 0
+        codec => line { format => "%{message}" }
+      }
+    }
+  ls_output_ssl: |-
+    input {
+      generator {
+        count => '<%=options[:generator_count]%>'
+      }
+    }
+    output {
+      logstash {
+        hosts => ["127.0.0.1:9800"]
+        ssl_enabled => true
+        ssl_certificate_authorities => '<%=options[:ssl_certificate_authorities]%>'
+        ssl_keystore_path => '<%=options[:ssl_keystore_path]%>'
+        ssl_keystore_password => '<%=options[:ssl_keystore_password]%>'
+      }
+    }
+
+teardown_script:
