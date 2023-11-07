@@ -1,3 +1,12 @@
 steps:
-  - label: "Test Windows JDK matrix pipeline"
-    command: "echo 'Hello world'"
+  - label: "windows-2022-{{matrix.jdk}} unit tests"
+    command: "dir \\"
+    agents:
+      provider: gcp
+      # for testing
+      # image: 'family/core-windows-2022'
+      imageProject: 'elastic-images-qa'
+      image: 'family/platform-ingest-logstash-multi-jdk-windows-2022'
+      machineType: "n2-standard-8"
+      diskSizeGb: 200
+      diskType: "pd-ssd"
