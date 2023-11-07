@@ -60,7 +60,7 @@ eval "$(rbenv init -)"
 # temporarily disable immediately failure on error, so that we can update the BK annotation
 set +eo pipefail
 {test_command}
-if [[ $? -neq 0 ]]; then
+if [[ $? -ne 0 ]]; then
   {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, self.failed_emoji)}
   exit 1
 else
