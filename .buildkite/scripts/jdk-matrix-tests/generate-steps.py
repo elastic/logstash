@@ -67,11 +67,9 @@ class LinuxJobs:
         return [
             self.java_unit_test,
             self.ruby_unit_test,
-            ## temporarily disabled due to https://github.com/elastic/logstash/issues/15529
-            # self.integration_tests_part_1,
+            self.integration_tests_part_1,
             self.integration_tests_part_2,
-            ## temporarily disabled due to https://github.com/elastic/logstash/issues/15529
-            # self.pq_integration_tests_part_1,
+            self.pq_integration_tests_part_1,
             self.pq_integration_tests_part_2,
             self.x_pack_unit_tests,
             self.x_pack_integration,
