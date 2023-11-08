@@ -27,9 +27,11 @@ $env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
+Write-Host "--- Running tests"
 & $CIScript
 if ($LASTEXITCODE -ne 0) {
     buildkite-agent annotate --context=$AnnotateContext --append "| :bk-status-failed: | $StepNameHuman |\n"
+    Write-Host "^^^ +++"
     exit 1 
 }
 buildkite-agent annotate --context=$AnnotateContext --append "| :bk-status-passed: | $StepNameHuman |\n"
