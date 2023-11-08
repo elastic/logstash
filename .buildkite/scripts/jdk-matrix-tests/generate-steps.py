@@ -155,6 +155,7 @@ fi
 
     def java_unit_test(self) -> JobRetValues:
         step_name_human = "Java Unit Test"
+        step_key = f"{self.group_key}-java-unit-test"
         test_command = '''
 export ENABLE_SONARQUBE="false"
 ci/unit_tests.sh java
@@ -163,13 +164,13 @@ ci/unit_tests.sh java
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key="java-unit-test",
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
     def ruby_unit_test(self) -> JobRetValues:
         step_name_human = "Ruby Unit Test"
-        step_name_key = "ruby-unit-test"
+        step_key = f"{self.group_key}-ruby-unit-test"
         test_command = """
 ci/unit_tests.sh ruby
         """
@@ -177,7 +178,7 @@ ci/unit_tests.sh ruby
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key=step_name_key,
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
@@ -189,7 +190,7 @@ ci/unit_tests.sh ruby
 
     def integration_tests(self, part: int) -> JobRetValues:
         step_name_human = f"Integration Tests - {part}"
-        step_name_key = f"integration-tests-{part}"
+        step_key = f"{self.group_key}-integration-tests-{part}"
         test_command = f"""
 ci/integration_tests.sh split {part-1}
         """
@@ -197,7 +198,7 @@ ci/integration_tests.sh split {part-1}
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key=step_name_key,
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
@@ -209,7 +210,7 @@ ci/integration_tests.sh split {part-1}
 
     def pq_integration_tests(self, part: int) -> JobRetValues:
         step_name_human = f"IT Persistent Queues - {part}"
-        step_name_key = f"it-persistent-queues-{part}"
+        step_key = f"{self.group_key}-it-persistent-queues-{part}"
         test_command = f"""
 export FEATURE_FLAG=persistent_queues
 ci/integration_tests.sh split {part-1}
@@ -218,13 +219,13 @@ ci/integration_tests.sh split {part-1}
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key=step_name_key,
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
     def x_pack_unit_tests(self) -> JobRetValues:
         step_name_human = "x-pack unit tests"
-        step_name_key = "x-pack-unit-test"
+        step_key = f"{self.group_key}-x-pack-unit-test"
         test_command = """
 x-pack/ci/unit_tests.sh
         """
@@ -232,13 +233,13 @@ x-pack/ci/unit_tests.sh
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key=step_name_key,
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
     def x_pack_integration(self) -> JobRetValues:
         step_name_human = "x-pack integration"
-        step_name_key = "x-pack-integration"
+        step_key = f"{self.group_key}-x-pack-integration"
         test_command = """
 x-pack/ci/integration_tests.sh
         """
@@ -246,7 +247,7 @@ x-pack/ci/integration_tests.sh
         return JobRetValues(
             step_label=step_name_human,
             command=self.emit_command(step_name_human, test_command),
-            step_key=step_name_key,
+            step_key=step_key,
             depends=self.init_annotation_key,
         )
 
@@ -277,8 +278,10 @@ if __name__ == "__main__":
             step = {
               "label": f"{matrix_os} / {matrix_jdk} / {job_values.step_label}",
               "key": job_values.step_key,
-              "command": job_values.command,
             }
+
+            if job_values.depends:
+                step["depends_on"] = job_values.depends
 
             if not job_values.default_agent:
                 step["agents"] = {
@@ -288,10 +291,10 @@ if __name__ == "__main__":
                     "machineType": "n2-standard-4",
                     "diskSizeGb": 200,
                     "diskType": "pd-ssd",
-                    }
+                }
 
-            if job_values.depends:
-                step["depends_on"] = job_values.depends
+
+            step["command"] = job_values.command
 
             group_steps.append(step)
 
