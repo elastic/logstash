@@ -52,7 +52,7 @@ class Jobs(abc.ABC):
         self.os = os
         self.jdk = jdk
         self.group_key = group_key
-        self.init_annotation_key = "initialize-annotation"
+        self.init_annotation_key = f"{os}-{jdk}-initialize-annotation"
 
     def init_annotation(self) -> JobRetValues:
         """
@@ -162,7 +162,7 @@ ci/unit_tests.sh java
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key="java-unit-test",
             depends=self.init_annotation_key,
         )
@@ -176,7 +176,7 @@ ci/unit_tests.sh ruby
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key=step_name_key,
             depends=self.init_annotation_key,
         )
@@ -196,7 +196,7 @@ ci/integration_tests.sh split {part-1}
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key=step_name_key,
             depends=self.init_annotation_key,
         )
@@ -217,7 +217,7 @@ ci/integration_tests.sh split {part-1}
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key=step_name_key,
             depends=self.init_annotation_key,
         )
@@ -231,7 +231,7 @@ x-pack/ci/unit_tests.sh
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key=step_name_key,
             depends=self.init_annotation_key,
         )
@@ -245,7 +245,7 @@ x-pack/ci/integration_tests.sh
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
+            command=self.emit_command(step_name_human, test_command),
             step_key=step_name_key,
             depends=self.init_annotation_key,
         )
