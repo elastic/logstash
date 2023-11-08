@@ -10,6 +10,9 @@ param (
     [switch]$AnnotateContext
 )
 
+# the unit test script expects the WORKSPACE env var
+$env:WORKSPACE = $PWD.Path
+
 # unset generic JAVA_HOME
 if (Test-Path env:JAVA_HOME) {
     Remove-Item -Path env:JAVA_HOME
