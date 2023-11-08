@@ -44,7 +44,7 @@ def bk_annotate(body: str, context: str, mode = "") -> str:
     if mode:
         cmd += f"--{mode} "
 
-    cmd += f"\"\n{body}\n\""
+    cmd += f"\"\n{body}\""
     return cmd
 
 
