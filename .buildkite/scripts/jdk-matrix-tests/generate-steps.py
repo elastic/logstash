@@ -44,7 +44,7 @@ def bk_annotate(body: str, context: str, mode = "") -> str:
     if mode:
         cmd += f"--{mode} "
 
-    cmd += f"\"{body}\n\""
+    cmd += f"\"\n{body}\n\""
     return cmd
 
 
@@ -60,7 +60,7 @@ class Jobs(abc.ABC):
         Command for creating the header of a new annotation for a group step
         """
 
-        body = f"## Group {self.os} / {self.jdk}\n| **Status** | **Test** |"
+        body = f"### Group {self.os} / {self.jdk}\n| **Status** | **Test** |"
 
         return JobRetValues(
             step_label="Initialize annotation",
