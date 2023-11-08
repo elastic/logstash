@@ -40,7 +40,7 @@ def get_bk_metadata(key: str) -> typing.List[str]:
         exit(1)
 
 def bk_annotate(body: str, context: str, mode = "") -> str:
-    cmd = f"""buildkite-agent annotate --context={context} """
+    cmd = f"""buildkite-agent annotate --style=info --context={context} """
     if mode:
         cmd += f"--{mode} "
 
