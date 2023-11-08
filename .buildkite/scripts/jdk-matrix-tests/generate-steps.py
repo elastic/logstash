@@ -40,10 +40,11 @@ def get_bk_metadata(key: str) -> typing.List[str]:
         exit(1)
 
 def bk_annotate(body: str, context: str, mode = "") -> str:
-    cmd = f"""buildkite-agent annotate "{body}" --context={context}"""
+    cmd = f"""buildkite-agent annotate --context={context} """
     if mode:
-        cmd += f" --{mode}"
+        cmd += f"--{mode} "
 
+    cmd += f"\"{body}\"\n"
     return cmd
 
 
@@ -59,10 +60,7 @@ class Jobs(abc.ABC):
         Command for creating the header of a new annotation for a group step
         """
 
-        body = f'''## Group {self.os} / {self.jdk}
-
-        | **Status** | **Test** |
-        '''
+        body = f"## Group {self.os} / {self.jdk}\n| **Status** | **Test** |"
 
         return JobRetValues(
             step_label="Initialize annotation",
