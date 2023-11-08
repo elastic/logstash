@@ -3,8 +3,6 @@
 # required for Logstash CI JDK matrix tests
 # ********************************************************
 
-$ErrorActionPreference = "Stop"
-
 param (
     [string]$JDK,
     [string]$CIScript,
