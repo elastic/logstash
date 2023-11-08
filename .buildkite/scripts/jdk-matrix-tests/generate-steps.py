@@ -60,7 +60,7 @@ class Jobs(abc.ABC):
         Command for creating the header of a new annotation for a group step
         """
 
-        body = f"### Group: `{self.os} / {self.jdk}`\n| **Status** | **Test** |\n| --- | ----|"
+        body = f"### Group: {self.os} / {self.jdk}\n| **Status** | **Test** |\n| --- | ----|"
 
         return JobRetValues(
             step_label="Initialize annotation",
@@ -81,21 +81,23 @@ class WindowsJobs(Jobs):
 
     def all_jobs(self):# -> list[Callable[[], JobRetValues]]:
         return [
+          self.init_annotation,
           self.unit_tests,
         ]
 
     def unit_tests(self) -> JobRetValues:
-        step_name_human = "Java Unit Test"
-        test_command = "# TODO"
+        step_name_human = "Unit Test"
+        step_key = f"{self.group_key}-unit-test"
+        test_command = f'''.\\\\.buildkite\\\\scripts\\\\jdk-matrix-tests\\\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -Context "{self.group_key}" -CIScript ".\\\\ci\\\\unit_tests.bat"
+        '''
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
-            step_key="java-unit-test",
-            depends="",
+            command=LiteralScalarString(test_command),
+            step_key=step_key,
+            depends=self.init_annotation_key,
         )
-        return step_name_human, test_command
-      
+
 
 class LinuxJobs(Jobs):
     def __init__(self, os: str, jdk: str, group_key: str):
