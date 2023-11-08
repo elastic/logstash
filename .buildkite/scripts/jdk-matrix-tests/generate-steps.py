@@ -44,7 +44,7 @@ def bk_annotate(body: str, context: str, mode = "") -> str:
     if mode:
         cmd += f"--{mode} "
 
-    cmd += f"\"{body}\"\n"
+    cmd += f"\"{body}\n\""
     return cmd
 
 
@@ -132,10 +132,10 @@ eval "$(rbenv init -)"
 """
 
     def failed_step_annotation(self, step_name_human) -> str:
-        return bk_annotate(body=f"| {BuildkiteEmojis.failed} | {step_name_human} |\n", context=self.group_key, mode="append")
+        return bk_annotate(body=f"| {BuildkiteEmojis.failed} | {step_name_human} |", context=self.group_key, mode="append")
 
     def succeeded_step_annotation(self, step_name_human) -> str:
-        return bk_annotate(body=f"| {BuildkiteEmojis.success} | {step_name_human} |\n", context=self.group_key, mode="append")
+        return bk_annotate(body=f"| {BuildkiteEmojis.success} | {step_name_human} |", context=self.group_key, mode="append")
 
     def emit_command(self, step_name_human, test_command: str) -> str:
         return LiteralScalarString(f"""
