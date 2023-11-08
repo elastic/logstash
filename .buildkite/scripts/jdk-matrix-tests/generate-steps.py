@@ -60,7 +60,7 @@ class Jobs(abc.ABC):
         Command for creating the header of a new annotation for a group step
         """
 
-        body = f"### Group: `{self.os} / {self.jdk}`\n| **Status** | **Test** |\n| --- | ----|"
+        body = f"### Group: {self.os} / {self.jdk}\n| **Status** | **Test** |\n| --- | ----|"
 
         return JobRetValues(
             step_label="Initialize annotation",
