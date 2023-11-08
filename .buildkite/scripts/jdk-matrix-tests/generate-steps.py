@@ -7,6 +7,22 @@ from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString
 
 
+@dataclass
+class BuildkiteEmojis:
+  running: str = ":bk-status-running:"
+  success: str = ":bk-status-passed:"
+  failed: str = ":bk-status-failed:"
+
+def slugify_bk_key(key: str) -> str:
+    """
+    Convert and return key to an acceptable format for Buildkite's key: field
+    Only alphanumerics, dashes and underscores are allowed.
+    """
+
+    mapping_table = str.maketrans({'.': '_', ' ': '_', '/': '_'})
+
+    return key.translate(mapping_table)
+
 def get_bk_metadata(key: str) -> typing.List[str]:
     try:
       return os.environ[key].split()
@@ -14,21 +30,19 @@ def get_bk_metadata(key: str) -> typing.List[str]:
         print(f"Missing environment variable [{key}]. This should be set before calling this script using buildkite-agent meta-data get. Exiting.")
         exit(1)
 
-def bk_annotate(job_name_human: str, job_name_slug: str, os: str, jdk: str, status: str) -> str:
-  return f"""buildkite-agent annotate "{status} **{job_name_human}** / **{os}** / **{jdk}**" --context={job_name_slug}-{os}-{jdk}"""
+def bk_annotate(job_name_human: str, job_name_slug: str, os: str, jdk: str, status: str, context: str, mode: str) -> str:
+  cmd = f"""buildkite-agent annotate "{status} **{job_name_human}** / **{os}** / **{jdk}**" --context={context}"""
+  if mode:
+     cmd += f" --{mode}"
 
-
-@dataclass
-class BuildkiteEmojis:
-  running: str = ":bk-status-running:"
-  success: str = ":bk-status-passed:"
-  failed: str = ":bk-status-failed:"
+  return cmd
 
 
 class WindowsJobs:
-    def __init__(self, os: str, jdk: str):
+    def __init__(self, os: str, jdk: str, group_key: str):
       self.os = os
       self.jdk = jdk
+      self.group_key: str
 
     def all_jobs(self) -> list[typing.Callable[[], typing.Tuple[str, str]]]:
         return [
@@ -44,9 +58,10 @@ class WindowsJobs:
       
 
 class LinuxJobs:
-    def __init__(self, os: str, jdk: str):
+    def __init__(self, os: str, jdk: str, group_key: str):
       self.os = os
       self.jdk = jdk
+      self.group_key = group_key
 
     def all_jobs(self) -> list[typing.Callable[[], typing.Tuple[str, str]]]:
         return [
@@ -82,15 +97,14 @@ eval "$(rbenv init -)"
     def emit_command(self, job_name_human, job_name_slug, test_command: str) -> str:
       return LiteralScalarString(f"""
 {self.prepare_shell()}
-{bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.running)}
 # temporarily disable immediate failure on errors, so that we can update the BK annotation
 set +eo pipefail
 {test_command}
 if [[ $$? -ne 0 ]]; then
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.failed)}
+  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.failed, context=self.group_key, mode="append")}
   exit 1
 else
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.success)}
+  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.success, context=self.group_key, mode="append")}
 fi
       """)
 
@@ -174,13 +188,18 @@ if __name__ == "__main__":
 
     for matrix_os in matrix_oses:
         for matrix_jdk in matrix_jdkes:
-          if "windows" in pipeline_name:
-            jobs = WindowsJobs(os=matrix_os, jdk=matrix_jdk)
-          else:
-            jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk)
+          group_name = f"{matrix_os}/{matrix_jdk}"
+          group_key = slugify_bk_key(group_name)
 
+          if "windows" in pipeline_name:
+            jobs = WindowsJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key)
+          else:
+            jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key)
+
+          group_steps = []
           for job in jobs.all_jobs():
             job_name_human, shell_command = job()
+
             step = {
               "label": f"{matrix_os} / {matrix_jdk} / {job_name_human}",
               "agents": {
@@ -194,6 +213,13 @@ if __name__ == "__main__":
                 "command": shell_command,
             }
 
-            structure["steps"].append(step)
+            group_steps.append(step)
+
+
+          structure["steps"].append({
+            "group": group_name,
+            "key": slugify_bk_key(group_name),
+            "steps": group_steps})
+
 
     YAML().dump(structure, sys.stdout)
