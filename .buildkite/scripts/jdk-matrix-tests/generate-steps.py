@@ -1,3 +1,4 @@
+import abc
 from dataclasses import dataclass
 import os
 import sys
@@ -8,10 +9,18 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 
 
 @dataclass
+class JobRetValues:
+    step_label: str
+    command: str
+    step_key: str
+    depends: str
+    default_agent: bool = False
+
+@dataclass
 class BuildkiteEmojis:
-  running: str = ":bk-status-running:"
-  success: str = ":bk-status-passed:"
-  failed: str = ":bk-status-failed:"
+    running: str = ":bk-status-running:"
+    success: str = ":bk-status-passed:"
+    failed: str = ":bk-status-failed:"
 
 def slugify_bk_key(key: str) -> str:
     """
@@ -30,41 +39,73 @@ def get_bk_metadata(key: str) -> typing.List[str]:
         print(f"Missing environment variable [{key}]. This should be set before calling this script using buildkite-agent meta-data get. Exiting.")
         exit(1)
 
-def bk_annotate(job_name_human: str, job_name_slug: str, os: str, jdk: str, status: str, context: str, mode: str) -> str:
-  cmd = f"""buildkite-agent annotate "{status} **{job_name_human}** / **{os}** / **{jdk}**" --context={context}"""
-  if mode:
-     cmd += f" --{mode}"
+def bk_annotate(body: str, context: str, mode = "") -> str:
+    cmd = f"""buildkite-agent annotate "{body}" --context={context}"""
+    if mode:
+        cmd += f" --{mode}"
 
-  return cmd
+    return cmd
 
 
-class WindowsJobs:
+class Jobs(abc.ABC):
     def __init__(self, os: str, jdk: str, group_key: str):
-      self.os = os
-      self.jdk = jdk
-      self.group_key: str
+        self.os = os
+        self.jdk = jdk
+        self.group_key = group_key
+        self.init_annotation_key = "initialize-annotation"
 
+    def init_annotation(self) -> JobRetValues:
+        """
+        Command for creating the header of a new annotation for a group step
+        """
+
+        body = f'''## Group {self.os} / {self.jdk}
+
+        | **Status** | **Test** |
+        '''
+
+        return JobRetValues(
+            step_label="Initialize annotation",
+            command=LiteralScalarString(bk_annotate(body=body, context=self.group_key)),
+            step_key=self.init_annotation_key,
+            depends="",
+            default_agent=True,
+        )
+
+    @abc.abstractmethod
     def all_jobs(self) -> list[typing.Callable[[], typing.Tuple[str, str]]]:
+        pass
+
+
+class WindowsJobs(Jobs):
+    def __init__(self, os: str, jdk: str, group_key: str):
+      super().__init__(os=os, jdk=jdk, group_key=group_key)
+
+    def all_jobs(self):# -> list[Callable[[], JobRetValues]]:
         return [
           self.unit_tests,
         ]
 
-    def unit_tests(self) -> typing.Tuple[str, str]:
-        job_name_human = "Java Unit Test"
-        job_name_slug = "java-unit-test"
+    def unit_tests(self) -> JobRetValues:
+        step_name_human = "Java Unit Test"
         test_command = "# TODO"
 
-        return job_name_human, test_command
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key="java-unit-test",
+            depends="",
+        )
+        return step_name_human, test_command
       
 
-class LinuxJobs:
+class LinuxJobs(Jobs):
     def __init__(self, os: str, jdk: str, group_key: str):
-      self.os = os
-      self.jdk = jdk
-      self.group_key = group_key
+      super().__init__(os=os, jdk=jdk, group_key=group_key)
 
-    def all_jobs(self) -> list[typing.Callable[[], typing.Tuple[str, str]]]:
+    def all_jobs(self):# -> list[Callable[[], JobRetValues]]:
         return [
+            self.init_annotation,
             self.java_unit_test,
             self.ruby_unit_test,
             self.integration_tests_part_1,
@@ -92,87 +133,122 @@ export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PA
 eval "$(rbenv init -)"
 """
 
-    def emit_command(self, job_name_human, job_name_slug, test_command: str) -> str:
-      return LiteralScalarString(f"""
+    def failed_step_annotation(self, step_name_human) -> str:
+        return bk_annotate(body=f"| {BuildkiteEmojis.failed} | {step_name_human} |\n", context=self.group_key, mode="append")
+
+    def succeeded_step_annotation(self, step_name_human) -> str:
+        return bk_annotate(body=f"| {BuildkiteEmojis.success} | {step_name_human} |\n", context=self.group_key, mode="append")
+
+    def emit_command(self, step_name_human, test_command: str) -> str:
+        return LiteralScalarString(f"""
 {self.prepare_shell()}
 # temporarily disable immediate failure on errors, so that we can update the BK annotation
 set +eo pipefail
 {test_command}
 if [[ $$? -ne 0 ]]; then
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.failed, context=self.group_key, mode="append")}
+    {self.failed_step_annotation(step_name_human)}
   exit 1
 else
-  {bk_annotate(job_name_human, job_name_slug, self.os, self.jdk, BuildkiteEmojis.success, context=self.group_key, mode="append")}
+    {self.succeeded_step_annotation(step_name_human)}
 fi
       """)
 
-    def java_unit_test(self) -> typing.Tuple[str, str]:
-        job_name_human = "Java Unit Test"
-        job_name_slug = "java-unit-test"
+    def java_unit_test(self) -> JobRetValues:
+        step_name_human = "Java Unit Test"
         test_command = '''
 export ENABLE_SONARQUBE="false"
 ci/unit_tests.sh java
         '''
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key="java-unit-test",
+            depends=self.init_annotation_key,
+        )
 
-    def ruby_unit_test(self) -> typing.Tuple[str, str]:
-        job_name_human = "Ruby Unit Test"
-        job_name_slug = "ruby-unit-test"
+    def ruby_unit_test(self) -> JobRetValues:
+        step_name_human = "Ruby Unit Test"
+        step_name_key = "ruby-unit-test"
         test_command = """
 ci/unit_tests.sh ruby
         """
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key=step_name_key,
+            depends=self.init_annotation_key,
+        )
 
-    def integration_tests_part_1(self) -> typing.Tuple[str, str]:
+    def integration_tests_part_1(self) -> JobRetValues:
         return self.integration_tests(part=1)
 
-    def integration_tests_part_2(self) -> typing.Tuple[str, str]:
+    def integration_tests_part_2(self) -> JobRetValues:
         return self.integration_tests(part=2)
 
-    def integration_tests(self, part: int) -> typing.Tuple[str, str]:
-        job_name_human = f"Integration Tests - {part}"
-        job_name_slug = f"integration-tests-pt-{part}"
+    def integration_tests(self, part: int) -> JobRetValues:
+        step_name_human = f"Integration Tests - {part}"
+        step_name_key = f"integration-tests-{part}"
         test_command = f"""
 ci/integration_tests.sh split {part-1}
         """
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key=step_name_key,
+            depends=self.init_annotation_key,
+        )
 
-    def pq_integration_tests_part_1(self) -> typing.Tuple[str, str]:
+    def pq_integration_tests_part_1(self) -> JobRetValues:
         return self.pq_integration_tests(part=1)
 
-    def pq_integration_tests_part_2(self) -> typing.Tuple[str, str]:
+    def pq_integration_tests_part_2(self) -> JobRetValues:
         return self.pq_integration_tests(part=2)
 
-    def pq_integration_tests(self, part: int) -> typing.Tuple[str, str]:
-        job_name_human = f"IT Persistent Queues - {part}"
-        job_name_slug = f"it-persistent-queues-pt-{part}"
+    def pq_integration_tests(self, part: int) -> JobRetValues:
+        step_name_human = f"IT Persistent Queues - {part}"
+        step_name_key = f"it-persistent-queues-{part}"
         test_command = f"""
 export FEATURE_FLAG=persistent_queues
 ci/integration_tests.sh split {part-1}
         """
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key=step_name_key,
+            depends=self.init_annotation_key,
+        )
 
-    def x_pack_unit_tests(self) -> typing.Tuple[str, str]:
-        job_name_human = "x-pack unit tests"
-        job_name_slug = "x-pack-unit-tests"
+    def x_pack_unit_tests(self) -> JobRetValues:
+        step_name_human = "x-pack unit tests"
+        step_name_key = "x-pack-unit-test"
         test_command = """
 x-pack/ci/unit_tests.sh
         """
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key=step_name_key,
+            depends=self.init_annotation_key,
+        )
 
-    def x_pack_integration(self) -> typing.Tuple[str, str]:
-        job_name_human = "x-pack integration"
-        job_name_slug = "x-pack-integration"
+    def x_pack_integration(self) -> JobRetValues:
+        step_name_human = "x-pack integration"
+        step_name_key = "x-pack-integration"
         test_command = """
 x-pack/ci/integration_tests.sh
         """
 
-        return job_name_human, self.emit_command(job_name_human, job_name_slug, test_command)
+        return JobRetValues(
+            step_label=step_name_human,
+            command=test_command,
+            step_key=step_name_key,
+            depends=self.init_annotation_key,
+        )
 
 
 if __name__ == "__main__":
@@ -196,20 +272,26 @@ if __name__ == "__main__":
 
           group_steps = []
           for job in jobs.all_jobs():
-            job_name_human, shell_command = job()
+            job_values = job()
 
             step = {
-              "label": f"{matrix_os} / {matrix_jdk} / {job_name_human}",
-              "agents": {
-                  "provider": "gcp",
-                  "imageProject": "elastic-images-qa",
-                  "image": f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
-                  "machineType": "n2-standard-4",
-                  "diskSizeGb": 200,
-                  "diskType": "pd-ssd",
-                },
-                "command": shell_command,
+              "label": f"{matrix_os} / {matrix_jdk} / {job_values.step_label}",
+              "key": job_values.step_key,
+              "command": job_values.command,
             }
+
+            if not job_values.default_agent:
+                step["agents"] = {
+                    "provider": "gcp",
+                    "imageProject": "elastic-images-qa",
+                    "image": f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
+                    "machineType": "n2-standard-4",
+                    "diskSizeGb": 200,
+                    "diskType": "pd-ssd",
+                    }
+
+            if job_values.depends:
+                step["depends_on"] = job_values.depends
 
             group_steps.append(step)
 
