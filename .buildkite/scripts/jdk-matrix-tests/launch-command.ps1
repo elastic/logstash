@@ -33,11 +33,13 @@ $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
 Start-Process -FilePath $CIScript -Wait -NoNewWindow
-
-if ($LASTEXITCODE -ne 0) {
+$Retcode = $LASTEXITCODE
+if ($Retcode -ne 0) {
+    Write-Host "Encountered an error, $CIScript returned exit code: $Retcode"
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-failed: | $StepNameHuman |`n"
         Write-Host "^^^ +++"
+        Write-Host "--- Archiving test reports"
         & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
     }
     exit 1
