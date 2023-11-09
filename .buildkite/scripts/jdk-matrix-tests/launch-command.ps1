@@ -35,7 +35,7 @@ $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
 try {
-    Start-Process -FilePath $CIScript
+    Start-Process -FilePath $CIScript -Wait -NoNewWindow
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
     }
