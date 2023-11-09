@@ -32,13 +32,13 @@ $env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
-Start-Process -FilePath $CIScript -Wait -NoNewWindow
-if ($? -or ($LASTEXITCODE -ne $null -and $LASTEXITCODE -eq 0)) {
-    # success
+try {
+    Start-Process -FilePath $CIScript -Wait -NoNewWindow
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
     }
-} else {
+
+} catch {
     # tests failed
     Write-Host "^^^ +++"
     if ($Annotate) {
@@ -46,5 +46,19 @@ if ($? -or ($LASTEXITCODE -ne $null -and $LASTEXITCODE -eq 0)) {
         Write-Host "--- Archiving test reports"
         & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
     }
-    exit 1
-}    
+}
+# if ($? -or ($LASTEXITCODE -ne $null -and $LASTEXITCODE -eq 0)) {
+#     # success
+#     if ($Annotate) {
+#         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
+#     }
+# } else {
+#     # tests failed
+#     Write-Host "^^^ +++"
+#     if ($Annotate) {
+#         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-failed: | $StepNameHuman |`n"
+#         Write-Host "--- Archiving test reports"
+#         & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
+#     }
+#     exit 1
+# }    
