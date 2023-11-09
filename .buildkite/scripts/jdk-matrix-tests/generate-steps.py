@@ -92,19 +92,19 @@ class WindowsJobs(Jobs):
         step_key = f"{self.group_key}-unit-test"
         #test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
         #'''
-        test_command = r'''
+        test_command = rf'''
 Write-Host "^^^ +++"
 
 # the unit test script expects the WORKSPACE env var
-$env:WORKSPACE = $PWD.Path
+$$env:WORKSPACE = $$PWD.Path
 
 Remove-Item -Path env:JAVA_HOME
 
 # LS env vars for JDK matrix tests
-$JAVA_CUSTOM_DIR = "C:\.java\$JDK"
-$env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
-$env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
-$env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
+$$JAVA_CUSTOM_DIR = "C:\.java\{self.jdk}"
+$$env:BUILD_JAVA_HOME = $$JAVA_CUSTOM_DIR
+$$env:RUNTIME_JAVA_HOME = $$JAVA_CUSTOM_DIR
+$$env:LS_JAVA_HOME = $$JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
 .\\ci\\unit_tests.bat
