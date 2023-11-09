@@ -1,5 +1,5 @@
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 import sys
 import typing
@@ -14,7 +14,9 @@ class JobRetValues:
     command: str
     step_key: str
     depends: str
+    artifact_paths: list = field(default_factory=list)
     default_agent: bool = False
+
 
 @dataclass
 class BuildkiteEmojis:
@@ -88,7 +90,24 @@ class WindowsJobs(Jobs):
     def unit_tests(self) -> JobRetValues:
         step_name_human = "Unit Test"
         step_key = f"{self.group_key}-unit-test"
-        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -Context "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
+        #test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
+        #'''
+        test_command = r'''
+Write-Host "^^^ +++"
+
+# the unit test script expects the WORKSPACE env var
+$env:WORKSPACE = $PWD.Path
+
+Remove-Item -Path env:JAVA_HOME
+
+# LS env vars for JDK matrix tests
+$JAVA_CUSTOM_DIR = "C:\.java\$JDK"
+$env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
+$env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
+$env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
+
+Write-Host "--- Running tests"
+.\\ci\\unit_tests.bat
         '''
 
         return JobRetValues(
@@ -96,6 +115,9 @@ class WindowsJobs(Jobs):
             command=LiteralScalarString(test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            artifact_paths=[
+                "logstash-core/build/reports/tests/**/index.html"
+            ]
         )
 
 
@@ -293,6 +315,8 @@ if __name__ == "__main__":
                     "diskType": "pd-ssd",
                 }
 
+            if job_values.artifact_paths:
+                step["artifact_paths"] = job_values.artifact_paths
 
             step["command"] = job_values.command
 

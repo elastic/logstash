@@ -3,6 +3,9 @@
 # required for Logstash CI JDK matrix tests
 # ********************************************************
 
+# expand previous command (shell invocation)
+Write-Host "^^^ +++"
+
 param (
     [string]$JDK,
     [string]$CIScript,
