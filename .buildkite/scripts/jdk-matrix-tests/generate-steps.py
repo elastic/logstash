@@ -79,7 +79,7 @@ class WindowsJobs(Jobs):
     def __init__(self, os: str, jdk: str, group_key: str):
       super().__init__(os=os, jdk=jdk, group_key=group_key)
 
-    def all_jobs(self):# -> list[Callable[[], JobRetValues]]:
+    def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
           self.init_annotation,
           self.unit_tests,
@@ -103,7 +103,7 @@ class LinuxJobs(Jobs):
     def __init__(self, os: str, jdk: str, group_key: str):
       super().__init__(os=os, jdk=jdk, group_key=group_key)
 
-    def all_jobs(self):# -> list[Callable[[], JobRetValues]]:
+    def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
             self.init_annotation,
             self.java_unit_test,
