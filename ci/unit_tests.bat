@@ -48,6 +48,7 @@ if defined BUILD_JAVA_HOME (
   )
 )
 echo Invoking Gradle, GRADLE_OPTS: %GRADLE_OPTS%, BUILD_JAVA_HOME: %BUILD_JAVA_HOME%
+call .\gradlew.bat clean
 call .\gradlew.bat test --console=plain --no-daemon --info
 
 if errorlevel 1 (
