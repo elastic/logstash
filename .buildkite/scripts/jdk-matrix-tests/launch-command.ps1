@@ -14,6 +14,8 @@ param (
 # expand previous buildkite folded section (command invocation)
 Write-Host "^^^ +++"
 
+Start-Sleep -Seconds 300
+
 # the unit test script expects the WORKSPACE env var
 $env:WORKSPACE = $PWD.Path
 
@@ -33,11 +35,10 @@ $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
 try {
-    Start-Process -FilePath $CIScript -Wait -NoNewWindow
+    Start-Process -FilePath $CIScript
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
     }
-
 } catch {
     # tests failed
     Write-Host "^^^ +++"
