@@ -88,7 +88,7 @@ class WindowsJobs(Jobs):
     def unit_tests(self) -> JobRetValues:
         step_name_human = "Unit Test"
         step_key = f"{self.group_key}-unit-test"
-        test_command = f'''.\\\\.buildkite\\\\scripts\\\\jdk-matrix-tests\\\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -Context "{self.group_key}" -CIScript ".\\\\ci\\\\unit_tests.bat"
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -Context "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
         '''
 
         return JobRetValues(
