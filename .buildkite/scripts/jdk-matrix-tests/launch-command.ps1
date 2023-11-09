@@ -35,7 +35,7 @@ Write-Host "--- Running tests"
 Start-Process -FilePath $CIScript -Wait -NoNewWindow
 $Retcode = $LASTEXITCODE
 if ($Retcode -ne 0) {
-    Write-Host "Encountered an error, $CIScript returned exit code: $Retcode"
+    Write-Host "Encountered an error, $CIScript returned exit code: [$Retcode]"
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-failed: | $StepNameHuman |`n"
         Write-Host "^^^ +++"
