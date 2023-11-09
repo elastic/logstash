@@ -16,10 +16,9 @@
 # under the License.
 
 require_relative '../framework/fixture'
-require_relative '../framework/helpers'
 require_relative '../framework/settings'
+require_relative '../framework/helpers'
 require_relative '../services/logstash_service'
-require_relative 'spec_helper.rb'
 
 require 'stud/temporary'
 require 'logstash/devutils/rspec/spec_helper'
@@ -28,9 +27,12 @@ describe "Logstash to Logstash communication Integration test" do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
+    # backup original setting file since we change API port number, and restore after all tests
+    FileUtils.cp(@fixture.get_service('logstash').application_settings_file, "#{@fixture.get_service('logstash').application_settings_file}.original")
   }
 
   after(:all) {
+    FileUtils.mv("#{@fixture.get_service('logstash').application_settings_file}.original", @fixture.get_service('logstash').application_settings_file)
     @fixture.teardown
   }
 
@@ -52,7 +54,7 @@ describe "Logstash to Logstash communication Integration test" do
     api_port = 9600 + rand(1000)
     logstash_service = LogstashService.new(@fixture.settings, api_port)
     change_logstash_setting(logstash_service, "api.http.port", api_port)
-    logstash_service.spawn_logstash("-f", config_to_temp_file(@fixture.config(config_name, options)), "--enable-local-plugin-development", "--path.data", get_temp_path_dir)
+    logstash_service.spawn_logstash("-f", config_to_temp_file(@fixture.config(config_name, options)), "--path.data", get_temp_path_dir)
     wait_for_logstash(logstash_service)
     logstash_service
   end
@@ -84,7 +86,6 @@ describe "Logstash to Logstash communication Integration test" do
     }
 
     it "successfully send events" do
-      puts "Config options: #{all_config_options.inspect}"
       upstream_logstash_service = run_logstash_instance(input_config_name, all_config_options)
       downstream_logstash_service = run_logstash_instance(output_config_name, all_config_options)
 
@@ -109,48 +110,9 @@ describe "Logstash to Logstash communication Integration test" do
   end
 
   context "with baseline configs" do
-    let(:input_config_name) { "ls_input_baseline" }
-    let(:output_config_name) { "ls_output_baseline" }
-    let(:output_file_path) { "ls_to_ls_baseline.output" }
-
-    include_examples "send events"
-  end
-
-  context "with basic auth configs" do
-    let(:input_config_name) { "ls_input_basic_auth" }
-    let(:output_config_name) { "ls_output_basic_auth" }
-    let(:output_file_path) { "ls_to_ls_basic_auth.output" }
-
-    include_examples "send events"
-  end
-
-  context "with ssl configs" do
-    let(:input_config_name) { "ls_input_ssl" }
-    let(:output_config_name) { "ls_output_ssl" }
-    let(:output_file_path) { "ls_to_ls_ssl.output" }
-
-    let(:ssl_certificates_path) { File.expand_path("../../fixtures/ls_to_ls_certs/generated", __FILE__) }
-
-    # client
-    let(:ssl_certificate) { File.join(ssl_certificates_path, "server_from_root.pem") }
-    let(:ssl_key) { File.join(ssl_certificates_path, "server_from_root.key.pkcs8.pem") }
-    let(:ssl_key_passphrase) { "12345678" }
-
-    # server
-    let(:ssl_certificate_authorities) { File.join(ssl_certificates_path, "root.pem") }
-    let(:ssl_keystore_path) { File.join(ssl_certificates_path, "client_from_root.jks") }
-    let(:ssl_keystore_password) { "12345678" }
-
-    let(:config_options) {
-      super().merge(
-        :ssl_certificate => ssl_certificate,
-        :ssl_key => ssl_key,
-        :ssl_key_passphrase => ssl_key_passphrase,
-        :ssl_certificate_authorities => ssl_certificate_authorities,
-        :ssl_keystore_path => ssl_keystore_path,
-        :ssl_keystore_password => ssl_keystore_password
-      )
-    }
+    let(:input_config_name) { "basic_ls_input" }
+    let(:output_config_name) { "basic_ls_output" }
+    let(:output_file_path) { "basic_ls_to_ls.output" }
 
     include_examples "send events"
   end

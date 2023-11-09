@@ -1,0 +1,35 @@
+---
+services:
+  - logstash
+config:
+  basic_ls_input: |-
+    input {
+      logstash {
+        ssl_enabled => false
+        username => "logstash"
+        password => "$e0re!"
+      }
+    }
+    output {
+      file {
+        path => '<%=options[:output_file_path]%>'
+        flush_interval => 0
+        codec => line { format => "%{message}" }
+      }
+    }
+  basic_ls_output: |-
+    input {
+      generator {
+        count => '<%=options[:generator_count]%>'
+      }
+    }
+    output {
+      logstash {
+        ssl_enabled => false
+        hosts => ["127.0.0.1:9800"]
+        username => "logstash"
+        password => "$e0re!"
+      }
+    }
+
+teardown_script:
