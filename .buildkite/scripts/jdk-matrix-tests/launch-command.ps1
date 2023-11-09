@@ -26,24 +26,21 @@ if (Test-Path env:JAVA_HOME) {
 }
 
 # LS env vars for JDK matrix tests
-$JAVA_CUSTOM_DIR = "C:\.java\$JDK"
+$JAVA_CUSTOM_DIR = "C:\Users\buildkite\.java\$JDK"
 $env:BUILD_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:RUNTIME_JAVA_HOME = $JAVA_CUSTOM_DIR
 $env:LS_JAVA_HOME = $JAVA_CUSTOM_DIR
 
 Write-Host "--- Running tests"
 Start-Process -FilePath $CIScript -Wait -NoNewWindow
-$Retcode = $?
-if (-not $Retcode) {
+if (-not $? -or ($LASTEXITCODE -ne $null -and $LASTEXITCODE -ne 0)) {
     Write-Host "^^^ +++"
-    Write-Host "Encountered an error, $CIScript returned exit code: [$Retcode]"
     if ($Annotate) {
         C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-failed: | $StepNameHuman |`n"
         Write-Host "--- Archiving test reports"
         & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
     }
     exit 1
-}
-if ($Annotate) {
-    C:\buildkite-agent\bin\buildkite-agent.exe\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
+} elseif ($Annotate) {
+    C:\buildkite-agent\bin\buildkite-agent.exe annotate --context="$AnnotateContext" --append "| :bk-status-passed: | $StepNameHuman |`n"
 }
