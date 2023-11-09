@@ -279,7 +279,7 @@ if __name__ == "__main__":
             job_values = job()
 
             step = {
-              "label": f"{matrix_os} / {matrix_jdk} / {job_values.step_label}",
+              "label": f"{job_values.step_label}",
               "key": job_values.step_key,
             }
 
