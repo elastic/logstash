@@ -90,24 +90,7 @@ class WindowsJobs(Jobs):
     def unit_tests(self) -> JobRetValues:
         step_name_human = "Unit Test"
         step_key = f"{self.group_key}-unit-test"
-        #test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
-        #'''
-        test_command = rf'''
-Write-Host "^^^ +++"
-
-# the unit test script expects the WORKSPACE env var
-$$env:WORKSPACE = $$PWD.Path
-
-Remove-Item -Path env:JAVA_HOME
-
-# LS env vars for JDK matrix tests
-$$JAVA_CUSTOM_DIR = "C:\.java\{self.jdk}"
-$$env:BUILD_JAVA_HOME = $$JAVA_CUSTOM_DIR
-$$env:RUNTIME_JAVA_HOME = $$JAVA_CUSTOM_DIR
-$$env:LS_JAVA_HOME = $$JAVA_CUSTOM_DIR
-
-Write-Host "--- Running tests"
-.\\ci\\unit_tests.bat
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat"
         '''
 
         return JobRetValues(
@@ -115,9 +98,7 @@ Write-Host "--- Running tests"
             command=LiteralScalarString(test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
-            artifact_paths=[
-                "logstash-core/build/reports/tests/**/index.html"
-            ]
+            artifact_paths=["build_reports.zip"],
         )
 
 

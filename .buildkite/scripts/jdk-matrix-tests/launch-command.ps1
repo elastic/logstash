@@ -3,15 +3,15 @@
 # required for Logstash CI JDK matrix tests
 # ********************************************************
 
-# expand previous command (shell invocation)
-Write-Host "^^^ +++"
-
 param (
     [string]$JDK,
     [string]$CIScript,
     [switch]$StepNameHuman,
     [switch]$AnnotateContext
 )
+
+# expand previous buildkite folded section (command invocation)
+Write-Host "^^^ +++"
 
 # the unit test script expects the WORKSPACE env var
 $env:WORKSPACE = $PWD.Path
@@ -35,6 +35,7 @@ Start-Process -FilePath $CIScript -Wait -NoNewWindow
 if ($LASTEXITCODE -ne 0) {
     buildkite-agent annotate --context=$AnnotateContext --append "| :bk-status-failed: | $StepNameHuman |`n"
     Write-Host "^^^ +++"
+    & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
     exit 1 
 }
 buildkite-agent annotate --context=$AnnotateContext --append "| :bk-status-passed: | $StepNameHuman |`n"
