@@ -66,10 +66,8 @@ class Plugin
 
   # return true if successed
   def execute_rspec
-    if File.exists?("#{plugin_base_folder}/build.gradle")
-      system("#{plugin_base_folder}/gradlew vendor")
-    end
-    system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
+    return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S rake vendor")
+    return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
     return spec_result ? true : false
   end
