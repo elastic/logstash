@@ -7,11 +7,11 @@
 
 ToDo: Add brief intro describing the feature and value prop. 
 So far, we haven't differentiated between the two. 
-Add info to help them decide which one they want to use.  
+Add info to help them decide which one they need.  
 
 **Prerequisites**
 
-Complete these steps as you prepare to collect and ship monitoring data for stack monitoring:
+Complete these steps as you prepare to collect and ship monitoring data for dashboards:
 
 [[disable-default-db]]
 .Disable default collection of {ls} monitoring metrics
@@ -42,7 +42,7 @@ We'll walk you through the process in these steps:
 
 [discrete]
 [[add-logstash-integration-ead]]
-==== Add the {agent} Logstash integration to monitor host logs and metrics
+==== Add the {agent} {ls} integration to monitor host logs and metrics
 
 . Go to the {kib} home page, and click **Add integrations**.
 +
@@ -51,10 +51,10 @@ We'll walk you through the process in these steps:
 image::images/kibana-home.png[{kib} home page]
 --
 
-. In the query bar, search for **Logstash** and select the integration to see more
+. In the query bar, search for **{ls}** and select the integration to see more
 details.
 
-. Click **Add Logstash**.
+. Click **Add {ls}**.
 
 . Configure the integration name and add a description (optional).
 
@@ -64,7 +64,7 @@ details.
 
 . Configure the integration to collect metrics.
 * Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
-* Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
+* Under **Metrics (Technical Preview)**, make sure the {ls} URL setting
 points to your {ls} instance URLs. +
 By default, the integration collects {ls}
 monitoring metrics from `https://localhost:9600`. If that host and port number are not
@@ -97,12 +97,12 @@ include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
 [discrete]
 [[view-data-dashboard]]
-=== Monitor Logstash logs and metrics
+=== Monitor {ls} logs and metrics
 
-From the list of assets, open the **[Metrics Logstash] Logstash overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into Logstash performance.
+From the list of assets, open the **[Metrics {ls}] {ls} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {ls} performance.
 +
 [role="screenshot"]
-image::images/integration-dashboard-overview.png[The Logstash Overview dashboard in {kib} with various metrics from your monitored Logstash]
+image::images/integration-dashboard-overview.png[The {ls} Overview dashboard in {kib} with various metrics from your monitored {ls}]
 
 You can hover over any visualization to adjust its settings, or click the
 **Edit** button to make changes to the dashboard. To learn more, refer to

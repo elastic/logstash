@@ -5,9 +5,9 @@
 <titleabbrev>Collect monitoring data for stack monitoring</titleabbrev>
 ++++
 
-ToDo: Add brief intro describing the feature and value prop. 
-So far, we haven't differentiated between the two. 
-Add info to help them decide which one they want to use.  
+{agent} collects monitoring data from your {ls} instance and sends it directly to your monitoring cluster.
+With {agent} collection the monitoring agent remains
+active even if the {ls} instance does not. 
 
 **Prerequisites**
 
@@ -64,7 +64,7 @@ We'll walk you through the process in these steps:
 image::images/kibana-home.png[{kib} home page]
 --
 
-. In the query bar, search for **Logstash** and select the integration to see more
+. In the query bar, search for **{ls}** and select the integration to see more
 details about it.
 
 . Click **Add {ls}**.
@@ -78,7 +78,7 @@ to match your {ls} environment.
 
 . Configure the integration to collect metrics
 * Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off, if you
-want to collect metrics from your Logstash instance
+want to collect metrics from your {ls} instance
 * Under **Metrics (Stack Monitoring)**, make sure the hosts setting
 points to your {ls} host URLs. By default, the integration collects {ls}
 monitoring metrics from `localhost:9600`. If that host and port number are not
@@ -109,6 +109,6 @@ include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
 [discrete]
 [[view-data-stack]]
-==== Monitor Logstash logs and metrics (Stack Monitoring)
+==== Monitor {ls} logs and metrics (Stack Monitoring)
 
 {kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, monitoring UI>>.

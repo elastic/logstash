@@ -18,7 +18,7 @@ monitoring data from your {ls} instance, sends it directly to your monitoring
 cluster, and shows the data in {ls} dashboards.
 {ls} dashboards include an extended range of metrics, including plugin
 drilldowns, and plugin specific dashboards for the dissect filter, the grok filter, and the elasticsearch output.
-* <<monitoring-with-elastic-agent,{stack} monitoring>>. Use the Elastic Stack monitoring features to gain insight into the health of Logstash instances running in your environment.
+* <<monitoring-with-elastic-agent,{stack} monitoring>>. Use the Elastic Stack monitoring features to gain insight into the health of {ls} instances running in your environment.
 
 include::monitoring-ea-dashboards.asciidoc[]
 include::monitoring-ea.asciidoc[]
