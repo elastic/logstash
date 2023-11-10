@@ -38,10 +38,10 @@ import java.util.Optional;
 
 /**
  * Default serializer for {@link org.jruby.RubyBasicObject} since Jackson can't handle that type natively.
- * Arrays, Collections and Maps are delegated to the default Jackson’s serializer - which might end-up invoking this
+ * Arrays, Collections and Maps are delegated to the default Jackson's serializer - which might end-up invoking this
  * serializer for its elements.
  * Values which inspect method is implemented and owned by the LogStash module will be serialized using this method return.
- * If none of the above conditions match, it gets the serialized value by invoking the Ruby’s {@code to_s} method, falling back
+ * If none of the above conditions match, it gets the serialized value by invoking the Ruby's {@code to_s} method, falling back
  * to {@link RubyBasicObject#to_s()}  and {@link RubyBasicObject#anyToString()} in case of errors.
  */
 public final class RubyBasicObjectSerializer extends StdSerializer<RubyBasicObject> {
