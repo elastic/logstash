@@ -15,6 +15,7 @@
 require "open3"
 require "set"
 require 'optparse'
+require 'rake'
 
 ENV['LOGSTASH_PATH'] = File.expand_path('..', __dir__)
 ENV['LOGSTASH_SOURCE'] = '1'
@@ -219,9 +220,9 @@ setup_logstash_for_development
 snapshot_logstash_artifacts!
 
 plugins.each do |plugin_name|
-   restore_logstash_from_snapshot
+  restore_logstash_from_snapshot
 
-   Dir.chdir(plugins_folder) do
+  status = Dir.chdir(plugins_folder) do
     plugin = Plugin.new(plugins_folder, plugin_name)
     plugin.git_retrieve
 
@@ -247,12 +248,12 @@ plugins.each do |plugin_name|
       end
       :success
     end
-
-    # any of the verification subtask terminated with error
-    if status == :error
-      # break looping on plugins if immediate halt
-      break if options[:halt]
-    end
+    status
+  end
+  # any of the verification subtask terminated with error
+  if status == :error
+    # break looping on plugins if immediate halt
+    break if options[:halt]
   end
 end
 
