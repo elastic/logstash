@@ -9,13 +9,49 @@ ToDo: Add brief intro describing the feature and value prop.
 So far, we haven't differentiated between the two. 
 Add info to help them decide which one they want to use.  
 
-When you have completed the <<monitoring-prereqs>>, install and configure {agent} to monitor host logs and metrics.
+**Prerequisites**
+
+Complete these steps as you prepare to collect and ship monitoring data for stack monitoring:
+
+[[disable-default-include-ea]]
+.Disable default collection of {ls} monitoring metrics
+[%collapsible]
+====
+include::monitoring-prereq-disable-default.asciidoc[]
+====
+
+[[define-cluster__uuid-ea]]
+.Specify the target cluster_uuid (optional)
+[%collapsible]
+====
+include::monitoring-prereq-define-cluster.asciidoc[]
+====
+
+[[set-up-monitoring-ea]]
+.Set up {es} monitoring 
+[%collapsible]
+====
+include::monitoring-prereq-setup-es.asciidoc[]
+====
+
+[[create-user-ea]]
+.Create a monitoring user 
+[%collapsible]
+====
+include::monitoring-prereq-create-user.asciidoc[]
+====
+
+[discrete]
+[[install-and-configure-mon]]
+=== Install and configure {agent}
+
+When you have completed the prerequisites, install and configure {agent} to monitor host logs and metrics.
 We'll walk you through the process in these steps:
 
-. <<add-logstash-integration-ea>>
-. <<add-agent-to-fleet-ea>>
-. <<confirm-ea>>
-. <<view-data-stack>>
+* <<add-logstash-integration-ea>>
+* <<add-agent-to-fleet-ea>>
+* <<view-assets>>
+* <<view-data-stack>>
 
 [discrete]
 [[add-logstash-integration-ea]]
@@ -66,9 +102,9 @@ TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 include::monitoring-install.asciidoc[tag=install-agent-widget]
 
 [discrete]
-[[confirm-ea]]
-=== Confirm Enrollment
-// Include section about confirming enrollment
+[[view-assets]]
+=== View assets
+// Include section about viewing assets
 include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
 [discrete]

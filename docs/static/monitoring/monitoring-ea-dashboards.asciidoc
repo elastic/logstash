@@ -9,14 +9,36 @@ ToDo: Add brief intro describing the feature and value prop.
 So far, we haven't differentiated between the two. 
 Add info to help them decide which one they want to use.  
 
-When you have completed the <<monitoring-prereqs>>, install and configure {agent} to collect {ls} monitoring data for dashboards.
+**Prerequisites**
+
+Complete these steps as you prepare to collect and ship monitoring data for stack monitoring:
+
+[[disable-default-db]]
+.Disable default collection of {ls} monitoring metrics
+[%collapsible]
+====
+include::monitoring-prereq-disable-default.asciidoc[]
+====
+
+[[define-cluster__uuid-db]]
+.Specify the target cluster_uuid (optional)
+[%collapsible]
+====
+include::monitoring-prereq-define-cluster.asciidoc[]
+====
+
+
+[discrete]
+[[install-and-configure-db]]
+=== Install and configure {agent}
+
+Install and configure {agent} to collect {ls} monitoring data for dashboards.
 We'll walk you through the process in these steps:
 
 * <<add-logstash-integration-ead>>
 * <<add-agent-to-fleet-ead>>
-* <<confirm-ead>>
+* <<view-assets-ead>>
 * <<view-data-dashboard>>
-
 
 [discrete]
 [[add-logstash-integration-ead]]
@@ -68,9 +90,9 @@ TIP: If you accidentally close the popup, go to **{fleet} > Agents** and click
 include::monitoring-install.asciidoc[tag=install-agent-widget]
 
 [discrete]
-[[confirm-ead]]
-=== Confirm Enrollment
-// Include section about confirming enrollment
+[[view-assets-ead]]
+=== View assets
+// Include section about viewing assets
 include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
 [discrete]

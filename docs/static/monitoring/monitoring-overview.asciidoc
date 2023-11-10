@@ -13,18 +13,8 @@ Make sure that monitoring is enabled on your {es} cluster. Then configure *one* 
 these methods to collect {ls} metrics:
 
 [float]
-[[configuring-logstash-xpack]]
+[[configuring-logstash-dashboards]]
 === Configuring monitoring for {ls} Dashboards (Beta)
-
-* <<dashboard-monitoring-with-elastic-agent, {agent} collection for Dashboards>>. {agent} collects
-monitoring data from your {ls} instance and sends it directly to your monitoring
-cluster, and shows the data in Logstash Dashboards.
-The benefit of {agent} collection is that the monitoring agent remains
-active even if the {ls} instance does not, you can manage all your
-monitoring agents from a central location in {fleet}.
-Logstash dashboards can be rearranged based on needs, and include an extended range of metrics, including plugin
-drilldowns, and plugin specific dashboards for dissect and grok filters, and the elasticsearch output.
-
 
 [float]
 [[configuring-logstash-xpack-legacy]]
