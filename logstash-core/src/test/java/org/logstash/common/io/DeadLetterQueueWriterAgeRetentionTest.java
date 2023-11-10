@@ -328,7 +328,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
 
         Duration retainedPeriod = Duration.ofDays(1);
-        Duration flushInterval = Duration.ofSeconds(1);
+        Duration flushInterval = Duration.ofSeconds(2);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
                 .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
                 .retentionTime(retainedPeriod)
