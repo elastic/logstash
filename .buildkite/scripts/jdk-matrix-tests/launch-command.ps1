@@ -11,6 +11,8 @@ param (
     [switch]$Annotate
 )
 
+w32tm /query /configuration
+
 # expand previous buildkite folded section (command invocation)
 Write-Host "^^^ +++"
 
