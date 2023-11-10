@@ -4,4 +4,4 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false
 
 ./gradlew assemble
 
-bin/ruby ci/test_supported_plugins.rb $@
+bin/ruby ci/test_plugins.rb $@

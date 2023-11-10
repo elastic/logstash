@@ -426,7 +426,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # otherwise, report error and restart
       @logger.error(I18n.t(
         "logstash.pipeline.worker-error-debug",
-        default_logging_keys(
+        **default_logging_keys(
           :plugin => plugin.inspect,
           :error => e.message,
           :exception => e.class,

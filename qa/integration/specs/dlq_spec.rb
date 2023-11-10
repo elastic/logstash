@@ -27,7 +27,7 @@ describe "Test Dead Letter Queue" do
   # template with an ip field
   let(:template) { serverless? ? { "index_patterns": ["te*"], "template": {"mappings": { "properties": { "ip": { "type": "ip" }}}} } :
                      { "index_patterns": ["te*"], "mappings": { "properties": { "ip": { "type": "ip" }}}} }
-  let(:template_api) { serverless? ? "_index_template": "_template" }
+  let(:template_api) { serverless? ? "_index_template" : "_template" }
   # a message that is incompatible with the template
   let(:message) { {"message": "hello", "ip": 1}.to_json }
 

@@ -379,7 +379,7 @@
 #xpack.management.elasticsearch.sniffing: false
 #xpack.management.logstash.poll_interval: 5s
 
-# X-Pack GeoIP plugin
+# X-Pack GeoIP Database Management
 # https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html#plugins-filters-geoip-manage_update
-#xpack.geoip.download.endpoint: "https://geoip.elastic.co/v1/database"
 #xpack.geoip.downloader.enabled: true
+#xpack.geoip.downloader.endpoint: "https://geoip.elastic.co/v1/database"

@@ -56,7 +56,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "rack", '~> 2'
   gem.add_runtime_dependency "sinatra", '~> 2'
   gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.3.1'
-  gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
+  gem.add_runtime_dependency "jruby-openssl", "~> 0.14.1"
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
@@ -86,7 +86,4 @@ Gem::Specification.new do |gem|
   # https://github.com/logstash-plugins/logstash-mixin-scheduler/blob/v1.0.1/lib/logstash/plugin_mixins/scheduler/rufus_impl.rb#L85=
   # and https://github.com/elastic/logstash/issues/13773
 
-  # TEMPORARY: racc-1.6.0 doesn't have JAVA counterpart (yet)
-  # SEE: https://github.com/ruby/racc/issues/172
-  gem.add_runtime_dependency "racc", "~> 1.5.2" #(Ruby license)
 end

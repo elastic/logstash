@@ -142,6 +142,9 @@ include::static/transforming-data.asciidoc[]
 // Deploying & Scaling
 include::static/deploying.asciidoc[]
 
+// GeoIP Database Management
+include::static/geoip-database-management.asciidoc[]
+
 // Troubleshooting performance
 include::static/performance-checklist.asciidoc[]
 

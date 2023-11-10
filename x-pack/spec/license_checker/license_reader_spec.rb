@@ -166,7 +166,6 @@ describe LogStash::LicenseChecker::LicenseReader do
         expect(subject.fetch_cluster_info).to eq({})
       end
     end
-
   end
 
   it "builds ES client" do

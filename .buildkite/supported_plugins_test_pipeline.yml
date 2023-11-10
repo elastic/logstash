@@ -1,0 +1,38 @@
+agents:
+  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+  cpu: "8"
+  memory: "16Gi"
+  ephemeralStorage: "200Gi"
+
+steps:
+  - group: "Tier1 plugins test group"
+    key: "tier1_plugins"
+    steps:
+      - label: "Test Tier1 inputs"
+        command: ./ci/test_plugins.sh -t tier1 -k input
+      - label: "Test Tier1 filters"
+        command: ./ci/test_plugins.sh -t tier1 -k filter
+      - label: "Test Tier1 codecs"
+        command: ./ci/test_plugins.sh -t tier1 -k codec
+      - label: "Test Tier1 outputs"
+        command: ./ci/test_plugins.sh -t tier1 -k output
+      - label: "Test Tier1 integrations"
+        command: ./ci/test_plugins.sh -t tier1 -k integration
+
+  - group: "Tier2 plugins test group"
+    key: "tier2_plugins"
+    steps:
+      - label: "Test Tier2 inputs"
+        command: ./ci/test_plugins.sh -t tier2 -k input
+      - label: "Test Tier2 filters"
+        command: ./ci/test_plugins.sh -t tier2 -k filter
+      - label: "Test Tier2 codecs"
+        command: ./ci/test_plugins.sh -t tier2 -k codec
+      - label: "Test Tier2 outputs"
+        command: ./ci/test_plugins.sh -t tier2 -k output
+
+  - group: "Unsupported plugins test group"
+    key: "unsupported_plugins"
+    steps:
+      - label: "Test unsupported inputs"
+        command: ./ci/test_plugins.sh -t unsupported -k input

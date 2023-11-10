@@ -1,0 +1,26 @@
+[role="xpack"]
+[[geoip-database-management-settings]]
+==== GeoIP database Management settings in {ls}
+++++
+<titleabbrev>GeoIP Database Management Settings</titleabbrev>
+++++
+
+You can set the following `xpack.geoip` settings in `logstash.yml` to configure the <<logstash-geoip-database-management, geoip database manager>>.
+For more information about configuring Logstash, see <<logstash-settings-file>>.
+
+`xpack.geoip.downloader.enabled`::
+
+(Boolean) If `true`, Logstash automatically downloads and manages updates for GeoIP2 databases from the `xpack.geoip.downloader.endpoint`.
+If `false`, Logstash does not manage GeoIP2 databases and plugins that need a GeoIP2 database must be configured to provide their own.
+
+`xpack.geoip.downloader.endpoint`::
+
+(String) Endpoint URL used to download updates for GeoIP2 databases.
+For example, `https://mydomain.com/overview.json`.
+Defaults to `https://geoip.elastic.co/v1/database`.
+Note that Logstash will periodically make a GET request to `${xpack.geoip.downloader.endpoint}?elastic_geoip_service_tos=agree`, expecting the list of metadata about databases typically found in `overview.json`.
+
+`xpack.geoip.downloader.poll.interval`::
+(Time Value) How often Logstash checks for GeoIP2 database updates at the `xpack.geoip.downloader.endpoint`.
+For example, `6h` to check every six hours.
+Defaults to `24h` (24 hours).

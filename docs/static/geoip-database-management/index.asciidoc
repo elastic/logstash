@@ -1,0 +1,19 @@
+[role="xpack"]
+[[logstash-geoip-database-management]]
+=== GeoIP Database Management
+
+Logstash provides a mechanism for provisioning and maintaining GeoIP databases, which plugins can use to ensure that they have access to an always-up-to-date and EULA-compliant database for geo enrichment.
+This mechanism requires internet access or a network route to an Elastic GeoIP database service.
+
+If the database manager is enabled in `logstash.yml` (as it is by default), a plugin may subscribe to a database, triggering a download if a valid database is not already available.
+Logstash checks for updates every day.
+When an updated database is discovered, it is downloaded in the background and made available to the plugins that rely on it.
+
+The GeoIP databases are separately-licensed from MaxMind under the terms of an End User License Agreement, which prohibits a database from being used after an update has been available for more than 30 days.
+When Logstash cannot reach the database service for 30 days or more to validate that a managed database is up-to-date, that database is deleted and made unavailable to the plugins that subscribed to it.
+
+NOTE: GeoIP database management is a licensed feature of Logstash, and is only available in the Elastic-licensed complete distribution of Logstash.
+
+include::metrics.asciidoc[]
+
+include::configuring.asciidoc[]

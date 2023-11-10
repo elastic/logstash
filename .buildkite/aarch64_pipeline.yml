@@ -1,0 +1,109 @@
+agents:
+  provider: aws
+  imagePrefix: platform-ingest-logstash-ubuntu-2204-aarch64
+  instanceType: "m6g.4xlarge"
+  diskSizeGb: 200
+
+steps:
+  - group: "Testing Phase"
+    key: "testing-phase"
+    steps:
+      - label: ":rspec: Ruby unit tests"
+        key: "ruby-unit-tests"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/unit_tests.sh ruby
+
+      - label: ":java: Java unit tests"
+        key: "java-unit-tests"
+        env:
+          # https://github.com/elastic/logstash/pull/15486 for background
+          ENABLE_SONARQUBE: "false"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/unit_tests.sh java
+
+      - label: ":lab_coat: Integration Tests / part 1"
+        key: "integration-tests-part-1"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/integration_tests.sh split 0
+
+      - label: ":lab_coat: Integration Tests / part 2"
+        key: "integration-tests-part-2"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/integration_tests.sh split 1
+
+      - label: ":lab_coat: IT Persistent Queues / part 1"
+        key: "integration-tests-qa-part-1"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          export FEATURE_FLAG=persistent_queues
+          ci/integration_tests.sh split 0
+
+      - label: ":lab_coat: IT Persistent Queues / part 2"
+        key: "integration-tests-qa-part-2"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          export FEATURE_FLAG=persistent_queues
+          ci/integration_tests.sh split 1
+
+      - label: ":lab_coat: x-pack unit tests"
+        key: "x-pack-unit-tests"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          x-pack/ci/unit_tests.sh
+
+      - label: ":lab_coat: x-pack integration"
+        key: "integration-tests-x-pack"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          x-pack/ci/integration_tests.sh
+
+  - group: "Acceptance Phase"
+    depends_on: "testing-phase"
+    key: "acceptance-phase"
+    steps:
+      - label: "Docker [{{matrix}}] flavor acceptance"
+        command:
+          set -euo pipefail
+          
+          source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
+        matrix:
+          - "full"
+          - "oss"
+
+      # *** TODO: enable after clarifying if acceptance tests really need vagrant on aarch64
+      # - label: "Acceptance tests on {{matrix.distribution}}"
+      #   agents:
+      #     provider: aws
+      #     imagePrefix: platform-ingest-logstash-{{matrix.distribution}}-aarch64
+      #     instanceType: "m6g.4xlarge"
+      #     diskSizeGb: 200
+      #   command:
+      #     set -euo pipefail
+          
+      #     source .buildkite/scripts/common/vm-agent.sh && ci/acceptance_tests.sh {{matrix.suite}}
+      #   matrix:
+      #     setup:
+      #       suite:
+      #         - "debian"
+      #       distribution:
+      #         - "ubuntu-2204"

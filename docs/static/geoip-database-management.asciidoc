@@ -1,0 +1,10 @@
+[[geoip-database-management]]
+== Managing GeoIP Databases
+
+Logstash provides GeoIP database management features to make it easier for you to
+use plugins that require an up-to-date database to enrich events with geographic data.
+
+- <<logstash-geoip-database-management, Feature Overview>>
+- <<configuring-geoip-database-management, Configuration Guide>>
+
+include::geoip-database-management/index.asciidoc[]

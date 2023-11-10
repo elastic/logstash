@@ -10,12 +10,22 @@ one Logstash instance, see <<pipeline-to-pipeline>>.
 
 Logstash-to-Logstash communication can be achieved in one of two ways: 
 
+* <<native-considerations,Logstash output to Logstash Input>>
 * <<lumberjack-considerations,Lumberjack output to Beats input>>
-* <<http-considerations,HTTP output to HTTP input>>
+
+[[native-considerations]]*Logstash to Logstash considerations*
+
+This is the preferred method to implement Logstash-to-Logstash. It replaces <<ls-to-ls-http>> and has these considerations:
+
+* It relies on HTTP as the communication protocol between the Input and Output.
+* It supports multiple hosts, providing high availability by load balancing equally amongst the multiple destination hosts.
+* No connection information is added to events.
+
+Ready to see more configuration details? See <<ls-to-ls-native>>.
 
 [[lumberjack-considerations]]*Lumberjack-Beats considerations*
 
-Lumberjack output to Beats input has been our standard approach for {ls}-to-{ls} communication, and may still be the best option for more robust use cases. 
+Lumberjack output to Beats input has been our standard approach for {ls}-to-{ls} communication, but our recommended approach is now <<ls-to-ls-native>>.
 Before you implement the Lumberjack to Beats configuration, keep these points in mind: 
 
 * Lumberjack to Beats provides high availability, but does not provide load balancing. 
@@ -25,20 +35,6 @@ The Lumberjack output plugin allows defining multiple output hosts for high avai
 
 Ready to see more configuration details? See <<ls-to-ls-lumberjack>>.
 
-[[http-considerations]]*HTTP-HTTP considerations* 
-
-This approach relies on the use of <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> plugins.
-Take these considerations into account before you implement:
-
-* HTTP does not provide built-in high availability. You will need to implement your own load balancer in between the HTTP output and the HTTP input. 
-* If you need a proxy between the Logstash instances, you can use any HTTP proxy. 
-* The HTTP input adds connection information to events, and this may be data you don't want.
-
-For now, <<plugins-outputs-http,http output>> to <<plugins-inputs-http,http input>> with manual configuration may be the best path forward if these limitations don't apply to your use case.
-
-Ready to see more configuration details? See <<ls-to-ls-http>>.
-
-NOTE: In the future, we may replace the implementation of Logstash-to-Logstash with a purpose-build HTTP implementation, which would deprecate the use of Lumberjack and Beats, or the use of the HTTP Input and Output plugins.
-
 include::ls-ls-lumberjack.asciidoc[]
 include::ls-ls-http.asciidoc[]
+include::ls-ls-native.asciidoc[]
