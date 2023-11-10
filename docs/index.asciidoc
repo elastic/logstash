@@ -65,6 +65,8 @@ include::static/running-logstash.asciidoc[]
 
 include::static/docker.asciidoc[]
 
+include::static/running-logstash-kubernetes.asciidoc[]
+
 include::static/running-logstash-windows.asciidoc[]
 
 include::static/logging.asciidoc[]

@@ -1,0 +1,6 @@
+[[running-logstash-kubernetes]]
+=== Running Logstash on Kubernetes
+Starting from Logstash 8.4, Logstash can run on Kubernetes cluster through Elastic Cloud on Kubernetes (ECK) in technical preview.
+
+To get started, check out https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-deploy-eck.html[QuickStart] to install ECK
+and https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-logstash.html[Run Logstash on ECK] to deploy Logstash with ECK
