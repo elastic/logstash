@@ -1,5 +1,5 @@
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 import sys
 import typing
@@ -14,7 +14,9 @@ class JobRetValues:
     command: str
     step_key: str
     depends: str
+    artifact_paths: list = field(default_factory=list)
     default_agent: bool = False
+
 
 @dataclass
 class BuildkiteEmojis:
@@ -81,21 +83,24 @@ class WindowsJobs(Jobs):
 
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
+          self.init_annotation,
           self.unit_tests,
         ]
 
     def unit_tests(self) -> JobRetValues:
-        step_name_human = "Java Unit Test"
-        test_command = "# TODO"
+        step_name_human = "Unit Test (Java/Ruby)"
+        step_key = f"{self.group_key}-unit-test"
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat" -Annotate
+        '''
 
         return JobRetValues(
             step_label=step_name_human,
-            command=test_command,
-            step_key="java-unit-test",
-            depends="",
+            command=LiteralScalarString(test_command),
+            step_key=step_key,
+            depends=self.init_annotation_key,
+            artifact_paths=["build_reports.zip"],
         )
-        return step_name_human, test_command
-      
+
 
 class LinuxJobs(Jobs):
     def __init__(self, os: str, jdk: str, group_key: str):
@@ -274,7 +279,7 @@ if __name__ == "__main__":
             job_values = job()
 
             step = {
-              "label": f"{matrix_os} / {matrix_jdk} / {job_values.step_label}",
+              "label": f"{job_values.step_label}",
               "key": job_values.step_key,
             }
 
@@ -291,6 +296,8 @@ if __name__ == "__main__":
                     "diskType": "pd-ssd",
                 }
 
+            if job_values.artifact_paths:
+                step["artifact_paths"] = job_values.artifact_paths
 
             step["command"] = job_values.command
 
