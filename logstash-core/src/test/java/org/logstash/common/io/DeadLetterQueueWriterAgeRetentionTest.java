@@ -337,7 +337,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
             writeManager.writeEntry(entry);
-            Thread.sleep(101);
+
             // wait the flush interval so that the current head segment is sealed
             Awaitility.await("After the flush interval head segment is sealed and a fresh empty head is created")
                     .atLeast(flushInterval)
