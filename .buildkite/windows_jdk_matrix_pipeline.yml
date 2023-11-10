@@ -1,3 +1,65 @@
 steps:
-  - label: "Test Windows JDK matrix pipeline"
-    command: "echo 'Hello world'"
+  - input: "Test Parameters"
+    if: build.source != "schedule"
+    fields:
+      - select: "Operating System"
+        key: "matrix-os"
+        hint: "The operating system variant(s) to run on:"
+        required: true
+        multiple: true
+        default: "windows-2022"
+        options:
+          - label: "Windows 2022"
+            value: "windows-2022"
+          - label: "Windows 2019"
+            value: "windows-2019"
+          - label: "Windows 2016"
+            value: "windows-2016"
+
+      - select: "Java"
+        key: "matrix-jdk"
+        hint: "The JDK to test with:"
+        required: true
+        multiple: true
+        default: "adoptiumjdk_17"
+        options:
+          - label: "Adoptium JDK 17 (Eclipse Temurin)"
+            value: "adoptiumjdk_17"
+          - label: "Adopt OpenJDK 11"
+            value: "adoptopenjdk_11"
+          - label: "OpenJDK 17"
+            value: "openjdk_17"
+          - label: "OpenJDK 11"
+            value: "openjdk_11"
+          - label: "Zulu 17"
+            value: "zulu_17"
+          - label: "Zulu 11"
+            value: "zulu_11"
+
+  - wait: ~
+    if: build.source != "schedule"
+
+  - command: |
+      set -euo pipefail
+
+      echo "--- Downloading prerequisites"
+      python3 -m pip install ruamel.yaml
+
+      echo "--- Printing generated dynamic steps"
+      export MATRIX_OSES="$(buildkite-agent meta-data get matrix-os)"
+      export MATRIX_JDKS="$(buildkite-agent meta-data get matrix-jdk)"
+      set +eo pipefail
+      python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py >pipeline_steps.yml
+      if [[ $$? -ne 0 ]]; then
+        echo "^^^ +++"
+        echo "There was a problem rendering the pipeline steps."
+        cat pipeline_steps.yml
+        echo "Exiting now."
+        exit 1
+      else
+        set -eo pipefail
+        cat pipeline_steps.yml
+      fi
+
+      echo "--- Uploading steps to buildkite"
+      cat pipeline_steps.yml | buildkite-agent pipeline upload
