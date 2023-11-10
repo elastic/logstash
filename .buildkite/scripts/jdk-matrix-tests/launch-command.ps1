@@ -50,4 +50,5 @@ try {
         Write-Host "--- Archiving test reports"
         & "7z.exe" a -r .\build_reports.zip .\logstash-core\build\reports\tests
     }
+    exit 1
 }
