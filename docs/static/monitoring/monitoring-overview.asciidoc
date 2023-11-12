@@ -9,17 +9,31 @@ For an introduction to monitoring your Elastic stack, see
 {ref}/monitor-elasticsearch-cluster.html[Monitoring a cluster] in the
 {ref}[Elasticsearch Reference].
 
-[float]
-[[configuring-logstash-xpack]]
-=== Configuring monitoring for {ls}
-
 Make sure that monitoring is enabled on your {es} cluster. Then configure *one* of
 these methods to collect {ls} metrics:
 
-* <<monitoring-with-elastic-agent, {agent} collection>>. {agent} collects
+[float]
+[[configuring-logstash-xpack]]
+=== Configuring monitoring for {ls} Dashboards (Beta)
+
+* <<dashboard-monitoring-with-elastic-agent, {agent} collection for Dashboards>>. {agent} collects
 monitoring data from your {ls} instance and sends it directly to your monitoring
-cluster. The benefit of {agent} collection is that the monitoring agent remains
-active even if the {ls} instance does not. Plus you can mange all your
+cluster, and shows the data in Logstash Dashboards.
+The benefit of {agent} collection is that the monitoring agent remains
+active even if the {ls} instance does not, you can manage all your
+monitoring agents from a central location in {fleet}.
+Logstash dashboards can be rearranged based on needs, and include an extended range of metrics, including plugin
+drilldowns, and plugin specific dashboards for dissect and grok filters, and the elasticsearch output.
+
+
+[float]
+[[configuring-logstash-xpack-legacy]]
+=== Configuring monitoring for {ls} Stack Monitoring
+* <<monitoring-with-elastic-agent, {agent} collection for Stack Monitoring>>. {agent} collects
+monitoring data from your {ls} instance and sends it directly to your monitoring
+cluster, and shows the data in Logstash Dashboards.
+The benefit of {agent} collection is that the monitoring agent remains
+active even if the {ls} instance does not, you can manage all your
 monitoring agents from a central location in {fleet}.
 
 * <<monitoring-with-metricbeat, {metricbeat} collection>>. Metricbeat collects
@@ -30,6 +44,7 @@ agent remains active even if the {ls} instance does not.
 * <<monitoring-internal-collection-legacy,Legacy collection (deprecated)>>. 
 Legacy collectors send monitoring data to your production cluster.
 
+include::monitoring-ea-dashboards.asciidoc[]
 include::monitoring-ea.asciidoc[]
 include::monitoring-mb.asciidoc[]
 include::monitoring-internal-legacy.asciidoc[]

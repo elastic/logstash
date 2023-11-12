@@ -1,8 +1,8 @@
-[[monitoring-with-elastic-agent]]
-=== Collect {ls} monitoring data with {agent}
+[[dashboard-monitoring-with-elastic-agent]]
+=== Collect {ls} monitoring data with {agent} for dashboards
 [subs="attributes"]
 ++++
-<titleabbrev>{agent} collection for Stack Monitoring</titleabbrev>
+<titleabbrev>{agent} collection for Dashboards (beta)</titleabbrev>
 ++++
 
 You can use {agent} to collect data about {ls} and ship it to the monitoring
@@ -12,27 +12,28 @@ monitoring agents from a central location in {fleet}.
 
 To collect and ship monitoring data:
 
-. <<disable-default-include-ea,Disable default collection of monitoring metrics>>
-. <<define-cluster__uuid-include-ea,Specify the target `cluster_uuid` (optional)>>
+. <<disable-default-include-ead,Disable default collection of monitoring metrics>>
+. <<define-cluster__uuid-include-ead,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {agent} to collect monitoring data>>
 
 [float]
-[[disable-default-include-ea]]
+[[disable-default-include-ead]]
 //include section about disabling default collection from the metricbeat topic
 include::monitoring-mb.asciidoc[tag=disable-default-collection]
 
 [float]
-[[define-cluster__uuid-include-ea]]
+[[define-cluster__uuid-include-ead]]
 //include section about defining cluster_uuid from the metricbeat topic
 include::monitoring-mb.asciidoc[tag=define-cluster-uuid]
 
 [float]
-[[configure-elastic-agent-logstash]]
+[[configure-elastic-agent-logstash-dashboards]]
+
 == Install and configure {agent}
 
 
 [discrete]
-[[add-logstash-integration-ea]]
+[[add-logstash-integration-ead]]
 === Step 1: Add the {agent} Logstash integration
 
 {agent} is a single, unified way to add monitoring for logs, metrics, and other
@@ -60,17 +61,15 @@ details about it.
 ** Under **Logs**, modify the log paths
 to match your {ls} environment.
 . Configure the integration to collect metrics
-* Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off, if you
-want to collect metrics from your Logstash instance
-** Under **Metrics (Stack Monitoring)**, make sure the hosts setting
-points to your {ls} host URLs. By default, the integration collects {ls}
-monitoring metrics from `localhost:9600`. If that host and port number are not
-correct, update the `hosts` setting. If you configured {ls} to use encrypted
-communications, you must access it via HTTPS. For example, use a `hosts` setting
-like
-`https://localhost:9600`.
-. Choose where to add the integration policy.
-* Click **New hosts** to add it to new agent policy or **Existing hosts** to add it to an existing agent policy.
+* Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
+** Under **Metrics (Technical Preview)**, make sure the Logstash URL setting
+points to your {ls} instance URLs. By default, the integration collects {ls}
+monitoring metrics from `https://localhost:9600`. If that host and port number are not
+correct, update the `Logstash URL` setting. If you configured {ls} to use encrypted
+communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {ls} instance.
+. Click **Save and continue**. This step takes a minute or two to complete. When
+it's done, you'll have an agent policy that contains a system integration policy
+for the configuration you just specified.
 . In the popup, click **Add {agent} to your hosts** to open the **Add agent**
 flyout.
 +
@@ -78,9 +77,9 @@ TIP: If you accidentally close the popup, go to **{fleet} > Agents**, then click
 **Add agent** to access the flyout.
 
 
-
 [discrete]
-[[add-agent-to-fleet-ea]]
+[[add-agent-to-fleet-ead]]
+
 === Step 2: Install and run an {agent} on your machine
 // Include section about installing agents
 include::monitoring-install.asciidoc[tag=install-agent-widget]
@@ -89,9 +88,15 @@ include::monitoring-install.asciidoc[tag=install-agent-widget]
 // Include section about confirming enrollment
 include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
 
-
 [discrete]
-[[view-data-stack-monitoring]]
-=== Step 4: Monitor Logstash logs and metrics (Stack Monitoring)
+[[view-data-dashboard]]
+=== Step 4: Monitor Logstash logs and metrics
 
-{kibana-ref}/monitoring-data.html[View the monitoring data in {kib}], and navigate to the <<logstash-monitoring-ui, {monitoring} UI>>
+. From the list of assets, open the **[Metrics Logstash] Logstash overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into Logstash performance.
++
+[role="screenshot"]
+image::images/integration-dashboard-overview.png[The Logstash Overview dashboard in {kib} with various metrics from your monitored Logstash]
+
+You can hover over any visualization to adjust its settings, or click the
+**Edit** button to make changes to the dashboard. To learn more, refer to
+{kibana-ref}/dashboard.html[Dashboard and visualizations].

@@ -1,0 +1,40 @@
+++++
+<div class="tabs" data-tab-group="ts">
+  <div role="tablist" aria-label="tls">
+    <button role="tab"
+            aria-selected="true"
+            aria-controls="fm-tab-ts"
+            id="fm-ts">
+      Fleet-managed
+    </button>
+    <button role="tab"
+            aria-selected="false"
+            aria-controls="standalone-tab-ts"
+            id="standalone-ts"
+            tabindex="-1">
+      Run standalone
+    </button>
+  </div>
+  <div tabindex="0"
+       role="tabpanel"
+       id="fm-tab-ts"
+       aria-labelledby="fm-ts">
+++++
+
+include::install-agent.asciidoc[tag=fleet-managed]
+
+++++
+  </div>
+  <div tabindex="0"
+       role="tabpanel"
+       id="standalone-tab-ts"
+       aria-labelledby="standalone-ts"
+       hidden="">
+++++
+
+include::install-agent.asciidoc[tag=standalone]
+
+++++
+  </div>
+</div>
+++++
