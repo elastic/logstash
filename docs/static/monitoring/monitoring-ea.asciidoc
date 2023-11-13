@@ -6,8 +6,10 @@
 ++++
 
 {agent} collects monitoring data from your {ls} instance and sends it directly to your monitoring cluster.
-With {agent} collection the monitoring agent remains
-active even if the {ls} instance does not. 
+With {agent} collection the monitoring agent remains active even if the {ls} instance does not. 
+
+You can enroll {agent} in {fleet-guide}/install-fleet-managed-elastic-agent.html[{fleet}] for management 
+from a central location, or you can run {fleet-guide}/install-standalone-elastic-agent.html[{agent} standalone]. 
 
 **Prerequisites**
 
@@ -35,7 +37,7 @@ include::monitoring-prereq-setup-es.asciidoc[]
 ====
 
 [[create-user-ea]]
-.Create a monitoring user 
+.Create a monitoring user (standalone agent only)
 [%collapsible]
 ====
 include::monitoring-prereq-create-user.asciidoc[]
@@ -52,6 +54,8 @@ We'll walk you through the process in these steps:
 * <<add-agent-to-fleet-ea>>
 * <<view-assets>>
 * <<view-data-stack>>
+
+Check out {fleet-guide}/elastic-agent-installation.html[Installing {agent}] in the _Fleet and Elastic Agent Guide_ for more info. 
 
 [discrete]
 [[add-logstash-integration-ea]]
