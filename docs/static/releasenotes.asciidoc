@@ -52,7 +52,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-11-1]]
 === Logstash 8.11.1 Release Notes
 
-* downgrade jackson to avoid "log.format: json" serialization issues https://github.com/elastic/logstash/pull/15549[#15549]
+* Downgrade jackson to avoid serialization issues when log.format is set to "json" https://github.com/elastic/logstash/pull/15549[#15549]
 
 [[logstash-8-11-0]]
 === Logstash 8.11.0 Release Notes
