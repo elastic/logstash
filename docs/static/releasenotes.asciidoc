@@ -78,61 +78,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-15]]
 === Logstash 7.17.15 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.15
-
-* [docs] Small typo fixes in README https://github.com/elastic/logstash/pull/15429[#15429]
-* [ci] Backport Buildkite PR pipeline to 7.17 https://github.com/elastic/logstash/pull/15432[#15432]
-* [ci] Commit PR based Java unit tests for Buildkite https://github.com/elastic/logstash/pull/15437[#15437]
-* [ci] Add PR it-tests (part 1+2) to Buildkite https://github.com/elastic/logstash/pull/15438[#15438]
-* Backport PR #15437 to 7.17: [ci] Commit PR based Java unit tests for Buildkite https://github.com/elastic/logstash/pull/15443[#15443]
-* Migrate remaining PR jobs to Buildkite https://github.com/elastic/logstash/pull/15444[#15444]
-* Backport PR #15438 to 7.17: [ci] Add PR it-tests (part 1+2) to Buildkite https://github.com/elastic/logstash/pull/15447[#15447]
-* Backport PR #15444 to 7.17: Migrate remaining PR jobs to Buildkite https://github.com/elastic/logstash/pull/15449[#15449]
-* Backport PR #15429 to 7.17: [docs] Small typo fixes in README https://github.com/elastic/logstash/pull/15457[#15457]
-* [ci] Initial aarch64 Buildkite pipeline https://github.com/elastic/logstash/pull/15460[#15460]
-* [ci] aarch64 Buildkite pipeline part 1 https://github.com/elastic/logstash/pull/15466[#15466]
-* Backport PR #15460 to 7.17: [ci] Initial aarch64 Buildkite pipeline https://github.com/elastic/logstash/pull/15469[#15469]
-* [ci] aarch64 Buildkite pipeline part 2 https://github.com/elastic/logstash/pull/15473[#15473]
-* Backport PR #15466 to 7.17: [ci] aarch64 Buildkite pipeline part 1 https://github.com/elastic/logstash/pull/15482[#15482]
-* [ci] re-enable Java unit tests on aarch64 pipeline https://github.com/elastic/logstash/pull/15492[#15492]
-* Backport PR #15492 to 7.17: [ci] re-enable Java unit tests on aarch64 pipeline https://github.com/elastic/logstash/pull/15495[#15495]
-* Backport PR #15473 to 7.17: [ci] aarch64 Buildkite pipeline part 2 https://github.com/elastic/logstash/pull/15506[#15506]
-* [ci] Initial JDK matrix Buildkite pipeline https://github.com/elastic/logstash/pull/15520[#15520]
-* Backport PR #15520 to 7.17: [ci] Initial JDK matrix Buildkite pipeline https://github.com/elastic/logstash/pull/15523[#15523]
-* [ci] Split JDK matrix pipelines per OS https://github.com/elastic/logstash/pull/15534[#15534]
-* Backport PR #15534 to 7.17: [ci] Split JDK matrix pipelines per OS https://github.com/elastic/logstash/pull/15538[#15538]
-* [ci] JDK matrix Buildkite pipelines (part 1) https://github.com/elastic/logstash/pull/15539[#15539]
-* Backport PR #15539 to 7.17: [ci] JDK matrix Buildkite pipelines (part 1) https://github.com/elastic/logstash/pull/15556[#15556]
-* [ci] JDK matrix Buildkite pipelines (pt 2/Windows) https://github.com/elastic/logstash/pull/15563[#15563]
-
-=== Logstash Commits between 7.17 and 7.17.14
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.14..7.17"
-
-44b6ec501 - (HEAD -> 7.17, origin/7.17) [ci] JDK matrix Buildkite pipelines (part 1) (#15539) (#15556) (4 days ago) <github-actions[bot]>
-45aa3584a - [ci] Split JDK matrix pipelines per OS (#15534) (#15538) (6 days ago) <github-actions[bot]>
-bc9636487 - [ci] Initial JDK matrix Buildkite pipeline (#15520) (#15523) (11 days ago) <github-actions[bot]>
-c998e4f09 - [ci] aarch64 Buildkite pipeline part 2 (#15473) (#15506) (3 weeks ago) <github-actions[bot]>
-ffd026a80 - [ci] re-enable Java unit tests on aarch64 pipeline (#15492) (#15495) (3 weeks ago) <github-actions[bot]>
-3d3b60ad5 - [ci] aarch64 Buildkite pipeline part 1 (#15466) (#15482) (3 weeks ago) <github-actions[bot]>
-9d56c7aa3 - [ci] Initial aarch64 Buildkite pipeline (#15460) (#15469) (4 weeks ago) <github-actions[bot]>
-e3f4d9cb8 - [docs] Small typo fixes in README (#15429) (#15457) (4 weeks ago) <github-actions[bot]>
-f959972cd - Migrate remaining PR jobs to Buildkite #15444 (#15449) (4 weeks ago) <github-actions[bot]>
-763a2d004 - [ci] Add PR it-tests (part 1+2) to Buildkite (#15438) (#15447) (4 weeks ago) <github-actions[bot]>
-0529308ce - [ci] Commit PR based Java unit tests for Buildkite (#15437) (#15443) (4 weeks ago) <github-actions[bot]>
-8ca4d205e - [ci] Backport Buildkite PR pipeline to 7.17 (#15432) (5 weeks ago) <Dimitrios Liappis>
-3fd2a9c12 - Bump core to 7.17.15 (#15423) (5 weeks ago) <Mashhur>
-34824fc46 - Release notes for 7.17.14 (#15389) (5 weeks ago) <github-actions[bot]>
-f6f88d691 - [ci] Build 7.17 DRA using Ubuntu 20.04 (#15398) (5 weeks ago) <Dimitrios Liappis>
-c85ec893a - [ci] Backport Buildkite DRA pipeline+scripts to 7.17 (#15393) (5 weeks ago) <Dimitrios Liappis>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.14..7.17 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+No user facing changes in this release.
 
 [[logstash-7-17-14]]
 === Logstash 7.17.14 Release Notes
