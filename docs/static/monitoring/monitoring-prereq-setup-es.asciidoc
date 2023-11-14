@@ -1,0 +1,5 @@
+//[[set-up-monitoring]]
+//=== Set up {es} monitoring (stack monitoring only)
+
+Set up {ref}/monitoring-overview.html[{es} monitoring].
+If you would like to create a dedicated monitoring cluster (optional), check out {ref}/monitoring-production.html[{es} monitoring documentation].

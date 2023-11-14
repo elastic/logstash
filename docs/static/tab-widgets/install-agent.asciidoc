@@ -1,0 +1,39 @@
+// tag::fleet-managed[]
+. When the **Add Agent flyout** appears, stay on the **Enroll in fleet** tab
++
+--
+[role="screenshot"]
+image::../monitoring/images/integration-agent-add.png[Add agent flyout in {kib}]
+--
+. Skip the **Select enrollment token** step. The enrollment token you need is
+already selected.
++
+NOTE: The enrollment token is specific to the {agent} policy that you just
+created. When you run the command to enroll the agent in {fleet}, you will pass
+in the enrollment token.
+
+. Download, install, and enroll the {agent} on your host by selecting
+your host operating system and following the **Install {agent} on your host**
+step.
+
+It takes about a minute for {agent} to enroll in {fleet}, download the
+configuration specified in the policy you just created, and start collecting
+data.
+
+--
+[role="screenshot"]
+image::../monitoring/images/integration-agent-confirm.png[Agent confirm data]
+--
+// end::fleet-managed[]
+
+// tag::standalone[]
+. When the **Add Agent flyout** appears, navigate to the **Run standalone** tab
++
+--
+[role="screenshot"]
+image::../monitoring/images/integration-agent-add-standalone.png[Add agent flyout in {kib}]
+--
+. Configure the agent. Follow all the instructions in **Install Elastic Agent on your host**
+. After unpacking the binary, replace the `elastic-agent.yml` file with that supplied in the Add Agent flyout on the "Run standalone" tab, replacing the values of `ES_USERNAME` and `ES_PASSWORD` appropriately.
+. Run `sudo ./elastic-agent install`
+// end::standalone[]

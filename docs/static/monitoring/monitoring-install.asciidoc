@@ -1,0 +1,11 @@
+[float]
+[[install-agent]]
+//tag::install-agent-widget[]
+
+The **Add agent** flyout has two options: **Enroll in {fleet}** and
+**Run standalone**. 
+Enrolling agents in {fleet} (default) provides a centralized management tool in {kib},
+reducing management overhead. 
+
+include::{tab-widget-dir}/install-agent-widget.asciidoc[]
+//end::install-agent-widget[]
