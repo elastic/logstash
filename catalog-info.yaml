@@ -464,6 +464,7 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/supported_plugins_test_pipeline.yml"
+      maximum_timeout_in_minutes: 90
       skip_intermediate_builds: true
       provider_settings:
         trigger_mode: none
