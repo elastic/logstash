@@ -1,0 +1,10 @@
+//[[define-cluster__uuid]]
+//==== Define `cluster_uuid` (optional)
+
+To bind the metrics of {ls} to a specific cluster, optionally define the `monitoring.cluster_uuid`
+in the configuration file (logstash.yml):
+
+[source,yaml]
+----------------------------------
+monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
+----------------------------------

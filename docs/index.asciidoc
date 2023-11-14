@@ -19,6 +19,7 @@ include::./include/attributes-lsplugins.asciidoc[]
 :jdk:                   1.8.0
 :lsissue:               https://github.com/elastic/logstash/issues
 :lsplugindocs:          https://www.elastic.co/guide/en/logstash-versioned-plugins/current
+:tab-widget-dir:         {docdir}/static/tab-widgets
 
 
 [[introduction]]
@@ -149,6 +150,8 @@ include::static/geoip-database-management.asciidoc[]
 include::static/performance-checklist.asciidoc[]
 
 // Monitoring 
+include::static/monitoring/monitoring-ea-intro.asciidoc[] 
+
 include::static/monitoring/monitoring-overview.asciidoc[]
 
 include::static/monitoring/monitoring.asciidoc[]
