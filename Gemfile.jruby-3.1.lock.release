@@ -729,7 +729,7 @@ GEM
       net-smtp
     manticore (0.9.1-java)
       openssl_pkcs8_pure
-    march_hare (4.5.0-java)
+    march_hare (4.6.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
