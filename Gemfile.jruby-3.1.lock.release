@@ -54,14 +54,14 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.2.0)
-    aws-partitions (1.841.0)
+    aws-partitions (1.849.0)
     aws-sdk-cloudfront (1.83.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-cloudwatch (1.81.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.185.1)
+    aws-sdk-core (3.186.0)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
@@ -76,17 +76,16 @@ GEM
       aws-sdk-core (~> 3, >= 3.181.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.6)
-    aws-sdk-sns (1.67.0)
+    aws-sdk-sns (1.68.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-sqs (1.64.0)
+    aws-sdk-sqs (1.67.0)
       aws-sdk-core (~> 3, >= 3.184.0)
       aws-sigv4 (~> 1.1)
-    aws-sigv4 (1.6.0)
+    aws-sigv4 (1.6.1)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
     backports (3.24.1)
-    base64 (0.1.1)
     belzebuth (0.2.3)
       childprocess
     benchmark-ips (2.12.0)
@@ -109,10 +108,9 @@ GEM
     crack (0.4.5)
       rexml
     dalli (3.2.6)
-    date (3.3.3-java)
+    date (3.3.4-java)
     diff-lcs (1.5.0)
-    domain_name (0.5.20190701)
-      unf (>= 0.0.5, < 1.0.0)
+    domain_name (0.6.20231109)
     dotenv (2.8.1)
     down (5.2.4)
       addressable (~> 2.8)
@@ -124,13 +122,13 @@ GEM
       elasticsearch-transport (>= 7.11)
       jwt (>= 1.5, < 3.0)
     elastic-workplace-search (0.4.1)
-    elasticsearch (7.17.9)
-      elasticsearch-api (= 7.17.9)
-      elasticsearch-transport (= 7.17.9)
-    elasticsearch-api (7.17.9)
+    elasticsearch (7.17.10)
+      elasticsearch-api (= 7.17.10)
+      elasticsearch-transport (= 7.17.10)
+    elasticsearch-api (7.17.10)
       multi_json
-    elasticsearch-transport (7.17.9)
-      faraday (~> 1)
+    elasticsearch-transport (7.17.10)
+      faraday (>= 1, < 3)
       multi_json
     equalizer (0.0.11)
     et-orbi (1.2.7)
@@ -434,14 +432,14 @@ GEM
       logstash-codec-plain
       logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-input-elastic_serverless_forwarder (0.1.3-java)
+    logstash-input-elastic_serverless_forwarder (0.1.4-java)
       logstash-codec-json_lines
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-input-http (>= 3.7.2)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-normalize_config_support (~> 1.0)
       logstash-mixin-plugin_factory_support
-    logstash-input-elasticsearch (4.18.0)
+    logstash-input-elasticsearch (4.19.0)
       elasticsearch (>= 7.17.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
@@ -495,7 +493,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-normalize_config_support (~> 1.0)
-    logstash-input-http_poller (5.5.0)
+    logstash-input-http_poller (5.5.1)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
@@ -667,7 +665,7 @@ GEM
       logstash-filter-json
       logstash-input-generator
       logstash-output-file
-    logstash-output-elasticsearch (11.19.0-java)
+    logstash-output-elasticsearch (11.21.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -730,7 +728,7 @@ GEM
       net-smtp
     manticore (0.9.1-java)
       openssl_pkcs8_pure
-    march_hare (4.5.0-java)
+    march_hare (4.6.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
     method_source (1.0.0)
@@ -750,7 +748,7 @@ GEM
     naught (1.1.0)
     net-http (0.3.2)
       uri
-    net-imap (0.4.2)
+    net-imap (0.4.5)
       date
       net-protocol
     net-pop (0.1.2)
@@ -789,14 +787,14 @@ GEM
     puma (6.4.0-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
-    racc (1.7.1-java)
+    racc (1.7.3-java)
     rack (2.2.8)
     rack-protection (2.2.4)
       rack
     rack-test (2.1.0)
       rack (>= 1.3)
     rainbow (3.1.1)
-    rake (13.0.6)
+    rake (13.1.0)
     redis (4.8.1)
     regexp_parser (2.8.2)
     reline (0.3.9)
@@ -817,8 +815,7 @@ GEM
     rspec-support (3.12.1)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
-    rubocop (1.57.1)
-      base64 (~> 0.1.1)
+    rubocop (1.57.2)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -829,7 +826,7 @@ GEM
       rubocop-ast (>= 1.28.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
-    rubocop-ast (1.29.0)
+    rubocop-ast (1.30.0)
       parser (>= 3.2.1.0)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
@@ -841,7 +838,7 @@ GEM
       faraday (>= 0.17.3, < 3)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.73.0)
+    sequel (5.74.0)
       bigdecimal
     simple_oauth (0.3.1)
     sinatra (2.2.4)
@@ -877,7 +874,6 @@ GEM
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2023.3)
       tzinfo (>= 1.0.0)
-    unf (0.1.4-java)
     unicode-display_width (2.5.0)
     uri (0.12.2)
     webhdfs (0.10.2)
@@ -891,6 +887,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
