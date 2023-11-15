@@ -32,7 +32,7 @@ steps:
           - label: "Oracle Linux 7"
             value: "oraclelinux-7"
           - label: "Rocky Linux 8"
-            value: "rocky-8"
+            value: "rocky-linux-8"
           - label: "Amazon Linux"
             value: "amazonlinux-2023"
           - label: "OpenSUSE Leap 15"
