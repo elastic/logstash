@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
 agents:
   image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
   cpu: "8"
