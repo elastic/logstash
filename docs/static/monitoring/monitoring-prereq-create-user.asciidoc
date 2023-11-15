@@ -1,0 +1,5 @@
+//[[create-user]]
+//=== Create a monitoring user (stack monitoring only)
+
+Create a user on the production cluster that has the
+`remote_monitoring_collector` {ref}/built-in-roles.html[built-in role].
