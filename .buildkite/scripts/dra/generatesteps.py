@@ -128,4 +128,4 @@ if __name__ == "__main__":
         yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
     )
 
-    print(yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
+    print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json\n' + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
