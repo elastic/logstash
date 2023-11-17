@@ -35,7 +35,7 @@ steps:
             value: "oraclelinux-7"
           - label: "Rocky Linux 8"
             value: "rocky-linux-8"
-          - label: "Amazon Linux"
+          - label: "Amazon Linux (2023)"
             value: "amazonlinux-2023"
           - label: "OpenSUSE Leap 15"
             value: "opensuse-leap-15"
