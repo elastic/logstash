@@ -14,9 +14,56 @@ class JobRetValues:
     command: str
     step_key: str
     depends: str
+    agent: typing.Dict[typing.Any, typing.Any]
     artifact_paths: list = field(default_factory=list)
-    default_agent: bool = False
 
+
+class GCPAgent:
+    def __init__(self, image: str, machineType: str, disSizeGb: int = 200, diskType: str = "pd-ssd") -> None:
+        self.provider = "gcp"
+        self.imageProject = "elastic-images-qa"
+        self.image = image
+        self.machineType = machineType
+        self.diskSizeGb = disSizeGb
+        self.diskType = diskType
+
+    def to_dict(self):
+        return {
+            "provider": self.provider,
+            "imageProject": self.imageProject,
+            "image": self.image,
+            "machineType": self.machineType,
+            "diskSizeGb": self.diskSizeGb,
+            "diskType": self.diskType,
+        }
+
+
+class AWSAgent:
+    def __init__(self, imagePrefix: str, instanceType: str, diskSizeGb: int):
+        self.provider = "aws"
+        self.imagePrefix = imagePrefix
+        self.instanceType = instanceType
+        self.diskSizeGb = diskSizeGb
+
+    def to_dict(self):
+        return {
+            "provider": self.provider,
+            "imagePrefix": self.imagePrefix,
+            "instanceType": self.instanceType,
+            "diskSizeGb": self.diskSizeGb,   
+        }
+    
+class NoneAgent:
+    """
+    Represents an empty agent definition which makes Buildkite use the default i.e. a container
+    """
+
+    def __init__(self) -> None:
+        pass
+
+    def to_json(self) -> typing.Dict:
+        return {}
+    
 
 @dataclass
 class BuildkiteEmojis:
@@ -51,11 +98,12 @@ def bk_annotate(body: str, context: str, mode = "") -> str:
 
 
 class Jobs(abc.ABC):
-    def __init__(self, os: str, jdk: str, group_key: str):
+    def __init__(self, os: str, jdk: str, group_key: str, agent: typing.Union[GCPAgent, AWSAgent]):
         self.os = os
         self.jdk = jdk
         self.group_key = group_key
         self.init_annotation_key = f"{os}-{jdk}-initialize-annotation"
+        self.agent = agent
 
     def init_annotation(self) -> JobRetValues:
         """
@@ -69,7 +117,7 @@ class Jobs(abc.ABC):
             command=LiteralScalarString(bk_annotate(body=body, context=self.group_key)),
             step_key=self.init_annotation_key,
             depends="",
-            default_agent=True,
+            agent=NoneAgent().to_json(),
         )
 
     @abc.abstractmethod
@@ -78,8 +126,8 @@ class Jobs(abc.ABC):
 
 
 class WindowsJobs(Jobs):
-    def __init__(self, os: str, jdk: str, group_key: str):
-      super().__init__(os=os, jdk=jdk, group_key=group_key)
+    def __init__(self, os: str, jdk: str, group_key: str, agent: typing.Union[GCPAgent, AWSAgent]):
+      super().__init__(os=os, jdk=jdk, group_key=group_key, agent=agent)
 
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
@@ -99,12 +147,13 @@ class WindowsJobs(Jobs):
             step_key=step_key,
             depends=self.init_annotation_key,
             artifact_paths=["build_reports.zip"],
+            agent=self.agent.to_dict(),
         )
 
 
 class LinuxJobs(Jobs):
-    def __init__(self, os: str, jdk: str, group_key: str):
-      super().__init__(os=os, jdk=jdk, group_key=group_key)
+    def __init__(self, os: str, jdk: str, group_key: str, agent: typing.Union[GCPAgent, AWSAgent]):
+      super().__init__(os=os, jdk=jdk, group_key=group_key, agent=agent)
 
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
@@ -169,6 +218,7 @@ ci/unit_tests.sh java
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
     def ruby_unit_test(self) -> JobRetValues:
@@ -183,6 +233,7 @@ ci/unit_tests.sh ruby
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
     def integration_tests_part_1(self) -> JobRetValues:
@@ -203,6 +254,7 @@ ci/integration_tests.sh split {part-1}
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
     def pq_integration_tests_part_1(self) -> JobRetValues:
@@ -224,6 +276,7 @@ ci/integration_tests.sh split {part-1}
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
     def x_pack_unit_tests(self) -> JobRetValues:
@@ -238,6 +291,7 @@ x-pack/ci/unit_tests.sh
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
     def x_pack_integration(self) -> JobRetValues:
@@ -252,6 +306,7 @@ x-pack/ci/integration_tests.sh
             command=self.emit_command(step_name_human, test_command),
             step_key=step_key,
             depends=self.init_annotation_key,
+            agent=self.agent.to_dict(),
         )
 
 
@@ -263,16 +318,30 @@ if __name__ == "__main__":
 
     structure = {"steps": []}
 
-
     for matrix_os in matrix_oses:
+        gcpAgent = GCPAgent(
+            image=f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
+            machineType="gcp",
+            disSizeGb=200,
+            diskType="pd-ssd",
+        )
+
+        awsAgent = AWSAgent(
+            imagePrefix=f"test-platform-ingest-logstash-multi-jdk-{matrix_os}",
+            instanceType="m5.2xlarge",
+            diskSizeGb=200,
+        )
+
         for matrix_jdk in matrix_jdkes:
           group_name = f"{matrix_os}/{matrix_jdk}"
           group_key = slugify_bk_key(group_name)
 
+          agent = awsAgent if "amazon" in matrix_os else gcpAgent
+
           if "windows" in pipeline_name:
-            jobs = WindowsJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key)
+            jobs = WindowsJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key, agent=agent)
           else:
-            jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key)
+            jobs = LinuxJobs(os=matrix_os, jdk=matrix_jdk, group_key=group_key, agent=agent)
 
           group_steps = []
           for job in jobs.all_jobs():
@@ -286,15 +355,8 @@ if __name__ == "__main__":
             if job_values.depends:
                 step["depends_on"] = job_values.depends
 
-            if not job_values.default_agent:
-                step["agents"] = {
-                    "provider": "gcp",
-                    "imageProject": "elastic-images-qa",
-                    "image": f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
-                    "machineType": "n2-standard-4",
-                    "diskSizeGb": 200,
-                    "diskType": "pd-ssd",
-                }
+            if job_values.agent:
+                step["agents"] = job_values.agent
 
             if job_values.artifact_paths:
                 step["artifact_paths"] = job_values.artifact_paths
