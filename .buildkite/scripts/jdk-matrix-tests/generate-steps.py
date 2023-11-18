@@ -53,9 +53,9 @@ class AWSAgent:
             "diskSizeGb": self.diskSizeGb,   
         }
     
-class NoneAgent:
+class DefaultAgent:
     """
-    Represents an empty agent definition which makes Buildkite use the default i.e. a container
+    Represents an empty agent definition which makes Buildkite use the default agent i.e. a container
     """
 
     def __init__(self) -> None:
@@ -117,7 +117,7 @@ class Jobs(abc.ABC):
             command=LiteralScalarString(bk_annotate(body=body, context=self.group_key)),
             step_key=self.init_annotation_key,
             depends="",
-            agent=NoneAgent().to_json(),
+            agent=DefaultAgent().to_json(),
         )
 
     @abc.abstractmethod
