@@ -327,7 +327,7 @@ if __name__ == "__main__":
         )
 
         awsAgent = AWSAgent(
-            imagePrefix=f"test-platform-ingest-logstash-multi-jdk-{matrix_os}",
+            imagePrefix=f"platform-ingest-logstash-multi-jdk-{matrix_os}",
             instanceType="m5.2xlarge",
             diskSizeGb=200,
         )
