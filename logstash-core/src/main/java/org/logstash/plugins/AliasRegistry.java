@@ -1,6 +1,9 @@
 package org.logstash.plugins;
 
 import java.util.Map;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,8 +90,8 @@ public class AliasRegistry {
 
         @SuppressWarnings("unchecked")
         private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
-            Yaml yaml = new Yaml();
-            return (Map) yaml.load(yamlContents);
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
