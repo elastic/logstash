@@ -25,8 +25,6 @@ steps:
             value: "rhel-9"
           - label: "RHEL 8"
             value: "rhel-8"
-          - label: "CentOS 8"
-            value: "centos-8"
           - label: "CentOS 7"
             value: "centos-7"
           - label: "Oracle Linux 8"
