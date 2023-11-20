@@ -56,8 +56,10 @@ import org.logstash.log.RubyBasicObjectSerializer;
 
 public final class ObjectMappers {
 
+    static final String RUBY_SERIALIZERS_MODULE_ID = "RubySerializers";
+
     private static final SimpleModule RUBY_SERIALIZERS =
-        new SimpleModule("RubySerializers")
+        new SimpleModule(RUBY_SERIALIZERS_MODULE_ID)
             .addSerializer(RubyString.class, new RubyStringSerializer())
             .addSerializer(RubySymbol.class, new RubySymbolSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer())
@@ -75,10 +77,12 @@ public final class ObjectMappers {
     public static final ObjectMapper JSON_MAPPER =
             new ObjectMapper().registerModule(RUBY_SERIALIZERS);
 
+    static String RUBY_BASIC_OBJECT_SERIALIZERS_MODULE_ID = "RubyBasicObjectSerializers";
+
     // The RubyBasicObjectSerializer must be registered first, so it has a lower priority
     // over other more specific serializers.
     public static final ObjectMapper LOG4J_JSON_MAPPER = new Log4jJsonObjectMapper()
-            .registerModule(new SimpleModule().addSerializer(new RubyBasicObjectSerializer()))
+            .registerModule(new SimpleModule(RUBY_BASIC_OBJECT_SERIALIZERS_MODULE_ID).addSerializer(new RubyBasicObjectSerializer()))
             .registerModule(RUBY_SERIALIZERS);
 
     /* TODO use this validator instead of LaissezFaireSubTypeValidator
