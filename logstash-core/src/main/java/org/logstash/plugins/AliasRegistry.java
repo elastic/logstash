@@ -108,8 +108,6 @@ public class AliasRegistry {
             Map<PluginType, List<AliasPlugin>> result = convertYamlMapToObject(yamlMap);
 
             return result;
-            //ObjectMapper mapper = new ObjectMapper();
-            //return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
