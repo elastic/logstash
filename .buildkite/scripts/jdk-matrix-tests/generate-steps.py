@@ -19,12 +19,12 @@ class JobRetValues:
 
 
 class GCPAgent:
-    def __init__(self, image: str, machineType: str, disSizeGb: int = 200, diskType: str = "pd-ssd") -> None:
+    def __init__(self, image: str, machineType: str, diskSizeGb: int = 200, diskType: str = "pd-ssd") -> None:
         self.provider = "gcp"
         self.imageProject = "elastic-images-qa"
         self.image = image
         self.machineType = machineType
-        self.diskSizeGb = disSizeGb
+        self.diskSizeGb = diskSizeGb
         self.diskType = diskType
 
     def to_dict(self):
@@ -321,8 +321,8 @@ if __name__ == "__main__":
     for matrix_os in matrix_oses:
         gcpAgent = GCPAgent(
             image=f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
-            machineType="gcp",
-            disSizeGb=200,
+            machineType="n2-standard-4",
+            diskSizeGb=200,
             diskType="pd-ssd",
         )
 
