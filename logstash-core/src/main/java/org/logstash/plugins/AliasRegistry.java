@@ -1,8 +1,6 @@
 package org.logstash.plugins;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+
+import org.yaml.snakeyaml.Yaml;
 
 public class AliasRegistry {
 
@@ -68,26 +68,13 @@ public class AliasRegistry {
     private static class YamlWithChecksum {
 
         private static YamlWithChecksum load(InputStream in) {
-            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
-                // read the header line
-                final String header = scanner.nextLine();
-                if (!header.startsWith("#CHECKSUM:")) {
-                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
-                }
-                final String extractedHash = header.substring("#CHECKSUM:".length()).trim();
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(in);
 
-                // read the comment
-                scanner.nextLine();
+            String yamlContents = yaml.dump(yamlMap);
+            String extractedHash = DigestUtils.sha256Hex(yamlContents);
 
-                // collect all remaining lines
-                final StringBuilder yamlBuilder = new StringBuilder();
-                scanner.useDelimiter("\\z"); // EOF
-                if (scanner.hasNext()) {
-                    yamlBuilder.append(scanner.next());
-                }
-                final String yamlContents = yamlBuilder.toString();
-                return new YamlWithChecksum(yamlContents, extractedHash);
-            }
+            return new YamlWithChecksum(yamlContents, extractedHash);
         }
 
         final String yamlContents;
@@ -100,8 +87,8 @@ public class AliasRegistry {
 
         @SuppressWarnings("unchecked")
         private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
+            Yaml yaml = new Yaml();
+            return (Map) yaml.load(yamlContents);
         }
 
         private String computeHashFromContent() {
