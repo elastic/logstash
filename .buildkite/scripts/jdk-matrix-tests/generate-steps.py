@@ -21,7 +21,7 @@ class JobRetValues:
 class GCPAgent:
     def __init__(self, image: str, machineType: str, diskSizeGb: int = 200, diskType: str = "pd-ssd") -> None:
         self.provider = "gcp"
-        self.imageProject = "elastic-images-qa"
+        self.imageProject = "elastic-images-prod"
         self.image = image
         self.machineType = machineType
         self.diskSizeGb = diskSizeGb
