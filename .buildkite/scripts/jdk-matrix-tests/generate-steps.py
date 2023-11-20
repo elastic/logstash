@@ -371,5 +371,5 @@ if __name__ == "__main__":
             "key": slugify_bk_key(group_name),
             "steps": group_steps})
 
-
+    print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
     YAML().dump(structure, sys.stdout)
