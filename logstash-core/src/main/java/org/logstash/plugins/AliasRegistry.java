@@ -1,13 +1,10 @@
 package org.logstash.plugins;
 
-import java.util.Map;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
+import org.logstash.plugins.aliases.AliasDocumentReplace;
 import org.logstash.plugins.aliases.AliasPlugin;
 
 import java.io.FileInputStream;
@@ -18,6 +15,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,13 +69,26 @@ public class AliasRegistry {
     private static class YamlWithChecksum {
 
         private static YamlWithChecksum load(InputStream in) {
-            Yaml yaml = new Yaml();
-            Map<String, Object> yamlMap = yaml.load(in);
+            try (Scanner scanner = new Scanner(in, StandardCharsets.UTF_8.name())) {
+                // read the header line
+                final String header = scanner.nextLine();
+                if (!header.startsWith("#CHECKSUM:")) {
+                    throw new IllegalArgumentException("Bad header format, expected '#CHECKSUM: ...' but found " + header);
+                }
+                final String extractedHash = header.substring("#CHECKSUM:".length()).trim();
 
-            String yamlContents = yaml.dump(yamlMap);
-            String extractedHash = DigestUtils.sha256Hex(yamlContents);
+                // read the comment
+                scanner.nextLine();
 
-            return new YamlWithChecksum(yamlContents, extractedHash);
+                // collect all remaining lines
+                final StringBuilder yamlBuilder = new StringBuilder();
+                scanner.useDelimiter("\\z"); // EOF
+                if (scanner.hasNext()) {
+                    yamlBuilder.append(scanner.next());
+                }
+                final String yamlContents = yamlBuilder.toString();
+                return new YamlWithChecksum(yamlContents, extractedHash);
+            }
         }
 
         final String yamlContents;
@@ -90,12 +101,52 @@ public class AliasRegistry {
 
         @SuppressWarnings("unchecked")
         private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(yamlContents);
+
+            // Convert the loaded YAML content to the expected type structure
+            Map<PluginType, List<AliasPlugin>> result = convertYamlMapToObject(yamlMap);
+
+            return result;
+            //ObjectMapper mapper = new ObjectMapper();
+            //return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
         }
 
         private String computeHashFromContent() {
             return DigestUtils.sha256Hex(yamlContents);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<PluginType, List<AliasPlugin>> convertYamlMapToObject(Map<String, Object> yamlMap) {
+            Map<PluginType, List<AliasPlugin>> result = new HashMap<>();
+
+            for (Map.Entry<String, Object> entry : yamlMap.entrySet()) {
+                PluginType pluginType = PluginType.valueOf(entry.getKey().toUpperCase());
+                List<Map<String, Object>> aliasList = (List<Map<String, Object>>) entry.getValue();
+
+                List<AliasPlugin> aliasPlugins = new ArrayList<>();
+                for (Map<String, Object> aliasEntry : aliasList) {
+                    String aliasName = (String) aliasEntry.get("alias");
+                    String from = (String) aliasEntry.get("from");
+
+                    List<Map<String, String>> docs = (List<Map<String, String>>) aliasEntry.get("docs");
+                    List<AliasDocumentReplace> replaceRules = new ArrayList<>();
+
+                    if (docs != null) {
+                        for (Map<String, String> doc : docs) {
+                            String replace = doc.get("replace");
+                            String with = doc.get("with");
+                            replaceRules.add(new AliasDocumentReplace(replace, with));
+                        }
+                    }
+
+                    AliasPlugin aliasPlugin = new AliasPlugin(aliasName, from, replaceRules);
+                    aliasPlugins.add(aliasPlugin);
+                }
+
+                result.put(pluginType, aliasPlugins);
+            }
+            return result;
         }
     }
 

@@ -11,6 +11,11 @@ import java.util.List;
  */
 public class AliasPlugin {
 
+    public AliasPlugin(String aliasName, String from, List<AliasDocumentReplace> docHeaderReplaces) {
+        this.aliasName = aliasName;
+        this.from = from;
+        this.docHeaderReplaces = docHeaderReplaces;
+    }
     /**
      * Name of the aliased plugin.
      */
