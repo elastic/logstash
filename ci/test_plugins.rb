@@ -66,8 +66,10 @@ class Plugin
 
   # return true if successed
   def execute_rspec
-    return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S rake vendor")
+    #system("env")
+    #ENV['GEM_PATH'] = "#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/stdlib:" + ENV['GEM_PATH'] + ":#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/gems/shared"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
+    return false unless system("#{ENV['LOGSTASH_PATH']}/vendor/jruby/bin/jruby -S bundle exec rake vendor")
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
     return spec_result ? true : false
   end
