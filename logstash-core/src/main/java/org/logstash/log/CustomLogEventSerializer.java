@@ -21,17 +21,26 @@
 package org.logstash.log;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.io.SegmentedStringWriter;
+import com.fasterxml.jackson.core.util.BufferRecycler;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-
+import com.google.common.primitives.Primitives;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.Map;
 
+import static org.logstash.ObjectMappers.LOG4J_JSON_MAPPER;
+
 /**
  * Json serializer for logging messages, use in json appender.
- * */
+ */
 public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
+
+    private static final Logger LOGGER = LogManager.getLogger(CustomLogEventSerializer.class);
+
     @Override
     public void serialize(CustomLogEvent event, JsonGenerator generator, SerializerProvider provider) throws IOException {
         generator.writeStartObject();
@@ -41,20 +50,9 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
         generator.writeObjectField("thread", event.getThreadName());
         generator.writeFieldName("logEvent");
         generator.writeStartObject();
-        if (event.getMessage() instanceof StructuredMessage) {
-            StructuredMessage message = (StructuredMessage) event.getMessage();
-            generator.writeStringField("message", message.getMessage());
-            if (message.getParams() != null) {
-                for (Map.Entry<Object, Object> entry : message.getParams().entrySet()) {
-                    Object value = entry.getValue();
-                    try {
-                        generator.writeObjectField(entry.getKey().toString(), value);
-                    } catch (JsonMappingException e) {
-                        generator.writeObjectField(entry.getKey().toString(), value.toString());
-                    }
-                }
-            }
 
+        if (event.getMessage() instanceof StructuredMessage) {
+            writeStructuredMessage((StructuredMessage) event.getMessage(), generator);
         } else {
             generator.writeStringField("message", event.getMessage().getFormattedMessage());
         }
@@ -63,9 +61,48 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
         generator.writeEndObject();
     }
 
+    private void writeStructuredMessage(StructuredMessage message, JsonGenerator generator) throws IOException {
+        generator.writeStringField("message", message.getMessage());
+
+        if (message.getParams() == null || message.getParams().isEmpty()) {
+            return;
+        }
+
+        for (final Map.Entry<Object, Object> entry : message.getParams().entrySet()) {
+            final String paramName = entry.getKey().toString();
+            final Object paramValue = entry.getValue();
+
+            try {
+                if (isValueSafeToWrite(paramValue)) {
+                    generator.writeObjectField(paramName, paramValue);
+                    continue;
+                }
+
+                // Create a new Jackson's generator for each entry, that way, the main generator is not compromised/invalidated
+                // in case any key/value fails to write. It also uses the JSON_LOGGER_MAPPER instead of the default Log4's one,
+                // leveraging all necessary custom Ruby serializers.
+                try (final SegmentedStringWriter entryJsonWriter = new SegmentedStringWriter(new BufferRecycler());
+                     final JsonGenerator entryGenerator = LOG4J_JSON_MAPPER.getFactory().createGenerator(entryJsonWriter)) {
+                    entryGenerator.writeObject(paramValue);
+                    generator.writeFieldName(paramName);
+                    generator.writeRawValue(entryJsonWriter.getAndClear());
+                }
+            } catch (JsonMappingException e) {
+                LOGGER.debug("Failed to serialize message param type {}", paramValue.getClass(), e);
+                generator.writeObjectField(paramName, paramValue.toString());
+            }
+        }
+    }
+
+    private boolean isValueSafeToWrite(Object value) {
+        return value == null ||
+               value instanceof String ||
+               value.getClass().isPrimitive() ||
+               Primitives.isWrapperType(value.getClass());
+    }
+
     @Override
     public Class<CustomLogEvent> handledType() {
-
         return CustomLogEvent.class;
     }
 }

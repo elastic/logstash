@@ -37,11 +37,12 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.fasterxml.jackson.dataformat.cbor.CBORFactory;
 import com.fasterxml.jackson.dataformat.cbor.CBORGenerator;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import org.apache.logging.log4j.core.jackson.Log4jJsonObjectMapper;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyFixnum;
@@ -51,11 +52,14 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.log.RubyBasicObjectSerializer;
 
 public final class ObjectMappers {
 
+    static final String RUBY_SERIALIZERS_MODULE_ID = "RubySerializers";
+
     private static final SimpleModule RUBY_SERIALIZERS =
-        new SimpleModule("RubySerializers")
+        new SimpleModule(RUBY_SERIALIZERS_MODULE_ID)
             .addSerializer(RubyString.class, new RubyStringSerializer())
             .addSerializer(RubySymbol.class, new RubySymbolSerializer())
             .addSerializer(RubyFloat.class, new RubyFloatSerializer())
@@ -71,7 +75,15 @@ public final class ObjectMappers {
             .addDeserializer(RubyNil.class, new RubyNilDeserializer());
 
     public static final ObjectMapper JSON_MAPPER =
-        new ObjectMapper().registerModule(RUBY_SERIALIZERS);
+            new ObjectMapper().registerModule(RUBY_SERIALIZERS);
+
+    static String RUBY_BASIC_OBJECT_SERIALIZERS_MODULE_ID = "RubyBasicObjectSerializers";
+
+    // The RubyBasicObjectSerializer must be registered first, so it has a lower priority
+    // over other more specific serializers.
+    public static final ObjectMapper LOG4J_JSON_MAPPER = new Log4jJsonObjectMapper()
+            .registerModule(new SimpleModule(RUBY_BASIC_OBJECT_SERIALIZERS_MODULE_ID).addSerializer(new RubyBasicObjectSerializer()))
+            .registerModule(RUBY_SERIALIZERS);
 
     /* TODO use this validator instead of LaissezFaireSubTypeValidator
     public static final PolymorphicTypeValidator TYPE_VALIDATOR = BasicPolymorphicTypeValidator.builder()

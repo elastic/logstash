@@ -43,27 +43,32 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
+import org.jruby.RubyHash;
+import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.logstash.ObjectMappers;
+import org.logstash.RubyUtil;
 
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
-    private ListAppender appender;
 
     @ClassRule
     public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
 
     @Test
     public void testPatternLayout() {
-        appender = CTX.getListAppender("EventLogger").clear();
+        ListAppender appender = CTX.getListAppender("EventLogger").clear();
         Logger logger = LogManager.getLogger("EventLogger");
         logger.info("simple message");
         logger.warn("complex message", Collections.singletonMap("foo", "bar"));
@@ -82,7 +87,7 @@ public class CustomLogEventTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testJSONLayout() throws Exception {
-        appender = CTX.getListAppender("JSONEventLogger").clear();
+        ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
         Logger logger = LogManager.getLogger("JSONEventLogger");
         logger.info("simple message");
         logger.warn("complex message", Collections.singletonMap("foo", "bar"));
@@ -132,5 +137,41 @@ public class CustomLogEventTests {
         assertEquals(5, fifthMessage.size());
         logEvent = Collections.singletonMap("message", "ignored params 4");
         assertEquals(logEvent, fifthMessage.get("logEvent"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testJSONLayoutWithRubyObjectArgument() throws JsonProcessingException {
+        final ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
+        final Logger logger = LogManager.getLogger("JSONEventLogger");
+
+        final IRubyObject fooRubyObject = RubyUtil.RUBY.evalScriptlet("Class.new do def initialize\n @foo = true\n end\n def to_s\n 'foo_value'\n end end.new");
+        final Map<Object, Object> arguments = RubyHash.newHash(RubyUtil.RUBY);
+        arguments.put("foo", fooRubyObject);
+        arguments.put("bar", "bar_value");
+        arguments.put("one", 1);
+
+        final Map<Object, Object> mapArgValue = RubyHash.newHash(RubyUtil.RUBY);
+        mapArgValue.put("first", 1);
+        mapArgValue.put("second", 2);
+        arguments.put("map", mapArgValue);
+
+        logger.error("Error with hash: {}", arguments);
+
+        final List<String> loggedMessages = appender.getMessages();
+        assertFalse(loggedMessages.isEmpty());
+        assertFalse(loggedMessages.get(0).isEmpty());
+
+        final Map<String, Object> message =  ObjectMappers.JSON_MAPPER.readValue(loggedMessages.get(0), Map.class);
+        final Map<String, Object> logEvent = (Map<String, Object>) message.get("logEvent");
+
+        assertEquals("Error with hash: {}", logEvent.get("message"));
+        assertEquals("foo_value", logEvent.get("foo"));
+        assertEquals("bar_value", logEvent.get("bar"));
+        assertEquals(1, logEvent.get("one"));
+
+        final Map<String, Object> logEventMapValue = (Map<String, Object>) logEvent.get("map");
+        assertEquals(1, logEventMapValue.get("first"));
+        assertEquals(2, logEventMapValue.get("second"));
     }
 }
