@@ -15,25 +15,25 @@ public class AliasPlugin {
      * Name of the aliased plugin.
      */
     @Nonnull
-    private String aliasName;
+    private final String aliasName;
 
     /**
      * The plugin name where aliased plugin made from.
      */
     @Nonnull
-    private String from;
-
-    public AliasPlugin(String aliasName, String from, List<AliasDocumentReplace> docHeaderReplaces) {
-        this.aliasName = aliasName;
-        this.from = from;
-        this.docHeaderReplaces = docHeaderReplaces;
-    }
+    private final String from;
 
     /**
      * List of replace entries when transforming artifact doc to aliased plugin doc.
      */
     @Nullable
     private List<AliasDocumentReplace> docHeaderReplaces;
+
+    public AliasPlugin(String aliasName, String from, List<AliasDocumentReplace> docHeaderReplaces) {
+        this.aliasName = aliasName;
+        this.from = from;
+        this.docHeaderReplaces = docHeaderReplaces;
+    }
 
     @Nonnull
     public String getAliasName() {
