@@ -105,9 +105,7 @@ public class AliasRegistry {
             Map<String, Object> yamlMap = yaml.load(yamlContents);
 
             // Convert the loaded YAML content to the expected type structure
-            Map<PluginType, List<AliasPlugin>> result = convertYamlMapToObject(yamlMap);
-
-            return result;
+            return convertYamlMapToObject(yamlMap);
         }
 
         private String computeHashFromContent() {
@@ -122,30 +120,41 @@ public class AliasRegistry {
                 PluginType pluginType = PluginType.valueOf(entry.getKey().toUpperCase());
                 List<Map<String, Object>> aliasList = (List<Map<String, Object>>) entry.getValue();
 
-                List<AliasPlugin> aliasPlugins = new ArrayList<>();
-                for (Map<String, Object> aliasEntry : aliasList) {
-                    String aliasName = (String) aliasEntry.get("alias");
-                    String from = (String) aliasEntry.get("from");
-
-                    List<Map<String, String>> docs = (List<Map<String, String>>) aliasEntry.get("docs");
-                    List<AliasDocumentReplace> replaceRules = new ArrayList<>();
-
-                    if (docs != null) {
-                        for (Map<String, String> doc : docs) {
-                            String replace = doc.get("replace");
-                            String with = doc.get("with");
-                            replaceRules.add(new AliasDocumentReplace(replace, with));
-                        }
-                    }
-
-                    AliasPlugin aliasPlugin = new AliasPlugin(aliasName, from, replaceRules);
-                    aliasPlugins.add(aliasPlugin);
-                }
+                List<AliasPlugin> aliasPlugins = aliasList.stream()
+                        .map(YamlWithChecksum::convertToAliasPluginDefinition)
+                        .collect(Collectors.toList());
 
                 result.put(pluginType, aliasPlugins);
             }
             return result;
         }
+
+        @SuppressWarnings("unchecked")
+        private static AliasPlugin convertToAliasPluginDefinition(Map<String, Object> aliasEntry) {
+            String aliasName = (String) aliasEntry.get("alias");
+            String from = (String) aliasEntry.get("from");
+
+            List<Map<String, String>> docs = (List<Map<String, String>>) aliasEntry.get("docs");
+            List<AliasDocumentReplace> replaceRules = convertToDocumentationReplacementRules(docs);
+
+            return new AliasPlugin(aliasName, from, replaceRules);
+        }
+
+        private static List<AliasDocumentReplace> convertToDocumentationReplacementRules(List<Map<String, String>> docs) {
+            if (docs == null) {
+                return Collections.emptyList();
+            }
+            return docs.stream()
+                    .map(YamlWithChecksum::convertSingleDocReplacementRule)
+                    .collect(Collectors.toList());
+        }
+
+        private static AliasDocumentReplace convertSingleDocReplacementRule(Map<String, String> doc) {
+            String replace = doc.get("replace");
+            String with = doc.get("with");
+            return new AliasDocumentReplace(replace, with);
+        }
+    }
     }
 
     static class AliasYamlLoader {
