@@ -355,20 +355,19 @@ spec:
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'  # disable during development
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
-      ## disable during development
-      # schedules:
-      #   Weekly 7_17:
-      #     branch: '7.17'
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Linux JDK matrix tests for 7.17
-      #   Weekly 8_11:
-      #     branch: '8.11'
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Linux JDK matrix tests for 7.17
-      #   Daily main:
-      #     branch: main
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Linux JDK matrix tests for main
+      schedules:
+        Weekly 7_17:
+          branch: '7.17'
+          cronline: 0 1 * * 2
+          message: Weekly Linux JDK matrix tests for 7.17
+        Weekly 8_11:
+          branch: '8.11'
+          cronline: 0 1 * * 2
+          message: Weekly Linux JDK matrix tests for 8.11
+        Daily main:
+          branch: main
+          cronline: 0 1 * * 2
+          message: Weekly Linux JDK matrix tests for main
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
@@ -407,23 +406,22 @@ spec:
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
       env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'  # disable during development
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
-      ## disable during development
-      # schedules:
-      #   Weekly 7_17:
-      #     branch: '7.17'
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Windows JDK matrix tests for 7.17
-      #   Weekly 8_11:
-      #     branch: '8.11'
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Windows JDK matrix tests for 7.17
-      #   Daily main:
-      #     branch: main
-      #     cronline: 0 1 * * 2
-      #     message: Weekly Windows JDK matrix tests for main
+      schedules:
+        Weekly 7_17:
+          branch: '7.17'
+          cronline: 0 1 * * 2
+          message: Weekly Windows JDK matrix tests for 7.17
+        Weekly 8_11:
+          branch: '8.11'
+          cronline: 0 1 * * 2
+          message: Weekly Windows JDK matrix tests for 8.11
+        Daily main:
+          branch: main
+          cronline: 0 1 * * 2
+          message: Weekly Windows JDK matrix tests for main
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
