@@ -7,10 +7,6 @@ import javax.annotation.Nonnull;
  */
 public class AliasDocumentReplace {
 
-    public AliasDocumentReplace(String replace, String with) {
-        this.replace = replace;
-        this.with = with;
-    }
     /**
      * A document entry need to be replaced.
      */
@@ -22,6 +18,11 @@ public class AliasDocumentReplace {
      */
     @Nonnull
     private String with;
+
+    public AliasDocumentReplace(String replace, String with) {
+        this.replace = replace;
+        this.with = with;
+    }
 
     public String getReplace() {
         return this.replace;
