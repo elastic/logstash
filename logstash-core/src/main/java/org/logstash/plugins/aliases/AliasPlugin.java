@@ -11,16 +11,10 @@ import java.util.List;
  */
 public class AliasPlugin {
 
-    public AliasPlugin(String aliasName, String from, List<AliasDocumentReplace> docHeaderReplaces) {
-        this.aliasName = aliasName;
-        this.from = from;
-        this.docHeaderReplaces = docHeaderReplaces;
-    }
     /**
      * Name of the aliased plugin.
      */
     @Nonnull
-    @JsonProperty("alias")
     private String aliasName;
 
     /**
@@ -29,11 +23,16 @@ public class AliasPlugin {
     @Nonnull
     private String from;
 
+    public AliasPlugin(String aliasName, String from, List<AliasDocumentReplace> docHeaderReplaces) {
+        this.aliasName = aliasName;
+        this.from = from;
+        this.docHeaderReplaces = docHeaderReplaces;
+    }
+
     /**
      * List of replace entries when transforming artifact doc to aliased plugin doc.
      */
     @Nullable
-    @JsonProperty("docs")
     private List<AliasDocumentReplace> docHeaderReplaces;
 
     @Nonnull
