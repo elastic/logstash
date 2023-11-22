@@ -19,6 +19,11 @@ public class AliasDocumentReplace {
     @Nonnull
     private String with;
 
+    public AliasDocumentReplace(String replace, String with) {
+        this.replace = replace;
+        this.with = with;
+    }
+
     public String getReplace() {
         return this.replace;
     }
