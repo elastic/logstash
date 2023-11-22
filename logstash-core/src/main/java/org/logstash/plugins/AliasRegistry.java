@@ -1,12 +1,10 @@
 package org.logstash.plugins;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.plugins.PluginLookup.PluginType;
+import org.logstash.plugins.aliases.AliasDocumentReplace;
 import org.logstash.plugins.aliases.AliasPlugin;
 
 import java.io.FileInputStream;
@@ -24,6 +22,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
+import org.yaml.snakeyaml.Yaml;
 
 public class AliasRegistry {
 
@@ -100,12 +101,58 @@ public class AliasRegistry {
 
         @SuppressWarnings("unchecked")
         private Map<PluginType, List<AliasPlugin>> decodeYaml() throws IOException {
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            return mapper.readValue(yamlContents, new TypeReference<Map<PluginType, List<AliasPlugin>>>() {});
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(yamlContents);
+
+            // Convert the loaded YAML content to the expected type structure
+            return convertYamlMapToObject(yamlMap);
         }
 
         private String computeHashFromContent() {
             return DigestUtils.sha256Hex(yamlContents);
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<PluginType, List<AliasPlugin>> convertYamlMapToObject(Map<String, Object> yamlMap) {
+            Map<PluginType, List<AliasPlugin>> result = new HashMap<>();
+
+            for (Map.Entry<String, Object> entry : yamlMap.entrySet()) {
+                PluginType pluginType = PluginType.valueOf(entry.getKey().toUpperCase());
+                List<Map<String, Object>> aliasList = (List<Map<String, Object>>) entry.getValue();
+
+                List<AliasPlugin> aliasPlugins = aliasList.stream()
+                        .map(YamlWithChecksum::convertToAliasPluginDefinition)
+                        .collect(Collectors.toList());
+
+                result.put(pluginType, aliasPlugins);
+            }
+            return result;
+        }
+
+        @SuppressWarnings("unchecked")
+        private static AliasPlugin convertToAliasPluginDefinition(Map<String, Object> aliasEntry) {
+            String aliasName = (String) aliasEntry.get("alias");
+            String from = (String) aliasEntry.get("from");
+
+            List<Map<String, String>> docs = (List<Map<String, String>>) aliasEntry.get("docs");
+            List<AliasDocumentReplace> replaceRules = convertToDocumentationReplacementRules(docs);
+
+            return new AliasPlugin(aliasName, from, replaceRules);
+        }
+
+        private static List<AliasDocumentReplace> convertToDocumentationReplacementRules(List<Map<String, String>> docs) {
+            if (docs == null) {
+                return Collections.emptyList();
+            }
+            return docs.stream()
+                    .map(YamlWithChecksum::convertSingleDocReplacementRule)
+                    .collect(Collectors.toList());
+        }
+
+        private static AliasDocumentReplace convertSingleDocReplacementRule(Map<String, String> doc) {
+            String replace = doc.get("replace");
+            String with = doc.get("with");
+            return new AliasDocumentReplace(replace, with);
         }
     }
 
