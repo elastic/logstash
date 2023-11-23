@@ -42,7 +42,7 @@ class Plugin
 
   def git_retrieve
     if File.directory?(plugin_name)
-      puts "#{plugin_name} already cloned locally, proceed with updating..."
+      puts "test plugins(git_retrieve)>> #{plugin_name} already cloned locally, proceed with updating..."
       Dir.chdir(plugin_name) do
         system("git restore -- .")
         puts "Cleaning following files"
@@ -50,11 +50,11 @@ class Plugin
         puts "Proceed with cleaning"
         system("git clean -Xf")
       end
-      puts "#{plugin_name} updated"
+      puts "test plugins(git_retrieve)>> #{plugin_name} updated"
       return
     end
 
-    puts "#{plugin_name} local clone doesn't exist, cloning..."
+    puts "test plugins(git_retrieve)>> #{plugin_name} local clone doesn't exist, cloning..."
 
     plugin_repository = "git@github.com:logstash-plugins/#{plugin_name}.git"
     unless system("git clone #{plugin_repository}")
@@ -68,12 +68,16 @@ class Plugin
   def execute_rspec
     #system("env")
     #ENV['GEM_PATH'] = "#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/stdlib:" + ENV['GEM_PATH'] + ":#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/gems/shared"
+    puts "test plugins(execute_rspec)>> bundle install"
+
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
 #     puts "\nDNADBG>> executing bundle show logstash-core"
 #     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle show logstash-core")
 #     puts "DNADBG>> after bundle show logstash-core\n"
+    puts "test plugins(execute_rspec)>> rake vendor"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rake vendor")
 #     return false unless system("#{ENV['LOGSTASH_PATH']}/vendor/jruby/bin/jruby -S bundle exec rake vendor")
+    puts "test plugins(execute_rspec)>> exec rspec"
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
     return spec_result ? true : false
   end
