@@ -4,6 +4,12 @@ set -e
 
 TARGET_BRANCHES=("main")
 
+install_java() {
+  # TODO: let's think about using BK agent which has Java installed
+  #   Current caveat is Logstash BK agent doesn't support docker operatioins in it
+  sudo apt update && sudo apt install -y openjdk-17-jdk && sudo apt install -y openjdk-17-jre
+}
+
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
@@ -49,6 +55,7 @@ report() {
   ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
 }
 
+install_java
 resolve_latest_branches
 download_auth_snyk
 
