@@ -1,7 +1,9 @@
 agents:
-  provider: "gcp"
-  machineType: "n1-standard-4"
-  image: family/core-ubuntu-2204
+  provider: gcp
+  imageProject: elastic-images-prod
+  image: family/platform-ingest-logstash-ubuntu-2204
+  machineType: "n2-standard-4"
+  diskSizeGb: 120
 
 steps:
   # reports main, previous (ex: 7.latest) and current (ex: 8.latest) release branches to Snyk
