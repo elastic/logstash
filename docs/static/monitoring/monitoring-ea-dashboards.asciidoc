@@ -101,7 +101,7 @@ include::monitoring-install.asciidoc[tag=install-agent-widget]
 [[view-assets-ead]]
 === View assets
 // Include section about viewing assets
-include::monitoring-confirm.asciidoc[tag=confirm-enrollment-widget]
+include::monitoring-view.asciidoc[]
 
 [discrete]
 [[view-data-dashboard]]
