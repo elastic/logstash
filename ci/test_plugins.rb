@@ -66,17 +66,12 @@ class Plugin
 
   # return true if successed
   def execute_rspec
-    #system("env")
-    #ENV['GEM_PATH'] = "#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/stdlib:" + ENV['GEM_PATH'] + ":#{ENV['LOGSTASH_PATH']}/vendor/jruby/lib/ruby/gems/shared"
     puts "test plugins(execute_rspec)>> bundle install"
-
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
-#     puts "\nDNADBG>> executing bundle show logstash-core"
-#     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle show logstash-core")
-#     puts "DNADBG>> after bundle show logstash-core\n"
+
     puts "test plugins(execute_rspec)>> rake vendor"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rake vendor")
-#     return false unless system("#{ENV['LOGSTASH_PATH']}/vendor/jruby/bin/jruby -S bundle exec rake vendor")
+    
     puts "test plugins(execute_rspec)>> exec rspec"
     spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
     return spec_result ? true : false
