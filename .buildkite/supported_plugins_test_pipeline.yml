@@ -9,7 +9,17 @@ steps:
     key: "tier1_plugins"
     steps:
       - label: "Test Tier1 inputs"
-        command: ./ci/test_plugins.sh -t tier1 -k input
+        command: |
+          source .buildkite/scripts/common/vm-agent.sh
+          ./ci/test_plugins.sh -t tier1 -k input
+        # Workaround for https://github.com/elastic/ingest-dev/issues/2676
+        agents:
+          provider: gcp
+          imageProject: elastic-images-prod
+          image: family/platform-ingest-logstash-ubuntu-2204
+          machineType: "n2-standard-4"
+          diskSizeGb: 120
+
       - label: "Test Tier1 filters"
         command: ./ci/test_plugins.sh -t tier1 -k filter
       - label: "Test Tier1 codecs"

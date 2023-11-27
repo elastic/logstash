@@ -1,4 +1,17 @@
-#!/bin/sh -ie
+#!/usr/bin/env bash
+set -euo pipefail
+
+## TODO remove, used for debugging
+echo ">>>> OS is:"
+cat /etc/os-release
+
+echo ">>> JRuby is"
+jruby --version
+
+echo ">>> Java is"
+java -version
+## END debug section
+
 export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 
