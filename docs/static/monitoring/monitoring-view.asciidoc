@@ -1,7 +1,3 @@
-[float]
-[[confirm-enrollment]]
-//tag::confirm-enrollment-widget[]
-
 After you have confirmed enrollment and data is coming in,  click **View assets** to access dashboards related to the {ls} integration.
 
 For traditional Stack Monitoring UI, the dashboards marked **[Logs {ls}]** are used to visualize the logs
@@ -16,4 +12,3 @@ image::images/integration-assets-dashboards.png[Integration assets]
 
 A number of dashboards are included to view {ls} as a whole, and dashboards that allow you to drill-down
 into how {ls} is performing on a node, pipeline and plugin basis.
-//end::confirm-enrollment-widget[]
