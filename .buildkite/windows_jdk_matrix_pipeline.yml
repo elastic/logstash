@@ -5,45 +5,45 @@ env:
   DEFAULT_MATRIX_JDK: "adoptiumjdk_17"
 
 steps:
-  - input: "Test Parameters"
-    if: build.source != "schedule"
-    fields:
-      - select: "Operating System"
-        key: "matrix-os"
-        hint: "The operating system variant(s) to run on:"
-        required: true
-        multiple: true
-        default: "${DEFAULT_MATRIX_OS}"
-        options:
-          - label: "Windows 2022"
-            value: "windows-2022"
-          - label: "Windows 2019"
-            value: "windows-2019"
-          - label: "Windows 2016"
-            value: "windows-2016"
+  # - input: "Test Parameters"
+  #   if: build.source != "schedule"
+  #   fields:
+  #     - select: "Operating System"
+  #       key: "matrix-os"
+  #       hint: "The operating system variant(s) to run on:"
+  #       required: true
+  #       multiple: true
+  #       default: "${DEFAULT_MATRIX_OS}"
+  #       options:
+  #         - label: "Windows 2022"
+  #           value: "windows-2022"
+  #         - label: "Windows 2019"
+  #           value: "windows-2019"
+  #         - label: "Windows 2016"
+  #           value: "windows-2016"
 
-      - select: "Java"
-        key: "matrix-jdk"
-        hint: "The JDK to test with:"
-        required: true
-        multiple: true
-        default: "${DEFAULT_MATRIX_JDK}"
-        options:
-          - label: "Adoptium JDK 17 (Eclipse Temurin)"
-            value: "adoptiumjdk_17"
-          - label: "Adopt OpenJDK 11"
-            value: "adoptopenjdk_11"
-          - label: "OpenJDK 17"
-            value: "openjdk_17"
-          - label: "OpenJDK 11"
-            value: "openjdk_11"
-          - label: "Zulu 17"
-            value: "zulu_17"
-          - label: "Zulu 11"
-            value: "zulu_11"
+  #     - select: "Java"
+  #       key: "matrix-jdk"
+  #       hint: "The JDK to test with:"
+  #       required: true
+  #       multiple: true
+  #       default: "${DEFAULT_MATRIX_JDK}"
+  #       options:
+  #         - label: "Adoptium JDK 17 (Eclipse Temurin)"
+  #           value: "adoptiumjdk_17"
+  #         - label: "Adopt OpenJDK 11"
+  #           value: "adoptopenjdk_11"
+  #         - label: "OpenJDK 17"
+  #           value: "openjdk_17"
+  #         - label: "OpenJDK 11"
+  #           value: "openjdk_11"
+  #         - label: "Zulu 17"
+  #           value: "zulu_17"
+  #         - label: "Zulu 11"
+  #           value: "zulu_11"
 
-  - wait: ~
-    if: build.source != "schedule"
+  # - wait: ~
+  #   if: build.source != "schedule"
 
   - command: |
       set -euo pipefail

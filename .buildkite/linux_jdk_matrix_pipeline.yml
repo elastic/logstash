@@ -5,65 +5,65 @@ env:
   DEFAULT_MATRIX_JDK: "adoptiumjdk_17"
 
 steps:
-  - input: "Test Parameters"
-    if: build.source != "schedule"
-    fields:
-      - select: "Operating System"
-        key: "matrix-os"
-        hint: "The operating system variant(s) to run on:"
-        required: true
-        multiple: true
-        default: "${DEFAULT_MATRIX_OS}"
-        options:
-          - label: "Ubuntu 22.04"
-            value: "ubuntu-2204"
-          - label: "Ubuntu 20.04"
-            value: "ubuntu-2004"
-          - label: "Ubuntu 18.04"
-            value: "ubuntu-1804"
-          - label: "Debian 11"
-            value: "debian-11"
-          - label: "Debian 10"
-            value: "debian-10"
-          - label: "RHEL 9"
-            value: "rhel-9"
-          - label: "RHEL 8"
-            value: "rhel-8"
-          - label: "CentOS 7"
-            value: "centos-7"
-          - label: "Oracle Linux 8"
-            value: "oraclelinux-8"
-          - label: "Oracle Linux 7"
-            value: "oraclelinux-7"
-          - label: "Rocky Linux 8"
-            value: "rocky-linux-8"
-          - label: "Amazon Linux (2023)"
-            value: "amazonlinux-2023"
-          - label: "OpenSUSE Leap 15"
-            value: "opensuse-leap-15"
+  # - input: "Test Parameters"
+  #   if: build.source != "schedule"
+  #   fields:
+  #     - select: "Operating System"
+  #       key: "matrix-os"
+  #       hint: "The operating system variant(s) to run on:"
+  #       required: true
+  #       multiple: true
+  #       default: "${DEFAULT_MATRIX_OS}"
+  #       options:
+  #         - label: "Ubuntu 22.04"
+  #           value: "ubuntu-2204"
+  #         - label: "Ubuntu 20.04"
+  #           value: "ubuntu-2004"
+  #         - label: "Ubuntu 18.04"
+  #           value: "ubuntu-1804"
+  #         - label: "Debian 11"
+  #           value: "debian-11"
+  #         - label: "Debian 10"
+  #           value: "debian-10"
+  #         - label: "RHEL 9"
+  #           value: "rhel-9"
+  #         - label: "RHEL 8"
+  #           value: "rhel-8"
+  #         - label: "CentOS 7"
+  #           value: "centos-7"
+  #         - label: "Oracle Linux 8"
+  #           value: "oraclelinux-8"
+  #         - label: "Oracle Linux 7"
+  #           value: "oraclelinux-7"
+  #         - label: "Rocky Linux 8"
+  #           value: "rocky-linux-8"
+  #         - label: "Amazon Linux (2023)"
+  #           value: "amazonlinux-2023"
+  #         - label: "OpenSUSE Leap 15"
+  #           value: "opensuse-leap-15"
 
-      - select: "Java"
-        key: "matrix-jdk"
-        hint: "The JDK to test with:"
-        required: true
-        multiple: true
-        default: "${DEFAULT_MATRIX_JDK}"
-        options:
-          - label: "Adoptium JDK 17 (Eclipse Temurin)"
-            value: "adoptiumjdk_17"
-          - label: "Adopt OpenJDK 11"
-            value: "adoptopenjdk_11"
-          - label: "OpenJDK 17"
-            value: "openjdk_17"
-          - label: "OpenJDK 11"
-            value: "openjdk_11"
-          - label: "Zulu 17"
-            value: "zulu_17"
-          - label: "Zulu 11"
-            value: "zulu_11"
+  #     - select: "Java"
+  #       key: "matrix-jdk"
+  #       hint: "The JDK to test with:"
+  #       required: true
+  #       multiple: true
+  #       default: "${DEFAULT_MATRIX_JDK}"
+  #       options:
+  #         - label: "Adoptium JDK 17 (Eclipse Temurin)"
+  #           value: "adoptiumjdk_17"
+  #         - label: "Adopt OpenJDK 11"
+  #           value: "adoptopenjdk_11"
+  #         - label: "OpenJDK 17"
+  #           value: "openjdk_17"
+  #         - label: "OpenJDK 11"
+  #           value: "openjdk_11"
+  #         - label: "Zulu 17"
+  #           value: "zulu_17"
+  #         - label: "Zulu 11"
+  #           value: "zulu_11"
 
-  - wait: ~
-    if: build.source != "schedule"
+  # - wait: ~
+  #   if: build.source != "schedule"
 
   - command: |
       set -euo pipefail
