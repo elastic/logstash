@@ -68,6 +68,7 @@ describe "Beat Input" do
       begin
         sleep(1) while (result = logstash_service.monitoring_api.event_stats).nil?
       rescue
+        sleep(1)
         retry
       end
 
