@@ -1,5 +1,9 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
+env:
+  DEFAULT_MATRIX_OS: "ubuntu-2204"
+  DEFAULT_MATRIX_JDK: "adoptiumjdk_17"
+
 steps:
   - input: "Test Parameters"
     if: build.source != "schedule"
@@ -9,7 +13,7 @@ steps:
         hint: "The operating system variant(s) to run on:"
         required: true
         multiple: true
-        default: "ubuntu-2204"
+        default: "${DEFAULT_MATRIX_OS}"
         options:
           - label: "Ubuntu 22.04"
             value: "ubuntu-2204"
@@ -43,7 +47,7 @@ steps:
         hint: "The JDK to test with:"
         required: true
         multiple: true
-        default: "adoptiumjdk_17"
+        default: "${DEFAULT_MATRIX_JDK}"
         options:
           - label: "Adoptium JDK 17 (Eclipse Temurin)"
             value: "adoptiumjdk_17"
@@ -68,8 +72,8 @@ steps:
       python3 -m pip install ruamel.yaml
 
       echo "--- Printing generated dynamic steps"
-      export MATRIX_OSES="$(buildkite-agent meta-data get matrix-os)"
-      export MATRIX_JDKS="$(buildkite-agent meta-data get matrix-jdk)"
+      export MATRIX_OSES="$(buildkite-agent meta-data get matrix-os --default=${DEFAULT_MATRIX_OS})"
+      export MATRIX_JDKS="$(buildkite-agent meta-data get matrix-jdk --default=${DEFAULT_MATRIX_JDK})"
       set +eo pipefail
       python3 .buildkite/scripts/jdk-matrix-tests/generate-steps.py >pipeline_steps.yml
       if [[ $$? -ne 0 ]]; then
