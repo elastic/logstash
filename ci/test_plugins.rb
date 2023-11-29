@@ -73,12 +73,28 @@ class Plugin
     puts "test plugins(execute_rspec)>> bundle install"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
 
+    unit_test_folders = Dir.glob('spec/**/*')
+        .select {|f| File.directory? f}
+        .select{|f| not f.include?('integration')}
+        .join(" ")
+
     puts "test plugins(execute_rspec)>> rake vendor"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rake vendor")
     
     puts "test plugins(execute_rspec)>> exec rspec"
-    spec_result = system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec --tag \"~integration\" --tag \"~secure_integration\"")
-    return spec_result ? true : false
+    rspec_command = "#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec #{unit_test_folders} --tag ~integration --tag ~secure_integration"
+    puts "\t\t executing: #{rspec_command}"
+    stdout, stderr, status = Open3.capture3(rspec_command)
+    if status != 0
+      puts "Error executing rspec"
+      puts "Stderr ----------------------"
+      puts stderr
+      puts "Stdout ----------------------"
+      puts stdout
+      puts "OEFStdout--------------------"
+      return false
+    end
+    return true
   end
 
   # Return nil in case of error or the file name of the generated gem file
