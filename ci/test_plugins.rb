@@ -69,6 +69,7 @@ class Plugin
     # setup JRUBY_OPTS env var to open access to expected modules
     # the content is the same of the file https://github.com/logstash-plugins/.ci/blob/main/dockerjdk17.env
     ENV['JRUBY_OPTS'] = "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED -J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED -J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED -J--add-opens=java.base/java.security=ALL-UNNAMED -J--add-opens=java.base/java.io=ALL-UNNAMED -J--add-opens=java.base/java.nio.channels=ALL-UNNAMED -J--add-opens=java.base/sun.nio.ch=ALL-UNNAMED -J--add-opens=java.management/sun.management=ALL-UNNAMED -Xregexp.interruptible=true -Xcompile.invokedynamic=true -Xjit.threshold=0 -J-XX:+PrintCommandLineFlags -v -W1"
+    ENV['USER'] = "logstash"
 
     puts "test plugins(execute_rspec)>> bundle install"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle install")
