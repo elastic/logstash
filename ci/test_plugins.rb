@@ -99,7 +99,8 @@ class Plugin
 
   # Return nil in case of error or the file name of the generated gem file
   def build_gem
-    system("gem build #{plugin_name}.gemspec")
+    gem_command = "#{ENV['LOGSTASH_PATH']}/bin/ruby -S gem build #{plugin_name}.gemspec"
+    system(gem_command)
 
     gem_name = Dir.glob("#{plugin_name}*.gem").first
     unless gem_name
