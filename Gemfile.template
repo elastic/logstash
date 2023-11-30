@@ -29,6 +29,8 @@ gem "json-schema", "~> 2", :group => :development
 gem "logstash-devutils", "~> 2", :group => :development
 gem "rack-test", :require => "rack/test", :group => :development
 gem "rspec", "~> 3.5", :group => :development
+gem "simplecov", require: false, :group => :test
+gem "simplecov-json", require: false, :group => :test
 gem "webmock", "~> 3", :group => :development
 gem "jar-dependencies", "= 0.4.1" # Gem::LoadError with jar-dependencies 0.4.2
 gem "murmurhash3", "= 0.1.6" # Pins until version 0.1.7-java is released

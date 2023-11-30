@@ -22,6 +22,8 @@ require "flores/random"
 require "pathname"
 require "stud/task"
 require "logstash/devutils/rspec/spec_helper"
+require 'simplecov'
+require 'simplecov-json'
 require "support/resource_dsl_methods"
 require "support/mocks_classes"
 require "support/helpers"
@@ -43,6 +45,13 @@ class JSONIOThingy < IO
     LogStash::Json.load(payload)
   end
 end
+
+SimpleCov.formatters = SimpleCov::Formatter::MultiFormatter.new([
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::JSONFormatter
+])
+
+SimpleCov.start
 
 # Refactor the suite to https://github.com/elastic/logstash/issues/7148
 RSpec::Expectations.configuration.on_potential_false_positives = :nothing
