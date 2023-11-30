@@ -1,3 +1,29 @@
 steps:
-  - label: "Test Exhaustive tests pipeline"
-    command: "echo 'Hello world'"
+  - label: "Exhaustive tests pipeline"
+    command: |
+      #!/usr/bin/env bash
+      set -eo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      echo "--- Downloading prerequisites"
+      python3 -m pip install ruamel.yaml
+      curl -fsSL --retry-max-time 60 --retry 3 --retry-delay 5 -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+      chmod a+x /usr/bin/yq
+
+      echo "--- Printing generated dynamic steps"
+      set +e
+      python3 .buildkite/scripts/exhaustive-tests/generate-steps.py >pipeline_steps.yml
+      if [[ $$? -ne 0 ]]; then
+        echo "^^^ +++"
+        echo "There was a problem rendering the pipeline steps."
+        cat pipeline_steps.yml
+        echo "Exiting now."
+        exit 1
+      else
+        set -eo pipefail
+        cat pipeline_steps.yml | yq .
+      fi
+
+      set -eo pipefail
+      echo "--- Uploading steps to buildkite"
+      cat pipeline_steps.yml | buildkite-agent pipeline upload
