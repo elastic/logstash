@@ -39,11 +39,11 @@ volume and variety of data.
 ****
 If you are sending data from {ls} to {serverless-full}, note these differences from {ess} and self-managed Elasticsearch:
 
-* {serverless-full} uses Data Lifecycle Management (DLM) instead of Index Lifecycle Management (ILM). 
-Any ILM settings in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
+* {serverless-full} uses {dlm} ({dlm-init}) instead of {ilm} ({ilm-init}). 
+Any {ilm-init} settings in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
 * Use API keys to access {serverless-full} from {ls}. 
 Any user-based security settings in your in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* Logstash monitoring for {serverless-full} is still under development.
+* {ls} monitoring is available through the https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] on {serverless-full}.
 ****
 
 
