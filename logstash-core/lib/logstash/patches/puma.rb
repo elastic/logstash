@@ -126,6 +126,10 @@ module LogStash
     def debug_error(error, req = nil, text = "")
       @logger.debug(text, { error: error, req: req, backtrace: error&.backtrace }) if @logger.debug?
     end
+
+    def debug?
+      @logger.debug?
+    end
   end
 end
 
