@@ -49,7 +49,7 @@ class LogStash::SecretStoreCli
     LogStash::Util::SettingsHelper.post_process
     secure_config = SecretStoreExt.getConfig(LogStash::SETTINGS.get_setting("keystore.file").value, LogStash::SETTINGS.get_setting("keystore.classname").value)
     cli = SecretStoreCli.new(Terminal.new)
-    cli.command(ARGV[0], secure_config, ARGV[1])
+    cli.command(ARGV[0], secure_config, *ARGV[1, ARGV.length])
     exit 0
   rescue => e
     logger.error(e.message, :cause => e.cause, :backtrace => e.backtrace)

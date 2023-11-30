@@ -28,11 +28,15 @@ import org.logstash.secret.store.SecretStoreFactory;
 import org.logstash.secret.store.SecureConfig;
 
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.logstash.secret.store.SecretStoreFactory.ENVIRONMENT_PASS_KEY;
 
@@ -54,6 +58,7 @@ public class SecretStoreCliTest {
         final SecretStoreFactory secretStoreFactory = SecretStoreFactory.withEnvironment(environment);
 
         cli = new SecretStoreCli(terminal, secretStoreFactory);
+
         existingStoreConfig = new SecureConfig();
         existingStoreConfig.add("keystore.file",
                 Paths.get(this.getClass().getClassLoader().getResource("logstash.keystore.with.default.pass").toURI()).toString().toCharArray());
@@ -64,14 +69,14 @@ public class SecretStoreCliTest {
 
     @Test
     public void testBadCommand() {
-        cli.command("nonsense", null, null);
+        cli.command("nonsense", null);
         assertPrimaryHelped();
     }
 
     @Test
     public void testHelpAdd() {
         cli.command("add", null, "--help");
-        assertThat(terminal.out).containsIgnoringCase("Adds a new secret to the keystore");
+        assertThat(terminal.out).containsIgnoringCase("Add secrets to the keystore");
     }
 
     @Test
@@ -89,12 +94,12 @@ public class SecretStoreCliTest {
     @Test
     public void testHelpRemove() {
         cli.command("remove", null, "--help");
-        assertThat(terminal.out).containsIgnoringCase("Removes a secret from the keystore");
+        assertThat(terminal.out).containsIgnoringCase("Remove secrets from the keystore");
     }
 
     @Test
     public void testList() {
-        cli.command("list", existingStoreConfig, null);
+        cli.command("list", existingStoreConfig);
 
        // contents of the existing store is a-z for both the key and value
         for (int i = 65; i <= 90; i++) {
@@ -106,104 +111,166 @@ public class SecretStoreCliTest {
 
     @Test
     public void testCreateNewAllYes() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
+        terminal.in.add("y");
+        cli.command("create", newStoreConfig);
         assertCreated();
     }
 
     @Test
     public void testCreateNewAllNo() {
-        terminal.in = "n";
-        cli.command("create", newStoreConfig, null);
+        terminal.in.add("n");
+        cli.command("create", newStoreConfig);
         assertNotCreated();
     }
 
     @Test
     public void testCreateNoEnvironmentWarning() {
-        cli.command("create", newStoreConfig, null);
+        cli.command("create", newStoreConfig);
         assertThat(terminal.out).contains("Please set the environment variable `LOGSTASH_KEYSTORE_PASS`. Failure to do so will result in reduced security.");
     }
 
 
     @Test
     public void testDoubleCreateWarning() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
-        assertCreated();
-        terminal.reset();
+        createKeyStore();
 
-        cli.command("create", newStoreConfig, null);
+        cli.command("create", newStoreConfig);
         assertThat(terminal.out).contains("Overwrite");
         assertNotCreated();
     }
 
     @Test
     public void testAddEmptyValue() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
-        assertCreated();
-        terminal.reset();
+        createKeyStore();
 
-        terminal.in = ""; // sets the value
+        terminal.in.add(""); // sets the empty value
+        terminal.in.add("value");
+
         String id = UUID.randomUUID().toString();
         cli.command("add", newStoreConfig.clone(), id);
-        assertThat(terminal.out).containsIgnoringCase("ERROR");
+        assertThat(terminal.out).containsIgnoringCase("ERROR: Value cannot be empty");
+    }
+
+    @Test
+    public void testAddNonAsciiValue() {
+        createKeyStore();
+
+        terminal.in.add("€€€€€"); // sets non-ascii value value
+        terminal.in.add("value");
+
+        String id = UUID.randomUUID().toString();
+        cli.command("add", newStoreConfig.clone(), id);
+        assertThat(terminal.out).containsIgnoringCase("ERROR: Value must contain only ASCII characters");
     }
 
     @Test
     public void testAdd() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
-        assertCreated();
-        terminal.reset();
+        createKeyStore();
 
-        terminal.in = UUID.randomUUID().toString(); // sets the value
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
         String id = UUID.randomUUID().toString();
         cli.command("add", newStoreConfig.clone(), id);
         terminal.reset();
 
-        cli.command("list", newStoreConfig, null);
+        cli.command("list", newStoreConfig);
         assertListed(id);
     }
 
     @Test
-    public void testRemove() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
-        assertCreated();
+    public void testAddWithNoIdentifiers() {
+        final String expectedMessage = "ERROR: You must supply an identifier to add";
+
+        createKeyStore();
+
+        String[] nullArguments = null;
+        cli.command("add", newStoreConfig.clone(), nullArguments);
+        assertThat(terminal.out).containsIgnoringCase(expectedMessage);
+
         terminal.reset();
 
-        terminal.in = UUID.randomUUID().toString(); // sets the value
+        cli.command("add", newStoreConfig.clone());
+        assertThat(terminal.out).containsIgnoringCase(expectedMessage);
+    }
+
+    @Test
+    public void testAddMultipleKeys() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString());
+        terminal.in.add(UUID.randomUUID().toString());
+
+        final String keyOne = UUID.randomUUID().toString();
+        final String keyTwo = UUID.randomUUID().toString();
+        cli.command("add", newStoreConfig.clone(), keyOne, keyTwo);
+        terminal.reset();
+
+        cli.command("list", newStoreConfig);
+        assertListed(keyOne, keyTwo);
+    }
+
+    @Test
+    public void testAddWithoutCreatedKeystore() {
+        cli.command("add", newStoreConfig.clone(), UUID.randomUUID().toString());
+        assertThat(terminal.out).containsIgnoringCase("ERROR: Logstash keystore not found. Use 'create' command to create one.");
+    }
+
+    @Test
+    public void testRemove() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
         String id = UUID.randomUUID().toString();
         cli.command("add", newStoreConfig.clone(), id);
         System.out.println(terminal.out);
         terminal.reset();
 
-        cli.command("list", newStoreConfig.clone(), null);
+        cli.command("list", newStoreConfig.clone());
         assertListed(id);
         terminal.reset();
 
         cli.command("remove", newStoreConfig.clone(), id);
         terminal.reset();
 
-        cli.command("list", newStoreConfig, null);
+        cli.command("list", newStoreConfig);
         assertThat(terminal.out).doesNotContain(id);
     }
 
     @Test
-    public void testRemoveMissing() {
-        terminal.in = "y";
-        cli.command("create", newStoreConfig, null);
-        assertCreated();
+    public void testRemoveMultipleKeys() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString());
+        terminal.in.add(UUID.randomUUID().toString());
+
+        final String keyOne = UUID.randomUUID().toString();
+        final String keyTwo = UUID.randomUUID().toString();
+
+        cli.command("add", newStoreConfig.clone(), keyOne, keyTwo);
         terminal.reset();
 
-        terminal.in = UUID.randomUUID().toString(); // sets the value
+        cli.command("list", newStoreConfig.clone());
+        assertListed(keyOne, keyTwo);
+        terminal.reset();
+
+        cli.command("remove", newStoreConfig.clone(), keyOne, keyTwo);
+        terminal.reset();
+
+        cli.command("list", newStoreConfig);
+        assertThat(terminal.out).doesNotContain(keyOne);
+        assertThat(terminal.out).doesNotContain(keyTwo);
+    }
+
+    @Test
+    public void testRemoveMissing() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
         String id = UUID.randomUUID().toString();
         cli.command("add", newStoreConfig.clone(), id);
         System.out.println(terminal.out);
         terminal.reset();
 
-        cli.command("list", newStoreConfig.clone(), null);
+        cli.command("list", newStoreConfig.clone());
         assertListed(id);
         terminal.reset();
 
@@ -211,6 +278,29 @@ public class SecretStoreCliTest {
         assertThat(terminal.out).containsIgnoringCase("error");
     }
 
+    @Test
+    public void testRemoveWithNoIdentifiers() {
+        final String expectedMessage = "ERROR: You must supply a value to remove.";
+
+        createKeyStore();
+
+        String[] nullArguments = null;
+        cli.command("remove", newStoreConfig.clone(), nullArguments);
+        assertThat(terminal.out).containsIgnoringCase(expectedMessage);
+
+        terminal.reset();
+
+        cli.command("remove", newStoreConfig.clone());
+        assertThat(terminal.out).containsIgnoringCase(expectedMessage);
+    }
+
+    private void createKeyStore() {
+        terminal.reset();
+        terminal.in.add("y");
+        cli.command("create", newStoreConfig);
+        assertCreated();
+        terminal.reset();
+    }
 
     private void assertNotCreated() {
         assertThat(terminal.out).doesNotContain("Created Logstash keystore");
@@ -220,8 +310,8 @@ public class SecretStoreCliTest {
         assertThat(terminal.out).contains("Created Logstash keystore");
     }
 
-    private void assertListed(String expected) {
-        assertThat(terminal.out).contains(expected);
+    private void assertListed(String... expected) {
+        assertTrue(Arrays.stream(expected).allMatch(terminal.out::contains));
     }
 
     private void assertPrimaryHelped() {
@@ -243,7 +333,7 @@ public class SecretStoreCliTest {
 
     class TestTerminal extends Terminal {
         public String out = "";
-        public String in = "";
+        public final Queue<String> in = new LinkedList<>();
 
         @Override
         public void writeLine(String text) {
@@ -257,16 +347,16 @@ public class SecretStoreCliTest {
 
         @Override
         public String readLine() {
-            return in;
+            return in.poll();
         }
 
         @Override
         public char[] readSecret() {
-            return in.toCharArray();
+            return in.poll().toCharArray();
         }
 
         public void reset() {
-            in = "";
+            in.clear();
             out = "";
         }
     }
