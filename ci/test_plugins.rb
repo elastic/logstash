@@ -153,7 +153,7 @@ PLUGIN_DEFINITIONS = {
                 "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
                 "logstash-filter-xml"],
     :output => ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
-                "logstash-output-redis", "logstash-output-s3", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
+                "logstash-output-redis", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
     :integration => ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
                      "logstash-integration-elastic_enterprise_search", "logstash-integration-aws"]
   },
