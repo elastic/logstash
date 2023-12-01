@@ -8,10 +8,21 @@ steps:
   - group: "Tier1 plugins test group"
     key: "tier1_plugins"
     steps:
-      - label: "Test Tier1 inputs"
+      - label: "Test input file plugin"
         command: |
           source .buildkite/scripts/common/vm-agent.sh
-          ./ci/test_plugins.sh -t tier1 -k input
+          ./ci/test_plugins.sh -p logstash-input-file
+        # Workaround for https://github.com/elastic/ingest-dev/issues/2676
+        agents:
+          provider: gcp
+          imageProject: elastic-images-prod
+          image: family/platform-ingest-logstash-ubuntu-2204
+          machineType: "n2-standard-4"
+          diskSizeGb: 120
+      - label: "Test rest of Tier1 inputs"
+        command: |
+          source .buildkite/scripts/common/vm-agent.sh
+          ./ci/test_plugins.sh -p logstash-input-azure_event_hubs logstash-input-beats logstash-input-elasticsearch logstash-input-generator logstash-input-heartbeat logstash-input-http logstash-input-http_poller logstash-input-redis logstash-input-stdin logstash-input-syslog logstash-input-udp
         # Workaround for https://github.com/elastic/ingest-dev/issues/2676
         agents:
           provider: gcp
