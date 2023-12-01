@@ -194,18 +194,14 @@ def select_by_tiers_and_kinds(tiers, kinds)
 end
 
 def select_plugins_by_opts(options)
-  select_plugins = []
-  if options[:plugins]
-    select_plugins = select_plugins + options[:plugins]
-  else
-    selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
-    selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
-    selected_partition = options.fetch(:split, "1/1")
+  return options[:plugins] if options[:plugins]
 
-    select_plugins = select_plugins + select_by_tiers_and_kinds(selected_tiers, selected_kinds)
-    select_plugins = split_by_partition(select_plugins, selected_partition)
-  end
-  select_plugins
+  selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
+  selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
+  selected_partition = options.fetch(:split, "1/1")
+
+  select_plugins = select_by_tiers_and_kinds(selected_tiers, selected_kinds)
+  return split_by_partition(select_plugins, selected_partition)
 end
 
 # Return the partion corresponding to the definition of the given list
@@ -254,8 +250,6 @@ option_parser.parse!(into: options)
 validate_options!(options)
 
 plugins = select_plugins_by_opts(options)
-puts "DNADBG>> test plugins: #{plugins.class} #{plugins}"
-exit 1
 
 puts "test plugins(start)>> start at #{Time.new}"
 
