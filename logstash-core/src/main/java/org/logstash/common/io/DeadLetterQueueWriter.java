@@ -254,7 +254,9 @@ public final class DeadLetterQueueWriter implements Closeable {
             }
 
             try {
-                flushScheduler.shutdown();
+                if (flushScheduler != null) {
+                    flushScheduler.shutdown();
+                }
             } catch (Exception e) {
                 logger.warn("Unable shutdown flush scheduler, ignoring", e);
             }
