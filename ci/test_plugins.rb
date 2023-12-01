@@ -195,8 +195,8 @@ end
 
 def select_plugins_by_opts(options)
   select_plugins = []
-  if options[:plugin]
-    select_plugins << options[:plugins]
+  if options[:plugins]
+    select_plugins = select_plugins + options[:plugins]
   else
     selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
     selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
@@ -242,9 +242,9 @@ def setup_logstash_for_development
 end
 
 option_parser = OptionParser.new do |opts|
-  opts.on '-t', '--tiers tier1 tier2 unsupported', Array, 'Use to select which tier to test. If no provided mean "all"'
-  opts.on '-k', '--kinds input codec filter output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
-  opts.on '-p', '--plugins plugin1 plugin2', Array, 'Use to select a specific set of plugins, conflict with either -t and -k'
+  opts.on '-t', '--tiers tier1,tier2,unsupported', Array, 'Use to select which tier to test. If no provided mean "all"'
+  opts.on '-k', '--kinds input,codec,filter,output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
+  opts.on '-p', '--plugins plugin1,plugin2', Array, 'Use to select a specific set of plugins, conflict with either -t and -k'
   opts.on '-sPARTITION', '--split=PARTITION', String, 'Use to partition the set of plugins to execute, for example -s 1/3 means "execute the first third of the selected plugin list"'
   opts.on '-h', '--halt', 'Halt immediately on first error'
 end
@@ -254,6 +254,8 @@ option_parser.parse!(into: options)
 validate_options!(options)
 
 plugins = select_plugins_by_opts(options)
+puts "DNADBG>> test plugins: #{plugins.class} #{plugins}"
+exit 1
 
 puts "test plugins(start)>> start at #{Time.new}"
 

@@ -22,7 +22,7 @@ steps:
       - label: "Test rest of Tier1 inputs"
         command: |
           source .buildkite/scripts/common/vm-agent.sh
-          ./ci/test_plugins.sh -p logstash-input-azure_event_hubs logstash-input-beats logstash-input-elasticsearch logstash-input-generator logstash-input-heartbeat logstash-input-http logstash-input-http_poller logstash-input-redis logstash-input-stdin logstash-input-syslog logstash-input-udp
+          ./ci/test_plugins.sh -p logstash-input-azure_event_hubs,logstash-input-beats,logstash-input-elasticsearch,logstash-input-generator,logstash-input-heartbeat,logstash-input-http,logstash-input-http_poller,logstash-input-redis,logstash-input-stdin,logstash-input-syslog,logstash-input-udp
         # Workaround for https://github.com/elastic/ingest-dev/issues/2676
         agents:
           provider: gcp
