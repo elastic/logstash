@@ -1,13 +1,14 @@
 # encoding: utf-8
 
 # Test the
-# - build (rspec),
+# - build (rspec unit testing),
 # - packaging (gem build)
 # - and deploy (bin/logstash-plugin install)
 # of a plugins inside the current Logstash, using its JRuby
 # Usage example:
 # bin/ruby ci/test_supported_plugins.rb -p logstash-integration-jdbc
 # bin/ruby ci/test_supported_plugins.rb -t tier1 -k input,codec,integration
+# bin/ruby ci/test_supported_plugins.rb -t tier1 -k input,codec,integration --split 1/3
 #
 # The script uses OS's temp folder unless the environment variable LOGSTASH_PLUGINS_TMP is specified.
 # The path of such variable should be absolute.
@@ -42,7 +43,7 @@ class Plugin
 
   def git_retrieve
     if File.directory?(plugin_name)
-      puts "test plugins(git_retrieve)>> #{plugin_name} already cloned locally, proceed with updating..."
+      puts "test plugins(git_retrieve)>> #{plugin_name} already cloned locally, proceed with updating... (at #{Time.new})"
       Dir.chdir(plugin_name) do
         system("git restore -- .")
         puts "Cleaning following files"
@@ -54,7 +55,7 @@ class Plugin
       return
     end
 
-    puts "test plugins(git_retrieve)>> #{plugin_name} local clone doesn't exist, cloning..."
+    puts "test plugins(git_retrieve)>> #{plugin_name} local clone doesn't exist, cloning... (at #{Time.new})"
 
     plugin_repository = "git@github.com:logstash-plugins/#{plugin_name}.git"
     unless system("git clone #{plugin_repository}")
@@ -79,7 +80,7 @@ class Plugin
         .select{|f| not f.include?('integration')}
         .join(" ")
 
-    puts "test plugins(execute_rspec)>> rake vendor"
+    puts "test plugins(execute_rspec)>> rake vendor (at #{Time.new})"
     return false unless system("#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rake vendor")
     
     puts "test plugins(execute_rspec)>> exec rspec"
@@ -199,9 +200,23 @@ def select_plugins_by_opts(options)
   else
     selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
     selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
+    selected_partition = options.fetch(:split, "1/1")
+
     select_plugins = select_plugins + select_by_tiers_and_kinds(selected_tiers, selected_kinds)
+    select_plugins = split_by_partition(select_plugins, selected_partition)
   end
   select_plugins
+end
+
+# Return the partion corresponding to the definition of the given list
+def split_by_partition(list, partition_definition)
+  slice = partition_definition.split('/')[0].to_i
+  num_slices = partition_definition.split('/')[1].to_i
+
+  slice_size = list.size / num_slices
+  slice_start = (slice - 1) * slice_size
+  slice_end = slice == num_slices ? -1 : slice * slice_size - 1
+  return list[slice_start..slice_end]
 end
 
 def snapshot_logstash_artifacts!
@@ -230,6 +245,7 @@ option_parser = OptionParser.new do |opts|
   opts.on '-t', '--tiers tier1, tier2, unsupported', Array, 'Use to select which tier to test. If no provided mean "all"'
   opts.on '-k', '--kinds input, codec, filter, output', Array, 'Use to select which kind of plugin to test. If no provided mean "all"'
   opts.on '-pPLUGIN', '--plugin=PLUGIN', 'Use to select a specific plugin, conflict with either -t and -k'
+  opts.on '-sPARTITION', '--split=PARTITION', String, 'Use to partition the set of plugins to execute, for example -s 1/3 means "execute the first third of the selected plugin list"'
   opts.on '-h', '--halt', 'Halt immediately on first error'
 end
 options = {}
@@ -238,6 +254,8 @@ option_parser.parse!(into: options)
 validate_options!(options)
 
 plugins = select_plugins_by_opts(options)
+
+puts "test plugins(start)>> start at #{Time.new}"
 
 setup_logstash_for_development
 
