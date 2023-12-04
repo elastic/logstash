@@ -65,6 +65,14 @@ elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
 
   echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/ubi8/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "cgr" ]]; then
+
+  echo "--- Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+
+  echo "--- Acceptance: Running the tests"
+  bundle exec rspec docker/spec/cgr/*_spec.rb
 else
   echo "--- Building all docker images"
   cd $LS_HOME

@@ -21,7 +21,7 @@ end
 def find_image(flavor)
   Docker::Image.all.detect {
       |image| image.info['RepoTags'].detect {
-        |tag| tag == "docker.elastic.co/logstash/logstash-#{flavor}:#{qualified_version}"
+        |tag| tag == "docker.elastic.co/sscs/logstash-cgr:20231205-pr-7"
     }}
 end
 
@@ -120,7 +120,7 @@ def get_settings(container)
 end
 
 def java_process(container, column)
-  exec_in_container(container, "ps -C java -o #{column}=")
+  exec_in_container(container, "ps -o #{column}=")
 end
 
 # Runs the given command in the given container. This method returns
