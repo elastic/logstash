@@ -6,5 +6,7 @@ Shared attributes for the plugin docs (in the LSR and VPR) should
 go in /docs/include/attributes-lsplugins.asciidoc instead 
 with a corresponding change to the VPR settings in 
 logstash-docs/docs/versioned-plugins/include/attributes-ls-vpr.asciidoc
+
+TEST FOR PR
 /////
 
