@@ -15,9 +15,9 @@ See {ref}/configuring-stack-security.html[Starting the Elastic Stack with securi
 [NOTE]
 =====
 
-{serverless-full} simplifies safe, secure communication between {ls} and {es}. 
+{es-serverless} simplifies safe, secure communication between {ls} and {es}. 
 
-Configure the <<plugins-outputs-elasticsearch,{ls} {es} output plugin>> to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> and an <<plugins-outputs-elasticsearch-api_key,`api_key`>> to establish safe, secure communication between {ls} and {serverless-full}.
+Configure the <<plugins-outputs-elasticsearch,{ls} {es} output plugin>> to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> and an <<plugins-outputs-elasticsearch-api_key,`api_key`>> to establish safe, secure communication between {ls} and {es-serverless}.
 No additional SSL configuration steps are needed.
 
 Configuration example:

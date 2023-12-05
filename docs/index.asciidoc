@@ -37,18 +37,20 @@ volume and variety of data.
 [serverless]
 .Logstash to {serverless-full}
 ****
-If you are sending data from {ls} to {serverless-full}, note these differences from {ess} and self-managed Elasticsearch:
+You'll use the {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> to send data to {serverless-full}.
+Note these differences between {es-serverless} and both {ess} and self-managed {es}:
 
-* Use API keys to access {serverless-full} from {ls}. 
+* Use *API keys* to access {serverless-full} from {ls}. 
 Any user-based security settings in your in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* {serverless-full} uses {dlm} ({dlm-init}) instead of {ilm} ({ilm-init}). 
+* {serverless-full} uses *{dlm} ({dlm-init})* instead of {ilm} ({ilm-init}). 
 Any {ilm-init} settings in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* {ls} monitoring is available through the https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] on {serverless-full}.
-** Known issue**
+* *{ls} monitoring* is available through the https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] on {serverless-full}.
 
-* The logstash-output-elasticsearch `hosts` setting defaults to port :9200. Set the value to port :443 instead.
+
+.Known issue for {ls} to {es-serverless}.
+
+The logstash-output-elasticsearch `hosts` setting defaults to port :9200. Set the value to port :443 instead.
 ****
-
 
 
 // The pass blocks here point to the correct repository for the edit links in the guide.
