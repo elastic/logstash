@@ -79,74 +79,17 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-16]]
 === Logstash 7.17.16 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.16
-
-* [ci] Fix image name for Rocky Linux 8 https://github.com/elastic/logstash/pull/15584[#15584]
-* Backport PR #15584 to 7.17: [ci] Fix image name for Rocky Linux 8 https://github.com/elastic/logstash/pull/15588[#15588]
-* [ci] Support amazonlinux for JDK matrix pipeline https://github.com/elastic/logstash/pull/15595[#15595]
-* Backport PR #15595 to 7.17: [ci] Support amazonlinux for JDK matrix pipeline https://github.com/elastic/logstash/pull/15597[#15597]
-* [ci] Use GCP prod image for JDK matrix jobs https://github.com/elastic/logstash/pull/15600[#15600]
-* Backport PR #15600 to 7.17: [ci] Use GCP prod image for JDK matrix jobs https://github.com/elastic/logstash/pull/15603[#15603]
-* [ci] Initial Exhaustive tests Buildkite pipeline https://github.com/elastic/logstash/pull/15607[#15607]
-* Backport PR #15607 to 7.17: [ci] Initial Exhaustive tests Buildkite pipeline https://github.com/elastic/logstash/pull/15616[#15616]
-* [ci] Fix scheduled JDK matrix CI jobs https://github.com/elastic/logstash/pull/15623[#15623]
-* Backport PR #15623 to 7.17: [ci] Fix scheduled JDK matrix CI jobs https://github.com/elastic/logstash/pull/15626[#15626]
-* [ci] Switch to Adoptium distro for JDK 11 https://github.com/elastic/logstash/pull/15629[#15629]
-* Backport PR #15629 to 7.17: [ci] Switch to Adoptium distro for JDK 11 https://github.com/elastic/logstash/pull/15634[#15634]
-* [ci] Compatibility tests for Exhaustive suite https://github.com/elastic/logstash/pull/15641[#15641]
-* Backport PR #15641 to 7.17: [ci] Compatibility tests for Exhaustive suite https://github.com/elastic/logstash/pull/15646[#15646]
-* Shutdown DLQ segments flusher only if it has been started https://github.com/elastic/logstash/pull/15649[#15649]
 * Backport PR #15649 to 7.17: Shutdown DLQ segments flusher only if it has been started https://github.com/elastic/logstash/pull/15657[#15657]
-
-=== Logstash Commits between 7.17 and 7.17.15
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.15..7.17"
-
-a461023f5 - (HEAD -> 7.17, origin/7.17) Shutdown DLQ segments flusher only if it has been started (#15649) (#15657) (5 hours ago) <github-actions[bot]>
-32ca361cd - Update patch plugin versions in gemfile lock (#15652) (25 hours ago) <github-actions[bot]>
-06acff465 - [ci] Compatibility tests for Exhaustive suite (#15641) (#15646) (5 days ago) <github-actions[bot]>
-6b8874822 - [ci] Switch to Adoptium JDK 11 for Jenkins CI (#15635) (6 days ago) <Dimitrios Liappis>
-fff1b277b - [ci] Switch to Adoptium distro for JDK 11 (#15629) (#15634) (6 days ago) <github-actions[bot]>
-807530b99 - [ci] Fix scheduled JDK matrix CI jobs (#15623) (#15626) (7 days ago) <github-actions[bot]>
-1e6114628 - [ci] Initial Exhaustive tests Buildkite pipeline (#15607) (#15616) (8 days ago) <github-actions[bot]>
-ad34b887f - [ci] Use GCP prod image for Linux JDK matrix job (#15600) (#15603) (2 weeks ago) <github-actions[bot]>
-b2aad94c8 - [ci] Add yaml language server to pipelines (#15590) (#15592) (2 weeks ago) <Dimitrios Liappis>
-04c6ae40a - [ci] Support amazonlinux for JDK matrix pipeline (#15595) (#15597) (2 weeks ago) <github-actions[bot]>
-440cfb464 - [ci] Fix image name for Rocky Linux 8 (#15584) (#15588) (3 weeks ago) <github-actions[bot]>
-56812c359 - [ci] JDK matrix Buildkite pipelines (pt 2/Windows) (#15563) (#15569) (3 weeks ago) <github-actions[bot]>
-7302a0067 - Release notes for 7.17.15 (#15573) (3 weeks ago) <github-actions[bot]>
-176a2ca23 - bump version to 7.17.16 (#15575) (3 weeks ago) <João Duarte>
-44b6ec501 - [ci] JDK matrix Buildkite pipelines (part 1) (#15539) (#15556) (4 weeks ago) <github-actions[bot]>
-45aa3584a - [ci] Split JDK matrix pipelines per OS (#15534) (#15538) (4 weeks ago) <github-actions[bot]>
-bc9636487 - [ci] Initial JDK matrix Buildkite pipeline (#15520) (#15523) (5 weeks ago) <github-actions[bot]>
-c998e4f09 - [ci] aarch64 Buildkite pipeline part 2 (#15473) (#15506) (6 weeks ago) <github-actions[bot]>
-ffd026a80 - [ci] re-enable Java unit tests on aarch64 pipeline (#15492) (#15495) (6 weeks ago) <github-actions[bot]>
-3d3b60ad5 - [ci] aarch64 Buildkite pipeline part 1 (#15466) (#15482) (6 weeks ago) <github-actions[bot]>
-9d56c7aa3 - [ci] Initial aarch64 Buildkite pipeline (#15460) (#15469) (7 weeks ago) <github-actions[bot]>
-e3f4d9cb8 - [docs] Small typo fixes in README (#15429) (#15457) (7 weeks ago) <github-actions[bot]>
-f959972cd - Migrate remaining PR jobs to Buildkite #15444 (#15449) (7 weeks ago) <github-actions[bot]>
-763a2d004 - [ci] Add PR it-tests (part 1+2) to Buildkite (#15438) (#15447) (8 weeks ago) <github-actions[bot]>
-0529308ce - [ci] Commit PR based Java unit tests for Buildkite (#15437) (#15443) (8 weeks ago) <github-actions[bot]>
-8ca4d205e - [ci] Backport Buildkite PR pipeline to 7.17 (#15432) (8 weeks ago) <Dimitrios Liappis>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.15..7.17 *.release"
-Changed plugin versions:
-logstash-filter-mutate: 3.5.7 -> 3.5.8
-logstash-input-file: 4.4.4 -> 4.4.5
----------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
 
 *Mutate Filter - 3.5.8*
 
 * Fix "Can't modify frozen string" error when converting boolean to `string` https://github.com/logstash-plugins/logstash-filter-mutate/pull/171[#171] 
-  
 
 *File Input - 4.4.5*
 
-* Handle EOF when checking archive validity https://github.com/logstash-plugins/logstash-input-file/pull/321[#321]
+* Correctly handle EOF when checking archive validity https://github.com/logstash-plugins/logstash-input-file/pull/321[#321]
 
 
 [[logstash-7-17-15]]
