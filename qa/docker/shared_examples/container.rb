@@ -82,7 +82,7 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
 
     it 'should be running under the logstash group' do
-      expect(java_process(@container, "1000")).to eql 'logstash'
+      expect(java_process(@container, "group")).to eql 'logstash'
     end
 
     it 'should have cgroup overrides set' do
