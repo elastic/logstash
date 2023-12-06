@@ -159,7 +159,7 @@ PLUGIN_DEFINITIONS = {
                      "logstash-integration-elastic_enterprise_search", "logstash-integration-aws"]
   },
   :tier2 => {
-    :input => ["logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
+    :input => ["logstash-input-couchdb_changes", "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
                   "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
     :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
                   "logstash-codec-msgpack", "logstash-codec-netflow"],
