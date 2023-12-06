@@ -154,6 +154,10 @@ spec:
           branch: '8.11'
           cronline: 30 02 * * *
           message: Daily SNAPSHOT build for 8.11
+        Daily 8_12:
+          branch: '8.12'
+          cronline: 30 02 * * *
+          message: Daily SNAPSHOT build for 8.12
         Daily main:
           branch: main
           cronline: 30 02 * * *
