@@ -148,7 +148,9 @@ PLUGIN_DEFINITIONS = {
                "logstash-codec-rubydebug"],
     :filter => ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
                 "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
-                "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", "logstash-filter-json", "logstash-filter-kv",
+                "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", 
+                #"logstash-filter-json", # Commented because of issue https://github.com/logstash-plugins/logstash-filter-json/issues/55
+                "logstash-filter-kv",
                 "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
                 "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
                 "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
@@ -159,10 +161,13 @@ PLUGIN_DEFINITIONS = {
                      "logstash-integration-elastic_enterprise_search", "logstash-integration-aws"]
   },
   :tier2 => {
-    :input => ["logstash-input-couchdb_changes", "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
+    :input => [# "logstash-input-couchdb_changes", # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
+               "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
                   "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
     :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
-                  "logstash-codec-msgpack", "logstash-codec-netflow"],
+                  "logstash-codec-msgpack", 
+                  #{}"logstash-codec-netflow" # Commented because of issue https://github.com/logstash-plugins/logstash-codec-netflow/issues/203
+                ],
     :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
     :output => ["logstash-output-csv", "logstash-output-graphite"]
   },
