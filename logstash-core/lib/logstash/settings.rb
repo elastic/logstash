@@ -101,6 +101,7 @@ module LogStash
 
     def get_setting(setting_name)
       setting = @settings[setting_name]
+#       puts "DNADBG>> setting retrieved: #{setting}, setting_name: #{setting_name}"
       raise ArgumentError.new("Setting \"#{setting_name}\" doesn't exist. Please check if you haven't made a typo.") if setting.nil?
       setting
     end
@@ -108,6 +109,7 @@ module LogStash
     def get_subset(setting_regexp)
       regexp = setting_regexp.is_a?(Regexp) ? setting_regexp : Regexp.new(setting_regexp)
       settings = self.class.new
+#       puts "DNADBG>> settings class is #{self.class}"
       @settings.each do |setting_name, setting|
         next unless setting_name.match(regexp)
         settings.register(setting.clone)
@@ -245,12 +247,20 @@ module LogStash
     include LogStash::Settings::LOGGABLE_PROXY
 
     attr_reader :name, :default
+    attr_reader :wrapped_setting
 
     def initialize(name, klass, default = nil, strict = true, &validator_proc)
       @name = name
       unless klass.is_a?(Class)
         raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
       end
+#       methods = Java::org.logstash.settings.Setting.create(name).methods
+#       puts "DNADBG>> methods: #{methods}"
+      @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
+            .defaultValue(default)
+            .strict(strict)
+            .build()
+
       @klass = klass
       @validator_proc = validator_proc
       @value = nil
@@ -261,28 +271,49 @@ module LogStash
       @default = default
     end
 
+    def initialize_copy(original)
+      @wrapped_setting = original.wrapped_setting.clone
+    end
+
+#     def clone
+# #       new_instance = self.class.new(name, @clazz, default, @strict, @validator_proc)
+#       new_instance = super.clone
+#       new_instance.update_wrapper(@wrapped_setting)
+#       new_instance
+#     end
+
+    def update_wrapper(wrapped_setting)
+      @wrapped_setting = wrapped_setting
+    end
+    private :update_wrapper
+
     def value
-      @value_is_set ? @value : default
+#       @value_is_set ? @value : default
+      @wrapped_setting.value()
     end
 
     def set?
-      @value_is_set
+#       @value_is_set
+      @wrapped_setting.set?
     end
 
     def strict?
-      @strict
+#       @strict
+      @wrapped_setting.strict?
     end
 
     def set(value)
-      validate(value) if @strict
-      @value = value
-      @value_is_set = true
+#       validate(value) if @strict
+#       @value = value
+#       @value_is_set = true
+      @wrapped_setting.set(value)
       @value
     end
 
     def reset
-      @value = nil
-      @value_is_set = false
+#       @value = nil
+#       @value_is_set = false
+      @wrapped_setting.reset
     end
 
     def to_hash
@@ -355,6 +386,11 @@ module LogStash
         unless klass.is_a?(Class)
           raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
         end
+        @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
+                    .defaultValue(default)
+                    .strict(strict)
+                    .build()
+
         @klass = klass
         @validator_proc = validator_proc
         @value = nil
@@ -371,9 +407,10 @@ module LogStash
 
       def set(value)
         coerced_value = coerce(value)
-        validate(coerced_value)
-        @value = coerce(coerced_value)
-        @value_is_set = true
+        @wrapped_setting.set(coerced_value)
+#         validate(coerced_value)
+#         @value = coerce(coerced_value)
+#         @value_is_set = true
         @value
       end
 
