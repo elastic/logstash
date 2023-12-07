@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-11-2,Logstash 8.11.2>>
 * <<logstash-8-11-1,Logstash 8.11.1>>
 * <<logstash-8-11-0,Logstash 8.11.0>>
 * <<logstash-8-10-4,Logstash 8.10.4>>
@@ -47,6 +48,32 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-11-2]]
+=== Logstash 8.11.2 Release Notes
+
+* Added missing method of logger wrapper for puma https://github.com/elastic/logstash/pull/15642[#15642]
+* Prevent calling shutdown on the DLQ segments flusher if it hasn't been started yet https://github.com/elastic/logstash/pull/15656[#15656]
+* Remove dependency on jackson-dataformat-yaml https://github.com/elastic/logstash/pull/15599[#15599]
+
+==== Plugins
+
+*Mutate Filter - 3.5.8*
+
+* Fix "Can't modify frozen string" error when converting boolean to `string` https://github.com/logstash-plugins/logstash-filter-mutate/pull/171[#171] 
+
+*Beats Input - 6.7.2*
+
+* Restore Lumberjack event parsing source code https://github.com/logstash-plugins/logstash-input-beats/pull/486[#486]
+
+*Elastic_serverless_forwarder Input - 0.1.4*
+
+* [DOC] Adds tips for using the logstash-input-elastic_serverless_forwarder plugin with the Elasticsearch output plugin https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/7[#7]
+
+*Validator_support Mixin - 1.1.1*
+
+* Allow single-word host names such as "localhost". This addresses the inability to set "hosts" to "localhost" in the logstash-filter-elastic_integration plugin. https://github.com/logstash-plugins/logstash-mixin-validator_support/pull/7[#7]
 
 
 [[logstash-8-11-1]]
