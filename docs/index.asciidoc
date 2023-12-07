@@ -133,6 +133,10 @@ include::static/config-management.asciidoc[]
 
 include::static/management/configuring-centralized-pipelines.asciidoc[]
 
+// EA Integrations to Logstash 
+// (Planting near module content for now. Will likely move it up in info architecture.)
+include::static/ea-integrations.asciidoc[]
+
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
 
