@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-16,Logstash 7.17.16>>
 * <<logstash-7-17-15,Logstash 7.17.15>>
 * <<logstash-7-17-14,Logstash 7.17.14>>
 * <<logstash-7-17-13,Logstash 7.17.13>>
@@ -73,6 +74,22 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-16]]
+=== Logstash 7.17.16 Release Notes
+
+* Backport PR #15649 to 7.17: Shutdown DLQ segments flusher only if it has been started https://github.com/elastic/logstash/pull/15657[#15657]
+
+==== Plugins
+
+*Mutate Filter - 3.5.8*
+
+* Fix "Can't modify frozen string" error when converting boolean to `string` https://github.com/logstash-plugins/logstash-filter-mutate/pull/171[#171] 
+
+*File Input - 4.4.5*
+
+* Correctly handle EOF when checking archive validity https://github.com/logstash-plugins/logstash-input-file/pull/321[#321]
 
 
 [[logstash-7-17-15]]
