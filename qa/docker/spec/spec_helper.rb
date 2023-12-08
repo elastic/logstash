@@ -7,9 +7,11 @@ require 'json'
 require 'stud/try'
 require 'docker-api'
 require_relative '../patches/excon/unix_socket'
+require 'pry'
 
 def version
-  @version ||= LOGSTASH_VERSION
+  #@version ||= LOGSTASH_VERSION
+  "8.11.1"
 end
 
 def qualified_version
@@ -21,6 +23,7 @@ end
 def find_image(flavor)
   Docker::Image.all.detect {
       |image| image.info['RepoTags'].detect {
+        #|tag| tag == "docker.elastic.co/logstash/logstash-#{flavor}:#{qualified_version}"
         |tag| tag == "docker.elastic.co/sscs/logstash-cgr:20231205"
     }}
 end
@@ -120,7 +123,31 @@ def get_settings(container)
 end
 
 def java_process(container, column)
-  exec_in_container(container, "ps -o #{column}=")
+  lspid = exec_in_container(container, "pgrep java")
+
+  lsuidresp = exec_in_container(container, "grep Uid: /proc/#{lspid}/status")
+  lsuid = lsuidresp.split(/[ \t]+/)[1]
+
+  lsgidresp = exec_in_container(container, "grep Gid: /proc/#{lspid}/status")
+  lsgid = lsgidresp.split(/[ \t]+/)[1]
+
+  lsusernameresp = exec_in_container(container, "grep #{lsuid} /etc/passwd")
+  lsusername = lsusernameresp.split(/:/)[0]
+
+  lsgroupnameresp = exec_in_container(container, "grep #{lsgid} /etc/group")
+  lsgroupname = lsgroupnameresp.split(/:/)[0]
+
+  lsargs = exec_in_container(container, "cat /proc/#{lspid}/cmdline")
+
+  if column == "user" then
+    return lsusername
+  elsif column == "group" then
+    return lsgroupname
+  elsif column == "args" then
+    return lsargs
+  elsif column == "pid" then
+    return lspid
+  end
 end
 
 # Runs the given command in the given container. This method returns

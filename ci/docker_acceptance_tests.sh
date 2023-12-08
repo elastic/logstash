@@ -71,6 +71,7 @@ elif [[ $SELECTED_TEST_SUITE == "cgr" ]]; then
   cd $QA_DIR
   bundle install
 
+  docker pull docker.elastic.co/sscs/logstash-cgr:20231205
   echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/cgr/*_spec.rb
 else

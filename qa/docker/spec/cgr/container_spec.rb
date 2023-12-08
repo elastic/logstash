@@ -3,6 +3,7 @@ require_relative '../../shared_examples/container_config'
 require_relative '../../shared_examples/container_options'
 require_relative '../../shared_examples/container'
 require_relative '../../shared_examples/xpack'
+require 'pry'
 
 describe 'A container running the Chainguard image' do
   it_behaves_like 'the container is configured correctly', 'cgr'
