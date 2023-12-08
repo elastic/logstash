@@ -24,7 +24,7 @@ def find_image(flavor)
   Docker::Image.all.detect {
       |image| image.info['RepoTags'].detect {
         #|tag| tag == "docker.elastic.co/logstash/logstash-#{flavor}:#{qualified_version}"
-        |tag| tag == "docker.elastic.co/sscs/logstash-cgr:20231205"
+        |tag| tag == "docker.elastic.co/sscs/logstash-cgr:20231208-pr-8"
     }}
 end
 
