@@ -55,7 +55,7 @@ EOF
 done
 
 echo "--- Printing generated steps"
-/usr/local/bin/yq . pipeline_steps.yaml
+yq . pipeline_steps.yaml
 
 echo "--- Uploading steps to buildkite"
 cat pipeline_steps.yml | buildkite-agent pipeline upload
