@@ -18,50 +18,50 @@
 require_relative "base"
 
 module ServiceTester
-  class DebianCommands < Base
-
-    include ::ServiceTester::SystemD
+  class OpenSuseCommands < Base
 
     def installed?(package)
       stdout = ""
-      cmd = sudo_exec!("dpkg -s #{package}")
+      cmd = sudo_exec!("zypper --no-refresh search #{package}")
       stdout = cmd.stdout
-      stdout.match(/^Package: #{package}$/)
-      stdout.match(/^Status: install ok installed$/)
+      stdout.match(/^i | logstash | An extensible logging pipeline | package$/)
     end
 
-    def package_extension
-      "deb"
+    def package_extension()
+      "rpm"
     end
 
-    def architecture_extension
-      if java.lang.System.getProperty("os.arch") == "amd64"
-        "amd64"
-      else
-        "arm64"
-      end
+    def architecture_extension()
+      "x86_64"
     end
 
     def install(package)
-      cmd = sudo_exec!("dpkg -i --force-confnew #{package}")
+      cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive install  #{package}")
       if cmd.exit_status != 0
         raise InstallException.new(cmd.stderr.to_s)
       end
     end
 
     def uninstall(package)
-      sudo_exec!("dpkg -r #{package}")
-      sudo_exec!("dpkg --purge #{package}")
+      cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive remove #{package}")
     end
 
     def removed?(package)
       stdout = ""
-      cmd = sudo_exec!("dpkg -s #{package}")
-      stdout = cmd.stderr
-      (
-        stdout.match(/^Package `#{package}' is not installed and no info is available.$/) ||
-        stdout.match(/^dpkg-query: package '#{package}' is not installed and no information is available$/)
-      )
+      cmd    = sudo_exec!("zypper --no-refresh info #{package}")
+      stdout = cmd.stdout
+      stdout.match(/package \'#{package}\' not found/)
+    end
+
+    def running?(package)
+      stdout = ""
+      cmd = sudo_exec!("service #{package} status")
+      stdout = cmd.stdout
+      stdout.match(/Active: active \(running\)/)
+    end
+
+    def service_manager(service, action)
+      sudo_exec!("service #{service} #{action}")
     end
   end
 end

@@ -24,22 +24,20 @@ require_relative "../shared_examples/cli/logstash-plugin/remove"
 require_relative "../shared_examples/cli/logstash-plugin/update"
 require_relative "../shared_examples/cli/logstash-plugin/generate"
 require_relative "../shared_examples/cli/logstash-plugin/integration_plugin"
+require 'pry'
 
 # This is the collection of test for the CLI interface, this include the plugin manager behaviour,
 # it also include the checks for other CLI options.
 describe "CLI operation" do
-  config = ServiceTester.configuration
-  config.servers.each do |address|
-    logstash = ServiceTester::Artifact.new(address, config.lookup[address])
-    # Force tests to use bundled JDK
-    logstash.run_command("unset LS_JAVA_HOME")
-    it_behaves_like "logstash version", logstash
-    it_behaves_like "logstash install", logstash
-    it_behaves_like "logstash list", logstash
-    it_behaves_like "logstash uninstall", logstash
-    it_behaves_like "logstash remove", logstash
-    it_behaves_like "logstash update", logstash
-    it_behaves_like "integration plugins compatible", logstash
+  logstash = ServiceTester::Artifact.new()
+  # Force tests to use bundled JDK
+  logstash.run_command("unset LS_JAVA_HOME")
+  it_behaves_like "logstash version", logstash
+  it_behaves_like "logstash install", logstash
+  it_behaves_like "logstash list", logstash
+  it_behaves_like "logstash uninstall", logstash
+  it_behaves_like "logstash remove", logstash
+  it_behaves_like "logstash update", logstash
+  it_behaves_like "integration plugins compatible", logstash
 #    it_behaves_like "logstash generate", logstash
-  end
 end

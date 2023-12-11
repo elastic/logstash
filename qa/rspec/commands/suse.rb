@@ -20,12 +20,10 @@ require_relative "base"
 module ServiceTester
   class SuseCommands < Base
 
-    def installed?(hosts, package)
+    def installed?(package)
       stdout = ""
-      at(hosts, {in: :serial}) do |host|
-        cmd = exec!("zypper search #{package}")
-        stdout = cmd.stdout
-      end
+      cmd = sudo_exec!("zypper search #{package}")
+      stdout = cmd.stdout
       stdout.match(/^i | logstash | An extensible logging pipeline | package$/)
     end
 
@@ -37,47 +35,33 @@ module ServiceTester
       "x86_64"
     end
 
-    def install(package, host = nil)
-      hosts  = (host.nil? ? servers : Array(host))
-      errors = []
-      at(hosts, {in: :serial}) do |_host|
-        cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive install  #{package}")
-        errors << cmd.stderr unless cmd.stderr.empty?
-      end
-      raise InstallException.new(errors.join("\n")) unless errors.empty?
-    end
-
-    def uninstall(package, host = nil)
-      hosts = (host.nil? ? servers : Array(host))
-      at(hosts, {in: :serial}) do |_|
-        cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive remove #{package}")
+    def install(package)
+      cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive install  #{package}")
+      if cmd.exit_status != 0
+        raise InstallException.new(cmd.stderr.to_s)
       end
     end
 
-    def removed?(hosts, package)
+    def uninstall(package)
+      cmd = sudo_exec!("zypper --no-gpg-checks --non-interactive remove #{package}")
+    end
+
+    def removed?(package)
       stdout = ""
-      at(hosts, {in: :serial}) do |host|
-        cmd    = exec!("zypper search #{package}")
-        stdout = cmd.stdout
-      end
+      cmd    = sudo_exec!("zypper search #{package}")
+      stdout = cmd.stdout
       stdout.match(/No packages found/)
     end
 
-    def running?(hosts, package)
+    def running?(package)
       stdout = ""
-      at(hosts, {in: :serial}) do |host|
-        cmd = sudo_exec!("service #{package} status")
-        stdout = cmd.stdout
-      end
+      cmd = sudo_exec!("service #{package} status")
+      stdout = cmd.stdout
       stdout.match(/Active: active \(running\)/)
     end
 
-    def service_manager(service, action, host = nil)
-      hosts = (host.nil? ? servers : Array(host))
-      at(hosts, {in: :serial}) do |_|
-        sudo_exec!("service #{service} #{action}")
-      end
+    def service_manager(service, action)
+      sudo_exec!("service #{service} #{action}")
     end
-
   end
 end

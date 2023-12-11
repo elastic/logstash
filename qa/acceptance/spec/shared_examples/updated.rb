@@ -16,10 +16,12 @@
 # under the License.
 
 require_relative '../spec_helper'
+require_relative '../../helpers'
 require          'logstash/version'
+require 'pry'
 
 # This test checks if the current package could used to update from the latest version released.
-RSpec.shared_examples "updated" do |logstash|
+RSpec.shared_examples "updated" do |logstash, from_release_branch|
   before(:all) {
     #unset to force it using bundled JDK to run LS
     logstash.run_command("unset LS_JAVA_HOME")
@@ -31,12 +33,14 @@ RSpec.shared_examples "updated" do |logstash|
   end
 
   before(:each) do
-    options = {:version => LOGSTASH_LATEST_VERSION, :snapshot => false, :base => "./", :skip_jdk_infix => true }
-    logstash.install(options) # make sure latest version is installed
+    latest_logstash_release_version = fetch_latest_logstash_release_version(from_release_branch)
+    url, dest = logstash_download_metadata(latest_logstash_release_version, logstash.client.architecture_extension, logstash.client.package_extension).values_at(:url, :dest)
+    logstash.download(url, dest)
+    options = {:version => latest_logstash_release_version, :snapshot => false, :base => "./", :skip_jdk_infix => false }
+    logstash.install(options)
   end
 
-  it "can be updated and run on #{logstash.hostname}" do
-    pending('Cannot install on OS') if logstash.hostname == 'oel-6'
+  it "can be updated and run on [#{logstash.human_name}]" do
     expect(logstash).to be_installed
     # Performing the update
     logstash.install({:version => LOGSTASH_VERSION})
