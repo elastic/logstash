@@ -54,29 +54,15 @@ This section summarizes the changes in the following releases:
 [[logstash-8-11-3]]
 === Logstash 8.11.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.11.3
+[[docs-8.11.3]]
+==== Documentation enhancements
 
-* Doc: Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15518[#15518]
+* Document how to further transform events processed by the filter-elastic_integration plugin https://github.com/elastic/logstash/pull/15675[#15675]
+
+[[dependencies-8.11.3]]
+==== Updates to dependencies
+
 * Update JRuby to 9.4.5.0 (#15531) https://github.com/elastic/logstash/pull/15670[#15670]
-* Backport PR #15518 to 8.11: Doc: Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15675[#15675]
-
-=== Logstash Commits between 8.11 and 8.11.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.11.2..8.11"
-
-7e9f9e079 - (HEAD -> 8.11, origin/8.11) Doc: Add docs for extending integrations with filter-elastic_integrations (#15518) (#15675) (4 days ago) <github-actions[bot]>
-45f6dce3e - Update JRuby to 9.4.5.0 (#15531) (#15670) (4 days ago) <João Duarte>
-3d22fb395 - bump to 8.11.3 (#15669) (4 days ago) <João Duarte>
-4e3e09c5d - Release notes for 8.11.2 (#15660) (4 days ago) <github-actions[bot]>
-44788ccfc - Doc: Update Logstash intro and security overview for serverless (#15313) (#15664) (5 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.11.2..8.11 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
 
 [[logstash-8-11-2]]
 === Logstash 8.11.2 Release Notes
