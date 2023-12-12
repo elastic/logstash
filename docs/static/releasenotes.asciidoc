@@ -62,7 +62,7 @@ This section summarizes the changes in the following releases:
 [[dependencies-8.11.3]]
 ==== Updates to dependencies
 
-* Update JRuby to 9.4.5.0 (#15531) https://github.com/elastic/logstash/pull/15670[#15670]
+* Update JRuby to 9.4.5.0  https://github.com/elastic/logstash/pull/15670[#15670]
 
 [[logstash-8-11-2]]
 === Logstash 8.11.2 Release Notes
