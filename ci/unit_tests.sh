@@ -10,6 +10,7 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 export TEST_DEBUG=true
+export COVERAGE=true
 # don't rely on bash booleans for truth checks, since some CI platforms don't have a way to specify env vars as boolean
 export ENABLE_SONARQUBE=${ENABLE_SONARQUBE:-"true"}
 
