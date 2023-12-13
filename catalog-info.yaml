@@ -404,6 +404,10 @@ spec:
           branch: '7.17'
           cronline: 0 1 * * 2
           message: Weekly Linux JDK matrix tests for 7.17
+        Weekly 8_12:
+          branch: '8.12'
+          cronline: 0 1 * * 2
+          message: Weekly Linux JDK matrix tests for 8.12
         Weekly 8_11:
           branch: '8.11'
           cronline: 0 1 * * 2
@@ -459,6 +463,10 @@ spec:
           branch: '7.17'
           cronline: 0 1 * * 2
           message: Weekly Windows JDK matrix tests for 7.17
+        Weekly 8_12:
+          branch: '8.12'
+          cronline: 0 1 * * 2
+          message: Weekly Windows JDK matrix tests for 8.12
         Weekly 8_11:
           branch: '8.11'
           cronline: 0 1 * * 2
