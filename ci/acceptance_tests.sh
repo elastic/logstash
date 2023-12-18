@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-PACKAGE_TYPE="all"
+PACKAGE_TYPE=${PACKAGE_TYPE:-"all"}
 
 function get_package_type {
   source /etc/os-release
