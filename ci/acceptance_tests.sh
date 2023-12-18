@@ -4,6 +4,7 @@ set -eo pipefail
 PACKAGE_TYPE=${PACKAGE_TYPE:-"all"}
 
 function get_package_type {
+  # determines OS packaging system; at the moment either rpm or deb
   source /etc/os-release
 
   if [[ $ID == "ubuntu" || $ID == "debian" || $ID_LIKE == "debian" ]]; then
@@ -11,7 +12,7 @@ function get_package_type {
   elif [[ $ID_LIKE == *"rhel"* || $ID_LIKE == *"fedora"* || $ID_LIKE == *"suse"* ]]; then
     PACKAGE_TYPE="rpm"
   else
-    echo "Unsupported Linux distribution [$ID]. Acceptance packaging tests only support deb or rpm based distributions. Exiting."
+    echo "^^^ +++ Unsupported Linux distribution [$ID]. Acceptance packaging tests only support deb or rpm based distributions. Exiting."
     exit 1
   fi
 }
@@ -35,17 +36,25 @@ QA_DIR="$PWD/qa"
 
 cd $LS_HOME
 
-if [[ ! -z $BUILD_ARTIFACTS ]]; then
-  get_package_type
-  echo "Detected a distribution that supports [$PACKAGE_TYPE] packages"
+get_package_type
+
+if [[ $BUILD_ARTIFACTS == "true" ]]; then
+  echo "--- Detected a distribution that supports \033[33m[$PACKAGE_TYPE]\033[0m packages. Running gradle."
   ./gradlew clean bootstrap
-  echo "Building Logstash artifacts"
+  echo "--- Building Logstash artifacts"
   rake artifact:$PACKAGE_TYPE
 fi
 
-echo "Acceptance: Installing dependencies"
+# in CI (Buildkite), packaging artifacts are pre-built from a previous step
+if [[ $BUILDKITE == true && -n $BUILDKITE_BUILD_PATH ]]; then
+  LS_ARTIFACTS_PATH=$BUILDKITE_BUILD_PATH
+  mkdir -p $LS_ARTIFACTS_PATH
+  buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $LS_ARTIFACTS_PATH
+fi
+
+echo "--- Acceptance: Installing dependencies"
 cd $QA_DIR
 bundle install
 
-echo "Acceptance: Running the tests"
+echo "--- Acceptance: Running the tests"
 rake qa:acceptance:all
