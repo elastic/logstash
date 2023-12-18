@@ -14,5 +14,5 @@ export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:/op
 # we don't use yq (or e.g. the yaml Python module) because both aren't guaranteed to be pre-installed on all VMs.
 _JAVA_MAJOR_VERSION=$(awk '/^bundled_jdk:/ {found_bundled_jdk=1; next} found_bundled_jdk && /^[[:space:]]*revision:/ {gsub(/^[[:space:]]*revision:[[:space:]]*/, ""); split($1, rev, "."); print rev[1]; found_bundled_jdk=0}' versions.yml)
 
-export JAVA_HOME="/opt/buildkite-agent/adoptiumjdk_${_JAVA_MAJOR_VERSION}"
+export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_${_JAVA_MAJOR_VERSION}"
 eval "$(rbenv init -)"
