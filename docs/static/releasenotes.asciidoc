@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-11-3,Logstash 8.11.3>>
 * <<logstash-8-11-2,Logstash 8.11.2>>
 * <<logstash-8-11-1,Logstash 8.11.1>>
 * <<logstash-8-11-0,Logstash 8.11.0>>
@@ -49,6 +50,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-11-3]]
+=== Logstash 8.11.3 Release Notes
+
+[[docs-8.11.3]]
+==== Documentation enhancements
+
+* Document how to further transform events processed by the filter-elastic_integration plugin https://github.com/elastic/logstash/pull/15675[#15675]
+
+[[dependencies-8.11.3]]
+==== Updates to dependencies
+
+* Update JRuby to 9.4.5.0  https://github.com/elastic/logstash/pull/15670[#15670]
 
 [[logstash-8-11-2]]
 === Logstash 8.11.2 Release Notes
