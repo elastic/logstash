@@ -22,7 +22,7 @@ ARTIFACTS_API = "https://artifacts-api.elastic.co/v1/versions"
 
 def logstash_download_metadata(version, arch, artifact_type)
   filename = "logstash-#{version}-#{arch}.#{artifact_type}"
-  return { url: "https://artifacts.elastic.co/downloads/logstash/#{filename}", dest: File.join(ROOT, 'qa', filename) }
+  { url: "https://artifacts.elastic.co/downloads/logstash/#{filename}", dest: File.join(ROOT, 'qa', filename) }
 end
 
 def fetch_latest_logstash_release_version(branch)
