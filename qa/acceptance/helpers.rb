@@ -31,7 +31,7 @@ def fetch_latest_logstash_release_version(branch)
   response = retryable_http_get(uri)
   versions_data = JSON.parse(response)
 
-  filtered_versions = versions_data["versions"].select { |v| v.start_with?(branch) }
+  filtered_versions = versions_data["versions"].select { |v| v.start_with?(branch) && !v.include?('SNAPSHOT') }
 
   return filtered_versions.max_by { |v| Gem::Version.new(v) }
 end
