@@ -106,6 +106,7 @@ def acceptance_linux_steps() -> list[typing.Any]:
         "agents": gcp_agent("ubuntu-2204"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
+source .buildkite/scripts/common/vm-agent.sh
 ./gradlew clean bootstrap
 rake artifact:all
 """),
@@ -124,7 +125,10 @@ rake artifact:all
             "key": slugify_bk_key(vm),
             "agents": gcp_agent(vm),
             "depends_on": "acceptance-build-artifacts",
-            "command": "ci/acceptance_tests.sh",
+            "command": LiteralScalarString("""#!/usr/bin/env bash
+set -eo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+ci/acceptance_tests.sh"""),
         }
         steps.append(step)
     
