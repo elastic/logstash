@@ -12,7 +12,6 @@ VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 #ACCEPTANCE_LINUX_OSES = ["ubuntu-2204", "ubuntu-2004", "debian-11", "debian-10", "rhel-9", "rhel-8", "rocky-linux-8", "opensuse-leap-15"]
 ACCEPTANCE_LINUX_OSES = ["ubuntu-2204"]
 
-
 def slugify_bk_key(key: str) -> str:
     """
     Convert and return key to an acceptable format for Buildkite's key: field
@@ -106,7 +105,7 @@ def acceptance_linux_steps() -> list[typing.Any]:
         "agents": gcp_agent("ubuntu-2204"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
-source .buildkite/scripts/common/vm-agent.sh
+source .buildkite/scripts/common/vm-agent-multi-jdk.sh
 ./gradlew clean bootstrap
 rake artifact:all
 """),
@@ -127,7 +126,7 @@ rake artifact:all
             "depends_on": "acceptance-build-artifacts",
             "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
-source .buildkite/scripts/common/vm-agent.sh
+source .buildkite/scripts/common/vm-agent-multi-jdk.sh
 ci/acceptance_tests.sh"""),
         }
         steps.append(step)
