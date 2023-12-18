@@ -37,8 +37,9 @@ cd $LS_HOME
 
 if [[ ! -z $BUILD_ARTIFACTS ]]; then
   get_package_type
-  echo "Building Logstash artifacts for [$PACKAGE_TYPE]"
+  echo "Detected a distribution that supports [$PACKAGE_TYPE] packages"
   ./gradlew clean bootstrap
+  echo "Building Logstash artifacts"
   rake artifact:$PACKAGE_TYPE
 fi
 
