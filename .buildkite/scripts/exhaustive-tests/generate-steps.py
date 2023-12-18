@@ -143,19 +143,17 @@ if __name__ == "__main__":
 
     structure = {"steps": []}
 
-    structure["steps"].append({
-            "group": "Compatibility / Linux",
-            "key": "compatibility-linux",
-            #"steps": compat_linux_steps,
-            "steps": [],
-    })
+    # structure["steps"].append({
+    #         "group": "Compatibility / Linux",
+    #         "key": "compatibility-linux",
+    #         "steps": compat_linux_steps,
+    # })
 
-    structure["steps"].append({
-            "group": "Compatibility / Windows",
-            "key": "compatibility-windows",
-            #"steps": [compat_windows_step(imagesuffix=windows_test_os)],
-            "steps": [],
-    })
+    # structure["steps"].append({
+    #         "group": "Compatibility / Windows",
+    #         "key": "compatibility-windows",
+    #         "steps": [compat_windows_step(imagesuffix=windows_test_os)],
+    # })
 
     structure["steps"].append({
             "group": "Acceptance / Packaging",
