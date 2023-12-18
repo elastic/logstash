@@ -24,7 +24,6 @@ require_relative "../shared_examples/cli/logstash-plugin/remove"
 require_relative "../shared_examples/cli/logstash-plugin/update"
 require_relative "../shared_examples/cli/logstash-plugin/generate"
 require_relative "../shared_examples/cli/logstash-plugin/integration_plugin"
-require 'pry'
 
 # This is the collection of test for the CLI interface, this include the plugin manager behaviour,
 # it also include the checks for other CLI options.
