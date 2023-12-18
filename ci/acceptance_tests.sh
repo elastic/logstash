@@ -35,7 +35,7 @@ get_package_type
 
 # in CI (Buildkite), packaging artifacts are pre-built from a previous step
 if [[ $BUILDKITE == true && -n $BUILDKITE_BUILD_PATH ]]; then
-  LS_ARTIFACTS_PATH=$BUILDKITE_BUILD_PATH
+  export LS_ARTIFACTS_PATH=$BUILDKITE_BUILD_PATH
   mkdir -p $LS_ARTIFACTS_PATH
   buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $LS_ARTIFACTS_PATH
   echo "--- Running gradle"
