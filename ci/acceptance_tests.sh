@@ -35,10 +35,12 @@ get_package_type
 
 # in CI (Buildkite), packaging artifacts are pre-built from a previous step
 if [[ $BUILDKITE == true ]]; then
-  export LS_ARTIFACTS_PATH="$HOME/builds"
+  export LS_ARTIFACTS_PATH="$HOME/build"
   echo "--- Downloading artifacts from \"build/*${PACKAGE_TYPE}\" to $LS_ARTIFACTS_PATH"
-  mkdir -p $LS_ARTIFACTS_PATH
-  buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $LS_ARTIFACTS_PATH
+  set -x
+  # also creates build/ under $HOME
+  buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $HOME
+  set +x
   echo "--- Running gradle"
   ./gradlew clean bootstrap
 else
