@@ -106,6 +106,7 @@ def acceptance_linux_steps() -> list[typing.Any]:
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
 source .buildkite/scripts/common/vm-agent-multi-jdk.sh
+echo "--- Building all artifacts"
 ./gradlew clean bootstrap
 rake artifact:all
 """),
