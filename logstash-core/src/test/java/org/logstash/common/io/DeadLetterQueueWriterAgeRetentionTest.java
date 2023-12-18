@@ -67,7 +67,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         }
     }
 
-    private static class SynchScheduledService implements DeadLetterQueueWriter.SchedulerService {
+    private static class SynchronizedScheduledService implements DeadLetterQueueWriter.SchedulerService {
 
         private Runnable action;
 
@@ -76,7 +76,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             this.action = action;
         }
 
-        void executeActionSynch() {
+        void executeAction() {
             action.run();
         }
     }
@@ -86,14 +86,14 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private SynchScheduledService synchScheduler;
+    private SynchronizedScheduledService synchScheduler;
 
     @Before
     public void setUp() throws Exception {
         dir = temporaryFolder.newFolder().toPath();
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         fakeClock = new ForwardableClock(pointInTimeFixedClock);
-        synchScheduler = new SynchScheduledService();
+        synchScheduler = new SynchronizedScheduledService();
     }
 
     @Test
@@ -318,7 +318,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
-                .schedulerService(synchScheduler)
+                .flusherService(synchScheduler)
                 .build()) {
             // write an element to make head segment stale
             final Event anotherEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
@@ -348,7 +348,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
-                .schedulerService(synchScheduler)
+                .flusherService(synchScheduler)
                 .build()) {
 
             DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
@@ -376,6 +376,6 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     private void triggerExecutionOfFlush() {
-        synchScheduler.executeActionSynch();
+        synchScheduler.executeAction();
     }
 }

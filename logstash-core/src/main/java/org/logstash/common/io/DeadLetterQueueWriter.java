@@ -126,7 +126,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private volatile Optional<Path> oldestSegmentPath = Optional.empty();
     private final TemporalAmount retentionTime;
 
-    private final SchedulerService schedulerService;
+    private final SchedulerService flusherService;
 
     interface SchedulerService {
 
@@ -205,7 +205,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
 
         @VisibleForTesting
-        Builder schedulerService(SchedulerService service) {
+        Builder flusherService(SchedulerService service) {
             this.customSchedulerService = service;
             return this;
         }
@@ -241,7 +241,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
                                   final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
-                                  final Clock clock, SchedulerService schedulerService) throws IOException {
+                                  final Clock clock, SchedulerService flusherService) throws IOException {
         this.clock = clock;
 
         this.fileLock = FileLockFactory.obtainLock(queuePath, LOCK_FILE);
@@ -261,8 +261,8 @@ public final class DeadLetterQueueWriter implements Closeable {
                 .max().orElse(0);
         nextWriter();
         this.lastEntryTimestamp = Timestamp.now();
-        this.schedulerService = schedulerService;
-        this.schedulerService.repeatedAction(this::scheduledFlushCheck);
+        this.flusherService = flusherService;
+        this.flusherService.repeatedAction(this::scheduledFlushCheck);
     }
 
     public boolean isOpen() {
