@@ -123,7 +123,7 @@ rake artifact:all
             "label": vm,
             "key": slugify_bk_key(vm),
             "agents": gcp_agent(vm),
-            "depends-on": "acceptance-build-artifacts",
+            "depends_on": "acceptance-build-artifacts",
             "command": "ci/acceptance_tests.sh",
         }
         steps.append(step)
