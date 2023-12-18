@@ -78,11 +78,11 @@ def randomized_windows_os() -> str:
 
     return random.choice(all_oses["windows"])
 
-def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", disk_size_gb: int = 200) -> dict[str, typing.Any]:
+def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", image_prefix: str = "family/platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
     return {
         "provider": "gcp",
         "imageProject": "elastic-images-prod",
-        "image": f"family/platform-ingest-logstash-multi-jdk-{vm_name}",
+        "image": f"{image_prefix}-{vm_name}",
         "machineType": instance_type,
         "diskSizeGb": disk_size_gb,
         "diskType": "pd-ssd",
@@ -102,13 +102,14 @@ def acceptance_linux_steps() -> list[typing.Any]:
     build_artifacts_step = {
         "label": "Build artifacts",
         "key": "acceptance-build-artifacts",
-        "agents": gcp_agent("ubuntu-2204"),
+        # use the same agent as the one we use for building DRA artifacts
+        "agents": gcp_agent("ubuntu-2204", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
-source .buildkite/scripts/common/vm-agent-multi-jdk.sh
+source .buildkite/scripts/common/vm-agent.sh
 echo "--- Building all artifacts"
 ./gradlew clean bootstrap
-rake artifact:all
+rake artifact:deb artifact:rpm
 """),
         "artifact_paths": [
             "build/*rpm",
