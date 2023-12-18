@@ -38,6 +38,8 @@ if [[ $BUILDKITE == true && -n $BUILDKITE_BUILD_PATH ]]; then
   LS_ARTIFACTS_PATH=$BUILDKITE_BUILD_PATH
   mkdir -p $LS_ARTIFACTS_PATH
   buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $LS_ARTIFACTS_PATH
+  echo "--- Running gradle"
+  ./gradlew clean bootstrap
 else
   echo "--- Detected a distribution that supports \033[33m[$PACKAGE_TYPE]\033[0m packages. Running gradle."
   ./gradlew clean bootstrap
