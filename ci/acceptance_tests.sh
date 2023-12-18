@@ -24,9 +24,6 @@ export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 export OSS=true
 
-# On Buildkite, artifacts will be prebuilt at a previous step and provided in $LS_ARTIFACTS_PATH
-export BUILD_ARTIFACTS=${BUILD_ARTIFACTS:-"true"}
-
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
@@ -38,18 +35,16 @@ cd $LS_HOME
 
 get_package_type
 
-if [[ $BUILD_ARTIFACTS == "true" ]]; then
-  echo "--- Detected a distribution that supports \033[33m[$PACKAGE_TYPE]\033[0m packages. Running gradle."
-  ./gradlew clean bootstrap
-  echo "--- Building Logstash artifacts"
-  rake artifact:$PACKAGE_TYPE
-fi
-
 # in CI (Buildkite), packaging artifacts are pre-built from a previous step
 if [[ $BUILDKITE == true && -n $BUILDKITE_BUILD_PATH ]]; then
   LS_ARTIFACTS_PATH=$BUILDKITE_BUILD_PATH
   mkdir -p $LS_ARTIFACTS_PATH
   buildkite-agent artifact download "build/*${PACKAGE_TYPE}" $LS_ARTIFACTS_PATH
+else
+  echo "--- Detected a distribution that supports \033[33m[$PACKAGE_TYPE]\033[0m packages. Running gradle."
+  ./gradlew clean bootstrap
+  echo "--- Building Logstash artifacts"
+  rake artifact:$PACKAGE_TYPE
 fi
 
 echo "--- Acceptance: Installing dependencies"
