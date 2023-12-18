@@ -67,16 +67,33 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         }
     }
 
+    private static class SynchronizedScheduledService implements DeadLetterQueueWriter.SchedulerService {
+
+        private Runnable action;
+
+        @Override
+        public void repeatedAction(Runnable action) {
+            this.action = action;
+        }
+
+        void executeAction() {
+            action.run();
+        }
+    }
+
     private Path dir;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private SynchronizedScheduledService synchScheduler;
 
     @Before
     public void setUp() throws Exception {
         dir = temporaryFolder.newFolder().toPath();
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        synchScheduler = new SynchronizedScheduledService();
     }
 
     @Test
@@ -272,7 +289,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentWriterIsStale() throws IOException, InterruptedException {
+    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentWriterIsStale() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
                 Collections.singletonMap("message", "Not so important content"));
 
@@ -298,9 +315,10 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
         fakeClock.forward(Duration.ofDays(3));
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
+                .flusherService(synchScheduler)
                 .build()) {
             // write an element to make head segment stale
             final Event anotherEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
@@ -308,8 +326,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             DLQEntry entry = new DLQEntry(anotherEvent, "", "", "00002", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
             writeManager.writeEntry(entry);
 
-            // wait a cycle of flusher schedule
-            Thread.sleep(flushInterval.toMillis());
+            triggerExecutionOfFlush();
 
             // flusher should clean the expired segments
             Set<String> actual = listFileNames(dir);
@@ -317,9 +334,8 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         }
     }
 
-
     @Test
-    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException, InterruptedException {
+    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
                 Collections.singletonMap("message", "Not so important content"));
 
@@ -328,31 +344,38 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
 
         Duration retainedPeriod = Duration.ofDays(1);
-        Duration flushInterval = Duration.ofSeconds(1);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+                .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
+                .flusherService(synchScheduler)
                 .build()) {
 
             DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
             writeManager.writeEntry(entry);
 
+            triggerExecutionOfFlush();
+
             // wait the flush interval so that the current head segment is sealed
             Awaitility.await("After the flush interval head segment is sealed and a fresh empty head is created")
-                    .atLeast(flushInterval)
-                    .atMost(Duration.ofMinutes(1))
+                    .atMost(Duration.ofSeconds(1))
                     .until(()  -> Set.of("1.log", "2.log.tmp", ".lock").equals(listFileNames(dir)));
 
             // move forward the time so that the age policy is kicked in when the current head segment is empty
             fakeClock.forward(retainedPeriod.plusMinutes(2));
 
+            triggerExecutionOfFlush();
+
             // wait the flush period
             Awaitility.await("Remains the untouched head segment while the expired is removed")
                     // wait at least the flush period
-                    .atMost(Duration.ofMinutes(1))
+                    .atMost(Duration.ofSeconds(1))
                     // check the expired sealed segment is removed
                     .until(()  -> Set.of("2.log.tmp", ".lock").equals(listFileNames(dir)));
         }
+    }
+
+    private void triggerExecutionOfFlush() {
+        synchScheduler.executeAction();
     }
 }
