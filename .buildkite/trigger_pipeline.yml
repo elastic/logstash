@@ -2,4 +2,4 @@
 
 steps:
   - label: ":pipeline: Generate trigger steps for $PIPELINE_TO_TRIGGER"
-    command: ".buildkite/scripts/trigger-pipeline-generate-steps.sh"
+    command: ".buildkite/scripts/common/trigger-pipeline-generate-steps.sh"
