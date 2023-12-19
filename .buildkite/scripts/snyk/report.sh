@@ -128,12 +128,12 @@ resolve_version_and_report_docker_images() {
 }
 
 # resolve docker artifact and report
-for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
-do
-  if git show-ref --quiet refs/heads/"$TARGET_BRANCH"; then
-    echo "Using $TARGET_BRANCH branch for docker images."
-    resolve_version_and_report_docker_images "$TARGET_BRANCH"
-  else
-    echo "$TARGET_BRANCH branch doesn't exist."
-  fi
-done
+#for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
+#do
+#  if git show-ref --quiet refs/heads/"$TARGET_BRANCH"; then
+#    echo "Using $TARGET_BRANCH branch for docker images."
+#    resolve_version_and_report_docker_images "$TARGET_BRANCH"
+#  else
+#    echo "$TARGET_BRANCH branch doesn't exist."
+#  fi
+#done
