@@ -47,11 +47,9 @@ for BRANCH in $BRANCHES; do
     cat >>pipeline_steps.yaml <<EOF
   - trigger: $PIPELINE_TO_TRIGGER
     label: ":testexecute: Triggering ${PIPELINE_TO_TRIGGER} / ${BRANCH}"
-    branches: "main"
-    async: true
     build:
       branch: "$BRANCH"
-      message: ":testexecute: Triggering ${PIPELINE_TO_TRIGGER} / ${BRANCH}"
+      message: ":testexecute: Scheduled build for ${BRANCH}"
 EOF
 done
 
@@ -59,4 +57,4 @@ echo "--- Printing generated steps"
 yq . pipeline_steps.yaml
 
 echo "--- Uploading steps to buildkite"
-cat pipeline_steps.yml | buildkite-agent pipeline upload
+cat pipeline_steps.yaml | buildkite-agent pipeline upload
