@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eo pipefail
 
 # *******************************************************
 # this script is used by schedule-type pipelines
@@ -12,7 +12,7 @@ set -euo pipefail
 # https://github.com/elastic/ingest-dev/issues/2664
 # *******************************************************
 
-ACTIVE_BRANCHES_URL="https://raw.githubusercontent.com/elastic/elasticsearch/main/branches.json"
+ACTIVE_BRANCHES_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/branches.json"
 
 function install_yq() {
 if ! [[ -x $(which yq) && $(yq --version) == *mikefarah* ]]; then
@@ -29,6 +29,7 @@ if [[ -z $PIPELINE_TO_TRIGGER ]]; then
     exit 1
 fi
 
+set -u
 set +e
 BRANCHES=$(curl --retry-all-errors --retry 5 --retry-delay 5 -fsSL $ACTIVE_BRANCHES_URL | jq -r '.branches[].branch')
 if [[ $? -ne 0 ]]; then
