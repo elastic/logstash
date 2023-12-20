@@ -307,8 +307,13 @@
 #   * info (default)
 #   * debug
 #   * trace
-#
 # log.level: info
+#
+# Options for log.format:
+#   * plain (default)
+#   * json
+#
+# log.format: plain
 # path.logs:
 #
 # ------------ Other Settings --------------
