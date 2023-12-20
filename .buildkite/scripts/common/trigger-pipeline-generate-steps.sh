@@ -22,12 +22,18 @@ if ! [[ -x $(which yq) && $(yq --version) == *mikefarah* ]]; then
 fi
 }
 
-if [[ -z $PIPELINE_TO_TRIGGER ]]; then
+function parse_pipelines() {
+  IFS="," read -ra PIPELINES <<< "$PIPELINES_TO_TRIGGER"
+}
+
+if [[ -z $PIPELINES_TO_TRIGGER ]]; then
     echo "^^^ +++"
-    echo "Required environment variable [PIPELINE_TO_TRIGGER] is missing."
+    echo "Required environment variable [PIPELINES_TO_TRIGGER] is missing."
     echo "Exiting now."
     exit 1
 fi
+
+parse_pipelines
 
 set -u
 set +e
@@ -43,14 +49,16 @@ install_yq
 
 echo 'steps:' >pipeline_steps.yaml
 
-for BRANCH in $BRANCHES; do
-    cat >>pipeline_steps.yaml <<EOF
-  - trigger: $PIPELINE_TO_TRIGGER
-    label: ":testexecute: Triggering ${PIPELINE_TO_TRIGGER} / ${BRANCH}"
+for PIPELINE in "${PIPELINES[@]}"; do
+  for BRANCH in $BRANCHES; do
+      cat >>pipeline_steps.yaml <<EOF
+  - trigger: $PIPELINE
+    label: ":testexecute: Triggering ${PIPELINE} / ${BRANCH}"
     build:
       branch: "$BRANCH"
       message: ":testexecute: Scheduled build for ${BRANCH}"
 EOF
+  done
 done
 
 echo "--- Printing generated steps"
