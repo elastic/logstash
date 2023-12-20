@@ -103,12 +103,14 @@ if __name__ == "__main__":
     structure["steps"].append({
             "group": "Compatibility / Linux",
             "key": "compatibility-linux",
+            "depends_on": "testing-phase",
             "steps": compat_linux_steps,
     })
 
     structure["steps"].append({
             "group": "Compatibility / Windows",
             "key": "compatibility-windows",
+            "depends_on": "testing-phase",
             "steps": [compat_windows_step(imagesuffix=windows_test_os)],
     })
 
