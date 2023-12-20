@@ -9,6 +9,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 
 VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
+CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def slugify_bk_key(key: str) -> str:
     """
@@ -19,6 +20,10 @@ def slugify_bk_key(key: str) -> str:
     mapping_table = str.maketrans({'.': '_', ' ': '_', '/': '_'})
 
     return key.translate(mapping_table)
+
+def testing_phase_steps() -> typing.Dict[str, typing.List[typing.Any]]:
+    with open(os.path.join(CUR_PATH, "..", "..", "pull_request_pipeline.yml")) as fp:
+        return YAML().load(fp)
 
 def compat_linux_step(imagesuffix: str) -> dict[str, typing.Any]:
     linux_command = LiteralScalarString("""#!/usr/bin/env bash
@@ -88,6 +93,12 @@ if __name__ == "__main__":
     windows_test_os = WINDOWS_OS_ENV_VAR_OVERRIDE or randomized_windows_os()
 
     structure = {"steps": []}
+
+    structure["steps"].append({
+        "group": "Testing Phase",
+        "key": "testing-phase",
+        **testing_phase_steps(),
+    })
 
     structure["steps"].append({
             "group": "Compatibility / Linux",
