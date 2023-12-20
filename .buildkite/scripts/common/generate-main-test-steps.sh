@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+cat >pipeline_steps.yaml <<@EOF
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 steps:
@@ -28,20 +32,6 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       ci/unit_tests.sh ruby
-
-  - label: ":java: Java unit tests"
-    key: "java-unit-tests"
-    agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
-      cpu: "8"
-      memory: "16Gi"
-      ephemeralStorage: "100Gi"
-    command: |
-      set -euo pipefail
-
-      source .buildkite/scripts/common/container-agent.sh
-      source .buildkite/scripts/pull-requests/sonar-env.sh
-      ci/unit_tests.sh java
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
@@ -134,3 +124,43 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       x-pack/ci/integration_tests.sh
+@EOF
+
+if [[ $1 == "--enable-sonar"* ]]; then
+
+  cat >>pipeline_steps.yaml <<@EOF
+  - label: ":java: Java unit tests"
+    key: "java-unit-tests"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      source .buildkite/scripts/pull-requests/sonar-env.sh
+      ci/unit_tests.sh java
+@EOF
+else
+  cat >>pipeline_steps.yaml <<@EOF
+  - label: ":java: Java unit tests"
+    key: "java-unit-tests"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+    env:
+      # https://github.com/elastic/logstash/pull/15486 for background
+      ENABLE_SONARQUBE: "false"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/unit_tests.sh java
+@EOF
+fi
+
+cat pipeline_steps.yaml
