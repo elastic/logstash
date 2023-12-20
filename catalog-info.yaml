@@ -235,7 +235,7 @@ spec:
       description: ':logstash: Testing for Logstash Pull Requests'
     spec:
       repository: elastic/logstash
-      pipeline_file: ".buildkite/scripts/pull-requests/generate-steps.sh"
+      pipeline_file: ".buildkite/pull-request-pipeline.yml"
       maximum_timeout_in_minutes: 120
       provider_settings:
         build_pull_request_forks: false
