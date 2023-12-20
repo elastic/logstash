@@ -185,7 +185,7 @@ spec:
       description: ':alarm_clock: Scheduled runs of Logstash DRA Snapshot Pipeline per eligible branch'
     spec:
       repository: elastic/logstash
-      pipeline_file: ".buildkite/trigger_pipeline.yml"
+      pipeline_file: ".buildkite/trigger_pipelines.yml"
       maximum_timeout_in_minutes: 120
       schedules:
         Daily main:
@@ -196,7 +196,7 @@ spec:
       provider_settings:
         trigger_mode: none
       env:
-        PIPELINE_TO_TRIGGER: 'logstash-dra-snapshot-pipeline'
+        PIPELINES_TO_TRIGGER: 'logstash-dra-snapshot-pipeline'
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
