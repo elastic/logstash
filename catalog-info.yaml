@@ -399,23 +399,6 @@ spec:
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
-      schedules:
-        Weekly 7_17:
-          branch: '7.17'
-          cronline: 0 1 * * 2
-          message: Weekly Linux JDK matrix tests for 7.17
-        Weekly 8_12:
-          branch: '8.12'
-          cronline: 0 1 * * 2
-          message: Weekly Linux JDK matrix tests for 8.12
-        Weekly 8_11:
-          branch: '8.11'
-          cronline: 0 1 * * 2
-          message: Weekly Linux JDK matrix tests for 8.11
-        Daily main:
-          branch: main
-          cronline: 0 1 * * 2
-          message: Weekly Linux JDK matrix tests for main
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
@@ -458,23 +441,53 @@ spec:
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-scheduled-jdk-matrix-pipeline
+  description: 'Scheduled runs (Weekly, Auto) of Logstash Linux and Windows JDK matrix pipelines per branch'
+  links:
+    - title: 'Scheduled runs (Weekly, Auto) of Logstash Linux and Windows JDK matrix pipelines per branch'
+      url: logstash-scheduled-jdk-matrix-pipeline
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: buildkite
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: Logstash Scheduled JDK matrix Pipeline
+      description: ':alarm_clock: Scheduled runs of Logstash JDK matrix pipelines per eligible branch'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/trigger_pipelines.yml"
+      maximum_timeout_in_minutes: 120
       schedules:
-        Weekly 7_17:
-          branch: '7.17'
-          cronline: 0 1 * * 2
-          message: Weekly Windows JDK matrix tests for 7.17
-        Weekly 8_12:
-          branch: '8.12'
-          cronline: 0 1 * * 2
-          message: Weekly Windows JDK matrix tests for 8.12
-        Weekly 8_11:
-          branch: '8.11'
-          cronline: 0 1 * * 2
-          message: Weekly Windows JDK matrix tests for 8.11
         Daily main:
           branch: main
           cronline: 0 1 * * 2
-          message: Weekly Windows JDK matrix tests for main
+          message: Weekly trigger of JDK matrix pipelines per branch
+      skip_intermediate_builds: true
+      provider_settings:
+        trigger_mode: none
+      env:
+        PIPELINES_TO_TRIGGER: 'logstash-linux-jdk-matrix-pipeline,logstash-windows-jdk-matrix-pipeline'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
