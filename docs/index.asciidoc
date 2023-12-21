@@ -34,6 +34,26 @@ type of event can be enriched and transformed with a broad array of input, filte
 native codecs further simplifying the ingestion process. Logstash accelerates your insights by harnessing a greater
 volume and variety of data.
 
+
+[serverless]
+.Logstash to {serverless-full}
+****
+You'll use the {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> to send data to {serverless-full}.
+Note these differences between {es-serverless} and both {ess} and self-managed {es}:
+
+* Use *API keys* to access {serverless-full} from {ls}. 
+Any user-based security settings in your in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
+* {serverless-full} uses *data streams* and {ref}/data-stream-lifecycle.html[{dlm} ({dlm-init})] instead of {ilm} ({ilm-init}). 
+Any {ilm-init} settings in your <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
+* *{ls} monitoring* is available through the https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] on {serverless-full}.
+
+
+.Known issue for {ls} to {es-serverless}.
+
+The logstash-output-elasticsearch `hosts` setting defaults to port :9200. Set the value to port :443 instead.
+****
+
+
 // The pass blocks here point to the correct repository for the edit links in the guide.
 
 // Introduction
@@ -112,6 +132,10 @@ include::static/ls-ls-config.asciidoc[]
 include::static/config-management.asciidoc[]
 
 include::static/management/configuring-centralized-pipelines.asciidoc[]
+
+// EA Integrations to Logstash 
+// (Planting near module content for now. Will likely move it up in info architecture.)
+include::static/ea-integrations.asciidoc[]
 
 // Working with Logstash Modules
 include::static/modules.asciidoc[]
