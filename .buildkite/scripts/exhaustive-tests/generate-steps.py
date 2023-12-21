@@ -85,6 +85,14 @@ def randomized_windows_os() -> str:
 
     return random.choice(all_oses["windows"])
 
+def aws_agent(vm_name: str, instance_type: str, image_prefix: str = "platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
+    return {
+        "provider": "aws",
+        "imagePrefix": f"{image_prefix}-{vm_name}",
+        "instanceType": instance_type,
+        "diskSizeGb": disk_size_gb,
+    }
+
 def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", image_prefix: str = "family/platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
     return {
         "provider": "gcp",
@@ -106,6 +114,7 @@ def acceptance_linux_vms() -> typing.List[str]:
 
 def acceptance_linux_steps() -> list[typing.Any]:
     steps = []
+
     build_artifacts_step = {
         "label": "Build artifacts",
         "key": "acceptance-build-artifacts",
@@ -131,7 +140,7 @@ rake artifact:deb artifact:rpm
         step = {
             "label": vm,
             "key": slugify_bk_key(vm),
-            "agents": gcp_agent(vm),
+            "agents": aws_agent(vm,instance_type="m5.4xlarge") if "amazonlinux" in vm else gcp_agent(vm),
             "depends_on": "acceptance-build-artifacts",
             "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
