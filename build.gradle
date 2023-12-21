@@ -750,7 +750,7 @@ class JDKDetails {
             url += "_${arch}"
         }
         println "Retrieving JDK from catalog..."
-        def catalogMetadataUrl = new URL(url)
+        def catalogMetadataUrl = URI.create(url).toURL()
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
         assert catalogConnection.responseCode == 200
