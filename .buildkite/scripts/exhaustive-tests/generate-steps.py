@@ -9,8 +9,11 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 
 VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
+
 ACCEPTANCE_LINUX_OSES = ["ubuntu-2204", "ubuntu-2004", "debian-11", "debian-10", "rhel-9", "rhel-8", "rocky-linux-8", "opensuse-leap-15"]
 # ACCEPTANCE_LINUX_OSES = ["ubuntu-2204"]
+
+CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def slugify_bk_key(key: str) -> str:
     """
@@ -21,6 +24,10 @@ def slugify_bk_key(key: str) -> str:
     mapping_table = str.maketrans({'.': '_', ' ': '_', '/': '_'})
 
     return key.translate(mapping_table)
+
+def testing_phase_steps() -> typing.Dict[str, typing.List[typing.Any]]:
+    with open(os.path.join(CUR_PATH, "..", "..", "pull_request_pipeline.yml")) as fp:
+        return YAML().load(fp)
 
 def compat_linux_step(imagesuffix: str) -> dict[str, typing.Any]:
     linux_command = LiteralScalarString("""#!/usr/bin/env bash
@@ -149,14 +156,22 @@ if __name__ == "__main__":
     structure = {"steps": []}
 
     # structure["steps"].append({
+    #     "group": "Testing Phase",
+    #     "key": "testing-phase",
+    #     **testing_phase_steps(),
+    # })
+
+    # structure["steps"].append({
     #         "group": "Compatibility / Linux",
     #         "key": "compatibility-linux",
+    #         "depends_on": "testing-phase",
     #         "steps": compat_linux_steps,
     # })
 
     # structure["steps"].append({
     #         "group": "Compatibility / Windows",
     #         "key": "compatibility-windows",
+    #         "depends_on": "testing-phase",
     #         "steps": [compat_windows_step(imagesuffix=windows_test_os)],
     # })
 

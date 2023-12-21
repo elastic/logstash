@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Generate trigger steps for $PIPELINES_TO_TRIGGER"
+    command: ".buildkite/scripts/common/trigger-pipeline-generate-steps.sh"
