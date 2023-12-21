@@ -34,7 +34,7 @@ public class RegexValueExpression extends ValueExpression {
             throw new InvalidIRException("Regex value expressions can only take strings!");
         }
 
-        this.regex = getSource();
+        this.regex = (String) value;
     }
 
     @Override

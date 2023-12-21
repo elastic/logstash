@@ -65,6 +65,7 @@ public class SourceWithMetadata implements HashableWithSource {
 
     private static final Pattern emptyString = Pattern.compile("^\\s*$");
 
+    @SuppressWarnings("this-escape")
     public SourceWithMetadata(String protocol, String id, Integer line, Integer column, String text, String metadata) throws IncompleteSourceWithMetadataException {
         this.protocol = protocol;
         this.id = id;
@@ -73,6 +74,9 @@ public class SourceWithMetadata implements HashableWithSource {
         this.text = text;
         this.metadata = metadata;
 
+        // This is the reason why of the "this-escape" suppress warning, a method (attributes) is invoked on
+        // a non completely initialized object and that could generate some errors in accessing fields.
+        // This is not the case because the method is private and not overridable in sub classes.
         List<Object> badAttributes = this.attributes().stream().filter(a -> {
             if (a == null) return true;
             if (a instanceof String) {
