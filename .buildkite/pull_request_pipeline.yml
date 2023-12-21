@@ -38,9 +38,14 @@ steps:
       ephemeralStorage: "100Gi"
     command: |
       set -euo pipefail
+      if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
+        # https://github.com/elastic/logstash/pull/15486 for background
+        export ENABLE_SONARQUBE="false"
+      else
+        source .buildkite/scripts/pull-requests/sonar-env.sh
+      fi
 
       source .buildkite/scripts/common/container-agent.sh
-      source .buildkite/scripts/pull-requests/sonar-env.sh
       ci/unit_tests.sh java
 
   - label: ":lab_coat: Integration Tests / part 1"
