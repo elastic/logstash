@@ -36,6 +36,7 @@ require "logstash-core/logstash-core"
 require "logstash/environment"
 require "logstash/modules/cli_parser"
 require "logstash/util/settings_helper"
+require "logstash/util/jackson"
 
 LogStash::Environment.load_locale!
 
@@ -327,6 +328,9 @@ class LogStash::Runner < Clamp::StrictCommand
 
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
+
+    # Set up the Jackson defaults
+    LogStash::Util::Jackson.set_jackson_defaults(logger)
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
