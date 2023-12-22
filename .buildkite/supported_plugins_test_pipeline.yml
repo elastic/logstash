@@ -58,7 +58,9 @@ steps:
       - label: "Test Tier2 filters"
         command: ./ci/test_plugins.sh -t tier2 -k filter
       - label: "Test Tier2 codecs"
-        command: ./ci/test_plugins.sh -t tier2 -k codec
+        command:  |
+          export LOGSTASH_PLUGINS_TMP="/tmp"
+          ./ci/test_plugins.sh -t tier2 -k codec
       - label: "Test Tier2 outputs"
         command: ./ci/test_plugins.sh -t tier2 -k output
 
