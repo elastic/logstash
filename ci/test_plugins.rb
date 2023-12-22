@@ -149,7 +149,7 @@ PLUGIN_DEFINITIONS = {
     :filter => ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
                 "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
                 "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", 
-                #"logstash-filter-json", # Commented because of issue https://github.com/logstash-plugins/logstash-filter-json/issues/55
+                "logstash-filter-json", 
                 "logstash-filter-kv",
                 "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
                 "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
@@ -166,7 +166,7 @@ PLUGIN_DEFINITIONS = {
                   "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
     :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
                   "logstash-codec-msgpack", 
-                  #{}"logstash-codec-netflow" # Commented because of issue https://github.com/logstash-plugins/logstash-codec-netflow/issues/203
+                  "logstash-codec-netflow"
                 ],
     :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
     :output => ["logstash-output-csv", "logstash-output-graphite"]
