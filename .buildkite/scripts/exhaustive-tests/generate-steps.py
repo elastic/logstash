@@ -10,8 +10,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 
-ACCEPTANCE_LINUX_OSES = ["ubuntu-2204", "ubuntu-2004", "debian-11", "debian-10", "rhel-9", "rhel-8", "rocky-linux-8", "opensuse-leap-15"]
-# ACCEPTANCE_LINUX_OSES = ["ubuntu-2204"]
+ACCEPTANCE_LINUX_OSES = ["ubuntu-2204", "ubuntu-2004", "debian-11", "debian-10", "rhel-9", "rhel-8", "oraclelinux-7", "rocky-linux-8", "opensuse-leap-15", "amazonlinux-2023"]
 
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
