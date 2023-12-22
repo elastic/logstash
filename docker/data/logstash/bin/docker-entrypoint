@@ -4,7 +4,7 @@
 # Note that this will mutate logstash.yml in place if any such settings are found.
 # This may be undesirable, especially if logstash.yml is bind-mounted from the
 # host system.
-env2yaml /usr/share/logstash/config/logstash.yml
+./bin/ruby --dev /usr/share/logstash/env2yaml.rb /usr/share/logstash/config/logstash.yml
 
 if [[ -n "$LOG_STYLE" ]]; then
   case "$LOG_STYLE" in

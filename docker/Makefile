@@ -33,7 +33,7 @@ lint: venv
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-full-artifacts: venv dockerfile env2yaml
+build-from-local-full-artifacts: venv dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -44,7 +44,7 @@ build-from-local-full-artifacts: venv dockerfile env2yaml
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
 
-build-from-local-oss-artifacts: venv dockerfile env2yaml
+build-from-local-oss-artifacts: venv dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -54,7 +54,7 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-build-from-local-ubi8-artifacts: venv dockerfile env2yaml
+build-from-local-ubi8-artifacts: venv dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -66,7 +66,7 @@ build-from-local-ubi8-artifacts: venv dockerfile env2yaml
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
-COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.rb
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
@@ -75,7 +75,7 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.rb: data/logstash/env2yaml/env2yaml.rb
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -113,7 +113,6 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/bin
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/config
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_ironbank
@@ -130,7 +129,7 @@ public-dockerfiles_full: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-full && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml.rb pipeline
 
 public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
@@ -144,7 +143,7 @@ public-dockerfiles_oss: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-oss && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
-	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml.rb pipeline
 
 public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	jinja2 \
@@ -158,7 +157,7 @@ public-dockerfiles_ubi8: venv templates/Dockerfile.j2 docker_paths $(COPY_FILES)
 	  templates/Dockerfile.j2 > $(ARTIFACTS_DIR)/Dockerfile-ubi8 && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
-	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml.rb pipeline
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml templates/Dockerfile.j2 ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	jinja2 \
@@ -200,17 +199,6 @@ venv: requirements.txt
 	for i in 0 1 2 3 4 5; do sleep "$i"; pip install -r requirements.txt && break; done &&\
 	touch venv
 
-# Make a Golang container that can compile our env2yaml tool.
-golang:
-	docker build -t golang:env2yaml data/golang
-
-# Compile "env2yaml", the helper for configuring logstash.yml via environment
-# variables.
-env2yaml: golang
-	docker run --rm -i \
-	  -v $(PWD)/data/logstash/env2yaml:/usr/local/src/env2yaml:Z \
-	  golang:env2yaml
-
 # Generate the Dockerfiles from Jinja2 templates.
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
@@ -225,7 +213,7 @@ dockerfile: venv templates/Dockerfile.j2
 	)
 
 clean:
-	rm -f ${ARTIFACTS_DIR}/env2yaml/env2yaml ${ARTIFACTS_DIR}/Dockerfile
+	rm -f ${ARTIFACTS_DIR}/Dockerfile
 	rm -rf venv
 
 .PHONY: clean push

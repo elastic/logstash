@@ -1,52 +1,17 @@
-// env2yaml
-//
-// Merge environment variables into logstash.yml.
-// For example, running Docker with:
-//
-//	docker run -e pipeline.workers=6
-//
-// or
-//
-//	docker run -e PIPELINE_WORKERS=6
-//
-// will cause logstash.yml to contain the line:
-//
-//	pipeline.workers: 6
-package main
+require 'yaml'
 
-import (
-	"errors"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"log"
-	"os"
-	"strings"
-)
+def squash_setting(setting)
+  setting.downcase.gsub('.', '').gsub('_', '')
+end
 
-// If the given string can be parsed as YAML, then do so and return the
-// resulting entity. Otherwise, return the string unmodified.
-func FromYamlIfPossible(str string) interface{} {
-	var entity interface{}
-	err := yaml.Unmarshal([]byte(str), &entity)
-	if err == nil {
-		return entity
-	} else {
-		return str
-	}
-}
+# Set filename
+filename = ARGV[0]
 
-// Given a setting name, return a downcased version with delimiters removed.
-func squashSetting(setting string) string {
-	downcased := strings.ToLower(setting)
-	de_dotted := strings.Replace(downcased, ".", "", -1)
-	de_underscored := strings.Replace(de_dotted, "_", "", -1)
-	return de_underscored
-}
+# Load YAML file
+settings = YAML.load_file(filename) || {}
 
-// Given a setting name like "pipeline.workers" or "PIPELINE_UNSAFE_SHUTDOWN",
-// return the canonical setting name. eg. 'pipeline.unsafe_shutdown'
-func normalizeSetting(setting string) (string, error) {
-	valid_settings := []string{
+# Define list of valid settings
+valid_settings = [
 		"api.enabled",
 		"api.http.host",
 		"api.http.port",
@@ -87,10 +52,10 @@ func normalizeSetting(setting string) (string, error) {
 		"dead_letter_queue.storage_policy",
 		"dead_letter_queue.retain.age",
 		"path.dead_letter_queue",
-		"http.enabled",     // DEPRECATED: prefer `api.enabled`
-		"http.environment", // DEPRECATED: prefer `api.environment`
-		"http.host",        // DEPRECATED: prefer `api.http.host`
-		"http.port",        // DEPRECATED: prefer `api.http.port`
+		"http.enabled",     # DEPRECATED: prefer `api.enabled`
+		"http.environment", # DEPRECATED: prefer `api.environment`
+		"http.host",        # DEPRECATED: prefer `api.http.host`
+		"http.port",        # DEPRECATED: prefer `api.http.port`
 		"log.level",
 		"log.format",
 		"modules",
@@ -153,62 +118,39 @@ func normalizeSetting(setting string) (string, error) {
 		"xpack.geoip.downloader.enabled",
 		"cloud.id",
 		"cloud.auth",
-	}
+]
 
-	for _, valid_setting := range valid_settings {
-		if squashSetting(setting) == squashSetting(valid_setting) {
-			return valid_setting, nil
-		}
-	}
-	return "", errors.New("Invalid setting: " + setting)
-}
+# Normalize keys in valid settings
+normalized_valid_settings = valid_settings.map { |setting| squash_setting(setting) }
 
-func main() {
-	if len(os.Args) != 2 {
-		log.Fatalf("usage: env2yaml FILENAME")
-	}
-	settingsFilePath := os.Args[1]
+# Prepare a hash for mapping normalized keys back to their original form
+valid_setting_map = Hash[normalized_valid_settings.zip(valid_settings)]
 
-	settingsFile, err := ioutil.ReadFile(settingsFilePath)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+# Merge any valid settings found in the environment
+found_new_settings = false
 
-	// Read the original settings file into a map.
-	settings := make(map[string]interface{})
-	err = yaml.Unmarshal(settingsFile, &settings)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+ENV.each do |key, value|
+  normalized_key = squash_setting(key)
 
-	// Merge any valid settings found in the environment.
-	foundNewSettings := false
-	for _, line := range os.Environ() {
-		kv := strings.SplitN(line, "=", 2)
-		key := kv[0]
-		value := kv[1]
-		setting, err := normalizeSetting(key)
-		if err == nil {
-			foundNewSettings = true
-			log.Printf("Setting '%s' from environment.", setting)
-			settings[setting] = FromYamlIfPossible(value)
-		}
-	}
+  # If the environment variable is a valid setting, update the settings
+  if valid_setting_map[normalized_key]
+    found_new_settings = true
+    puts "Setting '#{valid_setting_map[normalized_key]}' from environment."
 
-	if foundNewSettings {
-		output, err := yaml.Marshal(&settings)
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
+    # Try to parse the value as YAML
+    begin
+      parsed_value = YAML.safe_load(value)
+    rescue Psych::SyntaxError
+      parsed_value = value
+    end
 
-		stat, err := os.Stat(settingsFilePath)
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
+    target_key = valid_setting_map[normalized_key]
+    settings[target_key] = parsed_value
+  end
+end
 
-		err = ioutil.WriteFile(settingsFilePath, output, stat.Mode())
-		if err != nil {
-			log.Fatalf("error: %v", err)
-		}
-	}
-}
+# If new settings were found, write them back to the YAML file
+if found_new_settings
+  File.open(filename, 'w') {|f| f.write settings.to_yaml } 
+end
+
