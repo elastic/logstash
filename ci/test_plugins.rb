@@ -33,12 +33,19 @@ unless File.directory?(plugins_folder)
 end
 
 class Plugin
-  attr_reader :plugins_folder, :plugin_name, :plugin_base_folder
+  attr_reader :plugins_folder, :plugin_name, :plugin_base_folder, :plugin_repository
 
-  def initialize(plugins_folder, plugin_name)
+  # params:
+  #    plugin_repo if present MUST be the full git url
+  def initialize(plugins_folder, plugin_name, plugin_repo = nil)
     @plugin_name = plugin_name
     @plugins_folder = plugins_folder
     @plugin_base_folder = "#{plugins_folder}/#{plugin_name}"
+    if plugin_repo.nil?
+      @plugin_repository = "git@github.com:logstash-plugins/#{plugin_name}.git"
+    else 
+      @plugin_repository = plugin_repo
+    end  
   end
 
   def git_retrieve
@@ -57,7 +64,7 @@ class Plugin
 
     puts "test plugins(git_retrieve)>> #{plugin_name} local clone doesn't exist, cloning... (at #{Time.new})"
 
-    plugin_repository = "git@github.com:logstash-plugins/#{plugin_name}.git"
+    
     unless system("git clone #{plugin_repository}")
       puts "Can't clone #{plugin_repository}"
       exit 1
@@ -138,6 +145,9 @@ FailureDetail = Struct.new(:plugin_name, :reason)
 # contains set of FailureDetail
 failed_plugins = [].to_set
 
+# By default the plugins are cloned from repositories in the organization git@github.com:logstash-plugins.
+# If a plugin resides in some other orhganization, instead of inserting just the plugin name, use couple (array with 2 elements)
+# with first value the name of the plugin and second value the full git url to the repository
 PLUGIN_DEFINITIONS = {
   :tier1 => {
     :input => ["logstash-input-azure_event_hubs", "logstash-input-beats", "logstash-input-elasticsearch", "logstash-input-file",
@@ -155,7 +165,9 @@ PLUGIN_DEFINITIONS = {
                 "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
                 "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
                 "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
-                "logstash-filter-xml"],
+                "logstash-filter-xml",
+                ["logstash-filter-elastic_integration", "git@github.com:elastic/logstash-filter-elastic_integration.git"]
+              ],
     :output => ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
                 "logstash-output-redis", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
     :integration => ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
@@ -200,8 +212,37 @@ def select_by_tiers_and_kinds(tiers, kinds)
   selected
 end
 
+# Return plain or composed (with repo url) definitions given a list of plugin names
+def list_plugins_definitions(plugins)
+  res = []
+  plugins.each do |plugin|
+    res = res + search_plugin_definition(plugin)
+  end 
+  return res
+end  
+
+# return a list of string or couple
+def search_plugin_definition(plugin_name)
+  res = []
+  PLUGIN_DEFINITIONS.each do |tier, kinds|
+    kinds.each do |kind, list_of_definitions|
+      if list_of_definitions.include?(plugin_name)
+        res << plugin_name
+      else
+        # search plugin name as first part of tuples present in the list of definitions
+        res = res + list_of_definitions
+            .filter{ |plugin_def| plugin_def.kind_of?(Array) }
+            .filter{ |plugin_def| plugin_def[0] == plugin_name}
+      end    
+    end  
+  end
+  return res
+end
+
 def select_plugins_by_opts(options)
-  return options[:plugins] if options[:plugins]
+  if options[:plugins]
+    return list_plugins_definitions(options[:plugins])
+  end
 
   selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
   selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
@@ -265,11 +306,17 @@ setup_logstash_for_development
 # save to local git for test isolation
 snapshot_logstash_artifacts!
 
-plugins.each do |plugin_name|
+plugins.each do |plugin_definition|
   restore_logstash_from_snapshot
 
+  if plugin_definition.kind_of?(Array)
+    plugin_name = plugin_definition[0]
+  else
+    plugin_name = plugin_definition  
+  end
+
   status = Dir.chdir(plugins_folder) do
-    plugin = Plugin.new(plugins_folder, plugin_name)
+    plugin = Plugin.new(plugins_folder, *plugin_definition)
     plugin.git_retrieve
 
     status = Dir.chdir(plugin_name) do
