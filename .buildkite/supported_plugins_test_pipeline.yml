@@ -58,9 +58,7 @@ steps:
       - label: "Test Tier2 filters"
         command: ./ci/test_plugins.sh -t tier2 -k filter
       - label: "Test Tier2 codecs"
-        command:  |
-          export LOGSTASH_PLUGINS_TMP="/tmp"
-          ./ci/test_plugins.sh -t tier2 -k codec
+        command:  ./ci/test_plugins.sh -t tier2 -k codec
         agents:
           provider: gcp
           imageProject: elastic-images-prod
