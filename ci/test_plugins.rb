@@ -78,6 +78,7 @@ class Plugin
     unit_test_folders = Dir.glob('spec/**/*')
         .select {|f| File.directory? f}
         .select{|f| not f.include?('integration')}
+        .select{|f| not f.include?('benchmark')}
         .join(" ")
 
     puts "test plugins(execute_rspec)>> rake vendor (at #{Time.new})"
@@ -85,7 +86,7 @@ class Plugin
     
     puts "test plugins(execute_rspec)>> exec rspec"
     rspec_command = "#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec #{unit_test_folders} --tag ~integration --tag ~secure_integration"
-    puts "\t\t executing: #{rspec_command}"
+    puts "\t\t executing: #{rspec_command}\n from #{Dir.pwd}"
     stdout, stderr, status = Open3.capture3(rspec_command)
     if status != 0
       puts "Error executing rspec"
