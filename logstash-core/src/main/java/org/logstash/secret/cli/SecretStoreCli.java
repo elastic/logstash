@@ -29,7 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
 
 /**
@@ -42,22 +41,109 @@ public class SecretStoreCli {
     private final Terminal terminal;
     private final SecretStoreFactory secretStoreFactory;
 
-    enum Command {
-        CREATE("create"), LIST("list"), ADD("add"), REMOVE("remove"), HELP("--help");
+    enum CommandOptions {
+        HELP("help"),
+        /**
+         * Common flag used to change the read source to the standard input. It has no effect as
+         * this tool already reads values from the stdin by default, but still necessary (BC) to
+         * not consider this flag as an actual value.
+         */
+        STDIN("stdin");
+
+        private static final String PREFIX = "--";
 
         private final String option;
 
-        Command(String option) {
-            this.option = option;
+        CommandOptions(String option) {
+            this.option = String.format("%s%s", PREFIX, option);
         }
 
-        static Optional<Command> fromString(final String input) {
-            Optional<Command> command = EnumSet.allOf(Command.class).stream().filter(c -> c.option.equals(input)).findFirst();
-            return command;
+        static List<CommandOptions> fromArguments(final String[] arguments) {
+            final Set<String> candidates = Arrays.stream(arguments)
+                    .filter(p -> p.startsWith(PREFIX))
+                    .collect(Collectors.toSet());
+
+            return Arrays.stream(values())
+                    .filter(p -> candidates.contains(p.option))
+                    .collect(Collectors.toList());
         }
 
         String getOption() {
             return option;
+        }
+    }
+
+    static class CommandLine {
+        private final Command command;
+        private final List<String> arguments;
+        private final EnumSet<CommandOptions> options;
+
+        CommandLine(Command command, String[] arguments) {
+            this.command = command;
+            this.arguments = parseCommandArguments(arguments);
+            this.options = parseCommandOptions(arguments);
+        }
+
+        private static List<String>  parseCommandArguments(String[] arguments) {
+            if (arguments == null || arguments.length == 0) {
+                return List.of();
+            }
+
+            final Set<String> commandOptions = Arrays.stream(CommandOptions.values())
+                    .map(CommandOptions::getOption)
+                    .collect(Collectors.toSet());
+
+            // Includes all arguments values until it reaches the end or found a command option/flag
+            String[] filteredArguments = arguments;
+            for (int i = 0; i < arguments.length; i++) {
+                if (commandOptions.contains(arguments[i])) {
+                    filteredArguments = Arrays.copyOfRange(arguments, 0, i);
+                    break;
+                }
+            }
+
+            return Arrays.asList(filteredArguments);
+        }
+
+        private static EnumSet<CommandOptions> parseCommandOptions(String[] arguments) {
+            final EnumSet<CommandOptions> flags = EnumSet.noneOf(CommandOptions.class);
+            if (arguments == null) {
+                return flags;
+            }
+
+            flags.addAll(CommandOptions.fromArguments(arguments));
+
+            return flags;
+        }
+
+        boolean hasOption(CommandOptions option) {
+            return options.contains(option);
+        }
+
+        Command getCommand() {
+            return command;
+        }
+
+        List<String> getArguments() {
+            return Collections.unmodifiableList(arguments);
+        }
+    }
+
+    enum Command {
+        CREATE("create"), LIST("list"), ADD("add"), REMOVE("remove");
+
+        private final String command;
+
+        Command(String command) {
+            this.command = command;
+        }
+
+        static Optional<CommandLine> parse(final String command, final String[] arguments) {
+            final Optional<Command> foundCommand = Arrays.stream(values())
+                    .filter(c -> c.command.equals(command))
+                    .findFirst();
+
+            return foundCommand.map(value -> new CommandLine(value, arguments));
         }
     }
 
@@ -74,16 +160,21 @@ public class SecretStoreCli {
      * Entry point to issue a command line command.
      * @param primaryCommand The string representation of a {@link SecretStoreCli.Command}, if the String does not map to a {@link SecretStoreCli.Command}, then it will show the help menu.
      * @param config The configuration needed to work a secret store. May be null for help.
-     * @param arguments This can be either identifiers for a secret, or a sub command like --help. May be null.
+     * @param allArguments This can be either identifiers for a secret, or a sub command like --help. May be null.
      */
-    public void command(String primaryCommand, SecureConfig config, String... arguments) {
+    public void command(String primaryCommand, SecureConfig config, String... allArguments) {
         terminal.writeLine("");
-        final Command command = Command.fromString(primaryCommand).orElse(Command.HELP);
-        boolean help = nonNull(arguments) && Arrays.asList(arguments).contains(Command.HELP.getOption());
+        final Optional<CommandLine> commandParseResult = Command.parse(primaryCommand, allArguments);
+        if (commandParseResult.isEmpty()) {
+            printHelp();
+            return;
+        }
 
-        switch (command) {
+
+        final CommandLine commandLine = commandParseResult.get();
+        switch (commandLine.getCommand()) {
             case CREATE: {
-                if (help){
+                if (commandLine.hasOption(CommandOptions.HELP)){
                     terminal.writeLine("Creates a new keystore. For example: 'bin/logstash-keystore create'");
                     return;
                 }
@@ -98,7 +189,7 @@ public class SecretStoreCli {
                 break;
             }
             case LIST: {
-                if (help){
+                if (commandLine.hasOption(CommandOptions.HELP)){
                     terminal.writeLine("List all secret identifiers from the keystore. For example: " +
                             "`bin/logstash-keystore list`. Note - only the identifiers will be listed, not the secrets.");
                     return;
@@ -110,18 +201,18 @@ public class SecretStoreCli {
                 break;
             }
             case ADD: {
-                if (help){
+                if (commandLine.hasOption(CommandOptions.HELP)){
                     terminal.writeLine("Add secrets to the keystore. For example: " +
                             "`bin/logstash-keystore add my-secret`, at the prompt enter your secret. You will use the identifier ${my-secret} in your Logstash configuration.");
                     return;
                 }
-                if (arguments == null || arguments.length == 0) {
+                if (commandLine.getArguments().isEmpty()) {
                     terminal.writeLine("ERROR: You must supply an identifier to add. (e.g. bin/logstash-keystore add my-secret)");
                     return;
                 }
                 if (secretStoreFactory.exists(config.clone())) {
                     final SecretStore secretStore = secretStoreFactory.load(config);
-                    for (String argument : arguments) {
+                    for (String argument : commandLine.getArguments()) {
                         final SecretIdentifier id = new SecretIdentifier(argument);
                         final byte[] existingValue = secretStore.retrieveSecret(id);
                         if (existingValue != null) {
@@ -159,18 +250,18 @@ public class SecretStoreCli {
                 break;
             }
             case REMOVE: {
-                if (help){
+                if (commandLine.hasOption(CommandOptions.HELP)){
                     terminal.writeLine("Remove secrets from the keystore. For example: " +
                             "`bin/logstash-keystore remove my-secret`");
                     return;
                 }
-                if (arguments == null || arguments.length == 0) {
+                if (commandLine.getArguments().isEmpty()) {
                     terminal.writeLine("ERROR: You must supply a value to remove. (e.g. bin/logstash-keystore remove my-secret)");
                     return;
                 }
 
                 final SecretStore secretStore = secretStoreFactory.load(config);
-                for (String argument : arguments) {
+                for (String argument : commandLine.getArguments()) {
                     SecretIdentifier id = new SecretIdentifier(argument);
                     if (secretStore.containsSecret(id)) {
                         secretStore.purgeSecret(id);
@@ -182,30 +273,30 @@ public class SecretStoreCli {
 
                 break;
             }
-            case HELP: {
-                terminal.writeLine("Usage:");
-                terminal.writeLine("--------");
-                terminal.writeLine("bin/logstash-keystore [option] command [argument]");
-                terminal.writeLine("");
-                terminal.writeLine("Commands:");
-                terminal.writeLine("--------");
-                terminal.writeLine("create - Creates a new Logstash keystore  (e.g. bin/logstash-keystore create)");
-                terminal.writeLine("list   - List entries in the keystore  (e.g. bin/logstash-keystore list)");
-                terminal.writeLine("add    - Add values to the keystore (e.g. bin/logstash-keystore add secret-one secret-two)");
-                terminal.writeLine("remove - Remove values from the keystore  (e.g. bin/logstash-keystore remove secret-one secret-two)");
-                terminal.writeLine("");
-                terminal.writeLine("Argument:");
-                terminal.writeLine("--------");
-                terminal.writeLine("--help - Display command specific help  (e.g. bin/logstash-keystore add --help)");
-                terminal.writeLine("");
-                terminal.writeLine("Options:");
-                terminal.writeLine("--------");
-                terminal.writeLine("--path.settings - Set the directory for the keystore. This is should be the same directory as the logstash.yml settings file. " +
-                        "The default is the config directory under Logstash home. (e.g. bin/logstash-keystore --path.settings /tmp/foo create)");
-                terminal.writeLine("");
-                break;
-            }
         }
+    }
+
+    private void printHelp(){
+        terminal.writeLine("Usage:");
+        terminal.writeLine("--------");
+        terminal.writeLine("bin/logstash-keystore [option] command [argument]");
+        terminal.writeLine("");
+        terminal.writeLine("Commands:");
+        terminal.writeLine("--------");
+        terminal.writeLine("create - Creates a new Logstash keystore  (e.g. bin/logstash-keystore create)");
+        terminal.writeLine("list   - List entries in the keystore  (e.g. bin/logstash-keystore list)");
+        terminal.writeLine("add    - Add values to the keystore (e.g. bin/logstash-keystore add secret-one secret-two)");
+        terminal.writeLine("remove - Remove values from the keystore  (e.g. bin/logstash-keystore remove secret-one secret-two)");
+        terminal.writeLine("");
+        terminal.writeLine("Argument:");
+        terminal.writeLine("--------");
+        terminal.writeLine("--help - Display command specific help  (e.g. bin/logstash-keystore add --help)");
+        terminal.writeLine("");
+        terminal.writeLine("Options:");
+        terminal.writeLine("--------");
+        terminal.writeLine("--path.settings - Set the directory for the keystore. This is should be the same directory as the logstash.yml settings file. " +
+                "The default is the config directory under Logstash home. (e.g. bin/logstash-keystore --path.settings /tmp/foo create)");
+        terminal.writeLine("");
     }
 
     private void add(SecretStore secretStore, SecretIdentifier id, byte[] secret) {

@@ -32,7 +32,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 
@@ -294,6 +296,69 @@ public class SecretStoreCliTest {
         assertThat(terminal.out).containsIgnoringCase(expectedMessage);
     }
 
+    @Test
+    public void testCommandWithStdinFlag() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+
+        String id = UUID.randomUUID().toString();
+        cli.command("add", newStoreConfig.clone(), id, SecretStoreCli.CommandOptions.STDIN.getOption());
+        terminal.reset();
+
+        cli.command("list", newStoreConfig);
+        assertListed(id);
+        assertNotListed(SecretStoreCli.CommandOptions.STDIN.getOption());
+    }
+
+    @Test
+    public void testCommandOptionsArgumentsParsing() {
+        final String[] args = new String[]{
+                "add",
+                "FOO",
+                "--help",
+                "--non-existing-flag",
+                "--stdin"
+        };
+
+        final List<SecretStoreCli.CommandOptions> parsedOptions = SecretStoreCli.CommandOptions
+                .fromArguments(args);
+
+        assertThat(parsedOptions).containsExactly(
+                SecretStoreCli.CommandOptions.HELP,
+                SecretStoreCli.CommandOptions.STDIN
+        );
+    }
+
+    @Test
+    public void testCommandParseWithValidCommand() {
+        final String[] args = new String[]{
+                "FOO",
+                "BAR",
+                "--stdin",
+                "ANYTHING"
+        };
+
+        final Optional<SecretStoreCli.CommandLine> commandLineParseResult = SecretStoreCli.Command
+                .parse("add", args);
+
+        assertThat(commandLineParseResult).isPresent();
+
+        final SecretStoreCli.CommandLine commandLine = commandLineParseResult.get();
+        assertThat(commandLine.getCommand()).isEqualTo(SecretStoreCli.Command.ADD);
+        assertThat(commandLine.getArguments()).containsExactly("FOO", "BAR");
+        assertThat(commandLine.hasOption(SecretStoreCli.CommandOptions.STDIN)).isTrue();
+    }
+
+    @Test
+    public void testCommandParseWithInvalidCommand() {
+        final Optional<SecretStoreCli.CommandLine> commandLineParseResult = SecretStoreCli.Command
+                .parse("non-existing-command", new String[0]);
+
+        assertThat(commandLineParseResult).isEmpty();
+    }
+
     private void createKeyStore() {
         terminal.reset();
         terminal.in.add("y");
@@ -312,6 +377,10 @@ public class SecretStoreCliTest {
 
     private void assertListed(String... expected) {
         assertTrue(Arrays.stream(expected).allMatch(terminal.out::contains));
+    }
+
+    private void assertNotListed(String... expected) {
+        assertTrue(Arrays.stream(expected).noneMatch(terminal.out::contains));
     }
 
     private void assertPrimaryHelped() {
