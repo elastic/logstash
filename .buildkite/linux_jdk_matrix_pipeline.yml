@@ -69,7 +69,7 @@ steps:
             value: "zulu_11"
 
   - wait: ~
-    if: build.source != "schedule"
+    if: build.source != "schedule" && build.source != "trigger_job"
 
   - command: |
       set -euo pipefail
