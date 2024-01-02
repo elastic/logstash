@@ -58,7 +58,9 @@ steps:
       - label: "Test Tier2 filters"
         command: ./ci/test_plugins.sh -t tier2 -k filter
       - label: "Test Tier2 codecs"
-        command:  ./ci/test_plugins.sh -t tier2 -k codec
+        command: |
+          source .buildkite/scripts/common/vm-agent.sh
+          ./ci/test_plugins.sh -t tier2 -k codec
         agents:
           provider: gcp
           imageProject: elastic-images-prod
