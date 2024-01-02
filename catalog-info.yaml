@@ -543,8 +543,8 @@ spec:
       provider_settings:
         trigger_mode: none
       env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:
