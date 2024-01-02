@@ -78,6 +78,7 @@ class Plugin
     unit_test_folders = Dir.glob('spec/**/*')
         .select {|f| File.directory? f}
         .select{|f| not f.include?('integration')}
+        .select{|f| not f.include?('benchmark')}
         .join(" ")
 
     puts "test plugins(execute_rspec)>> rake vendor (at #{Time.new})"
@@ -85,7 +86,7 @@ class Plugin
     
     puts "test plugins(execute_rspec)>> exec rspec"
     rspec_command = "#{ENV['LOGSTASH_PATH']}/bin/ruby -S bundle exec rspec #{unit_test_folders} --tag ~integration --tag ~secure_integration"
-    puts "\t\t executing: #{rspec_command}"
+    puts "\t\t executing: #{rspec_command}\n from #{Dir.pwd}"
     stdout, stderr, status = Open3.capture3(rspec_command)
     if status != 0
       puts "Error executing rspec"
@@ -149,7 +150,7 @@ PLUGIN_DEFINITIONS = {
     :filter => ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
                 "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
                 "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", 
-                #"logstash-filter-json", # Commented because of issue https://github.com/logstash-plugins/logstash-filter-json/issues/55
+                "logstash-filter-json", 
                 "logstash-filter-kv",
                 "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
                 "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
@@ -164,9 +165,10 @@ PLUGIN_DEFINITIONS = {
     :input => [# "logstash-input-couchdb_changes", # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
                "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
                   "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
-    :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
+    :codec => [#"logstash-codec-collectd", # Removed because of https://github.com/logstash-plugins/logstash-codec-collectd/issues/32
+               "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
                   "logstash-codec-msgpack", 
-                  #{}"logstash-codec-netflow" # Commented because of issue https://github.com/logstash-plugins/logstash-codec-netflow/issues/203
+                  "logstash-codec-netflow"
                 ],
     :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
     :output => ["logstash-output-csv", "logstash-output-graphite"]
