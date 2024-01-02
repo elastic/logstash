@@ -165,7 +165,8 @@ PLUGIN_DEFINITIONS = {
     :input => [# "logstash-input-couchdb_changes", # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
                "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
                   "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
-    :codec => ["logstash-codec-collectd", "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
+    :codec => [#"logstash-codec-collectd", # Removed because of https://github.com/logstash-plugins/logstash-codec-collectd/issues/32
+               "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
                   "logstash-codec-msgpack", 
                   "logstash-codec-netflow"
                 ],
