@@ -8,11 +8,9 @@
 
 set -euo pipefail
 
-# the convoluted AWK script below grabs the major version from bundled_jdk:\nrevision in Logstash's `version.yml`
-# we don't use yq (or e.g. the yaml Python module) because both aren't guaranteed to be pre-installed on all VMs.
-_JAVA_MAJOR_VERSION=$(awk '/^bundled_jdk:/ {found_bundled_jdk=1; next} found_bundled_jdk && /^[\ \t]*revision:/ {print $0}' versions.yml | awk -F ': ' '{print $2}' | cut -d '.' -f 1,1)
+source .ci/java-versions.properties
+export BUILD_JAVA_HOME=/opt/buildkite-agent/.java/$LS_BUILD_JAVA
 
-export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_${_JAVA_MAJOR_VERSION}"
-export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:${JAVA_HOME}/bin:$PATH"
+export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$BUILD_JAVA_HOME/bin:$PATH"
 
 eval "$(rbenv init -)"
