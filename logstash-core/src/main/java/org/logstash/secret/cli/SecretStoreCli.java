@@ -54,18 +54,18 @@ public class SecretStoreCli {
 
         private final String option;
 
-        CommandOptions(String option) {
+        CommandOptions(final String option) {
             this.option = String.format("%s%s", PREFIX, option);
         }
 
-        static List<CommandOptions> fromArguments(final String[] arguments) {
-            final Set<String> candidates = Arrays.stream(arguments)
-                    .filter(p -> p.startsWith(PREFIX))
-                    .collect(Collectors.toSet());
+        static Optional<CommandOptions> fromString(final String option) {
+            if (option == null || !option.startsWith(PREFIX)) {
+                return Optional.empty();
+            }
 
             return Arrays.stream(values())
-                    .filter(p -> candidates.contains(p.option))
-                    .collect(Collectors.toList());
+                    .filter(p -> p.option.equals(option))
+                    .findFirst();
         }
 
         String getOption() {
@@ -76,27 +76,28 @@ public class SecretStoreCli {
     static class CommandLine {
         private final Command command;
         private final List<String> arguments;
-        private final EnumSet<CommandOptions> options;
+        private final Set<CommandOptions> options;
 
-        CommandLine(Command command, String[] arguments) {
+        CommandLine(final Command command, final String[] arguments) {
             this.command = command;
-            this.arguments = parseCommandArguments(arguments);
-            this.options = parseCommandOptions(arguments);
+            this.arguments = parseCommandArguments(command, arguments);
+            this.options = parseCommandOptions(command, arguments);
         }
 
-        private static List<String>  parseCommandArguments(String[] arguments) {
+        private static List<String> parseCommandArguments(final Command command, final String[] arguments) {
             if (arguments == null || arguments.length == 0) {
                 return List.of();
             }
 
-            final Set<String> commandOptions = Arrays.stream(CommandOptions.values())
+            final Set<String> commandValidOptions = command.getValidOptions()
+                    .stream()
                     .map(CommandOptions::getOption)
                     .collect(Collectors.toSet());
 
             // Includes all arguments values until it reaches the end or found a command option/flag
             String[] filteredArguments = arguments;
             for (int i = 0; i < arguments.length; i++) {
-                if (commandOptions.contains(arguments[i])) {
+                if (commandValidOptions.contains(arguments[i])) {
                     filteredArguments = Arrays.copyOfRange(arguments, 0, i);
                     break;
                 }
@@ -105,18 +106,26 @@ public class SecretStoreCli {
             return Arrays.asList(filteredArguments);
         }
 
-        private static EnumSet<CommandOptions> parseCommandOptions(String[] arguments) {
-            final EnumSet<CommandOptions> flags = EnumSet.noneOf(CommandOptions.class);
+        private static Set<CommandOptions> parseCommandOptions(final Command command, final String[] arguments) {
+            final Set<CommandOptions> providedOptions = EnumSet.noneOf(CommandOptions.class);
             if (arguments == null) {
-                return flags;
+                return providedOptions;
             }
 
-            flags.addAll(CommandOptions.fromArguments(arguments));
+            for (final String argument : arguments) {
+                if (argument.startsWith(CommandOptions.PREFIX)) {
+                    final Optional<CommandOptions> option = CommandOptions.fromString(argument);
+                    if (option.isEmpty() || !command.validOptions.contains(option.get())) {
+                        throw new InvalidCommandException(String.format("Unrecognized option '%s' for command '%s'", argument, command.command));
+                    }
+                    providedOptions.add(option.get());
+                }
+            }
 
-            return flags;
+            return providedOptions;
         }
 
-        boolean hasOption(CommandOptions option) {
+        boolean hasOption(final CommandOptions option) {
             return options.contains(option);
         }
 
@@ -129,13 +138,31 @@ public class SecretStoreCli {
         }
     }
 
+    static class InvalidCommandException extends RuntimeException {
+        private static final long serialVersionUID = 8402825920204022022L;
+
+        public InvalidCommandException(final String message) {
+            super(message);
+        }
+    }
+
     enum Command {
-        CREATE("create"), LIST("list"), ADD("add"), REMOVE("remove");
+        CREATE("create"),
+        LIST("list"),
+        ADD("add", List.of(CommandOptions.STDIN)),
+        REMOVE("remove");
+
+        private final Set<CommandOptions> validOptions = EnumSet.of(CommandOptions.HELP);
 
         private final String command;
 
-        Command(String command) {
+        Command(final String command) {
             this.command = command;
+        }
+
+        Command(final String command, final Collection<CommandOptions> validOptions) {
+            this.command = command;
+            this.validOptions.addAll(validOptions);
         }
 
         static Optional<CommandLine> parse(final String command, final String[] arguments) {
@@ -144,6 +171,10 @@ public class SecretStoreCli {
                     .findFirst();
 
             return foundCommand.map(value -> new CommandLine(value, arguments));
+        }
+
+        Set<CommandOptions> getValidOptions() {
+            return Collections.unmodifiableSet(validOptions);
         }
     }
 
@@ -164,12 +195,19 @@ public class SecretStoreCli {
      */
     public void command(String primaryCommand, SecureConfig config, String... allArguments) {
         terminal.writeLine("");
-        final Optional<CommandLine> commandParseResult = Command.parse(primaryCommand, allArguments);
+
+        final Optional<CommandLine> commandParseResult;
+        try {
+            commandParseResult = Command.parse(primaryCommand, allArguments);
+        } catch (InvalidCommandException e) {
+            terminal.writeLine(String.format("ERROR: %s", e.getMessage()));
+            return;
+        }
+
         if (commandParseResult.isEmpty()) {
             printHelp();
             return;
         }
-
 
         final CommandLine commandLine = commandParseResult.get();
         switch (commandLine.getCommand()) {

@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
@@ -217,6 +216,22 @@ public class SecretStoreCliTest {
     }
 
     @Test
+    public void testAddWithStdinOption() {
+        createKeyStore();
+
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+
+        String id = UUID.randomUUID().toString();
+        cli.command("add", newStoreConfig.clone(), id, SecretStoreCli.CommandOptions.STDIN.getOption());
+        terminal.reset();
+
+        cli.command("list", newStoreConfig);
+        assertListed(id);
+        assertNotListed(SecretStoreCli.CommandOptions.STDIN.getOption());
+    }
+
+    @Test
     public void testRemove() {
         createKeyStore();
 
@@ -297,38 +312,18 @@ public class SecretStoreCliTest {
     }
 
     @Test
-    public void testCommandWithStdinFlag() {
+    public void testCommandWithUnrecognizedOption() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+        terminal.in.add("foo");
 
-        String id = UUID.randomUUID().toString();
-        cli.command("add", newStoreConfig.clone(), id, SecretStoreCli.CommandOptions.STDIN.getOption());
+        final String invalidOption = "--invalid-option";
+        cli.command("add", newStoreConfig.clone(), UUID.randomUUID().toString(), invalidOption);
+        assertThat(terminal.out).contains(String.format("Unrecognized option '%s' for command 'add'", invalidOption));
+
         terminal.reset();
-
         cli.command("list", newStoreConfig);
-        assertListed(id);
-        assertNotListed(SecretStoreCli.CommandOptions.STDIN.getOption());
-    }
-
-    @Test
-    public void testCommandOptionsArgumentsParsing() {
-        final String[] args = new String[]{
-                "add",
-                "FOO",
-                "--help",
-                "--non-existing-flag",
-                "--stdin"
-        };
-
-        final List<SecretStoreCli.CommandOptions> parsedOptions = SecretStoreCli.CommandOptions
-                .fromArguments(args);
-
-        assertThat(parsedOptions).containsExactly(
-                SecretStoreCli.CommandOptions.HELP,
-                SecretStoreCli.CommandOptions.STDIN
-        );
+        assertNotListed(invalidOption);
     }
 
     @Test
@@ -357,6 +352,15 @@ public class SecretStoreCliTest {
                 .parse("non-existing-command", new String[0]);
 
         assertThat(commandLineParseResult).isEmpty();
+    }
+
+    @Test
+    public void tesCommandsAllowHelpOption() {
+        for (final SecretStoreCli.Command value : SecretStoreCli.Command.values()) {
+            assertThat(value.getValidOptions())
+                    .withFailMessage("Command '%s' must support the '--help' option", value.name())
+                    .contains(SecretStoreCli.CommandOptions.HELP);
+        }
     }
 
     private void createKeyStore() {
