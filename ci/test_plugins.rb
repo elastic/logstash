@@ -33,12 +33,16 @@ unless File.directory?(plugins_folder)
 end
 
 class Plugin
-  attr_reader :plugins_folder, :plugin_name, :plugin_base_folder
+  attr_reader :plugins_folder, :plugin_name, :plugin_base_folder, :plugin_repository
 
-  def initialize(plugins_folder, plugin_name)
-    @plugin_name = plugin_name
+  # params:
+  #    plugin_definition
+  def initialize(plugins_folder, plugin_definition)
+    @plugin_name = plugin_definition.name
     @plugins_folder = plugins_folder
     @plugin_base_folder = "#{plugins_folder}/#{plugin_name}"
+    plugin_org = plugin_definition.organization || 'logstash-plugins'
+    @plugin_repository = "git@github.com:#{plugin_org}/#{plugin_name}.git"
   end
 
   def git_retrieve
@@ -57,7 +61,7 @@ class Plugin
 
     puts "test plugins(git_retrieve)>> #{plugin_name} local clone doesn't exist, cloning... (at #{Time.new})"
 
-    plugin_repository = "git@github.com:logstash-plugins/#{plugin_name}.git"
+    
     unless system("git clone #{plugin_repository}")
       puts "Can't clone #{plugin_repository}"
       exit 1
@@ -138,45 +142,99 @@ FailureDetail = Struct.new(:plugin_name, :reason)
 # contains set of FailureDetail
 failed_plugins = [].to_set
 
-PLUGIN_DEFINITIONS = {
-  :tier1 => {
-    :input => ["logstash-input-azure_event_hubs", "logstash-input-beats", "logstash-input-elasticsearch", "logstash-input-file",
-               "logstash-input-generator", "logstash-input-heartbeat", "logstash-input-http", "logstash-input-http_poller",
-               "logstash-input-redis", "logstash-input-stdin", "logstash-input-syslog", "logstash-input-udp",
-             ],
-    :codec => ["logstash-codec-avro", "logstash-codec-cef", "logstash-codec-es_bulk", "logstash-codec-json",
-               "logstash-codec-json_lines", "logstash-codec-line", "logstash-codec-multiline", "logstash-codec-plain",
-               "logstash-codec-rubydebug"],
-    :filter => ["logstash-filter-cidr", "logstash-filter-clone", "logstash-filter-csv", "logstash-filter-date", "logstash-filter-dissect",
-                "logstash-filter-dns", "logstash-filter-drop", "logstash-filter-elasticsearch", "logstash-filter-fingerprint",
-                "logstash-filter-geoip", "logstash-filter-grok", "logstash-filter-http", 
-                "logstash-filter-json", 
-                "logstash-filter-kv",
-                "logstash-filter-memcached", "logstash-filter-mutate", "logstash-filter-prune", "logstash-filter-ruby",
-                "logstash-filter-sleep", "logstash-filter-split", "logstash-filter-syslog_pri", "logstash-filter-translate",
-                "logstash-filter-truncate", "logstash-filter-urldecode", "logstash-filter-useragent", "logstash-filter-uuid",
-                "logstash-filter-xml"],
-    :output => ["logstash-output-elasticsearch", "logstash-output-email", "logstash-output-file", "logstash-output-http",
-                "logstash-output-redis", "logstash-output-stdout", "logstash-output-tcp", "logstash-output-udp"],
-    :integration => ["logstash-integration-jdbc", "logstash-integration-kafka", "logstash-integration-rabbitmq",
-                     "logstash-integration-elastic_enterprise_search", "logstash-integration-aws"]
-  },
-  :tier2 => {
-    :input => [# "logstash-input-couchdb_changes", # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
-               "logstash-input-gelf", "logstash-input-graphite", "logstash-input-jms",
-                  "logstash-input-snmp", "logstash-input-sqs", "logstash-input-twitter"],
-    :codec => [#"logstash-codec-collectd", # Removed because of https://github.com/logstash-plugins/logstash-codec-collectd/issues/32
-               "logstash-codec-dots", "logstash-codec-fluent", "logstash-codec-graphite",
-                  "logstash-codec-msgpack", 
-                  "logstash-codec-netflow"
-                ],
-    :filter => ["logstash-filter-aggregate", "logstash-filter-de_dot", "logstash-filter-throttle"],
-    :output => ["logstash-output-csv", "logstash-output-graphite"]
-  },
-  :unsupported => {
-    :input => ["logstash-input-rss"]
-  }
-}
+# Models plugin's metadata, organization is optional, if nil then it consider logstash-plugins as default.
+PluginDefinition = Struct.new(:name, :support, :type, :organization) do
+  def initialize(name, support, type, organization = "logstash_plugins")
+    super(name, support, type, organization)
+  end
+end
+PLUGIN_DEFINITIONS = [
+    PluginDefinition.new('logstash-input-azure_event_hubs', :tier1, :input),
+    PluginDefinition.new('logstash-input-beats', :tier1, :input),
+    PluginDefinition.new('logstash-input-elasticsearch', :tier1, :input),
+    PluginDefinition.new('logstash-input-file', :tier1, :input),
+    PluginDefinition.new('logstash-input-generator', :tier1, :input),
+    PluginDefinition.new('logstash-input-heartbeat', :tier1, :input),
+    PluginDefinition.new('logstash-input-http', :tier1, :input),
+    PluginDefinition.new('logstash-input-http_poller', :tier1, :input),
+    PluginDefinition.new('logstash-input-redis', :tier1, :input),
+    PluginDefinition.new('logstash-input-stdin', :tier1, :input),
+    PluginDefinition.new('logstash-input-syslog', :tier1, :input),
+    PluginDefinition.new('logstash-input-udp', :tier1, :input),
+    PluginDefinition.new('logstash-codec-avro', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-cef', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-es_bulk', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-json', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-json_lines', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-line', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-multiline', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-plain', :tier1, :codec),
+    PluginDefinition.new('logstash-codec-rubydebug', :tier1, :codec),
+    PluginDefinition.new('logstash-filter-cidr', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-clone', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-csv', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-date', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-dissect', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-dns', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-drop', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-elasticsearch', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-fingerprint', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-geoip', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-grok', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-http', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-json', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-kv', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-memcached', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-mutate', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-prune', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-ruby', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-sleep', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-split', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-syslog_pri', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-translate', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-truncate', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-urldecode', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-useragent', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-uuid', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-xml', :tier1, :filter),
+    PluginDefinition.new('logstash-filter-elastic_integration', :tier1, :filter, 'elastic'),
+    PluginDefinition.new('logstash-output-elasticsearch', :tier1, :output), 
+    PluginDefinition.new('logstash-output-email', :tier1, :output), 
+    PluginDefinition.new('logstash-output-file', :tier1, :output), 
+    PluginDefinition.new('logstash-output-http', :tier1, :output),
+    PluginDefinition.new('logstash-output-redis', :tier1, :output), 
+    PluginDefinition.new('logstash-output-stdout', :tier1, :output), 
+    PluginDefinition.new('logstash-output-tcp', :tier1, :output), 
+    PluginDefinition.new('logstash-output-udp', :tier1, :output),
+    PluginDefinition.new('logstash-integration-jdbc', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-kafka', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-rabbitmq', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-elastic_enterprise_search', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-aws', :tier1, :integration),
+    # tier2
+    # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
+    #PluginDefinition.new('logstash-input-couchdb_changes', :tier2, :input),
+    PluginDefinition.new('logstash-input-gelf', :tier2, :input),     
+    PluginDefinition.new('logstash-input-graphite', :tier2, :input), 
+    PluginDefinition.new('logstash-input-jms', :tier2, :input),      
+    PluginDefinition.new('logstash-input-snmp', :tier2, :input),     
+    PluginDefinition.new('logstash-input-sqs', :tier2, :input),      
+    PluginDefinition.new('logstash-input-twitter', :tier2, :input),   
+    # Removed because of https://github.com/logstash-plugins/logstash-codec-collectd/issues/32 
+    #PluginDefinition.new('logstash-codec-collectd', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-dots', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-fluent', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-graphite', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-msgpack', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-netflow', :tier2, :codec),
+    PluginDefinition.new('logstash-filter-aggregate', :tier2, :filter),  
+    PluginDefinition.new('logstash-filter-de_dot', :tier2, :filter),  
+    PluginDefinition.new('logstash-filter-throttle', :tier2, :filter), 
+    PluginDefinition.new('logstash-output-csv', :tier2, :output),
+    PluginDefinition.new('logstash-output-graphite', :tier2, :output),
+    # unsupported
+    PluginDefinition.new('logstash-input-rss', :unsupported, :input),
+]
 
 def validate_options!(options)
   raise "plugin and tiers or kinds can't be specified at the same time" if (options[:tiers] || options[:kinds]) && options[:plugin]
@@ -191,17 +249,19 @@ end
 # @param tiers array of labels
 # @param kinds array of labels
 def select_by_tiers_and_kinds(tiers, kinds)
-  selected = []
-  tiers.each do |tier|
-    kinds.each do |kind|
-      selected = selected + PLUGIN_DEFINITIONS[tier].fetch(kind, [])
-    end
-  end
-  selected
+  PLUGIN_DEFINITIONS.select { |plugin| tiers.include?(plugin.support) }
+        .select { |plugin| kinds.include?(plugin.type) }
+end
+
+# Return of PluginDefinitions given a list of plugin names
+def list_plugins_definitions(plugins)
+  PLUGIN_DEFINITIONS.select { |plugin| plugins.include?(plugin.name) }
 end
 
 def select_plugins_by_opts(options)
-  return options[:plugins] if options[:plugins]
+  if options[:plugins]
+    return list_plugins_definitions(options[:plugins])
+  end
 
   selected_tiers = options.fetch(:tiers, [:tier1, :tier2, :unsupported])
   selected_kinds = options.fetch(:kinds, [:input, :codec, :filter, :output, :integration])
@@ -211,7 +271,7 @@ def select_plugins_by_opts(options)
   return split_by_partition(select_plugins, selected_partition)
 end
 
-# Return the partion corresponding to the definition of the given list
+# Return the partition corresponding to the definition of the given list
 def split_by_partition(list, partition_definition)
   slice = partition_definition.split('/')[0].to_i
   num_slices = partition_definition.split('/')[1].to_i
@@ -265,11 +325,13 @@ setup_logstash_for_development
 # save to local git for test isolation
 snapshot_logstash_artifacts!
 
-plugins.each do |plugin_name|
+plugins.each do |plugin_definition|
   restore_logstash_from_snapshot
 
+  plugin_name = plugin_definition.name
+
   status = Dir.chdir(plugins_folder) do
-    plugin = Plugin.new(plugins_folder, plugin_name)
+    plugin = Plugin.new(plugins_folder, plugin_definition)
     plugin.git_retrieve
 
     status = Dir.chdir(plugin_name) do
