@@ -144,7 +144,7 @@ failed_plugins = [].to_set
 
 # Models plugin's metadata, organization is optional, if nil then it consider logstash-plugins as default.
 PluginDefinition = Struct.new(:name, :support, :type, :organization) do
-  def initialize(name, support, type, organization = "logstash_plugins")
+  def initialize(name, support, type, organization = "logstash-plugins")
     super(name, support, type, organization)
   end
 end
