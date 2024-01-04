@@ -143,7 +143,11 @@ FailureDetail = Struct.new(:plugin_name, :reason)
 failed_plugins = [].to_set
 
 # Models plugin's metadata, organization is optional, if nil then it consider logstash-plugins as default.
-PluginDefinition = Struct.new(:name, :support, :type, :organization)
+PluginDefinition = Struct.new(:name, :support, :type, :organization) do
+  def initialize(name, support, type, organization = "logstash_plugins")
+    super(name, support, type, organization)
+  end
+end
 PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-input-azure_event_hubs', :tier1, :input),
     PluginDefinition.new('logstash-input-beats', :tier1, :input),
