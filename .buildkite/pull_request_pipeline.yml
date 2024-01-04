@@ -145,7 +145,7 @@ steps:
   - wait: ~
     continue_on_failure: true
 
-  - label: "🏁 Test results"
+  - label: "🏁 Annotate JUnit results"
     # the plugin requires docker run, hence the use of a VM
     agents:
       provider: gcp
