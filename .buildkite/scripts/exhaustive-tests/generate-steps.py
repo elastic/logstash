@@ -183,37 +183,37 @@ if __name__ == "__main__":
 
     structure = {"steps": []}
 
-    # structure["steps"].append({
-    #     "group": "Testing Phase",
-    #     "key": "testing-phase",
-    #     **testing_phase_steps(),
-    # })
+    structure["steps"].append({
+        "group": "Testing Phase",
+        "key": "testing-phase",
+        **testing_phase_steps(),
+    })
 
-    # structure["steps"].append({
-    #         "group": "Compatibility / Linux",
-    #         "key": "compatibility-linux",
-    #         "depends_on": "testing-phase",
-    #         "steps": compat_linux_steps,
-    # })
+    structure["steps"].append({
+            "group": "Compatibility / Linux",
+            "key": "compatibility-linux",
+            "depends_on": "testing-phase",
+            "steps": compat_linux_steps,
+    })
 
-    # structure["steps"].append({
-    #         "group": "Compatibility / Windows",
-    #         "key": "compatibility-windows",
-    #         "depends_on": "testing-phase",
-    #         "steps": [compat_windows_step(imagesuffix=windows_test_os)],
-    # })
+    structure["steps"].append({
+            "group": "Compatibility / Windows",
+            "key": "compatibility-windows",
+            "depends_on": "testing-phase",
+            "steps": [compat_windows_step(imagesuffix=windows_test_os)],
+    })
 
-    # structure["steps"].append({
-    #         "group": "Acceptance / Packaging",
-    #         "key": "acceptance-packaging",
-    #         #"depends_on": ["compatibility-linux", "compatibility-windows"],
-    #         "steps": acceptance_linux_steps(),
-    # })
+    structure["steps"].append({
+            "group": "Acceptance / Packaging",
+            "key": "acceptance-packaging",
+            "depends_on": ["compatibility-linux", "compatibility-windows"],
+            "steps": acceptance_linux_steps(),
+    })
 
     structure["steps"].append({
             "group": "Acceptance / Docker",
             "key": "acceptance-docker",
-            #"depends_on": ["compatibility-linux", "compatibility-windows"],
+            "depends_on": ["compatibility-linux", "compatibility-windows"],
             "steps": acceptance_docker_steps(),
     })
 
