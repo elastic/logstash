@@ -26,7 +26,7 @@ module LogStash module Util
         cloned_safe_uri = subject.clone
         cloned_safe_uri.path = "/cloned"
         cloned_safe_uri.query = "a=b"
-        expect(subject.path).to eq("/uri")
+        expect(subject.path).to eq("/uriDELIBERATEBUG")
         expect(subject.query).to eq("q=s")
         expect(cloned_safe_uri.path).to eq("/cloned")
         expect(cloned_safe_uri.query).to eq("a=b")
