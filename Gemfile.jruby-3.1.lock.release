@@ -267,7 +267,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
       logstash-patterns-core
-    logstash-codec-netflow (4.3.1)
+    logstash-codec-netflow (4.3.2)
       bindata (>= 1.5.0)
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-event_support (~> 1.0)
@@ -341,7 +341,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-http_client (>= 7.3.0, < 8.0.0)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-filter-json (3.2.0)
+    logstash-filter-json (3.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-validator_support (~> 1.0)
@@ -647,10 +647,8 @@ GEM
       rufus-scheduler (>= 3.0.9)
     logstash-mixin-validator_support (1.1.1-java)
       logstash-core (>= 6.8)
-    logstash-output-csv (3.0.9)
+    logstash-output-csv (3.0.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-filter-json
-      logstash-input-generator
       logstash-output-file
     logstash-output-elasticsearch (11.19.0-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -733,14 +731,14 @@ GEM
     mustermann (2.0.2)
       ruby2_keywords (~> 0.0.1)
     naught (1.1.0)
-    net-imap (0.4.8)
+    net-imap (0.4.9.1)
       date
       net-protocol
     net-pop (0.1.2)
       net-protocol
     net-protocol (0.1.3)
       timeout
-    net-smtp (0.4.0)
+    net-smtp (0.4.0.1)
       net-protocol
     nio4r (2.5.9-java)
     nokogiri (1.15.5-java)
@@ -766,10 +764,10 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
-    psych (5.1.1.1-java)
+    psych (5.1.2-java)
       jar-dependencies (>= 0.1.7)
     public_suffix (5.0.4)
-    puma (6.4.0-java)
+    puma (6.4.1-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.7.3-java)
@@ -853,7 +851,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2023.3)
+    tzinfo-data (1.2023.4)
       tzinfo (>= 1.0.0)
     unf (0.1.4-java)
     unicode-display_width (2.5.0)
@@ -868,6 +866,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
