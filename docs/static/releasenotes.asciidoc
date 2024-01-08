@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-11-4,Logstash 8.11.4>>
 * <<logstash-8-11-3,Logstash 8.11.3>>
 * <<logstash-8-11-2,Logstash 8.11.2>>
 * <<logstash-8-11-1,Logstash 8.11.1>>
@@ -49,6 +50,76 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-11-4]]
+=== Logstash 8.11.4 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.11.4
+
+* Remove temporary dependencies in logstash-core.gemspec https://github.com/elastic/logstash/pull/15694[#15694]
+* Refactor qa/acceptance tests to get away from vagrant https://github.com/elastic/logstash/pull/15696[#15696]
+* [ci] Reusable unit + IT test steps for Buildkite https://github.com/elastic/logstash/pull/15708[#15708]
+* [ci] Add testing phase to exhaustive tests suite https://github.com/elastic/logstash/pull/15711[#15711]
+* Backport PR #15708 to 8.11: [ci] Reusable unit + IT test steps for Buildkite https://github.com/elastic/logstash/pull/15714[#15714]
+* Backport PR #15711 to 8.11: [ci] Add testing phase to exhaustive tests suite https://github.com/elastic/logstash/pull/15717[#15717]
+* Don't block triggered JDK matrix Buildkite jobs https://github.com/elastic/logstash/pull/15729[#15729]
+* Backport PR #15729 to 8.11: Don't block triggered JDK matrix Buildkite jobs https://github.com/elastic/logstash/pull/15731[#15731]
+* Skip input step when triggering JDK matrix jobs https://github.com/elastic/logstash/pull/15733[#15733]
+* Backport PR #15733 to 8.11: Skip input step when triggering JDK matrix jobs https://github.com/elastic/logstash/pull/15735[#15735]
+* JUnit result annotation for Buildkite PR jobs https://github.com/elastic/logstash/pull/15741[#15741]
+* Backport PR #15741 to 8.11: JUnit result annotation for Buildkite PR jobs https://github.com/elastic/logstash/pull/15745[#15745]
+
+=== Logstash Commits between 8.11 and 8.11.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.11.3..8.11"
+
+8113f77d2 - (HEAD -> 8.11, origin/8.11) bump lock file for 8.11 (#15750) (3 days ago) <github-actions[bot]>
+8727fe8e1 - JUnit result annotation for Buildkite PR jobs (#15741) (#15745) (4 days ago) <github-actions[bot]>
+c557a9b7e - Skip input step when triggering JDK matrix jobs (#15733) (#15735) (6 days ago) <github-actions[bot]>
+5871b600e - Don't block triggered JDK matrix Buildkite jobs (#15729) (#15731) (6 days ago) <github-actions[bot]>
+84b4fec2d - [ci] Add testing phase to exhaustive tests suite (#15711) (#15717) (3 weeks ago) <github-actions[bot]>
+86ea32067 - [ci] Reusable unit + IT test steps for Buildkite (#15708) (#15714) (3 weeks ago) <github-actions[bot]>
+7c0fc32f8 - Remove temporary dependencies in logstash-core.gemspec (#15694) (3 weeks ago) <Rob Bavey>
+a45349ea4 - Release notes for 8.11.3 (#15681) (4 weeks ago) <github-actions[bot]>
+53d154c54 - bump version to 8.11.4 (#15682) (4 weeks ago) <João Duarte>
+7e9f9e079 - Doc: Add docs for extending integrations with filter-elastic_integrations (#15518) (#15675) (5 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.11.3..8.11 *.release"
+Changed plugin versions:
+logstash-codec-netflow: 4.3.0 -> 4.3.2
+logstash-filter-json: 3.2.0 -> 3.2.1
+logstash-input-file: 4.4.5 -> 4.4.6
+logstash-input-twitter: 4.1.0 -> 4.1.1
+logstash-output-csv: 3.0.9 -> 3.0.10
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Netflow Codec - 4.3.2*
+
+* Updates the milliseconds rounding for IPFIX start/end milliseconds fields. 
+* Fix the test to run on Logstash 8 with microseconds precision. https://github.com/logstash-plugins/logstash-codec-netflow/pull/206[#206]
+
+* Fixed unable to initialize the plugin with Logstash 8.10+ https://github.com/logstash-plugins/logstash-codec-netflow/pull/205[#205]
+
+*Json Filter - 3.2.1*
+
+* Fix tag on failure test https://github.com/logstash-plugins/logstash-filter-json/pull/52[#52]
+
+*File Input - 4.4.6*
+
+* Change read mode to immediately stop consuming buffered lines when shutdown is requested https://github.com/logstash-plugins/logstash-input-file/pull/322[#322]
+
+*Twitter Input - 4.1.1*
+
+* Bumped `public_suffix` gem version to `> 4` `< 6` https://github.com/logstash-plugins/logstash-input-twitter/pull/77[#77]
+
+*Csv Output - 3.0.10*
+
+* Extend `spreadsheet_safe` prefix guard to '-', '+', and '@' https://github.com/logstash-plugins/logstash-output-csv/pull/27[#27]
 
 
 [[logstash-8-11-3]]
