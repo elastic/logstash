@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+<<<<<<< HEAD
 require 'runner-tool'
 require_relative '../../rspec/helpers'
 require_relative '../../rspec/matchers'
@@ -56,6 +57,12 @@ selected_boxes = if ENV.include?('LS_VAGRANT_HOST') then
 SpecsHelper.configure(selected_boxes)
 
 puts "[Acceptance specs] running on #{ServiceTester.configuration.hosts}" if !selected_boxes.empty?
+=======
+ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
+$LOAD_PATH.unshift File.join(ROOT, 'logstash-core/lib')
+
+require_relative '../../rspec/matchers'
+>>>>>>> cebe4a753 (Refactor qa/acceptance tests to get away from vagrant (#15696))
 
 def with_running_logstash_service(logstash, jdk_path=nil)
   begin

@@ -28,8 +28,12 @@ shared_examples "logstash generate" do |logstash|
     logstash.uninstall
   end
 
+<<<<<<< HEAD
   describe "on #{logstash.hostname}" do
 
+=======
+  describe "on [#{logstash.human_name}]" do
+>>>>>>> cebe4a753 (Refactor qa/acceptance tests to get away from vagrant (#15696))
     GENERATE_TYPES = ["input", "filter", "codec", "output"]
     GENERATE_TYPES.each do |type|
       context "with type #{type}" do

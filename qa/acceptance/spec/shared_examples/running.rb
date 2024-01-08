@@ -25,7 +25,7 @@ RSpec.shared_examples "runnable" do |logstash|
     logstash.install({:version => LOGSTASH_VERSION})
   end
 
-  it "is running on #{logstash.hostname}" do
+  it "is running on [#{logstash.human_name}]" do
     with_running_logstash_service(logstash) do
       expect(logstash).to be_running
     end

@@ -16,11 +16,10 @@
 # under the License.
 
 require 'rspec/expectations'
-require_relative '../helpers'
 
 RSpec::Matchers.define :be_running do
   match do |subject|
-    subject.running?(subject.hosts, subject.name)
+    subject.running?(subject.name)
   end
 end
 

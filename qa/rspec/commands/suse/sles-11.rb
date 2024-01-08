@@ -21,21 +21,23 @@ require_relative "../suse"
 module ServiceTester
   class Sles11Commands < SuseCommands
 
-    def running?(hosts, package)
+    def running?(package)
       stdout = ""
-      at(hosts, {in: :serial}) do |host|
-        cmd = sudo_exec!("/etc/init.d/#{package} status")
-        stdout = cmd.stdout
-      end
+      cmd = sudo_exec!("/etc/init.d/#{package} status")
+      stdout = cmd.stdout
       stdout.match(/#{package} is running$/)
     end
 
+<<<<<<< HEAD
     def service_manager(service, action, host=nil)
       hosts = (host.nil? ? servers : Array(host))
       at(hosts, {in: :serial}) do |_|
         sudo_exec!("/etc/init.d/#{service} #{action}")
       end
+=======
+    def service_manager(service, action)
+      sudo_exec!("/etc/init.d/#{service} #{action}")
+>>>>>>> cebe4a753 (Refactor qa/acceptance tests to get away from vagrant (#15696))
     end
-
   end
 end
