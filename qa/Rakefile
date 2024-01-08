@@ -19,80 +19,15 @@ require "rspec"
 require "rspec/core/runner"
 require "rspec/core/rake_task"
 require "stud/try"
-require_relative "vagrant/helpers"
-require_relative "platform_config"
-
-platforms = PlatformConfig.new
 
 task :spec    => 'spec:all'
 task :default => :spec
 
 namespace :qa do
-  namespace :vm do
-    def user_feedback_string_for(action, platform, machines, options = {})
-      experimental_string = options["experimental"] ? "experimental" : "non experimental"
-      message  = "#{action} all #{experimental_string} VM's defined in acceptance/Vagrantfile"
-      "#{message} for #{platform}: #{machines}" if !platform.nil?
-    end
-
-    desc "Generate a valid ssh-config"
-    task :ssh_config do
-      require "json"
-      # Loop until the Vagrant box finishes SSH bootstrap
-      raw_ssh_config = Stud.try(50.times, LogStash::CommandExecutor::CommandError) do
-          LogStash::VagrantHelpers.fetch_config.stdout.split("\n");
-      end
-      parsed_ssh_config = LogStash::VagrantHelpers.parse(raw_ssh_config)
-      File.write(".vm_ssh_config", parsed_ssh_config.to_json)
-    end
-
-    desc "Bootstrap all the VM's used for this tests"
-    task :setup, :platform do |t, args|
-      config = PlatformConfig.new
-      experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
-      machines = config.select_names_for(args[:platform], {"experimental" => experimental})
-
-      puts user_feedback_string_for("bootstrapping", args[:platform], machines, {"experimental" => experimental})
-
-      options = {:debug => ENV['LS_QA_DEBUG']}
-      puts "Destroying #{machines}"
-      LogStash::VagrantHelpers.destroy(machines, options)
-      puts "Bootstrapping #{machines}"
-      LogStash::VagrantHelpers.bootstrap(machines, options)
-    end
-
-    desc "Halt all VM's involved in the acceptance test round"
-    task :halt, :platform do |t, args|
-      config = PlatformConfig.new
-      experimental = (ENV['LS_QA_EXPERIMENTAL_OS'].to_s.downcase || "false") == "true"
-      machines = config.select_names_for(args[:platform], {"experimental" => experimental})
-
-      puts user_feedback_string_for("halting", args[:platform], machines, {"experimental" => experimental})
-      options = {:debug => ENV['LS_QA_DEBUG']}
-
-      puts "Halting #{machines}"
-      LogStash::VagrantHelpers.halt(machines, options)
-    end
-  end
-
   namespace :acceptance do
-    desc "Run all acceptance"
+    desc "Run all acceptance tests"
     task :all do
       exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/*_spec.rb"]]))
-    end
-
-    platforms.types.each do |type|
-      desc "Run acceptance test in #{type} machines"
-      task type do
-        ENV['LS_TEST_PLATFORM'] = type
-        exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/*_spec.rb"]]))
-      end
-    end
-
-    desc "Run one single machine acceptance test"
-    task :single, :machine do |t, args|
-      ENV['LS_VAGRANT_HOST'] = args[:machine]
-      exit(RSpec::Core::Runner.run([Rake::FileList["acceptance/spec/lib/**/**/*_spec.rb"]]))
     end
   end
 end
