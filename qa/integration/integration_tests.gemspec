@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
 
   # Gem dependencies
   s.add_development_dependency 'elasticsearch'
-  s.add_development_dependency 'childprocess', '~> 4'
+  s.add_development_dependency 'childprocess', '~> 4' # https://github.com/enkessler/childprocess/pull/175 landed in 5.0.0 and seems to have broken JRuby support for spawning processes. sticking to 4.x.
   s.add_development_dependency 'rspec-wait'
   s.add_development_dependency 'manticore'
   s.add_development_dependency 'stud', '~> 0.0.22'
