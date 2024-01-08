@@ -14,7 +14,7 @@ For information about building the documentation, see the README in https://gith
 ## Downloads
 
 You can download officially released Logstash binaries, as well as debian/rpm packages for the
-supported platforms, from [downloads page](https://www.elastic.co/downloads/logstash).
+supported platforms, from the [downloads page](https://www.elastic.co/downloads/logstash).
 
 ## Need Help?
 
