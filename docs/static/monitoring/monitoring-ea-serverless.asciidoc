@@ -33,6 +33,8 @@ include::monitoring-prereq-define-cluster.asciidoc[]
 include::monitoring-prereq-create-user.asciidoc[]
 ====
 
+You'll need to have an {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] project. 
+We'll create one in the next steps.
 
 [discrete]
 [[setup-project]]
