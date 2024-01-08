@@ -39,7 +39,7 @@ build-from-local-full-artifacts: venv dockerfile env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: full"; \
-	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
+	docker build --pull --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
 	  (docker kill $(HTTPD); false); \
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
@@ -50,7 +50,7 @@ build-from-local-oss-artifacts: venv dockerfile env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: oss"; \
-	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
+	docker build --pull --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -60,7 +60,7 @@ build-from-local-ubi8-artifacts: venv dockerfile env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	pyfiglet -f puffy -w 160 "Building: ubi8"; \
-	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
+	docker build --pull --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
