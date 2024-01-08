@@ -541,6 +541,16 @@ describe LogStash::Runner do
     end
   end
 
+  describe 'jackson defaults' do
+    subject { LogStash::Runner.new("") }
+    let(:args) { ["-e", "input {} output {}"] }
+
+    it 'should be set' do
+      expect(LogStash::Util::Jackson).to receive(:set_jackson_defaults)
+      subject.run(args)
+    end
+  end
+
   describe "--log.level" do
     before :each do
       allow_any_instance_of(subject).to receive(:show_version)
