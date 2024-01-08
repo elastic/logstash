@@ -23,7 +23,6 @@ require_relative "./commands/opensuse"
 require_relative "./commands/centos/centos-6"
 require_relative "./commands/oel/oel-6"
 require_relative "./commands/suse/sles-11"
-
 require "forwardable"
 require "open3"
 
@@ -101,7 +100,6 @@ module ServiceTester
       @options = options
       @hostfacts = HostFacts.new()
       @client = CommandsFactory.fetch(@hostfacts)
-      @bundled_jdk = false
       @skip_jdk_infix = false
     end
 
@@ -131,10 +129,9 @@ module ServiceTester
 
     def install(options={})
       base      = options.fetch(:base, ServiceTester::Base::LOCATION)
-      @bundled_jdk = options.fetch(:bundled_jdk, false)
       @skip_jdk_infix = options.fetch(:skip_jdk_infix, false)
       filename = filename(options)
-      package = client.package_for(filename, @skip_jdk_infix, @bundled_jdk, base)
+      package = client.package_for(filename, @skip_jdk_infix, base)
       client.install(package)
     end
 

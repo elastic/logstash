@@ -22,14 +22,12 @@ require          'logstash/version'
 RSpec.shared_examples "installable_with_jdk" do |logstash|
 
   before(:all) do
-    #unset to force it using bundled JDK to run LS
-    logstash.run_command("unset LS_JAVA_HOME")
     logstash.run_command("unset JAVA_HOME")
   end
 
   before(:each) do
     logstash.uninstall
-    logstash.install({:bundled_jdk => true, :version => LOGSTASH_VERSION})
+    logstash.install({:version => LOGSTASH_VERSION})
   end
 
   after(:each) do
@@ -41,8 +39,8 @@ RSpec.shared_examples "installable_with_jdk" do |logstash|
   end
 
   it "is running on #{logstash.human_name}" do
-    with_running_logstash_service(logstash, "/usr/share/logstash/jdk/bin/java") do
-      expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+    with_running_logstash_service(logstash) do
+      expect(logstash).to be_running
     end
   end
 

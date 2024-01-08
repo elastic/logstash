@@ -17,7 +17,7 @@
 
 require_relative '../spec_helper'
 require          'logstash/version'
-
+require 'pry'
 # This test checks if a package is possible to be installed without errors.
 RSpec.shared_examples "installable" do |logstash|
 

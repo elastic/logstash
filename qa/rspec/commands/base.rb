@@ -134,7 +134,7 @@ module ServiceTester
     end
 
     private
-    def jdk_architecture_extension(skip_jdk_infix, bundled_jdk)
+    def jdk_architecture_extension(skip_jdk_infix)
       if skip_jdk_infix
         ""
       else

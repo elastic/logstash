@@ -16,10 +16,11 @@
 # under the License.
 
 require_relative "base"
+require 'pry'
 
 module ServiceTester
   module SystemD
-    def running?(package, jdk_path = '/usr/bin/java')
+    def running?(package, jdk_path = '/usr/share/logstash/jdk/bin/java')
       stdout = ""
       cmd = sudo_exec!("service #{package} status")
       stdout = cmd.stdout
@@ -37,7 +38,7 @@ module ServiceTester
   end
 
   module InitD
-    def running?(package, jdk_path = '/usr/bin/java')
+    def running?(package, jdk_path = '/usr/share/logstash/jdk/bin/java')
       stdout = ""
       cmd = sudo_exec!("initctl status #{package}")
       stdout = cmd.stdout
