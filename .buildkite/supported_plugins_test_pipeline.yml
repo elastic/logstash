@@ -58,7 +58,15 @@ steps:
       - label: "Test Tier2 filters"
         command: ./ci/test_plugins.sh -t tier2 -k filter
       - label: "Test Tier2 codecs"
-        command: ./ci/test_plugins.sh -t tier2 -k codec
+        command: |
+          source .buildkite/scripts/common/vm-agent.sh
+          ./ci/test_plugins.sh -t tier2 -k codec
+        agents:
+          provider: gcp
+          imageProject: elastic-images-prod
+          image: family/platform-ingest-logstash-ubuntu-2204
+          machineType: "n2-standard-4"
+          diskSizeGb: 120
       - label: "Test Tier2 outputs"
         command: ./ci/test_plugins.sh -t tier2 -k output
 
