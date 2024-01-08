@@ -28,7 +28,7 @@ shared_examples "logstash version" do |logstash|
       logstash.uninstall
     end
 
-    context "on #{logstash.hostname}" do
+    context "on [#{logstash.human_name}]" do
       it "returns the right logstash version" do
         result = logstash.run_command_in_path("bin/logstash --version")
         expect(result).to run_successfully_and_output(/#{LOGSTASH_VERSION}/)
