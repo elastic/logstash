@@ -20,7 +20,7 @@ require "logstash/version"
 require "fileutils"
 
 shared_examples "integration plugins compatible" do |logstash|
-  describe "logstash-plugin install on #{logstash.hostname}" do
+  describe "logstash-plugin install on [#{logstash.human_name}]" do
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
@@ -56,7 +56,7 @@ shared_examples "integration plugins compatible" do |logstash|
     end
   end
 
-  describe "logstash-plugin uninstall on #{logstash.hostname}" do
+  describe "logstash-plugin uninstall on [#{logstash.human_name}]" do
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
@@ -79,7 +79,7 @@ shared_examples "integration plugins compatible" do |logstash|
     end
   end
 
-  describe "logstash-plugin list on #{logstash.hostname}" do
+  describe "logstash-plugin list on [#{logstash.human_name}]" do
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})

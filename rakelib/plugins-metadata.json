@@ -119,6 +119,10 @@
     "core-specs": true,
     "skip-list": false
   },
+  "logstash-filter-elastic_integration": {
+    "default-plugins": false,
+    "skip-list": false
+  },
   "logstash-filter-elasticsearch": {
     "default-plugins": true,
     "skip-list": false

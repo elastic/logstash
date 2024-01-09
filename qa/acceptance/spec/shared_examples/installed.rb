@@ -25,17 +25,17 @@ RSpec.shared_examples "installable" do |logstash|
     logstash.install({:version => LOGSTASH_VERSION})
   end
 
-  it "is installed on #{logstash.hostname}" do
+  it "is installed on [#{logstash.human_name}]" do
     expect(logstash).to be_installed
   end
 
-  it "is running on #{logstash.hostname}" do
+  it "is running on [#{logstash.human_name}]" do
     with_running_logstash_service(logstash) do
       expect(logstash).to be_running
     end
   end
 
-  it "is removable on #{logstash.hostname}" do
+  it "is removable on [#{logstash.human_name}]" do
     logstash.uninstall
     expect(logstash).to be_removed
   end
