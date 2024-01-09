@@ -430,7 +430,7 @@ describe LogStash::Compiler do
         it "should contain both section declarations, in order" do
           expect(compiled_section).to ir_eql(compose(
                                       splugin("aplugin", {"count" => 1}),
-                                        splugin("aplugin", {"count" => 2})
+                                      splugin("aplugin", {"count" => 2})
                                       ))
                                     end
       end
@@ -807,8 +807,8 @@ describe LogStash::Compiler do
                                           rand_meta,
                                           j.eEq(j.eEventValue("[foo]"), j.eEventValue("[bar]")),
                                           j.iIf(rand_meta, j.eEq(j.eEventValue("[bar]"), j.eEventValue("[baz]")),
-                                                   splugin("aplugin"),
-                                                   j.noop
+                                                splugin("aplugin"),
+                                                j.noop
                                                   ),
                                           j.iIf(
                                             rand_meta,

@@ -215,16 +215,16 @@ module LogStash module Helpers
 
       if provided_username && !provided_password
         raise(ArgumentError,
-          "When using #{prefix}#{feature}.elasticsearch.username, " +
-          "#{prefix}#{feature}.elasticsearch.password must also be set"
+              "When using #{prefix}#{feature}.elasticsearch.username, " +
+              "#{prefix}#{feature}.elasticsearch.password must also be set"
         )
       end
 
       if provided_cloud_id
         if provided_hosts
           raise(ArgumentError,
-            "Both #{prefix}#{feature}.elasticsearch.cloud_id and " +
-            "#{prefix}#{feature}.elasticsearch.hosts specified, please only use one of those"
+                "Both #{prefix}#{feature}.elasticsearch.cloud_id and " +
+                "#{prefix}#{feature}.elasticsearch.hosts specified, please only use one of those"
           )
         end
       end
