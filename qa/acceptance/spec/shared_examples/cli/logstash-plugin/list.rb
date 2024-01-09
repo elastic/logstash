@@ -18,7 +18,7 @@
 require_relative "../../../spec_helper"
 require "logstash/version"
 require "fileutils"
-
+require 'pry'
 shared_examples "logstash list" do |logstash|
   describe "logstash-plugin list on [#{logstash.human_name}]" do
     before(:all) do
@@ -45,11 +45,10 @@ shared_examples "logstash list" do |logstash|
 
       it "list the plugins with their versions" do
         result = logstash.run_command_in_path("bin/logstash-plugin list --verbose")
-
         stdout = StringIO.new(result.stdout)
         stdout.set_encoding(Encoding::UTF_8)
         while line = stdout.gets
-          next if line.match(/^Using system java:.*$/)
+          next if line.match(/^Using bundled JDK:.*$/)
           match = line.match(/^#{plugin_name_with_version}$/)
           expect(match).to_not be_nil
 

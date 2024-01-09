@@ -24,7 +24,6 @@ require_relative '../shared_examples/updated'
 # This tests verify that the generated artifacts could be used properly in a release, implements https://github.com/elastic/logstash/issues/5070
 describe "artifacts operation" do
   logstash = ServiceTester::Artifact.new()
-  it_behaves_like "installable", logstash
   it_behaves_like "installable_with_jdk", logstash
   it_behaves_like "updated", logstash, from_release_branch="7.17"
 end

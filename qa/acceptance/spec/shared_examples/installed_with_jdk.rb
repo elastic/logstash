@@ -22,6 +22,7 @@ require          'logstash/version'
 RSpec.shared_examples "installable_with_jdk" do |logstash|
 
   before(:all) do
+    logstash.run_command("unset LS_JAVA_HOME")
     logstash.run_command("unset JAVA_HOME")
   end
 
