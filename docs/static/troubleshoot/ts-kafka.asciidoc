@@ -172,6 +172,8 @@ To troubleshoot authentication failures in Kafka client, add `-Dsun.security.krb
 ```
 logger.kafkainput.name = logstash.inputs.kafka
 logger.kafkainput.level = debug
+logger.kafkaoutput.name = logstash.outputs.kafka
+logger.kafkaoutput.level = debug
 logger.kafka.name = org.apache.kafka
 logger.kafka.level = debug
 ```
