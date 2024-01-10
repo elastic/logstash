@@ -163,4 +163,17 @@ https://github.com/logstash-plugins/logstash-input-kafka/issues/210
 * If (and only if) upgrading is not possible, set `consumer_threads` to `1`.
 
 
+[discrete] 
+[[ts-kafka-kerberos-debug]]
+===== Debug Kerberos SASL
 
+To troubleshoot authentication failure in Kafka client, add `-Dsun.security.krb5.debug=true` to `jvm.options` and the following lines to `log4j2.properties`
+
+```
+logger.kafkainput.name = logstash.inputs.kafka
+logger.kafkainput.level = debug
+logger.kafka.name = org.apache.kafka
+logger.kafka.level = debug
+```
+
+NOTE: Kerberos debug log is not being output through log4j but is directed to the console.
