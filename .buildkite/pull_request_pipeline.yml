@@ -47,6 +47,8 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       ci/unit_tests.sh java
+    artifact_paths:
+      - "**/build/test-results/javaTests/TEST-*.xml"
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
@@ -139,3 +141,17 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       x-pack/ci/integration_tests.sh
+
+  - wait: ~
+    continue_on_failure: true
+
+  - label: "🏁 Annotate JUnit results"
+    # the plugin requires docker run, hence the use of a VM
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-2"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: "**/TEST-*.xml"

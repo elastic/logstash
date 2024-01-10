@@ -436,11 +436,15 @@ spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/exhaustive_tests_pipeline.yml"
       provider_settings:
-        trigger_mode: none
-      cancel_intermediate_builds: true
-      skip_intermediate_builds: true
+        build_branches: true
+        build_pull_request_forks: false
+        build_pull_requests: false
+        build_tags: false
+        trigger_mode: code
+      cancel_intermediate_builds: false
+      skip_intermediate_builds: false
       env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'  # disable during development
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
@@ -543,8 +547,8 @@ spec:
       provider_settings:
         trigger_mode: none
       env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash'
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'false'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
       teams:
         ingest-fp:

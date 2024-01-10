@@ -6,7 +6,7 @@ env:
 
 steps:
   - input: "Test Parameters"
-    if: build.source != "schedule"
+    if: build.source != "schedule" && build.source != "trigger_job"
     fields:
       - select: "Operating System"
         key: "matrix-os"
@@ -69,7 +69,7 @@ steps:
             value: "zulu_11"
 
   - wait: ~
-    if: build.source != "schedule"
+    if: build.source != "schedule" && build.source != "trigger_job"
 
   - command: |
       set -euo pipefail
