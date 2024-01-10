@@ -31,9 +31,13 @@ RSpec.shared_examples "updated" do |logstash, from_release_branch|
 
   before(:each) do
     latest_logstash_release_version = fetch_latest_logstash_release_version(from_release_branch)
-    url, dest = logstash_download_metadata(latest_logstash_release_version, logstash.client.architecture_extension, logstash.client.package_extension).values_at(:url, :dest)
+    major, minor, patch = latest_logstash_release_version.split('.').map(&:to_i)
+    if patch > 0
+      previous_patch_release = "#{major}.#{minor}.#{patch - 1}"
+    end
+    url, dest = logstash_download_metadata(previous_patch_release, logstash.client.architecture_extension, logstash.client.package_extension).values_at(:url, :dest)
     logstash.download(url, dest)
-    options = {:version => latest_logstash_release_version, :snapshot => false, :base => "./", :skip_jdk_infix => false }
+    options = {:version => previous_patch_release, :snapshot => false, :base => "./", :skip_jdk_infix => false }
     logstash.install(options)
   end
 
