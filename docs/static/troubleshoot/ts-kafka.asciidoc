@@ -176,4 +176,4 @@ logger.kafka.name = org.apache.kafka
 logger.kafka.level = debug
 ```
 
-NOTE: Kerberos debug log is not being output through log4j but is directed to the console.
+NOTE: Logging entries for Kerberos are NOT sent through Log4j but go directly to the console.
