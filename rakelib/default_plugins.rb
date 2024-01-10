@@ -51,5 +51,7 @@ module LogStash
     CORE_SPECS_PLUGINS = self.fetch_plugins_for("core-specs").freeze
 
     ALL_PLUGINS_SKIP_LIST = Regexp.union(self.fetch_plugins_for("skip-list")).freeze
+
+    OSS_EXCLUDED_PLUGINS = self.fetch_plugins_for("oss-excluded").freeze
   end
 end

@@ -61,6 +61,16 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
+  task "install-default-oss" => "bootstrap" do
+    puts("[plugin:install-default] Installing default OSS plugins")
+    remove_lockfile # because we want to use the release lockfile
+
+    plugins = LogStash::RakeLib::DEFAULT_PLUGINS - LogStash::RakeLib::OSS_EXCLUDED_PLUGINS
+    install_plugins("--no-verify", "--preserve", *plugins)
+
+    task.reenable # Allow this task to be run again
+  end
+
   task "clean-local-core-gem", [:name, :path] do |task, args|
     name = args[:name]
     path = args[:path]

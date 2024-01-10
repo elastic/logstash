@@ -193,7 +193,7 @@ namespace "artifact" do
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
-  task "archives_oss" => ["prepare", "generate_build_metadata"] do
+  task "archives_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
@@ -443,6 +443,12 @@ namespace "artifact" do
   task "prepare" do
     if ENV['SKIP_PREPARE'] != "1"
       ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+    end
+  end
+
+  task "prepare-oss" do
+    if ENV['SKIP_PREPARE'] != "1"
+      ["bootstrap", "plugin:install-default-oss", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
     end
   end
 
