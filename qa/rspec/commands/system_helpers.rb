@@ -16,7 +16,6 @@
 # under the License.
 
 require_relative "base"
-require 'pry'
 
 module ServiceTester
   module SystemD

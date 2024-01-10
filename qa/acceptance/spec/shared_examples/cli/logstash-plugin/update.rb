@@ -17,7 +17,7 @@
 
 require_relative "../../../spec_helper"
 require "logstash/version"
-require 'pry'
+
 shared_examples "logstash update" do |logstash|
   describe "logstash-plugin update on [#{logstash.human_name}]" do
     before :each do
@@ -85,7 +85,6 @@ shared_examples "logstash update" do |logstash|
   #     it "has executed successfully" do
   #       logstash.run_command_in_path("bin/logstash-plugin update --no-verify")
   #       logstash.run_command_in_path("bin/logstash-plugin list")
-  #       binding.pry
   #       expect(logstash).to have_installed?(plugin_name, "0.1.1")
   #       expect(logstash).not_to be_running
   #       with_running_logstash_service(logstash) do

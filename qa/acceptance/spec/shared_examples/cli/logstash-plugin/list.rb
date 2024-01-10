@@ -18,7 +18,7 @@
 require_relative "../../../spec_helper"
 require "logstash/version"
 require "fileutils"
-require 'pry'
+
 shared_examples "logstash list" do |logstash|
   describe "logstash-plugin list on [#{logstash.human_name}]" do
     before(:all) do
