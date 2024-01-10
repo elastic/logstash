@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-11-4,Logstash 8.11.4>>
 * <<logstash-8-11-3,Logstash 8.11.3>>
 * <<logstash-8-11-2,Logstash 8.11.2>>
 * <<logstash-8-11-1,Logstash 8.11.1>>
@@ -49,6 +50,37 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-11-4]]
+=== Logstash 8.11.4 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Netflow Codec - 4.3.2*
+
+* Updates the milliseconds rounding for IPFIX start/end milliseconds fields. 
+* Fix the test to run on Logstash 8 with microseconds precision. https://github.com/logstash-plugins/logstash-codec-netflow/pull/206[#206]
+
+* Fixed unable to initialize the plugin with Logstash 8.10+ https://github.com/logstash-plugins/logstash-codec-netflow/pull/205[#205]
+
+*Json Filter - 3.2.1*
+
+* Fix tag on failure test https://github.com/logstash-plugins/logstash-filter-json/pull/52[#52]
+
+*File Input - 4.4.6*
+
+* Change read mode to immediately stop consuming buffered lines when shutdown is requested https://github.com/logstash-plugins/logstash-input-file/pull/322[#322]
+
+*Twitter Input - 4.1.1*
+
+* Bumped `public_suffix` gem version to `> 4` `< 6` https://github.com/logstash-plugins/logstash-input-twitter/pull/77[#77]
+
+*Csv Output - 3.0.10*
+
+* Extend `spreadsheet_safe` prefix guard to '-', '+', and '@' https://github.com/logstash-plugins/logstash-output-csv/pull/27[#27]
 
 
 [[logstash-8-11-3]]
