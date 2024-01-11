@@ -167,15 +167,25 @@ https://github.com/logstash-plugins/logstash-input-kafka/issues/210
 [[ts-kafka-kerberos-debug]]
 ===== Debug Kerberos SASL
 
-To troubleshoot authentication failures in Kafka client, add `-Dsun.security.krb5.debug=true` to `jvm.options` and the following lines to `log4j2.properties`:
+You can set up your machine to help you troubleshoot authentication failures in the Kafka client.
 
-```
+* In `config/jvm.options`, add:
++
+[source,txt]
+-----
+`-Dsun.security.krb5.debug=true` to `jvm.options` 
+-----
+
+* In `config/log4j2.properties`, add: 
++
+[source,txt]
+-----
 logger.kafkainput.name = logstash.inputs.kafka
 logger.kafkainput.level = debug
 logger.kafkaoutput.name = logstash.outputs.kafka
 logger.kafkaoutput.level = debug
 logger.kafka.name = org.apache.kafka
 logger.kafka.level = debug
-```
+-----
 
 NOTE: Logging entries for Kerberos are NOT sent through Log4j but go directly to the console.
