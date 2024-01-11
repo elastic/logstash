@@ -141,6 +141,7 @@ rake artifact:deb artifact:rpm
             "key": slugify_bk_key(vm),
             "agents": aws_agent(vm,instance_type="m5.4xlarge") if "amazonlinux" in vm else gcp_agent(vm),
             "depends_on": "acceptance-build-artifacts",
+            "retry": {"automatic": [{"limit": 3}]},
             "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
 source .buildkite/scripts/common/vm-agent-multi-jdk.sh
