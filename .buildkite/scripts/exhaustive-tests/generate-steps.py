@@ -193,7 +193,7 @@ if __name__ == "__main__":
     structure["steps"].append({
             "group": "Acceptance / Packaging",
             "key": "acceptance-packaging",
-            "depends_on": ["compatibility-linux", "compatibility-windows"],
+            "depends_on": ["testing-phase"],
             "steps": acceptance_linux_steps(),
     })
 
