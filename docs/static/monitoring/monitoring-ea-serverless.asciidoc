@@ -1,0 +1,73 @@
+[[serverless-monitoring-with-elastic-agent]]
+=== Collect {ls} monitoring data for dashboards ({serverless-short}) 
+[subs="attributes"]
+++++
+<titleabbrev>Collect monitoring data for dashboards ({serverless-short} )</titleabbrev>
+++++
+
+{ls} monitoring is available on {serverless-full} through the https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability].
+{agent} collects monitoring data from your {ls} instance, sends it directly to {serverless-full}, and shows the data in {ls} dashboards.
+
+You'll need to have an {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] project. 
+We'll provide steps to help you create one.
+
+**Prerequisite**
+
+[[disable-default-svrless]]
+.Disable default collection of {ls} monitoring metrics
+[%collapsible]
+====
+include::monitoring-prereq-disable-default.asciidoc[]
+====
+
+[discrete]
+[[setup-project]]
+=== Add and configure the {ls} integration
+
+**Add the {ls} integration**
+
+. Log in to your https://cloud.elastic.co/[cloud.elastic.co] account and create an Observability serverless project. 
+. Select **Get Started** from the main menu.
+. Select **Start exploring** (near the bottom of the page).
+. On the **Integrations** page, search for **{ls}** and select it to see details. 
+. Click **Add {ls}**. 
+. Follow the instructions to install {agent} and add the {ls} integration. 
+
+For more info, check out the {serverless-docs}/observability/what-is-observability-serverless[Elastic Observability] docs.
+
+**Configure the integration to collect logs** 
+ 
+* Make sure that **Logs** is ON if you want to collect logs from your {ls} instance. Check the settings to be sure that they are configured correctly.
+* Modify the log paths to match your {ls} environment.
+
+**Configure the integration to collect metrics**
+
+* Make sure that  **Metrics (Stack Monitoring)** is OFF, and that **Metrics (Technical Preview)** is ON.
+* Set the {ls} URL to point to your {ls} instance. +
+By default, the integration collects {ls}
+monitoring metrics from `https://localhost:9600`. If that host and port number are not
+correct, update the `Logstash URL` setting. If you configured {ls} to use encrypted
+communications and/or a username and password, you must access it using HTTPS. Expand the **Advanced Settings** options, and fill in the appropriate values for your {ls} instance.
+
+
+[discrete]
+[[view-assets-esvrless]]
+=== View assets
+. Go to **Project settings -> Integrations** to see your **Installed integrations**.
+. Select the {ls} integration, and then select **Assets** to access dashboards for the {ls} integration. 
+
+
+[discrete]
+[[view-data-svrless]]
+=== Monitor {ls} logs and metrics
+
+From the list of assets, open the **[Metrics {ls}] {ls} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {ls} performance.
+
+[role="screenshot"]
+image::images/integration-dashboard-overview.png[The {ls} Overview dashboard in {kib} with various metrics from your monitored {ls}]
+
+You can hover over any visualization to adjust its settings, or click the
+**Edit** button to make changes to the dashboard. To learn more, refer to
+{kibana-ref}/dashboard.html[Dashboard and visualizations].
+
+
