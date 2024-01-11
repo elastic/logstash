@@ -173,7 +173,7 @@ You can set up your machine to help you troubleshoot authentication failures in 
 +
 [source,txt]
 -----
-`-Dsun.security.krb5.debug=true` to `jvm.options` 
+-Dsun.security.krb5.debug=true
 -----
 
 * In `config/log4j2.properties`, add: 
