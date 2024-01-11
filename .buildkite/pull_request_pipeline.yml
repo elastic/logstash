@@ -8,6 +8,9 @@ steps:
       cpu: "4"
       memory: "6Gi"
       ephemeralStorage: "100Gi"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -23,6 +26,9 @@ steps:
       cpu: "4"
       memory: "8Gi"
       ephemeralStorage: "100Gi"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -36,6 +42,9 @@ steps:
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
       if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
@@ -59,6 +68,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as a non-root user
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -74,6 +86,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as a non-root user
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -89,6 +104,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as non root (logstash) user. UID is hardcoded in image.
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -105,6 +123,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as non root (logstash) user. UID is hardcoded in image.
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -121,6 +142,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as non root (logstash) user. UID is hardcoded in image.
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -136,6 +160,9 @@ steps:
       ephemeralStorage: "100Gi"
       # Run as non root (logstash) user. UID is hardcoded in image.
       imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
     command: |
       set -euo pipefail
 
