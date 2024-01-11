@@ -11,18 +11,24 @@ Plus you have the option to manage all of your monitoring agents from a central 
 types of data to a host. Each agent has a single policy you can update to add
 integrations for new data sources, security protections, and more.
 
-You can use {agent} to collect monitoring data for:
+You can use {agent} to collect {ls} monitoring data on:
 
-* <<dashboard-monitoring-with-elastic-agent,Dashboards>>. {agent} collects
+* <<dashboard-monitoring-with-elastic-agent,{ecloud} or self-managed dashboards>>. +
+{agent} collects
 monitoring data from your {ls} instance, sends it directly to your monitoring
 cluster, and shows the data in {ls} dashboards.
 {ls} dashboards include an extended range of metrics, including plugin
 drilldowns, and plugin specific dashboards for the dissect filter, the grok filter, and the elasticsearch output.
-* <<monitoring-with-elastic-agent,{stack} monitoring>>. Use the Elastic Stack monitoring features to gain insight into the health of {ls} instances running in your environment.
+* <<serverless-monitoring-with-elastic-agent,{ecloud} dashboards (serverless)>>. +
+{agent} collects
+monitoring data from your {ls} instance, sends it to 
+https://docs.elastic.co/serverless[Elastic serverless], 
+and shows the data in {ls} dashboards in https://docs.elastic.co/serverless/observability/what-is-observability-serverless[Elastic Observability].
+{ls} dashboards include an extended range of metrics, including plugin
+drilldowns, and plugin specific dashboards for the dissect filter, the grok filter, and the elasticsearch output.
+* <<monitoring-with-elastic-agent,{stack} monitoring>>. +
+Use the Elastic Stack monitoring features to gain insight into the health of {ls} instances running in your environment.
 
 include::monitoring-ea-dashboards.asciidoc[]
+include::monitoring-ea-serverless.asciidoc[]
 include::monitoring-ea.asciidoc[]
-
-
-
-
