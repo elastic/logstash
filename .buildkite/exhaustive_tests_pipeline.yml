@@ -2,9 +2,19 @@ steps:
   - label: "Exhaustive tests pipeline"
     command: |
       #!/usr/bin/env bash
+      echo "--- Check for docs changes"
+      set +e
+      .buildkite/scripts/common/check-files-changed.sh '^docs/.*'
+      if [[ $$? -eq 0 ]]; then
+        echo "^^^ +++"
+        echo "Skipping running pipeline as all changes are related to docs."
+        exit 0
+      else
+        echo "Changes are not exclusively related to docs, continuing."
+      fi
+
       set -eo pipefail
 
-      source .buildkite/scripts/common/container-agent.sh
       echo "--- Downloading prerequisites"
       python3 -m pip install ruamel.yaml
       curl -fsSL --retry-max-time 60 --retry 3 --retry-delay 5 -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
