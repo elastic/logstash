@@ -157,6 +157,20 @@ ci/acceptance_tests.sh"""),
     
     return steps
 
+def acceptance_docker_steps()-> list[typing.Any]:
+    steps = []
+    for flavor in ["full", "oss", "ubi8"]:
+        steps.append({
+            "label": f":docker: {flavor} flavor acceptance",
+            "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
+            "command": LiteralScalarString(f"""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+ci/docker_acceptance_tests.sh {flavor}"""),
+        })
+
+    return steps
+
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
     WINDOWS_OS_ENV_VAR_OVERRIDE = os.getenv("WINDOWS_OS")
@@ -197,5 +211,11 @@ if __name__ == "__main__":
             "steps": acceptance_linux_steps(),
     })
 
+    structure["steps"].append({
+            "group": "Acceptance / Docker",
+            "key": "acceptance-docker",
+            "depends_on": ["testing-phase"],
+            "steps": acceptance_docker_steps(),
+    })
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
     YAML().dump(structure, sys.stdout)
