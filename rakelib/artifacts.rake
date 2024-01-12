@@ -448,7 +448,7 @@ namespace "artifact" do
 
   task "prepare-oss" do
     if ENV['SKIP_PREPARE'] != "1"
-      ["bootstrap", "plugin:install-default-oss", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+      %w[bootstrap plugin:install-default plugin:remove-non-oss-plugins artifact:clean-bundle-config].each {|task| Rake::Task[task].invoke }
     end
   end
 

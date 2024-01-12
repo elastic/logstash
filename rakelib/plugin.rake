@@ -24,6 +24,13 @@ namespace "plugin" do
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["install"] + args)
   end
 
+  def remove_plugins(plugins)
+    require_relative "../lib/pluginmanager/main"
+    plugins.each do |plugin|
+      LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin])
+    end
+  end
+
   task "install-base" => "bootstrap" do
     puts("[plugin:install-base] Installing base dependencies")
     install_plugins("--development",  "--preserve")
@@ -61,12 +68,9 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-default-oss" => "bootstrap" do
-    puts("[plugin:install-default] Installing default OSS plugins")
-    remove_lockfile # because we want to use the release lockfile
-
-    plugins = LogStash::RakeLib::DEFAULT_PLUGINS - LogStash::RakeLib::OSS_EXCLUDED_PLUGINS
-    install_plugins("--no-verify", "--preserve", *plugins)
+  task "remove-non-oss-plugins" do |task, _|
+    puts("[plugin:remove-non-oss-plugins] Removing non-OSS plugins")
+    remove_plugins(LogStash::RakeLib::OSS_EXCLUDED_PLUGINS)
 
     task.reenable # Allow this task to be run again
   end
