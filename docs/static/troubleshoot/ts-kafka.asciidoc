@@ -165,7 +165,7 @@ https://github.com/logstash-plugins/logstash-input-kafka/issues/210
 
 [discrete] 
 [[ts-kafka-kerberos-debug]]
-===== Debug Kerberos SASL
+===== Setting up debugging for Kerberos SASL
 
 You can set up your machine to help you troubleshoot authentication failures in the Kafka client.
 
