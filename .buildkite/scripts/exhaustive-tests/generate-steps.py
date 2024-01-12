@@ -154,7 +154,7 @@ fi
 ci/acceptance_tests.sh"""),
         }
         steps.append(step)
-    
+
     return steps
 
 def acceptance_docker_steps()-> list[typing.Any]:
@@ -217,5 +217,6 @@ if __name__ == "__main__":
             "depends_on": ["testing-phase"],
             "steps": acceptance_docker_steps(),
     })
+
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
     YAML().dump(structure, sys.stdout)
