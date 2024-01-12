@@ -81,6 +81,38 @@ def randomized_windows_os() -> str:
 
     return random.choice(all_oses["windows"])
 
+def aws_agent(vm_name: str, instance_type: str, image_prefix: str = "platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
+    return {
+        "provider": "aws",
+        "imagePrefix": f"{image_prefix}-{vm_name}",
+        "instanceType": instance_type,
+        "diskSizeGb": disk_size_gb,
+    }
+
+def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", image_prefix: str = "family/platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
+    return {
+        "provider": "gcp",
+        "imageProject": "elastic-images-prod",
+        "image": f"{image_prefix}-{vm_name}",
+        "machineType": instance_type,
+        "diskSizeGb": disk_size_gb,
+        "diskType": "pd-ssd",
+    }
+
+def acceptance_docker_steps()-> list[typing.Any]:
+    steps = []
+    for flavor in ["full", "oss", "ubi8"]:
+        steps.append({
+            "label": f":docker: {flavor} flavor acceptance",
+            "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
+            "command": LiteralScalarString(f"""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+ci/docker_acceptance_tests.sh {flavor}"""),
+        })
+
+    return steps
+
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
     WINDOWS_OS_ENV_VAR_OVERRIDE = os.getenv("WINDOWS_OS")
@@ -112,6 +144,13 @@ if __name__ == "__main__":
             "key": "compatibility-windows",
             "depends_on": "testing-phase",
             "steps": [compat_windows_step(imagesuffix=windows_test_os)],
+    })
+
+    structure["steps"].append({
+            "group": "Acceptance / Docker",
+            "key": "acceptance-docker",
+            "depends_on": ["testing-phase"],
+            "steps": acceptance_docker_steps(),
     })
 
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
