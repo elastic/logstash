@@ -64,7 +64,7 @@ RSpec.configure do |c|
   c.include LogStashHelper
   c.extend LogStashHelper
 
-  if ENV['COVERAGE'] do
+  if ENV['COVERAGE']
     c.after(:suite) do
       SimpleCov.result.format!
     end
