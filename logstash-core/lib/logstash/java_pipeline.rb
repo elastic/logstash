@@ -204,7 +204,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     begin
       loop do
         monitor_inputs_and_workers
-        break unless @partialReloading
+        break if @partialReloading.false?
         start_workers
         @partialReloading.make_false
       end
