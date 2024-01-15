@@ -65,7 +65,6 @@ RSpec.configure do |c|
   c.extend LogStashHelper
 
   c.after(:suite) do
-    puts 'SUITE HOOK!!!'
     SimpleCov.result.format!
   end
 
