@@ -53,7 +53,7 @@ steps:
       ci/unit_tests.sh java
     artifact_paths:
       - "**/build/test-results/javaTests/TEST-*.xml"
-      - "**/build/reports/jacoco/test/jacocoTestReport.xml"
+      - "**/jacocoTestReport.xml"
 
   - label: ":sonarqube: Continuous Code Inspection"
     env:
@@ -62,7 +62,7 @@ steps:
       image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
     command:
       - "buildkite-agent artifact download --step ruby-unit-tests coverage/coverage.json ."
-      - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ./jacocoTestReport.xml"
+      - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ."
       - "ls -lah"
       - "/scan-source-code.sh"
     depends_on:
