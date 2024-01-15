@@ -38,6 +38,7 @@ If you think you found a bug, it probably is a bug.
 * or ask the [forum](https://discuss.elastic.co/c/logstash).
 
 ## Issue Prioritization
+
 The Logstash team takes time to digest, consider solutions, and weigh applicability of issues to both the broad
 Logstash user base and our own goals for the project. Through this process, we triage and update issues as we get to them. Please provide context in your issues instead of just adding a +1 comment. If you like a certain idea or enhancement, and have nothing more to add, please just use GitHub :+1: emoji.
 
