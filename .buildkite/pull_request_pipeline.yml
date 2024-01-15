@@ -35,7 +35,7 @@ steps:
       source .buildkite/scripts/common/container-agent.sh
       ci/unit_tests.sh ruby
     artifact_paths:
-      - "coverage/.resultset.json"
+      - "coverage/coverage.json"
 
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
