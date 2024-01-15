@@ -64,8 +64,10 @@ RSpec.configure do |c|
   c.include LogStashHelper
   c.extend LogStashHelper
 
-  c.after(:suite) do
-    SimpleCov.result.format!
+  if ENV['COVERAGE'] do
+    c.after(:suite) do
+      SimpleCov.result.format!
+    end
   end
 
   # Some tests mess with LogStash::SETTINGS, and data on the filesystem can leak state

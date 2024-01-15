@@ -10,6 +10,8 @@ export GRADLE_OPTS="-Xmx4g -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 export TEST_DEBUG=true
+# For Ruby tests
+export COVERAGE=true
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
