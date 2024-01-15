@@ -162,6 +162,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
+    private PluginMetricsFactoryExt metricsFactoryExt;
+    private ExecutionContextFactoryExt executionContextFactoryExt;
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -171,16 +173,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
             throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
+        this.metricsFactoryExt = new PluginMetricsFactoryExt(
+                    context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
+            ).initialize(context, pipelineId(), metric());
+        this.executionContextFactoryExt = new ExecutionContextFactoryExt(
+                context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
+            ).initialize(context, args[3], this, dlqWriter(context));
         lirExecution = new CompiledPipeline(
                 lir,
                 new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
                         lir,
-                        new PluginMetricsFactoryExt(
-                                context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
-                        ).initialize(context, pipelineId(), metric()),
-                        new ExecutionContextFactoryExt(
-                                context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
-                        ).initialize(context, args[3], this, dlqWriter(context)),
+                        metricsFactoryExt,
+                        executionContextFactoryExt,
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
                 getSecretStore(context)
@@ -405,6 +409,29 @@ public class AbstractPipelineExt extends RubyBasicObject {
             DeadLetterQueueFactory.release(pipelineId.asJavaString());
         }
         return context.nil;
+    }
+
+    @JRubyMethod(name = "reload_workers")
+    public final IRubyObject reloadWorkers(final ThreadContext context,
+                                           final IRubyObject pipelineConfig) {
+
+        PipelineIR new_lir;
+        PipelineConfig newPipelineConfig = pipelineConfig.toJava(PipelineConfig.class);
+        boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context), EnvironmentVariableProvider.defaultProvider())) {
+            new_lir = ConfigCompiler.configToPipelineIR(newPipelineConfig.getConfigParts(), supportEscapes, cve);
+        } catch (InvalidIRException iirex) {
+            throw new IllegalArgumentException(iirex);
+        }
+        if (new_lir.getInputGraph().sourceComponentEquals(lir.getInputGraph())) {
+            System.out.println("WOOHOOO WE CAN PARTIALLY RELOAD");
+            lirExecution.resetFilterOutputLIR(new_lir);
+            this.lir = lirExecution.pipelineIR;
+            this.pipelineSettings = pipelineConfig;
+            return context.tru;
+        } else {
+            return context.fals;
+        }
     }
 
     @JRubyMethod
