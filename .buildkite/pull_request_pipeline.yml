@@ -47,6 +47,8 @@ steps:
     retry:
       automatic:
         - limit: 3
+    env:
+      ENABLE_SONARQUBE: true
     command: |
       set -euo pipefail      
       source .buildkite/scripts/common/container-agent.sh
