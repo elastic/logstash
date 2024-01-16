@@ -59,8 +59,8 @@ This section summarizes the changes in the following releases:
 [[features-8.12.0]]
 ==== New features and enhancements
 
-* Add support to add and remove multiple keystore keys in a single operation https://github.com/elastic/logstash/pull/15739[#15739]
-* Docker: Update Iron Bank base image to ubi9.2 (#15490) (3 months ago) <Rob Bavey>
+* Add support for adding and removing multiple keystore keys in a single operation https://github.com/elastic/logstash/pull/15739[#15739]
+* Docker: Update Iron Bank base image to ubi9.2 https://github.com/elastic/logstash/pull/15490(#15490)
 * Internal: extract GeoIP database manager to stand-alone feature https://github.com/elastic/logstash/pull/15348[#15348]
 
 [[notable-8.12.0]]
@@ -84,11 +84,11 @@ This section summarizes the changes in the following releases:
 [[docs-8.12.0]]
 ==== Documentation enhancements
 
-* Add reference to ECK https://github.com/elastic/logstash/pull/15565[#15565]
-* Add monitoring for serverless https://github.com/elastic/logstash/pull/15636[#15636]
-* Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15674[#15674]
-* Update Logstash intro and security overview for serverless https://github.com/elastic/logstash/pull/15663[#15663]
-* Update the Logstash to Logstash Native section to reflect the multiple hosts usage https://github.com/elastic/logstash/pull/15512[#15512]
+* Add https://www.elastic.co/guide/en/logstash/8.12/running-logstash-kubernetes.html[info and link] to {ls} running on a {k8s} cluster through https://www.elastic.co/guide/en/cloud-on-k8s/current/index.html[{eck} (ECK)]  https://github.com/elastic/logstash/pull/15565[#15565]
+* Add info for  https://www.elastic.co/guide/en/logstash/current/serverless-monitoring-with-elastic-agent.html[sending {ls] monitoring data to Elastic serverless] https://github.com/elastic/logstash/pull/15636[#15636]
+* Add docs for https://www.elastic.co/guide/en/logstash/current/ea-integrations.html[extending integrations with filter-elastic_integration] https://github.com/elastic/logstash/pull/15674[#15674]
+* Update https://www.elastic.co/guide/en/logstash/current/introduction.html[Logstash intro] and https://www.elastic.co/guide/en/logstash/current/ls-security.html#serverless[security overview] for serverless https://github.com/elastic/logstash/pull/15663[#15663]
+* Update the https://www.elastic.co/guide/en/logstash/8.12/ls-to-ls-native.html#configure-upstream-logstash-output[{ls)-to-{ls} communication] section to reflect the multiple hosts usage https://github.com/elastic/logstash/pull/15512[#15512]
 
 ==== Plugins
 
