@@ -424,7 +424,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             throw new IllegalArgumentException(iirex);
         }
         if (new_lir.getInputGraph().sourceComponentEquals(lir.getInputGraph())) {
-            System.out.println("WOOHOOO WE CAN PARTIALLY RELOAD");
+            LOGGER.info("WOOHOOO WE CAN PARTIALLY RELOAD");
             lirExecution.resetFilterOutputLIR(new_lir);
             this.lir = lirExecution.pipelineIR;
             this.pipelineSettings = pipelineConfig;
