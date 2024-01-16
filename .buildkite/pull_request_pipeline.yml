@@ -67,7 +67,6 @@ steps:
       - "buildkite-agent artifact download --step ruby-unit-tests coverage/coverage.json ."
       - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ."
       - "buildkite-agent artifact download --step java-unit-tests **/build/classes/**/*.* ."
-      - "ls -lah"
       - "/scan-source-code.sh"
     depends_on:
       - "ruby-unit-tests"
