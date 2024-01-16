@@ -56,51 +56,46 @@ This section summarizes the changes in the following releases:
 [[logstash-8-12-0]]
 === Logstash 8.12.0 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.12.0
+[[features-8.12.0]]
+==== New features and enhancements
 
-* geoip: extract database manager to stand-alone feature https://github.com/elastic/logstash/pull/15348[#15348]
-* Forward port PR #15377 to main: Add bigdecimal > 3.1 dependency. https://github.com/elastic/logstash/pull/15384[#15384]
+* Add support to add and remove multiple keystore keys in a single operation https://github.com/elastic/logstash/pull/15739[#15739]
+* Docker: Update Iron Bank base image to ubi9.2 (#15490) (3 months ago) <Rob Bavey>
+* Internal: extract GeoIP database manager to stand-alone feature https://github.com/elastic/logstash/pull/15348[#15348]
+
+[[notable-8.12.0]]
+==== Notable issues fixed
+
+* Add missing method of logger wrapper for puma https://github.com/elastic/logstash/pull/15640[#15640]
+* Fix logstash-keystore multiple keys operations with command flags https://github.com/elastic/logstash/pull/15737[#15737]
+* Separate scheduling of segments flushes from time https://github.com/elastic/logstash/pull/15697[#15697]
+* Add system properties to configure Jackson's stream read constraints #15763 https://github.com/elastic/logstash/pull/15763[#15763]
+* Fix issue with Jackson 2.15: Can not write a field name, expecting a value https://github.com/elastic/logstash/pull/15564[#15564]
+
+[[dependencies-8.12.0]]
+==== Updates to dependencies
+
+* Add bigdecimal > 3.1 dependency. https://github.com/elastic/logstash/pull/15384[#15384]
 * Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15394[#15394]
-* Doc: Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15518[#15518]
-* Fwd PR #15599 to main: swap dataformat-yaml with snakeyaml https://github.com/elastic/logstash/pull/15606[#15606]
-* Doc: Add monitoring for serverless https://github.com/elastic/logstash/pull/15636[#15636]
-* Backport PR #15313 to 8.12: Doc: Update Logstash intro and security overview for serverless https://github.com/elastic/logstash/pull/15663[#15663]
-* Backport PR #15518 to 8.12: Doc: Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15674[#15674]
-* Backport PR #15680 to 8.12: Separate scheduling of segments flushes from time https://github.com/elastic/logstash/pull/15697[#15697]
-* Backport PR #15773 to 8.12: Bump Puma to newer version #15776 https://github.com/elastic/logstash/pull/15776[#15776]
-* Backport PR #15720 to 8.12: Add system properties to configure Jackson's stream read constraints #15763 https://github.com/elastic/logstash/pull/15763[#15763]
+* Swap dataformat-yaml with snakeyaml https://github.com/elastic/logstash/pull/15606[#15606]
+* Bump Puma to 6.4.2+ https://github.com/elastic/logstash/pull/15776[#15776]
+* Update jackson to 2.15.3 https://github.com/elastic/logstash/pull/15477[#15477]
 
+[[docs-8.12.0]]
+==== Documentation enhancements
 
-
-=== Logstash Commits between 8.12 and 8.11.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.11.4..8.12"
-
-25a381b25 - Fix logstash-keystore multiple keys operations with command flags (#15737) (#15739) (9 days ago) <github-actions[bot]>
-eddd91454 - Shutdown DLQ segments flusher only if it has been started (#15649) (5 weeks ago) <Andrea Selva>
-05392ad16 - Added missing method of logger wrapper for puma (#15640) (6 weeks ago) <kaisecheng>
-5543e3c3b - Add support to add and remove multiple keystore keys in a single operation (#15612) (6 weeks ago) <Edmo Vamerlatti Costa>
-906c2513c - Doc: Improvements to monitoring with agent (#15619) (7 weeks ago) <Karen Metts>
-57dc14c92 - Fix issue with Jackson 2.15: Can not write a field name, expecting a value (#15564) (7 weeks ago) <Edmo Vamerlatti Costa>
-53a346c57 - [Doc] add reference to ECK (#15565) (8 weeks ago) <kaisecheng>
-c060c00d7 - Doc: Add Elastic Agent collection (#15528) (8 weeks ago) <Karen Metts>
-bd6189db8 - Update JRuby to 9.4.5.0 (#15531) (9 weeks ago) <João Duarte>
-fa1382fd2 - Update the Logstash to Logstash Native doc to reflect the multiple hosts usage. (#15512) (10 weeks ago) <Mashhur>
-51886b910 - geoip: extract database manager to stand-alone feature (#15348) (10 weeks ago) <Ry Biesemeyer>
-206362212 - Update JDK to 17.0.9+9 (#15509) (3 months ago) <João Duarte>
-a398c93ee - Update Iron Bank base image to ubi9.2 (#15490) (3 months ago) <Rob Bavey>
-90964fb55 - Updates callsites synthax for i18n.t method to avoid deprecated and prohibited format (#15500) (3 months ago) <Andrea Selva>
-57cc392d0 - Update ubi8 base image to 8.7 (#15487) (3 months ago) <Rob Bavey>
-e62640969 - Update JRuby, JDK and Jackson (#15477) (3 months ago) <João Duarte>
-c0e812158 - Update Guava dependency to 32.1.2 (#15394) (3 months ago) <Andrea Selva>
+* Add reference to ECK https://github.com/elastic/logstash/pull/15565[#15565]
+* Add monitoring for serverless https://github.com/elastic/logstash/pull/15636[#15636]
+* Add docs for extending integrations with filter-elastic_integrations https://github.com/elastic/logstash/pull/15674[#15674]
+* Update Logstash intro and security overview for serverless https://github.com/elastic/logstash/pull/15663[#15663]
+* Update the Logstash to Logstash Native section to reflect the multiple hosts usage https://github.com/elastic/logstash/pull/15512[#15512]
 
 ==== Plugins
 
 *Elasticsearch Input - 4.19.1*
 
 * Plugin version bump to pick up docs fix in  https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/199[#199] required to clear build error in docgen. https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/200[#200]
-* Added `search_api` option to support `search_after` and `scroll` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/198[#198]
+* Add `search_api` option to support `search_after` and `scroll` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/198[#198]
 * The default value `auto` uses `search_after` for Elasticsearch >= 8, otherwise, fall back to `scroll` 
 
 *Http Input - 3.8.0*
@@ -111,20 +106,19 @@ c0e812158 - Update Guava dependency to 32.1.2 (#15394) (3 months ago) <Andrea Se
 
 *Elastic_enterprise_search Integration - 3.0.0*
 
+* [BREAKING] Swiftype endpoints are no longer supported for both plugins App Search and Workplace Search
 * Bumped Enterprise Search clients to version `>= 7.16`, `< 9` https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/18[#18]
 * Added support to SSL configurations (`ssl_certificate_authorities`, `ssl_truststore_path`, `ssl_truststore_password`, `ssl_truststore_type`, `ssl_verification_mode`, `ssl_supported_protocols` and `ssl_cipher_suites`)
-* [BREAKING] Swiftype endpoints are no longer supported for both plugins App Search and Workplace Search
 * The App Search deprecated options `host` and `path` were removed
-* Fixed the sprintf format support for the Workplace Search `source` configuration
 
 *Kafka Integration - 11.3.3*
 
-* Fix "Can't modify frozen string" error when record value is `nil` (tombstones) https://github.com/logstash-plugins/logstash-integration-kafka/pull/155[#155]
+* Fixed: "Can't modify frozen string" error when record value is `nil` (tombstones) https://github.com/logstash-plugins/logstash-integration-kafka/pull/155[#155]
 
 *Logstash Integration - 1.0.1*
 
-* Fix: improves throughput by allowing pipeline workers to share a plugin instance _concurrently_ instead of _sequentially_ https://github.com/logstash-plugins/logstash-integration-logstash/pull/19[#19]
-* Introduces the load balancing mechanism to distribute the requests among the `hosts` https://github.com/logstash-plugins/logstash-integration-logstash/pull/16[#16]
+* Fixed: improves throughput by allowing pipeline workers to share a plugin instance _concurrently_ instead of _sequentially_ https://github.com/logstash-plugins/logstash-integration-logstash/pull/19[#19]
+* Introduced load balancing mechanism to distribute the requests among the `hosts` https://github.com/logstash-plugins/logstash-integration-logstash/pull/16[#16]
 
 *Elasticsearch Output - 11.22.2*
 
