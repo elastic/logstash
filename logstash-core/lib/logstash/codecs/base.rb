@@ -29,6 +29,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
 
   def initialize(params = {})
     super
+    puts 'HEYA!'
     config_init(@params)
     register if respond_to?(:register)
     setup_multi_encode!
@@ -54,6 +55,7 @@ module LogStash::Codecs; class Base < LogStash::Plugin
   # over the current API for shared plugins
   # It is best if the codec implements this directly
   def multi_encode(events)
+    puts 'HEYA!'
     if @has_encode_sync
       events.map {|event| [event, self.encode_sync(event)]}
     else

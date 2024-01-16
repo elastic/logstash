@@ -60,6 +60,7 @@ public final class Javafier {
     }
 
     private static Object fallbackConvert(final Object o, final Class<?> cls) {
+        System.out.println("HEYA!");
         for (final Map.Entry<Class<?>, Valuefier.Converter> entry : CONVERTER_MAP.entrySet()) {
             if (entry.getKey().isAssignableFrom(cls)) {
                 final Valuefier.Converter found = entry.getValue();
@@ -91,6 +92,7 @@ public final class Javafier {
         converters.put(
             RubyBigDecimal.class, value -> ((RubyBigDecimal) value).getBigDecimalValue()
         );
+        System.out.println("HEYA!");
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
         converters.put(RubyFixnum.class, value -> ((RubyFixnum) value).getLongValue());
         converters.put(RubyFloat.class, value -> ((RubyFloat) value).getDoubleValue());

@@ -82,6 +82,7 @@ public class SlowLoggerExt extends RubyObject {
     }
 
     static long toLong(final IRubyObject value) {
+        System.out.println("HEYA!");
         if (!(value instanceof RubyNumeric)) {
             throw RubyUtil.RUBY.newTypeError("Numeric expected, got " + value.getMetaClass());
         }
