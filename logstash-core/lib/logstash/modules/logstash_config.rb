@@ -25,7 +25,6 @@ module LogStash module Modules class LogStashConfig
     @directory = ::File.join(modul.directory, "logstash")
     @name = modul.module_name
     @settings = settings
-    puts 'HEYA!'
   end
 
   def template
@@ -35,7 +34,6 @@ module LogStash module Modules class LogStashConfig
   def configured_inputs(default = [], aliases = {})
     name = "var.inputs"
     values = get_setting(LogStash::Setting::SplittableStringArray.new(name, String, default))
-    puts 'HEYA!'
     aliases.each { |k, v| values << v if values.include?(k) }
     aliases.invert.each { |k, v| values << v if values.include?(k) }
     values.flatten.uniq
