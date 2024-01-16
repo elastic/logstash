@@ -24,11 +24,9 @@ namespace "plugin" do
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["install"] + args)
   end
 
-  def remove_plugins(plugins)
+  def remove_plugin(plugin)
     require_relative "../lib/pluginmanager/main"
-    plugins.each do |plugin|
-      LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin])
-    end
+    LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin])
   end
 
   task "install-base" => "bootstrap" do
@@ -70,8 +68,10 @@ namespace "plugin" do
 
   task "remove-non-oss-plugins" do |task, _|
     puts("[plugin:remove-non-oss-plugins] Removing non-OSS plugins")
-    remove_plugins(LogStash::RakeLib::OSS_EXCLUDED_PLUGINS)
 
+    LogStash::RakeLib::OSS_EXCLUDED_PLUGINS.each do |plugin|
+      remove_plugin(plugin) if LogStash::RakeLib::DEFAULT_PLUGINS.include?(plugin)
+    end
     task.reenable # Allow this task to be run again
   end
 
