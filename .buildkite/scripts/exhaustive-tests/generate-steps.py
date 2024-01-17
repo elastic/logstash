@@ -118,7 +118,8 @@ def acceptance_linux_steps() -> list[typing.Any]:
         "label": "Build artifacts",
         "key": "acceptance-build-artifacts",
         # use the same agent as the one we use for building DRA artifacts
-        "agents": gcp_agent("ubuntu-2204", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
+        # NOTE! specifically on 7.17 we must use ubuntu 20.04 or less due to https://github.com/jruby/jruby/pull/7611#issuecomment-1750387837
+        "agents": gcp_agent("ubuntu-2004", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
 source .buildkite/scripts/common/vm-agent.sh
