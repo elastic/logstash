@@ -12,8 +12,6 @@ export CI=true
 export TEST_DEBUG=true
 # don't rely on bash booleans for truth checks, since some CI platforms don't have a way to specify env vars as boolean
 export ENABLE_SONARQUBE=${ENABLE_SONARQUBE:-"true"}
-# For Ruby tests
-export COVERAGE=true
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
@@ -21,12 +19,13 @@ fi
 
 SELECTED_TEST_SUITE=$1
 
-if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
-  SONAR_ARGS=()
-  if [[ $(echo $ENABLE_SONARQUBE | tr '[:lower:]' '[:upper:]') == "TRUE" ]]; then
-    SONAR_ARGS=("jacocoTestReport")
-  fi
+SONAR_ARGS=()
+if [[ $(echo $ENABLE_SONARQUBE | tr '[:lower:]' '[:upper:]') == "TRUE" ]]; then
+  SONAR_ARGS=("jacocoTestReport")
+  export COVERAGE=true
+fi
 
+if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
   echo "Running Java Tests"
   ./gradlew javaTests "${SONAR_ARGS[@]}" --console=plain --warning-mode all
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
