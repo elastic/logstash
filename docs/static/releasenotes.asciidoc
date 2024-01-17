@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
 * <<logstash-8-11-3,Logstash 8.11.3>>
 * <<logstash-8-11-2,Logstash 8.11.2>>
@@ -50,6 +51,84 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-12-0]]
+=== Logstash 8.12.0 Release Notes
+
+[[features-8.12.0]]
+==== New features and enhancements
+
+* Add support for adding and removing multiple keystore keys in a single operation https://github.com/elastic/logstash/pull/15739[#15739]
+* Docker: Update Iron Bank base image to ubi9.2 https://github.com/elastic/logstash/pull/15490[#15490]
+* Internal: extract GeoIP database manager to stand-alone feature https://github.com/elastic/logstash/pull/15348[#15348]
+
+[[notable-8.12.0]]
+==== Notable issues fixed
+
+* Add missing method of logger wrapper for puma https://github.com/elastic/logstash/pull/15640[#15640]
+* Fix logstash-keystore multiple keys operations with command flags https://github.com/elastic/logstash/pull/15737[#15737]
+* Separate scheduling of segments flushes from time https://github.com/elastic/logstash/pull/15697[#15697]
+* Add system properties to configure Jackson's stream read constraints https://github.com/elastic/logstash/pull/15763[#15763]
+* Fix issue with Jackson 2.15: Can not write a field name, expecting a value https://github.com/elastic/logstash/pull/15564[#15564]
+
+[[dependencies-8.12.0]]
+==== Updates to dependencies
+
+* Add bigdecimal > 3.1 dependency. https://github.com/elastic/logstash/pull/15384[#15384]
+* Update Guava dependency to 32.1.2 https://github.com/elastic/logstash/pull/15394[#15394]
+* Swap dataformat-yaml with snakeyaml https://github.com/elastic/logstash/pull/15606[#15606]
+* Bump Puma to 6.4.2+ https://github.com/elastic/logstash/pull/15776[#15776]
+* Update jackson to 2.15.3 https://github.com/elastic/logstash/pull/15477[#15477]
+
+[[docs-8.12.0]]
+==== Documentation enhancements
+
+* Add https://www.elastic.co/guide/en/logstash/8.12/running-logstash-kubernetes.html[info and link] to {ls} running on a {k8s} cluster through 
+{eck} (ECK) https://github.com/elastic/logstash/pull/15565[#15565]
+* Add info for sending https://www.elastic.co/guide/en/logstash/current/serverless-monitoring-with-elastic-agent.html[{ls} monitoring data to Elastic {serverless-short}] https://github.com/elastic/logstash/pull/15636[#15636]
+* Add docs for https://www.elastic.co/guide/en/logstash/current/ea-integrations.html[extending integrations with filter-elastic_integration] https://github.com/elastic/logstash/pull/15674[#15674]
+* Update https://www.elastic.co/guide/en/logstash/current/introduction.html[Logstash intro] and https://www.elastic.co/guide/en/logstash/current/ls-security.html#serverless[security overview] for {serverless-short} https://github.com/elastic/logstash/pull/15663[#15663]
+* Update the https://www.elastic.co/guide/en/logstash/8.12/ls-to-ls-native.html#configure-upstream-logstash-output[{ls}-to-{ls} communication] docs to reflect the multiple hosts usage https://github.com/elastic/logstash/pull/15512[#15512]
+
+==== Plugins
+
+*Elasticsearch Input - 4.19.1*
+
+* Plugin version bump to pick up docs fix in  https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/199[#199] required to clear build error in docgen. https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/200[#200]
+* Add `search_api` option to support `search_after` and `scroll` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/198[#198]
+* The default value `auto` uses `search_after` for Elasticsearch >= 8, otherwise, fall back to `scroll` 
+
+*Http Input - 3.8.0*
+
+* Fixed SSL Java KeyStore support  https://github.com/logstash-plugins/logstash-input-http/pull/171[#171]
+* Added `ssl_keystore_type` configuration
+* Added SSL Java TrustStore configurations (`ssl_truststore_type`, `ssl_truststore_path` and `ssl_truststore_password`)
+
+*Elastic_enterprise_search Integration - 3.0.0*
+
+* [BREAKING] Swiftype endpoints are no longer supported for both plugins App Search and Workplace Search
+* Bumped Enterprise Search clients to version `>= 7.16`, `< 9` https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/18[#18]
+* Added support to SSL configurations (`ssl_certificate_authorities`, `ssl_truststore_path`, `ssl_truststore_password`, `ssl_truststore_type`, `ssl_verification_mode`, `ssl_supported_protocols` and `ssl_cipher_suites`)
+* The App Search deprecated options `host` and `path` were removed
+
+*Kafka Integration - 11.3.3*
+
+* Fixed: "Can't modify frozen string" error when record value is `nil` (tombstones) https://github.com/logstash-plugins/logstash-integration-kafka/pull/155[#155]
+
+*Logstash Integration - 1.0.1*
+
+* Fixed: improves throughput by allowing pipeline workers to share a plugin instance _concurrently_ instead of _sequentially_ https://github.com/logstash-plugins/logstash-integration-logstash/pull/19[#19]
+* Introduced load balancing mechanism to distribute the requests among the `hosts` https://github.com/logstash-plugins/logstash-integration-logstash/pull/16[#16]
+
+*Elasticsearch Output - 11.22.2*
+
+* Fixed: avoid to populate `version` and `version_type` attributes when processing integration metadata and datastream is enabled. https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1161[#1161]
+* Added support for propagating event processing metadata when this output is downstream of an Elastic Integration Filter and configured _without_ explicit `version`, `version_type`, or `routing` directives https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1158[#1158]
+* Added support for propagating event processing metadata when this output is downstream of an Elastic Integration Filter and configured _without_ explicit `index`, `document_id`, or `pipeline` directives https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1155[#1155]
+* Changed the register to initiate pipeline shutdown upon bootstrap failure instead of simply logging the error https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1151[#1151]
+* Doc: Replace `document_already_exist_exception` with `version_conflict_engine_exception` in the `silence_errors_in_log` setting example https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1159[#1159]
+* Doc: Add content for sending data to Elasticsearch on serverless https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1164[#1164]
 
 
 [[logstash-8-11-4]]
