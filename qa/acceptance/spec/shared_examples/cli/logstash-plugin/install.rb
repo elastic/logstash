@@ -28,7 +28,7 @@ shared_examples "logstash install" do |logstash|
     logstash.uninstall
   end
 
-  describe "on #{logstash.hostname}" do
+  describe "on [#{logstash.human_name}]" do
     context "with a direct internet connection" do
       context "when the plugin exist" do
         context "from a local `.GEM` file" do

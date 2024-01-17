@@ -19,7 +19,7 @@ require_relative "../../../spec_helper"
 require "logstash/version"
 
 shared_examples "logstash update" do |logstash|
-  describe "logstash-plugin update on #{logstash.hostname}" do
+  describe "logstash-plugin update on [#{logstash.human_name}]" do
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
     end
