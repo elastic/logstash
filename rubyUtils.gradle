@@ -300,7 +300,10 @@ tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${previousJRubyVersion}", '')
     }
-    // Copy only the Linux aarch64 build of libjffi that changed from JRuby 9.3.9.0 to 9.3.10.0
+    // See https://github.com/jruby/jruby/issues/7579
+    // The aarch64 ffi binary broke for centos/oraclelinux 7 hhttps://github.com/jnr/jffi/issues/138
+    // For x86_64 Linux has been fixed in https://github.com/jnr/jffi/pull/140
+    // So we copy the Linux aarch64 build of libjffi that broke from JRuby 9.3.9.0 to 9.3.10.0 
     include "**/lib/jni/aarch64-Linux/*"
 
     includeEmptyDirs = false
