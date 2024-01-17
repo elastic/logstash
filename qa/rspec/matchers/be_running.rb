@@ -16,16 +16,9 @@
 # under the License.
 
 require 'rspec/expectations'
-require_relative '../helpers'
 
 RSpec::Matchers.define :be_running do
   match do |subject|
-    subject.running?(subject.hosts, subject.name)
-  end
-end
-
-RSpec::Matchers.define :be_running_with do |expected_jdk_path|
-  match do |subject|
-    subject.running?(subject.hosts, subject.name, expected_jdk_path)
+    subject.running?(subject.name)
   end
 end

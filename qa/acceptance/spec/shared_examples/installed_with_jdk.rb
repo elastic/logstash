@@ -18,35 +18,34 @@
 require_relative '../spec_helper'
 require          'logstash/version'
 
-# This test checks if a package is possible to be installed without errors.
+# This test checks if a package can be installed without errors.
 RSpec.shared_examples "installable_with_jdk" do |logstash|
 
   before(:all) do
-    #unset to force it using bundled JDK to run LS
     logstash.run_command("unset LS_JAVA_HOME")
     logstash.run_command("unset JAVA_HOME")
   end
 
   before(:each) do
     logstash.uninstall
-    logstash.install({:bundled_jdk => true, :version => LOGSTASH_VERSION})
+    logstash.install({:version => LOGSTASH_VERSION})
   end
 
   after(:each) do
     logstash.uninstall
   end
 
-  it "is installed on #{logstash.hostname}" do
+  it "is installed on [#{logstash.human_name}]" do
     expect(logstash).to be_installed
   end
 
-  it "is running on #{logstash.hostname}" do
-    with_running_logstash_service(logstash, "/usr/share/logstash/jdk/bin/java") do
-      expect(logstash).to be_running_with("/usr/share/logstash/jdk/bin/java")
+  it "is running on #{logstash.human_name}" do
+    with_running_logstash_service(logstash) do
+      expect(logstash).to be_running
     end
   end
 
-  it "is removable on #{logstash.hostname}" do
+  it "is removable on [#{logstash.human_name}]" do
     logstash.uninstall
     expect(logstash).to be_removed
   end

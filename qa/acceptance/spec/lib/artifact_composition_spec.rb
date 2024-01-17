@@ -15,31 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require_relative '../spec_helper'
+require_relative '../../../rspec/commands'
 
 describe "artifacts composition" do
-  config = ServiceTester.configuration
-  config.servers.each do |address|
-    logstash = ServiceTester::Artifact.new(address, config.lookup[address])
+  logstash = ServiceTester::Artifact.new()
 
-    before(:each) do
-      logstash.install({:version => LOGSTASH_VERSION})
+  before(:each) do
+    logstash.install({:version => LOGSTASH_VERSION})
+  end
+
+  after(:each) do
+    logstash.uninstall
+  end
+
+  context 'prohibited gem dependencies' do
+    it 'does not vendor any version of kramdown' do
+      expect(logstash.gem_vendored?('kramdown')).to be false
     end
+  end
 
-    after(:each) do
-      logstash.uninstall
-    end
-
-    context 'prohibited gem dependencies' do
-      it 'does not vendor any version of kramdown' do
-        expect(logstash.gem_vendored?('kramdown')).to be false
-      end
-    end
-
-    context 'necessary gem dependencies (sanity check)' do
-      it 'vendors concurrent-ruby' do
-        expect(logstash.gem_vendored?('concurrent-ruby')).to be true
-      end
+  context 'necessary gem dependencies (sanity check)' do
+    it 'vendors concurrent-ruby' do
+      expect(logstash.gem_vendored?('concurrent-ruby')).to be true
     end
   end
 end
