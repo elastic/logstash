@@ -59,7 +59,10 @@ steps:
       - "**/build/classes/**/*.*"
 
   - label: ":sonarqube: Continuous Code Inspection"
-    if: build.pull_request.id != null || build.branch == "main"
+    if: | 
+      build.pull_request.id != null || 
+      build.branch == "main" || 
+      build.branch =~ /^[0-9]+\.[0-9]+\$/
     env:
       VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/logstash/sonar-analyze-token"
     agents:
