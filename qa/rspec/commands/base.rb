@@ -16,58 +16,80 @@
 # under the License.
 
 require 'tempfile'
-require_relative "../../vagrant/helpers"
+require 'open3'
 require_relative "system_helpers"
+
+LS_BUILD_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', 'build'))
+
+class Command
+  def initialize()
+    @stdout, @stderr, @exit_status = nil
+    end
+  
+  def stdout
+    @stdout
+  end
+
+  def stderr
+    @stderr
+  end
+
+  def exit_status
+    @exit_status
+  end
+
+  def execute(cmdline)
+    Open3.popen3(cmdline) do |stdin, stdout, stderr, wait_thr|
+      @stdout = stdout.read.chomp
+      @stderr = stderr.read.chomp
+      @exit_status = wait_thr.value.exitstatus
+    end
+  end
+end
+
+def sudo_exec!(cmd)
+  command = Command.new()
+  command.execute("sudo #{cmd}")
+  return command
+end
 
 module ServiceTester
   class InstallException < Exception; end
 
   class Base
-    LOCATION = "/logstash-build".freeze
+    LOCATION = ENV.fetch('LS_ARTIFACTS_PATH', LS_BUILD_PATH.freeze)
     LOGSTASH_PATH = "/usr/share/logstash/".freeze
 
-    def snapshot(host)
-      LogStash::VagrantHelpers.save_snapshot(host)
+    def start_service(service)
+      service_manager(service, "start")
     end
 
-    def restore(host)
-      LogStash::VagrantHelpers.restore_snapshot(host)
+    def stop_service(service)
+      service_manager(service, "stop")
     end
 
-    def start_service(service, host = nil)
-      service_manager(service, "start", host)
-    end
-
-    def stop_service(service, host = nil)
-      service_manager(service, "stop", host)
-    end
-
-    def run_command(cmd, host)
-      hosts = (host.nil? ? servers : Array(host))
-
+    def run_command(cmd)
       response = nil
-      at(hosts, {in: :serial}) do |_host|
-        response = sudo_exec!("JARS_SKIP='true' #{cmd}")
-      end
+      response = sudo_exec!("JARS_SKIP='true' #{cmd}")
       response
     end
 
-    def replace_in_gemfile(pattern, replace, host)
+    def replace_in_gemfile(pattern, replace)
       gemfile = File.join(LOGSTASH_PATH, "Gemfile")
       cmd = "sed -i.sedbak 's/#{pattern}/#{replace}/' #{gemfile}"
-      run_command(cmd, host)
+      run_command(cmd)
     end
 
-    def run_command_in_path(cmd, host)
-      run_command("#{File.join(LOGSTASH_PATH, cmd)}", host)
+    def run_command_in_path(cmd)
+      run_command("#{File.join(LOGSTASH_PATH, cmd)}")
     end
 
-    def plugin_installed?(host, plugin_name, version = nil)
+    def plugin_installed?(plugin_name, version = nil)
       if version.nil?
-        cmd = run_command_in_path("bin/logstash-plugin list", host)
+        cmd = run_command_in_path("bin/logstash-plugin list")
         search_token = plugin_name
       else
-        cmd = run_command_in_path("bin/logstash-plugin list --verbose", host)
+        cmd = run_command_in_path("bin/logstash-plugin list --verbose")
         search_token = "#{plugin_name} (#{version})"
       end
 
@@ -80,16 +102,15 @@ module ServiceTester
     #
     # Returns `true` if _any version_ of the gem is vendored.
     #
-    # @param host [???]
     # @param gem_name [String]
     # @return [Boolean]
     #   - the block should emit `true` iff the yielded gemspec meets the requirement, and `false` otherwise
-    def gem_vendored?(host, gem_name)
-      cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'", host)
+    def gem_vendored?(gem_name)
+      cmd = run_command("find /usr/share/logstash/vendor/bundle/jruby/*/specifications -name '#{gem_name}-*.gemspec'")
       matches = cmd.stdout.lines
       matches.map do |path_to_gemspec|
         filename = path_to_gemspec.split('/').last
-        gemspec_contents = run_command("cat #{path_to_gemspec}", host).stdout
+        gemspec_contents = run_command("cat #{path_to_gemspec}").stdout
         Tempfile.create(filename) do |tempfile|
           tempfile.write(gemspec_contents)
           tempfile.flush
@@ -98,12 +119,12 @@ module ServiceTester
       end.select { |gemspec| gemspec.name == gem_name }.any?
     end
 
-    def download(from, to, host)
-      run_command("wget #{from} -O #{to}", host)
+    def download(from, to)
+      run_command("curl -fsSL --retry 5 --retry-delay 5 #{from} -o #{to}")
     end
 
-    def delete_file(path, host)
-      run_command("rm -rf #{path}", host)
+    def delete_file(path)
+      run_command("rm -rf #{path}")
     end
 
     def package_for(filename, skip_jdk_infix, base = ServiceTester::Base::LOCATION)
