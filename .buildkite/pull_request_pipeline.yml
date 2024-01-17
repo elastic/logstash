@@ -34,6 +34,8 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       ci/unit_tests.sh ruby
+    artifact_paths:
+      - "coverage/coverage.json"
 
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
@@ -45,19 +47,37 @@ steps:
     retry:
       automatic:
         - limit: 3
+    env:
+      ENABLE_SONARQUBE: true
     command: |
-      set -euo pipefail
-      if [[ $BUILDKITE_PULL_REQUEST == "false" ]]; then
-        # https://github.com/elastic/logstash/pull/15486 for background
-        export ENABLE_SONARQUBE="false"
-      else
-        source .buildkite/scripts/pull-requests/sonar-env.sh
-      fi
-
+      set -euo pipefail      
       source .buildkite/scripts/common/container-agent.sh
       ci/unit_tests.sh java
     artifact_paths:
       - "**/build/test-results/javaTests/TEST-*.xml"
+      - "**/jacocoTestReport.xml"
+      - "**/build/classes/**/*.*"
+
+  - label: ":sonarqube: Continuous Code Inspection"
+    if: | 
+      build.pull_request.id != null || 
+      build.branch == "main" || 
+      build.branch =~ /^[0-9]+\.[0-9]+\$/
+    env:
+      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/logstash/sonar-analyze-token"
+    agents:
+      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
+    command:
+      - "buildkite-agent artifact download --step ruby-unit-tests coverage/coverage.json ."
+      - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ."
+      - "buildkite-agent artifact download --step java-unit-tests **/build/classes/**/*.* ."
+      - "/scan-source-code.sh"
+    depends_on:
+      - "ruby-unit-tests"
+      - "java-unit-tests"
+    retry:
+      manual:
+        allowed: true
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"

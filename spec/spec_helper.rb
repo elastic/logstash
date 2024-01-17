@@ -21,7 +21,6 @@ require "flores/rspec"
 require "flores/random"
 require "pathname"
 require "stud/task"
-require "logstash/devutils/rspec/spec_helper"
 require "support/resource_dsl_methods"
 require "support/mocks_classes"
 require "support/helpers"
@@ -33,6 +32,19 @@ require 'rack/test'
 require 'rspec'
 require "json"
 require 'logstash/runner'
+
+# Code coverage setup
+if ENV['COVERAGE']
+  require 'simplecov'
+  require 'simplecov-json'
+
+  SimpleCov.formatter = SimpleCov::Formatter::JSONFormatter
+
+  SimpleCov.start do
+    add_filter 'spec/'
+    add_filter 'vendor/'
+  end
+end
 
 class JSONIOThingy < IO
   def initialize; end
@@ -51,6 +63,12 @@ RSpec.configure do |c|
   Flores::RSpec.configure(c)
   c.include LogStashHelper
   c.extend LogStashHelper
+
+  if ENV['COVERAGE']
+    c.after(:suite) do
+      SimpleCov.result.format!
+    end
+  end
 
   # Some tests mess with LogStash::SETTINGS, and data on the filesystem can leak state
   # from one spec to another; run each spec with its own temporary data directory for `path.data`
