@@ -52,6 +52,7 @@ module LogStash
 
     ALL_PLUGINS_SKIP_LIST = Regexp.union(self.fetch_plugins_for("skip-list")).freeze
 
-    OSS_EXCLUDED_PLUGINS = self.fetch_plugins_for("oss-excluded").freeze
+    # default plugins will be installed and we remove only installed plugins.
+    OSS_EXCLUDED_PLUGINS = DEFAULT_PLUGINS.intersection(self.fetch_plugins_for("oss-excluded"))
   end
 end

@@ -70,7 +70,7 @@ namespace "plugin" do
     puts("[plugin:remove-non-oss-plugins] Removing non-OSS plugins")
 
     LogStash::RakeLib::OSS_EXCLUDED_PLUGINS.each do |plugin|
-      remove_plugin(plugin) if LogStash::RakeLib::DEFAULT_PLUGINS.include?(plugin)
+      remove_plugin(plugin)
     end
     task.reenable # Allow this task to be run again
   end
