@@ -29,6 +29,10 @@ def gem_in_lock_file?(pattern, lock_file)
   content.match(pattern)
 end
 
+# Bundler can mess up installation successful output: https://github.com/elastic/logstash/issues/15801
+INSTALL_SUCCESS_RE = /IB?nstall successful/
+INSTALLATION_SUCCESS_RE = /IB?nstallation successful/
+
 describe "CLI > logstash-plugin install" do
 
   before(:all) do
@@ -67,7 +71,7 @@ describe "CLI > logstash-plugin install" do
         it "successfully install the pack" do
           execute = @logstash_plugin.run_raw("#{offline_wrapper_cmd} #{install_command} #{pack}", change_dir)
 
-          expect(execute.stderr_and_stdout).to match(/Install successful/)
+          expect(execute.stderr_and_stdout).to match(INSTALL_SUCCESS_RE)
           expect(execute.exit_code).to eq(0)
 
           installed = @logstash_plugin.list("logstash-output-secret")
@@ -82,7 +86,7 @@ describe "CLI > logstash-plugin install" do
         it "successfully install the pack" do
           execute = @logstash_plugin.run_raw("#{install_command} #{pack}", change_dir)
 
-          expect(execute.stderr_and_stdout).to match(/Install successful/)
+          expect(execute.stderr_and_stdout).to match(INSTALL_SUCCESS_RE)
           expect(execute.exit_code).to eq(0)
 
           installed = @logstash_plugin.list("logstash-output-secret")
@@ -133,7 +137,7 @@ describe "CLI > logstash-plugin install" do
       it "successfully install the plugin" do
         execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}")
 
-        expect(execute.stderr_and_stdout).to match(/Installation successful/)
+        expect(execute.stderr_and_stdout).to match(INSTALLATION_SUCCESS_RE)
         expect(execute.exit_code).to eq(0)
 
         installed = @logstash_plugin.list(plugin_name)
@@ -143,7 +147,7 @@ describe "CLI > logstash-plugin install" do
       it "successfully installs the plugin with debug enabled" do
         execute = @logstash_plugin.run_raw("#{install_command} #{plugin_name}", true, {"DEBUG"=>"1"})
 
-        expect(execute.stderr_and_stdout).to match(/Installation successful/)
+        expect(execute.stderr_and_stdout).to match(INSTALLATION_SUCCESS_RE)
         expect(execute.exit_code).to eq(0)
 
         installed = @logstash_plugin.list(plugin_name)
