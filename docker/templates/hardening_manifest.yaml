@@ -57,9 +57,6 @@ resources:
 
 # List of project maintainers
 maintainers:
-- name: "Nassim Kammah"
-  username: "nkammah"
-  email: "nassim.kammah@elastic.co"
 - name: "Joao Duarte"
   username: "joaodiasduarte"
   email: "joao@elastic.co"
