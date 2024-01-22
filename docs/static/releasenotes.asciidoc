@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-17,Logstash 7.17.17>>
 * <<logstash-7-17-16,Logstash 7.17.16>>
 * <<logstash-7-17-15,Logstash 7.17.15>>
 * <<logstash-7-17-14,Logstash 7.17.14>>
@@ -74,6 +75,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-17]]
+=== Logstash 7.17.17 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Json Filter - 3.2.1*
+
+* Fix tag on failure test https://github.com/logstash-plugins/logstash-filter-json/pull/52[#52]
+
+*File Input - 4.4.6*
+
+* Change read mode to immediately stop consuming buffered lines when shutdown is requested https://github.com/logstash-plugins/logstash-input-file/pull/322[#322]
+
+*Csv Output - 3.0.10*
+
+* Extend `spreadsheet_safe` prefix guard to '-', '+', and '@' https://github.com/logstash-plugins/logstash-output-csv/pull/27[#27]
 
 
 [[logstash-7-17-16]]
