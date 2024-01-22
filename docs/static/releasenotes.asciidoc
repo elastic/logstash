@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-17,Logstash 7.17.17>>
 * <<logstash-7-17-16,Logstash 7.17.16>>
 * <<logstash-7-17-15,Logstash 7.17.15>>
 * <<logstash-7-17-14,Logstash 7.17.14>>
@@ -74,6 +75,86 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-17]]
+=== Logstash 7.17.17 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.17
+
+* [ci] Reusable unit + IT test steps for Buildkite https://github.com/elastic/logstash/pull/15708[#15708]
+* [ci] Add testing phase to exhaustive tests suite https://github.com/elastic/logstash/pull/15711[#15711]
+* Backport PR #15708 to 7.17: [ci] Reusable unit + IT test steps for Buildkite https://github.com/elastic/logstash/pull/15713[#15713]
+* Backport PR #15711 to 7.17: [ci] Add testing phase to exhaustive tests suite https://github.com/elastic/logstash/pull/15718[#15718]
+* Don't block triggered JDK matrix Buildkite jobs https://github.com/elastic/logstash/pull/15729[#15729]
+* Backport PR #15729 to 7.17: Don't block triggered JDK matrix Buildkite jobs https://github.com/elastic/logstash/pull/15732[#15732]
+* Skip input step when triggering JDK matrix jobs https://github.com/elastic/logstash/pull/15733[#15733]
+* Backport PR #15733 to 7.17: Skip input step when triggering JDK matrix jobs https://github.com/elastic/logstash/pull/15736[#15736]
+* JUnit result annotation for Buildkite PR jobs https://github.com/elastic/logstash/pull/15741[#15741]
+* Backport PR #15741 to 7.17: JUnit result annotation for Buildkite PR jobs https://github.com/elastic/logstash/pull/15746[#15746]
+* Add Docker acceptance to exhaustive BK pipeline https://github.com/elastic/logstash/pull/15748[#15748]
+* Pin `childprocess` gem to major version `4` https://github.com/elastic/logstash/pull/15758[#15758]
+* Backport PR #15758 to 7.17: Pin `childprocess` gem to major version `4` https://github.com/elastic/logstash/pull/15762[#15762]
+* Backport PR #15738 to 7.17: Run BK exhaustive pipeline when code is pushed https://github.com/elastic/logstash/pull/15772[#15772]
+* Enable packaging tests in exhaustive pipeline https://github.com/elastic/logstash/pull/15781[#15781]
+* Add retries to PR pipeline steps https://github.com/elastic/logstash/pull/15787[#15787]
+* Backport PR #15787 to 7.17: Add retries to PR pipeline steps https://github.com/elastic/logstash/pull/15790[#15790]
+* Backport PR #15787 to 7.17: Add retries to PR pipeline steps https://github.com/elastic/logstash/pull/15792[#15792]
+* Backport PR #15748 to 7.17: Add Docker acceptance to exhaustive BK pipeline https://github.com/elastic/logstash/pull/15800[#15800]
+* Fix flaky logstash-plugin IT test https://github.com/elastic/logstash/pull/15803[#15803]
+* Backport PR #15781 to 7.17: Enable packaging tests in exhaustive pipeline #15806 https://github.com/elastic/logstash/pull/15807[#15807]
+* [CI] Send Java and ruby tests to sonarqube simultaneously https://github.com/elastic/logstash/pull/15810[#15810]
+* Backport PR #15803 to 7.17: Fix flaky logstash-plugin IT test https://github.com/elastic/logstash/pull/15818[#15818]
+* Annotate successful DRA builds with summary URL https://github.com/elastic/logstash/pull/15820[#15820]
+* Backport PR #15820 to 7.17: Annotate successful DRA builds with summary URL https://github.com/elastic/logstash/pull/15824[#15824]
+* Fix acceptance/packaging upgrade test near a release https://github.com/elastic/logstash/pull/15826[#15826]
+* Backport PR #15826 to 7.17: Fix acceptance/packaging upgrade test near a release https://github.com/elastic/logstash/pull/15830[#15830]
+
+=== Logstash Commits between 7.17 and 7.17.16
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.16..7.17"
+
+a2f258c0f - (HEAD -> 7.17, origin/7.17) Fix acceptance/packaging upgrade test near a release (#15826) (#15830) (2 hours ago) <github-actions[bot]>
+c0f13dfe3 - Annotate successful DRA builds with summary URL (#15820) (#15824) (6 hours ago) <github-actions[bot]>
+438a6cf6f - Fix flaky logstash-plugin IT test (#15803) (#15818) (4 days ago) <github-actions[bot]>
+289b61f18 - Enable packaging tests in exhaustive pipeline (#15807) (#15781) (5 days ago) <Dimitrios Liappis>
+e74c0679f - Refactor qa/acceptance tests to get away from vagrant (#15696) (#15754) (6 days ago) <Dimitrios Liappis>
+d397a4d97 - Update patch plugin versions in gemfile lock (#15811) (6 days ago) <github-actions[bot]>
+fe82d6b70 - Add Docker acceptance to exhaustive BK pipeline (#15748) (#15800) (11 days ago) <github-actions[bot]>
+a98b3550a - Add retries to PR pipeline steps (#15787) (#15792) (11 days ago) <github-actions[bot]>
+f254443dc - Update Puma on 7.17 (#15774) (12 days ago) <Andrea Selva>
+5f2610ee2 - Run BK exhaustive pipeline when code is pushed (#15738) (#15772) (13 days ago) <Dimitrios Liappis>
+5f0838c0b - Pin `childprocess` gem to major version `4` (#15758) (#15762) (2 weeks ago) <github-actions[bot]>
+23071f575 - JUnit result annotation for Buildkite PR jobs (#15741) (#15746) (3 weeks ago) <github-actions[bot]>
+82b2b9609 - Skip input step when triggering JDK matrix jobs (#15733) (#15736) (3 weeks ago) <github-actions[bot]>
+a25ba1c85 - Don't block triggered JDK matrix Buildkite jobs (#15729) (#15732) (3 weeks ago) <github-actions[bot]>
+8cf1ce276 - [ci] Add testing phase to exhaustive tests suite (#15711) (#15718) (5 weeks ago) <github-actions[bot]>
+edd6c5ace - [ci] Reusable unit + IT test steps for Buildkite (#15708) (#15713) (5 weeks ago) <github-actions[bot]>
+4b29dac25 - bump to 7.17.17 (#15683) (6 weeks ago) <João Duarte>
+089bfe9e5 - Release notes for 7.17.16 (#15659) (7 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.16..7.17 *.release"
+Changed plugin versions:
+logstash-filter-json: 3.2.0 -> 3.2.1
+logstash-input-file: 4.4.5 -> 4.4.6
+logstash-output-csv: 3.0.9 -> 3.0.10
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Json Filter - 3.2.1*
+
+* Fix tag on failure test https://github.com/logstash-plugins/logstash-filter-json/pull/52[#52]
+
+*File Input - 4.4.6*
+
+* Change read mode to immediately stop consuming buffered lines when shutdown is requested https://github.com/logstash-plugins/logstash-input-file/pull/322[#322]
+
+*Csv Output - 3.0.10*
+
+* Extend `spreadsheet_safe` prefix guard to '-', '+', and '@' https://github.com/logstash-plugins/logstash-output-csv/pull/27[#27]
 
 
 [[logstash-7-17-16]]
