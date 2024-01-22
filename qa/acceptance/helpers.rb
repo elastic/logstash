@@ -16,9 +16,8 @@
 # under the License.
 
 require 'net/http'
-require 'json'
 
-ARTIFACTS_API = "https://artifacts-api.elastic.co/v1/versions"
+ARTIFACT_VERSIONS_API = "https://storage.googleapis.com/artifacts-api/releases.properties"
 
 def logstash_download_metadata(version, arch, artifact_type)
   filename = "logstash-#{version}-#{arch}.#{artifact_type}"
@@ -26,14 +25,12 @@ def logstash_download_metadata(version, arch, artifact_type)
 end
 
 def fetch_latest_logstash_release_version(branch)
-  uri = URI(ARTIFACTS_API)
+  uri = URI(ARTIFACT_VERSIONS_API)
+  major = branch.split('.').first
 
   response = retryable_http_get(uri)
-  versions_data = JSON.parse(response)
 
-  filtered_versions = versions_data["versions"].select { |v| v.start_with?(branch) && !v.include?('SNAPSHOT') }
-
-  return filtered_versions.max_by { |v| Gem::Version.new(v) }
+  response.match(/current_#{major}=(\S+)/)&.captures&.first
 end
 
 def retryable_http_get(uri, max_retries=5, retry_wait=10)
