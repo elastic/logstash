@@ -90,7 +90,16 @@ docker run --rm \
       --workflow "${WORKFLOW_TYPE}" \
       --version "${PLAIN_STACK_VERSION}" \
       --artifact-set main \
-      ${DRA_DRY_RUN}
+      ${DRA_DRY_RUN} | tee rm-output.txt
+
+# extract the summary URL from a release manager output line like:
+# Report summary-8.22.0.html can be found at https://artifacts-staging.elastic.co/logstash/8.22.0-ABCDEFGH/summary-8.22.0.html
+
+SUMMARY_URL=$(grep -E '^Report summary-.* can be found at ' rm-output.txt | grep -oP 'https://\S+' | awk '{print $1}')
+rm rm-output.txt
+
+# and make it easily clickable as a Builkite annotation
+printf "**Summary link:** [${SUMMARY_URL}](${SUMMARY_URL})\n" | buildkite-agent annotate --style=success 
 
 info "Teardown logins"
 $(dirname "$0")/docker-env-teardown.sh
