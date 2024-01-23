@@ -444,8 +444,8 @@ tasks.register("downloadFilebeat") {
             project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
             if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-                List packageUrls = SnapshotArtifactURLs.packageUrls("beats", beatVersion, downloadedFilebeatName)
-                project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: packageUrls[0])
+                def res = SnapshotArtifactURLs.packageUrls("beats", beatVersion, downloadedFilebeatName)
+                project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
                 project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
             } else {
                 // find url of build artifact
@@ -496,8 +496,8 @@ tasks.register("checkEsSHA") {
         String remoteSHA
 
         if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-            List packageUrls = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-            remoteSHA = packageUrls[1]
+            def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+            remoteSHA = res.packageShaUrl
         } else {
             // find url of build artifact
             String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
@@ -544,8 +544,8 @@ tasks.register("downloadEs") {
             project.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
 
             if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-                List packageUrls = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-                project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: packageUrls[0])
+                def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+                project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
                 project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
             } else {
                 // find url of build artifact
