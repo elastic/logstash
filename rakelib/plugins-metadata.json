@@ -122,7 +122,7 @@
   "logstash-filter-elastic_integration": {
     "default-plugins": true,
     "skip-list": false,
-    "oss-excluded": true
+    "skip-oss": true
   },
   "logstash-filter-elasticsearch": {
     "default-plugins": true,
