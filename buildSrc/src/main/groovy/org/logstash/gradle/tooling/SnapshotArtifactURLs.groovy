@@ -23,7 +23,6 @@ class SnapshotArtifactURLs {
         String packageUrl = packageArtifactUrls["projects"]["${project}"]["packages"]["${downloadedPackageName}.tar.gz"]["url"]
         String packageShaUrl = packageArtifactUrls["projects"]["${project}"]["packages"]["${downloadedPackageName}.tar.gz"]["sha_url"]
 
-        return [packageUrl, packageShaUrl]
-
+        return ["packageUrl": packageUrl, "packageShaUrl": packageShaUrl]
     }
 }
