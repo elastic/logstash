@@ -35,7 +35,7 @@ with the standard `log4j2.properties` shipped with {ls}.
 
 *Details*
 
-To enable JDK logging on {ls}, needs to:
+Steps to enable JDK logging on {ls}:
 
 * Create a properties file with the logging definitions for Java Util Logging (JUL).
 * Configure a JVM property to inform JUL to use such definitions file.
