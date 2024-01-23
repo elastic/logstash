@@ -175,13 +175,13 @@ tasks.register("configureArtifactInfo") {
             version = "$version-$versionQualifier"
         }
 
-        def isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
+        boolean isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
         String apiResponse = artifactVersionsApi.toURL().text
 
         def dlVersions = new JsonSlurper().parseText(apiResponse)
         String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
         if (qualifiedVersion == null) {
-            if (isReleaseBuild == false) {
+            if (!isReleaseBuild) {
                 project.ext.set("useProjectSpecificArtifactSnapshotUrl", true)
                 project.ext.set("stackArtifactSuffix", "${version}-SNAPSHOT")
                 return
