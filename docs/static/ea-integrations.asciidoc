@@ -26,7 +26,10 @@ When you find an integration for your data source, the UI walks you through addi
 [[integrations-and-ls]]
 === Extend {integrations} with {ls} (Beta)
 
-Logstash can run the ingest pipeline component of your integration when you use the Logstash filter-elastic_integration plugin. 
+Logstash can run the ingest pipeline component of your Elastic integration when you use the Logstash `filter-elastic_integration` plugin in your {ls} pipeline. 
+
+Adding the `filter-elastic_integration` plugin as the _first_ filter plugin keeps the pipeline's behavior as close as possible to the behavior you'd expect if the bytes were processed by the integration in {es}. 
+The more you modify an event before calling the `elastic_integration` filter, the higher the risk that the modifications will have meaningful effect in how the event is transformed.
 
 .How to
 
@@ -35,7 +38,6 @@ Create a {ls} pipeline that uses the <<plugins-inputs-elastic_agent,elastic_agen
 You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. 
 Add one or more output plugins to complete your pipeline. 
 **** 
-
 
 **Sample pipeline configuration**
 
