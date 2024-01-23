@@ -447,8 +447,7 @@ tasks.register("downloadFilebeat") {
                 List packageUrls = SnapshotArtifactURLs.packageUrls("beats", beatVersion, downloadedFilebeatName)
                 project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: packageUrls[0])
                 project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-            }
-            else {
+            } else {
                 // find url of build artifact
                 String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
                 String apiResponse = artifactApiUrl.toURL().text
@@ -499,8 +498,7 @@ tasks.register("checkEsSHA") {
         if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
             List packageUrls = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
             remoteSHA = packageUrls[1]
-        }
-        else {
+        } else {
             // find url of build artifact
             String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
             String apiResponse = artifactApiUrl.toURL().text
@@ -549,8 +547,7 @@ tasks.register("downloadEs") {
                 List packageUrls = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
                 project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: packageUrls[0])
                 project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-            }
-            else {
+            } else {
                 // find url of build artifact
                 String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
                 String apiResponse = artifactApiUrl.toURL().text
