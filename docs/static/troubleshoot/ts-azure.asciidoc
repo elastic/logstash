@@ -5,26 +5,26 @@
 [[ts-azure-http]]
 ===== Event Hub plugin can't connect to Storage blob (input)
 
-*Symptoms* 
+*Symptoms*
 
-Azure EventHub plugin can't connect to the blob storage:
+Azure EventHub can't connect to blob storage:
 
 -----
 [2024-01-01T13:13:13,123][ERROR][com.microsoft.azure.eventprocessorhost.AzureStorageCheckpointLeaseManager][azure_eventhub_pipeline][eh_input_plugin] host logstash-a0a00a00-0aa0-0000-aaaa-0a00a0a0aaaa: Failure while creating lease store
 com.microsoft.azure.storage.StorageException: The client could not finish the operation within specified maximum execution timeout.
 -----
 
-The plugin can't complete the registration phase because can't connect to the Azure Blob Storage configured
+Plugin can't complete registration phase because it can't connect to Azure Blob Storage configured
 in the plugin `storage_connection` setting.
 
 
 *Background*
 
 Azure Event Hub plugin can share the offset position of a consumer group with
-other consumers only if configures the Blob Storage connection setting.
-Despite EventHub uses the AMQP protocol to transfer data, the Blob Storage uses a
+other consumers only if Blob Storage connection settings are configured.
+EventHub uses the AMQP protocol to transfer data, but Blob storage uses a
 library which leverages the JDK's http client, `HttpURLConnection`.
-To troubleshoot HTTP connection problems, maybe related to proxy settings, the
+To troubleshoot HTTP connection problems, which may be related to proxy settings, the
 logging level for this part of the JDK has to be increased. The problem is that
 JDK uses Java Util Logging for its internal logging needs, which is not configurable
 with the standard `log4j2.properties` shipped with {ls}.
@@ -63,13 +63,13 @@ sun.net.www.protocol.http.HttpURLConnection.level = ALL
 -----
 
 With this configuration the log file will be created in a path chosen by the user (`<USER's LOGS FOLDER>/logs/`) and
-the only logger interested is `sun.net.www.protocol.http.HttpURLConnection`, at every level,
+the logger of interest is `sun.net.www.protocol.http.HttpURLConnection`, at every level,
 from the lowest to the highest.
 
 *JVM property*
 
 To inform the JUL framework of the selected definitions file a property (`java.util.logging.config.file`) has to be
-valued, and in this context the {ls}'s `config/jvm.properties` come in hand.
+evaluated, this is where {ls}'s `config/jvm.properties` come in handy.
 Edit the file adding the property, pointing to the path where the JUL definitions file was created:
 
 [source,txt]
