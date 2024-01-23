@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.FULL_SEGMENT_FILE_SIZE;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.GB;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
@@ -334,8 +335,15 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         }
     }
 
+    private static boolean isWindows() {
+        return System.getProperty("os.name").startsWith("Windows");
+    }
+
     @Test
     public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException {
+        // https://github.com/elastic/logstash/issues/15768
+        assumeThat(isWindows(), is(not(true)));
+
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
                 Collections.singletonMap("message", "Not so important content"));
 
