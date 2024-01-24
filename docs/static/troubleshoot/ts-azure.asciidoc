@@ -42,13 +42,14 @@ Steps to enable JDK logging on {ls}:
 
 *JUL definitions*
 
-Create a file (for example `<LS_HOME>/conf/jul.properties`) to define logging levels, handlers and loggers:
+Create a file that you can user to define logging levels, handlers and loggers.
+For example, `<LS_HOME>/conf/jul.properties`.
 
-[source,txt]
+["source","txt",subs="callouts"]
 -----
 handlers= java.util.logging.ConsoleHandler,java.util.logging.FileHandler
 .level= ALL
-java.util.logging.FileHandler.pattern = <USER's LOGS FOLDER>/logs/jul_http%u.log
+java.util.logging.FileHandler.pattern = <USER's LOGS FOLDER>/logs/jul_http%u.log <1>
 java.util.logging.FileHandler.limit = 50000
 java.util.logging.FileHandler.count = 1
 java.util.logging.FileHandler.level=ALL
@@ -59,12 +60,12 @@ java.util.logging.ConsoleHandler.level = INFO # or put FINE
 java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
 
 # defines the logger we are interested in
-sun.net.www.protocol.http.HttpURLConnection.level = ALL
+sun.net.www.protocol.http.HttpURLConnection.level = ALL <2> <3>
 -----
 
-With this configuration the log file will be created in a path chosen by the user (`<USER's LOGS FOLDER>/logs/`) and
-the logger of interest is `sun.net.www.protocol.http.HttpURLConnection`, at every level,
-from the lowest to the highest.
+<1> The log file will be created in a path defined by the user (`<USER's LOGS FOLDER>/logs/`) 
+<2> This configuration enables the `sun.net.www.protocol.http.HttpURLConnection` logger, and 
+<3> sets the logging level to `ALL`. It will log all messages directed to it, from highest to lowest priority.
 
 *JVM property*
 
