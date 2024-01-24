@@ -42,7 +42,7 @@ Steps to enable JDK logging on {ls}:
 
 *JUL definitions*
 
-Create a file that you can user to define logging levels, handlers and loggers.
+Create a file that you can use to define logging levels, handlers and loggers.
 For example, `<LS_HOME>/conf/jul.properties`.
 
 ["source","txt",subs="callouts"]
