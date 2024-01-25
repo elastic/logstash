@@ -10,7 +10,8 @@ You can take advantage of the extensive, built-in capabilities of Elastic {integ
 
 https://docs.elastic.co/integrations[Elastic {integrations}] provide quick, end-to-end solutions for:
 
-* ingesting data from a variety of data sources
+* ingesting data from a variety of data sources, 
+* ensuring compliance with the {ecs-ref}/index.html[Elastic Common Schema (ECS)],
 * getting the data into the {stack}, and 
 * visualizing it with purpose-built dashboards.
 
@@ -25,16 +26,18 @@ When you find an integration for your data source, the UI walks you through addi
 [[integrations-and-ls]]
 === Extend {integrations} with {ls} (Beta)
 
-Logstash can run the ingest pipeline component of your integration when you use the Logstash filter-elastic_integration plugin. 
+Logstash can run the ingest pipeline component of your Elastic integration when you use the Logstash `filter-elastic_integration` plugin in your {ls} pipeline. 
+
+Adding the `filter-elastic_integration` plugin as the _first_ filter plugin keeps the pipeline's behavior as close as possible to the behavior you'd expect if the bytes were processed by the integration in {es}. 
+The more you modify an event before calling the `elastic_integration` filter, the higher the risk that the modifications will have meaningful effect in how the event is transformed.
 
 .How to
 
 ****
-Create a {ls} pipeline that uses the <<plugins-inputs-elastic_agent,elastic_agent input>> plugin, and the https://github.com/elastic/logstash-filter-elastic_integration[logstash-filter-elastic_integration] plugin as the _first_ filter in your {ls} pipeline.
+Create a {ls} pipeline that uses the <<plugins-inputs-elastic_agent,elastic_agent input>> plugin, and the <<plugins-filters-elastic_integration,elastic_integration filter>> plugin as the _first_ filter in your {ls} pipeline.
 You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. 
-Add an output plugin to complete your pipeline. 
+Add one or more output plugins to complete your pipeline. 
 **** 
-
 
 **Sample pipeline configuration**
 
@@ -74,6 +77,6 @@ output { <3>
 }
 -----
 
-<1> Use `filter-elastic_agent` as the first filter in your pipeline 
-<2> You can use additional filters as long as they follow `filter-elastic_agent`
+<1> Use `filter-elastic_integration` as the first filter in your pipeline 
+<2> You can use additional filters as long as they follow `filter-elastic_integration`
 <3> Sample config to output data to multiple destinations
