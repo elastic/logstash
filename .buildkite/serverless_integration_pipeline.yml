@@ -6,25 +6,52 @@ agents:
 steps:
   - label: "DLQ rspec integration test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/dlq_rspec_tests.sh
+    retry:
+      automatic:
+        - limit: 3
   - label: "es-output test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_output_tests.sh
+    retry:
+      automatic:
+        - limit: 3
   - label: "es-input test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_input_tests.sh
+    retry:
+      automatic:
+        - limit: 3
   - label: "es-filter test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/es_filter_tests.sh
+    retry:
+      automatic:
+        - limit: 3
   - label: "elastic_integration filter test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/elastic_integration_filter_tests.sh
+    retry:
+      automatic:
+        - limit: 3
   - label: "central pipeline management test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/cpm_tests.sh
     # Legacy monitoring is disabled. Serverless does not support /_monitoring/bulk, hence the test always fails to ingest metrics.
+    retry:
+      automatic:
+        - limit: 3
   - label: "Logstash legacy monitoring test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/monitoring_tests.sh
     skip: true
     # Kibana API is disabled as it is not available with the current configuration in QA
+    retry:
+      automatic:
+        - limit: 3
   - label: "Kibana API test"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/kibana_api_tests.sh
     skip: true
     # Metricbeat stack monitoring is disabled
+    retry:
+      automatic:
+        - limit: 3
   - label: "metricbeat test is disabled as metricbeat has not disabled /_ilm yet"
     command: ./.buildkite/scripts/setup_java.sh && ./ci/serverless/metricbeat_monitoring_tests.sh
     skip: true
+    retry:
+      automatic:
+        - limit: 3
