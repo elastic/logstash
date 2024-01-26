@@ -21,6 +21,48 @@ if ($args.Count -eq 1) {
     $selectedTestSuite=$args[0]
 }
 
+## Map a drive letter to the current path to avoid path length issues
+
+# First, check if there is already a mapping
+$currentDir = $PWD.Path
+$substOutput = subst
+
+# Filter the subst output based on the path
+$matchedLines = $substOutput | Where-Object { $_ -like "*$currentDir*" }
+
+if ($matchedLines) {
+    # $current seems to be already mapped to another drive letter; switch to this drive
+    # Extract the drive letter from the matched lines
+    $driveLetter = $matchedLines | ForEach-Object {
+        # Split the line by colon and extract the drive letter
+        ($_ -split ':')[0]
+    }
+    $drivePath = "$driveLetter`:"
+
+    Write-Output "$currentDir is already mapped to $drivePath."
+    Set-Location -Path $drivePath
+    Write-Output "Changing drive to $drivePath."
+}
+else {
+    # $currentDir isn't mapped to a drive letter, let's find a free drive letter and change to it
+
+    foreach ($driveLetter in [char[]]('A'..'Z')) {
+        $drivePath = "$driveLetter`:"
+
+        # check if the drive letter is available
+        if (-not (Test-Path $drivePath)) {
+            # found a free drive letter, create the virtual drive mapping and switch to it
+            subst $drivePath $currentDir
+
+            Write-Output "Mapped $currentDir to $drivePath"
+            Set-Location -Path $drivePath
+            Write-Output "Changing drive to $drivePath."
+            # exit the loop since we found a free drive letter
+            break
+        }
+    }
+}
+
 if (Test-Path Env:BUILD_JAVA_HOME) {    
     if (Test-Path Env:GRADLE_OPTS) {    
         $env:GRADLE_OPTS=$env:GRADLE_OPTS + " " + "-Dorg.gradle.java.home=" + $env:BUILD_JAVA_HOME
