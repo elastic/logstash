@@ -16,7 +16,7 @@ from a central location, or you can run {fleet-guide}/install-standalone-elastic
 Complete these steps as you prepare to collect and ship monitoring data for stack monitoring:
 
 [[disable-default-include-ea]]
-.Disable default collection of {ls} monitoring metrics
+.Enable {ls} monitoring
 [%collapsible]
 ====
 include::monitoring-prereq-disable-default.asciidoc[]
