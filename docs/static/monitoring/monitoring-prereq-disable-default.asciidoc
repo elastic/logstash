@@ -1,3 +1,5 @@
+// [[disable-default]]
+// ==== Disable default collection of {ls} monitoring metrics
 
 The `monitoring` setting is in the {ls} configuration file (logstash.yml), but is
 commented out: 
@@ -7,4 +9,4 @@ commented out:
 monitoring.enabled: false
 ----------------------------------
 
-Remove the `#` at the beginning of the line and set it to `true` to enable the setting.
+Remove the `#` at the beginning of the line to enable the setting.
