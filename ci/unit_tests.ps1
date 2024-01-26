@@ -43,7 +43,7 @@ try {
         Invoke-Expression $CIScript
     }
     else {
-        Write-Host "~~~ 🧪 Running all tests via Gradle using $testOpts"
+        Write-Host "~~~ Running all tests via Gradle using $testOpts"
         $CIScript = ".\gradlew.bat test --console=plain --no-daemon --info"
         Invoke-Expression $CIScript
     }
