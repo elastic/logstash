@@ -47,8 +47,8 @@ else {
     # $currentDir isn't mapped to a drive letter, let's find a free drive letter and change to it
 
     # Loop through drive letters A to Z; we don't use the 'A'..'Z' for BWC with Windows 2016 / Powershell < 7
-    for ($driveLetter = 65; $driveLetter -le 90; $driveLetter++) {
-        $drivePath = "$driveLetter`:"
+    for ($driveLetterAscii = 65; $driveLetterAscii -le 90; $driveLetterAscii++) {
+        $drivePath = [char]$driveLetterAscii + ":"
 
         # check if the drive letter is available
         if (-not (Test-Path $drivePath)) {
