@@ -21,6 +21,8 @@ if ($args.Count -eq 1) {
     $selectedTestSuite=$args[0]
 }
 
+$startingPath = Get-Location
+
 ## Map a drive letter to the current path to avoid path length issues
 
 # First, check if there is already a mapping
@@ -99,3 +101,6 @@ try {
     Write-Host "^^^ +++"
     exit 1
 }
+
+# switch back to the path when the script started
+Set-Location -Path $startingPath
