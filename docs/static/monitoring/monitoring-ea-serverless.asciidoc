@@ -14,7 +14,7 @@ We'll provide steps to help you create one.
 **Prerequisite**
 
 [[disable-default-svrless]]
-.Enable {ls} monitoring
+.Disable default collection of {ls} monitoring metrics
 [%collapsible]
 ====
 include::monitoring-prereq-disable-default.asciidoc[]

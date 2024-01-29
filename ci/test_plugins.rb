@@ -220,8 +220,7 @@ PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-input-snmp', :tier2, :input),     
     PluginDefinition.new('logstash-input-sqs', :tier2, :input),      
     PluginDefinition.new('logstash-input-twitter', :tier2, :input),   
-    # Removed because of https://github.com/logstash-plugins/logstash-codec-collectd/issues/32 
-    #PluginDefinition.new('logstash-codec-collectd', :tier2, :codec),
+    PluginDefinition.new('logstash-codec-collectd', :tier2, :codec),
     PluginDefinition.new('logstash-codec-dots', :tier2, :codec),
     PluginDefinition.new('logstash-codec-fluent', :tier2, :codec),
     PluginDefinition.new('logstash-codec-graphite', :tier2, :codec),

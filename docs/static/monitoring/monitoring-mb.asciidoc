@@ -12,7 +12,7 @@ agent remains active even if the {ls} instance does not.
 
 To collect and ship monitoring data:
 
-. <<disable-default,Enable {ls} monitoring>>
+. <<disable-default,Disable default collection of monitoring metrics>>
 . <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
@@ -20,7 +20,7 @@ Want to use {agent} instead? Refer to <<monitoring-with-elastic-agent>>.
 
 [float]
 [[disable-default]]
-==== Enable {ls} monitoring
+==== Disable default collection of {ls} monitoring metrics
 
 --
 The `monitoring` setting is in the {ls} configuration file (logstash.yml), but is
@@ -31,7 +31,7 @@ commented out:
 monitoring.enabled: false
 ----------------------------------
 
-Remove the `#` at the beginning of the line and set it to `true` to enable the setting.
+Remove the `#` at the beginning of the line to enable the setting.
 
 --
 

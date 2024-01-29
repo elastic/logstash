@@ -14,7 +14,7 @@ You can enroll {agent} in {fleet-guide}/install-fleet-managed-elastic-agent.html
 Complete these steps as you prepare to collect and ship monitoring data for dashboards:
 
 [[disable-default-db]]
-.Enable {ls} monitoring
+.Disable default collection of {ls} monitoring metrics
 [%collapsible]
 ====
 include::monitoring-prereq-disable-default.asciidoc[]
