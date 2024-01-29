@@ -342,7 +342,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Test
     public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException {
         // https://github.com/elastic/logstash/issues/15768
-        assumeThat(isWindows(), is(not(true)));
+        // Deliberately allow running test assumeThat(isWindows(), is(not(true)));
 
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
                 Collections.singletonMap("message", "Not so important content"));
