@@ -48,6 +48,7 @@ def compat_step(imagesuffix: str, command: LiteralScalarString) -> dict[str, typ
         "key": slugify_bk_key(f"compat-linux-{imagesuffix}"),
         "command": command,
         "agents": {},
+        "retry": {"automatic": [{"limit": 3}]},
     }
 
     if "amazon" in imagesuffix.lower():
