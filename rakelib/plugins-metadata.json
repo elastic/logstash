@@ -120,7 +120,7 @@
     "skip-list": false
   },
   "logstash-filter-elastic_integration": {
-    "default-plugins": false,
+    "default-plugins": true,
     "skip-list": false,
     "skip-oss": true
   },
