@@ -71,10 +71,9 @@ namespace "plugin" do
 
     LogStash::RakeLib::OSS_EXCLUDED_PLUGINS.each do |plugin|
       remove_plugin(plugin)
-      # gem folder, spec file and cache still stay after removing the plugin
+      # gem folder and spec file still stay after removing the plugin
       FileUtils.rm_r(Dir.glob("#{LogStash::Environment::BUNDLE_DIR}/**/gems/#{plugin}*"))
       FileUtils.rm_r(Dir.glob("#{LogStash::Environment::BUNDLE_DIR}/**/specifications/#{plugin}*.gemspec"))
-      FileUtils.rm_r(Dir.glob("#{LogStash::Environment::BUNDLE_DIR}/**/cache/#{plugin}*"))
     end
     task.reenable # Allow this task to be run again
   end

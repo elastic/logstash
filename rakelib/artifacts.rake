@@ -348,17 +348,19 @@ namespace "artifact" do
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
     Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives"].invoke
-    Rake::Task["artifact:archives_oss"].invoke
+
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
-      Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
     end
+
+    Rake::Task["artifact:deb_oss"].invoke
+    Rake::Task["artifact:rpm_oss"].invoke
+    Rake::Task["artifact:archives_oss"].invoke
   end
 
   task "build_docker_full" => [:generate_build_metadata] do
