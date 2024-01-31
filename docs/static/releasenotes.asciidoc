@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
 * <<logstash-8-11-3,Logstash 8.11.3>>
@@ -51,6 +52,84 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-12-1]]
+=== Logstash 8.12.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.12.1
+
+* Doc: Update extending integrations docs to point to plugin https://github.com/elastic/logstash/pull/15747[#15747]
+* Fix flaky logstash-plugin IT test https://github.com/elastic/logstash/pull/15803[#15803]
+* [CI] Send Java and ruby tests to sonarqube simultaneously https://github.com/elastic/logstash/pull/15810[#15810]
+* Backport PR #15803 to 8.12: Fix flaky logstash-plugin IT test https://github.com/elastic/logstash/pull/15817[#15817]
+* Annotate successful DRA builds with summary URL https://github.com/elastic/logstash/pull/15820[#15820]
+* Backport PR #15820 to 8.12: Annotate successful DRA builds with summary URL https://github.com/elastic/logstash/pull/15825[#15825]
+* Fix acceptance/packaging upgrade test near a release https://github.com/elastic/logstash/pull/15826[#15826]
+* Fix IT tests after version bumps https://github.com/elastic/logstash/pull/15827[#15827]
+* Backport PR #15826 to 8.12: Fix acceptance/packaging upgrade test near a release https://github.com/elastic/logstash/pull/15829[#15829]
+* Backport PR #15827 to 8.12: Fix IT tests after version bumps https://github.com/elastic/logstash/pull/15838[#15838]
+* Updates bundled JDK https://github.com/elastic/logstash/pull/15840[#15840]
+* Mute DLQ test on Windows https://github.com/elastic/logstash/pull/15843[#15843]
+* Backport PR #15843 to 8.12: Mute DLQ test on Windows https://github.com/elastic/logstash/pull/15845[#15845]
+* Backport PR #15840 to 8.12: Updates bundled JDK https://github.com/elastic/logstash/pull/15846[#15846]
+* Retries for serverless-integration-testing pipeline https://github.com/elastic/logstash/pull/15851[#15851]
+* Backport PR #15851 to 8.12: Retries for serverless-integration-testing pipeline https://github.com/elastic/logstash/pull/15852[#15852]
+* Backport PR #15747 to 8.12: Doc: Update extending integrations docs to point to plugin https://github.com/elastic/logstash/pull/15853[#15853]
+* Remove Ubuntu 18.04 from CI jobs https://github.com/elastic/logstash/pull/15855[#15855]
+* Backport PR #15855 to 8.12: Remove Ubuntu 18.04 from CI jobs https://github.com/elastic/logstash/pull/15859[#15859]
+* Add BK retries to exhaustive/compat steps https://github.com/elastic/logstash/pull/15874[#15874]
+* Backport PR #15874 to 8.12: Add BK retries to exhaustive/compat steps https://github.com/elastic/logstash/pull/15875[#15875]
+* Add retries to JDK matrix pipeline steps https://github.com/elastic/logstash/pull/15877[#15877]
+* Backport PR #15877 to 8.12: Add retries to JDK matrix pipeline steps https://github.com/elastic/logstash/pull/15878[#15878]
+
+=== Logstash Commits between 8.12 and 8.12.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.12.0..8.12"
+
+c7e185a56 - (HEAD -> 8.12, origin/8.12) bump lock file for 8.12 (#15884) (3 hours ago) <github-actions[bot]>
+ff840751a - Add retries to JDK matrix pipeline steps (#15877) (#15878) (27 hours ago) <github-actions[bot]>
+d19de7145 - Add BK retries to exhaustive/compat steps (#15874) (#15875) (31 hours ago) <github-actions[bot]>
+8bac7c816 - Remove Ubuntu 18.04 from CI jobs (#15855) (#15859) (5 days ago) <github-actions[bot]>
+ff63e289b - Doc: Update extending integrations docs to point to plugin (#15747) (#15853) (6 days ago) <github-actions[bot]>
+890089acb - Retries for serverless-integration-testing pipeline (#15851) (#15852) (6 days ago) <github-actions[bot]>
+9277e1bf7 - Updates bundled JDK (#15840) (#15846) (7 days ago) <github-actions[bot]>
+60b604f1b - Mute DLQ test on Windows (#15843) (#15845) (7 days ago) <github-actions[bot]>
+19c39f80a - Fix IT tests after version bumps (#15827) (#15838) (8 days ago) <github-actions[bot]>
+b91c775e6 - Fix acceptance/packaging upgrade test near a release (#15826) (#15829) (9 days ago) <github-actions[bot]>
+1577537ad - Annotate successful DRA builds with summary URL (#15820) (#15825) (9 days ago) <github-actions[bot]>
+94d3839f4 - Fix flaky logstash-plugin IT test (#15803) (#15817) (13 days ago) <github-actions[bot]>
+9834f588b - Enable packaging tests in exhaustive pipeline (#15781) (#15805) (2 weeks ago) <github-actions[bot]>
+2ae452ee2 - Refactor qa/acceptance tests to get away from vagrant (#15696) (#15751) (2 weeks ago) <github-actions[bot]>
+6d0b60e33 - bumped version to 8.12.1 (#15814) (2 weeks ago) <João Duarte>
+d5d363208 - Release notes for 8.12.0 (#15804) (2 weeks ago) <github-actions[bot]>
+6194120e9 - Add Docker acceptance to exhaustive BK pipeline (#15748) (#15799) (3 weeks ago) <github-actions[bot]>
+f43ea43ae - Doc: Add monitoring for serverless (#15636) (#15796) (3 weeks ago) <github-actions[bot]>
+c5acb696b - Add retries to PR pipeline steps (#15787) (#15793) (3 weeks ago) <github-actions[bot]>
+677ffdcbd - Release notes for 8.11.4 (#15753) (#15778) (3 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.12.0..8.12 *.release"
+Changed plugin versions:
+logstash-filter-http: 1.5.0 -> 1.5.1
+logstash-filter-syslog_pri: 3.2.0 -> 3.2.1
+logstash-integration-logstash: 1.0.1 -> 1.0.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Http Filter - 1.5.1*
+
+* Don't process response when the body is empty. https://github.com/logstash-plugins/logstash-filter-http/pull/50[#50]
+
+*Syslog_pri Filter - 3.2.1*
+
+* Remove spurious leftover text from "use_labels" docs https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/15[#15]
+
+*Logstash Integration - 1.0.2*
+
+* Fix: input plugin now correctly applies common event decorators `type`, `tags`, and `add_field` to events after receiving them
 
 
 [[logstash-8-12-0]]
