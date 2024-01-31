@@ -17,6 +17,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "aws-sdk-sqs:1.51.1",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-sdk-sqs,Apache-2.0
 "aws-sigv4:1.5.1",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-sigv4,Apache-2.0
 "back_pressure:",https://github.com/yaauie/ruby_back_pressure,Apache-2.0
+"base64:",https://github.com/ruby/base64,BSD-2-Clause
 "bigdecimal:",https://github.com/ruby/bigdecimal,BSD-2-Clause
 "bindata:",http://github.com/dmendel/bindata,BSD-2-Clause
 "buftok:",https://github.com/sferik/buftok,MIT
