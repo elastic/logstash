@@ -33,7 +33,7 @@ $substOutput = subst
 $matchedLines = $substOutput | Where-Object { $_ -like "*$currentDir*" }
 
 if ($matchedLines) {
-    # $current seems to be already mapped to another drive letter; switch to this drive
+    # $currentDir seems to be already mapped to another drive letter; switch to this drive
     # Extract the drive letter from the matched lines
     $driveLetter = $matchedLines | ForEach-Object {
         # Split the line by colon and extract the drive letter
