@@ -38,7 +38,7 @@ ci/unit_tests.sh""")
 
 
 def compat_windows_step(imagesuffix: str) -> dict[str, typing.Any]:
-    windows_command = LiteralScalarString(r'''$$env:WORKSPACE=$$PWD.Path ; .\\ci\\unit_tests.bat''')
+    windows_command = LiteralScalarString(r'''.\\ci\\unit_tests.ps1''')
 
     return compat_step(imagesuffix, command=windows_command)
 
