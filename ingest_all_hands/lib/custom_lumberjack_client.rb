@@ -1,3 +1,11 @@
+# encoding: utf-8
+
+require "socket"
+require "thread"
+require "zlib"
+require "json"
+require "openssl"
+
 module Lumberjack
   SEQUENCE_MAX = (2**32-1).freeze
 
@@ -29,16 +37,17 @@ module Lumberjack
     end
 
     public
-    def write(elements, opts={})
+    def write(elements)
       elements = [elements] if elements.is_a?(Hash)
       send_window_size(elements.size)
 
       payload = elements.map { |element| JsonEncoder.to_frame(element, inc) }.join
-      send_payload(payload)
+      compressed_payload = compress_payload(payload)
+      send_payload(compressed_payload)
     end
 
     public
-    def read_ack
+    def ack
       ack = @socket.sysread(6)
       if ack.size > 2
         # ACK os size 2 are "2A" messages which are keep alive
@@ -59,6 +68,12 @@ module Lumberjack
     private
     def send_window_size(size)
       @socket.syswrite(["2", "W", size].pack("AAN"))
+    end
+
+    private
+    def compress_payload(payload)
+      compress = Zlib::Deflate.deflate(payload)
+      ["1", "C", compress.bytesize, compress].pack("AANA*")
     end
 
     private

@@ -42,7 +42,7 @@ class Benchmark
     @message_sizes.each do |message_size|
       puts "\n\n"
       message = 'a' * message_size + "\n"
-      test_iterations = 1
+      test_iterations = 3
       #repetitions = @total_traffic_per_connection / message_size
       repetitions = 10000
       puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
@@ -81,15 +81,16 @@ class Benchmark
     clients = @client_count.times.map { Lumberjack::Client.new }
 
     threads = client_count.times.map do |i|
-      Thread.new(i) do |i|
-        client = clients[i]
+      Thread.new(clients[i]) do |client|
         # keep message size above 16k, requiring two TLS records
         repetitions.times do
           client.send_raw(message)
           sent_messages.incrementAndGet
         end
         # Close is not available on jls-lumberjack
-        # client.close
+        if client.class == Lumberjack::CustomClient
+          client.close
+        end
       end
     end
 
@@ -106,45 +107,48 @@ class Benchmark
     batch_array = batch_size.times.map { data }
 
     writer_threads = client_count.times.map do |i|
-      Thread.new(i) do |i|
-        client = clients[i]
+      Thread.new(clients[i]) do |client|
+        # To avoid thundering
+        sleep rand
         repetitions.times do
           client.write(batch_array) # this convert JSON to bytes
+          written = client.ack
+#           break if written != 0
           sent_messages.addAndGet(batch_size)
         end
         # Close is not available on jls-lumberjack
-        # client.close
-      end
-    end
-
-    if @beats_ack
-      puts "Starting ACK reading thread"
-      reader_threads = client_count.times.map do |i|
-        Thread.new(i) do |i|
-          client = clients[i]
-          exit = false
-          acks_counter = 0;
-          while (!exit)
-            if acks_counter == @acks_per_second
-              sleep 1
-              acks_counter = 0
-            end
-            begin
-              # No read_ack method on JLS client
-              #client.read_ack
-              client.ack
-              acks_counter = acks_counter + 1
-            rescue
-              #puts "Closing reader thread for client #{i}"
-              exit = true
-            end
-          end
+        if client.class == Lumberjack::CustomClient
+          client.close
         end
       end
     end
 
+#     if @beats_ack
+#       puts "Starting ACK reading thread"
+#       reader_threads = client_count.times.map do |i|
+#         Thread.new(i) do |i|
+#           client = clients[i]
+#           exit = false
+#           acks_counter = 0;
+#           while (!exit)
+#             if acks_counter == @acks_per_second
+#               sleep 1
+#               acks_counter = 0
+#             end
+#             begin
+#               client.ack
+#               acks_counter = acks_counter + 1
+#             rescue
+#               #puts "Closing reader thread for client #{i}"
+#               exit = true
+#             end
+#           end
+#         end
+#       end
+#     end
+
     writer_threads.each(&:join)
-    reader_threads.each(&:join) if @beats_ack
+#     reader_threads.each(&:join) if @beats_ack
   end
 end
 
