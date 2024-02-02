@@ -7,111 +7,119 @@ require "json"
 require "openssl"
 require 'optparse'
 
+require 'lumberjack/client'
+
 Thread.abort_on_exception = true
 HOST="127.0.0.1"
 PORT=3333
 CLIENT_CERT="/Users/andrea/workspace/certificates/client_from_root.crt"
 CLIENT_KEY="/Users/andrea/workspace/certificates/client_from_root.key.pkcs8"
 
-module Lumberjack
-  SEQUENCE_MAX = (2**32-1).freeze
+# module Lumberjack
+#   SEQUENCE_MAX = (2**32-1).freeze
+#
+#   class Client
+#     def initialize
+#       @sequence = 0
+#       @socket = connect
+#     end
+#
+#     private
+#     def connect
+#       socket = TCPSocket.new(HOST, PORT)
+#       ctx = OpenSSL::SSL::SSLContext.new
+#       ctx.cert = OpenSSL::X509::Certificate.new(File.read(CLIENT_CERT))
+#       ctx.key = OpenSSL::PKey::RSA.new(File.read(CLIENT_KEY))
+#       ctx.ssl_version = :TLSv1_2
+#       # Wrap the socket with SSL/TLS
+#       ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
+#       ssl_socket.sync_close = true
+#       ssl_socket.connect
+#       ssl_socket
+#     end
+#
+#     public
+#     def write(elements, opts={})
+#       elements = [elements] if elements.is_a?(Hash)
+#       send_window_size(elements.size)
+#
+#       payload = elements.map { |element| JsonEncoder.to_frame(element, inc) }.join
+#       send_payload(payload)
+#     end
+#
+#     public
+#     def read_ack
+#       ack = @socket.sysread(6)
+#       if ack.size > 2
+#         # ACK os size 2 are "2A" messages which are keep alive
+#         unpacked = ack.unpack('AAN')
+#         if unpacked[0] == "2" && unpacked[1] == "A"
+#           sequence_num = unpacked[2]
+#           #puts "Received ACK #{sequence_num}"
+#         end
+#       end
+#     end
+#
+#     private
+#     def inc
+#       @sequence = 0 if @sequence + 1 > Lumberjack::SEQUENCE_MAX
+#       @sequence = @sequence + 1
+#     end
+#
+#     private
+#     def send_window_size(size)
+#       @socket.syswrite(["2", "W", size].pack("AAN"))
+#     end
+#
+#     private
+#     def send_payload(payload)
+#       payload_size = payload.size
+#       written = 0
+#       while written < payload_size
+#         written += @socket.syswrite(payload[written..-1])
+#       end
+#     end
+#
+#     public
+#     def send_raw(payload)
+#       send_payload(payload)
+#     end
+#
+#     public
+#     def close
+#       @socket.close
+#     end
+#   end
+#
+#   module JsonEncoder
+#     def self.to_frame(hash, sequence)
+#       json = hash.to_json
+#       json_length = json.bytesize
+#       pack = "AANNA#{json_length}"
+#       frame = ["2", "J", sequence, json_length, json]
+#       frame.pack(pack)
+#     end
+#   end
+#
+# end
 
-  class Client
-    def initialize
-      @sequence = 0
-      @socket = connect
-    end
 
-    private
-    def connect
-      socket = TCPSocket.new(HOST, PORT)
-      ctx = OpenSSL::SSL::SSLContext.new
-      ctx.cert = OpenSSL::X509::Certificate.new(File.read(CLIENT_CERT))
-      ctx.key = OpenSSL::PKey::RSA.new(File.read(CLIENT_KEY))
-      ctx.ssl_version = :TLSv1_2
-      # Wrap the socket with SSL/TLS
-      ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-      ssl_socket.sync_close = true
-      ssl_socket.connect
-      ssl_socket
-    end
-
-    public
-    def write(elements, opts={})
-      elements = [elements] if elements.is_a?(Hash)
-      send_window_size(elements.size)
-
-      payload = elements.map { |element| JsonEncoder.to_frame(element, inc) }.join
-      send_payload(payload)
-    end
-
-    public
-    def read_ack
-      ack = @socket.sysread(6)
-      if ack.size > 2
-        # ACK os size 2 are "2A" messages which are keep alive
-        unpacked = ack.unpack('AAN')
-        if unpacked[0] == "2" && unpacked[1] == "A"
-          sequence_num = unpacked[2]
-          #puts "Received ACK #{sequence_num}"
-        end
-      end
-    end
-
-    private
-    def inc
-      @sequence = 0 if @sequence + 1 > Lumberjack::SEQUENCE_MAX
-      @sequence = @sequence + 1
-    end
-
-    private
-    def send_window_size(size)
-      @socket.syswrite(["2", "W", size].pack("AAN"))
-    end
-
-    private
-    def send_payload(payload)
-      payload_size = payload.size
-      written = 0
-      while written < payload_size
-        written += @socket.syswrite(payload[written..-1])
-      end
-    end
-
-    public 
-    def send_raw(payload)
-      send_payload(payload)
-    end
-
-    public
-    def close
-      @socket.close
-    end
-  end
-
-  module JsonEncoder
-    def self.to_frame(hash, sequence)
-      json = hash.to_json
-      json_length = json.bytesize
-      pack = "AANNA#{json_length}"
-      frame = ["2", "J", sequence, json_length, json]
-      frame.pack(pack)
-    end
-  end
-
-end
+MB = 1024 * 1024
+KB = 1024
 
 class Benchmark
-  MB = 1024 * 1024
-  KB = 1024
 
   attr_reader :client_count
 
-  def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil)
+  def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil,
+                 batch_size = 2000,
+                 message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB])
     @client_count = 12
-    @total_traffic_per_connection = 1024 * MB
+#     @total_traffic_per_connection = 1024 * MB
     # keep message size above 16k, requiring two TLS records
-    @message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
+    @batch_size = batch_size
+    @message_sizes = message_sizes
+    puts "Starting with message_sizes: #{@message_sizes}"
     @traffic_type = traffic_type
     @beats_ack = beats_ack
     @acks_per_second = acks_per_second
@@ -123,10 +131,11 @@ class Benchmark
       puts "\n\n"
       message = 'a' * message_size + "\n"
       test_iterations = 3
-      repetitions = @total_traffic_per_connection / message_size
+      #repetitions = @total_traffic_per_connection / message_size
+      repetitions = 10000
       puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
       puts "Writing approximately #{(client_count * repetitions * message.size)/1024.0/1024.0}Mib across #{@client_count} clients (message size: #{message_size} Kb)"
-
+      puts "Testing sending #{repetitions} batches of #{@batch_size} events, each event is #{message_size} bytes, each batch is ~#{@batch_size * message_size} bytes"
       speeds = []
       test_iterations.times do
         speeds << execute_message_benchmark(message, repetitions)
@@ -138,14 +147,14 @@ class Benchmark
   end
 
   private
-  def execute_message_benchmark(message, repetitions)
+  def execute_message_benchmark(message, repetitions = 10000)
     start = Time.now()
     sent_messages = java.util.concurrent.atomic.AtomicLong.new(0)
 
     if @traffic_type == :tcp
       tcp_traffic_load(client_count, message, repetitions, sent_messages)
     elsif @traffic_type == :beats
-      beats_traffic_load(client_count, message, repetitions, sent_messages)
+      beats_traffic_load(client_count, message, repetitions, sent_messages, @batch_size)
     else
       raise "Unrecognized traffic type: #{@traffic_type}"
     end
@@ -167,7 +176,8 @@ class Benchmark
           client.send_raw(message)
           sent_messages.incrementAndGet
         end
-        client.close
+        # Close is not available on jls-lumberjack
+        # client.close
       end
     end
 
@@ -175,19 +185,22 @@ class Benchmark
   end
 
   private
-  def beats_traffic_load(client_count, message, repetitions, sent_messages)
-    clients = @client_count.times.map { Lumberjack::Client.new }
+  def beats_traffic_load(client_count, message, repetitions, sent_messages, batch_size = 2000)
+#     clients = @client_count.times.map { Lumberjack::Client.new }
+    clients = @client_count.times.map { Lumberjack::Client.new({:port => PORT, :addresses => [HOST], :ssl => false}) }
 
     writer_threads = client_count.times.map do |i|
       Thread.new(i) do |i|
         client = clients[i]
         # keep message size above 16k, requiring two TLS records
-        data = [ { "message" => message } ]
+        data = { "message" => message }
+        batch_array = batch_size.times.map { data }
         repetitions.times do
-          client.write(data) # this convert JSON to bytes
+          client.write(batch_array) # this convert JSON to bytes
           sent_messages.incrementAndGet
         end
-        client.close
+        # Close is not available on jls-lumberjack
+        # client.close
       end
     end
 
@@ -204,7 +217,9 @@ class Benchmark
               acks_counter = 0
             end
             begin
-              client.read_ack
+              # No read_ack method on JLS client
+              #client.read_ack
+              client.ack
               acks_counter = acks_counter + 1
             rescue
               #puts "Closing reader thread for client #{i}"
@@ -220,6 +235,26 @@ class Benchmark
   end
 end
 
+DIMENSION_MAPPING = {"kb" => 1024, "mb" => 1024 * 1024}
+
+# Accept a string (8Kb or similar) and return the number of bytes
+def parse_size(s)
+  # if it's plain number without dimension, parse directly to integer
+  return s.to_i if s.match(/^\d+$/)
+
+  # separate the dimension and value parts and apply the size calculation
+  dimension = s.downcase[s.length-2..s.length]
+  value = s[0..s.length-3]
+  raise "Can't convert #{value} to number" unless value.match(/^\d+$/)
+  raise "Unrecognized dimension: #{dimension}" unless DIMENSION_MAPPING.include?(dimension)
+  value.to_i * DIMENSION_MAPPING[dimension]
+end
+
+# parse a list of sizes and return dimensions
+def parse_sizes(list)
+  list.map {|d| parse_size(d)}.sort
+end
+
 options = {}
 option_parser = OptionParser.new do |opts|
   opts.banner = "Usage: ruby tcp_client.rb benchmark_client.rb --test=beats|tcp -ack [yes|no] --acks_per_second 1000"
@@ -228,6 +263,10 @@ option_parser = OptionParser.new do |opts|
     options[:ack] = v.nil? ? true : v
   end
   opts.on("-fACKS", "--acks_per_second ACKS", Integer, "Rate ACKs per second")
+  opts.on("--msg_sizes 8kb,16kb", Array, "List of message sizes, like 8Kb, 2Mb or just exact byte size like 2000 ") do |msg_sizes|
+    options[:msg_sizes] = parse_sizes(msg_sizes)
+  end
+  opts.on("-bBATCH", "--batch_size BATCH", Integer, "Number of events per batch")
 end
 option_parser.parse!(into: options)
 
@@ -240,5 +279,11 @@ kind = options[:test].downcase.to_sym if options[:test]
 acks_per_second = nil
 acks_per_second = options[:acks_per_second] if options[:acks_per_second]
 
-benchmark = Benchmark.new(kind, ack, acks_per_second)
+message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB]
+message_sizes = options[:msg_sizes] if options[:msg_sizes]
+
+batch_size = 2000
+batch_size = options[:batch_size] if options[:batch_size]
+
+benchmark = Benchmark.new(kind, ack, acks_per_second, batch_size, message_sizes)
 benchmark.run

@@ -31,3 +31,12 @@ ruby -J-Xmx16g -J-XX:-MaxFDLimit benchmark_client.rb --test=beats -a yes -f 3
 ```
 - `-a` is used to consumes the ACK messages
 -  `-f 3` define the speed of ACKs reads per seconds.
+
+
+Using bundler:
+```
+bundle exec ruby -J-Xmx16g -J-XX:-MaxFDLimit benchmark_client.rb --test=beats --msg_sizes=2000 -a yes
+```
+
+- `--msg_sizes` is a comma separated message sizes like 8Kb, 31Kb or just plain int number like 2000.
+- `--batch_size` followed by a  number, is the batch size, by default if not specified is 2000.
