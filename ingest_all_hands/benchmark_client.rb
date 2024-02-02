@@ -130,7 +130,7 @@ class Benchmark
     @message_sizes.each do |message_size|
       puts "\n\n"
       message = 'a' * message_size + "\n"
-      test_iterations = 3
+      test_iterations = 1
       #repetitions = @total_traffic_per_connection / message_size
       repetitions = 10000
       puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
@@ -189,15 +189,16 @@ class Benchmark
 #     clients = @client_count.times.map { Lumberjack::Client.new }
     clients = @client_count.times.map { Lumberjack::Client.new({:port => PORT, :addresses => [HOST], :ssl => false}) }
 
+    # keep message size above 16k, requiring two TLS records
+    data = { "message" => message }
+    batch_array = batch_size.times.map { data }
+
     writer_threads = client_count.times.map do |i|
       Thread.new(i) do |i|
         client = clients[i]
-        # keep message size above 16k, requiring two TLS records
-        data = { "message" => message }
-        batch_array = batch_size.times.map { data }
         repetitions.times do
           client.write(batch_array) # this convert JSON to bytes
-          sent_messages.incrementAndGet
+          sent_messages.addAndGet(batch_size)
         end
         # Close is not available on jls-lumberjack
         # client.close
