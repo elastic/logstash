@@ -9,6 +9,7 @@ require 'optparse'
 
 require 'lumberjack/client'
 require 'custom_lumberjack_client'
+require 'java'
 
 Thread.abort_on_exception = true
 HOST="127.0.0.1"
@@ -25,8 +26,9 @@ class Benchmark
 
   def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil,
                  batch_size = 2000,
-                 message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB])
-    @client_count = 12
+                 message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB],
+                 client_count = java.lang.Runtime.runtime.available_processors)
+    @client_count = client_count
 #     @total_traffic_per_connection = 1024 * MB
     # keep message size above 16k, requiring two TLS records
     @batch_size = batch_size
@@ -184,6 +186,7 @@ option_parser = OptionParser.new do |opts|
     options[:msg_sizes] = parse_sizes(msg_sizes)
   end
   opts.on("-bBATCH", "--batch_size BATCH", Integer, "Number of events per batch")
+  opts.on("-cNUM_CLIENTS", "--clients NUM_CLIENTS", Integer, "Number of client to connect")
 end
 option_parser.parse!(into: options)
 
@@ -202,5 +205,8 @@ message_sizes = options[:msg_sizes] if options[:msg_sizes]
 batch_size = 2000
 batch_size = options[:batch_size] if options[:batch_size]
 
-benchmark = Benchmark.new(kind, ack, acks_per_second, batch_size, message_sizes)
+clients = 12
+clients = options[:clients] if options[:clients]
+
+benchmark = Benchmark.new(kind, ack, acks_per_second, batch_size, message_sizes, clients)
 benchmark.run
