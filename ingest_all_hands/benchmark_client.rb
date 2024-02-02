@@ -8,101 +8,13 @@ require "openssl"
 require 'optparse'
 
 require 'lumberjack/client'
+require 'custom_lumberjack_client'
 
 Thread.abort_on_exception = true
 HOST="127.0.0.1"
 PORT=3333
 CLIENT_CERT="/Users/andrea/workspace/certificates/client_from_root.crt"
 CLIENT_KEY="/Users/andrea/workspace/certificates/client_from_root.key.pkcs8"
-
-# module Lumberjack
-#   SEQUENCE_MAX = (2**32-1).freeze
-#
-#   class Client
-#     def initialize
-#       @sequence = 0
-#       @socket = connect
-#     end
-#
-#     private
-#     def connect
-#       socket = TCPSocket.new(HOST, PORT)
-#       ctx = OpenSSL::SSL::SSLContext.new
-#       ctx.cert = OpenSSL::X509::Certificate.new(File.read(CLIENT_CERT))
-#       ctx.key = OpenSSL::PKey::RSA.new(File.read(CLIENT_KEY))
-#       ctx.ssl_version = :TLSv1_2
-#       # Wrap the socket with SSL/TLS
-#       ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-#       ssl_socket.sync_close = true
-#       ssl_socket.connect
-#       ssl_socket
-#     end
-#
-#     public
-#     def write(elements, opts={})
-#       elements = [elements] if elements.is_a?(Hash)
-#       send_window_size(elements.size)
-#
-#       payload = elements.map { |element| JsonEncoder.to_frame(element, inc) }.join
-#       send_payload(payload)
-#     end
-#
-#     public
-#     def read_ack
-#       ack = @socket.sysread(6)
-#       if ack.size > 2
-#         # ACK os size 2 are "2A" messages which are keep alive
-#         unpacked = ack.unpack('AAN')
-#         if unpacked[0] == "2" && unpacked[1] == "A"
-#           sequence_num = unpacked[2]
-#           #puts "Received ACK #{sequence_num}"
-#         end
-#       end
-#     end
-#
-#     private
-#     def inc
-#       @sequence = 0 if @sequence + 1 > Lumberjack::SEQUENCE_MAX
-#       @sequence = @sequence + 1
-#     end
-#
-#     private
-#     def send_window_size(size)
-#       @socket.syswrite(["2", "W", size].pack("AAN"))
-#     end
-#
-#     private
-#     def send_payload(payload)
-#       payload_size = payload.size
-#       written = 0
-#       while written < payload_size
-#         written += @socket.syswrite(payload[written..-1])
-#       end
-#     end
-#
-#     public
-#     def send_raw(payload)
-#       send_payload(payload)
-#     end
-#
-#     public
-#     def close
-#       @socket.close
-#     end
-#   end
-#
-#   module JsonEncoder
-#     def self.to_frame(hash, sequence)
-#       json = hash.to_json
-#       json_length = json.bytesize
-#       pack = "AANNA#{json_length}"
-#       frame = ["2", "J", sequence, json_length, json]
-#       frame.pack(pack)
-#     end
-#   end
-#
-# end
-
 
 MB = 1024 * 1024
 KB = 1024
@@ -186,8 +98,8 @@ class Benchmark
 
   private
   def beats_traffic_load(client_count, message, repetitions, sent_messages, batch_size = 2000)
-#     clients = @client_count.times.map { Lumberjack::Client.new }
-    clients = @client_count.times.map { Lumberjack::Client.new({:port => PORT, :addresses => [HOST], :ssl => false}) }
+    clients = @client_count.times.map { Lumberjack::CustomClient.new({:port => PORT, :host => HOST}) }
+#     clients = @client_count.times.map { Lumberjack::Client.new({:port => PORT, :addresses => [HOST], :ssl => false}) }
 
     # keep message size above 16k, requiring two TLS records
     data = { "message" => message }
