@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-18,Logstash 7.17.18>>
 * <<logstash-7-17-17,Logstash 7.17.17>>
 * <<logstash-7-17-16,Logstash 7.17.16>>
 * <<logstash-7-17-15,Logstash 7.17.15>>
@@ -76,6 +77,43 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-18]]
+=== Logstash 7.17.18 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.18
+
+* Remove Ubuntu 18.04 from CI jobs https://github.com/elastic/logstash/pull/15855[#15855]
+* Backport PR #15855 to 7.17: Remove Ubuntu 18.04 from CI jobs https://github.com/elastic/logstash/pull/15860[#15860]
+* Allow running Java+Ruby tests on Windows separately https://github.com/elastic/logstash/pull/15861[#15861]
+* Add BK retries to exhaustive/compat steps https://github.com/elastic/logstash/pull/15874[#15874]
+* Backport PR #15874 to 7.17: Add BK retries to exhaustive/compat steps https://github.com/elastic/logstash/pull/15876[#15876]
+* Add retries to JDK matrix pipeline steps https://github.com/elastic/logstash/pull/15877[#15877]
+* Backport PR #15877 to 7.17: Add retries to JDK matrix pipeline steps https://github.com/elastic/logstash/pull/15879[#15879]
+* Backport PR #15861 to 7.17: Allow running Java+Ruby tests on Windows separately https://github.com/elastic/logstash/pull/15887[#15887]
+
+=== Logstash Commits between 7.17 and 7.17.17
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.17..7.17"
+
+3420d4c14 - (HEAD -> 7.17, origin/7.17) Allow running Java+Ruby tests on Windows separately (#15861) (#15887) (33 hours ago) <github-actions[bot]>
+6a1ed267d - Add retries to JDK matrix pipeline steps (#15877) (#15879) (3 days ago) <github-actions[bot]>
+a44d4bf9f - Add BK retries to exhaustive/compat steps (#15874) (#15876) (3 days ago) <github-actions[bot]>
+fdf8a22b8 - Remove Ubuntu 18.04 from CI jobs (#15855) (#15860) (7 days ago) <github-actions[bot]>
+b16011a15 - bump to 7.17.18 (#15841) (10 days ago) <Ry Biesemeyer>
+72900ae7c - Fix IT tests after version bumps (#15827) (#15839) (10 days ago) <Dimitrios Liappis>
+2424d775f - Release notes for 7.17.17 (#15831) (11 days ago) <github-actions[bot]>
+a2f258c0f - Fix acceptance/packaging upgrade test near a release (#15826) (#15830) (11 days ago) <github-actions[bot]>
+c0f13dfe3 - Annotate successful DRA builds with summary URL (#15820) (#15824) (11 days ago) <github-actions[bot]>
+438a6cf6f - Fix flaky logstash-plugin IT test (#15803) (#15818) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.17..7.17 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-17-17]]
 === Logstash 7.17.17 Release Notes
