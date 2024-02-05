@@ -135,6 +135,10 @@ module ServiceTester
       client.install(package)
     end
 
+    def configure()
+      client.configure()
+    end
+
     def uninstall
       client.uninstall(name)
     end
