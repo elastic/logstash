@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
 * <<logstash-8-11-3,Logstash 8.11.3>>
@@ -51,6 +52,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-12-1]]
+=== Logstash 8.12.1 Release Notes
+
+* Updates bundled JDK https://github.com/elastic/logstash/pull/15840[#15840]
+
+==== Plugins
+
+*Http Filter - 1.5.1*
+
+* Don't process response when the body is empty. https://github.com/logstash-plugins/logstash-filter-http/pull/50[#50]
+
+*Syslog_pri Filter - 3.2.1*
+
+* Remove spurious leftover text from "use_labels" docs https://github.com/logstash-plugins/logstash-filter-syslog_pri/pull/15[#15]
+
+*Logstash Integration - 1.0.2*
+
+* Fix: input plugin now correctly applies common event decorators `type`, `tags`, and `add_field` to events after receiving them https://github.com/logstash-plugins/logstash-integration-logstash/pull/21[#21]
 
 
 [[logstash-8-12-0]]
