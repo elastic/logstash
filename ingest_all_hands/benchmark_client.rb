@@ -27,8 +27,10 @@ class Benchmark
   def initialize(traffic_type = :tcp, beats_ack = true, acks_per_second = nil,
                  batch_size = 2000,
                  message_sizes = [8 * KB, 16 * KB, 64 * KB, 128 * KB, 512 * KB],
-                 client_count = java.lang.Runtime.runtime.available_processors)
+                 client_count = java.lang.Runtime.runtime.available_processors,
+                 compress = true)
     @client_count = client_count
+    @compress = compress
 #     @total_traffic_per_connection = 1024 * MB
     # keep message size above 16k, requiring two TLS records
     @batch_size = batch_size
@@ -43,13 +45,14 @@ class Benchmark
     puts "Using #{client_count} clients, starting at: #{Time.now()}"
     @message_sizes.each do |message_size|
       puts "\n\n"
-      message = 'a' * message_size + "\n"
-      test_iterations = 3
+      message = "a"*message_size
+      test_iterations = 1
       #repetitions = @total_traffic_per_connection / message_size
       repetitions = 10000
       puts "Expected to send #{repetitions * client_count * test_iterations} total messages, repetitions #{repetitions} for client of #{message_size}KB size"
       puts "Writing approximately #{(client_count * repetitions * message.size)/1024.0/1024.0}Mib across #{@client_count} clients (message size: #{message_size} Kb)"
       puts "Testing sending #{repetitions} batches of #{@batch_size} events, each event is #{message_size} bytes, each batch is ~#{@batch_size * message_size} bytes"
+      puts "Used compressed frames? #{@compress}"
       speeds = []
       test_iterations.times do
         speeds << execute_message_benchmark(message, repetitions)
@@ -101,7 +104,7 @@ class Benchmark
 
   private
   def beats_traffic_load(client_count, message, repetitions, sent_messages, batch_size = 2000)
-    clients = @client_count.times.map { Lumberjack::CustomClient.new({:port => PORT, :host => HOST}) }
+    clients = @client_count.times.map { Lumberjack::CustomClient.new({:port => PORT, :host => HOST, :compress => @compress}) }
 #     clients = @client_count.times.map { Lumberjack::Client.new({:port => PORT, :addresses => [HOST], :ssl => false}) }
 
     # keep message size above 16k, requiring two TLS records
@@ -178,7 +181,7 @@ options = {}
 option_parser = OptionParser.new do |opts|
   opts.banner = "Usage: ruby tcp_client.rb benchmark_client.rb --test=beats|tcp -ack [yes|no] --acks_per_second 1000"
   opts.on '-tKIND', '--test=KIND', 'Select to benchmark the TCP or Beats input'
-  opts.on '-a' '--[no-]ack [FLAG]', TrueClass, 'In beats determine if read ACKs flow or not' do |v|
+  opts.on '-a', '--[no-]ack [FLAG]', TrueClass, 'In beats determine if read ACKs flow or not' do |v|
     options[:ack] = v.nil? ? true : v
   end
   opts.on("-fACKS", "--acks_per_second ACKS", Integer, "Rate ACKs per second")
@@ -187,6 +190,9 @@ option_parser = OptionParser.new do |opts|
   end
   opts.on("-bBATCH", "--batch_size BATCH", Integer, "Number of events per batch")
   opts.on("-cNUM_CLIENTS", "--clients NUM_CLIENTS", Integer, "Number of client to connect")
+  opts.on('-z', '--[no-]zip [FLAG]', TrueClass, 'Use compressed frames or not') do |v|
+    options[:compress] = v.nil? ? true : v
+  end
 end
 option_parser.parse!(into: options)
 
@@ -208,5 +214,5 @@ batch_size = options[:batch_size] if options[:batch_size]
 clients = 12
 clients = options[:clients] if options[:clients]
 
-benchmark = Benchmark.new(kind, ack, acks_per_second, batch_size, message_sizes, clients)
+benchmark = Benchmark.new(kind, ack, acks_per_second, batch_size, message_sizes, clients, options[:compress])
 benchmark.run

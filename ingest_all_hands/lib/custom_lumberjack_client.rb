@@ -13,9 +13,14 @@ module Lumberjack
     def initialize(opt = {})
       @host = opt[:host] || "127.0.0.1"
       @port = opt[:port] || 3333
-      @client_cert if opt[:cert]
-      @client_key if opt[:key]
+      @client_cert = opt[:cert] if opt[:cert]
+      @client_key = opt[:key] if opt[:key]
       @tls_enabled = opt.include?(:cert) && opt.include?(:cert)
+      if opt.include?(:compress)
+        @compress = opt[:compress]
+      else
+        @compress = true
+      end
       @sequence = 0
       @socket = connect
     end
@@ -42,8 +47,12 @@ module Lumberjack
       send_window_size(elements.size)
 
       payload = elements.map { |element| JsonEncoder.to_frame(element, inc) }.join
-      compressed_payload = compress_payload(payload)
-      send_payload(compressed_payload)
+      if @compress
+        payload_to_send = compress_payload(payload)
+      else
+        payload_to_send = payload
+      end
+      send_payload(payload_to_send)
     end
 
     public
