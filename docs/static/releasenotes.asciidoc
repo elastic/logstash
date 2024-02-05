@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-18,Logstash 7.17.18>>
 * <<logstash-7-17-17,Logstash 7.17.17>>
 * <<logstash-7-17-16,Logstash 7.17.16>>
 * <<logstash-7-17-15,Logstash 7.17.15>>
@@ -76,6 +77,15 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-18]]
+=== Logstash 7.17.18 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+No plugin changes.
 
 [[logstash-7-17-17]]
 === Logstash 7.17.17 Release Notes
