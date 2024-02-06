@@ -168,6 +168,7 @@ def acceptance_docker_steps()-> list[typing.Any]:
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
 ci/docker_acceptance_tests.sh {flavor}"""),
+            "retry": {"automatic": [{"limit": 3}]},
         })
 
     return steps
