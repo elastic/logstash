@@ -179,6 +179,7 @@ describe LogStash::Api::Commands::Stats do
                                                  :filter_throughput,
                                                  :queue_backpressure,
                                                  :worker_concurrency,
+                                                 :worker_utilization,
                                                  :input_throughput,
                                                  :queue_persisted_growth_bytes,
                                                  :queue_persisted_growth_events

@@ -116,6 +116,7 @@ describe "Test Logstash service when config reload is enabled" do
         # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
         # to be zero, so we are just looking for these to be _populated_
         'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+        'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
         'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
         # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
         # should be non-zero so long as pipeline uptime is less than ~10 minutes.

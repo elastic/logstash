@@ -117,6 +117,7 @@ describe LogStash::Api::Modules::NodeStats do
          "filter_throughput" => Hash,
          "queue_backpressure" => Hash,
          "worker_concurrency" => Hash,
+         "worker_utilization" => Hash,
          "input_throughput" => Hash,
          "queue_persisted_growth_bytes" => Hash,
          "queue_persisted_growth_events" => Hash
