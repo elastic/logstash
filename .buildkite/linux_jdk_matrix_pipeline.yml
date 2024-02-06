@@ -19,6 +19,8 @@ steps:
             value: "ubuntu-2204"
           - label: "Ubuntu 20.04"
             value: "ubuntu-2004"
+          - label: "Debian 12"
+            value: "debian-12"
           - label: "Debian 11"
             value: "debian-11"
           - label: "Debian 10"
