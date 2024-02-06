@@ -137,7 +137,7 @@ module ServiceTester
 
     def write_default_pipeline()
       # defines a minimal pipeline so that the service is able to start
-      client.write_pipeline(pipeline_string="input { heartbeat {} } output { null {} }")
+      client.write_pipeline("input { heartbeat {} } output { null {} }")
     end
 
     def uninstall
