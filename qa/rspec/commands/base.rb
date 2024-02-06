@@ -123,9 +123,8 @@ module ServiceTester
       run_command("curl -fsSL --retry 5 --retry-delay 5 #{from} -o #{to}")
     end
 
-    def configure()
-      # defines a minimal pipeline so that the service is able to start
-      run_command('bash -c "echo \"input { heartbeat {} } output { null {} }\" >/etc/logstash/conf.d/pipeline.conf"')
+    def write_pipeline(pipeline_string)
+      run_command("bash -c \"echo '#{pipeline_string}' >/etc/logstash/conf.d/pipeline.conf\"")
     end
 
     def delete_file(path)

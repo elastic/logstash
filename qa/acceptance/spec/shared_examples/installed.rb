@@ -23,7 +23,7 @@ RSpec.shared_examples "installable" do |logstash|
   before(:each) do
     logstash.uninstall
     logstash.install({:version => LOGSTASH_VERSION})
-    logstash.configure
+    logstash.write_default_pipeline
   end
 
   it "is installed on [#{logstash.human_name}]" do
