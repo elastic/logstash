@@ -4,6 +4,8 @@
 include::{docs-root}/shared/versions/stack/{source_branch}.asciidoc[]
 include::{docs-root}/shared/attributes.asciidoc[]
 
+:lsplugindocs:  IMPORTANT: This documentation is still in development. This feature may be changed or removed in a future release.
+
 [[introduction]]
 == Introduction
 
