@@ -28,6 +28,7 @@ RSpec.shared_examples "installable_with_jdk" do |logstash|
   before(:each) do
     logstash.uninstall
     logstash.install({:bundled_jdk => true, :version => LOGSTASH_VERSION})
+    logstash.write_default_pipeline
   end
 
   after(:each) do

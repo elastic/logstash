@@ -536,6 +536,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.flowMetrics.add(concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
+        final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
+        final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
+        final UpScaledMetric availableWorkerTimeInMillis = new UpScaledMetric(uptimeInPreciseMillis, workerCount);
+        final FlowMetric utilizationFlow = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
+        this.flowMetrics.add(utilizationFlow);
+        storeMetric(context, flowNamespace, utilizationFlow);
+
         initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
         initializePluginFlowMetrics(context, uptimeMetric);
         return context.nil;

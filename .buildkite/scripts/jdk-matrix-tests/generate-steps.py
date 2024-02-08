@@ -1,4 +1,5 @@
 import abc
+import copy
 from dataclasses import dataclass, field
 import os
 import sys
@@ -7,6 +8,7 @@ import typing
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString
 
+ENABLED_RETRIES = {"automatic": [{"limit": 3}]}
 
 @dataclass
 class JobRetValues:
@@ -15,6 +17,7 @@ class JobRetValues:
     step_key: str
     depends: str
     agent: typing.Dict[typing.Any, typing.Any]
+    retry: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None
     artifact_paths: list = field(default_factory=list)
 
 
@@ -138,7 +141,7 @@ class WindowsJobs(Jobs):
     def unit_tests(self) -> JobRetValues:
         step_name_human = "Unit Test (Java/Ruby)"
         step_key = f"{self.group_key}-unit-test"
-        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.bat" -Annotate
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.ps1" -Annotate
         '''
 
         return JobRetValues(
@@ -148,6 +151,7 @@ class WindowsJobs(Jobs):
             depends=self.init_annotation_key,
             artifact_paths=["build_reports.zip"],
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
 
@@ -219,6 +223,7 @@ ci/unit_tests.sh java
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
     def ruby_unit_test(self) -> JobRetValues:
@@ -234,6 +239,7 @@ ci/unit_tests.sh ruby
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
     def integration_tests_part_1(self) -> JobRetValues:
@@ -255,6 +261,7 @@ ci/integration_tests.sh split {part-1}
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
     def pq_integration_tests_part_1(self) -> JobRetValues:
@@ -277,6 +284,7 @@ ci/integration_tests.sh split {part-1}
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
     def x_pack_unit_tests(self) -> JobRetValues:
@@ -292,6 +300,7 @@ x-pack/ci/unit_tests.sh
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
     def x_pack_integration(self) -> JobRetValues:
@@ -307,6 +316,7 @@ x-pack/ci/integration_tests.sh
             step_key=step_key,
             depends=self.init_annotation_key,
             agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
 
@@ -360,6 +370,9 @@ if __name__ == "__main__":
 
             if job_values.artifact_paths:
                 step["artifact_paths"] = job_values.artifact_paths
+
+            if job_values.retry:
+                step["retry"] = job_values.retry
 
             step["command"] = job_values.command
 

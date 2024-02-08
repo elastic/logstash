@@ -499,6 +499,10 @@ Example response:
     "worker_concurrency" : {
       "current": 1.973,
       "lifetime": 1.721
+    },
+    "worker_utilization" : {
+      "current": 49.32,
+      "lifetime": 43.02
     }
   }
 }
@@ -535,6 +539,19 @@ A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric
 Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
 
 A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
+
+| worker_utilization |
+
+This is a unitless metric that indicates the percentage of available worker time being used by all plugins in a given pipeline (`duration` / (`uptime` * `pipeline.workers`).
+It is useful for determining whether the pipeline has consistently-idle resources or is under resource contention.
+
+A _pipeline_ is considered "saturated" when its `worker_utilization` flow metric approaches 100, because it indicates that all of its workers are being kept busy.
+This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
+Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+A _pipeline_ is considered "starved" when its `worker_utilization` flow metric approaches 0, because it indicates that none of its workers are being kept busy.
+This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
+Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
 
 | queue_backpressure |
 This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
@@ -623,6 +640,10 @@ Example response:
         "worker_concurrency" : {
           "current" : 0.941,
           "lifetime" : 0.9709
+        },
+        "worker_utilization" : {
+          "current" : 93.092,
+          "lifetime" : 92.187
         }
       },
       "plugins" : {
@@ -740,6 +761,10 @@ Example response:
         "worker_concurrency" : {
           "current" : 8.0,
           "lifetime" : 5.903
+        },
+        "worker_utilization" : {
+          "current" : 100,
+          "lifetime" : 75.8
         }
       },
       "plugins" : {
@@ -835,6 +860,10 @@ Example response:
         "worker_concurrency" : {
           "current" : 1.471,
           "lifetime" : 0.9709
+        },
+        "worker_utilization" : {
+          "current" : 74.54,
+          "lifetime" : 46.10
         },
         "queue_persisted_growth_bytes" : {
           "current" : 8731,
