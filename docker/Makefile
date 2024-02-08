@@ -200,16 +200,12 @@ venv: requirements.txt
 	for i in 0 1 2 3 4 5; do sleep "$i"; pip install -r requirements.txt && break; done &&\
 	touch venv
 
-# Make a Golang container that can compile our env2yaml tool.
-golang:
-	docker build -t golang:env2yaml data/golang
-
 # Compile "env2yaml", the helper for configuring logstash.yml via environment
 # variables.
-env2yaml: golang
-	docker run --rm -i \
-	  -v $(PWD)/data/logstash/env2yaml:/usr/local/src/env2yaml:Z \
-	  golang:env2yaml
+env2yaml:
+	docker run --rm \
+	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
+		-w /usr/src/env2yaml golang:1 go build
 
 # Generate the Dockerfiles from Jinja2 templates.
 dockerfile: venv templates/Dockerfile.j2
