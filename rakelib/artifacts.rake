@@ -332,7 +332,7 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
-  desc "Generate Dockerfile for full images"
+  desc "Generate Dockerfile for UBI8 images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
