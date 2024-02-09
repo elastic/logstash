@@ -150,7 +150,7 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-public-dockerfiles_ironbank: templates/hardening_manifest.yaml templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
