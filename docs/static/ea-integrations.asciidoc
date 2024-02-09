@@ -80,3 +80,6 @@ output { <3>
 <1> Use `filter-elastic_integration` as the first filter in your pipeline 
 <2> You can use additional filters as long as they follow `filter-elastic_integration`
 <3> Sample config to output data to multiple destinations
+
+
+include::ea-integration-tutorial.asciidoc[]
