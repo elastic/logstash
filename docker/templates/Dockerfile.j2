@@ -81,6 +81,9 @@ RUN for iter in {1..10}; do \
     {{ package_manager }} upgrade -y && \
 {% endif -%}
     {{ package_manager }} install -y procps findutils tar gzip curl && \
+{% if image_flavor == 'ubi8' -%}
+    {{ package_manager }} install -y openssl && \
+{% endif -%}
 {% if image_flavor == 'ubi8' or image_flavor == 'ironbank' -%}
     {{ package_manager }} install -y which shadow-utils && \
 {% else -%}
