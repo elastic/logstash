@@ -31,11 +31,11 @@ buildscript {
   }
 }
 
-project.sourceCompatibility = JavaVersion.VERSION_1_8
-project.targetCompatibility = JavaVersion.VERSION_1_8
+project.sourceCompatibility = JavaVersion.VERSION_11
+project.targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-  testImplementation "junit:junit:4.12"
+  testImplementation "junit:junit:4.13.1"
 }
 
 javadoc {
