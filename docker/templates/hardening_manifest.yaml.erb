@@ -8,14 +8,14 @@ name: "elastic/logstash/logstash"
 # The most specific version should be the first tag and will be shown
 # on ironbank.dsop.io
 tags:
-- "{{ elastic_version }}"
+- "<%= elastic_version %>"
 - "latest"
 
 # Build args passed to Dockerfile ARGs
 args:
   BASE_IMAGE: "redhat/ubi/ubi9"
   BASE_TAG: "9.2"
-  LOGSTASH_VERSION: "{{ elastic_version }}"
+  LOGSTASH_VERSION: "<%= elastic_version %>"
   GOLANG_VERSION: "1.17.8"
 
 # Docker image labels
@@ -29,7 +29,7 @@ labels:
   org.opencontainers.image.url: "https://www.elastic.co/products/logstash"
   ## Name of the distributing entity, organization or individual
   org.opencontainers.image.vendor: "Elastic"
-  org.opencontainers.image.version: "{{ elastic_version }}"
+  org.opencontainers.image.version: "<%= elastic_version %>"
   ## Keywords to help with search (ex. "cicd,gitops,golang")
   # mil.dso.ironbank.image.keywords: "FIXME"
   ## This value can be "opensource" or "commercial"
@@ -39,11 +39,11 @@ labels:
 
 # List of resources to make available to the offline build context
 resources:
-- filename: logstash-{{ elastic_version }}-linux-x86_64.tar.gz
-  url: <artifact_path>/logstash-{{ elastic_version }}-linux-x86_64.tar.gz
+- filename: logstash-<%= elastic_version %>-linux-x86_64.tar.gz
+  url: <artifact_path>/logstash-<%= elastic_version %>-linux-x86_64.tar.gz
   validation:
     type: sha512
-    value: <INSERT SHA512 VALUE FROM https://artifacts.elastic.co/downloads/logstash/logstash-{{ elastic_version }}-linux-x86_64.tar.gz.sha512>
+    value: <INSERT SHA512 VALUE FROM https://artifacts.elastic.co/downloads/logstash/logstash-<%= elastic_version %>-linux-x86_64.tar.gz.sha512>
 - filename: go1.17.8.linux-amd64.tar.gz
   url: https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz
   validation:
