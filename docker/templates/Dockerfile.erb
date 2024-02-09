@@ -75,6 +75,9 @@ export DEBIAN_FRONTEND=noninteractive && \
 <%= package_manager %> upgrade -y && \
 <% end -%>
 <%= package_manager %> install -y procps findutils tar gzip curl && \
+<% if image_flavor == 'ubi8' -%>
+<%= package_manager %> install -y openssl && \
+<% end -%>
 <% if image_flavor == 'ubi8' || image_flavor == 'ironbank' -%>
 <%= package_manager %> install -y which shadow-utils && \
 <% else -%>

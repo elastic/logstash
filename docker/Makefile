@@ -186,7 +186,7 @@ env2yaml:
 	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
 		-w /usr/src/env2yaml golang:1 go build
 
-# Generate the Dockerfiles from Jinja2 templates.
+# Generate the Dockerfiles from ERB templates.
 dockerfile: templates/Dockerfile.erb
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
 		../vendor/jruby/bin/jruby -S erb -T "-"\
