@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -180,7 +181,26 @@ public class JvmOptionsParser {
         // Set mandatory JVM options
         jvmOptionsContent.addAll(getMandatoryJvmOptions(javaMajorVersion));
 
-        System.out.println(String.join(" ", jvmOptionsContent));
+        final Set<String> jvmFinalOptions = nettyMaxOrderDefaultTo11(jvmOptionsContent);
+
+        System.out.println(String.join(" ", jvmFinalOptions));
+    }
+
+    /**
+     * Inplace method that verifies if Netty's maxOrder option is already set, else configure it to have
+     * the default value of 11.
+     *
+     * @param options the collection of options to examine.
+     * @return the collection of input option eventually with Netty maxOrder added.
+     * */
+    private Set<String> nettyMaxOrderDefaultTo11(Set<String> options) {
+        boolean maxOrderAlreadyContained = options.stream().anyMatch(s -> s.startsWith("-Dio.netty.allocator.maxOrder"));
+        if (maxOrderAlreadyContained) {
+            return options;
+        }
+        final Set<String> acc = new HashSet<>(options);
+        acc.add("-Dio.netty.allocator.maxOrder=11");
+        return acc;
     }
 
     /**
