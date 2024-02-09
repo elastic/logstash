@@ -8,11 +8,15 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
@@ -121,6 +125,38 @@ public class JvmOptionsParserTest {
 
         assertEquals("invalidOption", res.getInvalidLines().get(2));
         assertEquals("anotherInvalidOption", res.getInvalidLines().get(4));
+    }
+
+    @Test
+    public void testNettyMaxOrderRuleAppliesIfNotAlreadyDefinedExplicitlyByUser() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Dsome.other.netty.property=123"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        // Verify
+        final String output = outputStreamCaptor.toString();
+        assertTrue("Existing properties other than Netty's maxOrder ar preserved", output.contains("-Dsome.other.netty.property=123"));
+        assertTrue("Netty's maxOrder MUST be forcibly defined to the expected default", output.contains("-Dio.netty.allocator.maxOrder=11"));
+    }
+
+    @Test
+    public void testNettyMaxOrderRuleDoNotAppliesIfAlreadyDefinedExplicitlyByUser() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Dio.netty.allocator.maxOrder=10"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        // Verify
+        final String output = outputStreamCaptor.toString();
+        assertTrue("Netty's maxOrder MUST be forcibly defined to the expected default", output.contains("-Dio.netty.allocator.maxOrder=10"));
+
+    }
+
+    private File writeIntoTempOptionsFile(Consumer<PrintWriter> writer) throws IOException {
+        File optionsFile = temp.newFile("jvm.options");
+        PrintWriter optionsWriter = new PrintWriter(new FileWriter(optionsFile));
+        writer.accept(optionsWriter);
+        optionsWriter.close();
+        return optionsFile;
     }
 
     private void verifyOptions(String message, String expected, JvmOptionsParser.ParseResult res) {
