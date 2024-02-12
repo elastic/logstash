@@ -19,24 +19,13 @@ fi
 
 SELECTED_TEST_SUITE=$1
 
+SONAR_ARGS=()
+if [[ $(echo $ENABLE_SONARQUBE | tr '[:lower:]' '[:upper:]') == "TRUE" ]]; then
+  SONAR_ARGS=("jacocoTestReport")
+  export COVERAGE=true
+fi
+
 if [[ $SELECTED_TEST_SUITE == $"java" ]]; then
-  SONAR_ARGS=()
-
-  if [[ $(echo $ENABLE_SONARQUBE | tr '[:lower:]' '[:upper:]') == "TRUE" ]]; then
-    SONAR_ARGS=(
-      "jacocoTestReport"
-      "sonar"
-      "-Dsonar.token=${SONAR_TOKEN}"
-      "-Dsonar.host.url=https://sonar.elastic.dev"
-      "-Dsonar.projectKey=elastic_logstash_AYm_nEbQaV3I-igkX1q9"
-      "-Dsonar.projectName=logstash"
-      "-Dsonar.pullrequest.key=$PULL_ID"
-      "-Dsonar.pullrequest.branch=$SOURCE_BRANCH"
-      "-Dsonar.pullrequest.base=$TARGET_BRANCH"
-      "-Dsonar.scm.revision=$COMMIT_SHA"
-    )
-  fi
-
   echo "Running Java Tests"
   ./gradlew javaTests "${SONAR_ARGS[@]}" --console=plain --warning-mode all
 elif [[ $SELECTED_TEST_SUITE == $"ruby" ]]; then
