@@ -33,15 +33,15 @@ shared_examples "logstash install" do |logstash|
       context "when the plugin exist" do
         context "from a local `.GEM` file" do
           let(:gem_name) { "logstash-filter-qatest-0.1.1.gem" }
-          let(:gem_path_on_vagrant) { "/tmp/#{gem_name}" }
+          let(:gem_tmp_path) { "/tmp/#{gem_name}" }
           before(:each) do
-            logstash.download("https://rubygems.org/gems/#{gem_name}", gem_path_on_vagrant)
+            logstash.download("https://rubygems.org/gems/#{gem_name}", gem_tmp_path)
           end
 
-          after(:each) { logstash.delete_file(gem_path_on_vagrant) }
+          after(:each) { logstash.delete_file(gem_tmp_path) }
 
           it "successfully install the plugin" do
-            command = logstash.run_command_in_path("bin/logstash-plugin install #{gem_path_on_vagrant}")
+            command = logstash.run_command_in_path("bin/logstash-plugin install #{gem_tmp_path}")
             expect(command).to install_successfully
             expect(logstash).to have_installed?("logstash-filter-dns")
             expect(logstash).not_to be_running
