@@ -43,7 +43,7 @@ steps:
           - label: "Rocky Linux 9"
             value: "rocky-linux-9"
           - label: "Alma Linux 8"
-            value: "almalinux-8
+            value: "almalinux-8"
           - label: "Alma Linux 9"
             value: "almalinux-9"
           - label: "Amazon Linux (2023)"
