@@ -1,4 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+# Before adding an Operating System to the JDK matrix:
+#  - Ensure the image is available in https://github.com/elastic/ci-agent-images/blob/main/vm-images/platform-ingest/logstash-multi-jdk.yml
+#  - If image doesn't exist, review https://docs.elastic.dev/ingest-dev-docs/engineer-productivity/custom-ci-images
 
 env:
   DEFAULT_MATRIX_OS: "ubuntu-2204"
@@ -37,6 +40,12 @@ steps:
             value: "oraclelinux-7"
           - label: "Rocky Linux 8"
             value: "rocky-linux-8"
+          - label: "Rocky Linux 9"
+            value: "rocky-linux-9"
+          - label: "Alma Linux 8"
+            value: "almalinux-8"
+          - label: "Alma Linux 9"
+            value: "almalinux-9"
           - label: "Amazon Linux (2023)"
             value: "amazonlinux-2023"
           - label: "OpenSUSE Leap 15"
