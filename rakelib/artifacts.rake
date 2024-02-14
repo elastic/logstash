@@ -193,7 +193,7 @@ namespace "artifact" do
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
-  task "archives_oss" => ["prepare", "generate_build_metadata"] do
+  task "archives_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
@@ -224,7 +224,7 @@ namespace "artifact" do
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm_oss" => ["prepare", "generate_build_metadata"] do
+  task "rpm_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     puts("[artifact:rpm] building rpm OSS package x86_64")
@@ -256,7 +256,7 @@ namespace "artifact" do
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb_oss" => ["prepare", "generate_build_metadata"] do
+  task "deb_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     puts("[artifact:deb_oss] building deb OSS package x86_64")
@@ -300,7 +300,7 @@ namespace "artifact" do
   end
 
   desc "Build OSS docker image"
-  task "docker_oss" => ["prepare", "generate_build_metadata", "archives_oss"] do
+  task "docker_oss" => ["prepare-oss", "generate_build_metadata", "archives_oss"] do
     puts("[docker_oss] Building OSS docker image")
     build_docker('oss')
   end
@@ -321,7 +321,7 @@ namespace "artifact" do
   end
 
   desc "Generate Dockerfile for oss images"
-  task "dockerfile_oss" => ["prepare", "generate_build_metadata"] do
+  task "dockerfile_oss" => ["prepare-oss", "generate_build_metadata"] do
     puts("[dockerfiles] Building oss Dockerfile")
     build_dockerfile('oss')
   end
@@ -348,17 +348,19 @@ namespace "artifact" do
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
     Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives"].invoke
-    Rake::Task["artifact:archives_oss"].invoke
+
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
-      Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
     end
+
+    Rake::Task["artifact:deb_oss"].invoke
+    Rake::Task["artifact:rpm_oss"].invoke
+    Rake::Task["artifact:archives_oss"].invoke
   end
 
   task "build_docker_full" => [:generate_build_metadata] do
@@ -378,6 +380,7 @@ namespace "artifact" do
 
   task "generate_build_metadata" do
     require 'time'
+    require 'tempfile'
 
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
@@ -443,6 +446,12 @@ namespace "artifact" do
   task "prepare" do
     if ENV['SKIP_PREPARE'] != "1"
       ["bootstrap", "plugin:install-default", "artifact:clean-bundle-config"].each {|task| Rake::Task[task].invoke }
+    end
+  end
+
+  task "prepare-oss" do
+    if ENV['SKIP_PREPARE'] != "1"
+      %w[bootstrap plugin:install-default plugin:remove-non-oss-plugins artifact:clean-bundle-config].each {|task| Rake::Task[task].invoke }
     end
   end
 
