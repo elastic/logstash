@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-13-0,Logstash 8.13.0>>
 * <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
@@ -52,6 +53,161 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-13-0]]
+=== Logstash 8.13.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.13.0
+
+* Avoid to run integration tests while testing all supported plugin https://github.com/elastic/logstash/pull/15511[#15511]
+* Release notes for 8.11.2 https://github.com/elastic/logstash/pull/15660[#15660]
+* Backport PR #15660 to main: Release notes for 8.11.2 https://github.com/elastic/logstash/pull/15676[#15676]
+* Release notes for 8.11.3 https://github.com/elastic/logstash/pull/15681[#15681]
+* Backport PR #15681 to main: Release notes for 8.11.3 https://github.com/elastic/logstash/pull/15685[#15685]
+* Update to gradle 8.5 https://github.com/elastic/logstash/pull/15707[#15707]
+* Release notes for 8.11.4 https://github.com/elastic/logstash/pull/15753[#15753]
+* Forwardport PR #15753 to main: Release notes for 8.11.4 https://github.com/elastic/logstash/pull/15777[#15777]
+* Release notes for 8.12.0 https://github.com/elastic/logstash/pull/15804[#15804]
+* Backport PR #15804 to main: Release notes for 8.12.0 https://github.com/elastic/logstash/pull/15812[#15812]
+* Release notes for 8.12.1 https://github.com/elastic/logstash/pull/15885[#15885]
+* Forward port PR #15885 to main: Release notes for 8.12.1 https://github.com/elastic/logstash/pull/15910[#15910]
+* add openssl to ubi image https://github.com/elastic/logstash/pull/15929[#15929]
+* Add Alma 8, Alma 9, and Rocky Linux 9 to the JDK matrix https://github.com/elastic/logstash/pull/15941[#15941]
+* Backport PR #15941 to 8.13: Add Alma 8, Alma 9, and Rocky Linux 9 to the JDK matrix https://github.com/elastic/logstash/pull/15942[#15942]
+
+=== Logstash Commits between 8.13 and 8.12.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.12.1..8.13"
+
+52ccf3728 - (HEAD -> 8.13, origin/8.13) bump lock file for 8.13 (#15939) (18 hours ago) <github-actions[bot]>
+ed565110f - Add Alma 8, Alma 9, and Rocky Linux 9 to the JDK matrix (#15941) (#15942) (19 hours ago) <github-actions[bot]>
+5884ecd58 - copy Gemfile from 8.12 (2 days ago) <Kaise Cheng>
+be3f75e34 - Clean up left over scripts after CI migration (#15926) (2 days ago) <Dimitrios Liappis>
+4e6815b1e - add openssl to ubi image (#15929) (5 days ago) <kaisecheng>
+de01eb6ee - Remove jinja2 in favor of erb templates (#15142) (5 days ago) <João Duarte>
+52ce3ff8f - Set Netty's maxOrder options to previous default (#15925) (5 days ago) <Andrea Selva>
+5c3e64d59 - introduce go.mod for env2yaml (#15921) (6 days ago) <João Duarte>
+db193f56c - Update docs-preview link (#15918) (6 days ago) <Nassim Kammah>
+4e98aa811 - Fix the lastes 8.12 version, to the actually latest released (#15915) (7 days ago) <Andrea Selva>
+c75a2d84b - Update CI release file after releases. (#15911) (7 days ago) <Mashhur>
+38e8c5d3f - flow_metrics: pull `worker_utilization` up to pipeline-level (#15912) (8 days ago) <Ry Biesemeyer>
+529ed2edd - Release notes for 8.12.1 (#15885) (#15910) (8 days ago) <github-actions[bot]>
+b66dc7f46 - Fix service startup with acceptance tests (#15900) (8 days ago) <Dimitrios Liappis>
+2fc3f4c21 - Add retries to acceptance/docker steps in BK (#15901) (8 days ago) <Dimitrios Liappis>
+fedcf58c4 - Add Debian 12 to CI (#15895) (9 days ago) <Dimitrios Liappis>
+8ac55184b - Allow running Java+Ruby tests on Windows separately (#15861) (13 days ago) <Dimitrios Liappis>
+d2bdc05f9 - Doc: Update plugin headers to deeplink into matrix (#15870) (2 weeks ago) <Karen Metts>
+3b747d86b - Add retries to JDK matrix pipeline steps (#15877) (2 weeks ago) <Dimitrios Liappis>
+88a32cca8 - Add BK retries to exhaustive/compat steps (#15874) (2 weeks ago) <Dimitrios Liappis>
+0f9b6f9e8 - Fix typo with aarch64 pipeline name to trigger (#15873) (2 weeks ago) <Dimitrios Liappis>
+70c3fcdcb - [ci] Skip slack alerts if retried tasks succeeded (#15869) (2 weeks ago) <Dimitrios Liappis>
+905ddd267 - add base64 notice and update generated NOTICE.txt (#15867) (2 weeks ago) <João Duarte>
+eb9859276 - Update stack versions for CI. (#15864) (2 weeks ago) <Mashhur>
+0563a1366 - Fix typo in catalog-info with exhaustive schema (#15858) (2 weeks ago) <Dimitrios Liappis>
+5ee75803f - Scheduled runs of exhaustive and aarch64 pipelines (#15850) (2 weeks ago) <Dimitrios Liappis>
+706336573 - Revert "[docs] Simplify and imrove Logstash monitoring docs. (#15847)" (#15862) (3 weeks ago) <Mashhur>
+8657ce9d2 - Re-enabled collectd codec in test_plugins script (#15857) (3 weeks ago) <Andrea Selva>
+3f5b44a1a - Remove Ubuntu 18.04 from CI jobs (#15855) (3 weeks ago) <Dimitrios Liappis>
+931705208 - [docs] Simplify and imrove Logstash monitoring docs. (#15847) (3 weeks ago) <Mashhur>
+cefd553a7 - Doc: Update extending integrations docs to point to plugin (#15747) (3 weeks ago) <Karen Metts>
+0d808ed70 - Retries for serverless-integration-testing pipeline (#15851) (3 weeks ago) <Dimitrios Liappis>
+e4ef87923 - Describe how to troubleshoot connectivity problems in  Azure Blob Storage at HTTP level (#15835) (3 weeks ago) <Andrea Selva>
+1395d953b - Updates bundled JDK (#15840) (3 weeks ago) <Andrea Selva>
+c33afd4cd - Mute DLQ test on Windows (#15843) (3 weeks ago) <Dimitrios Liappis>
+d74fea4b5 - Fix IT tests after version bumps (#15827) (3 weeks ago) <Dimitrios Liappis>
+15e19a96c - Fix acceptance/packaging upgrade test near a release (#15826) (3 weeks ago) <Dimitrios Liappis>
+c5cb1fe2e - Annotate successful DRA builds with summary URL (#15820) (3 weeks ago) <Dimitrios Liappis>
+52d9e6286 - Update active branches used by CI (#15816) (4 weeks ago) <Dimitrios Liappis>
+9256de43c - Remove Nassim Kammah from list of maintainers (#15709) (4 weeks ago) <Nassim Kammah>
+fc09ad411 - Fix flaky logstash-plugin IT test (#15803) (4 weeks ago) <Dimitrios Liappis>
+2c83a5238 - [CI] Send Java and ruby tests to sonarqube simultaneously (#15810) (4 weeks ago) <Pavel Zorin>
+20b298e35 - Release notes for 8.12.0 (#15804) (#15812) (4 weeks ago) <github-actions[bot]>
+16c4d8827 - Enable packaging tests in exhaustive pipeline (#15781) (5 weeks ago) <Dimitrios Liappis>
+081d8fc15 - [Doc] kerberos debug instructions (#15779) (5 weeks ago) <kaisecheng>
+fca1fccb6 - Add Docker acceptance to exhaustive BK pipeline (#15748) (5 weeks ago) <Dimitrios Liappis>
+968fb2445 - Doc: Add monitoring for serverless (#15636) (5 weeks ago) <Karen Metts>
+a0e3b35c5 - Don't trigger exhaustive tests with backports (#15791) (5 weeks ago) <Dimitrios Liappis>
+4a2104b1a - Update releases inventory after 8.11.4 (#15783) (5 weeks ago) <Andrea Selva>
+739e8a3ef - Add retries to PR pipeline steps (#15787) (5 weeks ago) <Dimitrios Liappis>
+5b98f7d63 - Release notes for 8.11.4 (#15753) (#15777) (5 weeks ago) <github-actions[bot]>
+50a589493 - Bump Puma lower version constraint to >= 6.4.2 (#15773) (5 weeks ago) <Andrea Selva>
+c8726b79f - Run BK exhaustive pipeline when code is pushed (#15738) (5 weeks ago) <Dimitrios Liappis>
+a21ced094 - Add system properties to configure Jackson's stream read constraints (#15720) (5 weeks ago) <Edmo Vamerlatti Costa>
+9f1d55c6a - Pin `childprocess` gem to major version `4` (#15758) (5 weeks ago) <Dimitrios Liappis>
+cebe4a753 - Refactor qa/acceptance tests to get away from vagrant (#15696) (5 weeks ago) <Dimitrios Liappis>
+73c87a415 - Add elastic_integration plugin to the plugin meta list. (#15692) (6 weeks ago) <Mashhur>
+76d167718 - Fixes a typo in plugin's organization name (#15743) (6 weeks ago) <Andrea Selva>
+286088915 - JUnit result annotation for Buildkite PR jobs (#15741) (6 weeks ago) <Dimitrios Liappis>
+6dc842318 - Add filter elastic_integration to be tested in test_plugins script (#15723) (6 weeks ago) <Andrea Selva>
+41ec183f0 - Fix logstash-keystore multiple keys operations with command flags (#15737) (6 weeks ago) <Edmo Vamerlatti Costa>
+2be661b9b - Re-enable json filter and netflow codec plugins (#15722) (6 weeks ago) <Andrea Selva>
+f643e8606 - Update to gradle 8.5 (#15707) (6 weeks ago) <Andrea Selva>
+a8b64a32e - Skip input step when triggering JDK matrix jobs (#15733) (6 weeks ago) <Dimitrios Liappis>
+82ac474b1 - Don't block triggered JDK matrix Buildkite jobs (#15729) (6 weeks ago) <Dimitrios Liappis>
+4a7b31ea6 - [ci] No Slack alerts for pipeline scheduling job (#15728) (6 weeks ago) <Dimitrios Liappis>
+9538338ab - [ci] Add testing phase to exhaustive tests suite (#15711) (8 weeks ago) <Dimitrios Liappis>
+004971739 - So far we are practicing Snyk scan of docker images. Now we can comment docker scan logic to address collected issues later with more experiements. (#15702) (8 weeks ago) <Mashhur>
+03d7b59f2 - [ci] Reusable unit + IT test steps for Buildkite (#15708) (8 weeks ago) <Dimitrios Liappis>
+69c145d4e - Add log.format to the logstash.yml (#15049) (8 weeks ago) <Felix Jansson>
+48b0af120 - Replace Gradle's report.enabled setting to report's required property (#15706) (8 weeks ago) <Andrea Selva>
+33347dddd - Common scheduler pipeline for Buildkite (#15705) (8 weeks ago) <Dimitrios Liappis>
+06ceef8e1 - [ci] Allow schedule to trigger several pipelines (#15703) (8 weeks ago) <Dimitrios Liappis>
+42497edeb - Bug fix for trigger pipeline Buildkite pipeline (#15700) (8 weeks ago) <Dimitrios Liappis>
+c2eaecce8 - [ci] Remove hardcoded branches from DRA schedule (#15668) (8 weeks ago) <Dimitrios Liappis>
+f062fef60 - [ci] Add Java 21 option for multi JDK CI pipeline (#15691) (8 weeks ago) <Dimitrios Liappis>
+6b22cc8dd - Separate scheduling of segments flushes from time (#15680) (8 weeks ago) <Andrea Selva>
+aa05205a9 - Update logstash_releases.json to include 7.17.16 and 8.11.3 (#15688) (9 weeks ago) <João Duarte>
+9e93ded8e - Update catalog-info.yaml to include testing for 8.12 branch (#15666) (9 weeks ago) <João Duarte>
+64ef307a7 - Release notes for 8.11.3 (#15681) (#15685) (9 weeks ago) <github-actions[bot]>
+241c03274 - Avoid to run integration tests while testing all supported plugin (#15511) (9 weeks ago) <Andrea Selva>
+042e5d4c2 - Release notes for 8.11.2 (#15660) forwardport to main (#15676) (10 weeks ago) <github-actions[bot]>
+6a44d9df6 - Update JRuby core to 9.4.5.0 of rubyUtils.gralde (#15671) (10 weeks ago) <Mashhur>
+6c2e123a2 - Doc: Add docs for extending integrations with filter-elastic_integrations (#15518) (10 weeks ago) <Karen Metts>
+365ca4e2d - Add new 8.12 branch to CI (#15667) (10 weeks ago) <Dimitrios Liappis>
+6c12e6f4c - bump version to 8.13.0 (#15665) (2 months ago) <João Duarte>
+0954a687f - Doc: Update Logstash intro and security overview for serverless (#15313) (2 months ago) <Karen Metts>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.12.1..8.13 *.release"
+Changed plugin versions:
+logstash-input-beats: 6.7.2 -> 6.8.0
+logstash-input-elasticsearch: 4.19.1 -> 4.20.0
+logstash-integration-jdbc: 5.4.6 -> 5.4.8
+logstash-integration-kafka: 11.3.3 -> 11.3.4
+logstash-output-tcp: 6.1.2 -> 6.2.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Beats Input - 6.8.0*
+
+* Introduce expert only `event_loop_threads` to tune netty event loop threads count https://github.com/logstash-plugins/logstash-input-beats/pull/490[#490]
+
+*Elasticsearch Input - 4.20.0*
+
+* Added `response_type` configuration option to allow processing result of aggregations https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/202[#202]
+
+*Jdbc Integration - 5.4.8*
+
+* Update Derby with locally built 10.15.2.1 version https://github.com/logstash-plugins/logstash-integration-jdbc/pull/155[#155] 
+
+* Update sequel version to >= 5.74.0. It fixes the generic jdbc adapter to properly handle disconnect errors https://github.com/logstash-plugins/logstash-integration-jdbc/pull/153[#153]
+
+*Kafka Integration - 11.3.4*
+
+* Fix "retries" and "value_serializer" error handling in output plugin (#160) https://github.com/logstash-plugins/logstash-integration-kafka/pull/160[#160]
+
+*Tcp Output - 6.2.0*
+
+* Reviewed and deprecated SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-tcp/pull/53[#53]
+* Deprecated `ssl_enable` in favor of `ssl_enabled`
+* Deprecated `ssl_cert` in favor of `ssl_certificate`
+* Deprecated `ssl_verify` in favor of `ssl_client_authentication` when mode is `server`
+* Deprecated `ssl_verify` in favor of `ssl_verification_mode` when mode is `client`
+* Added `ssl_cipher_suites` configuration
+* Added SSL configuration validations
 
 
 [[logstash-8-12-1]]
