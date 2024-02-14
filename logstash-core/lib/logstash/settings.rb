@@ -238,12 +238,22 @@ module LogStash
     include LogStash::Settings::LOGGABLE_PROXY
 
     attr_reader :name, :default
+    attr_reader :wrapped_setting
 
     def initialize(name, klass, default = nil, strict = true, &validator_proc)
       @name = name
       unless klass.is_a?(Class)
         raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
       end
+      setting_builder = Java::org.logstash.settings.Setting.create(name)
+                            .defaultValue(@default)
+                            .strict(strict)
+      if validator_proc
+        setting_builder = setting_builder.validator(validator_proc)
+      end
+
+      @wrapped_setting = setting_builder.build()
+
       @klass = klass
       @validator_proc = validator_proc
       @value = nil
@@ -254,28 +264,35 @@ module LogStash
       @default = default
     end
 
+    def initialize_copy(original)
+      @wrapped_setting = original.wrapped_setting.clone
+    end
+
+    def update_wrapper(wrapped_setting)
+      @wrapped_setting = wrapped_setting
+    end
+    private :update_wrapper
+
     def value
-      @value_is_set ? @value : default
+      @wrapped_setting.value()
     end
 
     def set?
-      @value_is_set
+      @wrapped_setting.set?
     end
 
     def strict?
-      @strict
+      @wrapped_setting.strict?
     end
 
     def set(value)
       validate(value) if @strict
-      @value = value
-      @value_is_set = true
+      @wrapped_setting.set(value)
       @value
     end
 
     def reset
-      @value = nil
-      @value_is_set = false
+      @wrapped_setting.reset
     end
 
     def to_hash
@@ -348,6 +365,7 @@ module LogStash
         unless klass.is_a?(Class)
           raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
         end
+
         @klass = klass
         @validator_proc = validator_proc
         @value = nil
@@ -360,14 +378,23 @@ module LogStash
         else
           @default = default
         end
+
+        # default value must be coerced to the right type before being set
+        setting_builder = Java::org.logstash.settings.Setting.create(name)
+                              .defaultValue(@default)
+                              .strict(strict)
+        if validator_proc
+          setting_builder = setting_builder.validator(validator_proc)
+        end
+
+        @wrapped_setting = setting_builder.build()
       end
 
       def set(value)
         coerced_value = coerce(value)
         validate(coerced_value)
-        @value = coerce(coerced_value)
-        @value_is_set = true
-        @value
+        @wrapped_setting.set(coerced_value)
+        coerced_value
       end
 
       def coerce(value)
@@ -786,7 +813,8 @@ module LogStash
 
       def set(value)
         @value = coerce(value)
-        @value_is_set = true
+        @wrapped_setting.set(@value)
+#         @value_is_set = true
         @value
       end
 
