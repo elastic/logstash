@@ -48,7 +48,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));
-        // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         assertThat(inflight.get(Thread.currentThread().getId()), is(batch));
         client.closeBatch(batch);
         assertThat(client.rubyGetInflightBatches(context).size(), is(0));

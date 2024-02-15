@@ -131,7 +131,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @SuppressWarnings("deprecation")
     public void closeBatch(QueueBatch batch) throws IOException {
         batch.close();
-        // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         inflightBatches.remove(Thread.currentThread().getId());
     }
 
@@ -190,7 +190,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @Override
     @SuppressWarnings("deprecation")
     public void startMetrics(QueueBatch batch) {
-        // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
     }

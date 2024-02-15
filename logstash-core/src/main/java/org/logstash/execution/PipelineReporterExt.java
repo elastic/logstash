@@ -174,7 +174,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
 
                 IRubyObject batchSize = Optional.of((RubyThread) thread)
                         .map(RubyThread::getNativeThread)
-                        // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+                        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
                         .map(Thread::getId)
                         .map(id -> batchMap.op_aref(context, context.runtime.newFixnum(id)))
                         .map(batch -> extractBatchSize(context, batch))

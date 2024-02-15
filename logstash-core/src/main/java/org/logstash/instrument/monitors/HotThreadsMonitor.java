@@ -165,7 +165,7 @@ public final class HotThreadsMonitor {
         Map<Long, ThreadReport> reports = new HashMap<>();
 
         for (long threadId : threadMXBean.getAllThreadIds()) {
-            // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+            // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
             if (Thread.currentThread().getId() == threadId) {
                 continue;
             }
