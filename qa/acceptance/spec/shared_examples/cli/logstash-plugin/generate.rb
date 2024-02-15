@@ -22,6 +22,7 @@ require "fileutils"
 shared_examples "logstash generate" do |logstash|
   before(:each) do
     logstash.install({:version => LOGSTASH_VERSION})
+    logstash.write_default_pipeline
   end
 
   after(:each) do
