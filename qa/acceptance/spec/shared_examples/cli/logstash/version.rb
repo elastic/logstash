@@ -22,6 +22,7 @@ shared_examples "logstash version" do |logstash|
   describe "logstash --version" do
     before :all do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after :all do

@@ -23,6 +23,7 @@ shared_examples "logstash uninstall" do |logstash|
   describe "logstash-plugin uninstall on [#{logstash.human_name}]" do
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after :each do

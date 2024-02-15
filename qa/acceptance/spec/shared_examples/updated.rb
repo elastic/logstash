@@ -37,12 +37,14 @@ RSpec.shared_examples "updated" do |logstash, from_release_branch|
     logstash.download(url, dest)
     options = {:version => latest_logstash_release_version, :snapshot => false, :base => "./", :skip_jdk_infix => false }
     logstash.install(options)
+    logstash.write_default_pipeline
   end
 
   it "can be updated and run on [#{logstash.human_name}]" do
     expect(logstash).to be_installed
     # Performing the update
     logstash.install({:version => LOGSTASH_VERSION})
+    logstash.write_default_pipeline
     expect(logstash).to be_installed
     # starts the service to be sure it runs after the upgrade
     with_running_logstash_service(logstash) do
