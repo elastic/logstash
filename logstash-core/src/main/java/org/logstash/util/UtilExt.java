@@ -42,7 +42,7 @@ public class UtilExt {
         final Thread javaThread = ((RubyThread) thread).getNativeThread(); // weak-reference
         // even if thread is dead the RubyThread instance might stick around while the Java thread
         // instance already could have been garbage collected - let's return nil for dead meat :
-        // TODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         return javaThread == null ? context.nil : context.runtime.newFixnum(javaThread.getId());
     }
 
