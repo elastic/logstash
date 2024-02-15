@@ -23,6 +23,7 @@ RSpec.shared_examples "runnable" do |logstash|
 
   before(:each) do
     logstash.install({:version => LOGSTASH_VERSION})
+    logstash.write_default_pipeline
   end
 
   it "is running on [#{logstash.human_name}]" do
