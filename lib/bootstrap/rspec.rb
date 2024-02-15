@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+java.util.LinkedHashSet.remove_method(:map) rescue nil
 
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
