@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-12-2,Logstash 8.12.2>>
 * <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
@@ -52,6 +53,60 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-12-2]]
+=== Logstash 8.12.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.12.2
+
+* Follow up to #15900 -- fix remaining acceptance tests https://github.com/elastic/logstash/pull/15907[#15907]
+* introduce go.mod for env2yaml https://github.com/elastic/logstash/pull/15921[#15921]
+* Backport PR #15921 to 8.12: introduce go.mod for env2yaml https://github.com/elastic/logstash/pull/15922[#15922]
+* Set Netty's maxOrder options to previous default https://github.com/elastic/logstash/pull/15925[#15925]
+* Backport PR #15925 to 8.12: Set Netty's maxOrder options to previous default https://github.com/elastic/logstash/pull/15928[#15928]
+* add openssl to ubi image https://github.com/elastic/logstash/pull/15929[#15929]
+* Fix packaging service check failures https://github.com/elastic/logstash/pull/15946[#15946]
+* Backport PR #15946 to 8.12: Fix packaging service check failures https://github.com/elastic/logstash/pull/15949[#15949]
+* Backport PR #15907 to 8.12: Follow up to #15900 -- fix remaining acceptance tests https://github.com/elastic/logstash/pull/15952[#15952]
+
+=== Logstash Commits between 8.12 and 8.12.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.12.1..8.12"
+
+ee9dfd332 - (HEAD -> 8.12, origin/8.12) bump lock file for 8.12.2 (#15955) (64 seconds ago) <github-actions[bot]>
+afdf51151 - Follow up to #15900 -- fix remaining acceptance tests (#15907) (#15952) (29 hours ago) <github-actions[bot]>
+95117b083 - Fix packaging service check failures (#15946) (#15949) (31 hours ago) <github-actions[bot]>
+0996c64e4 - Clean up left over scripts after CI migration (#15926) (#15936) (3 days ago) <Dimitrios Liappis>
+0966f3c83 - add openssl to ubi image (#15931) (7 days ago) <kaisecheng>
+2a5c4c906 - Backport PR #15925 to 8.12: Set Netty's maxOrder options to previous default (#15928) (7 days ago) <github-actions[bot]>
+1cca6bcb2 - introduce go.mod for env2yaml (#15921) (#15922) (8 days ago) <github-actions[bot]>
+ec21c3ddd - Version bump to 8.12.2 (#15909) (10 days ago) <Mashhur>
+bdbd811d3 - Fix service startup with acceptance tests (#15900) (#15904) (10 days ago) <github-actions[bot]>
+283d02ffb - Add retries to acceptance/docker steps in BK (#15901) (#15902) (10 days ago) <github-actions[bot]>
+326f33001 - Add Debian 12 to CI (#15895) (#15898) (10 days ago) <github-actions[bot]>
+1b8648b36 - Release notes for 8.12.1 (#15885) (11 days ago) <github-actions[bot]>
+07216a486 - Allow running Java+Ruby tests on Windows separately (#15861) (#15886) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.12.1..8.12 *.release"
+Changed plugin versions:
+logstash-integration-jdbc: 5.4.6 -> 5.4.8
+logstash-integration-kafka: 11.3.3 -> 11.3.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Jdbc Integration - 5.4.8*
+
+* Update Derby with locally built 10.15.2.1 version https://github.com/logstash-plugins/logstash-integration-jdbc/pull/155[#155] 
+
+* Update sequel version to >= 5.74.0. It fixes the generic jdbc adapter to properly handle disconnect errors https://github.com/logstash-plugins/logstash-integration-jdbc/pull/153[#153]
+
+*Kafka Integration - 11.3.4*
+
+* Fix "retries" and "value_serializer" error handling in output plugin (#160) https://github.com/logstash-plugins/logstash-integration-kafka/pull/160[#160]
 
 
 [[logstash-8-12-1]]
