@@ -166,4 +166,5 @@ public class JvmOptionsParserTest {
     private BufferedReader asReader(String s) {
         return new BufferedReader(new StringReader(s));
     }
+
 }
