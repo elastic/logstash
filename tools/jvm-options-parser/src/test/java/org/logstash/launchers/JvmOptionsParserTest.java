@@ -166,4 +166,9 @@ public class JvmOptionsParserTest {
     private BufferedReader asReader(String s) {
         return new BufferedReader(new StringReader(s));
     }
+
+    @Test
+    public void canary() {
+        fail("Opssss yess it has to fail!!");
+    }
 }
