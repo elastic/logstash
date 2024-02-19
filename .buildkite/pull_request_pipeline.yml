@@ -1,6 +1,32 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 steps:
+  - label: testaws1
+    agents:
+      provider: aws
+      imagePrefix: platform-ingest-beats-ubuntu-2204-aarch64
+      instanceType: "m6g.4xlarge"
+      diskSizeGb: 200
+    command: |
+      #!/usr/bin/env /bin/bash
+      echo "--- os-release details"
+      cat /etc/os-release
+      echo "--- uname details" 
+      uname -a
+
+  - label: testaws2
+    agents:
+      provider: aws
+      imagePrefix: platform-ingest-beats-ubuntu-2004-aarch64
+      instanceType: "m6g.4xlarge"
+      diskSizeGb: 200
+    command: |
+      #!/usr/bin/env /bin/bash
+      echo "--- os-release details"
+      cat /etc/os-release
+      echo "--- uname details" 
+      uname -a
+
   - label: ":passport_control: License check"
     key: "license-check"
     agents:
