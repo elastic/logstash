@@ -100,8 +100,8 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
-      //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
-      testLogging {
+    //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
+    testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
       showExceptions true
@@ -896,6 +896,11 @@ tasks.register("copyJdk", Copy) {
 tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
     dependsOn "decompressJdk"
     osName = selectOsType()
+}
+
+tasks.register("javaTests") {
+    dependsOn ":logstash-core:javaTests"
+    dependsOn ":jvm-options-parser:test"
 }
 
 clean {
