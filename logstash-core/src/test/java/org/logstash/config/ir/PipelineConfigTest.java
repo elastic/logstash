@@ -108,7 +108,7 @@ public class PipelineConfigTest extends RubyEnvTestCase {
     public void setUp() throws IncompleteSourceWithMetadataException {
 
         source = RubyUtil.RUBY.getClass("LogStash::Config::Source::Local");
-        pipelineIdSym = RubySymbol.newSymbol(RubyUtil.RUBY, PIPELINE_ID);
+        pipelineIdSym = RubyUtil.RUBY.newString(PIPELINE_ID).intern();
 
         final SourceCollector sourceCollector = new SourceCollector();
         sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n", "{\"version\": \"1\"}");
