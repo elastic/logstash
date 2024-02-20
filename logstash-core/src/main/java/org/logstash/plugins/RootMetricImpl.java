@@ -23,6 +23,7 @@ package org.logstash.plugins;
 import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import org.jruby.RubyArray;
+import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.instrument.metrics.AbstractMetricExt;
@@ -45,7 +46,8 @@ public class RootMetricImpl implements Metric {
     @Override
     public NamespacedMetric namespace(final String... key) {
         final IRubyObject[] rubyfiedKeys = Stream.of(key)
-            .map(this.threadContext.getRuntime()::newSymbol)
+            .map(this.threadContext.getRuntime()::newString)
+            .map(RubyString::intern)
             .toArray(IRubyObject[]::new);
 
         return new NamespacedMetricImpl(
