@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-12-2,Logstash 8.12.2>>
 * <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
 * <<logstash-8-11-4,Logstash 8.11.4>>
@@ -53,6 +54,23 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-12-2]]
+=== Logstash 8.12.2 Release Notes
+
+* Set Netty's maxOrder options to previous default value of 11 https://github.com/elastic/logstash/pull/15928[#15928]
+* Add "openssl" to UBI docker images https://github.com/elastic/logstash/pull/15929[#15929]
+
+==== Plugins
+
+*Jdbc Integration - 5.4.8*
+
+* Update Derby to 10.15.2.1 (built from source) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/155[#155] 
+* Update sequel version to >= 5.74.0, that allows the generic jdbc adapter to better handle disconnect errors https://github.com/logstash-plugins/logstash-integration-jdbc/pull/153[#153]
+
+*Kafka Integration - 11.3.4*
+
+* Fix "retries" and "value_serializer" error handling in output plugin https://github.com/logstash-plugins/logstash-integration-kafka/pull/160[#160]
 
 [[logstash-8-12-1]]
 === Logstash 8.12.1 Release Notes
