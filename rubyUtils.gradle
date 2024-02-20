@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-core:9.4.5.0"
+        classpath "org.jruby:jruby-core:9.4.6.0"
     }
 }
 
@@ -239,15 +239,6 @@ tasks.register("downloadJRuby", Download) {
     dest new File("${projectDir}/vendor/_", "jruby-dist-${jRubyVersion}-bin.tar.gz")
 }
 
-tasks.register("downloadPreviousJRuby", Download) {
-    description "Download previous JRuby artifact from this specific URL: ${previousJRubyURL}"
-    src previousJRubyURL
-    onlyIfNewer true
-    inputs.file(versionsPath)
-    outputs.file(previousJrubyTarPath)
-    dest new File("${projectDir}/vendor/_", "jruby-dist-${previousJRubyVersion}-bin.tar.gz")
-}
-
 downloadJRuby.onlyIf { customJRubyDir == "" }
 
 tasks.register("verifyFile", Verify) {
@@ -291,26 +282,8 @@ tasks.register("installCustomJRuby", Copy) {
 
 installCustomJRuby.onlyIf { customJRubyDir != "" }
 
-tasks.register("downloadAndInstallPreviousJRubyFFI", Copy) {
-    dependsOn=[downloadPreviousJRuby]
-    description "Install previous JRuby FFI files in the new JRuby directory"
-    inputs.file(previousJrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby/tmp")
-    from tarTree(downloadPreviousJRuby.dest)
-    eachFile { f ->
-        f.path = f.path.replaceFirst("^jruby-${previousJRubyVersion}", '')
-    }
-    // Copy only the previous builds of libjffi that changed from JRuby 9.3.9.0 to 9.3.10.0
-    include "**/lib/jni/**/*"
-
-    includeEmptyDirs = false
-    into "${projectDir}/vendor/jruby/tmp"
-}
-
-
 tasks.register("downloadAndInstallJRuby", Copy) {
-    // TODO remove downloadAndInstallPreviousJRubyFFI after https://github.com/elastic/logstash/issues/14873 is fixed
-    dependsOn=[verifyFile, downloadAndInstallPreviousJRubyFFI, installCustomJRuby]
+    dependsOn=[verifyFile, installCustomJRuby]
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
     outputs.dir("${projectDir}/vendor/jruby")
@@ -323,14 +296,6 @@ tasks.register("downloadAndInstallJRuby", Copy) {
 
     includeEmptyDirs = false
     into "${projectDir}/vendor/jruby"
-
-    doLast {
-        ant.jar(destfile: "${projectDir}/vendor/jruby/lib/jruby.jar", update: true) {
-            fileset(dir: "${projectDir}/vendor/jruby/tmp/lib")
-        }
-        delete files("${projectDir}/vendor/jruby/tmp")
-    }
-
 }
 
 downloadAndInstallJRuby.onlyIf { customJRubyDir == "" }
