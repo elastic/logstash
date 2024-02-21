@@ -577,19 +577,25 @@ public final class DeadLetterQueueWriter implements Closeable {
     private void finalizeSegment(final FinalizeWhen finalizeWhen, SealReason sealReason) throws IOException {
         lock.lock();
         try {
-            if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE)
+            if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE) {
+                logger.debug("Current head segment {} is not stale", currentWriter.getPath().getFileName());
                 return;
+            }
 
             if (currentWriter != null) {
                 if (currentWriter.hasWritten()) {
                     currentWriter.close();
                     sealSegment(currentSegmentIndex, sealReason);
+                } else {
+                    logger.debug("Current head segment {} is untouched", currentWriter.getPath().getFileName());
                 }
                 updateOldestSegmentReference();
                 executeAgeRetentionPolicy();
                 if (isOpen() && currentWriter.hasWritten()) {
                     nextWriter();
                 }
+            } else {
+                logger.debug("No head segment writer yet created");
             }
         } finally {
             lock.unlock();
