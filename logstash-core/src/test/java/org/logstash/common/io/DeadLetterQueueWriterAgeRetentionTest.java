@@ -345,7 +345,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     }
 
     @Test
-    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException {
+    public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException, InterruptedException {
         // https://github.com/elastic/logstash/issues/15768
 //        assumeThat(isWindows(), is(not(true)));
 
@@ -366,6 +366,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
             writeManager.writeEntry(entry);
+
+            // WARN: writeEntry set the lastWrite instant which is later checked by isStale in RecordIOWriter
+            // against now - flush period. Given that flush period is 0, it could be that now is the same
+            // instant as lastWrite, while should be greater than, so put an artificial small delay
+            Thread.sleep(10);
 
             triggerExecutionOfFlush();
 
