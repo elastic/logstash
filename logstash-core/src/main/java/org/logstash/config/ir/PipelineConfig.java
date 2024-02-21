@@ -73,7 +73,7 @@ public final class PipelineConfig {
                 RubyArray.newArray(RUBY, uncastedConfigParts);
 
         this.source = source;
-        this.pipelineId = pipelineId.toString();
+        this.pipelineId = pipelineId.name(RUBY.getCurrentContext()).asJavaString();
         SourceWithMetadata[] castedConfigParts = (SourceWithMetadata[]) configParts.toJava(SourceWithMetadata[].class);
         List<SourceWithMetadata> confParts = Arrays.asList(castedConfigParts);
         confParts.sort(Comparator.comparing(SourceWithMetadata::getProtocol)
