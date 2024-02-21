@@ -77,11 +77,6 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             this.action = action;
         }
 
-        @Override
-        public void shutdown() {
-            // Noop
-        }
-
         void executeAction() {
             action.run();
         }

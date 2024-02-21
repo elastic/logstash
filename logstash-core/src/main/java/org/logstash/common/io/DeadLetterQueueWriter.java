@@ -134,8 +134,6 @@ public final class DeadLetterQueueWriter implements Closeable {
          * Register the callback action to invoke on every clock tick.
          * */
         void repeatedAction(Runnable action);
-
-        void shutdown();
     }
 
     private static class FixedRateScheduler implements SchedulerService {
@@ -157,22 +155,11 @@ public final class DeadLetterQueueWriter implements Closeable {
         public void repeatedAction(Runnable action) {
             scheduledExecutor.scheduleAtFixedRate(action, 1L, 1L, TimeUnit.SECONDS);
         }
-
-        @Override
-        public void shutdown() {
-            scheduledExecutor.shutdown();
-        }
-
     }
 
     private static class NoopScheduler implements SchedulerService {
         @Override
         public void repeatedAction(Runnable action) {
-            // Noop
-        }
-
-        @Override
-        public void shutdown() {
             // Noop
         }
     }
@@ -323,8 +310,6 @@ public final class DeadLetterQueueWriter implements Closeable {
             } catch (Exception e) {
                 logger.warn("Unable to release fileLock, ignoring", e);
             }
-
-            flusherService.shutdown();
 
             try {
                 // flushScheduler is null only if it's not explicitly started, which happens only in tests.
