@@ -116,7 +116,7 @@ public class CustomLogEventTests {
         assertNotNull(secondMessage.get("thread"));
         Map<String, Object> logEvent = new HashMap<>();
         logEvent.put("message", "complex message");
-        logEvent.put("foo", "bar");
+        logEvent.put("logEventParams", Collections.singletonMap("foo", "bar"));
         assertEquals(logEvent, secondMessage.get("logEvent"));
 
         Map<String, Object> thirdMessage =
@@ -130,7 +130,7 @@ public class CustomLogEventTests {
         assertEquals(5, fourthMessage.size());
         logEvent = new HashMap<>();
         logEvent.put("message", "here is a map: {}");
-        logEvent.put("2", 5);
+        logEvent.put("logEventParams", Collections.singletonMap("2", 5));
         assertEquals(logEvent, fourthMessage.get("logEvent"));
 
         Map<String, Object> fifthMessage =
@@ -167,11 +167,11 @@ public class CustomLogEventTests {
         final Map<String, Object> logEvent = (Map<String, Object>) message.get("logEvent");
 
         assertEquals("Error with hash: {}", logEvent.get("message"));
-        assertEquals("foo_value", logEvent.get("foo"));
-        assertEquals("bar_value", logEvent.get("bar"));
-        assertEquals(1, logEvent.get("one"));
+        assertEquals("foo_value", logEventParams(logEvent).get("foo"));
+        assertEquals("bar_value", logEventParams(logEvent).get("bar"));
+        assertEquals(1, logEventParams(logEvent).get("one"));
 
-        final Map<String, Object> logEventMapValue = (Map<String, Object>) logEvent.get("map");
+        final Map<String, Object> logEventMapValue = (Map<String, Object>) logEventParams(logEvent).get("map");
         assertEquals(1, logEventMapValue.get("first"));
         assertEquals(2, logEventMapValue.get("second"));
     }
@@ -193,8 +193,12 @@ public class CustomLogEventTests {
 
         Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
         assertEquals("here is a map: {}", actualLogEvent.get("message"));
+        assertEquals("something to say", logEventParams(actualLogEvent).get("message"));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> logEventParams(Map<String, Object> actualLogEvent) {
         assertTrue(actualLogEvent.get("logEventParams") instanceof Map);
-        Map<String, String> logEventParams = (Map<String, String>) actualLogEvent.get("logEventParams");
-        assertEquals("something to say", logEventParams.get("message"));
+        return (Map<String, Object>) actualLogEvent.get("logEventParams");
     }
 }
