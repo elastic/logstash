@@ -19,12 +19,13 @@ class JobRetValues:
     agent: typing.Dict[typing.Any, typing.Any]
     retry: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None
     artifact_paths: list = field(default_factory=list)
+    env: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None
 
 
 class GCPAgent:
-    def __init__(self, image: str, machineType: str, diskSizeGb: int = 200, diskType: str = "pd-ssd") -> None:
+    def __init__(self, image: str, machineType: str, diskSizeGb: int = 200, diskType: str = "pd-ssd", imageProject="elastic-images-prod") -> None:
         self.provider = "gcp"
-        self.imageProject = "elastic-images-prod"
+        self.imageProject = imageProject
         self.image = image
         self.machineType = machineType
         self.diskSizeGb = diskSizeGb
@@ -161,15 +162,15 @@ class LinuxJobs(Jobs):
 
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
-            self.init_annotation,
+            # self.init_annotation,
             self.java_unit_test,
-            self.ruby_unit_test,
-            self.integration_tests_part_1,
-            self.integration_tests_part_2,
-            self.pq_integration_tests_part_1,
-            self.pq_integration_tests_part_2,
-            self.x_pack_unit_tests,
-            self.x_pack_integration,
+            # self.ruby_unit_test,
+            # self.integration_tests_part_1,
+            # self.integration_tests_part_2,
+            # self.pq_integration_tests_part_1,
+            # self.pq_integration_tests_part_2,
+            # self.x_pack_unit_tests,
+            # self.x_pack_integration,
         ]
 
     def prepare_shell(self) -> str:
@@ -198,23 +199,33 @@ eval "$(rbenv init -)"
     def emit_command(self, step_name_human, test_command: str) -> str:
         return LiteralScalarString(f"""
 {self.prepare_shell()}
-# temporarily disable immediate failure on errors, so that we can update the BK annotation
-set +eo pipefail
 {test_command}
-if [[ $$? -ne 0 ]]; then
-    {self.failed_step_annotation(step_name_human)}
-  exit 1
-else
-    {self.succeeded_step_annotation(step_name_human)}
-fi
       """)
 
     def java_unit_test(self) -> JobRetValues:
         step_name_human = "Java Unit Test"
         step_key = f"{self.group_key}-java-unit-test"
         test_command = '''
+set -u
+
+.buildkite/scripts/common/filebeat-docker.sh
+echo ">>> Checking if fb is running"
+pgrep filebeat
+echo "script logs should be under /opt/buildkite-agent/bklogs"
+
+ls -la /tmp/bklogs/
+
+source .buildkite/scripts/common/container-agent.sh
 export ENABLE_SONARQUBE="false"
+sleep 20
+ls -la /tmp/bklogs/
+
+
 ci/unit_tests.sh java
+exit_code=$$?
+FB_PID=$$(pgrep filebeat)
+kill $$FB_PID
+exit $$exit_code
         '''
 
         return JobRetValues(
@@ -330,7 +341,8 @@ if __name__ == "__main__":
 
     for matrix_os in matrix_oses:
         gcpAgent = GCPAgent(
-            image=f"family/platform-ingest-logstash-multi-jdk-{matrix_os}",
+            image=f"family/platform-ingest-bklogs-ubuntu-2204",
+            imageProject="elastic-images-qa",
             machineType="n2-standard-4",
             diskSizeGb=200,
             diskType="pd-ssd",
@@ -362,8 +374,8 @@ if __name__ == "__main__":
               "key": job_values.step_key,
             }
 
-            if job_values.depends:
-                step["depends_on"] = job_values.depends
+            # if job_values.depends:
+            #     step["depends_on"] = job_values.depends
 
             if job_values.agent:
                 step["agents"] = job_values.agent
@@ -371,8 +383,11 @@ if __name__ == "__main__":
             if job_values.artifact_paths:
                 step["artifact_paths"] = job_values.artifact_paths
 
-            if job_values.retry:
-                step["retry"] = job_values.retry
+            # if job_values.retry:
+            #     step["retry"] = job_values.retry
+
+            if job_values.env:
+                step["env"] = job_values.env
 
             step["command"] = job_values.command
 

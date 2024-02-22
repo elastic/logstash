@@ -1,0 +1,13 @@
+# catalog of tool versions
+
+# branch independent tool definitions
+common:
+
+# branch specific tool definitions
+versioned:
+  ruby:
+    jruby-9.4.2.0: ">=8.10"
+    jruby-9.3.10.0: ">=8.0, <8.10"
+    jruby-9.2.20.1: "<8.0"
+  java:
+    openjdk-17: ">=8.0"
