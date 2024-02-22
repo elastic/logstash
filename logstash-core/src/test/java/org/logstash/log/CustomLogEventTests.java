@@ -59,6 +59,7 @@ import org.logstash.RubyUtil;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
@@ -181,7 +182,6 @@ public class CustomLogEventTests {
         ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
         Logger logger = LogManager.getLogger("JSONEventLogger");
 
-//        Map<Integer, Integer> poisonMap = Collections.singletonMap(2, 5);
         Map<String, String> poisonMap = Collections.singletonMap("message", "something to say");
         logger.error("here is a map: {}", poisonMap);
 
@@ -190,12 +190,11 @@ public class CustomLogEventTests {
 
         Map<String, Object> loggedMessage = ObjectMappers.JSON_MAPPER.readValue(messages.get(0), Map.class);
         assertEquals(5, loggedMessage.size());
-//        Map<String, Object> expectedLogEvent = new HashMap<>();
-//        expectedLogEvent.put("message", "here is a map: {}");
-//        expectedLogEvent.put("message", 5);
 
         Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
         assertEquals("here is a map: {}", actualLogEvent.get("message"));
-//        assertEquals(expectedLogEvent, actualLogEvent);
+        assertTrue(actualLogEvent.get("logEventParams") instanceof Map);
+        Map<String, String> logEventParams = (Map<String, String>) actualLogEvent.get("logEventParams");
+        assertEquals("something to say", logEventParams.get("message"));
     }
 }
