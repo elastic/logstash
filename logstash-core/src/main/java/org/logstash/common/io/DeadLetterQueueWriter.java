@@ -115,9 +115,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private volatile int currentSegmentIndex;
     private volatile Timestamp lastEntryTimestamp;
     private final Duration flushInterval;
-    private Instant lastWrite;
     private final AtomicBoolean open = new AtomicBoolean(true);
-    private ScheduledExecutorService flushScheduler;
     private final LongAdder droppedEvents = new LongAdder();
     private final LongAdder expiredEvents = new LongAdder();
     private volatile String lastError = "no errors";
@@ -324,15 +322,6 @@ public final class DeadLetterQueueWriter implements Closeable {
             }
 
             flusherService.shutdown();
-
-            try {
-                // flushScheduler is null only if it's not explicitly started, which happens only in tests.
-                if (flushScheduler != null) {
-                    flushScheduler.shutdown();
-                }
-            } catch (Exception e) {
-                logger.warn("Unable shutdown flush scheduler, ignoring", e);
-            }
         }
     }
 
@@ -371,7 +360,6 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
         long writtenBytes = currentWriter.writeEvent(record);
         currentQueueSize.getAndAdd(writtenBytes);
-        lastWrite = Instant.now();
     }
 
     private boolean exceedSegmentSize(int eventPayloadSize) throws IOException {
@@ -589,19 +577,25 @@ public final class DeadLetterQueueWriter implements Closeable {
     private void finalizeSegment(final FinalizeWhen finalizeWhen, SealReason sealReason) throws IOException {
         lock.lock();
         try {
-            if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE)
+            if (!isCurrentWriterStale() && finalizeWhen == FinalizeWhen.ONLY_IF_STALE) {
+                logger.debug("Current head segment {} is not stale", currentWriter.getPath().getFileName());
                 return;
+            }
 
             if (currentWriter != null) {
                 if (currentWriter.hasWritten()) {
                     currentWriter.close();
                     sealSegment(currentSegmentIndex, sealReason);
+                } else {
+                    logger.debug("Current head segment {} is untouched", currentWriter.getPath().getFileName());
                 }
                 updateOldestSegmentReference();
                 executeAgeRetentionPolicy();
                 if (isOpen() && currentWriter.hasWritten()) {
                     nextWriter();
                 }
+            } else {
+                logger.debug("No head segment writer yet created");
             }
         } finally {
             lock.unlock();
@@ -614,19 +608,6 @@ public final class DeadLetterQueueWriter implements Closeable {
                 StandardCopyOption.ATOMIC_MOVE);
         logger.debug("Sealed segment with index {} because {}", segmentIndex, motivation);
     }
-
-    private void createFlushScheduler() {
-        flushScheduler = Executors.newScheduledThreadPool(1, r -> {
-            Thread t = new Thread(r);
-            //Allow this thread to die when the JVM dies
-            t.setDaemon(true);
-            //Set the name
-            t.setName("dlq-flush-check");
-            return t;
-        });
-        flushScheduler.scheduleAtFixedRate(this::scheduledFlushCheck, 1L, 1L, TimeUnit.SECONDS);
-    }
-
 
     private long computeQueueSize() throws IOException {
         return listSegmentPaths(this.queuePath)
