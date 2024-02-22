@@ -68,6 +68,9 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
             return;
         }
 
+//        generator.writeFieldName("logEventParams");
+//        generator.writeStartObject();
+
         for (final Map.Entry<Object, Object> entry : message.getParams().entrySet()) {
             final String paramName = entry.getKey().toString();
             final Object paramValue = entry.getValue();
@@ -92,6 +95,8 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
                 generator.writeObjectField(paramName, paramValue.toString());
             }
         }
+
+//        generator.writeEndObject();
     }
 
     private boolean isValueSafeToWrite(Object value) {
