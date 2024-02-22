@@ -174,4 +174,28 @@ public class CustomLogEventTests {
         assertEquals(1, logEventMapValue.get("first"));
         assertEquals(2, logEventMapValue.get("second"));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testJSONLayoutWhenParamsContainsAnotherMessageField() throws JsonProcessingException {
+        ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
+        Logger logger = LogManager.getLogger("JSONEventLogger");
+
+//        Map<Integer, Integer> poisonMap = Collections.singletonMap(2, 5);
+        Map<String, String> poisonMap = Collections.singletonMap("message", "something to say");
+        logger.error("here is a map: {}", poisonMap);
+
+        List<String> messages = appender.getMessages();
+        assertEquals(1, messages.size());
+
+        Map<String, Object> loggedMessage = ObjectMappers.JSON_MAPPER.readValue(messages.get(0), Map.class);
+        assertEquals(5, loggedMessage.size());
+//        Map<String, Object> expectedLogEvent = new HashMap<>();
+//        expectedLogEvent.put("message", "here is a map: {}");
+//        expectedLogEvent.put("message", 5);
+
+        Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
+        assertEquals("here is a map: {}", actualLogEvent.get("message"));
+//        assertEquals(expectedLogEvent, actualLogEvent);
+    }
 }
