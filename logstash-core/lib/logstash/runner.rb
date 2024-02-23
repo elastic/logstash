@@ -326,6 +326,16 @@ class LogStash::Runner < Clamp::StrictCommand
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info "JVM bootstrap flags: #{jvmArgs}"
 
+    ruby_encoding_info = %w(external internal locale filesystem).map do |type|
+      Encoding.find(type)&.name&.then { |name| "#{type}:#{name}" }
+    end.compact.join(", ")
+
+    logger.info <<~ENCODINGINFO.tr("\n", ' ')
+      Ruby.Encoding=(#{ruby_encoding_info})
+      Java.Locale=`#{java.util.Locale::getDefault().toLanguageTag()}`
+      Java.Charset=`#{java.nio.charset.Charset::defaultCharset().displayName()}`
+    ENCODINGINFO
+
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
 

@@ -25,6 +25,16 @@ require "stud/try"
 describe "Test Monitoring API" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
+    ruby_encoding_info = %w(external internal locale filesystem).map do |type|
+      Encoding.find(type)&.name&.then { |name| "#{type}:#{name}" }
+    end.compact.join(", ")
+
+    $stderr.puts <<~ENCODINGINFO.tr("\n", ' ')
+      INFO(spec runner process)
+      Ruby.Encoding=(#{ruby_encoding_info})
+      Java.Locale=`#{java.util.Locale::getDefault().toLanguageTag()}`
+      Java.Charset=`#{java.nio.charset.Charset::defaultCharset().displayName()}`
+    ENCODINGINFO
   }
 
   after(:all) {
@@ -171,7 +181,6 @@ describe "Test Monitoring API" do
 
     it "can retrieve queue stats" do
       logstash_service = @fixture.get_service("logstash")
-      logstash_service.env_variables = { 'LANG' => 'en_US.UTF-8' }
       logstash_service.start_with_stdin('--pipeline.id' => pipeline_id)
       logstash_service.wait_for_logstash
 
@@ -202,7 +211,6 @@ describe "Test Monitoring API" do
 
     it "retrieves the pipeline flow statuses" do
       logstash_service = @fixture.get_service("logstash")
-      logstash_service.env_variables = { 'LANG' => 'en_US.UTF-8' }
       logstash_service.start_with_stdin('--pipeline.id' => pipeline_id)
       logstash_service.wait_for_logstash
       number_of_events.times {
@@ -252,7 +260,6 @@ describe "Test Monitoring API" do
           EOPIPELINE
 
         logstash_service = @fixture.get_service("logstash")
-        logstash_service.env_variables = { 'LANG' => 'en_US.UTF-8' }
         logstash_service.start_with_stdin('--pipeline.id' => pipeline_id, '--config.string' => plugins_config)
         logstash_service.wait_for_logstash
         number_of_events.times {
