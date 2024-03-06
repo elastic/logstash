@@ -147,7 +147,9 @@ COPY pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
-COPY env2yaml/env2yaml /usr/local/bin/
+# Copy over the appropriate env2yaml artifact
+ARG TARGETARCH
+COPY env2yaml/env2yaml-${TARGETARCH} /usr/local/bin/env2yaml
 # Place the startup wrapper script.
 COPY bin/docker-entrypoint /usr/local/bin/
 <% else -%>
