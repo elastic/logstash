@@ -19,9 +19,9 @@ jobs:
           owner: elastic
           # when running with on: pull_request_target we get the PR base ref by default
           ref: ${{ github.event.pull_request.head.sha }}
-          statusName: "elasticsearch-ci/docs"
+          statusName: "buildkite/docs-build-pr"
           # https://elasticsearch-ci.elastic.co/job/elastic+logstash+pull-request+build-docs
-          # usually finishes in ~ 10 minutes
+          # usually finishes in ~ 20 minutes
           timeoutSeconds: 900
           intervalSeconds: 30
       - name: Add Docs Preview link in PR Comment
@@ -29,5 +29,5 @@ jobs:
         uses: thollander/actions-comment-pull-request@v1
         with:
           message: |
-            :page_with_curl: **DOCS PREVIEW** :sparkles: https://logstash_${{ github.event.number }}.docs-preview.app.elstc.co/diff
+            :page_with_curl: **DOCS PREVIEW** :sparkles: https://logstash_bk_${{ github.event.number }}.docs-preview.app.elstc.co/diff
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

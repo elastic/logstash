@@ -1,37 +1,33 @@
-# This Dockerfile was generated from templates/Dockerfile.j2
-{% if local_artifacts == 'false' -%}
-{%   set url_root = 'https://artifacts.elastic.co/downloads/logstash' -%}
-{% else -%}
-{%   set url_root = 'http://localhost:8000' -%}
-{% endif -%}
-
-{% if image_flavor == 'oss' -%}
-  {% set tarball = 'logstash-oss-%s-linux-$(arch).tar.gz' % (elastic_version) -%}
-  {% set license = 'Apache 2.0' -%}
-{% else -%}
-  {% set tarball = 'logstash-%s-linux-$(arch).tar.gz' % (elastic_version) -%}
-  {% set license = 'Elastic License' -%}
-{% endif -%}
-
-{% if image_flavor == 'ubi8' -%}
-  {% set base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%}
-  {% set package_manager = 'microdnf'  -%}
-  # Minimal distributions do not ship with en language packs.
-  {% set locale = 'C.UTF-8' -%}
-{% elif image_flavor == 'ironbank' -%}
-    {% set package_manager = 'yum'  -%}
-{% else -%}
-  {% set base_image = 'ubuntu:20.04'  -%}
-  {% set package_manager = 'apt-get' -%}
-  {% set locale = 'en_US.UTF-8' -%}
-{% endif -%}
-
-
-{% if image_flavor == 'ironbank' -%}
+# This Dockerfile was generated from templates/Dockerfile.erb
+<% if local_artifacts == 'false' -%>
+<%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
+<% else -%>
+<%   url_root = 'http://localhost:8000' -%>
+<% end -%>
+<% if image_flavor == 'oss' -%>
+<%   tarball = "logstash-oss-#{elastic_version}-linux-$(arch).tar.gz" -%>
+<%   license = 'Apache 2.0' -%>
+<% else -%>
+<%   tarball = "logstash-#{elastic_version}-linux-$(arch).tar.gz" -%>
+<%   license = 'Elastic License' -%>
+<% end -%>
+<% if image_flavor == 'ubi8' %>
+<%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
+<%   package_manager = 'microdnf' -%>
+# Minimal distributions do not ship with en language packs.
+<%   locale = 'C.UTF-8' -%>
+<% elsif image_flavor == 'ironbank' -%>
+<%   package_manager = 'yum' -%>
+<% else -%>
+<%   base_image = 'ubuntu:20.04' -%>
+<%   package_manager = 'apt-get' -%>
+<%   locale = 'en_US.UTF-8' -%>
+<% end -%>
+<% if image_flavor == 'ironbank' -%>
 ARG BASE_REGISTRY=registry1.dsop.io
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.2
-ARG LOGSTASH_VERSION={{ elastic_version }}
+ARG LOGSTASH_VERSION=<%= elastic_version %>
 ARG GOLANG_VERSION=1.17.8
 
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG} AS env2yaml
@@ -66,93 +62,95 @@ RUN tar zxf /opt/logstash.tar.gz && \
     mv /usr/share/logstash-${LOGSTASH_VERSION} /usr/share/logstash
 
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
-
-{% else -%}
-FROM {{ base_image }}
-
-{% endif -%}
+<% else -%>
+FROM <%= base_image %>
+<% end -%>
 
 RUN for iter in {1..10}; do \
-{% if image_flavor == 'full' or image_flavor == 'oss' -%}
-    export DEBIAN_FRONTEND=noninteractive && \
-{% endif -%}
-    {{ package_manager }} update -y && \
-{% if image_flavor != 'ironbank' -%}
-    {{ package_manager }} upgrade -y && \
-{% endif -%}
-    {{ package_manager }} install -y procps findutils tar gzip curl && \
-{% if image_flavor == 'ubi8' or image_flavor == 'ironbank' -%}
-    {{ package_manager }} install -y which shadow-utils && \
-{% else -%}
-    {{ package_manager }} install -y locales && \
-{% endif -%}
-    {{ package_manager }} clean all && \
-{% if image_flavor == 'full' or image_flavor == 'oss' -%}
-    locale-gen 'en_US.UTF-8' && \
-    {{ package_manager }} clean metadata && \
-{% endif -%}
-    exit_code=0 && break || exit_code=$? && \
-    echo "packaging error: retry $iter in 10s" && \
-    {{ package_manager }} clean all && \
-{% if image_flavor == 'full' or image_flavor == 'oss' -%}
-    {{ package_manager }} clean metadata && \
-{% endif -%}
-    sleep 10; done; \
-    (exit $exit_code)
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
+export DEBIAN_FRONTEND=noninteractive && \
+<% end -%>
+<%= package_manager %> update -y && \
+<% if image_flavor != 'ironbank' -%>
+<%= package_manager %> upgrade -y && \
+<% end -%>
+<%= package_manager %> install -y procps findutils tar gzip curl && \
+<% if image_flavor == 'ubi8' -%>
+<%= package_manager %> install -y openssl && \
+<% end -%>
+<% if image_flavor == 'ubi8' || image_flavor == 'ironbank' -%>
+<%= package_manager %> install -y which shadow-utils && \
+<% else -%>
+<%= package_manager %> install -y locales && \
+<% end -%>
+<%= package_manager %> clean all && \
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
+locale-gen 'en_US.UTF-8' && \
+<%= package_manager %> clean metadata && \
+<% end -%>
+exit_code=0 && break || exit_code=$? && \
+echo "packaging error: retry $iter in 10s" && \
+<%= package_manager %> clean all && \
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
+<%= package_manager %> clean metadata && \
+<% end -%>
+sleep 10; done; \
+(exit $exit_code)
 
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \
     adduser --uid 1000 --gid 1000 \
-      {% if image_flavor != 'ironbank' %} --home {% else %} --home-dir {% endif -%} /usr/share/logstash --no-create-home \
-      logstash
+    <% if image_flavor != 'ironbank' %>--home <% else %>--home-dir <% end %>/usr/share/logstash --no-create-home \
+    logstash
 
-{% if image_flavor == 'ironbank' -%}
+<% if image_flavor == 'ironbank' %>
 WORKDIR /usr/share/logstash
 COPY --from=env2yaml /usr/local/src/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY --from=builder --chown=1000:0 /usr/share/logstash /usr/share/logstash
-{% endif -%}
+<% end -%>
 
 # Add Logstash itself.
 RUN \
-{% if image_flavor != 'ironbank' -%} curl -Lo - {{ url_root }}/{{ tarball }} | \
+<% if image_flavor != 'ironbank' %> curl -Lo - <%= url_root %>/<%= tarball %> | \
     tar zxf - -C /usr/share && \
-    mv /usr/share/logstash-{{ elastic_version }} /usr/share/logstash && \
-{% endif -%}
+    mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
+<% end -%>
     chown --recursive logstash:logstash /usr/share/logstash/ && \
     chown -R logstash:root /usr/share/logstash && \
     chmod -R g=u /usr/share/logstash && \
     mkdir /licenses/ && \
     mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
     mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
-{% if image_flavor != 'ironbank' -%}  find /usr/share/logstash -type d -exec chmod g+s {} \; && \
-{% endif -%}
+<% if image_flavor != 'ironbank' -%>
+    find /usr/share/logstash -type d -exec chmod g+s {} \; && \
+<% end -%>
     ln -s /usr/share/logstash /opt/logstash
 
-{% if image_flavor != 'ironbank' -%}
+<% if image_flavor != 'ironbank' %>
 WORKDIR /usr/share/logstash
-{% endif -%}
+<% end -%>
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
 
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
-{% if image_flavor != 'ironbank' -%}
+<% if image_flavor != 'ironbank' -%>
 COPY config/pipelines.yml config/pipelines.yml
-{% if image_flavor == 'oss' -%}
+<% if image_flavor == 'oss' -%>
 COPY config/logstash-oss.yml config/logstash.yml
-{% else -%}
+<% else -%>
 COPY config/logstash-full.yml config/logstash.yml
-{% endif -%}
+<% end -%>
 COPY config/log4j2.properties config/
 COPY config/log4j2.file.properties config/
 COPY pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
-ENV LANG={{ locale }} LC_ALL={{ locale }}
+ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 COPY env2yaml/env2yaml /usr/local/bin/
 # Place the startup wrapper script.
 COPY bin/docker-entrypoint /usr/local/bin/
-{% else -%}
+<% else -%>
 COPY scripts/config/pipelines.yml config/pipelines.yml
 COPY scripts/config/logstash.yml config/logstash.yml
 COPY scripts/config/log4j2.properties config/
@@ -161,7 +159,7 @@ COPY scripts/pipeline/default.conf pipeline/logstash.conf
 RUN chown --recursive logstash:root config/ pipeline/
 # Place the startup wrapper script.
 COPY scripts/bin/docker-entrypoint /usr/local/bin/
-{% endif -%}
+<% end -%>
 
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
 
@@ -169,33 +167,32 @@ USER 1000
 
 EXPOSE 9600 5044
 
-{% if image_flavor != 'ironbank' -%}
+<% if image_flavor != 'ironbank' -%>
 LABEL  org.label-schema.schema-version="1.0" \
   org.label-schema.vendor="Elastic" \
   org.opencontainers.image.vendor="Elastic" \
   org.label-schema.name="logstash" \
   org.opencontainers.image.title="logstash" \
-  org.label-schema.version="{{ elastic_version }}" \
-  org.opencontainers.image.version="{{ elastic_version }}" \
+  org.label-schema.version="<%= elastic_version %>" \
+  org.opencontainers.image.version="<%= elastic_version %>" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
   org.label-schema.vcs-url="https://github.com/elastic/logstash" \
-  org.label-schema.license="{{ license }}" \
-  org.opencontainers.image.licenses="{{ license }}" \
+  org.label-schema.license="<%= license %>" \
+  org.opencontainers.image.licenses="<%= license %>" \
   org.opencontainers.image.description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  org.label-schema.build-date={{ created_date }} \
-{% if image_flavor == 'ubi8' -%}
-  license="{{ license }}" \
+  org.label-schema.build-date=<%= created_date %> \
+<% if image_flavor == 'ubi8' -%>  license="<%= license %>" \
   description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
   name="logstash" \
   maintainer="info@elastic.co" \
   summary="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
   vendor="Elastic" \
-{% endif -%}
-  org.opencontainers.image.created={{ created_date }}
-{% endif -%}
+<% end -%>
+  org.opencontainers.image.created=<%= created_date %>
+<% end -%>
 
-{% if image_flavor == 'ironbank' -%}
+<% if image_flavor == 'ironbank' -%>
 HEALTHCHECK --interval=10s --timeout=5s --start-period=1m --retries=5 CMD curl -I -f --max-time 5 http://localhost:9600 || exit 1
-{% endif -%}
+<% end -%>
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
