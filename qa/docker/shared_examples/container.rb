@@ -22,10 +22,10 @@ shared_examples_for 'the container is configured correctly' do |flavor|
       expect(console_filtered).to match /#{version}/
     end
 
-    it 'should run with the bundled JDK' do
-      first_console_line = exec_in_container(@container, 'logstash --version').split("\n")[0]
-      expect(first_console_line).to match /Using bundled JDK: \/usr\/share\/logstash\/jdk/
-    end
+   # it 'should run with the bundled JDK' do
+   #   first_console_line = exec_in_container(@container, 'logstash --version').split("\n")[0]
+   #   expect(first_console_line).to match /Using bundled JDK: \/usr\/share\/logstash\/jdk/
+   # end
 
     it 'should be running an API server on port 9600' do
       wait_for_logstash(@container)

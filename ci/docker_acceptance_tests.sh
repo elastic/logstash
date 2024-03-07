@@ -65,6 +65,18 @@ elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
 
   echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/ubi8/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "cgr" ]]; then
+  echo "--- Building $SELECTED_TEST_SUITE docker images to generate versions-gem-copy.xml file"
+  cd $LS_HOME
+  rake artifact:docker
+
+  echo "--- Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+
+  docker pull docker.elastic.co/sscs/logstash-cgr:20231208-pr-8
+  echo "--- Acceptance: Running the tests"
+  bundle exec rspec docker/spec/cgr/*_spec.rb
 else
   echo "--- Building all docker images"
   cd $LS_HOME

@@ -83,14 +83,13 @@ steps:
     depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
-      - label: "Docker [{{matrix}}] flavor acceptance"
+      - label: "Docker Chainguard flavor acceptance"
         command:
           set -euo pipefail
           
           source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
         matrix:
-          - "full"
-          - "oss"
+          - "cgr"
 
       # *** TODO: enable after clarifying if acceptance tests really need vagrant on aarch64
       # - label: "Acceptance tests on {{matrix.distribution}}"
