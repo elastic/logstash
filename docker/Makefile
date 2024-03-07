@@ -56,7 +56,8 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
-COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
@@ -65,7 +66,8 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64: data/logstash/env2yaml/env2yaml-arm64
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64: data/logstash/env2yaml/env2yaml-amd64
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
