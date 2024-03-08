@@ -403,7 +403,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.8.0-java)
+    logstash-input-beats (6.8.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -430,7 +430,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-normalize_config_support (~> 1.0)
       logstash-mixin-plugin_factory_support
-    logstash-input-elasticsearch (4.20.1)
+    logstash-input-elasticsearch (4.20.2)
       elasticsearch (>= 7.17.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
@@ -776,7 +776,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.7.3-java)
-    rack (2.2.8)
+    rack (2.2.8.1)
     rack-protection (2.2.4)
       rack
     rack-test (2.1.0)
