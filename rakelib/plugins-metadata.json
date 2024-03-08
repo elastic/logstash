@@ -316,7 +316,7 @@
     "skip-list": false
   },
   "logstash-input-imap": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   },
   "logstash-input-java_input_example": {
