@@ -51,7 +51,7 @@ GEM
     aws-sdk-cloudwatch (1.86.0)
       aws-sdk-core (~> 3, >= 3.191.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-core (3.191.1)
+    aws-sdk-core (3.191.3)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.8)
@@ -178,7 +178,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.14.1)
+    i18n (1.14.4)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     jar-dependencies (0.4.1)
@@ -316,7 +316,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (0.1.6-java)
+    logstash-filter-elastic_integration (0.1.8-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (3.16.1)
@@ -403,7 +403,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.8.0-java)
+    logstash-input-beats (6.8.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -430,7 +430,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-normalize_config_support (~> 1.0)
       logstash-mixin-plugin_factory_support
-    logstash-input-elasticsearch (4.20.1)
+    logstash-input-elasticsearch (4.20.2)
       elasticsearch (>= 7.17.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
@@ -776,7 +776,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.7.3-java)
-    rack (2.2.8)
+    rack (2.2.8.1)
     rack-protection (2.2.4)
       rack
     rack-test (2.1.0)
@@ -798,7 +798,7 @@ GEM
     rspec-mocks (3.13.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.0)
+    rspec-support (3.13.1)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
     rubocop (1.60.2)
@@ -879,6 +879,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
