@@ -64,19 +64,19 @@ public abstract class MetricTestCase extends RubyEnvTestCase {
 
         RubyHash rh = metricStore;
         for (String p : path) {
-            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(p));
+            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern());
         }
         return rh;
     }
 
     protected String getMetricStringValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
         RubyString value = (RubyString) counter.callMethod("value");
         return value.asJavaString();
     }
 
     protected long getMetricLongValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
         RubyFixnum count = (RubyFixnum) counter.callMethod("value");
         return count.getLongValue();
     }

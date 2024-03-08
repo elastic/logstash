@@ -14,6 +14,8 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
 
+echo "LOCALE INFO:"$'\n'"$(locale | pr -to2)"
+
 if [[ $1 = "setup" ]]; then
  echo "Setup only, no tests will be run"
  exit 0

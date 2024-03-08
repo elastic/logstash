@@ -216,7 +216,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         Class klazz;
 
         StrategyPair(String symbolName, Class c) {
-            this.symbol = RUBY.newSymbol(symbolName);
+            this.symbol = RUBY.newString(symbolName).intern();
             this.klazz = c;
         }
     }

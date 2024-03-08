@@ -112,12 +112,22 @@ class LogstashService < Service
 
   # Can start LS in stdin and can send messages to stdin
   # Useful to test metrics and such
-  def start_with_stdin(pipeline_config = STDIN_CONFIG)
-    puts "Starting Logstash #{@logstash_bin} -e #{pipeline_config}"
+  # @overload start_with_stdin(options)
+  #   @param [Hash{String=>String}] options
+  #   @option options [String] '--config.string': the pipeline to run (default: STDIN_CONFIG)
+  #   @option options [String] '-e': alias for `--config.string`
+  # @overload start_with_stdin(pipeline_config_string)
+  #   @param [String] pipeline_config_string: the pipeline to run (default: STDIN_CONFIG)
+  def start_with_stdin(options={})
+    # pipeline_config = STDIN_CONFIG
+    params = options.kind_of?(Hash) ? options.dup : Hash['--config.string', options]
+    params['--config.string'] ||= params.delete('-e') || STDIN_CONFIG
+
+    puts "Starting Logstash #{@logstash_bin} #{params.to_a.flatten}"
     Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true
-      @process = build_child_process("-e", pipeline_config)
+      @process = build_child_process(*params.to_a.flatten(1))
       # pipe STDOUT and STDERR to a file
       @process.io.stdout = @process.io.stderr = out
       @process.duplex = true
