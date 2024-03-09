@@ -7,7 +7,7 @@ and write and delete documents in the indices it creates.
 
 To set up authentication credentials for Logstash:
 
-. Use the the **Management > Roles** UI in {kib} or the `role` API to create a
+. Use the **Management > Roles** UI in {kib} or the `role` API to create a
 `logstash_writer` role. For *cluster* privileges, add `manage_index_templates` and `monitor`. 
 For *indices* privileges, add `write`, `create`, and `create_index`.
 +

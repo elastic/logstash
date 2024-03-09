@@ -31,7 +31,7 @@ describe LogStash::StateResolver do
   end
 
   after do
-    # ensure that the the created pipeline are closed
+    # ensure that the created pipeline are closed
     pipelines.running_pipelines.each { |_, pipeline| pipeline.close }
   end
 
