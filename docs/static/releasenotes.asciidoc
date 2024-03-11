@@ -61,6 +61,7 @@ This section summarizes the changes in the following releases:
 
 * Package `elastic_integration` plugin. https://github.com/elastic/logstash/pull/15769[#15769]
 * Flow metrics added `worker_utilization` to pipeline-level https://github.com/elastic/logstash/pull/15912[#15912]
+* Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
 
 ==== Plugins
 
