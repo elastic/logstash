@@ -198,7 +198,7 @@ public class JvmOptionsParser {
         if (maxOrderAlreadyContained) {
             return options;
         }
-        final Set<String> acc = new HashSet<>(options);
+        final Set<String> acc = new LinkedHashSet<>(options);
         acc.add("-Dio.netty.allocator.maxOrder=11");
         return acc;
     }
