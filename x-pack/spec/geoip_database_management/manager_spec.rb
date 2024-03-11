@@ -116,8 +116,6 @@ describe LogStash::GeoipDatabaseManagement::Manager, aggregate_failures: true, v
         let(:existing_asn_db_path) { nil }
 
         it 'logs info about database manager being disabled' do
-          ::Dir.glob("#{settings_path_data}/**/*").each {|f| puts "  EXISTS(#{f})"}
-
           manager_instance # instantiate
 
           expect(mock_logger).to have_received(:info).with(a_string_including "database manager is disabled")
