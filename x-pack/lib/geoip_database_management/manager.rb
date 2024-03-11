@@ -59,9 +59,13 @@ module LogStash module GeoipDatabaseManagement class Manager
     @metadata = Metadata.new(data_path)
 
     unless enabled?
-      logger.info("database manager is disabled; removing managed databases from disk``")
-      metadata.delete
-      clean_up_database
+      if @metadata.exist?
+        logger.info("database manager is disabled; removing managed databases from disk``")
+        metadata.delete
+        clean_up_database
+      else
+        logger.info("database manager is disabled.")
+      end
     end
   end
 
@@ -142,6 +146,8 @@ module LogStash module GeoipDatabaseManagement class Manager
   end
 
   def clean_up_database(excluded_dirnames = [])
+    return unless ::Dir.exist?(data_path.root)
+
     protected_dirnames = excluded_dirnames.uniq
     existing_dirnames = ::Dir.children(data_path.root)
                              .select { |f| ::File.directory? ::File.join(data_path.root, f) }
