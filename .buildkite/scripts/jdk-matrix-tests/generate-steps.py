@@ -135,13 +135,30 @@ class WindowsJobs(Jobs):
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
         return [
           self.init_annotation,
-          self.unit_tests,
+          self.java_unit_test,
+          self.ruby_unit_test,          
         ]
 
-    def unit_tests(self) -> JobRetValues:
-        step_name_human = "Unit Test (Java/Ruby)"
-        step_key = f"{self.group_key}-unit-test"
-        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.ps1" -Annotate
+    def java_unit_test(self) -> JobRetValues:
+        step_name_human = "Java Unit Test"
+        step_key = f"{self.group_key}-java-unit-test"
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.ps1 java" -Annotate
+        '''
+
+        return JobRetValues(
+            step_label=step_name_human,
+            command=LiteralScalarString(test_command),
+            step_key=step_key,
+            depends=self.init_annotation_key,
+            artifact_paths=["build_reports.zip"],
+            agent=self.agent.to_dict(),
+            retry=copy.deepcopy(ENABLED_RETRIES),
+        )
+
+    def ruby_unit_test(self) -> JobRetValues:
+        step_name_human = "Ruby Unit Test"
+        step_key = f"{self.group_key}-ruby-unit-test"
+        test_command = rf'''.\\.buildkite\\scripts\\jdk-matrix-tests\\launch-command.ps1 -JDK "{self.jdk}" -StepNameHuman "{step_name_human}" -AnnotateContext "{self.group_key}" -CIScript ".\\ci\\unit_tests.ps1 ruby" -Annotate
         '''
 
         return JobRetValues(
