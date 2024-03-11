@@ -6,8 +6,7 @@ manage updates to your configuration over time.
 
 The topics in this section describe Logstash configuration management features
 only. For information about other config management tools, such as Puppet and
-Chef, see the documentation for those projects. Also take a look at the
-https://forge.puppet.com/elastic/logstash[Logstash Puppet module documentation].
+Chef, see the documentation for those projects.
 
 :edit_url!:
 include::management/centralized-pipelines.asciidoc[]
