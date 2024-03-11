@@ -119,7 +119,9 @@ describe LogStash::ConfigManagement::BootstrapCheck do
       end
 
       context 'when a configuration file exists in the specified location' do
-        let(:config_location) { Stud::Temporary.file.path }
+        # gsub replacement is only for Windows platform, without `gsub` `Dir.glob` cannot discover files and test fails
+        # note that in other `Dir.glob` places, we used `File.join/dirname` operations which doesn't create issue on Windows
+        let(:config_location) { Stud::Temporary.file.path.gsub("\\", "/") }
 
         it "raises a `LogStash::BootstrapCheckError` error" do
           expect { subject.check(settings) }.to raise_error LogStash::BootstrapCheckError
