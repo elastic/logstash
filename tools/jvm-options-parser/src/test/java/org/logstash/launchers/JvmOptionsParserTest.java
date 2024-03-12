@@ -151,6 +151,26 @@ public class JvmOptionsParserTest {
 
     }
 
+    @Test
+    public void testEnvironmentOPTSVariableTakesPrecedenceOverOptionsFile() throws IOException {
+        String regex = "Xmx[^ ]+";
+        String expected = "Xmx25g";
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Xmx1g"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, expected);
+
+        final String output = outputStreamCaptor.toString();
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        String lastMatch = pattern.matcher(output)
+                .results()
+                .map(java.util.regex.MatchResult::group)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+        assertEquals("LS_JAVA_OPTS env must take precedence over jvm.options file", expected, lastMatch);
+    }
+
     private File writeIntoTempOptionsFile(Consumer<PrintWriter> writer) throws IOException {
         File optionsFile = temp.newFile("jvm.options");
         PrintWriter optionsWriter = new PrintWriter(new FileWriter(optionsFile));
