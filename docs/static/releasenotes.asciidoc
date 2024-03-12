@@ -63,6 +63,11 @@ This section summarizes the changes in the following releases:
 * Flow metrics added `worker_utilization` to pipeline-level https://github.com/elastic/logstash/pull/15912[#15912]
 * Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
 
+[[notable-8.13.0]]
+==== Notable issues fixed
+
+* Ensure that the order of JVM options from both files and environment variables is respected https://github.com/elastic/logstash/pull/15997[15997]
+
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.6*
@@ -99,6 +104,12 @@ This section summarizes the changes in the following releases:
 
 * Set Netty's maxOrder options to previous default value of 11 https://github.com/elastic/logstash/pull/15928[#15928]
 * Add "openssl" to UBI docker images https://github.com/elastic/logstash/pull/15929[#15929]
+
+[[known-issues-8.12.2]]
+==== Known issues
+
+* The order of JVM flags is broken, leading to the inability to customize certain JVM configurations with the environment variable `LS_JAVA_OPTS`. https://github.com/elastic/logstash/issues/15996[15996]
+** A workaround is to specify JVM flags in the `config/jvm.options` file rather than relying on the `LS_JAVA_OPTS` environment variable.
 
 ==== Plugins
 
