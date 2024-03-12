@@ -198,7 +198,9 @@ public class JvmOptionsParser {
         if (maxOrderAlreadyContained) {
             return options;
         }
-        final Set<String> acc = new HashSet<>(options);
+        // Order is important because LS_JAVA_OPTS is added last and must take precedence 
+        // over settings in jvm.options
+        final Set<String> acc = new LinkedHashSet<>(options);
         acc.add("-Dio.netty.allocator.maxOrder=11");
         return acc;
     }
