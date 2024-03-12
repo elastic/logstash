@@ -74,7 +74,7 @@ export DEBIAN_FRONTEND=noninteractive && \
 <% if image_flavor != 'ironbank' -%>
 <%= package_manager %> upgrade -y && \
 <% end -%>
-<%= package_manager %> install -y procps findutils tar gzip curl && \
+<%= package_manager %> install -y procps findutils tar gzip && \
 <% if image_flavor == 'ubi8' -%>
 <%= package_manager %> install -y openssl && \
 <% end -%>
@@ -82,6 +82,9 @@ export DEBIAN_FRONTEND=noninteractive && \
 <%= package_manager %> install -y which shadow-utils && \
 <% else -%>
 <%= package_manager %> install -y locales && \
+<% end -%>
+<% if image_flavor != 'ubi9' && image_flavor != 'ironbank' -%>
+<%= package_manager %> install -y curl && \
 <% end -%>
 <%= package_manager %> clean all && \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
