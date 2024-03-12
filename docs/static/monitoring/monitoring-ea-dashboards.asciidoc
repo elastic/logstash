@@ -108,7 +108,7 @@ include::monitoring-view.asciidoc[]
 === Monitor {ls} logs and metrics
 
 From the list of assets, open the **[Metrics {ls}] {ls} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {ls} performance.
-+
+
 [role="screenshot"]
 image::images/integration-dashboard-overview.png[The {ls} Overview dashboard in {kib} with various metrics from your monitored {ls}]
 
