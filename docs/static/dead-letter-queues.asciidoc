@@ -131,7 +131,7 @@ Set the value to `drop_older` to remove the oldest events to make space for new 
 [[age-policy]]
 ====== Age policy
 You can use the age policy to automatically control the volume of events in the dead letter queue.
-Use the the `dead_letter_queue.retain.age` setting (in `logstash.yml` or `pipelines.yml`) to have {ls}
+Use the `dead_letter_queue.retain.age` setting (in `logstash.yml` or `pipelines.yml`) to have {ls}
 remove events that are older than a value you define.
 Available time units are `d`, `h`, `m`, `s` respectively for days, hours, minutes and seconds.
 There is no default time unit, so you need to specify it.
