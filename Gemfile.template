@@ -9,6 +9,7 @@ gem "paquet", "~> 0.2"
 gem "pleaserun", "~>0.0.28", require: false
 gem "rake", "~> 13", require: false
 gem "ruby-progressbar", "~> 1", require: false
+gem "ruby-maven-libs", "~> 3", ">= 3.8.9"
 gem "logstash-output-elasticsearch", ">= 11.14.0"
 gem "polyglot", require: false
 gem "treetop", require: false

@@ -177,6 +177,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "rspec-mocks:",https://github.com/rspec/rspec-mocks,MIT
 "rspec-support:",https://github.com/rspec/rspec-support,MIT
 "rspec-wait:",https://github.com/laserlemon/rspec-wait,MIT
+"ruby-maven-libs:",https://github.com/jruby/ruby-maven-libs,Apache-2.0
 "ruby-progressbar:",https://github.com/jfelchner/ruby-progressbar,MIT
 "ruby2_keywords",https://github.com/ruby/ruby2_keywords,BSD-2-Clause
 "rubyzip:",https://github.com/rubyzip/rubyzip,BSD-2-Clause-FreeBSD
