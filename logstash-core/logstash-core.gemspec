@@ -57,6 +57,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "sinatra", '~> 2'
   gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.4.2'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.14.1"
+  gem.add_runtime_dependency 'ruby-maven-libs', '~> 3', '>= 3.8.9'
+
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
