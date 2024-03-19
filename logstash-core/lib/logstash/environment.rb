@@ -72,6 +72,7 @@ module LogStash
            Setting::Boolean.new("help", false),
            Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
+           Setting::Boolean.new("log.format.json_strict", false),
            Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled"),
             Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host"),
          Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port"),
@@ -124,6 +125,7 @@ module LogStash
   SETTINGS.on_post_process do |settings|
     # Configure Logstash logging facility. This needs to be done as early as possible to
     # make sure the logger has the correct settings tnd the log level is correctly defined.
+    java.lang.System.setProperty("ls.log.json.strict", settings.get("log.format.json_strict").to_s)
     java.lang.System.setProperty("ls.logs", settings.get("path.logs"))
     java.lang.System.setProperty("ls.log.format", settings.get("log.format"))
     java.lang.System.setProperty("ls.log.level", settings.get("log.level"))

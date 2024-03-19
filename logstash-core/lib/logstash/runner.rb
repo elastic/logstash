@@ -232,6 +232,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "log.format",
     :default => LogStash::SETTINGS.get_default("log.format")
 
+  option ["--log.format.json_strict"], "FORMAT",
+    I18n.t("logstash.runner.flag.log_format"),
+    :attribute_name => "log.format.json_strict",
+    :default => LogStash::SETTINGS.get_default("log.format.json_strict")
+
   option ["--path.settings"], "SETTINGS_DIR",
     I18n.t("logstash.runner.flag.path_settings"),
     :attribute_name => "path.settings",

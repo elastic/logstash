@@ -99,7 +99,9 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
     private static String renameParamNameIfClashingWithMessage(Map.Entry<Object, Object> entry) {
         final String paramName = entry.getKey().toString();
         if ("message".equals(paramName)) {
-            return "message_1";
+            if ("true".equalsIgnoreCase(System.getProperty("ls.log.json.strict"))) {
+                return "message_1";
+            }
         }
         return paramName;
     }
