@@ -19,7 +19,7 @@ data.
 
 // tag::standalone[]
 . When the **Add Agent flyout** appears, navigate to the **Run standalone** tab.
-. Configure the agent. Follow all the instructions in **Install Elastic Agent on your host**.
+. Configure the agent. Follow the instructions in **Install Elastic Agent on your host**.
 . After unpacking the binary, replace the `elastic-agent.yml` file with that supplied in the Add Agent flyout on the "Run standalone" tab, replacing the values of `ES_USERNAME` and `ES_PASSWORD` appropriately.
 . Run `sudo ./elastic-agent install`
 // end::standalone[]
