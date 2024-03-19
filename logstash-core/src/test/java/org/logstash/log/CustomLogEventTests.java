@@ -116,7 +116,7 @@ public class CustomLogEventTests {
         assertNotNull(secondMessage.get("thread"));
         Map<String, Object> logEvent = new HashMap<>();
         logEvent.put("message", "complex message");
-        logEvent.put("logEventParams", Collections.singletonMap("foo", "bar"));
+        logEvent.put("foo", "bar");
         assertEquals(logEvent, secondMessage.get("logEvent"));
 
         Map<String, Object> thirdMessage =
@@ -130,7 +130,7 @@ public class CustomLogEventTests {
         assertEquals(5, fourthMessage.size());
         logEvent = new HashMap<>();
         logEvent.put("message", "here is a map: {}");
-        logEvent.put("logEventParams", Collections.singletonMap("2", 5));
+        logEvent.put("2", 5);
         assertEquals(logEvent, fourthMessage.get("logEvent"));
 
         Map<String, Object> fifthMessage =
@@ -167,11 +167,11 @@ public class CustomLogEventTests {
         final Map<String, Object> logEvent = (Map<String, Object>) message.get("logEvent");
 
         assertEquals("Error with hash: {}", logEvent.get("message"));
-        assertEquals("foo_value", logEventParams(logEvent).get("foo"));
-        assertEquals("bar_value", logEventParams(logEvent).get("bar"));
-        assertEquals(1, logEventParams(logEvent).get("one"));
+        assertEquals("foo_value", logEvent.get("foo"));
+        assertEquals("bar_value", logEvent.get("bar"));
+        assertEquals(1, logEvent.get("one"));
 
-        final Map<String, Object> logEventMapValue = (Map<String, Object>) logEventParams(logEvent).get("map");
+        final Map<String, Object> logEventMapValue = (Map<String, Object>) logEvent.get("map");
         assertEquals(1, logEventMapValue.get("first"));
         assertEquals(2, logEventMapValue.get("second"));
     }
