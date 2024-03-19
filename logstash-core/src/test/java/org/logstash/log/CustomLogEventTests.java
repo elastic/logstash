@@ -63,6 +63,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
+    public static final String STRICT_JSON_PROPERTY_NAME = "ls.log.json.strict";
 
     @ClassRule
     public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
@@ -179,6 +180,9 @@ public class CustomLogEventTests {
     @Test
     @SuppressWarnings("unchecked")
     public void testJSONLayoutWhenParamsContainsAnotherMessageField() throws JsonProcessingException {
+        String prevSetting = System.getProperty(STRICT_JSON_PROPERTY_NAME);
+        System.setProperty(STRICT_JSON_PROPERTY_NAME, Boolean.TRUE.toString());
+
         ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
         Logger logger = LogManager.getLogger("JSONEventLogger");
 
@@ -194,11 +198,12 @@ public class CustomLogEventTests {
         Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
         assertEquals("here is a map: {}", actualLogEvent.get("message"));
         assertEquals("something to say", actualLogEvent.get("message_1"));
-    }
 
-    @SuppressWarnings("unchecked")
-    private static Map<String, Object> logEventParams(Map<String, Object> actualLogEvent) {
-        assertTrue(actualLogEvent.get("logEventParams") instanceof Map);
-        return (Map<String, Object>) actualLogEvent.get("logEventParams");
+        // tear down
+        if (prevSetting == null) {
+            System.clearProperty(STRICT_JSON_PROPERTY_NAME);
+        } else {
+            System.setProperty(STRICT_JSON_PROPERTY_NAME, prevSetting);
+        }
     }
 }
