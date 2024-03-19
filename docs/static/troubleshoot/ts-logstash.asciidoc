@@ -210,7 +210,7 @@ Reset the logging level to `info`.
 
 *Symptoms*
 
-When `log.format` is set to `json` and for certain log events (for example errors from JSON codec plugin), the event
+When format of log is `json` and certain log events (for example errors from JSON codec plugin)
 contains two instances of the `message` field.
 
 *Solution*
