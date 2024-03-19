@@ -182,8 +182,8 @@ public class CustomLogEventTests {
         ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
         Logger logger = LogManager.getLogger("JSONEventLogger");
 
-        Map<String, String> poisonMap = Collections.singletonMap("message", "something to say");
-        logger.error("here is a map: {}", poisonMap);
+        Map<String, String> paramsWithAnotherMessageField = Collections.singletonMap("message", "something to say");
+        logger.error("here is a map: {}", paramsWithAnotherMessageField);
 
         List<String> messages = appender.getMessages();
         assertEquals(1, messages.size());
@@ -193,7 +193,7 @@ public class CustomLogEventTests {
 
         Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
         assertEquals("here is a map: {}", actualLogEvent.get("message"));
-        assertEquals("something to say", logEventParams(actualLogEvent).get("message"));
+        assertEquals("something to say", actualLogEvent.get("message_1"));
     }
 
     @SuppressWarnings("unchecked")
