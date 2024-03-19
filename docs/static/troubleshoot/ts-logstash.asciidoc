@@ -204,3 +204,26 @@ As the logging library used in Logstash is synchronous, heavy logging can affect
 *Solution*
 
 Reset the logging level to `info`.
+
+[[ts-pipeline-logging-json-duplicated-message-field]]
+==== Logging in json format can write duplicate `message` fields
+
+*Symptoms*
+
+When `log.format` is set to `json` and for certain log events (for example errors from JSON codec plugin), the event
+contains two instances of the `message` field.
+
+*Solution*
+In `config/logstash.yml` enable the strict json flag:
+
+[source,yaml]
+-----
+log.format.json_strict: true
+-----
+
+or pass the command line switch
+
+[source]
+-----
+bin/logstash --log.format.json_strict true
+-----
