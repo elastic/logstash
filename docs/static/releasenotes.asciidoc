@@ -98,6 +98,9 @@ This section summarizes the changes in the following releases:
 ** Added `ssl_cipher_suites` configuration
 ** Added SSL configuration validations
 
+*Elasticsearch Output - 11.22.3*
+
+* Fixes an issue where events containing non-unicode strings could fail to serialize correctly when compression is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1169[#1169]
 
 [[logstash-8-12-2]]
 === Logstash 8.12.2 Release Notes
