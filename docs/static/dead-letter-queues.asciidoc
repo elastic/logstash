@@ -159,7 +159,7 @@ input {
   dead_letter_queue {
   	path => "/path/to/data/dead_letter_queue"
   	pipeline_id => "main"
-    clean_consumed => true 
+  	clean_consumed => true 
   }
 }
 -----
