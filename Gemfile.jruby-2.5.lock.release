@@ -592,7 +592,7 @@ GEM
     logstash-output-csv (3.0.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-output-file
-    logstash-output-elasticsearch (11.4.1-java)
+    logstash-output-elasticsearch (11.4.2-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       logstash-mixin-ecs_compatibility_support (~> 1.0)
