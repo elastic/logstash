@@ -19,8 +19,8 @@ def package_x86_step(branch, workflow_type):
   key: "logstash_build_packages_dra"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2004
+    imageProject: elastic-images-qa
+    image: platform-ingest-logstash-ubuntu-2004-1720001094  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e98e-412d-b0a2-39ff0379e975 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -38,8 +38,8 @@ def package_x86_docker_step(branch, workflow_type):
   key: "logstash_build_x86_64_docker_dra"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2004
+    imageProject: elastic-images-qa
+    image: platform-ingest-logstash-ubuntu-2004-1720001094  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e98e-412d-b0a2-39ff0379e975 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
@@ -58,7 +58,7 @@ def package_aarch64_docker_step(branch, workflow_type):
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: aws
-    imagePrefix: platform-ingest-logstash-ubuntu-2004-aarch64
+    image: ami-079bcacbab6be53eb  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e995-4112-b76d-ba4054137942/523-543 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
     instanceType: "m6g.4xlarge"
     diskSizeGb: 200
   command: |
@@ -78,8 +78,8 @@ def publish_dra_step(branch, workflow_type, depends_on):
   depends_on: "{depends_on}"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
-    image: family/platform-ingest-logstash-ubuntu-2004
+    imageProject: elastic-images-qa
+    image: platform-ingest-logstash-ubuntu-2004-1720001094  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e98e-412d-b0a2-39ff0379e975 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
     machineType: "n2-standard-16"
     diskSizeGb: 200
   command: |
