@@ -741,7 +741,7 @@ GEM
       timeout
     net-smtp (0.4.0.1)
       net-protocol
-    nio4r (2.7.1-java)
+    nio4r (2.7.0-java)
     nokogiri (1.16.3-java)
       racc (~> 1.4)
     octokit (4.25.1)
@@ -772,7 +772,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.7.3-java)
-    rack (2.2.9)
+    rack (2.2.8.1)
     rack-protection (2.2.4)
       rack
     rack-test (2.1.0)
@@ -876,7 +876,6 @@ GEM
 
 PLATFORMS
   java
-  universal-java-11
 
 DEPENDENCIES
   belzebuth
