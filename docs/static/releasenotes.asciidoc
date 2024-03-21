@@ -76,6 +76,8 @@ This section summarizes the changes in the following releases:
 ** Once configured to point to an Elasticsearch cluster, this filter will detect which Elastic Integration processing (if any) should be executed for each event by auto-detecting the event’s data-stream.
 ** It will then perform that processing inside Logstash without transmitting the event to Elasticsearch. Events that are successfully handled will be tagged so that any downstream Elasticsearch output in the Logstash pipeline will avoid running the Elastic Integration again in Elasticsearch.
 
+* Fixes issue where configured `username`/`password` credentials was not sent to Elasticsearch instances that had anonymous access enabled https://github.com/elastic/logstash-filter-elastic_integration/pull/127[#127]
+
 *Beats Input - 6.8.0*
 
 * Added a new configuration option `event_loop_threads` to control the threads count of netty event loop https://github.com/logstash-plugins/logstash-input-beats/pull/490[#490]
