@@ -82,49 +82,10 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-19]]
 === Logstash 7.17.19 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.19
+[[dependencies-7-17-19]]
+==== Updates to dependencies
 
-* Updates JDK bundled in Logstash https://github.com/elastic/logstash/pull/15842[#15842]
-* Split java/ruby unit test steps on Windows https://github.com/elastic/logstash/pull/15888[#15888]
-* Follow up to #15900 -- fix remaining acceptance tests https://github.com/elastic/logstash/pull/15907[#15907]
-* introduce go.mod for env2yaml https://github.com/elastic/logstash/pull/15921[#15921]
-* Backport PR #15921 to 7.17: introduce go.mod for env2yaml https://github.com/elastic/logstash/pull/15923[#15923]
-* Fix packaging service check failures https://github.com/elastic/logstash/pull/15946[#15946]
-* Backport PR #15946 to 7.17: Fix packaging service check failures https://github.com/elastic/logstash/pull/15950[#15950]
-* Backport PR #15907 to 7.17: Follow up to #15900 -- fix remaining acceptance tests https://github.com/elastic/logstash/pull/15953[#15953]
-* Fix the Bootstrap check test failure on Windows. https://github.com/elastic/logstash/pull/15975[#15975]
-* Backport PR #15975 to 7.17: Fix the Bootstrap check test failure on Windows. https://github.com/elastic/logstash/pull/15991[#15991]
-* Backport PR #15888 to 7.17: Split java/ruby unit test steps on Windows https://github.com/elastic/logstash/pull/15994[#15994]
-* Bump ES output to include unicode-vs-compression fix https://github.com/elastic/logstash/pull/16012[#16012]
-
-=== Logstash Commits between 7.17 and 7.17.18
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.18..7.17"
-
-fa3973df9 - (HEAD -> 7.17, origin/7.17) Bump ES output to include unicode-vs-compression fix (#16012) (30 hours ago) <Ry Biesemeyer>
-937b1c596 - Update patch plugin versions in gemfile lock (#16010) (2 days ago) <github-actions[bot]>
-8c23b10fc - Split java/ruby unit test steps on Windows (#15888) (#15994) (10 days ago) <github-actions[bot]>
-c998741aa - Fix the Bootstrap check test failure on Windows. (#15975) (#15991) (10 days ago) <github-actions[bot]>
-b908f6ea1 - Follow up to #15900 -- fix remaining acceptance tests (#15907) (#15953) (5 weeks ago) <github-actions[bot]>
-59b191525 - Fix packaging service check failures (#15946) (#15950) (5 weeks ago) <github-actions[bot]>
-9da37e202 - Updates JDK bundled in Logstash (#15842) (6 weeks ago) <Andrea Selva>
-5d1eef89f - introduce go.mod for env2yaml (#15921) (#15923) (6 weeks ago) <github-actions[bot]>
-46df43b67 - Version bump to 7.17.19 (#15906) (6 weeks ago) <Mashhur>
-a6839e0c6 - Fix service startup with acceptance tests (#15900) (#15905) (6 weeks ago) <Dimitrios Liappis>
-cf3308f5d - Add retries to acceptance/docker steps in BK (#15901) (#15903) (6 weeks ago) <github-actions[bot]>
-5a6bbae6b - Add Debian 12 to CI (#15895) (#15899) (6 weeks ago) <github-actions[bot]>
-5cab4c11b - Release notes for 7.17.18 (#15892) (6 weeks ago) <github-actions[bot]>
-3420d4c14 - Allow running Java+Ruby tests on Windows separately (#15861) (#15887) (7 weeks ago) <github-actions[bot]>
-6a1ed267d - Add retries to JDK matrix pipeline steps (#15877) (#15879) (7 weeks ago) <github-actions[bot]>
-a44d4bf9f - Add BK retries to exhaustive/compat steps (#15874) (#15876) (7 weeks ago) <github-actions[bot]>
-fdf8a22b8 - Remove Ubuntu 18.04 from CI jobs (#15855) (#15860) (8 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.18..7.17 *.release"
-Changed plugin versions:
-logstash-output-elasticsearch: 11.4.1 -> 11.4.2
----------- GENERATED CONTENT ENDS HERE ------------
+* Update JDK to 11.0.22 https://github.com/elastic/logstash/pull/15842[#15842]
 
 ==== Plugins
 
