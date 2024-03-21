@@ -590,7 +590,7 @@ GEM
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       manticore (~> 0.8)
-    logstash-integration-jdbc (5.4.8)
+    logstash-integration-jdbc (5.4.9)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
