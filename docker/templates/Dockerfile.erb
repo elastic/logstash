@@ -1,5 +1,7 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
 <% if image_flavor == 'ironbank' -%>
+# Start image_flavor == 'ironbank'
+
 ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.3
@@ -56,7 +58,10 @@ RUN dnf -y upgrade && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
 
+# End image_flavor == 'ironbank'
+
 <% else -%>
+# Start image_flavor 'full', oss', 'ubi8'
   <% if local_artifacts == 'false' -%>
     <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
   <% else -%>
@@ -156,6 +161,8 @@ COPY env2yaml/env2yaml-${TARGETARCH} /usr/local/bin/env2yaml
 COPY bin/docker-entrypoint /usr/local/bin/
 
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
+
+# End image_flavor 'full', oss', 'ubi8'
 <% end -%>
 
 USER 1000
