@@ -59,15 +59,27 @@ This section summarizes the changes in the following releases:
 [[logstash-8-13-0]]
 === Logstash 8.13.0 Release Notes
 
-* Package `elastic_integration` plugin. https://github.com/elastic/logstash/pull/15769[#15769]
-* Flow metrics added `worker_utilization` to pipeline-level https://github.com/elastic/logstash/pull/15912[#15912]
-* Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
+[[featured-8-13-0]]
+==== New {ls} plugin: Elastic_integration filter
+
+With the {ls} Elastic_integration filter, you can take advantage of the features in {integrations-docs}[Elastic integrations] without missing out on the advanced processing capabilities offered by {ls}. 
+Together, Elastic integrations and {ls} can help you solve a wide range of use cases, including air gapped environments, data privacy processing, and multiple destinations. 
+
+Your {ls} pipeline would include the elastic_agent input, the elastic_integration filter, and the elasticsearch output, in addition to any other plugins you want to use.
+
+Check out <<ea-integrations>> and the <<plugins-filters-elastic_integration,`Elastics_integration filter`>>  plugin docs for details.
 
 [[notable-8.13.0]]
-==== Notable issues fixed
+==== Enhancements and notable issues fixed
 
-* Ensure that the order of JVM options from both files and environment variables is respected https://github.com/elastic/logstash/pull/15997[15997]
+* Flow metrics added `worker_utilization` to pipeline-level https://github.com/elastic/logstash/pull/15912[#15912]
+* Ensure that the order of JVM options from both files and environment variables is respected https://github.com/elastic/logstash/pull/15997[#15997]
 
+[[plugin-changes-8.13.0]]
+==== Changes to bundled plugins
+
+* Packaged `filter-elastic_integration` as a bundled plugin in preparation for GA. https://github.com/elastic/logstash/pull/15769[#15769]
+* Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.6*
