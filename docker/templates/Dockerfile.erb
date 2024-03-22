@@ -36,26 +36,25 @@ COPY scripts/bin/docker-entrypoint /usr/local/bin/
 COPY logstash-${LOGSTASH_VERSION}-linux-x86_64.tar.gz /tmp/logstash.tar.gz
 
 RUN dnf -y upgrade && \
-dnf install -y procps findutils tar gzip which shadow-utils && \
-dnf clean all && \
-groupadd --gid 1000 logstash && \
-adduser --uid 1000 --gid 1000 \
---home-dir /usr/share/logstash --no-create-home logstash && \
-tar -zxf /tmp/logstash.tar.gz -C /usr/share/ && \
-mv /usr/share/logstash-${LOGSTASH_VERSION} /usr/share/logstash && \
-chown -R 1000:0 /usr/share/logstash && \
-chown --recursive logstash:logstash /usr/share/logstash/ && \
-chown -R logstash:root /usr/share/logstash config/ pipeline/ && \
-chmod -R g=u /usr/share/logstash && \
-mv config/* /usr/share/logstash/config && \
-mv pipeline /usr/share/logstash/pipeline && \
-mkdir /licenses/ && \
-mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
-mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
-ln -s /usr/share/logstash /opt/logstash && \
-chmod 0755 /usr/local/bin/docker-entrypoint && \
-rmdir config && \
-rm /tmp/logstash.tar.gz
+  dnf install -y procps findutils tar gzip which shadow-utils && \
+  dnf clean all && \
+  groupadd --gid 1000 logstash && \
+  adduser --uid 1000 --gid 1000 --home-dir /usr/share/logstash --no-create-home logstash && \
+  tar -zxf /tmp/logstash.tar.gz -C /usr/share/ && \
+  mv /usr/share/logstash-${LOGSTASH_VERSION} /usr/share/logstash && \
+  chown -R 1000:0 /usr/share/logstash && \
+  chown --recursive logstash:logstash /usr/share/logstash/ && \
+  chown -R logstash:root /usr/share/logstash config/ pipeline/ && \
+  chmod -R g=u /usr/share/logstash && \
+  mv config/* /usr/share/logstash/config && \
+  mv pipeline /usr/share/logstash/pipeline && \
+  mkdir /licenses/ && \
+  mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
+  mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
+  ln -s /usr/share/logstash /opt/logstash && \
+  chmod 0755 /usr/local/bin/docker-entrypoint && \
+  rmdir config && \
+  rm /tmp/logstash.tar.gz
 
 <% else -%>
   <% if local_artifacts == 'false' -%>
