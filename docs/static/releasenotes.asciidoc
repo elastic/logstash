@@ -85,9 +85,12 @@ Check out <<ea-integrations>> and the <<plugins-filters-elastic_integration,`Ela
 
 *Elastic_integration Filter - 0.1.6*
 
-* Using this filter you can process Elastic Integrations in Logstash.
-** Once configured to point to an Elasticsearch cluster, this filter will detect which Elastic Integration processing (if any) should be executed for each event by auto-detecting the event’s data-stream.
-** It will then perform that processing inside Logstash without transmitting the event to Elasticsearch. Events that are successfully handled will be tagged so that any downstream Elasticsearch output in the Logstash pipeline will avoid running the Elastic Integration again in Elasticsearch.
+* The elastic_integration filter is generally available and bundled with Logstash 8.13.0. 
+Using this filter, {ls} can process data collected by {integrations-docs}[Elastic integrations].
++
+When you configure the filter to point to an {es} cluster, it auto-detects the event’s data-stream to determine what integration processing (if any) should be executed for each event.
+It performs that processing inside {ls} without transmitting the event to {es}. 
+Events that are successfully handled are tagged so that any downstream {es} output in the {ls} pipeline will not re-run the integration in {es}.
 
 * Fixes issue where configured `username`/`password` credentials was not sent to Elasticsearch instances that had anonymous access enabled https://github.com/elastic/logstash-filter-elastic_integration/pull/127[#127]
 
