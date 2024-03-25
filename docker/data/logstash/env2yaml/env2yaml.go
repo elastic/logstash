@@ -93,6 +93,7 @@ func normalizeSetting(setting string) (string, error) {
 		"http.port",        // DEPRECATED: prefer `api.http.port`
 		"log.level",
 		"log.format",
+		"log.format.json_strict",
 		"modules",
 		"metric.collect",
 		"path.logs",
