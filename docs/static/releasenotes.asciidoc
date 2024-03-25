@@ -80,6 +80,7 @@ Check out <<ea-integrations>> and the <<plugins-filters-elastic_integration,`Ela
 
 * Packaged `filter-elastic_integration` as a bundled plugin in preparation for GA. https://github.com/elastic/logstash/pull/15769[#15769]
 * Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
+
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.6*
