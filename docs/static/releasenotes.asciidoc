@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-19,Logstash 7.17.19>>
 * <<logstash-7-17-18,Logstash 7.17.18>>
 * <<logstash-7-17-17,Logstash 7.17.17>>
 * <<logstash-7-17-16,Logstash 7.17.16>>
@@ -76,6 +77,21 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-19]]
+=== Logstash 7.17.19 Release Notes
+
+[[dependencies-7-17-19]]
+==== Updates to dependencies
+
+* Update JDK to 11.0.22 https://github.com/elastic/logstash/pull/15842[#15842]
+
+==== Plugins
+
+*Elasticsearch Output - 11.4.2*
+
+* Fixes an issue where events containing non-unicode strings could fail to serialize correctly when compression is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1169[#1169]
 
 
 [[logstash-7-17-18]]
