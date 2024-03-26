@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-13-0,Logstash 8.13.0>>
 * <<logstash-8-12-2,Logstash 8.12.2>>
 * <<logstash-8-12-1,Logstash 8.12.1>>
 * <<logstash-8-12-0,Logstash 8.12.0>>
@@ -55,11 +56,81 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
 
+[[logstash-8-13-0]]
+=== Logstash 8.13.0 Release Notes
+
+[[featured-8-13-0]]
+==== New {ls} plugin: Elastic_integration filter
+
+With the {ls} Elastic_integration filter, you can take advantage of the features in {integrations-docs}[Elastic integrations] without missing out on the advanced processing capabilities offered by {ls}. 
+Together, Elastic integrations and {ls} can help you solve a wide range of use cases, including air gapped environments, data privacy processing, and multiple destinations. 
+
+Your {ls} pipeline would include the elastic_agent input, the elastic_integration filter, and the elasticsearch output, in addition to any other plugins you want to use.
+
+Check out <<ea-integrations>> and the <<plugins-filters-elastic_integration,`Elastics_integration filter`>>  plugin docs for details.
+
+[[notable-8.13.0]]
+==== Enhancements and notable issues fixed
+
+* Flow metrics added `worker_utilization` to pipeline-level https://github.com/elastic/logstash/pull/15912[#15912]
+* Ensure that the order of JVM options from both files and environment variables is respected https://github.com/elastic/logstash/pull/15997[#15997]
+
+[[plugin-changes-8.13.0]]
+==== Changes to bundled plugins
+
+* Packaged `filter-elastic_integration` as a bundled plugin in preparation for GA. https://github.com/elastic/logstash/pull/15769[#15769]
+* Unbundled `logstash-input-imap` plugin https://github.com/elastic/logstash/pull/15985[#15985]
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.6*
+
+* The elastic_integration filter is generally available and bundled with Logstash 8.13.0. 
+Using this filter, {ls} can process data collected by {integrations-docs}[Elastic integrations].
++
+When you configure the filter to point to an {es} cluster, it auto-detects the event’s data-stream to determine what integration processing (if any) should be executed for each event.
+It performs that processing inside {ls} without transmitting the event to {es}. 
+Events that are successfully handled are tagged so that any downstream {es} output in the {ls} pipeline will not re-run the integration in {es}.
+
+* Fixes issue where configured `username`/`password` credentials was not sent to Elasticsearch instances that had anonymous access enabled https://github.com/elastic/logstash-filter-elastic_integration/pull/127[#127]
+
+*Beats Input - 6.8.0*
+
+* Added a new configuration option `event_loop_threads` to control the threads count of netty event loop https://github.com/logstash-plugins/logstash-input-beats/pull/490[#490]
+** When multiple beats-input pipelines are defined in a single machine, sometimes the number of thread may lead to a resource problem.
+** By default, netty event loop creates CPU * 2 thread count. This configuration intends to limit or increase the number of threads to be created for the event loop.
+
+*Elasticsearch Input - 4.20.1*
+
+* Added support to aggregations with a new configuration option `response_type` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/202[#202]
+** `hits`, the default, is to generate one event per returned document, which is the current behavior.
+** `aggregations` is to allow processing result of aggregations. A single Logstash event will be generated with the contents of the aggregations object of the query's response.
+
+*Tcp Output - 6.2.0*
+
+* Deprecated SSL settings to comply with Logstash's naming convention https://github.com/logstash-plugins/logstash-output-tcp/pull/53[#53]
+** Deprecated `ssl_enable` in favor of `ssl_enabled`
+** Deprecated `ssl_cert` in favor of `ssl_certificate`
+** Deprecated `ssl_verify` in favor of `ssl_client_authentication` when mode is `server`
+** Deprecated `ssl_verify` in favor of `ssl_verification_mode` when mode is `client`
+** Added `ssl_cipher_suites` configuration
+** Added SSL configuration validations
+
+*Elasticsearch Output - 11.22.3*
+
+* Fixes an issue where events containing non-unicode strings could fail to serialize correctly when compression is enabled https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1169[#1169]
+
 [[logstash-8-12-2]]
 === Logstash 8.12.2 Release Notes
 
 * Set Netty's maxOrder options to previous default value of 11 https://github.com/elastic/logstash/pull/15928[#15928]
 * Add "openssl" to UBI docker images https://github.com/elastic/logstash/pull/15929[#15929]
+
+[[known-issues-8.12.2]]
+==== Known issues
+
+* The order of JVM flags is broken, leading to the inability to customize certain JVM configurations with the environment variable `LS_JAVA_OPTS`. https://github.com/elastic/logstash/issues/15996[15996]
+** A workaround is to specify JVM flags in the `config/jvm.options` file rather than relying on the `LS_JAVA_OPTS` environment variable.
 
 ==== Plugins
 
