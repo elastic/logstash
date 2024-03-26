@@ -17,11 +17,11 @@ jobs:
       - run: ls -lha
       - run: mkdir scan
       - run: tar -zxf ../build/logstash-*.tar.gz
-        working-directory: scan
-      - run: ls -lha
+        working-directory: ./scan
+      - run: ls -lha scan
       - name: Scan image
         uses: anchore/scan-action@v3
         with:
-          path: "scan/*"
+          path: "./scan"
           fail-build: true
           severity-cutoff: critical
