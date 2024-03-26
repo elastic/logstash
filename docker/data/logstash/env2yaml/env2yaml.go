@@ -24,7 +24,7 @@ import (
 	"fmt"
 )
 
-var validSettings = [...]string{
+var validSettings = []string{
 	"api.enabled",
 	"api.http.host",
 	"api.http.port",
