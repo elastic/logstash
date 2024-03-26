@@ -99,8 +99,8 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rake-*'
-    # exclude the maven jars until https://github.com/jruby/ruby-maven-libs/pull/4
-    @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9'
+    # exclude ruby-maven-libs 3.3.9 jars until JRuby ships with >= 3.8.9
+    @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*'
 
     @exclude_paths
   end
