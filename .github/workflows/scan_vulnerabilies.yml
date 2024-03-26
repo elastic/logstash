@@ -14,8 +14,11 @@ jobs:
         with:
           fetch-depth: 0
       - run: ./gradlew clean assembleTarDistribution
+      - run: ls -lha
       - run: mkdir scan
-      - run: cd scan && tar -zxf ../build/logstash-*.tar.gz
+      - run: tar -zxf ../build/logstash-*.tar.gz
+        working-directory: scan
+      - run: ls -lha
       - name: Scan image
         uses: anchore/scan-action@v3
         with:
