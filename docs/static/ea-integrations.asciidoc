@@ -1,5 +1,5 @@
 [[ea-integrations]]
-== Using {ls} with Elastic {integrations} (Beta)
+== Using {ls} with Elastic {integrations}
 
 You can take advantage of the extensive, built-in capabilities of Elastic {integrations}--such as managing data collection, transformation, and visualization--and then use {ls} for additional data processing and output options. 
 {ls} can further expand capabilities for use cases where you need additional processing, or if you need your data delivered to multiple destinations. 
@@ -24,7 +24,7 @@ When you find an integration for your data source, the UI walks you through addi
 
 [discrete]
 [[integrations-and-ls]]
-=== Extend {integrations} with {ls} (Beta)
+=== Extend {integrations} with {ls}
 
 Logstash can run the ingest pipeline component of your Elastic integration when you use the Logstash `filter-elastic_integration` plugin in your {ls} pipeline. 
 
