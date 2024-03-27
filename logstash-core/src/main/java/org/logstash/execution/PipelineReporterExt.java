@@ -157,7 +157,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         return result;
     }
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private RubyArray workerStates(final ThreadContext context, final RubyHash batchMap) {
         final RubyArray result = context.runtime.newArray();
         ((Iterable<IRubyObject>) pipeline.callMethod(context, "worker_threads"))
@@ -174,6 +174,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
 
                 IRubyObject batchSize = Optional.of((RubyThread) thread)
                         .map(RubyThread::getNativeThread)
+                        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
                         .map(Thread::getId)
                         .map(id -> batchMap.op_aref(context, context.runtime.newFixnum(id)))
                         .map(batch -> extractBatchSize(context, batch))

@@ -157,6 +157,7 @@ public class SecretStoreFactoryTest {
 
         Map<SecretIdentifier, ByteBuffer> secrets = new HashMap(1);
 
+        @SuppressWarnings("this-escape")
         public MemoryStore() {
             persistSecret(LOGSTASH_MARKER, LOGSTASH_MARKER.getKey().getBytes(StandardCharsets.UTF_8));
         }

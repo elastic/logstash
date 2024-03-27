@@ -6,6 +6,7 @@ import org.logstash.plugins.PluginLookup.PluginType;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class AliasRegistryTest {
 
         for (AliasRegistry.PluginCoordinate alias : aliasesDefinitions.keySet()) {
             final String gemName = alias.fullName();
-            URL url = new URL("https://rubygems.org/api/v1/gems/" + gemName +".json");
+            URL url = URI.create("https://rubygems.org/api/v1/gems/" + gemName +".json").toURL();
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/json");

@@ -145,6 +145,7 @@ public final class HotThreadsMonitor {
      *                      stacktrace_size - max depth of stack trace
      * @return A list of ThreadReport including all selected threads
      */
+    @SuppressWarnings("deprecation")
     public static List<ThreadReport> detect(Map<String, String> options) {
         String type = "cpu";
         if (options.containsKey(ORDERED_BY)) {
@@ -164,6 +165,7 @@ public final class HotThreadsMonitor {
         Map<Long, ThreadReport> reports = new HashMap<>();
 
         for (long threadId : threadMXBean.getAllThreadIds()) {
+            // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
             if (Thread.currentThread().getId() == threadId) {
                 continue;
             }

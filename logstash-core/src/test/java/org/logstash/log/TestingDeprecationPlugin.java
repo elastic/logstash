@@ -40,6 +40,7 @@ public class TestingDeprecationPlugin implements Codec {
      * @param configuration Logstash Configuration
      * @param context       Logstash Context
      */
+    @SuppressWarnings("this-escape")
     public TestingDeprecationPlugin(final Configuration configuration, final Context context) {
         deprecationLogger = context.getDeprecationLogger(this);
     }
