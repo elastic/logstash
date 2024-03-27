@@ -61,7 +61,7 @@ def compat_step(imagesuffix: str, command: LiteralScalarString) -> dict[str, typ
     else:
        step["agents"] = {
             "provider": "gcp",
-            "imageProject": "elastic-images-prod",
+            "imageProject": "elastic-images-qa",
             "image": f"family/{VM_IMAGE_PREFIX}{imagesuffix}",
             "machineType": "n2-standard-4",
             "diskSizeGb": 200,
@@ -93,10 +93,10 @@ def aws_agent(vm_name: str, instance_type: str, image_prefix: str = "platform-in
         "diskSizeGb": disk_size_gb,
     }
 
-def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", image_prefix: str = "family/platform-ingest-logstash-multi-jdk", disk_size_gb: int = 200) -> dict[str, typing.Any]:
+def gcp_agent(vm_name: str, instance_type: str = "n2-standard-4", image_prefix: str = "family/platform-ingest-logstash-multi-jdk", image_project="elastic-images-qa", disk_size_gb: int = 200) -> dict[str, typing.Any]:
     return {
         "provider": "gcp",
-        "imageProject": "elastic-images-prod",
+        "imageProject": image_project,
         "image": f"{image_prefix}-{vm_name}",
         "machineType": instance_type,
         "diskSizeGb": disk_size_gb,

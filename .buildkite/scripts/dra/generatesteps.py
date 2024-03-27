@@ -19,7 +19,7 @@ def package_x86_step(branch, workflow_type):
   key: "logstash_build_packages_dra"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
+    imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
     diskSizeGb: 200
@@ -38,7 +38,7 @@ def package_x86_docker_step(branch, workflow_type):
   key: "logstash_build_x86_64_docker_dra"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
+    imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
     diskSizeGb: 200
@@ -78,7 +78,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
   depends_on: "{depends_on}"
   agents:
     provider: gcp
-    imageProject: elastic-images-prod
+    imageProject: elastic-images-qa
     image: family/platform-ingest-logstash-ubuntu-2204
     machineType: "n2-standard-16"
     diskSizeGb: 200
