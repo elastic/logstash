@@ -292,7 +292,7 @@ tasks.register("downloadAndInstallJRuby", Copy) {
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
     }
     exclude "**/did_you_mean-*/evaluation/**" // licensing issue https://github.com/jruby/jruby/issues/6471
-    exclude "vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9"
+    exclude "vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*"
     exclude "**/lib/jni/**/**"
 
     includeEmptyDirs = false
