@@ -1,38 +1,22 @@
 shared_examples_for 'a container with xpack features' do |flavor|
+
+  before do
+    @image = find_image(flavor)
+    @container = start_container(@image, {'ENV' => env})
+  end
+
+  after do
+    cleanup_container(@container)
+  end
+
   context 'when configuring xpack settings' do
-    before do
-      @image = find_image(flavor)
-      @container = start_container(@image, {'ENV' => env})
-    end
+    let(:env) { %w(xpack.monitoring.enabled=false xpack.monitoring.elasticsearch.hosts=["http://node1:9200","http://node2:9200"]) }
 
-    after do
-      cleanup_container(@container)
-    end
-
-    context 'when disabling xpack monitoring' do
-      let(:env) {['xpack.monitoring.enabled=false']}
-
-      it 'should set monitoring to false' do
-        expect(get_settings(@container)['xpack.monitoring.enabled']).to be_falsey
-      end
-    end
-
-    context 'when enabling xpack monitoring' do
-      let(:env) {['xpack.monitoring.enabled=true']}
-
-      it 'should set monitoring to true' do
-        expect(get_settings(@container)['xpack.monitoring.enabled']).to be_truthy
-      end
-    end
-
-    context 'when setting elasticsearch urls as an array' do
-      let(:env) { ['xpack.monitoring.elasticsearch.hosts=["http://node1:9200","http://node2:9200"]']}
-
-      it 'should set set the hosts property correctly' do
-        expect(get_settings(@container)['xpack.monitoring.elasticsearch.hosts']).to be_an(Array)
-        expect(get_settings(@container)['xpack.monitoring.elasticsearch.hosts']).to include('http://node1:9200')
-        expect(get_settings(@container)['xpack.monitoring.elasticsearch.hosts']).to include('http://node2:9200')
-      end
+    it 'persists monitoring environment var keys' do
+      # persisting actual value of the environment keys bring the issue where keystore looses its power
+      # visit https://github.com/elastic/logstash/issues/15766 for details
+      expect(get_settings(@container)['xpack.monitoring.enabled']).to eq("${xpack.monitoring.enabled}")
+      expect(get_settings(@container)['xpack.monitoring.elasticsearch.hosts']).to eq("${xpack.monitoring.elasticsearch.hosts}")
     end
   end
 end
