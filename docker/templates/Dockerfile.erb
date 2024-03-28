@@ -1,148 +1,149 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
-<% if local_artifacts == 'false' -%>
-<%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
-<% else -%>
-<%   url_root = 'http://localhost:8000' -%>
-<% end -%>
-<% if image_flavor == 'oss' -%>
-<%   tarball = "logstash-oss-#{elastic_version}-linux-$(arch).tar.gz" -%>
-<%   license = 'Apache 2.0' -%>
-<% else -%>
-<%   tarball = "logstash-#{elastic_version}-linux-$(arch).tar.gz" -%>
-<%   license = 'Elastic License' -%>
-<% end -%>
-<% if image_flavor == 'ubi8' %>
-<%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
-<%   package_manager = 'microdnf' -%>
-# Minimal distributions do not ship with en language packs.
-<%   locale = 'C.UTF-8' -%>
-<% elsif image_flavor == 'ironbank' -%>
-<%   package_manager = 'yum' -%>
-<% else -%>
-<%   base_image = 'ubuntu:20.04' -%>
-<%   package_manager = 'apt-get' -%>
-<%   locale = 'en_US.UTF-8' -%>
-<% end -%>
 <% if image_flavor == 'ironbank' -%>
-ARG BASE_REGISTRY=registry1.dsop.io
+<%# Start image_flavor 'ironbank' %>
+ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
-ARG BASE_TAG=9.2
+ARG BASE_TAG=9.3
 ARG LOGSTASH_VERSION=<%= elastic_version %>
-ARG GOLANG_VERSION=1.17.8
+ARG GOLANG_VERSION=1.21.8
 
-FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG} AS env2yaml
+# stage 1: build env2yaml
+FROM ${BASE_REGISTRY}/google/golang/ubi9/golang-1.21:${GOLANG_VERSION} AS env2yaml
 
-ARG GOLANG_VERSION
+ENV GOPATH=/go
 
-# install golang
-RUN yum update -y && yum install -y git
-COPY go${GOLANG_VERSION}.linux-amd64.tar.gz /opt/go.tar.gz
-RUN tar -C /usr/local -xzf /opt/go.tar.gz
-ENV PATH=$PATH:/usr/local/go/bin
+COPY scripts/go /go
 
-# compile the env2yaml tool
-COPY v2.3.0.tar.gz /opt/env2yaml.tar.gz
-COPY scripts/go /usr/local/src/go
-WORKDIR /usr/local/src/go/src/env2yaml
-RUN mkdir -p vendor/gopkg.in
-RUN tar -zxf /opt/env2yaml.tar.gz -C vendor/gopkg.in
-RUN mv vendor/gopkg.in/yaml-2.3.0 vendor/gopkg.in/yaml.v2
-ENV GOPATH=/usr/local/src/go
-RUN go build -mod vendor
+USER root
 
-# stage 1: unpack logstash
-FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG} AS builder
+RUN dnf-3 -y upgrade && dnf-3 install -y git && \
+  cd /go/src/env2yaml && \
+  go build
+
+# Final stage
+FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
 
 ARG LOGSTASH_VERSION
 
-WORKDIR /usr/share/
-COPY logstash-${LOGSTASH_VERSION}-linux-x86_64.tar.gz /opt/logstash.tar.gz
+ENV ELASTIC_CONTAINER true
+ENV PATH=/usr/share/logstash/bin:$PATH
 
-RUN tar zxf /opt/logstash.tar.gz && \
-    mv /usr/share/logstash-${LOGSTASH_VERSION} /usr/share/logstash
+WORKDIR /usr/share
 
-FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
+COPY --from=env2yaml /go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
+COPY scripts/config/* config/
+COPY scripts/pipeline/default.conf pipeline/logstash.conf
+COPY scripts/bin/docker-entrypoint /usr/local/bin/
+COPY logstash-${LOGSTASH_VERSION}-linux-x86_64.tar.gz /tmp/logstash.tar.gz
+
+RUN dnf -y upgrade && \
+  dnf install -y procps findutils tar gzip which shadow-utils && \
+  dnf clean all && \
+  groupadd --gid 1000 logstash && \
+  adduser --uid 1000 --gid 1000 --home-dir /usr/share/logstash --no-create-home logstash && \
+  tar -zxf /tmp/logstash.tar.gz -C /usr/share/ && \
+  mv /usr/share/logstash-${LOGSTASH_VERSION} /usr/share/logstash && \
+  chown -R 1000:0 /usr/share/logstash && \
+  chown --recursive logstash:logstash /usr/share/logstash/ && \
+  chown -R logstash:root /usr/share/logstash config/ pipeline/ && \
+  chmod -R g=u /usr/share/logstash && \
+  mv config/* /usr/share/logstash/config && \
+  mv pipeline /usr/share/logstash/pipeline && \
+  mkdir /licenses/ && \
+  mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
+  mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
+  ln -s /usr/share/logstash /opt/logstash && \
+  chmod 0755 /usr/local/bin/docker-entrypoint && \
+  rmdir config && \
+  rm /tmp/logstash.tar.gz
+<%# End image_flavor 'ironbank' %>
 <% else -%>
+<%# Start image_flavor 'full', oss', 'ubi8' %>
+  <% if local_artifacts == 'false' -%>
+    <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
+  <% else -%>
+    <%   url_root = 'http://localhost:8000' -%>
+  <% end -%>
+  <% if image_flavor == 'oss' -%>
+    <%   tarball = "logstash-oss-#{elastic_version}-linux-$(arch).tar.gz" -%>
+    <%   license = 'Apache 2.0' -%>
+  <% else -%>
+    <%   tarball = "logstash-#{elastic_version}-linux-$(arch).tar.gz" -%>
+    <%   license = 'Elastic License' -%>
+  <% end -%>
+  <% if image_flavor == 'ubi8' %>
+    <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
+    <%   package_manager = 'microdnf' -%>
+    # Minimal distributions do not ship with en language packs.
+    <%   locale = 'C.UTF-8' -%>
+  <% else -%>
+    <%   base_image = 'ubuntu:20.04' -%>
+    <%   package_manager = 'apt-get' -%>
+    <%   locale = 'en_US.UTF-8' -%>
+  <% end -%>
+
 FROM <%= base_image %>
-<% end -%>
 
 RUN for iter in {1..10}; do \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-export DEBIAN_FRONTEND=noninteractive && \
+  export DEBIAN_FRONTEND=noninteractive && \
 <% end -%>
 <%= package_manager %> update -y && \
-<% if image_flavor != 'ironbank' -%>
 <%= package_manager %> upgrade -y && \
-<% end -%>
 <%= package_manager %> install -y procps findutils tar gzip && \
 <% if image_flavor == 'ubi8' -%>
-<%= package_manager %> install -y openssl && \
+  <%= package_manager %> install -y openssl && \
 <% end -%>
-<% if image_flavor == 'ubi8' || image_flavor == 'ironbank' -%>
-<%= package_manager %> install -y which shadow-utils && \
+<% if image_flavor == 'ubi8' -%>
+  <%= package_manager %> install -y which shadow-utils && \
 <% else -%>
-<%= package_manager %> install -y locales && \
+  <%= package_manager %> install -y locales && \
 <% end -%>
-<% if image_flavor != 'ubi9' && image_flavor != 'ironbank' -%>
-<%= package_manager %> install -y curl && \
+<% if image_flavor != 'ubi9' -%>
+  <%= package_manager %> install -y curl && \
 <% end -%>
 <%= package_manager %> clean all && \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-locale-gen 'en_US.UTF-8' && \
-<%= package_manager %> clean metadata && \
+  locale-gen 'en_US.UTF-8' && \
+  <%= package_manager %> clean metadata && \
 <% end -%>
 exit_code=0 && break || exit_code=$? && \
 echo "packaging error: retry $iter in 10s" && \
 <%= package_manager %> clean all && \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-<%= package_manager %> clean metadata && \
+  <%= package_manager %> clean metadata && \
 <% end -%>
 sleep 10; done; \
 (exit $exit_code)
 
 # Provide a non-root user to run the process.
 RUN groupadd --gid 1000 logstash && \
-    adduser --uid 1000 --gid 1000 \
-    <% if image_flavor != 'ironbank' %>--home <% else %>--home-dir <% end %>/usr/share/logstash --no-create-home \
-    logstash
-
-<% if image_flavor == 'ironbank' %>
-WORKDIR /usr/share/logstash
-COPY --from=env2yaml /usr/local/src/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
-COPY --from=builder --chown=1000:0 /usr/share/logstash /usr/share/logstash
-<% end -%>
+  adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
 
 # Add Logstash itself.
-RUN \
-<% if image_flavor != 'ironbank' %> curl -Lo - <%= url_root %>/<%= tarball %> | \
-    tar zxf - -C /usr/share && \
-    mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
-<% end -%>
-    chown --recursive logstash:logstash /usr/share/logstash/ && \
-    chown -R logstash:root /usr/share/logstash && \
-    chmod -R g=u /usr/share/logstash && \
-    mkdir /licenses/ && \
-    mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
-    mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
-<% if image_flavor != 'ironbank' -%>
-    find /usr/share/logstash -type d -exec chmod g+s {} \; && \
-<% end -%>
-    ln -s /usr/share/logstash /opt/logstash
+RUN curl -Lo - <%= url_root %>/<%= tarball %> | \
+  tar zxf - -C /usr/share && \
+  mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
+  chown --recursive logstash:logstash /usr/share/logstash/ && \
+  chown -R logstash:root /usr/share/logstash && \
+  chmod -R g=u /usr/share/logstash && \
+  mkdir /licenses/ && \
+  mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
+  mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
+  find /usr/share/logstash -type d -exec chmod g+s {} \; && \
+  ln -s /usr/share/logstash /opt/logstash
 
-<% if image_flavor != 'ironbank' %>
 WORKDIR /usr/share/logstash
-<% end -%>
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
 
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
-<% if image_flavor != 'ironbank' -%>
 COPY config/pipelines.yml config/pipelines.yml
 <% if image_flavor == 'oss' -%>
-COPY config/logstash-oss.yml config/logstash.yml
+  COPY config/logstash-oss.yml config/logstash.yml
 <% else -%>
-COPY config/logstash-full.yml config/logstash.yml
+  COPY config/logstash-full.yml config/logstash.yml
 <% end -%>
 COPY config/log4j2.properties config/
 COPY config/log4j2.file.properties config/
@@ -155,18 +156,10 @@ ARG TARGETARCH
 COPY env2yaml/env2yaml-${TARGETARCH} /usr/local/bin/env2yaml
 # Place the startup wrapper script.
 COPY bin/docker-entrypoint /usr/local/bin/
-<% else -%>
-COPY scripts/config/pipelines.yml config/pipelines.yml
-COPY scripts/config/logstash.yml config/logstash.yml
-COPY scripts/config/log4j2.properties config/
-COPY scripts/config/log4j2.file.properties config/
-COPY scripts/pipeline/default.conf pipeline/logstash.conf
-RUN chown --recursive logstash:root config/ pipeline/
-# Place the startup wrapper script.
-COPY scripts/bin/docker-entrypoint /usr/local/bin/
-<% end -%>
 
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
+<%# End image_flavor 'full', oss', 'ubi8' %>
+<% end -%>
 
 USER 1000
 
@@ -194,10 +187,6 @@ LABEL  org.label-schema.schema-version="1.0" \
   vendor="Elastic" \
 <% end -%>
   org.opencontainers.image.created=<%= created_date %>
-<% end -%>
-
-<% if image_flavor == 'ironbank' -%>
-HEALTHCHECK --interval=10s --timeout=5s --start-period=1m --retries=5 CMD curl -I -f --max-time 5 http://localhost:9600 || exit 1
 <% end -%>
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
