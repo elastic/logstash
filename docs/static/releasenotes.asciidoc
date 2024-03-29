@@ -60,40 +60,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-13-1]]
 === Logstash 8.13.1 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.13.1
-
-* Backport PR #15980 to 8.13: Add arm64 support for env2yaml https://github.com/elastic/logstash/pull/15984[#15984]
-* Backport PR #15998 to 8.13: Remove curl installation step, as `curl-minimal` is already provided … https://github.com/elastic/logstash/pull/16005[#16005]
-* Doc: Remove beta tag from integrations filter doc https://github.com/elastic/logstash/pull/16021[#16021]
-* Modernize ironbank Dockerfile https://github.com/elastic/logstash/pull/16022[#16022]
-* Save  name came through ENV vars to let Logstash decide using value from either keystore or ENV. https://github.com/elastic/logstash/pull/16026[#16026]
-* Fix exclusion of ruby-maven-libs jars https://github.com/elastic/logstash/pull/16032[#16032]
-* Backport PR #16021 to 8.13: Doc: Remove beta tag from integrations filter doc https://github.com/elastic/logstash/pull/16033[#16033]
-* Backport PR #16032 to 8.13: Fix exclusion of ruby-maven-libs jars https://github.com/elastic/logstash/pull/16035[#16035]
-* Backport PR #16026 to 8.13: Save  name came through ENV vars to let Logstash decide using value from either keystore or ENV. https://github.com/elastic/logstash/pull/16037[#16037]
-* Fix integration tests caused by #16026. https://github.com/elastic/logstash/pull/16038[#16038]
-* Backport PR #16022 to 8.13: Modernize ironbank Dockerfile https://github.com/elastic/logstash/pull/16041[#16041]
-* Backport PR #16038 to 8.13: Fix integration tests caused by #16026. https://github.com/elastic/logstash/pull/16043[#16043]
-
-=== Logstash Commits between 8.13 and 8.13.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.0..8.13"
-
-03fad2174 - (HEAD -> 8.13, origin/8.13) Fix integration tests caused by #16026. (#16038) (#16043) (23 hours ago) <github-actions[bot]>
-9d9425828 - Modernize ironbank Dockerfile (#16022) (#16041) (25 hours ago) <github-actions[bot]>
-d758e5d9c - Remove curl installation step, as `curl-minimal` is already provided in ubi9 (#15998) (#16005) (26 hours ago) <github-actions[bot]>
-b565864f4 - Add arm64 support for env2yaml (#15980) (#15984) (26 hours ago) <github-actions[bot]>
-0c30b6be3 - Save  name came through ENV vars to let Logstash decide using value from either keystore or ENV. (#16026) (#16037) (2 days ago) <github-actions[bot]>
-566160864 - Fix exclusion of old ruby-maven-libs 3.3.9 jars (#16032) (#16035) (2 days ago) <github-actions[bot]>
-6602983f2 - Doc: Remove beta tag from integrations filter doc (#16021) (#16033) (3 days ago) <github-actions[bot]>
-cb0969893 - bump 8.13.1 (#16029) (3 days ago) <kaisecheng>
-270c8ca11 - Release notes for 8.13.0 (#15978) (4 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.13.0..8.13 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
