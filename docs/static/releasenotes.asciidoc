@@ -62,8 +62,6 @@ This section summarizes the changes in the following releases:
 
 No user-facing changes in Logstash core.
 
-==== Plugins
-
 [[logstash-8-13-0]]
 === Logstash 8.13.0 Release Notes
 
