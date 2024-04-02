@@ -54,31 +54,49 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
-COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
-COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
-COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64 
-COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64
+COPY_FILES := $(ARTIFACTS_DIR)/docker/arm64/config/pipelines.yml $(ARTIFACTS_DIR)/docker/arm64/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/arm64/config/logstash-full.yml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/arm64/config/log4j2.properties
+COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/pipeline/default.conf $(ARTIFACTS_DIR)/docker/arm64/bin/docker-entrypoint
+COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/env2yaml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/config/pipelines.yml $(ARTIFACTS_DIR)/docker/amd64/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/amd64/config/logstash-full.yml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/amd64/config/log4j2.properties
+COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/pipeline/default.conf $(ARTIFACTS_DIR)/docker/amd64/bin/docker-entrypoint
+COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/env2yaml/env2yaml
 
-$(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
-$(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
-$(ARTIFACTS_DIR)/docker/config/logstash-full.yml: data/logstash/config/logstash-full.yml
-$(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4j2.file.properties
-$(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
-$(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
-$(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64: data/logstash/env2yaml/env2yaml-arm64
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64: data/logstash/env2yaml/env2yaml-amd64
+$(ARTIFACTS_DIR)/docker/arm64/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/docker/arm64/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
+$(ARTIFACTS_DIR)/docker/arm64/config/logstash-full.yml: data/logstash/config/logstash-full.yml
+$(ARTIFACTS_DIR)/docker/arm64/config/log4j2.file.properties: data/logstash/config/log4j2.file.properties
+$(ARTIFACTS_DIR)/docker/arm64/config/log4j2.properties: data/logstash/config/log4j2.properties
+$(ARTIFACTS_DIR)/docker/arm64/pipeline/default.conf: data/logstash/pipeline/default.conf
+$(ARTIFACTS_DIR)/docker/arm64/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/docker/arm64/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml-arm64
+
+$(ARTIFACTS_DIR)/docker/amd64/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/docker/amd64/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
+$(ARTIFACTS_DIR)/docker/amd64/config/logstash-full.yml: data/logstash/config/logstash-full.yml
+$(ARTIFACTS_DIR)/docker/amd64/config/log4j2.file.properties: data/logstash/config/log4j2.file.properties
+$(ARTIFACTS_DIR)/docker/amd64/config/log4j2.properties: data/logstash/config/log4j2.properties
+$(ARTIFACTS_DIR)/docker/amd64/pipeline/default.conf: data/logstash/pipeline/default.conf
+$(ARTIFACTS_DIR)/docker/amd64/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/docker/amd64/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml-amd64
+
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
 
 docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/
-	mkdir -p $(ARTIFACTS_DIR)/docker/bin
-	mkdir -p $(ARTIFACTS_DIR)/docker/config
-	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
-	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
+	mkdir -p $(ARTIFACTS_DIR)/docker/amd64
+	mkdir -p $(ARTIFACTS_DIR)/docker/arm64
+	mkdir -p $(ARTIFACTS_DIR)/docker/amd64/bin
+	mkdir -p $(ARTIFACTS_DIR)/docker/amd64/config
+	mkdir -p $(ARTIFACTS_DIR)/docker/amd64/env2yaml
+	mkdir -p $(ARTIFACTS_DIR)/docker/amd64/pipeline
+	mkdir -p $(ARTIFACTS_DIR)/docker/arm64/bin
+	mkdir -p $(ARTIFACTS_DIR)/docker/arm64/config
+	mkdir -p $(ARTIFACTS_DIR)/docker/arm64/env2yaml
+	mkdir -p $(ARTIFACTS_DIR)/docker/arm64/pipeline
 
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
