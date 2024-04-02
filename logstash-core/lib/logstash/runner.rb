@@ -305,6 +305,9 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
+    if setting("memory.heap_network_buffer")
+      configure_netty_for_java_heap_allocation
+    end
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
@@ -599,6 +602,18 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def setting(key)
     @settings.get_value(key)
+  end
+
+  def configure_netty_for_java_heap_allocation
+    # if user hasn't explicitly set Netty's interested properties
+    if java.lang.System.getProperty("io.netty.allocator.numDirectArenas") == nil &&
+        java.lang.System.getProperty("io.netty.noPreferDirect")  == nil
+      # set Netty's Java properties to disable direct memory allocation
+      java.lang.System.setProperty("io.netty.allocator.numDirectArenas", "0")
+      java.lang.System.setProperty("io.netty.noPreferDirect", "true")
+    else
+      logger.warn("Can't switch to Java heap Netty's buffer allocation because 'io.netty.allocator.numDirectArenas' or 'io.netty.noPreferDirect' Java properties were already set in jvm.options file.")
+    end
   end
 
 end

@@ -153,14 +153,6 @@ module LogStash
     end
   end
 
-  SETTINGS.on_post_process do |settings|
-    if settings.get("memory.heap_network_buffer") == true
-      # set Netty's Java properties to disable direct memory allocation
-      java.lang.System.setProperty("io.netty.allocator.numDirectArenas", "0")
-      java.lang.System.setProperty("io.netty.noPreferDirect", "true")
-    end
-  end
-
   module Environment
     extend self
 
