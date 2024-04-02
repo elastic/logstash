@@ -57,7 +57,7 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 COPY_FILES := $(ARTIFACTS_DIR)/docker/arm64/config/pipelines.yml $(ARTIFACTS_DIR)/docker/arm64/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/arm64/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/arm64/config/log4j2.properties
 COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/pipeline/default.conf $(ARTIFACTS_DIR)/docker/arm64/bin/docker-entrypoint
-COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/env2yaml
+COPY_FILES += $(ARTIFACTS_DIR)/docker/arm64/env2yaml/env2yaml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/config/pipelines.yml $(ARTIFACTS_DIR)/docker/amd64/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/amd64/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/amd64/config/log4j2.properties
 COPY_FILES += $(ARTIFACTS_DIR)/docker/amd64/pipeline/default.conf $(ARTIFACTS_DIR)/docker/amd64/bin/docker-entrypoint
@@ -141,7 +141,7 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-full" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -155,7 +155,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-oss" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
-	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
 
 public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -169,7 +169,7 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ubi8" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
-	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
