@@ -140,8 +140,9 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-full" && \
 	cd $(ARTIFACTS_DIR)/docker && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
+	cp $(ARTIFACTS_DIR)/Dockerfile-full arm64/Dockerfile && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-full amd64/Dockerfile && \
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz arm64 amd64
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -154,8 +155,9 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-oss" && \
 	cd $(ARTIFACTS_DIR)/docker && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
-	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
+	cp $(ARTIFACTS_DIR)/Dockerfile-oss arm64/Dockerfile && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-oss amd64/Dockerfile && \
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz arm64 amd64
 
 public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -168,8 +170,9 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ubi8" && \
 	cd $(ARTIFACTS_DIR)/docker && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
-	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile arm64 amd64
+	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 arm64/Dockerfile && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 amd64/Dockerfile && \
+	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz arm64 amd64
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
