@@ -305,8 +305,8 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
-    if setting("memory.heap_network_buffer")
-      configure_netty_for_java_heap_allocation
+    if setting("pipeline.receive_buffer.type") == "heap"
+      configure_io_receive_buffer_allocation_to_heap
     end
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
@@ -604,7 +604,7 @@ class LogStash::Runner < Clamp::StrictCommand
     @settings.get_value(key)
   end
 
-  def configure_netty_for_java_heap_allocation
+  def configure_io_receive_buffer_allocation_to_heap
     # if user hasn't explicitly set Netty's interested properties
     if java.lang.System.getProperty("io.netty.allocator.numDirectArenas") == nil &&
         java.lang.System.getProperty("io.netty.noPreferDirect")  == nil
