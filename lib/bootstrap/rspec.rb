@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
 require "logstash-core"
