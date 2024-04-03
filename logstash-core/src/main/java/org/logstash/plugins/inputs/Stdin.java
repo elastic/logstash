@@ -75,7 +75,10 @@ public class Stdin implements Input, Consumer<Map<String, Object>> {
         this(id, configuration, context, new FileInputStream(FileDescriptor.in).getChannel());
     }
 
+    @SuppressWarnings("this-escape")
     Stdin(final String id, final Configuration configuration, final Context context, FileChannel inputChannel) {
+        // This is the reason why of the "this-escape" suppress warning, but this is used just to grab the class
+        // for the logger.
         logger = context.getLogger(this);
         this.id = id;
         try {
