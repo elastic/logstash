@@ -24,8 +24,6 @@ module ::LogStash::Util::SubstitutionVariables
   include LogStash::Util::Loggable
 
   SUBSTITUTION_PLACEHOLDER_REGEX = /\${(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}/
-  NEW_LINE_CHARACTER = "\n"
-  COMMENT_CHARACTER = "#"
 
   SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
   private_constant :SECRET_STORE
@@ -58,8 +56,7 @@ module ::LogStash::Util::SubstitutionVariables
     end
     return value unless value.is_a?(String)
 
-    refined_config_value = exclude_config_comments(value)
-    refined_config_value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
+    value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
@@ -80,18 +77,6 @@ module ::LogStash::Util::SubstitutionVariables
       replacement.to_s
     end
   end # def replace_placeholders
-
-  # Removes the commented config lines or wipes out comment portion of the string
-  # if ${VAR} is in the comment, details https://github.com/elastic/logstash/issues/16008
-  def exclude_config_comments(config_string)
-    # if config_string doesn't contain ${VAR} then useless to clean the comment process
-    return config_string if config_string.scan(/\${(.*?)\}/).size <= 0
-
-    config_lines = config_string.lines.map(&:strip)
-    config_lines.reject! { |line| line.empty? || line.start_with?(COMMENT_CHARACTER) }
-    # wipe out comment part of the config
-    config_lines.map { |line| line.split(COMMENT_CHARACTER).first }.join(NEW_LINE_CHARACTER)
-  end
 
   class << self
     private
