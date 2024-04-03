@@ -20,7 +20,7 @@
 # It's mainly related to Gradle opening java.base module and this interfere with
 # JRuby binding of methods. Full description at https://github.com/jruby/jruby/issues/8061#issuecomment-1908807511
 # Remove when Logstash bundle a JRuby version >= 9.4.6.0.
-java.util.LinkedHashSet.remove_method(:map) rescue nil
+# java.util.LinkedHashSet.remove_method(:map) rescue nil
 
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
