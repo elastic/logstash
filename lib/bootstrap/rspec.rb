@@ -15,10 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# The following line is needed because from starting from JDK 21 LinkedHashSet
+# The following line is a workaround needed because starting from JDK 21 LinkedHashSet
 # has a package private map method that JRuby bound as a usable method.
 # It's mainly related to Gradle opening java.base module and this interfere with
 # JRuby binding of methods. Full description at https://github.com/jruby/jruby/issues/8061#issuecomment-1908807511
+# Remove when Logstash bundle a JRuby version >= 9.4.6.0.
 java.util.LinkedHashSet.remove_method(:map) rescue nil
 
 require_relative "environment"
