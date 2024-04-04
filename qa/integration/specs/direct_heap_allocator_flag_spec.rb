@@ -48,9 +48,6 @@ describe "Test Logstash buffer allocation setting" do
   let(:temp_dir) { Stud::Temporary.directory("logstash-pipelinelog-test") }
   let(:config) { @fixture.config("root") }
   let(:initial_config_file) { config_to_temp_file(@fixture.config("root")) }
-
-  let(:buffer_type) { "direct" }
-
   let(:settings) do
     {
       "path.logs" => temp_dir,
@@ -58,27 +55,34 @@ describe "Test Logstash buffer allocation setting" do
     }
   end
 
-  it "should use Netty direct memory if configured to 'direct'" do
-#     IO.write(@ls.application_settings_file, settings.to_yaml)
-#     @ls.spawn_logstash("-w", "1", "-e", config)
-#
-#     Stud.try(120.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-#       # poll Logstash HTTP api to become active
-#       expect(@ls.rest_active?).to be true
-#     end
-#
-#     # send some data to http pipeline (by default on port 8080)
-#     # in the mean time some dumps should appear in the logs
-#     #(> 5 seconds because the JRuby filter in test pipeline dumps Netty memory status every 5 seconds)
-#     stream_some_data_into_pipeline
-    start_logstash_and_process_some_events
+  context "running a pipeline that dump memory status" do
+    before(:each) { start_logstash_and_process_some_events }
 
-    last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
+    context "when 'direct' is configured as receive_buffer type" do
+      let(:buffer_type) { "direct" }
 
-    # verify direct buffer are used while heap buffers remains at 0
-    direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\d*) .*Heap mem: (\d*)/).captures
-    expect(direct_mem.to_i).to be > 0
-    expect(heap_mem.to_i).to eq 0
+      it "should use Netty direct memory" do
+        last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
+
+        # verify direct buffer are used while heap buffers remains at 0
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\-?\d*) .*Heap mem: (\-?\d*)/).captures
+        expect(direct_mem.to_i).to be > 0
+        expect(heap_mem.to_i).to be <= 0
+      end
+    end
+
+    context "when 'heap' is configured as receive_buffer type" do
+      let(:buffer_type) { "heap" }
+
+      it "should use only Java heap memory" do
+        last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
+
+        # verify java heap  buffer are used while direct buffers remains at 0
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\-?\d*) .*Heap mem: (\-?\d*)/).captures
+        expect(direct_mem.to_i).to be <= 0
+        expect(heap_mem.to_i).to be > 0
+      end
+    end
   end
 
   def start_logstash_and_process_some_events
