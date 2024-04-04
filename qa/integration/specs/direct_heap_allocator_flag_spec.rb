@@ -49,11 +49,39 @@ describe "Test Logstash buffer allocation setting" do
   let(:config) { @fixture.config("root") }
   let(:initial_config_file) { config_to_temp_file(@fixture.config("root")) }
 
-  it "should use Netty direct memory if configured to 'direct'" do
-    settings = {
+  let(:buffer_type) { "direct" }
+
+  let(:settings) do
+    {
       "path.logs" => temp_dir,
-      "pipeline.receive_buffer.type" => "direct"
+      "pipeline.receive_buffer.type" => buffer_type
     }
+  end
+
+  it "should use Netty direct memory if configured to 'direct'" do
+#     IO.write(@ls.application_settings_file, settings.to_yaml)
+#     @ls.spawn_logstash("-w", "1", "-e", config)
+#
+#     Stud.try(120.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+#       # poll Logstash HTTP api to become active
+#       expect(@ls.rest_active?).to be true
+#     end
+#
+#     # send some data to http pipeline (by default on port 8080)
+#     # in the mean time some dumps should appear in the logs
+#     #(> 5 seconds because the JRuby filter in test pipeline dumps Netty memory status every 5 seconds)
+#     stream_some_data_into_pipeline
+    start_logstash_and_process_some_events
+
+    last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
+
+    # verify direct buffer are used while heap buffers remains at 0
+    direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\d*) .*Heap mem: (\d*)/).captures
+    expect(direct_mem.to_i).to be > 0
+    expect(heap_mem.to_i).to eq 0
+  end
+
+  def start_logstash_and_process_some_events
     IO.write(@ls.application_settings_file, settings.to_yaml)
     @ls.spawn_logstash("-w", "1", "-e", config)
 
@@ -66,18 +94,19 @@ describe "Test Logstash buffer allocation setting" do
     # in the mean time some dumps should appear in the logs
     #(> 5 seconds because the JRuby filter in test pipeline dumps Netty memory status every 5 seconds)
     stream_some_data_into_pipeline
+  end
 
-    log_file = "#{temp_dir}/logstash-plain.log"
+  def find_last_mem_dump_log_line(log_file)
+    log_content = load_log_file_content(log_file)
+
+        # select just the log lines with memory dump
+    return log_content.split(/\n/).select { |line| line =~ /\[logstash.filters.ruby\s*\]\[main\].*Direct mem/ }.last
+  end
+
+  def load_log_file_content(log_file)
     expect(File.exist?(log_file)).to be true
     log_content = IO.read(log_file)
-
-    # select just the log lines with memory dump
-    last_dump_line = log_content.split(/\n/).select { |line| line =~ /\[logstash.filters.ruby\s*\]\[main\].*Direct mem/ }.last
-
-    # verify direct buffer are used while heap buffers remains at 0
-    direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\d*) .*Heap mem: (\d*)/).captures
-    expect(direct_mem.to_i).to be > 0
-    expect(heap_mem.to_i).to eq 0
+    return log_content
   end
 
   def stream_some_data_into_pipeline
