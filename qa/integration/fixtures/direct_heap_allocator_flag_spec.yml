@@ -4,6 +4,8 @@ services:
 config: |-
  input {
    http {
+     host => "localhost"
+     port => 8080
      response_headers => {"Content-Type" => "application/json"}
      ecs_compatibility => disabled
    }

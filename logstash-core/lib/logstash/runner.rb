@@ -612,7 +612,7 @@ class LogStash::Runner < Clamp::StrictCommand
       java.lang.System.setProperty("io.netty.allocator.numDirectArenas", "0")
       java.lang.System.setProperty("io.netty.noPreferDirect", "true")
     else
-      logger.warn("Can't switch to Java heap Netty's buffer allocation because 'io.netty.allocator.numDirectArenas' or 'io.netty.noPreferDirect' Java properties were already set in jvm.options file.")
+      logger.warn("Can't switch IO receive buffer to Java heap allocation because 'io.netty.allocator.numDirectArenas' or 'io.netty.noPreferDirect' Java properties were already set in jvm.options file.")
     end
   end
 
