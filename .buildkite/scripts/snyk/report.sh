@@ -48,6 +48,10 @@ report() {
     echo "Using '$REMOTE_REPO_URL' remote repo url."
   fi
 
+  # for big projects Snyk recommends pruning dependencies
+  # https://support.snyk.io/hc/en-us/articles/360002061438-CLI-returns-the-error-Failed-to-get-Vulns
+  ./snyk test --all-projects --prune-repeated-subdependencies
+
   # adding git commit hash to Snyk tag to improve visibility
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
   ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
@@ -62,6 +66,7 @@ for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
   git reset --hard HEAD # reset if any generated files appeared
   # check if target branch exists
+  echo "Checking out $TARGET_BRANCH branch."
   if git checkout "$TARGET_BRANCH"; then
     build_logstash
     report "$TARGET_BRANCH"
