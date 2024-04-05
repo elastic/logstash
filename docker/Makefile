@@ -64,7 +64,9 @@ build-from-local-ubi8-artifacts: venv dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
+COPY_FILES = $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml $(ARTIFACTS_DIR)/docker/config/log4j2.properties $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
@@ -73,6 +75,8 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.pr
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64: data/logstash/env2yaml/env2yaml-arm64
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64: data/logstash/env2yaml/env2yaml-amd64
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -198,8 +202,12 @@ venv: requirements.txt
 env2yaml:
 	docker run --rm \
 	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
-		-w /usr/src/env2yaml golang:1 go build
-
+		-e GOARCH=arm64 -e GOOS=linux \
+		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-arm64
+	docker run --rm \
+	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
+		-e GOARCH=amd64 -e GOOS=linux \
+		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-amd64
 # Generate the Dockerfiles from Jinja2 templates.
 dockerfile: venv templates/Dockerfile.j2
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
