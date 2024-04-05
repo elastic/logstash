@@ -24,8 +24,6 @@ resolve_latest_branches() {
 
 # Build Logstash specific branch to generate Gemlock file where Snyk scans
 build_logstash() {
-  git reset --hard HEAD # reset if any generated files appeared
-  git checkout "$1"
   ./gradlew clean bootstrap assemble installDefaultGems
 }
 
@@ -42,8 +40,8 @@ download_auth_snyk() {
 
 # Reports vulnerabilities to the Snyk
 report() {
-  echo "Reporting to Snyk..."
   REMOTE_REPO_URL=$1
+  echo "Reporting $REMOTE_REPO_URL branch."
   if [ "$REMOTE_REPO_URL" != "main" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
@@ -62,10 +60,10 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
-  # check if branch exists
-  if git show-ref --quiet refs/heads/"$TARGET_BRANCH"; then
-    echo "Using $TARGET_BRANCH branch."
-    build_logstash "$TARGET_BRANCH"
+  git reset --hard HEAD # reset if any generated files appeared
+   # check if target branch exists
+  if git rev-parse --verify "$TARGET_BRANCH"; then
+    build_logstash
     report "$TARGET_BRANCH"
   else
     echo "$TARGET_BRANCH branch doesn't exist."
