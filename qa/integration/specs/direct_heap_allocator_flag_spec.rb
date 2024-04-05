@@ -94,6 +94,11 @@ describe "Test Logstash buffer allocation setting" do
       expect(@ls.rest_active?).to be true
     end
 
+    # wait main pipeline becomes active
+    Stud.try(120.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      post_some_json_data
+    end
+
     # send some data to http pipeline (by default on port 8080)
     # in the mean time some dumps should appear in the logs
     #(> 5 seconds because the JRuby filter in test pipeline dumps Netty memory status every 5 seconds)
