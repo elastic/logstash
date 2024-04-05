@@ -61,8 +61,8 @@ download_auth_snyk
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
   git reset --hard HEAD # reset if any generated files appeared
-   # check if target branch exists
-  if git rev-parse --verify "$TARGET_BRANCH"; then
+  # check if target branch exists
+  if git checkout "$TARGET_BRANCH"; then
     build_logstash
     report "$TARGET_BRANCH"
   else
