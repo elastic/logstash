@@ -211,6 +211,51 @@ describe LogStashConfigParser do
         end
       end
     end
+
+    context "commentary in odd places" do
+      let(:config) { %q(
+        # early
+        input # bla
+        { # bla
+          plugin # bla
+          # bla
+          { # bla
+            # bla
+            arg  # bla
+            => # bla
+            bareword # bla
+            # bla
+            hasharg => {
+              #preentry
+              "firstkey" => "firstvalue"
+              # bla
+              "middle" # bla
+              # bla
+              => # bla
+              # bla
+              "midvalue"  # bla
+              # bla
+              "lastkey" => "lastvalue"
+              # bla
+            }
+          } # bla
+        # bla
+        } # bla
+        # comment ending in EOF:
+      ).strip }
+      subject { LogStashConfigParser.new }
+      def line_to_source(*args); end
+      def plugin(*args); end
+      it "hasn't got a trailing newline in the test config" do
+        # just to be clear that the last comment is supposed to end with EOF not \n
+        expect(config).not_to(end_with "\n")
+      end
+      it "should permit the comments" do
+        result = subject.parse(config)
+        expect(result).not_to(be_nil)
+        expect { eval(result.compile) }.not_to(raise_error)
+      end
+    end
   end
 
   context "when using two plugin sections of the same type" do
