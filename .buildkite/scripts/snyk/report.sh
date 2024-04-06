@@ -52,7 +52,7 @@ report() {
   # for big projects Snyk recommends pruning dependencies
   # https://support.snyk.io/hc/en-us/articles/360002061438-CLI-returns-the-error-Failed-to-get-Vulns
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
-  ./snyk monitor --prune-repeated-subdependencies -d --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
+  ./snyk monitor --prune-repeated-subdependencies --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
 }
 
 install_java
@@ -83,9 +83,9 @@ report_docker_image() {
   echo "Reporting $image to Snyk started..."
   docker pull "$image"
   if [[ $platform != null ]]; then
-    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" && true
+    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" || :
   else
-    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" && true
+    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" || :
   fi
 }
 
