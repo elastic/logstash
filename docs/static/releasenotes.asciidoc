@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-13-2,Logstash 8.13.2>>
 * <<logstash-8-13-1,Logstash 8.13.1>>
 * <<logstash-8-13-0,Logstash 8.13.0>>
 * <<logstash-8-12-2,Logstash 8.12.2>>
@@ -56,6 +57,18 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-13-2]]
+=== Logstash 8.13.2 Release Notes
+
+* Update Dockerfile to fix publishing of docker images to Docker Hub registry https://github.com/elastic/logstash/pull/16059[#16059]
+
+==== Plugins
+
+*Elasticsearch Output - 11.22.5*
+
+* [DOC] Correctly document default data stream name (`logs-generic-default`) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1140[#1140]
+* [DOC] Add note that ecs-compatibility is required for data streams to work properly https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1174[#1174]
 
 [[logstash-8-13-1]]
 === Logstash 8.13.1 Release Notes
