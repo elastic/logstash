@@ -61,35 +61,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-13-2]]
 === Logstash 8.13.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.13.2
-
-* Update Dockerfile to select appropriate architecture on build box https://github.com/elastic/logstash/pull/16053[#16053]
-* Backport PR #16053 to 8.13: Update Dockerfile to select appropriate architecture on build box https://github.com/elastic/logstash/pull/16059[#16059]
-
-=== Logstash Commits between 8.13 and 8.13.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.1..8.13"
-
-08e2162ee - (HEAD -> 8.13, origin/8.13) bump lock file for 8.13 (#16060) (3 days ago) <github-actions[bot]>
-9ad0b7e26 - Update Dockerfile to select appropriate architecture on build box (#16053) (#16059) (3 days ago) <github-actions[bot]>
-cc3693445 - Bump 8.13.2 (#16047) (6 days ago) <Andrea Selva>
-1d0269d7f - Release notes for 8.13.1 (#16046) (7 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.13.1..8.13 *.release"
-Changed plugin versions:
-logstash-output-elasticsearch: 11.22.3 -> 11.22.5
----------- GENERATED CONTENT ENDS HERE ------------
+* Update Dockerfile to fix publishing of docker images to Docker Hub registry https://github.com/elastic/logstash/pull/16059[#16059]
 
 ==== Plugins
 
 *Elasticsearch Output - 11.22.5*
 
-* [DOC] Correct default data stream name (`logs-generic-default`) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1140[#1140]
-
-* [DOC] Adds note that ecs-compatibility is required for data streams to work properly https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1174[#1174]
-
+* [DOC] Correctly document default data stream name (`logs-generic-default`) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1140[#1140]
+* [DOC] Add note that ecs-compatibility is required for data streams to work properly https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1174[#1174]
 
 [[logstash-8-13-1]]
 === Logstash 8.13.1 Release Notes
