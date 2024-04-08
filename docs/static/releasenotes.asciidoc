@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-20,Logstash 7.17.20>>
 * <<logstash-7-17-19,Logstash 7.17.19>>
 * <<logstash-7-17-18,Logstash 7.17.18>>
 * <<logstash-7-17-17,Logstash 7.17.17>>
@@ -78,6 +79,27 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-20]]
+=== Logstash 7.17.20 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.20
+
+=== Logstash Commits between 7.17 and 7.17.19
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.19..7.17"
+
+3e412daaa - (HEAD -> 7.17, origin/7.17) Update patch plugin versions in gemfile lock (#16061) (3 days ago) <github-actions[bot]>
+96dc9043e - Bump 7.17.20 (#16023) (13 days ago) <Andrea Selva>
+5d974610e - Release notes for 7.17.19 (#16016) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.19..7.17 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-17-19]]
 === Logstash 7.17.19 Release Notes
