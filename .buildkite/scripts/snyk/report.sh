@@ -24,8 +24,6 @@ resolve_latest_branches() {
 
 # Build Logstash specific branch to generate Gemlock file where Snyk scans
 build_logstash() {
-  git reset --hard HEAD # reset if any generated files appeared
-  git checkout "$1"
   ./gradlew clean bootstrap assemble installDefaultGems
 }
 
@@ -42,8 +40,8 @@ download_auth_snyk() {
 
 # Reports vulnerabilities to the Snyk
 report() {
-  echo "Reporting to Snyk..."
   REMOTE_REPO_URL=$1
+  echo "Reporting $REMOTE_REPO_URL branch."
   if [ "$REMOTE_REPO_URL" != "main" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
@@ -51,8 +49,10 @@ report() {
   fi
 
   # adding git commit hash to Snyk tag to improve visibility
+  # for big projects Snyk recommends pruning dependencies
+  # https://support.snyk.io/hc/en-us/articles/360002061438-CLI-returns-the-error-Failed-to-get-Vulns
   GIT_HEAD=$(git rev-parse --short HEAD 2> /dev/null)
-  ./snyk monitor --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" && true
+  ./snyk monitor --prune-repeated-subdependencies --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
 }
 
 install_java
@@ -62,10 +62,11 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
-  # check if branch exists
-  if git show-ref --quiet refs/heads/"$TARGET_BRANCH"; then
-    echo "Using $TARGET_BRANCH branch."
-    build_logstash "$TARGET_BRANCH"
+  git reset --hard HEAD # reset if any generated files appeared
+  # check if target branch exists
+  echo "Checking out $TARGET_BRANCH branch."
+  if git checkout "$TARGET_BRANCH"; then
+    build_logstash
     report "$TARGET_BRANCH"
   else
     echo "$TARGET_BRANCH branch doesn't exist."
@@ -82,9 +83,9 @@ report_docker_image() {
   echo "Reporting $image to Snyk started..."
   docker pull "$image"
   if [[ $platform != null ]]; then
-    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" && true
+    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" || :
   else
-    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" && true
+    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" || :
   fi
 }
 
