@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-13-2,Logstash 8.13.2>>
 * <<logstash-8-13-1,Logstash 8.13.1>>
 * <<logstash-8-13-0,Logstash 8.13.0>>
 * <<logstash-8-12-2,Logstash 8.12.2>>
@@ -56,6 +57,26 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-13-2]]
+=== Logstash 8.13.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.13.2
+
+* Update Dockerfile to select appropriate architecture on build box https://github.com/elastic/logstash/pull/16053[#16053]
+* Backport PR #16053 to 8.13: Update Dockerfile to select appropriate architecture on build box https://github.com/elastic/logstash/pull/16059[#16059]
+
+=== Logstash Commits between 8.13 and 8.13.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.2..8.13"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.13.2..8.13 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-13-1]]
 === Logstash 8.13.1 Release Notes
