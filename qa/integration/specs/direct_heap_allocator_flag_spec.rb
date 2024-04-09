@@ -58,28 +58,28 @@ describe "Test Logstash buffer allocation setting" do
   context "running a pipeline that dump memory status" do
     before(:each) { start_logstash_and_process_some_events }
 
-    context "when 'direct' is configured as receive_buffer type" do
+    context "when 'direct' is configured as pipeline.buffer.type" do
       let(:buffer_type) { "direct" }
 
       it "should use Netty direct memory" do
         last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
 
         # verify direct buffer are used while heap buffers remains at 0
-        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\-?\d*) .*Heap mem: (\-?\d*)/).captures
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct pinned: (\d*) .*Heap pinned: (\d*)/).captures
         expect(direct_mem.to_i).to be > 0
-        expect(heap_mem.to_i).to be <= 0
+        expect(heap_mem.to_i).to eq 0
       end
     end
 
-    context "when 'heap' is configured as receive_buffer type" do
+    context "when 'heap' is configured as pipeline.buffer.type" do
       let(:buffer_type) { "heap" }
 
       it "should use only Java heap memory" do
         last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
 
         # verify java heap  buffer are used while direct buffers remains at 0
-        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct mem: (\-?\d*) .*Heap mem: (\-?\d*)/).captures
-        expect(direct_mem.to_i).to be <= 0
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct pinned: (\d*) .*Heap pinned: (\d*)/).captures
+        expect(direct_mem.to_i).to eq 0
         expect(heap_mem.to_i).to be > 0
       end
     end
@@ -99,30 +99,23 @@ describe "Test Logstash buffer allocation setting" do
       post_some_json_data
     end
 
-    # send some data to http pipeline (by default on port 8080)
+    # wait some time to that the pipeline's Ruby filter allocate something with Netty allocator,
     # in the mean time some dumps should appear in the logs
     #(> 5 seconds because the JRuby filter in test pipeline dumps Netty memory status every 5 seconds)
-    stream_some_data_into_pipeline
+    sleep 5
   end
 
   def find_last_mem_dump_log_line(log_file)
     log_content = load_log_file_content(log_file)
 
         # select just the log lines with memory dump
-    return log_content.split(/\n/).select { |line| line =~ /\[logstash.filters.ruby\s*\]\[main\].*Direct mem/ }.last
+    return log_content.split(/\n/).select { |line| line =~ /\[logstash.filters.ruby\s*\]\[main\].*Direct pinned/ }.last
   end
 
   def load_log_file_content(log_file)
     expect(File.exist?(log_file)).to be true
     log_content = IO.read(log_file)
     return log_content
-  end
-
-  def stream_some_data_into_pipeline
-    10.times do
-      post_some_json_data
-      sleep 1
-    end
   end
 
   def post_some_json_data
