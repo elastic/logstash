@@ -139,17 +139,14 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
-COPY config/pipelines.yml config/pipelines.yml
 <% if image_flavor == 'oss' -%>
   COPY config/logstash-oss.yml config/logstash.yml
 <% else -%>
   COPY config/logstash-full.yml config/logstash.yml
 <% end -%>
-COPY config/log4j2.properties config/
-COPY config/log4j2.file.properties config/
+COPY config/pipelines.yml config/log4j2.properties config/log4j2.file.properties config/
 COPY pipeline/default.conf pipeline/logstash.conf
-COPY env2yaml/env2yaml-amd64 env2yaml/
-COPY env2yaml/env2yaml-arm64 env2yaml/
+COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
