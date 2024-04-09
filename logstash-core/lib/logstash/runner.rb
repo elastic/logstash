@@ -305,7 +305,7 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
-    if setting("pipeline.receive_buffer.type") == "heap"
+    if setting("pipeline.buffer.type") == "heap"
       configure_io_receive_buffer_allocation_to_heap
     end
 

@@ -51,7 +51,7 @@ describe "Test Logstash buffer allocation setting" do
   let(:settings) do
     {
       "path.logs" => temp_dir,
-      "pipeline.receive_buffer.type" => buffer_type
+      "pipeline.buffer.type" => buffer_type
     }
   end
 
