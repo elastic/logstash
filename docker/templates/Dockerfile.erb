@@ -156,7 +156,7 @@ RUN chown --recursive logstash:root config/ pipeline/
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
 # Copy over the appropriate env2yaml artifact
-RUN env2yamlarch="$(arch)"; \
+RUN env2yamlarch="$(dpkg --print-architecture)"; \
   case "${env2yamlarch}" in \
     'x86_64') \
       env2yamlarch=amd64; \
