@@ -605,14 +605,12 @@ class LogStash::Runner < Clamp::StrictCommand
   end
 
   def configure_io_receive_buffer_allocation_to_heap
-    # if user hasn't explicitly set Netty's interested properties
-    if java.lang.System.getProperty("io.netty.allocator.numDirectArenas") == nil &&
-        java.lang.System.getProperty("io.netty.noPreferDirect")  == nil
-      # set Netty's Java properties to disable direct memory allocation
-      java.lang.System.setProperty("io.netty.allocator.numDirectArenas", "0")
+    # if user hasn't explicitly set Netty's interested property
+    if java.lang.System.getProperty("io.netty.noPreferDirect")  == nil
+      # set Netty's Java properties to prefer direct memory allocation
       java.lang.System.setProperty("io.netty.noPreferDirect", "true")
     else
-      logger.warn("Can't switch IO receive buffer to Java heap allocation because 'io.netty.allocator.numDirectArenas' or 'io.netty.noPreferDirect' Java properties were already set in jvm.options file.")
+      logger.warn("Can't switch IO buffer to Java heap allocation because 'io.netty.noPreferDirect' Java property was already set in jvm.options file.")
     end
   end
 
