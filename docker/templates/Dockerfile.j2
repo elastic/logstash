@@ -152,7 +152,7 @@ ENV LANG={{ locale }} LC_ALL={{ locale }}
 COPY env2yaml/env2yaml-amd64 env2yaml/
 COPY env2yaml/env2yaml-arm64 env2yaml/
 
-RUN env2yamlarch="$(arch)"; \
+RUN env2yamlarch="$(dpkg --print-architecture)"; \
   case "${env2yamlarch}" in \
     'x86_64') \
       env2yamlarch=amd64; \
