@@ -16,6 +16,7 @@
 {% if image_flavor == 'ubi8' -%}
   {% set base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%}
   {% set package_manager = 'microdnf'  -%}
+  {% arch_command = 'uname -m' -%}
   # Minimal distributions do not ship with en language packs.
   {% set locale = 'C.UTF-8' -%}
 {% elif image_flavor == 'ironbank' -%}
@@ -23,6 +24,7 @@
 {% else -%}
   {% set base_image = 'ubuntu:20.04'  -%}
   {% set package_manager = 'apt-get' -%}
+  {% arch_command = 'dpkg --print-architecture' -%}
   {% set locale = 'en_US.UTF-8' -%}
 {% endif -%}
 
@@ -149,15 +151,14 @@ RUN chown --recursive logstash:root config/ pipeline/
 ENV LANG={{ locale }} LC_ALL={{ locale }}
 
 # Copy over the appropriate env2yaml artifact
-COPY env2yaml/env2yaml-amd64 env2yaml/
-COPY env2yaml/env2yaml-arm64 env2yaml/
+COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 
-RUN env2yamlarch="$(dpkg --print-architecture)"; \
+RUN env2yamlarch="$({{ arch_command }})"; \
   case "${env2yamlarch}" in \
-    'x86_64') \
+    'x86_64'|'amd64') \
       env2yamlarch=amd64; \
       ;; \
-    'aarch64') \
+    'aarch64'|'arm64') \
       env2yamlarch=arm64; \
       ;; \
     *) echo >&2 "error: unsupported architecture '$env2yamlarch'"; exit 1 ;; \
