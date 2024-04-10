@@ -88,7 +88,7 @@ module LogStash
            Setting::Boolean.new("api.ssl.enabled", false),
   Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
-          Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
+       Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::Boolean.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
@@ -109,7 +109,8 @@ module LogStash
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
-    Setting::NullableString.new("monitoring.cluster_uuid")
+    Setting::NullableString.new("monitoring.cluster_uuid"),
+            Setting::String.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 

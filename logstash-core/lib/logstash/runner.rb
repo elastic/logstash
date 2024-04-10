@@ -305,6 +305,9 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
+    if setting("pipeline.buffer.type") != nil
+      configure_pipeline_buffer_type
+    end
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
@@ -599,6 +602,21 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def setting(key)
     @settings.get_value(key)
+  end
+
+  def configure_pipeline_buffer_type
+    # if user hasn't explicitly set Netty's interested property
+    if java.lang.System.getProperty("io.netty.noPreferDirect") == nil
+      if setting("pipeline.buffer.type") == "heap"
+        # set Netty's Java properties to prefer heap memory allocation
+        java.lang.System.setProperty("io.netty.noPreferDirect", "true")
+      else
+        # set Netty's Java properties to prefer direct memory allocation
+        java.lang.System.setProperty("io.netty.noPreferDirect", "false")
+      end
+    else
+      logger.warn("Ignoring 'pipeline.buffer.type' since the 'io.netty.noPreferDirect' Java property has already been set (check LS_JAVA_OPTS or jvm.options file.")
+    end
   end
 
 end

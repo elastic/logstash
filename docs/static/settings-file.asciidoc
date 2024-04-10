@@ -362,4 +362,9 @@ separating each log lines per pipeline could be helpful in case you need to trou
 When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
 Setting this flag to `warn` is deprecated and will be removed in a future release.
 | `rename`
+
+| `pipeline.buffer.type`
+| Determine where to allocate memory buffers, for plugins that leverage them.
+Default to `direct`, optionally can be switched to `heap` to select Java heap space.
+| `direct`
 |=======================================================================
