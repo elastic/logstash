@@ -172,6 +172,7 @@ public final class PipelineConfig {
             logger.debug("\n\n{}", configPart.getText());
         }
         logger.debug("Merged config");
+        logger.debug("\n\n{}", this.configString());
     }
 
     public SourceWithMetadata lookupSource(int globalLineNumber, int sourceColumn)
