@@ -615,7 +615,7 @@ class LogStash::Runner < Clamp::StrictCommand
         java.lang.System.setProperty("io.netty.noPreferDirect", "false")
       end
     else
-      logger.warn("Can't switch IO buffer to Java heap allocation because 'io.netty.noPreferDirect' Java property was already set in jvm.options file.")
+      logger.warn("Ignoring 'pipeline.buffer.type' since the 'io.netty.noPreferDirect' Java property has already been set (check LS_JAVA_OPTS or jvm.options file.")
     end
   end
 
