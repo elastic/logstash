@@ -56,7 +56,8 @@ module LogStash
         data.map { |item| normalize_encoding(item) }
       when Hash
         # origin key might change when normalizing, so requires transformation
-        data.transform_keys { |key| normalize_encoding(key) }
+        modifiable_hash = data.to_hash # if coming from jruby objects such as UnmodifiableMap
+        modifiable_hash.transform_keys { |key| normalize_encoding(key) }
             .transform_values { |value| normalize_encoding(value) }
       else
         data # use as it is
