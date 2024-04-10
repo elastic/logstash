@@ -74,12 +74,14 @@ RUN dnf -y upgrade && \
   <% if image_flavor == 'ubi8' %>
     <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
     <%   package_manager = 'microdnf' -%>
+    <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
   <% else -%>
     <%   base_image = 'ubuntu:20.04' -%>
     <%   package_manager = 'apt-get' -%>
     <%   locale = 'en_US.UTF-8' -%>
+    <%   arch_command = 'dpkg --print-architecture' -%>
   <% end -%>
 
 FROM <%= base_image %>
@@ -153,7 +155,7 @@ RUN chown --recursive logstash:root config/ pipeline/
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
 # Copy over the appropriate env2yaml artifact
-RUN env2yamlarch="$(dpkg --print-architecture)"; \
+RUN env2yamlarch="$(<%= arch_command %>)"; \
   case "${env2yamlarch}" in \
     'x86_64'|'amd64') \
       env2yamlarch=amd64; \
