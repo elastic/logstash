@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/environment"
+require "logstash/util/unicode_normalizer"
 require "jrjackson"
 
 module LogStash
@@ -32,49 +33,34 @@ module LogStash
     end
 
     def jruby_dump(o, options = {})
+      encoding_normalized_data = normalize_encoding(o.dup)&.freeze
+
       # TODO [guyboertje] remove these comments in 5.0
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
       # also look for Java::JavaUtil::ArrayList, see TODO submit issue
       # o.is_a?(Enumerable) ? JrJackson::Raw.generate(o) : JrJackson::Json.dump(o)
-      if o.class == String # TODO: test only, make it happen for all data structures
-        duplicated_input_string = o.dup
-        if duplicated_input_string.encoding != Encoding::UTF_8
-          encoding_converter = Encoding::Converter.new(duplicated_input_string.encoding, Encoding::UTF_8)
-          conversion_error = false
-          begin
-            utf_encoded_string = encoding_converter.convert(duplicated_input_string).freeze
-          rescue Encoding::UndefinedConversionError => e
-            # trace logging
-            puts "Could not convert, #{e.inspect}"
-            conversion_error = true
-          ensure
-            # we don't catch the error raised by `JrJackson::Base.generate`
-            # and we let normalize and replace invalid unicode bytes before `JrJackson::Base.generate`
-            return JrJackson::Base.generate(utf_encoded_string, options) unless conversion_error
-          end
-        end
-
-        begin
-          # non expensive `force_encoding` operation which changes the encoding metadata, otherwise unicode normalization rejects
-          duplicated_input_string = duplicated_input_string.force_encoding(Encoding::UTF_8)
-          # force UTF-8 encoding might also have invalid bytes, we try to normalize first
-          # use replacement char with `scrub` if invalid bytes found
-          duplicated_input_string.unicode_normalize # maybe use :nfkc?
-        rescue ArgumentError => e
-          # trace log
-          puts "Could not normalize to unicode, #{e.inspect}"
-          puts "Replacing invalid non-utf bytes with replacement char."
-          duplicated_input_string.scrub!
-        end
-        JrJackson::Base.generate(duplicated_input_string, options)
-      else
-        JrJackson::Base.generate(o, options)
-      end
+      JrJackson::Base.generate(encoding_normalized_data, options)
     rescue => e
       raise LogStash::Json::GeneratorError.new(e.message)
     end
 
     alias_method :load, "jruby_load".to_sym
     alias_method :dump, "jruby_dump".to_sym
+
+    private
+    def normalize_encoding(data)
+      case data
+      when String
+        LogStash::UnicodeNormalizer.normalize_string_encoding(data)
+      when Array
+        data.map { |item| normalize_encoding(item) }
+      when Hash
+        # origin key might change when normalizing, so requires transformation
+        data.transform_keys { |key| normalize_encoding(key) }
+            .transform_values { |value| normalize_encoding(value) }
+      else
+        data # use as it is
+      end
+    end
   end
 end

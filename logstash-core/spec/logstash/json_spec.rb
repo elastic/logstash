@@ -174,5 +174,22 @@ describe "LogStash::Json" do
       end
 
     end
+
+    context 'with hash data structure' do
+      let(:input) {{"Th\xEFs key and".b.force_encoding(Encoding::WINDOWS_1252).freeze =>
+                      {"Thïs key also".b.force_encoding(Encoding::UTF_8).freeze => "not-quite-v\xCEalid uni\xF0\x9D\x84code string 💖ok".b.force_encoding(Encoding::UTF_8).freeze}}}
+      it 'normalizes and replaces each invalid key-value with the xFFFD replacement character' do
+        expect(result).to be_utf8.with_bytes("{\"Th\u{EF}s key and\":{\"Thïs key also\":\"not-quite-v\u{FFFD}alid uni\u{FFFD}code string 💖ok\"}}".bytes)
+      end
+    end
+
+    context 'with array data structure' do
+      let(:input) {["Th\xEFs entry and".b.force_encoding(Encoding::WINDOWS_1252).freeze,
+                    "Thïs entry also".b.force_encoding(Encoding::UTF_8).freeze,
+                    "not-quite-v\xCEalid uni\xF0\x9D\x84code strings 💖ok".b.force_encoding(Encoding::UTF_8).freeze]}
+      it 'normalizes and replaces each invalid array values with the xFFFD replacement character' do
+        expect(result).to be_utf8.with_bytes("[\"Th\u{EF}s entry and\",\"Thïs entry also\",\"not-quite-v\u{FFFD}alid uni\u{FFFD}code strings 💖ok\"]".bytes)
+      end
+    end
   end
 end
