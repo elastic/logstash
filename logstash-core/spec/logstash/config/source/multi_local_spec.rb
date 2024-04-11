@@ -145,12 +145,24 @@ describe LogStash::Config::Source::MultiLocal do
   end
 
   describe "#pipeline_configs" do
+
+    let(:config_string) {
+     "input {
+        udp {
+          port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
+          host => \"127.0.0.1\"
+        }
+        # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
+      }
+      output {}"
+    }
     let(:retrieved_pipelines) do
       [
-        { "pipeline.id" => "main", "config.string" => "input {} output {}" },
-        { "pipeline.id" => "backup", "config.string" => "input {} output {}" }
+        { "pipeline.id" => "main", "config.string" => config_string },
+        { "pipeline.id" => "backup", "config.string" => config_string }
       ]
     end
+
     before(:each) do
       allow(subject).to receive(:retrieve_yaml_pipelines).and_return(retrieved_pipelines)
     end
@@ -158,8 +170,8 @@ describe LogStash::Config::Source::MultiLocal do
     it "should return instances of PipelineConfig" do
       configs = subject.pipeline_configs
       expect(configs).to be_a(Array)
-      expect(subject.pipeline_configs.first).to be_a(::LogStash::Config::PipelineConfig)
-      expect(subject.pipeline_configs.last).to be_a(::LogStash::Config::PipelineConfig)
+      expect(configs.first).to be_a(::LogStash::Config::PipelineConfig)
+      expect(configs.last).to be_a(::LogStash::Config::PipelineConfig)
     end
 
     context "using non pipeline related settings" do
