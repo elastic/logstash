@@ -218,12 +218,12 @@ In `config/logstash.yml` enable the strict json flag:
 
 [source,yaml]
 -----
-log.format.json_strict: true
+log.format.json.fix_duplicate_message_fields: true
 -----
 
 or pass the command line switch
 
 [source]
 -----
-bin/logstash --log.format.json_strict true
+bin/logstash --log.format.json.fix_duplicate_message_fields true
 -----

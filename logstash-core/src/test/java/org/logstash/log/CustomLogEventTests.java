@@ -63,7 +63,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
-    public static final String STRICT_JSON_PROPERTY_NAME = "ls.log.json.strict";
+    public static final String STRICT_JSON_PROPERTY_NAME = "ls.log.format.json.fix_duplicate_message_fields";
 
     @ClassRule
     public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);

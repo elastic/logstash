@@ -232,10 +232,10 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "log.format",
     :default => LogStash::SETTINGS.get_default("log.format")
 
-  option ["--log.format.json_strict"], "FORMAT_JSON_STRICT",
-    I18n.t("logstash.runner.flag.log_format_json_strict"),
-    :attribute_name => "log.format.json_strict",
-    :default => LogStash::SETTINGS.get_default("log.format.json_strict")
+  option ["--log.format.json.fix_duplicate_message_fields"], "FORMAT_JSON_STRICT",
+    I18n.t("logstash.runner.flag.log_format_json_fix_duplicate_message_fields"),
+    :attribute_name => "log.format.json.fix_duplicate_message_fields",
+    :default => LogStash::SETTINGS.get_default("log.format.json.fix_duplicate_message_fields")
 
   option ["--path.settings"], "SETTINGS_DIR",
     I18n.t("logstash.runner.flag.path_settings"),
