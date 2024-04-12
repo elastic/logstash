@@ -74,12 +74,14 @@ RUN dnf -y upgrade && \
   <% if image_flavor == 'ubi8' %>
     <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
     <%   package_manager = 'microdnf' -%>
+    <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
   <% else -%>
     <%   base_image = 'ubuntu:20.04' -%>
     <%   package_manager = 'apt-get' -%>
     <%   locale = 'en_US.UTF-8' -%>
+    <%   arch_command = 'dpkg --print-architecture' -%>
   <% end -%>
 
 FROM <%= base_image %>
@@ -139,29 +141,26 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
-COPY config/pipelines.yml config/pipelines.yml
 <% if image_flavor == 'oss' -%>
   COPY config/logstash-oss.yml config/logstash.yml
 <% else -%>
   COPY config/logstash-full.yml config/logstash.yml
 <% end -%>
-COPY config/log4j2.properties config/
-COPY config/log4j2.file.properties config/
+COPY config/pipelines.yml config/log4j2.properties config/log4j2.file.properties config/
 COPY pipeline/default.conf pipeline/logstash.conf
-COPY env2yaml/env2yaml-amd64 env2yaml/
-COPY env2yaml/env2yaml-arm64 env2yaml/
+COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
 # Copy over the appropriate env2yaml artifact
-RUN env2yamlarch="$(arch)"; \
+RUN env2yamlarch="$(<%= arch_command %>)"; \
   case "${env2yamlarch}" in \
-    'x86_64') \
+    'x86_64'|'amd64') \
       env2yamlarch=amd64; \
       ;; \
-    'aarch64') \
+    'aarch64'|'arm64') \
       env2yamlarch=arm64; \
       ;; \
     *) echo >&2 "error: unsupported architecture '$env2yamlarch'"; exit 1 ;; \
