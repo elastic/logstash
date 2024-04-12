@@ -176,7 +176,9 @@ public class JvmOptionsParser {
             if (isDebugEnabled()) {
                 System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
             }
-            jvmOptionsContent.add(lsJavaOpts);
+            Arrays.stream(lsJavaOpts.split(" "))
+                    .filter(s -> !s.isBlank())
+                    .forEach(jvmOptionsContent::add);
         }
         // Set mandatory JVM options
         jvmOptionsContent.addAll(getMandatoryJvmOptions(javaMajorVersion));
