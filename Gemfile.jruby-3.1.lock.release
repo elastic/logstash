@@ -2,12 +2,12 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 8.13.3)
+      logstash-core (= 8.14.0)
 
 PATH
   remote: logstash-core
   specs:
-    logstash-core (8.13.3-java)
+    logstash-core (8.14.0-java)
       clamp (~> 1)
       concurrent-ruby (~> 1, < 1.1.10)
       down (~> 5.2.0)
@@ -45,11 +45,11 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.3.0)
-    aws-partitions (1.899.0)
-    aws-sdk-cloudfront (1.87.0)
+    aws-partitions (1.913.0)
+    aws-sdk-cloudfront (1.88.0)
       aws-sdk-core (~> 3, >= 3.191.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-cloudwatch (1.86.0)
+    aws-sdk-cloudwatch (1.88.0)
       aws-sdk-core (~> 3, >= 3.191.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-core (3.191.6)
@@ -57,10 +57,10 @@ GEM
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.8)
       jmespath (~> 1, >= 1.6.1)
-    aws-sdk-kms (1.78.0)
+    aws-sdk-kms (1.79.0)
       aws-sdk-core (~> 3, >= 3.191.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-resourcegroups (1.58.0)
+    aws-sdk-resourcegroups (1.59.0)
       aws-sdk-core (~> 3, >= 3.191.0)
       aws-sigv4 (~> 1.1)
     aws-sdk-s3 (1.146.1)
@@ -193,7 +193,7 @@ GEM
     jruby-jms (1.3.0-java)
       gene_pool
       semantic_logger
-    jruby-openssl (0.14.3-java)
+    jruby-openssl (0.14.4-java)
     jruby-stdin-channel (0.2.0-java)
     json (2.7.2-java)
     json-schema (2.8.1)
@@ -602,7 +602,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.3.4-java)
+    logstash-integration-kafka (11.4.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -717,7 +717,7 @@ GEM
     march_hare (4.6.0-java)
     memoizable (0.4.2)
       thread_safe (~> 0.3, >= 0.3.1)
-    method_source (1.0.0)
+    method_source (1.1.0)
     metriks (0.9.9.8)
       atomic (~> 1.0)
       avl_tree (~> 1.2.0)
@@ -739,10 +739,10 @@ GEM
       net-protocol
     net-protocol (0.2.2)
       timeout
-    net-smtp (0.4.0.1)
+    net-smtp (0.5.0)
       net-protocol
     nio4r (2.7.1-java)
-    nokogiri (1.16.3-java)
+    nokogiri (1.16.4-java)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
@@ -778,7 +778,7 @@ GEM
     rack-test (2.1.0)
       rack (>= 1.3)
     rainbow (3.1.1)
-    rake (13.1.0)
+    rake (13.2.1)
     redis (4.8.1)
     regexp_parser (2.9.0)
     rexml (3.2.6)
@@ -797,7 +797,7 @@ GEM
     rspec-support (3.13.1)
     rspec-wait (0.0.9)
       rspec (>= 3, < 4)
-    rubocop (1.62.1)
+    rubocop (1.63.2)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -821,7 +821,7 @@ GEM
       faraday (>= 0.17.3, < 3)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.78.0)
+    sequel (5.79.0)
       bigdecimal
     simple_oauth (0.3.1)
     simplecov (0.22.0)
@@ -876,6 +876,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
