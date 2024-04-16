@@ -118,6 +118,29 @@ To summarize, we have 3 categories of memory usage, where 2 can be limited by th
 
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
+[[reducing-off-heap-usage]]
+===== Reducing off-heap usage
+Some plugins like Elastic Agent, Beats, TCP and HTTP take advantage of direct memory to get
+better performance when interacting with the network stack. However, under certain circumstances of heavy load,
+the direct memory space could be exhausted and lead to Out of Memory errors in off-heap space.
+For better investigations an more significant heap dumps in such cases, the <<logstash-settings-file,`pipeline.buffer.type`>> setting
+could be leveraged. By setting to `heap`, all IO buffers allocations used by such plugin are configured to **prefer** the
+Java Heap instead of direct memory. In this way, in case of out-of-memory conditions, a better report of eventual leak
+could be investigated.
+Moving the allocation of IO buffers to Java heap generally doesn't impact the performance in terms of requests per second,
+because every event's payload has however to be converted from raw bytes in direct memory space to Logstash events,
+which are Java objects that live in the heap.
+However, the Java heap sizing requirements could be impacted by this change, because it has to allocate space that previously resided
+on the direct zone, outside heap. In such case you could increment the max size of Java heap by the amount of the direct space,
+but don't reduce too mush the direct memory size because there could be some allocation that still happens there.
+
+NOTE: When `pipeline.buffer.type` is valued to `heap` consider to increment the Java heap by the amount of
+previously reserved for direct space. At the same time do not decrease too much of the direct space, you could try to
+set to the half of the previous size.
+
+NOTE: `pipeline.buffer.type` is not intended to provide better throughput of events per second but to have better insights
+when out-of-memory in direct space happens. However, it should not impact the overall performance.
+
 [[memory-size-calculation]]
 ===== Memory sizing
 
