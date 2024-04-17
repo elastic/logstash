@@ -231,7 +231,7 @@ Without setting this flag, json log would contain objects like:
 }
 -----
 
-Please note the duplication of `message` field, despite is a formally valid json, it's not well accepted by many parsers.
+Please note the duplication of `message` field, while being technically valid json, it is not always parsed correctly.
 
 *Solution*
 In `config/logstash.yml` enable the strict json flag:
@@ -249,7 +249,7 @@ bin/logstash --log.format.json.fix_duplicate_message_fields true
 -----
 
 With `log.format.json.fix_duplicate_message_fields` enabled the duplication of `message` field is removed,
-adding to the fiels name a `_1` suffix:
+adding to the field name a `_1` suffix:
 
 [source,json]
 -----
