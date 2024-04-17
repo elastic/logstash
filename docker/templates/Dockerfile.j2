@@ -16,7 +16,7 @@
 {% if image_flavor == 'ubi8' -%}
   {% set base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%}
   {% set package_manager = 'microdnf'  -%}
-  {% arch_command = 'uname -m' -%}
+  {% set arch_command = 'uname -m' -%}
   # Minimal distributions do not ship with en language packs.
   {% set locale = 'C.UTF-8' -%}
 {% elif image_flavor == 'ironbank' -%}
@@ -24,7 +24,7 @@
 {% else -%}
   {% set base_image = 'ubuntu:20.04'  -%}
   {% set package_manager = 'apt-get' -%}
-  {% arch_command = 'dpkg --print-architecture' -%}
+  {% set arch_command = 'dpkg --print-architecture' -%}
   {% set locale = 'en_US.UTF-8' -%}
 {% endif -%}
 
