@@ -204,3 +204,65 @@ As the logging library used in Logstash is synchronous, heavy logging can affect
 *Solution*
 
 Reset the logging level to `info`.
+
+[[ts-pipeline-logging-json-duplicated-message-field]]
+==== Logging in json format can write duplicate `message` fields
+
+*Symptoms*
+
+When log format is `json` and certain log events (for example errors from JSON codec plugin)
+contains two instances of the `message` field.
+
+Without setting this flag, json log would contain objects like:
+
+[source,json]
+-----
+{
+   "level":"WARN",
+   "loggerName":"logstash.codecs.jsonlines",
+   "timeMillis":1712937761955,
+   "thread":"[main]<stdin",
+   "logEvent":{
+      "message":"JSON parse error, original data now in message field",
+      "message":"Unexpected close marker '}': expected ']' (for Array starting at [Source: (String)\"{\"name\": [}\"; line: 1, column: 10])\n at [Source: (String)\"{\"name\": [}\"; line: 1, column: 12]",
+      "exception":"LogStash::Json::ParserError",
+      "data":"{\"name\": [}"
+   }
+}
+-----
+
+Please note the duplication of `message` field, while being technically valid json, it is not always parsed correctly.
+
+*Solution*
+In `config/logstash.yml` enable the strict json flag:
+
+[source,yaml]
+-----
+log.format.json.fix_duplicate_message_fields: true
+-----
+
+or pass the command line switch
+
+[source]
+-----
+bin/logstash --log.format.json.fix_duplicate_message_fields true
+-----
+
+With `log.format.json.fix_duplicate_message_fields` enabled the duplication of `message` field is removed,
+adding to the field name a `_1` suffix:
+
+[source,json]
+-----
+{
+   "level":"WARN",
+   "loggerName":"logstash.codecs.jsonlines",
+   "timeMillis":1712937629789,
+   "thread":"[main]<stdin",
+   "logEvent":{
+      "message":"JSON parse error, original data now in message field",
+      "message_1":"Unexpected close marker '}': expected ']' (for Array starting at [Source: (String)\"{\"name\": [}\"; line: 1, column: 10])\n at [Source: (String)\"{\"name\": [}\"; line: 1, column: 12]",
+      "exception":"LogStash::Json::ParserError",
+      "data":"{\"name\": [}"
+   }
+}
+-----
