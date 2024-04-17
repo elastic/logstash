@@ -69,7 +69,9 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
         }
 
         for (final Map.Entry<Object, Object> entry : message.getParams().entrySet()) {
-            final String paramName = entry.getKey().toString();
+            // Given that message params is a map and the generator just started a new object, containing
+            // only one 'message' field, it could clash only on this field; fixit post-fixing it with '_1'
+            final String paramName = renameParamNameIfClashingWithMessage(entry);
             final Object paramValue = entry.getValue();
 
             try {
@@ -92,6 +94,16 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
                 generator.writeObjectField(paramName, paramValue.toString());
             }
         }
+    }
+
+    private static String renameParamNameIfClashingWithMessage(Map.Entry<Object, Object> entry) {
+        final String paramName = entry.getKey().toString();
+        if ("message".equals(paramName)) {
+            if ("true".equalsIgnoreCase(System.getProperty("ls.log.format.json.fix_duplicate_message_fields"))) {
+                return "message_1";
+            }
+        }
+        return paramName;
     }
 
     private boolean isValueSafeToWrite(Object value) {

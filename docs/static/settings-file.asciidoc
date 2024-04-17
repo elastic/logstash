@@ -336,6 +336,10 @@ The log level. Valid options are:
 | The log format. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`.
 | `plain`
 
+| `log.format.json.fix_duplicate_message_fields`
+| When the log format is `json` avoid collision of field names in log lines.
+| `false`
+
 | `path.logs`
 | The directory where Logstash will write its log to.
 | `LOGSTASH_HOME/logs`
