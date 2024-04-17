@@ -210,10 +210,10 @@ Reset the logging level to `info`.
 
 *Symptoms*
 
-When format of log is `json` and certain log events (for example errors from JSON codec plugin)
+When log format is `json` and certain log events (for example errors from JSON codec plugin)
 contains two instances of the `message` field.
 
-Without setting this flag, json log could contain objects like:
+Without setting this flag, json log would contain objects like:
 
 [source,json]
 -----
@@ -231,7 +231,7 @@ Without setting this flag, json log could contain objects like:
 }
 -----
 
-Please note the duplication of `message` field, that despite is a formally valid json, it's not well accepted by many parsers.
+Please note the duplication of `message` field, despite is a formally valid json, it's not well accepted by many parsers.
 
 *Solution*
 In `config/logstash.yml` enable the strict json flag:
@@ -248,8 +248,8 @@ or pass the command line switch
 bin/logstash --log.format.json.fix_duplicate_message_fields true
 -----
 
-With the `log.format.json.fix_duplicate_message_fields` enabled the duplication of `message` field is removed,
-adding a `_1` suffix:
+With `log.format.json.fix_duplicate_message_fields` enabled the duplication of `message` field is removed,
+adding to the fiels name a `_1` suffix:
 
 [source,json]
 -----
