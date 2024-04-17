@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-0,Logstash 8.14.0>>
 * <<logstash-8-13-2,Logstash 8.13.2>>
 * <<logstash-8-13-1,Logstash 8.13.1>>
 * <<logstash-8-13-0,Logstash 8.13.0>>
@@ -56,6 +57,90 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-14-0]]
+=== Logstash 8.14.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.14.0
+
+* Release notes for 8.12.2 https://github.com/elastic/logstash/pull/15956[#15956]
+* Backport PR #15956 to main: Release notes for 8.12.2 https://github.com/elastic/logstash/pull/15972[#15972]
+* Release notes for 8.13.0 https://github.com/elastic/logstash/pull/15978[#15978]
+* Backport PR #15978 to main: Release notes for 8.13.0 https://github.com/elastic/logstash/pull/16027[#16027]
+* Release notes for 8.13.1 https://github.com/elastic/logstash/pull/16046[#16046]
+* Backport PR #16046 to main: Release notes for 8.13.1 https://github.com/elastic/logstash/pull/16049[#16049]
+* Introduce a new setting to give preference to Java heap  or direct space buffer allocation type https://github.com/elastic/logstash/pull/16054[#16054]
+* Release notes for 8.13.2 https://github.com/elastic/logstash/pull/16068[#16068]
+* Backport PR #16068 to main: Release notes for 8.13.2 https://github.com/elastic/logstash/pull/16071[#16071]
+* Split LS_JAVA_OPTS content when contains multiple options https://github.com/elastic/logstash/pull/16079[#16079]
+
+=== Logstash Commits between 8.14 and 8.13.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.2..8.14"
+
+18583787b - (HEAD -> 8.14, origin/8.14) bump lock file for 8.14 (#16087) (67 minutes ago) <github-actions[bot]>
+ba5af1768 - update Gemfile lock (17 hours ago) <Kaise Cheng>
+b9b9ad939 - Use `dpkg --print-architecture` in Dockerfile to ascertain architecture (#16076) (5 days ago) <Rob Bavey>
+cc1eca904 - Split LS_JAVA_OPTS content when contains multiple options (#16079) (5 days ago) <Andrea Selva>
+9483ee04c - Fix the exception behavior when `config.string` contains ${VAR} in the comments. (#16050) (6 days ago) <Mashhur>
+84886ac4b - remove 8.12 from CI (#16077) (6 days ago) <kaisecheng>
+afa646fbc - Introduce a new setting to give preference to Java heap  or direct space buffer allocation type (#16054) (7 days ago) <Andrea Selva>
+2ec54b42e - Release notes for 8.13.2 (#16068) (#16071) (9 days ago) <github-actions[bot]>
+4a379be6d - Fix the git branch check for snyk bk jobs (#16062) (9 days ago) <Mashhur>
+e5b2b3d92 - Update Dockerfile to select appropriate architecture on build box (#16053) (12 days ago) <Rob Bavey>
+6eb99437e - Update releases inventory after 8.13.1 (#16048) (13 days ago) <Andrea Selva>
+6a04854e4 - JDK 21 move (#15719) (2 weeks ago) <Andrea Selva>
+327fbe134 - Release notes for 8.13.1 (#16046) (#16049) (2 weeks ago) <github-actions[bot]>
+dd1f6dd16 - Fix integration tests caused by #16026. (#16038) (3 weeks ago) <Mashhur>
+f6940f5a3 - Update critical_vulnerability_scan.yml (#16039) (3 weeks ago) <João Duarte>
+a7779664a - Modernize ironbank Dockerfile (#16022) (3 weeks ago) <kaisecheng>
+e42979503 - Save  name came through ENV vars to let Logstash decide using value from either keystore or ENV. (#16026) (3 weeks ago) <Mashhur>
+e8597cbb7 - Introduce vulnerability scanner that fails PRs on critical vulnerabilities (#16028) (3 weeks ago) <João Duarte>
+96e4838e4 - Fix exclusion of old ruby-maven-libs 3.3.9 jars (#16032) (3 weeks ago) <João Duarte>
+36b7cb8ab - Doc: Remove beta tag from integrations filter doc (#16021) (3 weeks ago) <Karen Metts>
+c4bd54de5 - Update releases inventory after 7.17.19 (#16024) (3 weeks ago) <Andrea Selva>
+716c33f4b - update ci release for 8.13.0 (#16030) (3 weeks ago) <kaisecheng>
+bae6210c2 - Release notes for 8.13.0 (#15978) (#16027) (3 weeks ago) <github-actions[bot]>
+59bd37636 - upgrade ruby-maven-libs to 3.8.9 (#15894) (4 weeks ago) <João Duarte>
+d1e624b81 - remove repetitions of "the" word (#15987) (4 weeks ago) <carrychair>
+92b20bc18 - Doc: Remove extra `+` to force page regen (#16000) (5 weeks ago) <Karen Metts>
+32052a263 - Remove curl installation step, as `curl-minimal` is already provided in ubi9 (#15998) (5 weeks ago) <Rob Bavey>
+43614ede5 - ensure order of jvm options from file and env vars is respected (#15997) (5 weeks ago) <João Duarte>
+483059e37 - geoip: avoid crash cleaning non-existing managed dbs (#15986) (5 weeks ago) <Ry Biesemeyer>
+c0c213d17 - Split java/ruby unit test steps on Windows (#15888) (5 weeks ago) <Dimitrios Liappis>
+b640e7e85 - Add arm64 support for env2yaml (#15980) (6 weeks ago) <Rob Bavey>
+dec53ba32 - Imap plugin is no anymore default plugin. (#15425) (6 weeks ago) <Mashhur>
+19637143e - Fix the Bootstrap check test failure on Windows. (#15975) (6 weeks ago) <Mashhur>
+3070a637c - Release notes for 8.12.2 (#15956) (#15972) (8 weeks ago) <github-actions[bot]>
+834c779c5 - Remove dlq writer dead code add some logs (#15965) (8 weeks ago) <Andrea Selva>
+18bbb3156 - Add shutdown step of DLQ flusher scheduled service (#15964) (8 weeks ago) <Andrea Selva>
+ff37e1e0d - Fix failing DLQ test due to time scheduling (#15960) (8 weeks ago) <Andrea Selva>
+14dc3d24a - bump jruby to 9.4.6.0 and remove ffi workaround (#15961) (8 weeks ago) <João Duarte>
+c30fe46c8 - Added :jvm-options-parser subproject to the javaTests task (#15957) (8 weeks ago) <Andrea Selva>
+e5ca8601b - [CI] [Sonar] Explicitly specified test sources for sonar (#15954) (9 weeks ago) <Pavel Zorin>
+54f73e5d2 - Follow up to #15900 -- fix remaining acceptance tests (#15907) (9 weeks ago) <Dimitrios Liappis>
+eedccea33 - Fix packaging service check failures (#15946) (9 weeks ago) <Dimitrios Liappis>
+3c9db658b - Package `elastic_integration` plugin. (#15769) (9 weeks ago) <Mashhur>
+22a10b5b9 - bump version to 8.14.0 (#15935) (9 weeks ago) <kaisecheng>
+34ebdc120 - add 8.13 branch (#15938) (9 weeks ago) <kaisecheng>
+8eb08e138 - Add Alma 8, Alma 9, and Rocky Linux 9 to the JDK matrix (#15941) (9 weeks ago) <Andres Rodriguez>
+dc8b5b2c8 - ci: provide metadata about releases that are in-flight (#15924) (9 weeks ago) <Ry Biesemeyer>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.13.2..8.14 *.release"
+Changed plugin versions:
+logstash-integration-kafka: 11.3.4 -> 11.4.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Kafka Integration - 11.4.1*
+
+* [DOC] Match anchor ID and references for `message_headers` https://github.com/logstash-plugins/logstash-integration-kafka/pull/164[#164]
+
+* Add support for setting Kafka message headers in output plugin https://github.com/logstash-plugins/logstash-integration-kafka/pull/162[#162]
 
 
 [[logstash-8-13-2]]
