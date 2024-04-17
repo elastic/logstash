@@ -423,6 +423,8 @@ en:
         log_format: |+
           Specify if Logstash should write its own logs in JSON form (one
           event per line) or in plain text (using Ruby's Object#inspect)
+        log_format_json_fix_duplicate_message_fields: |+
+          Enable to avoid duplication of message fields in JSON form.
         debug: |+
           Set the log level to debug.
           DEPRECATED: use --log.level=debug instead.

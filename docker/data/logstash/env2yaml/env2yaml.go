@@ -71,6 +71,7 @@ var validSettings = []string{
 	"http.port",        // DEPRECATED: prefer `api.http.port`
 	"log.level",
 	"log.format",
+	"log.format.json.fix_duplicate_message_fields",
 	"modules",
 	"metric.collect",
 	"path.logs",
