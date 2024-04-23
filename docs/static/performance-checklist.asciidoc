@@ -36,6 +36,7 @@ sure-fire way to create a confusing situation.
 * Memory
 ** Be aware of the fact that Logstash runs on the Java VM. This means that Logstash will always use the maximum amount of memory you allocate to it.
 ** Look for other applications that use large amounts of memory and may be causing Logstash to swap to disk. This can happen if the total memory used by applications exceeds physical memory.
+** Consider disabling swap temporarily by running `sudo swapoff -a` or setting sysctl value of `vm.swappiness` is to `1`. You can turn off swapping permanently by commenting out every line that contains the word `swap` in `/etc/fstab` on Linux. The Windows equivalent is disabling the paging file under `System Properties → Advanced → Performance → Advanced → Virtual memory`.
 * I/O Utilization
 ** Monitor disk I/O to check for disk saturation.
 *** Disk saturation can happen if you’re using Logstash plugins (such as the file output) that may saturate your storage.
