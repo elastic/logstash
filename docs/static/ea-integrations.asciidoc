@@ -8,14 +8,14 @@ You can take advantage of the extensive, built-in capabilities of Elastic {integ
 [[integrations-value]]
 === Elastic {integrations}: ingesting to visualizing 
 
-https://docs.elastic.co/integrations[Elastic {integrations}] provide quick, end-to-end solutions for:
+{integrations-docs}[Elastic {integrations}] provide quick, end-to-end solutions for:
 
 * ingesting data from a variety of data sources, 
 * ensuring compliance with the {ecs-ref}/index.html[Elastic Common Schema (ECS)],
 * getting the data into the {stack}, and 
 * visualizing it with purpose-built dashboards.
 
-{integrations} are available for https://docs.elastic.co/integrations/all_integrations[popular services and platforms], such as Nginx, AWS, and MongoDB, as well as many generic input types like log files.
+{integrations} are available for {integrations-docs}/all_integrations[popular services and platforms], such as Nginx, AWS, and MongoDB, as well as many generic input types like log files.
 Each integration includes pre-packaged assets to help reduce the time between ingest and insights. 
 
 To see available integrations, go to the {kib} home page, and click **Add {integrations}**. 
