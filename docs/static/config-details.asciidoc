@@ -119,7 +119,6 @@ To summarize, we have 3 categories of memory usage, where 2 can be limited by th
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
 [[reducing-off-heap-usage]]
-[[oom-off-heap-usage]]
 ===== Troubleshooting out of memory errors in off-heap space: `pipeline.buffer.type`
 
 Some plugins, such as {agent}, {beats}, TCP, and HTTP inputs, use direct memory to get
@@ -145,6 +144,7 @@ it has to allocate space that previously resided on the direct memory.
 --
 * When you set `pipeline.buffer.type` to `heap`, consider incrementing the Java heap by the 
 amount of memory that had been reserved for direct space. 
+--
 
 [[memory-size-calculation]]
 ===== Memory sizing
