@@ -89,11 +89,11 @@ logstash-input-tcp: 6.4.1 -> 6.4.2
 
 *Beats Input - 6.8.3*
 
-* bump netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-beats/pull/495[#495]
+* update netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-beats/pull/495[#495]
 
 *Http Input - 3.8.1*
 
-* bump netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-http/pull/173[#173]
+* update netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-http/pull/173[#173]
 
 *Tcp Input - 6.4.2*
 
