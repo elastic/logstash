@@ -235,7 +235,7 @@ GEM
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
       msgpack (~> 1.1)
-    logstash-codec-multiline (3.1.1)
+    logstash-codec-multiline (3.1.2)
       concurrent-ruby
       jls-grok (~> 0.11.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
