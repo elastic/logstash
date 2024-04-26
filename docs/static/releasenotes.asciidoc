@@ -90,7 +90,7 @@ No user-facing changes in Logstash core.
 
 *Multiline Codec - 3.1.2*
 
-* Fix: a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
+* Fixed a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
 
 
 [[logstash-7-17-20]]
