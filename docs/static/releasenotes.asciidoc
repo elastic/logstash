@@ -68,19 +68,19 @@ No user-facing changes in Logstash core.
 
 *Beats Input - 6.8.3*
 
-* update netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-beats/pull/495[#495]
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-beats/pull/495[#495]
 
 *Http Input - 3.8.1*
 
-* update netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-http/pull/173[#173]
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-http/pull/173[#173]
 
 *Tcp Input - 6.4.2*
 
-* update netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-tcp/pull/220[#220]
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-tcp/pull/220[#220]
 
 *Multiline Codec - 3.1.2*
 
-* Fix: a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
+* Fixed a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
 
 
 [[logstash-8-13-2]]
