@@ -81,10 +81,8 @@ This policy should be selected by default.
 
 . Click *Save and continue*.
 +
-You'll have an option to add the {agent} to your hosts. 
-Install the {agent} on the host where you want to collect data (if you have not already done so). 
-Documentation for this process can be
-found here: https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html
+You have the option to add the {agent} to your hosts. 
+If you haven't already, {fleet-guide}/elastic-agent-installation.html[install the {agent}] on the host where you want to collect data. 
 
 
 [discrete]
@@ -94,9 +92,9 @@ found here: https://www.elastic.co/guide/en/fleet/current/elastic-agent-installa
 . Create a new {logstash-ref}/configuration.html[{ls} pipeline].
 . Be sure to include these plugins:
 
-* `elastic_agent` input
-* `elastic_integration` filter
-* `elasticsearch` output
+*  <<plugins-inputs-elastic_agent,`elastic_agent` input>>
+*  <<plugins-filters-elastic_integration,`elastic_integration` filter>>
+*  <<plugins-outputs-elasticsearch,`elasticsearch` output>>
 
 Note that every event sent from the {agent} to {ls} contains specific meta-fields. 
 {ls} expects events to contain `data_stream.type`, `data_stream.dataset`, and `data_stream.namespace`.
