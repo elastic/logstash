@@ -315,7 +315,7 @@ namespace "artifact" do
 
   desc "Build wolfi docker image"
   task "docker_wolfi" => %w(prepare generate_build_metadata archives) do
-    puts("[docker_wolfi] Building UBI docker image")
+    puts("[docker_wolfi] Building Wolfi docker image")
     build_docker('wolfi')
   end
 
