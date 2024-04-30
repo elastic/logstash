@@ -94,7 +94,7 @@ FROM <%= base_image %>
 
 RUN for iter in {1..10}; do \
 <% if image_flavor == 'wolfi' %>
-  <%= package_manager %> add --no-cache curl && \
+  <%= package_manager %> add --no-cache curl bash && \
 <% else -%>
   <% if image_flavor == 'full' || image_flavor == 'oss' -%>
     export DEBIAN_FRONTEND=noninteractive && \
