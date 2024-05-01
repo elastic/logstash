@@ -186,6 +186,7 @@ RUN env2yamlarch="$(<%= arch_command %>)"; \
       ;; \
     *) echo >&2 "error: unsupported architecture '$env2yamlarch'"; exit 1 ;; \
   esac; \
+  mkdir -p /usr/local/bin; \
   cp env2yaml/env2yaml-${env2yamlarch} /usr/local/bin/env2yaml; \
   rm -rf env2yaml
 # Place the startup wrapper script.
