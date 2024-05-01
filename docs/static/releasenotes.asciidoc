@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-21,Logstash 7.17.21>>
 * <<logstash-7-17-20,Logstash 7.17.20>>
 * <<logstash-7-17-19,Logstash 7.17.19>>
 * <<logstash-7-17-18,Logstash 7.17.18>>
@@ -78,6 +79,18 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-21]]
+=== Logstash 7.17.21 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Multiline Codec - 3.1.2*
+
+* Fixed a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
 
 
 [[logstash-7-17-20]]
