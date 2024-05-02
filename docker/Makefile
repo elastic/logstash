@@ -54,7 +54,7 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-build-from-local-wolfi-artifacts: dockerfile env2yaml
+build-from-local-wolfi-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
