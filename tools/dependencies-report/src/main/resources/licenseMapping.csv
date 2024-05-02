@@ -12,6 +12,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "aws-sdk:",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "aws-sigv4:",http://github.com/aws/aws-sdk-ruby,Apache-2.0
 "back_pressure:",https://github.com/yaauie/ruby_back_pressure,Apache-2.0
+"bigdecimal:",https://github.com/ruby/bigdecimal,BSD-2-Clause
 "bindata:",http://github.com/dmendel/bindata,BSD-2-Clause
 "buftok:",https://github.com/sferik/buftok,MIT
 "builder:",http://onestepback.org,MIT
