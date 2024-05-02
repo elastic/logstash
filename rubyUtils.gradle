@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-core:9.4.6.0"
+        classpath "org.jruby:jruby-core:9.4.7.0"
     }
 }
 
@@ -207,8 +207,6 @@ def versionsPath = project.hasProperty("LOGSTASH_CORE_PATH") ? LOGSTASH_CORE_PAT
 versionMap = (Map) (new Yaml()).load(new File("${versionsPath}").text)
 
 String jRubyURL
-String previousJRubyVersion = "9.3.9.0"
-String previousJRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${previousJRubyVersion}/jruby-dist-${previousJRubyVersion}-bin.tar.gz"
 String jRubyVersion
 String jRubySha1
 Boolean doChecksum
@@ -224,7 +222,6 @@ if (versionMap["jruby-runtime-override"]) {
     doChecksum = true
 }
 def jrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${jRubyVersion}-bin.tar.gz"
-def previousJrubyTarPath = "${projectDir}/vendor/_/jruby-dist-${previousJRubyVersion}-bin.tar.gz"
 
 def customJRubyDir = project.hasProperty("custom.jruby.path") ? project.property("custom.jruby.path") : ""
 def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.get(customJRubyDir, "VERSION")).get(0).trim()
