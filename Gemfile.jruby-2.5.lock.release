@@ -542,7 +542,7 @@ GEM
       elastic-workplace-search (~> 0.4.1)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
-    logstash-integration-jdbc (5.2.6)
+    logstash-integration-jdbc (5.4.9)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -737,7 +737,7 @@ GEM
       faraday (> 0.8, < 2.0)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.53.0)
+    sequel (5.74.0)
     simple_oauth (0.3.1)
     sinatra (2.2.1)
       mustermann (~> 1.0)
