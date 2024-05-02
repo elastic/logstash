@@ -121,7 +121,7 @@ Keep these memory requirements in mind as you calculate your ideal memory alloca
 [[reducing-off-heap-usage]]
 ===== Troubleshooting out of memory errors in off-heap space: `pipeline.buffer.type`
 
-Some plugins, such as {agent}, {beats}, TCP, and HTTP inputs, use direct memory to get
+Plugins such as {agent}, {beats}, TCP, and HTTP inputs, use direct memory to get
 better performance when interacting with the network stack. 
 Under certain circumstances of heavy load, the direct memory space can be exhausted and lead to Out of Memory (OOM) errors in off-heap space.
 
@@ -137,8 +137,8 @@ Moving the allocation of IO buffers to Java heap generally doesn't impact the pe
 However, every event's payload has to be converted from raw bytes in direct memory space to {ls} events,
 which are Java objects that live in the heap.
 
-Note that the Java heap sizing requirements could be impacted by this change because
-it has to allocate space that previously resided on the direct memory. 
+Note that the Java heap sizing requirements will be impacted by this change since
+allocations that previously resided on the direct memory will use heap instead. 
 
 [NOTE] 
 --
