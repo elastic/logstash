@@ -76,7 +76,7 @@ Notice for: json-parser-
 TEST
 
 ==========
-Notice for: junit:junit-4.12
+Notice for: junit:junit-4.13.2
 ----------
 
 TEST

@@ -32,7 +32,7 @@ buildscript {
 dependencies {
   testImplementation project(':logstash-core')
   testImplementation 'org.assertj:assertj-core:3.8.0'
-  testImplementation 'junit:junit:4.12'
+  testImplementation 'junit:junit:4.13.2'
 }
 
 test {

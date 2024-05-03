@@ -38,12 +38,13 @@ import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.Java;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThrows;
 
 public class ValuefierTest extends RubyTestBase {
 
@@ -120,15 +121,12 @@ public class ValuefierTest extends RubyTestBase {
         assertEquals(zdt.toInstant().toEpochMilli(), result.getTimestamp().toEpochMilli());
     }
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testUnhandledObject() {
         RubyMatchData md = new RubyMatchData(RubyUtil.RUBY);
-        exception.expect(MissingConverterException.class);
-        exception.expectMessage("Missing Converter handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData");
-        Valuefier.convert(md);
+
+        MissingConverterException missingConverterException = assertThrows(MissingConverterException.class, () -> Valuefier.convert(md));
+        assertThat(missingConverterException.getMessage(), containsString("Missing Converter handling for full class name=org.jruby.RubyMatchData, simple name=RubyMatchData"));
     }
 
     @Test

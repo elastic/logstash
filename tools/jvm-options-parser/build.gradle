@@ -35,7 +35,7 @@ project.sourceCompatibility = JavaVersion.VERSION_11
 project.targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-  testImplementation "junit:junit:4.13.1"
+  testImplementation "junit:junit:4.13.2"
 }
 
 javadoc {

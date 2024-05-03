@@ -58,7 +58,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.logstash.ackedqueue.QueueTestHelpers.computeCapacityForMmapPageIO;
-import static org.logstash.util.ExceptionMatcher.assertThrows;
+import static org.junit.Assert.assertThrows;
 
 public class QueueTest {
 

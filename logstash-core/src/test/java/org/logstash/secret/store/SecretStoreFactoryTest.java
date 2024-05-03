@@ -22,7 +22,6 @@ package org.logstash.secret.store;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.secret.SecretIdentifier;
 import org.logstash.secret.store.backend.JavaKeyStore;
@@ -36,6 +35,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.logstash.secret.store.SecretStoreFactory.ENVIRONMENT_PASS_KEY;
 import static org.logstash.secret.store.SecretStoreFactory.KEYSTORE_ACCESS_KEY;
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
@@ -48,9 +48,6 @@ public class SecretStoreFactoryTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     private static final SecretStoreFactory secretStoreFactory = SecretStoreFactory.fromEnvironment();
 
@@ -65,12 +62,12 @@ public class SecretStoreFactoryTest {
 
     @Test
     public void testAlternativeImplementationInvalid() {
-        thrown.expect(SecretStoreException.ImplementationNotFoundException.class);
         SecureConfig secureConfig = new SecureConfig();
         secureConfig.add("keystore.classname", "junk".toCharArray());
-        SecretStore secretStore = secretStoreFactory.load(secureConfig);
-        assertThat(secretStore).isInstanceOf(MemoryStore.class);
-        validateMarker(secretStore);
+
+        assertThrows(SecretStoreException.ImplementationNotFoundException.class, () -> {
+            secretStoreFactory.load(secureConfig);
+        });
     }
 
     @Test
@@ -140,9 +137,10 @@ public class SecretStoreFactoryTest {
      */
     @Test
     public void testErrorLoading() {
-        thrown.expect(SecretStoreException.LoadException.class);
-        //default implementation requires a path
-        secretStoreFactory.load(new SecureConfig());
+        assertThrows(SecretStoreException.LoadException.class, () -> {
+            //default implementation requires a path
+            secretStoreFactory.load(new SecureConfig());
+        });
     }
 
     private void validateMarker(SecretStore secretStore) {

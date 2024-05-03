@@ -32,7 +32,7 @@ import org.logstash.plugins.ConfigVariableExpander;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.logstash.config.ir.IRHelpers.*;
 
 public class IfVertexTest {

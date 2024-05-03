@@ -27,11 +27,11 @@ import org.logstash.config.ir.graph.Graph;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.config.ir.graph.QueueVertex;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.logstash.config.ir.DSL.*;
 import static org.logstash.config.ir.PluginDefinition.Type.*;
 import static org.logstash.config.ir.IRHelpers.randMeta;
