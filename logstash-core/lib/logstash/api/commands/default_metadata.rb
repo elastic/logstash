@@ -28,7 +28,7 @@ module LogStash
              :id => service.agent.id,
              :name => service.agent.name,
              :ephemeral_id => service.agent.ephemeral_id,
-             :status => "green",  # This is hard-coded to mirror x-pack behavior
+             :status => service.agent.health_observer.status,
              :snapshot => ::BUILD_INFO["build_snapshot"],
              :pipeline => {
                :workers => LogStash::SETTINGS.get("pipeline.workers"),
