@@ -60,7 +60,7 @@ dependencies {
   implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: elasticsearch
   implementation "org.openjdk.jmh:jmh-core:$jmh"
   testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.27.0'
-  testImplementation "junit:junit:4.12"
+  testImplementation "junit:junit:4.13.2"
 }
 
 javadoc {

@@ -120,6 +120,7 @@ public class ValuefierTest extends RubyTestBase {
         assertEquals(zdt.toInstant().toEpochMilli(), result.getTimestamp().toEpochMilli());
     }
 
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException exception = ExpectedException.none();
 

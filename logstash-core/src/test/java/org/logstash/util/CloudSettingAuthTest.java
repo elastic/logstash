@@ -29,6 +29,7 @@ import static org.junit.Assert.*;
 
 public class CloudSettingAuthTest extends RubyTestBase {
 
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 

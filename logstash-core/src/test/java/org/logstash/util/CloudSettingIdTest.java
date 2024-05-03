@@ -33,6 +33,7 @@ public class CloudSettingIdTest extends RubyTestBase {
     private String input = "foobar:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy";
     private CloudSettingId sut;
 
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 

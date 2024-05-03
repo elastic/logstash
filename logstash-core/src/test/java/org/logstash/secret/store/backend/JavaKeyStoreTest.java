@@ -68,6 +68,7 @@ public class JavaKeyStoreTest {
     private final static String EXTERNAL_TEST_WRITE = "test_external_write";
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException thrown = ExpectedException.none();
     private JavaKeyStore keyStore;

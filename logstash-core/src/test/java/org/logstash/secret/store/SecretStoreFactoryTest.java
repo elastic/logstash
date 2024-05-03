@@ -49,6 +49,7 @@ public class SecretStoreFactoryTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    @SuppressWarnings("deprecation")
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 

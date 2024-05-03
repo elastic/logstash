@@ -1,7 +1,8 @@
 package org.logstash.util;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @FunctionalInterface
 public interface ExceptionMatcher {
@@ -11,7 +12,7 @@ public interface ExceptionMatcher {
         try {
             executable.execute();
         } catch (Throwable actual) {
-            Assert.assertThat(actual, Matchers.instanceOf(expectedType));
+            assertThat(actual, Matchers.instanceOf(expectedType));
             return expectedType.cast(actual);
         }
 

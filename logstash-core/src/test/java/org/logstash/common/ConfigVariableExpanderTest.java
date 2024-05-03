@@ -20,6 +20,7 @@
 
 package org.logstash.common;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.logstash.plugins.ConfigVariableExpander;
@@ -110,7 +111,7 @@ public class ConfigVariableExpanderTest {
                 Collections.singletonMap(key, evVal));
 
         Object expandedValue = cve.expand("${" + key + ":" + defaultValue + "}", true);
-        Assert.assertThat(expandedValue, instanceOf(SecretVariable.class));
+        MatcherAssert.assertThat(expandedValue, instanceOf(SecretVariable.class));
         Assert.assertEquals(ssVal, ((SecretVariable) expandedValue).getSecretValue());
     }
 
