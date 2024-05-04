@@ -33,7 +33,7 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for decompressing archives.
@@ -48,7 +48,7 @@ final class LsBenchCompressUtil {
         if (!folder.exists() && !folder.mkdir()) {
             throw new IllegalStateException("unzip failed");
         }
-        try (ArchiveInputStream zis = new ZipArchiveInputStream(new FileInputStream(zipFile))) {
+        try (ArchiveInputStream<?> zis = new ZipArchiveInputStream(new FileInputStream(zipFile))) {
             unpackDir(folder, zis);
         }
     }
@@ -64,7 +64,7 @@ final class LsBenchCompressUtil {
         LsBenchFileUtil.ensureDeleted(ball);
     }
 
-    private static void unpackDir(final File destination, final ArchiveInputStream archive)
+    private static void unpackDir(final File destination, final ArchiveInputStream<?> archive)
         throws IOException {
         ArchiveEntry entry = archive.getNextEntry();
         while (entry != null) {

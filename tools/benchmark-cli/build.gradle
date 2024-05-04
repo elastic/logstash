@@ -48,18 +48,19 @@ ext {
 }
 
 dependencies {
-  implementation 'net.sf.jopt-simple:jopt-simple:5.0.3'
-  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.12'
-  implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.23.0'
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.10'
-  implementation group: 'commons-codec', name: 'commons-codec', version: '1.14'
+  implementation 'net.sf.jopt-simple:jopt-simple:5.0.4'
+  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+  implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+  implementation group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
 
-  implementation group: 'commons-io', name: 'commons-io', version: '2.13.0'
+  implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: elasticsearch
   implementation "org.openjdk.jmh:jmh-core:$jmh"
-  testImplementation group: 'com.github.tomakehurst', name: 'wiremock-standalone', version: '2.27.0'
+  testImplementation group: 'org.wiremock', name: 'wiremock-standalone', version: '3.0.4'
+
   testImplementation "junit:junit:4.13.2"
 }
 

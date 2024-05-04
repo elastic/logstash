@@ -23,6 +23,6 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "pry"
-  spec.add_development_dependency "webmock", "~> 2.2.0"
+  spec.add_development_dependency "webmock", "~> 3"
   spec.add_development_dependency "stud"
 end
