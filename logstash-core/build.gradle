@@ -61,7 +61,7 @@ String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.17.1'
+String log4jVersion = '2.20.0'
 
 tasks.register("sourcesJar", Jar) {
     dependsOn classes
@@ -213,7 +213,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    implementation 'org.codehaus.janino:janino:3.1.0'
+    implementation 'org.codehaus.janino:janino:3.1.12'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation group: 'com.google.guava', name: 'guava', version: '33.1.0-jre'
