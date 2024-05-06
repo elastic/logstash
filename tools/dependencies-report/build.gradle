@@ -43,7 +43,7 @@ buildscript {
 
 dependencies {
   implementation 'commons-io:commons-io:2.16.1'
-  implementation 'org.apache.commons:commons-csv:1.8'
+  implementation 'org.apache.commons:commons-csv:1.5'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
   implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
