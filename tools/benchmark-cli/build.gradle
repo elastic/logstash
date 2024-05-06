@@ -36,13 +36,13 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+    classpath group: 'org.yaml', name: 'snakeyaml', version: "${snakeYamlVersion}"
     classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 
 ext {
-  jmh = '1.23'
+  jmh = '1.37'
   elasticsearch = '5.6.16'
 }
 
