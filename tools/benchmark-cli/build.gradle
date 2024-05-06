@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import org.yaml.snakeyaml.Yaml
 
 // fetch version from Logstash's main versions.yml file
@@ -37,8 +36,8 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
+    classpath group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 
@@ -77,6 +76,7 @@ test {
 }
 
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
 
 shadowJar {
   archiveBaseName = 'benchmark-cli'

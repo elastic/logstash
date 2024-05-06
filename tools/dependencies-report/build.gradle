@@ -37,7 +37,7 @@ buildscript {
   }
   dependencies {
     classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
+    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 

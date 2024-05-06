@@ -19,12 +19,13 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.0'
-        shadowGradlePluginVersion = '7.0.0'
+        snakeYamlVersion = '2.2'
+        shadowGradlePluginVersion = '8.1.1'
     }
 
     repositories {
         mavenCentral()
+        gradlePluginPortal()
         maven {
             url 'https://plugins.gradle.org/m2/'
         }
@@ -35,10 +36,14 @@ buildscript {
 }
 
 plugins {
+    id "java"
     id "de.undercouch.download" version "4.0.4"
     id "com.dorongold.task-tree" version "2.1.0"
-//    id "jacoco"
-//    id "org.sonarqube" version "4.3.0.3225"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 apply plugin: 'de.undercouch.download'
@@ -59,8 +64,6 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'idea'
   apply plugin: 'java-library'
-  project.sourceCompatibility = JavaVersion.VERSION_11
-  project.targetCompatibility = JavaVersion.VERSION_11
 
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
