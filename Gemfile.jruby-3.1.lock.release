@@ -650,7 +650,7 @@ GEM
     logstash-output-csv (3.0.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-output-file
-    logstash-output-elasticsearch (11.22.5-java)
+    logstash-output-elasticsearch (11.22.6-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -750,7 +750,7 @@ GEM
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     parallel (1.24.0)
-    parser (3.3.0.5)
+    parser (3.3.1.0)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.32)
@@ -795,8 +795,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.1)
-    rspec-wait (0.0.9)
-      rspec (>= 3, < 4)
+    rspec-wait (0.0.10)
+      rspec (>= 3.0)
     rubocop (1.62.1)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
@@ -808,8 +808,8 @@ GEM
       rubocop-ast (>= 1.31.1, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
-    rubocop-ast (1.31.2)
-      parser (>= 3.3.0.4)
+    rubocop-ast (1.31.3)
+      parser (>= 3.3.1.0)
     ruby-maven-libs (3.8.9)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
@@ -876,6 +876,7 @@ GEM
 
 PLATFORMS
   java
+  universal-java-11
 
 DEPENDENCIES
   belzebuth
