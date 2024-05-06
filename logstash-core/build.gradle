@@ -198,7 +198,7 @@ dependencies {
     annotationProcessor "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     api "org.apache.logging.log4j:log4j-core:${log4jVersion}"
     runtimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
-    runtimeOnly "org.slf4j:slf4j-api:1.7.30"
+    runtimeOnly "org.slf4j:slf4j-api:2.0.13"
     // concerns libraries such as manticore's http-client 4.5 (using commons-logging)
     runtimeOnly "org.apache.logging.log4j:log4j-jcl:${log4jVersion}"
     // for the log4j-jcl bridge to work commons-logging needs to be on the same class-path
