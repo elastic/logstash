@@ -63,26 +63,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-13-4]]
 === Logstash 8.13.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.13.4
-
-* Use `dpkg --print-architecture` in Dockerfile to ascertain architecture https://github.com/elastic/logstash/pull/16076[#16076]
-* Backport PR #16076 to 8.13: Use `dpkg --print-architecture` in Dockerfile to ascertain architecture https://github.com/elastic/logstash/pull/16127[#16127]
-
-=== Logstash Commits between 8.13 and 8.13.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.3..8.13"
-
-80e67bc73 - (HEAD -> 8.13, origin/8.13) bump lock file for 8.13 (#16143) (3 hours ago) <github-actions[bot]>
-b349c092d - Use `dpkg --print-architecture` in Dockerfile to ascertain architecture (#16076) (#16127) (4 days ago) <github-actions[bot]>
-f0c340731 - bump 8.13.4 (#16121) (4 days ago) <kaisecheng>
-05d408e0e - Release notes for 8.13.3 (#16108) (5 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.13.3..8.13 *.release"
-Changed plugin versions:
-logstash-output-elasticsearch: 11.22.5 -> 11.22.6
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
