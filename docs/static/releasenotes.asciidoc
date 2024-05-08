@@ -4,6 +4,8 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-8-14-0,Logstash 8.14.0>>
+* <<logstash-8-13-4,Logstash 8.13.4>>
+* <<logstash-8-13-3,Logstash 8.13.3>>
 * <<logstash-8-13-2,Logstash 8.13.2>>
 * <<logstash-8-13-1,Logstash 8.13.1>>
 * <<logstash-8-13-0,Logstash 8.13.0>>
@@ -142,6 +144,39 @@ logstash-integration-kafka: 11.3.4 -> 11.4.1
 
 * Add support for setting Kafka message headers in output plugin https://github.com/logstash-plugins/logstash-integration-kafka/pull/162[#162]
 
+[[logstash-8-13-4]]
+=== Logstash 8.13.4 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Elasticsearch Output - 11.22.6*
+
+* [DOC] Logstash output.elasticsearch index can be alias or datastream https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1179[#1179]
+
+[[logstash-8-13-3]]
+=== Logstash 8.13.3 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Beats Input - 6.8.3*
+
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-beats/pull/495[#495]
+
+*Http Input - 3.8.1*
+
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-http/pull/173[#173]
+
+*Tcp Input - 6.4.2*
+
+* Updated netty to 4.1.109 https://github.com/logstash-plugins/logstash-input-tcp/pull/220[#220]
+
+*Multiline Codec - 3.1.2*
+
+* Fixed a race condition in periodic runner that blocks clean up process and pipeline shutdown https://github.com/logstash-plugins/logstash-codec-multiline/pull/72[#72]
 
 [[logstash-8-13-2]]
 === Logstash 8.13.2 Release Notes
