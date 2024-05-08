@@ -55,7 +55,13 @@ describe LogStash::WebServer do
   end
 
   let(:logger) { LogStash::Logging::Logger.new("testing") }
-  let(:agent) { OpenStruct.new({:webserver => webserver_block, :http_address => "127.0.0.1", :id => "myid", :name => "myname"}) }
+  let(:agent) { OpenStruct.new({
+                                 webserver:       webserver_block,
+                                 http_address:    "127.0.0.1",
+                                 id:              "myid",
+                                 name:            "myname",
+                                 health_observer: org.logstash.health.HealthObserver.new,
+                               }) }
   let(:webserver_block) { OpenStruct.new({}) }
 
   subject(:webserver) { LogStash::WebServer.new(logger, agent, webserver_options) }
