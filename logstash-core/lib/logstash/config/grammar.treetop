@@ -6,8 +6,13 @@ grammar LogStashConfig
     cs plugin_section cs (cs plugin_section)* cs <LogStash::Config::AST::Config>
   end
 
+  rule newline_or_eoi
+    # `!.` is a negative lookahead for 'anything', i.e. it matches at the end of input.
+    ("\r"? "\n") / !.
+  end
+
   rule comment
-    (whitespace? "#" [^\r\n]* "\r"? "\n")+ <LogStash::Config::AST::Comment>
+    (whitespace? "#" [^\r\n]* newline_or_eoi)+ <LogStash::Config::AST::Comment>
   end
 
   rule cs
@@ -114,7 +119,7 @@ grammar LogStashConfig
   end
 
   rule hashentries
-    hashentry (whitespace hashentry)*
+    hashentry (cs hashentry)*
     <LogStash::Config::AST::HashEntries>
   end
 

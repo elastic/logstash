@@ -80,7 +80,91 @@ module LogStashCompilerLSCLGrammar
     r0
   end
 
+  module NewlineOrEoi0
+  end
+
+  def _nt_newline_or_eoi
+    start_index = index
+    if node_cache[:newline_or_eoi].has_key?(index)
+      cached = node_cache[:newline_or_eoi][index]
+      if cached
+        node_cache[:newline_or_eoi][index] = cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    i1, s1 = index, []
+    if (match_len = has_terminal?("\r", false, index))
+      r3 = true
+      @index += match_len
+    else
+      terminal_parse_failure('"\\r"')
+      r3 = nil
+    end
+    if r3
+      r2 = r3
+    else
+      r2 = instantiate_node(SyntaxNode,input, index...index)
+    end
+    s1 << r2
+    if r2
+      if (match_len = has_terminal?("\n", false, index))
+        r4 = true
+        @index += match_len
+      else
+        terminal_parse_failure('"\\n"')
+        r4 = nil
+      end
+      s1 << r4
+    end
+    if s1.last
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1.extend(NewlineOrEoi0)
+    else
+      @index = i1
+      r1 = nil
+    end
+    if r1
+      r1 = SyntaxNode.new(input, (index-1)...index) if r1 == true
+      r0 = r1
+    else
+      i5 = index
+      if index < input_length
+        r6 = true
+        @index += 1
+      else
+        terminal_parse_failure("any character")
+        r6 = nil
+      end
+      if r6
+        @index = i5
+        r5 = nil
+        terminal_parse_failure("any character", true)
+      else
+        @terminal_failures.pop
+        @index = i5
+        r5 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      if r5
+        r5 = SyntaxNode.new(input, (index-1)...index) if r5 == true
+        r0 = r5
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:newline_or_eoi][start_index] = r0
+
+    r0
+  end
+
   module Comment0
+    def newline_or_eoi
+      elements[3]
+    end
   end
 
   def _nt_comment
@@ -132,29 +216,8 @@ module LogStashCompilerLSCLGrammar
           r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
           s1 << r5
           if r5
-            if (match_len = has_terminal?("\r", false, index))
-              r8 = true
-              @index += match_len
-            else
-              terminal_parse_failure('"\\r"')
-              r8 = nil
-            end
-            if r8
-              r7 = r8
-            else
-              r7 = instantiate_node(SyntaxNode,input, index...index)
-            end
+            r7 = _nt_newline_or_eoi
             s1 << r7
-            if r7
-              if (match_len = has_terminal?("\n", false, index))
-                r9 = true
-                @index += match_len
-              else
-                terminal_parse_failure('"\\n"')
-                r9 = nil
-              end
-              s1 << r9
-            end
           end
         end
       end
@@ -1674,7 +1737,7 @@ module LogStashCompilerLSCLGrammar
   end
 
   module Hashentries0
-    def whitespace
+    def cs
       elements[0]
     end
 
@@ -1708,7 +1771,7 @@ module LogStashCompilerLSCLGrammar
       s2, i2 = [], index
       loop do
         i3, s3 = index, []
-        r4 = _nt_whitespace
+        r4 = _nt_cs
         s3 << r4
         if r4
           r5 = _nt_hashentry
