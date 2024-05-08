@@ -53,8 +53,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
-  gem.add_runtime_dependency "rack", '~> 2'
-  gem.add_runtime_dependency "sinatra", '~> 2'
+  gem.add_runtime_dependency "rack", '~> 3'
+  gem.add_runtime_dependency "sinatra", '~> 4'
   gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.4.2'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.14.1"
   gem.add_runtime_dependency 'ruby-maven-libs', '~> 3', '>= 3.8.9'

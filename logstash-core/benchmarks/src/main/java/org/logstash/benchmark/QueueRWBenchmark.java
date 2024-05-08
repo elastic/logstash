@@ -20,7 +20,7 @@
 
 package org.logstash.benchmark;
 
-import com.google.common.io.Files;
+import java.nio.file.Files;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -136,8 +136,8 @@ public class QueueRWBenchmark {
         future.get();
     }
 
-    private static Settings settings() {
-        return SettingsImpl.fileSettingsBuilder(Files.createTempDir().getPath())
+    private static Settings settings() throws IOException {
+        return SettingsImpl.fileSettingsBuilder(String.valueOf(Files.createTempDirectory(null)))
             .capacity(256 * 1024 * 1024)
             .queueMaxBytes(Long.MAX_VALUE)
             .checkpointMaxWrites(ACK_INTERVAL)

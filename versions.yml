@@ -7,8 +7,8 @@ logstash-core-plugin-api: 2.1.16
 bundled_jdk:
   # for AdoptOpenJDK/OpenJDK jdk-14.0.1+7.1, the revision is 14.0.1 while the build is 7.1
   vendor: "adoptium"
-  revision: 17.0.10
-  build: 7
+  revision: 17.0.11
+  build: 9
 
 # jruby must reference a *released* version of jruby which can be downloaded from the official download url
 # *and* for which jars artifacts are published for compile-time
@@ -25,5 +25,5 @@ jruby:
 #       bundler evaluates the gemspec via bin/logstash
 # Ensure Jackson version here is kept in sync with version used by jrjackson gem
 jrjackson: 0.4.18
-jackson: 2.15.3
-jackson-databind: 2.15.3
+jackson: 2.16.2
+jackson-databind: 2.16.2

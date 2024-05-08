@@ -19,8 +19,8 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.0'
-        shadowGradlePluginVersion = '7.0.0'
+        snakeYamlVersion = '2.2'
+        shadowGradlePluginVersion = '8.1.1'
     }
 
     repositories {
@@ -37,8 +37,6 @@ buildscript {
 plugins {
     id "de.undercouch.download" version "4.0.4"
     id "com.dorongold.task-tree" version "2.1.0"
-//    id "jacoco"
-//    id "org.sonarqube" version "4.3.0.3225"
 }
 
 apply plugin: 'de.undercouch.download'

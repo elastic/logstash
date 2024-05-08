@@ -57,7 +57,7 @@ public final class LsBenchDownloader {
                     target.flush();
                 }
             }
-            if (GzipUtils.isCompressedFilename(url)) {
+            if (GzipUtils.isCompressedFileName(url)) {
                 LsBenchCompressUtil.gunzipDir(temp, file);
             }
             if (url.endsWith(".zip")) {
