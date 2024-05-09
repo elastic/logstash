@@ -21,7 +21,7 @@ metadata:
       url: https://elastic.co/logstash
 spec:
   type: tool
-  owner: group:ingest-fp
+  owner: group:logstash
   system: platform-ingest
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
@@ -43,8 +43,8 @@ metadata:
   description: Buildkite pipeline for the Serverless Integration Test
 spec:
   type: buildkite-pipeline
-  owner: group:ingest-fp
-  system: buildkite
+  owner: group:logstash
+  system: platform-ingest
   implementation:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
@@ -62,7 +62,9 @@ spec:
         SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
         SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
       teams:
-        ingest-fp:
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
@@ -85,8 +87,8 @@ metadata:
   description: 'The logstash-snyk-report pipeline.'
 spec:
   type: buildkite-pipeline
-  owner: group:ingest-fp
-  system: buildkite
+  owner: group:logstash
+  system: platform-ingest
   implementation:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
