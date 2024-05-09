@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-0,Logstash 8.14.0>>
 * <<logstash-8-13-4,Logstash 8.13.4>>
 * <<logstash-8-13-3,Logstash 8.13.3>>
 * <<logstash-8-13-2,Logstash 8.13.2>>
@@ -59,6 +60,42 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-14-0]]
+=== Logstash 8.14.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.14.0
+
+* Release notes for 8.12.2 https://github.com/elastic/logstash/pull/15956[#15956]
+* Provide opt-in flag to avoid fields name clash when log format is json https://github.com/elastic/logstash/pull/15969[#15969]
+* Backport PR #15956 to main: Release notes for 8.12.2 https://github.com/elastic/logstash/pull/15972[#15972]
+* Release notes for 8.13.0 https://github.com/elastic/logstash/pull/15978[#15978]
+* Backport PR #15978 to main: Release notes for 8.13.0 https://github.com/elastic/logstash/pull/16027[#16027]
+* Release notes for 8.13.1 https://github.com/elastic/logstash/pull/16046[#16046]
+* Backport PR #16046 to main: Release notes for 8.13.1 https://github.com/elastic/logstash/pull/16049[#16049]
+* Introduce a new setting to give preference to Java heap  or direct space buffer allocation type https://github.com/elastic/logstash/pull/16054[#16054]
+* Release notes for 8.13.2 https://github.com/elastic/logstash/pull/16068[#16068]
+* Backport PR #16068 to main: Release notes for 8.13.2 https://github.com/elastic/logstash/pull/16071[#16071]
+* Split LS_JAVA_OPTS content when contains multiple options https://github.com/elastic/logstash/pull/16079[#16079]
+* Backport PR #15969 to 8.14: Provide opt-in flag to avoid fields name clash when log format is json https://github.com/elastic/logstash/pull/16094[#16094]
+* upgrade jruby to 9.4.7.0 https://github.com/elastic/logstash/pull/16125[#16125]
+* Backport PR #16125 to 8.14: upgrade jruby to 9.4.7.0 https://github.com/elastic/logstash/pull/16126[#16126]
+* force ruby-maven-libs constraint to >= 3.9.6.1 https://github.com/elastic/logstash/pull/16130[#16130]
+* Backport PR #16130 to 8.14: force ruby-maven-libs constraint to >= 3.9.6.1 https://github.com/elastic/logstash/pull/16131[#16131]
+* Release notes for 8.13.4 https://github.com/elastic/logstash/pull/16144[#16144]
+* Backport PR #16144 to 8.14: Release notes for 8.13.4 https://github.com/elastic/logstash/pull/16151[#16151]
+
+=== Logstash Commits between 8.14 and 8.13.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.13.4..8.14"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.13.4..8.14 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-13-4]]
 === Logstash 8.13.4 Release Notes
