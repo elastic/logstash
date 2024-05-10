@@ -57,8 +57,11 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'idea'
   apply plugin: 'java-library'
-  project.sourceCompatibility = JavaVersion.VERSION_11
-  project.targetCompatibility = JavaVersion.VERSION_11
+
+  java {
+      sourceCompatibility = JavaVersion.VERSION_11
+      targetCompatibility = JavaVersion.VERSION_11
+  }
 
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
