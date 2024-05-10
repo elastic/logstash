@@ -1,0 +1,14 @@
+---
+# $yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+steps:
+  - label: "Build"
+    command: "true"
+
+  - label: "Test"
+    command: "true"
+
+  - label: "Deploy"
+    command: "true"
+
+  - label: "Publish"
+    command: "true"
