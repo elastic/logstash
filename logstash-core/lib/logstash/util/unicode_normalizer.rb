@@ -34,17 +34,12 @@ module LogStash
 
       if input_string.encoding != Encoding::UTF_8
         encoding_converter = Encoding::Converter.new(input_string.encoding, Encoding::UTF_8)
-        conversion_error, utf8_string = false, nil
         begin
-          utf8_string = encoding_converter.convert(input_string).freeze
+          # if we can successfully convert, then our work is done.
+          return encoding_converter.convert(input_string).freeze
         rescue => e
           # we mostly get Encoding::UndefinedConversionError but let's do not expect surprise crashes
           logger.trace? && logger.trace("Could not convert, #{e.inspect}")
-          conversion_error = true
-        ensure
-          # if we cannot convert with a standard way
-          # we let normalize and replace invalid unicode bytes
-          return utf8_string unless conversion_error
         end
       end
 

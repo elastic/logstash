@@ -33,7 +33,7 @@ module LogStash
     end
 
     def jruby_dump(o, options = {})
-      encoding_normalized_data = normalize_encoding(o.dup)&.freeze
+      encoding_normalized_data = normalize_encoding(o.dup).freeze
 
       # TODO [guyboertje] remove these comments in 5.0
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
@@ -56,8 +56,8 @@ module LogStash
         data.map { |item| normalize_encoding(item) }
       when Hash
         # origin key might change when normalizing, so requires transformation
-        modifiable_hash = data.to_hash # if coming from jruby objects such as UnmodifiableMap
-        modifiable_hash.transform_keys { |key| normalize_encoding(key) }
+        data.to_hash # if coming from jruby objects such as UnmodifiableMap
+            .transform_keys { |key| normalize_encoding(key) }
             .transform_values { |value| normalize_encoding(value) }
       else
         data # use as it is
