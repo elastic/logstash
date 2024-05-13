@@ -119,26 +119,23 @@ To summarize, we have 3 categories of memory usage, where 2 can be limited by th
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
 [[reducing-off-heap-usage]]
-===== Troubleshooting out of memory errors in off-heap space: `pipeline.buffer.type`
+===== Upcoming changes to Buffer Allocation and Troubleshooting Out of Memory errors
 
-Plugins such as {agent}, {beats}, TCP, and HTTP inputs, use direct memory to get
-better performance when interacting with the network stack. 
-Under certain circumstances of heavy load, the direct memory space can be exhausted and lead to Out of Memory (OOM) errors in off-heap space.
+Plugins such as {agent}, {beats}, TCP, and HTTP inputs, currently default to using direct memory as it tends
+to provide better performance, especially when interacting with the network stack. 
+Under heavy load, namely large number of connections and large messages, the direct memory space can be exhausted and lead to Out of Memory (OOM) errors in off-heap space.
 
-{ls} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that can help you investigate and troubleshoot Out of Memory errors. 
-This setting lets you control where to allocate memory buffers for plugins that use them. 
-It is set to `direct` by default, but you can change it to `heap` to use Java heap space instead.
-When set to `heap`, all IO buffer allocations used by plugins are configured to **prefer** the
-Java Heap instead of direct memory. 
+An off-heap OOM is difficult to debug, so {ls} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate memory buffers for plugins that use them. 
+Currently it is set to `direct` by default, but you can change it to `heap` to use Java heap space instead, which will be become the default in the future.
+When set to `heap`, buffer allocations used by plugins are configured to **prefer** the
+Java Heap instead of direct memory, as direct memory allocations may still be necessary depending on the plugin.
 
-In the case of an out-of-memory condition, you have a better report for investigating memory leaks.
+When set to "heap", in the event of an out-of-memory, Logstash will produce a heap dump to facilitate debugging.
 
-Moving the allocation of IO buffers to Java heap generally doesn't impact the performance in terms of requests per second.
-However, every event's payload has to be converted from raw bytes in direct memory space to {ls} events,
-which are Java objects that live in the heap.
-
-Note that the Java heap sizing requirements will be impacted by this change since
+It is important to note that the Java heap sizing requirements will be impacted by this change since
 allocations that previously resided on the direct memory will use heap instead. 
+
+Performance-wise there shouldn't be a noticeable impact, since while direct memory IO is faster, Logstash Event objects produced by these plugins end up being allocated on the Java Heap, incurring the cost of copying from direct memory to heap memory regardless of the setting.
 
 [NOTE] 
 --
