@@ -23,6 +23,7 @@ spec:
   type: tool
   owner: group:logstash
   system: platform-ingest
+  lifecycle: production
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
     - resource:logstash-snyk-report
