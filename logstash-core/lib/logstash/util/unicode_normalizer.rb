@@ -22,40 +22,17 @@ module LogStash
 
     include LogStash::Util::Loggable
 
-    # Tries to convert input string to UTF-8 with a standard way
-    # If input string is the force encoded invalid unicode:
-    #   applies unicode normalization
-    #   replaces invalid unicode bytes with replacement characters
+    # Tries to normalize input string to UTF-8 when
+    #   input string encoding is not UTF-8,
+    #   and replaces invalid unicode bytes with replacement characters ('uFFFD')
     # string_data - The String data to be normalized.
     # Returns the normalized string data.
     def self.normalize_string_encoding(string_data)
-      input_string = string_data.dup if string_data.frozen?
-      input_string = string_data unless string_data.frozen?
-
-      if input_string.encoding != Encoding::UTF_8
-        encoding_converter = Encoding::Converter.new(input_string.encoding, Encoding::UTF_8)
-        begin
-          # if we can successfully convert, then our work is done.
-          return encoding_converter.convert(input_string).freeze
-        rescue => e
-          # we mostly get Encoding::UndefinedConversionError but let's do not expect surprise crashes
-          logger.trace? && logger.trace("Could not convert, #{e.inspect}")
-        end
-      end
-
-      begin
-        # non expensive `force_encoding` operation which changes the encoding metadata
-        # otherwise unicode normalization rejects
-        input_string = input_string.force_encoding(Encoding::UTF_8)
-        # force UTF-8 encoding as data might also have invalid bytes
-        # we try to normalize first, use replacement char with `scrub` if invalid bytes found
-        input_string.unicode_normalize! # use default :NFC normalization since decompositions may result multiple characters
-      rescue => e
-        logger.trace? && logger.trace("Could not normalize to unicode, #{e.inspect}")
-        logger.trace? && logger.trace("Replacing invalid non-utf bytes with replacement char.")
-        input_string.scrub!
-      end
-      input_string
+      # when given BINARY-flagged string, assume it is UTF-8 so that
+      # subsequent cleanup retains valid UTF-8 sequences
+      source_encoding = string_data.encoding
+      source_encoding = Encoding::UTF_8 if source_encoding == Encoding::BINARY
+      string_data.encode(Encoding::UTF_8, source_encoding, invalid: :replace, undef: :replace).scrub
     end
   end
 end
