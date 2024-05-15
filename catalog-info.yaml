@@ -27,10 +27,10 @@ spec:
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
     - resource:logstash-snyk-report
-    - logstash-dra-snapshot-pipeline
-    - logstash-dra-staging-pipeline
-    - logstash-linux-jdk-matrix-pipeline
-    - logstash-windows-jdk-matrix-pipeline
+    - resource:logstash-dra-snapshot-pipeline
+    - resource:logstash-dra-staging-pipeline
+    - resource:logstash-linux-jdk-matrix-pipeline
+    - resource:logstash-windows-jdk-matrix-pipeline
 
 # ***********************************
 # Declare serverless IT pipeline
