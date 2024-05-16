@@ -118,4 +118,78 @@ describe "LogStash::Json" do
     o = LogStash::Json.load("  ")
     expect(o).to be_nil
   end
+
+  context "Unicode edge-cases" do
+    matcher :be_utf8 do
+      match(:notify_expectation_failures => true) do |actual|
+        aggregate_failures do
+          expect(actual).to have_attributes(:encoding => Encoding::UTF_8, :valid_encoding? => true)
+          expect(actual.bytes).to eq(@expected_bytes) unless @expected_bytes.nil?
+        end
+      end
+      chain :with_bytes do |expected_bytes|
+        @expected_bytes = expected_bytes
+      end
+    end
+
+    let(:result) { LogStash::Json::dump(input) }
+
+    context "with valid non-unicode encoding" do
+      let(:input) { "Th\xEFs \xCCs W\xCFnd\xD8w\x8A".b.force_encoding(Encoding::WINDOWS_1252).freeze }
+      it 'transcodes to equivalent UTF-8 code-points' do
+        aggregate_failures do
+          expect(result).to be_utf8.with_bytes("\u{22}Th\u{EF}s \u{CC}s W\u{CF}nd\u{D8}w\u{160}\u{22}".bytes)
+        end
+      end
+    end
+
+    context "with unicode that has invalid sequences" do
+      let(:input) { "Thïs is a not-quite-v\xCEalid uni\xF0\x9D\x84code string 💖ok".b.force_encoding(Encoding::UTF_8).freeze }
+      it 'replaces each invalid sequence with the xFFFD replacement character' do
+        expect(result).to be_utf8.with_bytes("\x22Thïs is a not-quite-v\u{FFFD}alid uni\u{FFFD}code string 💖ok\x22".bytes)
+      end
+    end
+
+    context 'with valid unicode' do
+      let(:input) { "valid \u{A7}\u{a9c5}\u{18a5}\u{1f984} unicode".encode('UTF-8').freeze }
+      it 'keeps the unicode in-tact' do
+        expect(result).to be_utf8.with_bytes(('"' + input + '"').bytes)
+      end
+    end
+
+    context 'with binary-flagged input' do
+
+      context 'that contains only lower-ascii' do
+        let(:input) { "hello, world. This is a test including newline(\x0A) literal-backslash(\x5C) double-quote(\x22)".b.force_encoding(Encoding::BINARY).freeze}
+        it 'does not munge the bytes' do
+          expect(result).to be_utf8.with_bytes("\x22hello, world. This is a test including newline(\x5Cn) literal-backslash(\x5C\x5C) double-quote(\x5C\x22)\x22".bytes)
+        end
+      end
+
+      context 'that contains bytes outside lower-ascii' do
+        let(:input) { "Thïs is a not-quite-v\xCEalid uni\xF0\x9D\x84code string 💖ok".b.force_encoding(Encoding::BINARY).freeze }
+        it 'replaces each invalid sequence with the xFFFD replacement character' do
+          expect(result).to be_utf8.with_bytes("\x22Thïs is a not-quite-v\u{FFFD}alid uni\u{FFFD}code string 💖ok\x22".bytes)
+        end
+      end
+
+    end
+
+    context 'with hash data structure' do
+      let(:input) {{"Th\xEFs key and".b.force_encoding(Encoding::WINDOWS_1252).freeze =>
+                      {"Thïs key also".b.force_encoding(Encoding::UTF_8).freeze => "not-quite-v\xCEalid uni\xF0\x9D\x84code string 💖ok".b.force_encoding(Encoding::UTF_8).freeze}}}
+      it 'normalizes and replaces each invalid key-value with the xFFFD replacement character' do
+        expect(result).to be_utf8.with_bytes("{\"Th\u{EF}s key and\":{\"Thïs key also\":\"not-quite-v\u{FFFD}alid uni\u{FFFD}code string 💖ok\"}}".bytes)
+      end
+    end
+
+    context 'with array data structure' do
+      let(:input) {["Th\xEFs entry and".b.force_encoding(Encoding::WINDOWS_1252).freeze,
+                    "Thïs entry also".b.force_encoding(Encoding::UTF_8).freeze,
+                    "not-quite-v\xCEalid uni\xF0\x9D\x84code strings 💖ok".b.force_encoding(Encoding::UTF_8).freeze]}
+      it 'normalizes and replaces each invalid array values with the xFFFD replacement character' do
+        expect(result).to be_utf8.with_bytes("[\"Th\u{EF}s entry and\",\"Thïs entry also\",\"not-quite-v\u{FFFD}alid uni\u{FFFD}code strings 💖ok\"]".bytes)
+      end
+    end
+  end
 end

@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/environment"
+require "logstash/util/unicode_normalizer"
 require "jrjackson"
 
 module LogStash
@@ -32,16 +33,35 @@ module LogStash
     end
 
     def jruby_dump(o, options = {})
+      encoding_normalized_data = normalize_encoding(o.dup).freeze
+
       # TODO [guyboertje] remove these comments in 5.0
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
       # also look for Java::JavaUtil::ArrayList, see TODO submit issue
       # o.is_a?(Enumerable) ? JrJackson::Raw.generate(o) : JrJackson::Json.dump(o)
-      JrJackson::Base.generate(o, options)
+      JrJackson::Base.generate(encoding_normalized_data, options)
     rescue => e
       raise LogStash::Json::GeneratorError.new(e.message)
     end
 
     alias_method :load, "jruby_load".to_sym
     alias_method :dump, "jruby_dump".to_sym
+
+    private
+    def normalize_encoding(data)
+      case data
+      when String
+        LogStash::UnicodeNormalizer.normalize_string_encoding(data)
+      when Array
+        data.map { |item| normalize_encoding(item) }
+      when Hash
+        # origin key might change when normalizing, so requires transformation
+        data.to_hash # if coming from jruby objects such as UnmodifiableMap
+            .transform_keys { |key| normalize_encoding(key) }
+            .transform_values { |value| normalize_encoding(value) }
+      else
+        data # use as it is
+      end
+    end
   end
 end
