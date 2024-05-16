@@ -298,7 +298,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: amazing_print-1.5.0
+Notice for: amazing_print-1.6.0
 ----------
 
 MIT License
@@ -722,7 +722,7 @@ Notice for: aws-eventstream-1.3.0
    limitations under the License.
 
 ==========
-Notice for: aws-partitions-1.883.0
+Notice for: aws-partitions-1.929.0
 ----------
 
 
@@ -929,7 +929,7 @@ Notice for: aws-partitions-1.883.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-cloudfront-1.87.0
+Notice for: aws-sdk-cloudfront-1.90.0
 ----------
 
 
@@ -1136,7 +1136,7 @@ Notice for: aws-sdk-cloudfront-1.87.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-cloudwatch-1.85.0
+Notice for: aws-sdk-cloudwatch-1.91.0
 ----------
 
 
@@ -1343,7 +1343,7 @@ Notice for: aws-sdk-cloudwatch-1.85.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-core-3.191.0
+Notice for: aws-sdk-core-3.196.1
 ----------
 
 
@@ -1550,7 +1550,7 @@ Notice for: aws-sdk-core-3.191.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-kms-1.77.0
+Notice for: aws-sdk-kms-1.81.0
 ----------
 
 
@@ -1757,7 +1757,7 @@ Notice for: aws-sdk-kms-1.77.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-resourcegroups-1.58.0
+Notice for: aws-sdk-resourcegroups-1.61.0
 ----------
 
 
@@ -1964,7 +1964,7 @@ Notice for: aws-sdk-resourcegroups-1.58.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-s3-1.143.0
+Notice for: aws-sdk-s3-1.151.0
 ----------
 
 
@@ -2171,7 +2171,7 @@ Notice for: aws-sdk-s3-1.143.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-sns-1.71.0
+Notice for: aws-sdk-sns-1.75.0
 ----------
 
 
@@ -2378,7 +2378,7 @@ Notice for: aws-sdk-sns-1.71.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-sqs-1.70.0
+Notice for: aws-sdk-sqs-1.74.0
 ----------
 
 
@@ -2837,7 +2837,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: bigdecimal-3.1.6
+Notice for: bigdecimal-3.1.8
 ----------
 
 # source: https://github.com/ruby/bigdecimal/blob/v3.1.4/LICENSE
@@ -2899,7 +2899,7 @@ You can redistribute it and/or modify it under either the terms of the
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
      PURPOSE.
 ==========
-Notice for: bindata-2.4.15
+Notice for: bindata-2.5.0
 ----------
 
 Copyright (C) 2007-2012 Dion Mendel. All rights reserved.
@@ -3086,7 +3086,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-annotations-2.15.2
+Notice for: com.fasterxml.jackson.core:jackson-annotations-2.15.4
 ----------
 
 This copy of Jackson JSON processor annotations is licensed under the
@@ -3303,7 +3303,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    limitations under the License.
 
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-core-2.15.2
+Notice for: com.fasterxml.jackson.core:jackson-core-2.15.4
 ----------
 
 # Jackson JSON processor
@@ -3530,7 +3530,7 @@ from the source code management (SCM) system project uses.
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.core:jackson-databind-2.15.2
+Notice for: com.fasterxml.jackson.core:jackson-databind-2.15.4
 ----------
 
 # Jackson JSON processor
@@ -3766,7 +3766,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.15.3
+Notice for: com.fasterxml.jackson.dataformat:jackson-dataformat-cbor-2.16.2
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -3981,7 +3981,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.15.2
+Notice for: com.fasterxml.jackson.module:jackson-module-afterburner-2.15.4
 ----------
 
 This copy of Jackson JSON processor databind module is licensed under the
@@ -4196,7 +4196,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.google.googlejavaformat:google-java-format-1.15.0
+Notice for: com.google.googlejavaformat:google-java-format-1.22.0
 ----------
 
 Copyright 2015 Google Inc.
@@ -4472,7 +4472,7 @@ Program             Directory
 
 
 ==========
-Notice for: com.google.guava:guava-32.1.2-jre
+Notice for: com.google.guava:guava-33.1.0-jre
 ----------
 
 
@@ -4678,7 +4678,7 @@ Notice for: com.google.guava:guava-32.1.2-jre
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: commons-codec:commons-codec-1.15
+Notice for: commons-codec:commons-codec-1.17.0
 ----------
 
 Apache Commons Codec
@@ -5140,7 +5140,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. 
 
 ==========
-Notice for: dalli-3.2.7
+Notice for: dalli-3.2.8
 ----------
 
 Copyright (c) Peter M. Goldstein, Mike Perham
@@ -5274,7 +5274,7 @@ This file is generated from the Public Suffix List
 https://mozilla.org/MPL/2.0/
 
 ==========
-Notice for: dotenv-2.8.1
+Notice for: dotenv-3.1.2
 ----------
 
 Copyright (c) 2012 Brandon Keepers
@@ -5589,7 +5589,7 @@ source: https://github.com/elastic/enterprise-search-ruby/blob/v7.16.0/LICENSE
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: elastic-transport-8.3.1
+Notice for: elastic-transport-8.3.2
 ----------
 
 source: https://github.com/elastic/elastic-transport-ruby/blob/v8.3.0/LICENSE
@@ -5885,7 +5885,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: et-orbi-1.2.7
+Notice for: et-orbi-1.2.11
 ----------
 
 source: https://github.com/floraison/et-orbi/blob/v1.2.7/LICENSE.txt
@@ -6157,7 +6157,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: fugit-1.9.0
+Notice for: fugit-1.11.0
 ----------
 
 source: https://github.com/floraison/fugit/blob/v1.5.2/LICENSE.txt
@@ -6380,7 +6380,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 ==========
-Notice for: i18n-1.14.1
+Notice for: i18n-1.14.5
 ----------
 
 source: https://github.com/svenfuchs/i18n/blob/v0.6.9/MIT-LICENSE
@@ -6865,7 +6865,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 ==========
-Notice for: jrjackson-0.4.18
+Notice for: jrjackson-0.4.20
 ----------
 
 https://github.com/guyboertje/jrjackson/blob/v0.4.6/README.md
@@ -9357,7 +9357,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: jruby-openssl-0.14.2
+Notice for: jruby-openssl-0.14.5
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
@@ -9417,7 +9417,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==========
-Notice for: json-2.7.1
+Notice for: json-2.7.2
 ----------
 
 source: https://github.com/tmattia/json-generator/blob/v0.1.0/LICENSE.txt
@@ -9445,7 +9445,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: jwt-2.7.1
+Notice for: jwt-2.8.1
 ----------
 
 source: https://github.com/jwt/ruby-jwt/blob/v2.2.2/LICENSE
@@ -9594,7 +9594,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: method_source-1.0.0
+Notice for: method_source-1.1.0
 ----------
 
 source: https://github.com/banister/method_source/blob/v0.9.0/README.markdown#license
@@ -9730,7 +9730,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: multipart-post-2.3.0
+Notice for: multipart-post-2.4.1
 ----------
 
 source: https://github.com/nicksieger/multipart-post/blob/v2.0.0/README.md#license
@@ -9813,7 +9813,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: mustermann-2.0.2
+Notice for: mustermann-3.0.0
 ----------
 
 Copyright (c) 2013-2017 Konstantin Haase
@@ -9870,7 +9870,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: net-imap-0.4.9.1
+Notice for: net-imap-0.4.11
 ----------
 
 # source: https://github.com/ruby/net-imap/blob/v0.3.7/LICENSE.txt
@@ -10014,7 +10014,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: net-smtp-0.4.0.1
+Notice for: net-smtp-0.5.0
 ----------
 
 # source: https://github.com/ruby/net-smtp/blob/v0.4.0/LICENSE.txt
@@ -10042,7 +10042,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: nio4r-2.7.0
+Notice for: nio4r-2.7.3
 ----------
 
 Released under the MIT license.
@@ -10057,7 +10057,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: nokogiri-1.16.0
+Notice for: nokogiri-1.16.5
 ----------
 
 source: https://github.com/sparklemotion/nokogiri/blob/v1.8.2/LICENSE.md
@@ -10120,7 +10120,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ==========
-Notice for: org.apache.httpcomponents:httpclient-4.5.13
+Notice for: org.apache.httpcomponents:httpclient-4.5.14
 ----------
 
 source: https://github.com/apache/httpcomponents-client/blob/4.5.x/NOTICE.txt
@@ -10132,7 +10132,7 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ==========
-Notice for: org.apache.httpcomponents:httpcore-4.4.14
+Notice for: org.apache.httpcomponents:httpcore-4.4.16
 ----------
 
 source: https://github.com/apache/httpcomponents-core/blob/4.4.x/NOTICE.txt
@@ -10144,7 +10144,7 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ==========
-Notice for: org.apache.logging.log4j:log4j-1.2-api-2.17.1
+Notice for: org.apache.logging.log4j:log4j-1.2-api-2.17.2
 ----------
 
 source: https://github.com/apache/logging-log4j2/blob/rel/2.14.0/NOTICE.txt
@@ -10167,7 +10167,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-api-2.17.1
+Notice for: org.apache.logging.log4j:log4j-api-2.17.2
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -10190,7 +10190,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-core-2.17.1
+Notice for: org.apache.logging.log4j:log4j-core-2.17.2
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -10213,7 +10213,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-jcl-2.17.1
+Notice for: org.apache.logging.log4j:log4j-jcl-2.17.2
 ----------
 
 source: https://github.com/apache/logging-log4j2/blob/rel/2.14.0/NOTICE.txt
@@ -10236,7 +10236,7 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
-Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.17.1
+Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.17.2
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -10295,7 +10295,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========
-Notice for: org.javassist:javassist-3.29.0-GA
+Notice for: org.javassist:javassist-3.30.2-GA
 ----------
 
 Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
@@ -10303,7 +10303,7 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
-Notice for: org.jruby:jruby-core-9.4.5.0
+Notice for: org.jruby:jruby-core-9.4.7.0
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -10586,7 +10586,7 @@ Eclipse Public License - v 2.0
 
     You may add additional accurate notices of copyright ownership.
 ==========
-Notice for: org.logstash:jvm-options-parser-8.13.0
+Notice for: org.logstash:jvm-options-parser-8.15.0
 ----------
 
 Copyright (c) 2022 Elasticsearch B.V. <http://www.elastic.co>
@@ -10774,7 +10774,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==========
-Notice for: public_suffix-5.0.4
+Notice for: public_suffix-5.0.5
 ----------
 
 Copyright (c) 2009-2018 Simone Carletti <weppos@weppos.net>
@@ -10889,7 +10889,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: rack-2.2.8
+Notice for: rack-3.0.11
 ----------
 
 The MIT License (MIT)
@@ -10913,7 +10913,7 @@ THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: rack-protection-2.2.4
+Notice for: rack-protection-4.0.0
 ----------
 
 The MIT License (MIT)
@@ -10940,7 +10940,83 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: rake-13.1.0
+Notice for: rack-session-2.0.0
+----------
+
+# MIT License
+
+Copyright, 2007-2008, by Leah Neukirchen.  
+Copyright, 2007-2009, by Scytrin dai Kinthra.  
+Copyright, 2008, by Daniel Roethlisberger.  
+Copyright, 2009, by Joshua Peek.  
+Copyright, 2009, by Mickaël Riga.  
+Copyright, 2010, by Simon Chiang.  
+Copyright, 2010-2011, by José Valim.  
+Copyright, 2010-2013, by James Tucker.  
+Copyright, 2010-2019, by Aaron Patterson.  
+Copyright, 2011, by Max Cantor.  
+Copyright, 2011-2012, by Konstantin Haase.  
+Copyright, 2011, by Will Leinweber.  
+Copyright, 2011, by John Manoogian III.  
+Copyright, 2012, by Yun Huang Yong.  
+Copyright, 2012, by Ravil Bayramgalin.  
+Copyright, 2012, by Timothy Elliott.  
+Copyright, 2012, by Jamie Macey.  
+Copyright, 2012-2015, by Santiago Pastorino.  
+Copyright, 2013, by Andrew Cole.  
+Copyright, 2013, by Postmodern.  
+Copyright, 2013, by Vipul A M.  
+Copyright, 2013, by Charles Hornberger.  
+Copyright, 2014, by Michal Bryxí.  
+Copyright, 2015, by deepj.  
+Copyright, 2015, by Doug McInnes.  
+Copyright, 2015, by David Runger.  
+Copyright, 2015, by Francesco Rodríguez.  
+Copyright, 2015, by Yuichiro Kaneko.  
+Copyright, 2015, by Michael Sauter.  
+Copyright, 2016, by Kir Shatrov.  
+Copyright, 2016, by Yann Vanhalewyn.  
+Copyright, 2016, by Jian Weihang.  
+Copyright, 2017, by Jordan Raine.  
+Copyright, 2018, by Dillon Welch.  
+Copyright, 2018, by Yoshiyuki Hirano.  
+Copyright, 2019, by Krzysztof Rybka.  
+Copyright, 2019, by Frederick Cheung.  
+Copyright, 2019, by Adrian Setyadi.  
+Copyright, 2019, by Rafael Mendonça França.  
+Copyright, 2019-2020, by Pavel Rosicky.  
+Copyright, 2019, by Dima Fatko.  
+Copyright, 2019, by Oleh Demianiuk.  
+Copyright, 2020-2023, by Samuel Williams.  
+Copyright, 2020-2022, by Jeremy Evans.  
+Copyright, 2020, by Alex Speller.  
+Copyright, 2020, by Ryuta Kamizono.  
+Copyright, 2020, by Yudai Suzuki.  
+Copyright, 2020, by Bart de Water.  
+Copyright, 2020, by Alec Clarke.  
+Copyright, 2021, by Michael Coyne.  
+Copyright, 2022, by Philip Arndt.  
+Copyright, 2022, by Jon Dufresne.  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+==========
+Notice for: rake-13.2.1
 ----------
 
 Copyright (c) Jim Weirich
@@ -10990,7 +11066,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: rexml-3.2.6
+Notice for: rexml-3.2.8
 ----------
 
 source: https://github.com/ruby/rexml/blob/v3.2.5/LICENSE.txt
@@ -11017,6 +11093,82 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
+==========
+Notice for: ruby-maven-libs-3.9.6.1
+----------
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+1. Definitions.
+"License" shall mean the terms and conditions for use, reproduction, and distribution as defined by Sections 1 through 9 of this document.
+
+"Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
+
+"Legal Entity" shall mean the union of the acting entity and all other entities that control, are controlled by, or are under common control with that entity. For the purposes of this definition, "control" means (i) the power, direct or indirect, to cause the direction or management of such entity, whether by contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the outstanding shares, or (iii) beneficial ownership of such entity.
+
+"You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
+
+"Source" form shall mean the preferred form for making modifications, including but not limited to software source code, documentation source, and configuration files.
+
+"Object" form shall mean any form resulting from mechanical transformation or translation of a Source form, including but not limited to compiled object code, generated documentation, and conversions to other media types.
+
+"Work" shall mean the work of authorship, whether in Source or Object form, made available under the License, as indicated by a copyright notice that is included in or attached to the work (an example is provided in the Appendix below).
+
+"Derivative Works" shall mean any work, whether in Source or Object form, that is based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship. For the purposes of this License, Derivative Works shall not include works that remain separable from, or merely link (or bind by name) to the interfaces of, the Work and Derivative Works thereof.
+
+"Contribution" shall mean any work of authorship, including the original version of the Work and any modifications or additions to that Work or Derivative Works thereof, that is intentionally submitted to Licensor for inclusion in the Work by the copyright owner or by an individual or Legal Entity authorized to submit on behalf of the copyright owner. For the purposes of this definition, "submitted" means any form of electronic, verbal, or written communication sent to the Licensor or its representatives, including but not limited to communication on electronic mailing lists, source code control systems, and issue tracking systems that are managed by, or on behalf of, the Licensor for the purpose of discussing and improving the Work, but excluding communication that is conspicuously marked or otherwise designated in writing by the copyright owner as "Not a Contribution."
+
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf of whom a Contribution has been received by Licensor and subsequently incorporated within the Work.
+
+2. Grant of Copyright License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare Derivative Works of, publicly display, publicly perform, sublicense, and distribute the Work and such Derivative Works in Source or Object form.
+3. Grant of Patent License. Subject to the terms and conditions of this License, each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by such Contributor that are necessarily infringed by their Contribution(s) alone or by combination of their Contribution(s) with the Work to which such Contribution(s) was submitted. If You institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the Work or a Contribution incorporated within the Work constitutes direct or contributory patent infringement, then any patent licenses granted to You under this License for that Work shall terminate as of the date such litigation is filed.
+4. Redistribution. You may reproduce and distribute copies of the Work or Derivative Works thereof in any medium, with or without modifications, and in Source or Object form, provided that You meet the following conditions:
+(a) You must give any other recipients of the Work or Derivative Works a copy of this License; and
+(b) You must cause any modified files to carry prominent notices stating that You changed the files; and
+(c) You must retain, in the Source form of any Derivative Works that You distribute, all copyright, patent, trademark, and attribution notices from the Source form of the Work, excluding those notices that do not pertain to any part of the Derivative Works; and
+(d) If the Work includes a "NOTICE" text file as part of its distribution, then any Derivative Works that You distribute must include a readable copy of the attribution notices contained within such NOTICE file, excluding those notices that do not pertain to any part of the Derivative Works, in at least one of the following places: within a NOTICE text file distributed as part of the Derivative Works; within the Source form or documentation, if provided along with the Derivative Works; or, within a display generated by the Derivative Works, if and wherever such third-party notices normally appear. The contents of the NOTICE file are for informational purposes only and do not modify the License. You may add Your own attribution notices within Derivative Works that You distribute, alongside or as an addendum to the NOTICE text from the Work, provided that such additional attribution notices cannot be construed as modifying the License.
+You may add Your own copyright statement to Your modifications and may provide additional or different license terms and conditions for use, reproduction, or distribution of Your modifications, or for any such Derivative Works as a whole, provided Your use, reproduction, and distribution of the Work otherwise complies with the conditions stated in this License.
+
+5. Submission of Contributions. Unless You explicitly state otherwise, any Contribution intentionally submitted for inclusion in the Work by You to the Licensor shall be under the terms and conditions of this License, without any additional terms or conditions. Notwithstanding the above, nothing herein shall supersede or modify the terms of any separate license agreement you may have executed with Licensor regarding such Contributions.
+6. Trademarks. This License does not grant permission to use the trade names, trademarks, service marks, or product names of the Licensor, except as required for reasonable and customary use in describing the origin of the Work and reproducing the content of the NOTICE file.
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE. You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
+8. Limitation of Liability. In no event and under no legal theory, whether in tort (including negligence), contract, or otherwise, unless required by applicable law (such as deliberate and grossly negligent acts) or agreed to in writing, shall any Contributor be liable to You for damages, including any direct, indirect, special, incidental, or consequential damages of any character arising as a result of this License or out of the use or inability to use the Work (including but not limited to damages for loss of goodwill, work stoppage, computer failure or malfunction, or any and all other commercial damages or losses), even if such Contributor has been advised of the possibility of such damages.
+9. Accepting Warranty or Additional Liability. While redistributing the Work or Derivative Works thereof, You may choose to offer, and charge a fee for, acceptance of support, warranty, indemnity, or other liability obligations and/or rights consistent with this License. However, in accepting such obligations, You may act only on Your own behalf and on Your sole responsibility, not on behalf of any other Contributor, and only if You agree to indemnify, defend, and hold each Contributor harmless for any liability incurred by, or claims asserted against, such Contributor by reason of your accepting any such warranty or additional liability.
+END OF TERMS AND CONDITIONS
+
+APPENDIX: How to apply the Apache License to your work.
+
+To apply the Apache License to your work, attach the following boilerplate notice, with the fields enclosed by brackets "[]" replaced with your own identifying information. (Don't include the brackets!) The text should be enclosed in the appropriate comment syntax for the file format. We also recommend that a file or class name and description of purpose be included on the same "printed page" as the copyright notice for easier identification within third-party archives.
+
+Copyright [yyyy] [name of copyright owner]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Standard License Header
+Copyright [yyyy] [name of copyright owner]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 ==========
 Notice for: ruby-progressbar-1.13.0
 ----------
@@ -11185,7 +11337,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: sequel-5.76.0
+Notice for: sequel-5.80.0
 ----------
 
 Copyright (c) 2007-2008 Sharon Rosner
@@ -11234,7 +11386,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: sinatra-2.2.4
+Notice for: sinatra-4.0.0
 ----------
 
 Copyright (c) 2007, 2008, 2009 Blake Mizerany
@@ -11752,7 +11904,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: tzinfo-data-1.2023.4
+Notice for: tzinfo-data-1.2024.1
 ----------
 
 Copyright (c) 2005-2018 Philip Ross
@@ -11776,7 +11928,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: webhdfs-0.10.2
+Notice for: webhdfs-0.11.0
 ----------
 
 Copyright (C) 2012 Fluentd Project
