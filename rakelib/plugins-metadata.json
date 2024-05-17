@@ -433,6 +433,10 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-snmp": {
+    "default-plugins": false,
+    "skip-list": false
+  },
   "logstash-integration-aws": {
     "default-plugins": true,
     "skip-list": false
