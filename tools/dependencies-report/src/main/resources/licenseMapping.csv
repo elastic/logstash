@@ -190,6 +190,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "snappy-jars:",https://github.com/doxavore/snappy-jars,Apache-2.0
 "snappy:",https://github.com/miyucy/snappy,MIT
 "snmp:",https://github.com/hallidave/ruby-snmp,MIT
+"strscan:",https://github.com/ruby/strscan,BSD-2-Clause
 "spoon:",https://github.com/headius/spoon,Apache-2.0
 "stud:",https://github.com/jordansissel/ruby-stud,Apache-2.0
 "thread_safe:",https://github.com/ruby-concurrency/thread_safe,Apache-2.0
