@@ -441,6 +441,14 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-internal": {
+    "default-plugins": false,
+    "skip-list": true
+  },
+  "logstash-integration-zeromq": {
+    "default-plugins": false,
+    "skip-list": true
+  },
   "logstash-input-cloudwatch": {
     "default-plugins": false,
     "skip-list": true
