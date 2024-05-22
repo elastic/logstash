@@ -519,14 +519,47 @@ public class QueueTest {
     public void reachMaxSizeTest() throws IOException, InterruptedException {
         Queueable element = new StringElement("0123456789"); // 10 bytes
 
+        int pageSize = computeCapacityForMmapPageIO(element, 10);
+        int queueMaxSize = (pageSize * 10) - 1; // 100th will overflow max capacity while still on 10th page
+
         // allow 10 elements per page but only 100 events in total
         Settings settings = TestSettings.persistedQueueSettings(
-                computeCapacityForMmapPageIO(element, 10), computeCapacityForMmapPageIO(element, 100), dataPath
+                pageSize, queueMaxSize, dataPath
         );
         try (Queue q = new Queue(settings)) {
             q.open();
 
             int elementCount = 99; // should be able to write 99 events before getting full
+            for (int i = 0; i < elementCount; i++) {
+                q.write(element);
+            }
+
+            assertThat(q.isFull(), is(false));
+
+            // we expect this next write call to block so let's wrap it in a Future
+            executor.submit(() -> q.write(element));
+            while (!q.isFull()) {
+                Thread.sleep(10);
+            }
+            assertThat(q.isFull(), is(true));
+        }
+    }
+
+    @Test(timeout = 50_000)
+    public void preciselyMaxSizeTest() throws IOException, InterruptedException {
+        Queueable element = new StringElement("0123456789"); // 10 bytes
+
+        int pageSize = computeCapacityForMmapPageIO(element, 10);
+        int queueMaxSize = (pageSize * 10); // 100th will precisely fit max capacity
+
+        // allow 10 elements per page but only 100 events in total
+        Settings settings = TestSettings.persistedQueueSettings(
+                pageSize, queueMaxSize, dataPath
+        );
+        try (Queue q = new Queue(settings)) {
+            q.open();
+
+            int elementCount = 100; // should be able to write 100 events before getting full
             for (int i = 0; i < elementCount; i++) {
                 q.write(element);
             }

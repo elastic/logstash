@@ -506,18 +506,13 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * <p>Checks if the Queue is full, with "full" defined as either of:</p>
-     * <p>Assuming a maximum size of the queue larger than 0 is defined:</p>
+     * <p>Checks if the Queue is full, with "full" defined as either of:
      * <ul>
-     *     <li>The sum of the size of all allocated pages is more than the allowed maximum Queue
-     *     size</li>
-     *     <li>The sum of the size of all allocated pages equal to the allowed maximum Queue size
-     *     and the current head page has no remaining capacity.</li>
-     * </ul>
-     * <p>or assuming a max unread count larger than 0, is defined "full" is also defined as:</p>
-     * <ul>
-     *     <li>The current number of unread events exceeds or is equal to the configured maximum
-     *     number of allowed unread events.</li>
+     *     <li>{@code maxUnread} is non-zero and is met or exceeded by the total
+     *         number of unread events on all pages ({@code unreadCount})</li>
+     *     <li>{@code maxBytes} is non-zero and is exceeded by the sum of the sizes
+     *         of all allocated tail pages plus the portion of the current head page
+     *         containing events</li>
      * </ul>
      * @return True iff the queue is full
      */
@@ -535,8 +530,7 @@ public final class Queue implements Closeable {
             return false;
         }
 
-        final long persistedByteSize = getPersistedByteSize();
-        return ((persistedByteSize > this.maxBytes) || (persistedByteSize == this.maxBytes && !this.headPage.hasSpace(1)));
+        return getPersistedByteSize() > this.maxBytes;
     }
 
     private boolean isMaxUnreadReached() {

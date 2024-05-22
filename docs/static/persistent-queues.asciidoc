@@ -61,7 +61,7 @@ The total of `queue.max_bytes` for _all_ queues should be
 lower than the capacity of your disk.
 +
 TIP: If you are using persistent queues to protect against data loss, but don't
-require much buffering, you can set `queue.max_bytes` to a smaller value.
+require much buffering, you can set `queue.max_bytes` to a smaller value as long as it is not less than the value of `queue.page_capacity`.
 A smaller value produces smaller queues and improves queue performance. 
 
 `queue.checkpoint.acks`:: Sets the number of acked events before forcing a checkpoint. 
