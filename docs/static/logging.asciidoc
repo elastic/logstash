@@ -48,6 +48,68 @@ The logger is usually identified by a Java class name, such as
 path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
 the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
 
+It's strongly recommended to use the default log4j configuration that's shipped with {ls}, however the
+following section describe in detail how the rolling strategy works, so you have more control on these settings.
+
+In `log4j2.properties` file are defined three appenders to write on log files: one for plain text, one with json format,
+and another to split log lines on per pipeline basis when using the `pipeline.separate_logs` setting.
+These appenders define triggering policies and rollover strategy. The triggering policy determines if a rollover
+should be performed, while the strategy defines how the rollover should be done.
+In default definition are used two triggering policies: time and size. The time policy defines to create one file per day
+while the size policy force to create a new file every time the size surpasses a limit (100 MB by default).
+
+The default strategy defines to roll logs up to a maximum number of 30 files and also specify to execute the delete action on
+files older than seven days.
+This means that for each day, a maximum of 30 files is created. When the 31-st has to be created a rollover happen, the first
+is removed, all the other are renamed, so that 2nd becomes 1st, and 30th becomes 29th, so creating the space for the new file.
+Each file has a date and if the files are older than seven days they are removed on the rollover execution.
+
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile <1>
+appender.rolling.name = plain_rolling
+appender.rolling.fileName = ${sys:ls.logs}/logstash-plain.log <2>
+appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}-%i.log.gz <3>
+appender.rolling.policies.type = Policies
+appender.rolling.policies.time.type = TimeBasedTriggeringPolicy <4>
+appender.rolling.policies.time.interval = 1
+appender.rolling.policies.time.modulate = true
+appender.rolling.layout.type = PatternLayout
+appender.rolling.layout.pattern = [%d{ISO8601}][%-5p][%-25c]%notEmpty{[%X{pipeline.id}]}%notEmpty{[%X{plugin.id}]} %m%n
+appender.rolling.policies.size.type = SizeBasedTriggeringPolicy <5>
+appender.rolling.policies.size.size = 100MB
+appender.rolling.strategy.type = DefaultRolloverStrategy
+appender.rolling.strategy.max = 30 <6>
+appender.rolling.strategy.action.type = Delete <7>
+appender.rolling.strategy.action.basepath = ${sys:ls.logs}
+appender.rolling.strategy.action.condition.type = IfFileName
+appender.rolling.strategy.action.condition.glob = logstash-plain-* <8>
+appender.rolling.strategy.action.condition.nested_condition.type = IfLastModified
+appender.rolling.strategy.action.condition.nested_condition.age = 7D <9>
+----------------------------------
+<1> The appender type, which rolls older log files.
+<2> Name of the current log file.
+<3> Name's format definition of the rolled files, in this case a date followed by an incremental number (up to 30, in this case).
+<4> Time policy to trigger a rollover at the end of the day.
+<5> Size policy to trigger a rollover once the plain text file reaches the dimension of 100 MB.
+<6> Rollover strategy defines a maximum of 30 files.
+<7> Action to execute during the rollover.
+<8> The file set to consider by the action.
+<9> Condition to execute the rollover action, so older than 7 days.
+
+The conditions matched by the rollover action can also enforce a space limitation, in such case deletes older files to match
+the requested condition, as an example:
+
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile
+...
+appender.rolling.strategy.action.condition.glob = pipeline_${ctx:pipeline.id}.*.log.gz
+appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize
+appender.rolling.strategy.action.condition.nested_condition.exceeds = 5MB <1>
+----------------------------------
+<1> Only delete if we have accumulated too many compressed logs.
+
 ==== Logging APIs
 
 For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
