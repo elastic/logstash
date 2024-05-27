@@ -257,9 +257,8 @@ module LogStash
       @validator_proc = validator_proc
       @value = nil
       @value_is_set = false
-      @strict = strict
 
-      validate(default) if @strict
+      validate(default) if strict?
       @default = default
     end
 
@@ -289,7 +288,7 @@ module LogStash
     end
 
     def set(value)
-      validate(value) if @strict
+      validate(value) if strict?
       @wrapped_setting.set(value)
       @value
     end
