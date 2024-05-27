@@ -256,7 +256,6 @@ module LogStash
       @klass = klass
       @validator_proc = validator_proc
       @value = nil
-      @value_is_set = false
 
       validate(default) if strict?
       @default = default
@@ -302,7 +301,7 @@ module LogStash
         "name" => @wrapped_setting.name,
         "klass" => @klass,
         "value" => @value,
-        "value_is_set" => @value_is_set,
+        "value_is_set" => @wrapped_setting.set?,
         "default" => @default,
         # Proc#== will only return true if it's the same obj
         # so no there's no point in comparing it
@@ -313,7 +312,7 @@ module LogStash
     end
 
     def inspect
-      "<#{self.class.name}(#{name}): #{value.inspect}" + (@value_is_set ? '' : ' (DEFAULT)') + ">"
+      "<#{self.class.name}(#{name}): #{value.inspect}" + (@wrapped_setting.set? ? '' : ' (DEFAULT)') + ">"
     end
 
     def ==(other)
@@ -370,7 +369,6 @@ module LogStash
         @klass = klass
         @validator_proc = validator_proc
         @value = nil
-        @value_is_set = false
 
         # needed to have the name method accessible when invoking validate
         @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
@@ -821,7 +819,6 @@ module LogStash
       def set(value)
         @value = coerce(value)
         @wrapped_setting.set(@value)
-#         @value_is_set = true
         @value
       end
 
