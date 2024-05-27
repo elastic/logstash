@@ -246,7 +246,7 @@ module LogStash
         raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
       end
       setting_builder = Java::org.logstash.settings.Setting.create(name)
-                            .defaultValue(@default)
+                            .defaultValue(default)
                             .strict(strict)
       if validator_proc
         setting_builder = setting_builder.validator(validator_proc)
