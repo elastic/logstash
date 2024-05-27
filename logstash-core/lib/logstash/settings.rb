@@ -244,13 +244,12 @@ module LogStash
   class Setting
     include LogStash::Settings::LOGGABLE_PROXY
 
-    attr_reader :name, :default
+    attr_reader :default
     attr_reader :wrapped_setting
 
     def initialize(name, klass, default = nil, strict = true, &validator_proc)
-      @name = name
       unless klass.is_a?(Class)
-        raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+        raise ArgumentError.new("Setting \"#{name}\" must be initialized with a class (received #{klass})")
       end
       setting_builder = Java::org.logstash.settings.Setting.create(name)
                             .defaultValue(default)
@@ -271,14 +270,18 @@ module LogStash
       @default = default
     end
 
+    def name
+      @wrapped_setting.name
+    end
+
     def initialize_copy(original)
       @wrapped_setting = original.wrapped_setting.clone
     end
 
+    # To be used only internally
     def update_wrapper(wrapped_setting)
       @wrapped_setting = wrapped_setting
     end
-    private :update_wrapper
 
     def value
       @wrapped_setting.value()
@@ -304,7 +307,7 @@ module LogStash
 
     def to_hash
       {
-        "name" => @name,
+        "name" => @wrapped_setting.name,
         "klass" => @klass,
         "value" => @value,
         "value_is_set" => @value_is_set,
@@ -358,25 +361,30 @@ module LogStash
     protected
     def validate(input)
       if !input.is_a?(@klass)
-        raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+        raise ArgumentError.new("Setting \"#{@wrapped_setting.name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
       end
 
       if @validator_proc && !@validator_proc.call(input)
-        raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+        raise ArgumentError.new("Failed to validate setting \"#{@wrapped_setting.name}\" with value: #{input}")
       end
     end
 
     class Coercible < Setting
       def initialize(name, klass, default = nil, strict = true, &validator_proc)
-        @name = name
         unless klass.is_a?(Class)
-          raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+          raise ArgumentError.new("Setting \"#{name}\" must be initialized with a class (received #{klass})")
         end
 
         @klass = klass
         @validator_proc = validator_proc
         @value = nil
         @value_is_set = false
+
+        # needed to have the name method accessible when invoking validate
+        @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
+                                      .defaultValue(@default)
+                                      .strict(strict)
+                                      .build()
 
         if strict
           coerced_default = coerce(default)
@@ -760,15 +768,15 @@ module LogStash
       protected
       def validate(input)
         if !input.is_a?(@klass)
-          raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+          raise ArgumentError.new("Setting \"#{@wrapped_setting.name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
         end
 
         unless input.all? {|el| el.kind_of?(@element_class) }
-          raise ArgumentError.new("Values of setting \"#{@name}\" must be #{@element_class}. Received: #{input.map(&:class)}")
+          raise ArgumentError.new("Values of setting \"#{@wrapped_setting.name}\" must be #{@element_class}. Received: #{input.map(&:class)}")
         end
 
         if @validator_proc && !@validator_proc.call(input)
-          raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+          raise ArgumentError.new("Failed to validate setting \"#{@wrapped_setting.name}\" with value: #{input}")
         end
       end
     end
@@ -809,7 +817,7 @@ module LogStash
         return unless invalid_value.any?
 
         raise ArgumentError,
-          "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
+          "Failed to validate the setting \"#{@wrapped_setting.name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
       end
     end
 
@@ -867,7 +875,7 @@ module LogStash
         @canonical_proxy = canonical_proxy
 
         clone = @canonical_proxy.canonical_setting.clone
-        clone.instance_variable_set(:@name, alias_name)
+        clone.update_wrapper(clone.wrapped_setting.deprecate(alias_name))
         clone.instance_variable_set(:@default, nil)
 
         super(clone)

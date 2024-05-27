@@ -73,6 +73,13 @@ public class Setting<T> implements Cloneable {
         }
     }
 
+    /**
+     * Creates a copy of the setting with the original name to deprecate
+     * */
+    protected Setting<T> deprecate(String deprecatedName) {
+        return new Setting<T>(deprecatedName, this.defaultValue, this.strict, this.validator);
+    }
+
     protected static <T> Predicate<T> noValidator() {
         return t -> true;
     }
@@ -81,6 +88,10 @@ public class Setting<T> implements Cloneable {
         if (!validator.test(input)) {
             throw new IllegalArgumentException("Failed to validate setting " + this.name + " with value: " + input);
         }
+    }
+
+    public String getName() {
+        return name;
     }
 
     public T value() {
