@@ -237,7 +237,6 @@ module LogStash
   class Setting
     include LogStash::Settings::LOGGABLE_PROXY
 
-    attr_reader :default
     attr_reader :wrapped_setting
 
     def initialize(name, klass, default = nil, strict = true, &validator_proc)
@@ -257,7 +256,10 @@ module LogStash
       @validator_proc = validator_proc
 
       validate(default) if strict?
-      @default = default
+    end
+
+    def default
+      @wrapped_setting.defaultValue
     end
 
     def name
@@ -301,7 +303,7 @@ module LogStash
         "klass" => @klass,
         "value" => @wrapped_setting.value,
         "value_is_set" => @wrapped_setting.set?,
-        "default" => @default,
+        "default" => @wrapped_setting.default_value,
         # Proc#== will only return true if it's the same obj
         # so no there's no point in comparing it
         # also thereś no use case atm to return the proc
@@ -370,21 +372,21 @@ module LogStash
 
         # needed to have the name method accessible when invoking validate
         @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
-                                      .defaultValue(@default)
+                                      .defaultValue(default)
                                       .strict(strict)
                                       .build()
 
         if strict
           coerced_default = coerce(default)
           validate(coerced_default)
-          @default = coerced_default
+          updated_default = coerced_default
         else
-          @default = default
+          updated_default = default
         end
 
         # default value must be coerced to the right type before being set
         setting_builder = Java::org.logstash.settings.Setting.create(name)
-                              .defaultValue(@default)
+                              .defaultValue(updated_default)
                               .strict(strict)
         if validator_proc
           setting_builder = setting_builder.validator(validator_proc)
@@ -863,7 +865,6 @@ module LogStash
 
         clone = @canonical_proxy.canonical_setting.clone
         clone.update_wrapper(clone.wrapped_setting.deprecate(alias_name))
-        clone.instance_variable_set(:@default, nil)
 
         super(clone)
       end
