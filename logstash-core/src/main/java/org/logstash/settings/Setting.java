@@ -126,6 +126,10 @@ public class Setting<T> implements Cloneable {
     public void validateValue() {
         validate(this.value);
     }
+
+    public T defaultValue() {
+        return this.defaultValue;
+    }
 }
 
 //abstract class Coercible<T> extends Setting<T> {
