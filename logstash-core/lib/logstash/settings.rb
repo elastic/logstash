@@ -259,7 +259,7 @@ module LogStash
     end
 
     def default
-      @wrapped_setting.defaultValue
+      @wrapped_setting.default
     end
 
     def name
@@ -303,7 +303,7 @@ module LogStash
         "klass" => @klass,
         "value" => @wrapped_setting.value,
         "value_is_set" => @wrapped_setting.set?,
-        "default" => @wrapped_setting.default_value,
+        "default" => @wrapped_setting.default,
         # Proc#== will only return true if it's the same obj
         # so no there's no point in comparing it
         # also thereś no use case atm to return the proc
