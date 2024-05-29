@@ -342,19 +342,7 @@ module LogStash
     end
 
     def format(output)
-      effective_value = self.value
-      default_value = self.default
-      setting_name = self.name
-
-      if default_value == value # print setting and its default value
-        output << "#{setting_name}: #{effective_value.inspect}" unless effective_value.nil?
-      elsif default_value.nil? # print setting and warn it has been set
-        output << "*#{setting_name}: #{effective_value.inspect}"
-      elsif effective_value.nil? # default setting not set by user
-        output << "#{setting_name}: #{default_value.inspect}"
-      else # print setting, warn it has been set, and show default value
-        output << "*#{setting_name}: #{effective_value.inspect} (default: #{default_value.inspect})"
-      end
+      @wrapped_setting.format(output)
     end
 
     protected
