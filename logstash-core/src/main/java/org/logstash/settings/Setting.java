@@ -1,5 +1,6 @@
 package org.logstash.settings;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -61,7 +62,7 @@ public class Setting<T> implements Cloneable {
         return new Builder<>(name);
     }
 
-    private Setting(String name, T defaultValue, boolean strict, Predicate<T> validator) {
+    protected Setting(String name, T defaultValue, boolean strict, Predicate<T> validator) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(validator);
         this.name = name;
@@ -129,6 +130,25 @@ public class Setting<T> implements Cloneable {
 
     public T getDefault() {
         return this.defaultValue;
+    }
+
+    public void format(List<String> output) {
+        T effectiveValue = this.value;
+        String settingName = this.name;
+
+        if (effectiveValue != null && effectiveValue.equals(defaultValue)) {
+            // print setting and its default value
+            output.add(String.format("%s: %s", settingName, effectiveValue));
+        } else if (defaultValue == null) {
+            // print setting and warn it has been set
+            output.add(String.format("*%s: %s", settingName, effectiveValue));
+        } else if (effectiveValue == null) {
+            // default setting not set by user
+            output.add(String.format("%s: %s", settingName, defaultValue));
+        } else {
+            // print setting, warn it has been set, and show default value
+            output.add(String.format("*%s: %s (default: %s)", settingName, effectiveValue, defaultValue));
+        }
     }
 }
 
