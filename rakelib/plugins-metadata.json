@@ -376,7 +376,7 @@
     "skip-list": false
   },
   "logstash-input-snmptrap": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   },
   "logstash-input-sqs": {
