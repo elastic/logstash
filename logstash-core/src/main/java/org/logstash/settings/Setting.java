@@ -127,7 +127,7 @@ public class Setting<T> implements Cloneable {
         validate(this.value);
     }
 
-    public T defaultValue() {
+    public T getDefault() {
         return this.defaultValue;
     }
 }
