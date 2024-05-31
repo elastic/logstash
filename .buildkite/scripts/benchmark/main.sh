@@ -8,9 +8,11 @@ set -eo pipefail
 # - Use flog (docker) to generate ~2GB log
 # - Pull the snapshot docker image of the main branch every day
 # - Logstash runs two pipelines, main and node_stats
-#   - The main pipeline handles beats ingestion, sending data to the data stream logs-generic-default
-#   - The node_stats pipeline retrieves Logstash /_node/stats every 30s and sends it to the data stream metrics-nodestats-logstash
-# - The script sends a summary of EPS and resource usage to index benchmark_summary
+#   - The main pipeline handles beats ingestion, sending data to the data stream `logs-generic-default`
+#     - It runs for all combinations. (pq + mq) x worker x batch size
+#     - Each test runs for ~7 minutes
+#   - The node_stats pipeline retrieves Logstash /_node/stats every 30s and sends it to the data stream `metrics-nodestats-logstash`
+# - The script sends a summary of EPS and resource usage to index `benchmark_summary`
 # *******************************************************
 
 SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd)"
@@ -19,22 +21,21 @@ source "$SCRIPT_PATH/util.sh"
 
 ## usage:
 ##   main.sh FB_CNT QTYPE CPU MEM
-##   main.sh 4 all 4 4       # default
+##   main.sh 4 all 4 4          # default launch 4 filebeats to benchmark pq and mq
 ##   main.sh 4 memory
 ##   main.sh 4 persisted
 ##   main.sh 4
 ##   main.sh
 ## accept env vars:
-##   FB_VERSION=8.13.4
-##   LS_VERSION=8.15.0-SNAPSHOT
-##   LS_JAVA_OPTS=-Xmx2g
-##   MULTIPLIERS=2,4,6          # worker = cpu * multiplier
+##   FB_VERSION=8.13.4          # docker tag
+##   LS_VERSION=master-SNAPSHOT # docker tag
+##   LS_JAVA_OPTS=-Xmx2g        # by default, Xmx is set to half of memory
+##   MULTIPLIERS=2,4,6          # determine the number of workers (cpu * multiplier)
 ##   BATCH_SIZES=125,1000
-##   CPU=4
-##   MEM=4
-##   QTYPE=all                  # (pq + mq) x worker x batch size
-##   FB_CNT=4
-##   LOG_GENERATION_SECOND=600  # seconds to wait for log generation
+##   CPU=4                      # number of cpu for Logstash container
+##   MEM=4                      # number of GB for Logstash container
+##   QTYPE=memory               # queue type to test {persisted|memory|all}
+##   FB_CNT=4                   # number of filebeats to use in benchmark
 usage() {
   echo "Usage: $0 [FB_CNT] [QTYPE] [CPU] [MEM]"
   echo "Example: $0 4 {persisted|memory|all} 2 2"
@@ -126,8 +127,7 @@ generate_logs() {
     docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b 2621440000 -p 524288000
 
     local cnt=0
-    LOG_GENERATION_SECOND=${LOG_GENERATION_SECOND:-600}
-    until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt $LOG_GENERATION_SECOND ]]; do
+    until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt 600 ]]; do
       echo "wait 30s" && sleep 30
       cnt=$((cnt + 30))
     done
