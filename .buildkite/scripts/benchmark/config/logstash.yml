@@ -1,0 +1,9 @@
+api.http.host: 0.0.0.0
+pipeline.workers: ${WORKER} 
+pipeline.batch.size: ${BATCH_SIZE}
+queue.type: ${QTYPE}
+
+xpack.monitoring.enabled: true
+xpack.monitoring.elasticsearch.username: ${MONITOR_ES_USER}
+xpack.monitoring.elasticsearch.password: ${MONITOR_ES_PW}
+xpack.monitoring.elasticsearch.hosts: ["${MONITOR_ES_HOST}"]

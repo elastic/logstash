@@ -1,0 +1,14 @@
+agents:
+  provider: gcp
+  imageProject: elastic-images-prod
+  image: family/platform-ingest-logstash-ubuntu-2204
+  machineType: "n2-standard-16"
+  diskSizeGb: 100
+  diskType: pd-ssd
+
+steps:
+  - label: "Benchmark Snapshot"
+    retry:
+      automatic:
+        - limit: 3
+    command: .buildkite/scripts/benchmark/main.sh --all
