@@ -3,7 +3,6 @@
     input { 
       beats {
         port => 5044
-        enrich => none
       }
     } 
     output { 
