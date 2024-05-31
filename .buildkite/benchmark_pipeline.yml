@@ -11,4 +11,4 @@ steps:
     retry:
       automatic:
         - limit: 3
-    command: .buildkite/scripts/benchmark/main.sh --all
+    command: .buildkite/scripts/benchmark/main.sh
