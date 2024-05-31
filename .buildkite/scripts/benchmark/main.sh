@@ -93,7 +93,7 @@ get_secret() {
 }
 
 load_images() {
-    # pull logstash staging image
+    # pull logstash image
     MAIN_VERSION=$( curl -s --retry 3 https://artifacts-api.elastic.co/v1/versions | jq -r ".versions[-1]" )
     LS_VERSION=${LS_VERSION:-$MAIN_VERSION}
     ARCH=$(arch)
@@ -103,9 +103,9 @@ load_images() {
     [[ -z $(docker images -q docker.elastic.co/logstash/logstash:$LS_VERSION) ]] && docker load -i $IMAGE_FILENAME
 
     # pull filebeat image
-    FB_LAST_VERSION=$( curl -s --retry 3 "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
-    FB_VERSION=${FB_VERSION:-$FB_LAST_VERSION}
-    docker pull docker.elastic.co/beats/filebeat:$FB_VERSION
+    FB_LATEST_VERSION=$( curl -s --retry 3 "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
+    FB_VERSION=${FB_VERSION:-$FB_LATEST_VERSION}
+    docker pull "docker.elastic.co/beats/filebeat:$FB_VERSION"
 
     # pull flog image
     docker pull mingrammer/flog:latest
