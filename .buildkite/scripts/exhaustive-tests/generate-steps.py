@@ -160,7 +160,7 @@ ci/acceptance_tests.sh"""),
 
 def acceptance_docker_steps()-> list[typing.Any]:
     steps = []
-    for flavor in ["full", "oss", "ubi8"]:
+    for flavor in ["full", "oss", "ubi8", "wolfi"]:
         steps.append({
             "label": f":docker: {flavor} flavor acceptance",
             "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
