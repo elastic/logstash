@@ -742,7 +742,7 @@ GEM
     net-smtp (0.5.0)
       net-protocol
     nio4r (2.7.3-java)
-    nokogiri (1.16.4-java)
+    nokogiri (1.16.5-java)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
