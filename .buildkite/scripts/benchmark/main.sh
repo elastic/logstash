@@ -30,7 +30,7 @@ source "$SCRIPT_PATH/util.sh"
 ##   FB_VERSION=8.13.4          # docker tag
 ##   LS_VERSION=8.15.0-SNAPSHOT # docker tag
 ##   LS_JAVA_OPTS=-Xmx2g        # by default, Xmx is set to half of memory
-##   MULTIPLIERS=2,4,6          # determine the number of workers (cpu * multiplier)
+##   MULTIPLIERS=1,2,4          # determine the number of workers (cpu * multiplier)
 ##   BATCH_SIZES=125,1000
 ##   CPU=4                      # number of cpu for Logstash container
 ##   MEM=4                      # number of GB for Logstash container
@@ -72,22 +72,19 @@ parse_args() {
   FB_CNT=${FB_CNT:-4}
   # all | persisted | memory
   QTYPE=${QTYPE:-all}
-  # cpu: 4
   CPU=${CPU:-4}
-  # mem: 4
   MEM=${MEM:-4}
   XMX=$((MEM / 2))
 
   IFS=','
-  # multiplier: 2,4,6
-  MULTIPLIERS="${MULTIPLIERS:-2,4,6}"
+  # worker multiplier: 1,2,4
+  MULTIPLIERS="${MULTIPLIERS:-1,2,4}"
   read -ra MULTIPLIERS <<< "$MULTIPLIERS"
-  # batch_size: 1000
   BATCH_SIZES="${BATCH_SIZES:-1000}"
   read -ra BATCH_SIZES <<< "$BATCH_SIZES"
 
   IFS=' '
-  echo "filebeats: $FB_CNT, cpu: $CPU, mem: $MEM, Queue: $QTYPE, multiplier: ${MULTIPLIERS[@]}, batch size: ${BATCH_SIZES[@]}"
+  echo "filebeats: $FB_CNT, cpu: $CPU, mem: $MEM, Queue: $QTYPE, worker multiplier: ${MULTIPLIERS[@]}, batch size: ${BATCH_SIZES[@]}"
 }
 
 get_secret() {
