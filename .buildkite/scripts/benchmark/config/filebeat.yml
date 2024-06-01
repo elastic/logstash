@@ -8,6 +8,7 @@ logging.level: info
 output.logstash:
   hosts:
     - "localhost:5044"
+  pipelining: 3
   ttl: 10ms
   bulk_max_size: 2048
 # queue.mem:
