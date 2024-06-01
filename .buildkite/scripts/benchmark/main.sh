@@ -120,8 +120,6 @@ pull_images() {
     [[ -z $(docker images -q docker.elastic.co/logstash/logstash:$LS_VERSION) ]] && docker load -i "$IMAGE_FILENAME"
   fi
 
-exit 0
-
   # pull filebeat image
   FB_LATEST_VERSION=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
   FB_VERSION=${FB_VERSION:-$FB_LATEST_VERSION}
