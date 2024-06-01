@@ -28,7 +28,7 @@ source "$SCRIPT_PATH/util.sh"
 ##   main.sh
 ## accept env vars:
 ##   FB_VERSION=8.13.4          # docker tag
-##   LS_VERSION=master-SNAPSHOT # docker tag
+##   LS_VERSION=8.15.0-SNAPSHOT # docker tag
 ##   LS_JAVA_OPTS=-Xmx2g        # by default, Xmx is set to half of memory
 ##   MULTIPLIERS=2,4,6          # determine the number of workers (cpu * multiplier)
 ##   BATCH_SIZES=125,1000
@@ -106,8 +106,21 @@ pull_images() {
   echo "--- Pull docker images"
 
   # pull the latest snapshot logstash image
-  LS_VERSION=${LS_VERSION:-master-SNAPSHOT}
-  docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
+  if [[ -n "$LS_VERSION" ]]; then
+    docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
+  else
+    LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/versions | jq -r ".versions[-1]" )
+    BUILD_ID=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/branches/master/builds | jq -r ".builds[0]" )
+    ARCH=$(arch)
+    IMAGE_URL="https://snapshots.elastic.co/${BUILD_ID}/downloads/logstash/logstash-$LS_VERSION-docker-image-$ARCH.tar.gz"
+    IMAGE_FILENAME="$LS_VERSION.tar.gz"
+
+    echo "Download $LS_VERSION from $IMAGE_URL"
+    [[ ! -e $IMAGE_FILENAME ]] && curl -fsSL --retry-max-time 60 --retry 3 --retry-delay 5 -o "$IMAGE_FILENAME" "$IMAGE_URL"
+    [[ -z $(docker images -q docker.elastic.co/logstash/logstash:$LS_VERSION) ]] && docker load -i "$IMAGE_FILENAME"
+  fi
+
+exit 0
 
   # pull filebeat image
   FB_LATEST_VERSION=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
