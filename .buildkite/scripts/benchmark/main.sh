@@ -31,7 +31,7 @@ source "$SCRIPT_PATH/util.sh"
 ##   LS_VERSION=8.15.0-SNAPSHOT # docker tag
 ##   LS_JAVA_OPTS=-Xmx2g        # by default, Xmx is set to half of memory
 ##   MULTIPLIERS=1,2,4          # determine the number of workers (cpu * multiplier)
-##   BATCH_SIZES=125,1000
+##   BATCH_SIZES=125,500
 ##   CPU=4                      # number of cpu for Logstash container
 ##   MEM=4                      # number of GB for Logstash container
 ##   QTYPE=memory               # queue type to test {persisted|memory|all}
@@ -80,7 +80,7 @@ parse_args() {
   # worker multiplier: 1,2,4
   MULTIPLIERS="${MULTIPLIERS:-1,2,4}"
   read -ra MULTIPLIERS <<< "$MULTIPLIERS"
-  BATCH_SIZES="${BATCH_SIZES:-1000}"
+  BATCH_SIZES="${BATCH_SIZES:-500}"
   read -ra BATCH_SIZES <<< "$BATCH_SIZES"
 
   IFS=' '
@@ -121,9 +121,6 @@ pull_images() {
   FB_LATEST_VERSION=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
   FB_VERSION=${FB_VERSION:-$FB_LATEST_VERSION}
   docker pull "docker.elastic.co/beats/filebeat:$FB_VERSION"
-
-  # pull flog image
-  docker pull mingrammer/flog:latest
 }
 
 generate_logs() {
@@ -131,15 +128,19 @@ generate_logs() {
   mkdir -p $FLOG_PATH
 
   if [[ ! -e "$FLOG_PATH/log4.log" ]]; then
-    echo "--- Generate logs. log: 5, size: 500mb"
+    echo "--- Generate logs in background. log: 5, size: 500mb"
     docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b 2621440000 -p 524288000
-
-    local cnt=0
-    until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt 600 ]]; do
-      echo "wait 30s" && sleep 30
-      cnt=$((cnt + 30))
-    done
   fi
+}
+
+check_logs() {
+  echo "--- Check log generation"
+
+  local cnt=0
+  until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt 600 ]]; do
+    echo "wait 30s" && sleep 30
+    cnt=$((cnt + 30))
+  done
 
   ls -lah $FLOG_PATH
 }
@@ -175,68 +176,46 @@ start_filebeat() {
   done
 }
 
-reset_stats() {
-  MAX_EPS_1M=0
-  MAX_EPS_5M=0
-  MAX_WORKER_UTIL=0
-  MAX_WORKER_CONCURR=0
-  MAX_Q_EVENT_CNT=0
-  MAX_Q_SIZE=0
-
-  SUM_CPU_PERCENT=0
-  SUM_HEAP=0
-  SUM_NON_HEAP=0
-
-  AVG_CPU_PERCENT=0
-  AVG_HEAP=0
-  AVG_NON_HEAP=0
-
-  TOTAL_EVENTS_OUT=0
-}
-
 capture_stats() {
   CURRENT=$(jq -r '.flow.output_throughput.current' $NS_JSON)
-  EPS_1M=$(jq -r '.flow.output_throughput.last_1_minute' $NS_JSON)
-  EPS_5M=$(jq -r '.flow.output_throughput.last_5_minutes' $NS_JSON)
-  WORKER_UTIL=$(jq -r '.pipelines.main.flow.worker_utilization.last_1_minute' $NS_JSON)
-  WORKER_CONCURR=$(jq -r '.pipelines.main.flow.worker_concurrency.last_1_minute' $NS_JSON)
-  CPU_PERCENT=$(jq -r '.process.cpu.percent' $NS_JSON)
-  HEAP=$(jq -r '.jvm.mem.heap_used_in_bytes' $NS_JSON)
-  NON_HEAP=$(jq -r '.jvm.mem.non_heap_used_in_bytes' $NS_JSON)
-  Q_EVENT_CNT=$(jq -r '.pipelines.main.queue.events_count' $NS_JSON)
-  Q_SIZE=$(jq -r '.pipelines.main.queue.queue_size_in_bytes' $NS_JSON)
+  local eps_1m=$(jq -r '.flow.output_throughput.last_1_minute' $NS_JSON)
+  local eps_5m=$(jq -r '.flow.output_throughput.last_5_minutes' $NS_JSON)
+  local worker_util=$(jq -r '.pipelines.main.flow.worker_utilization.last_1_minute' $NS_JSON)
+  local worker_concurr=$(jq -r '.pipelines.main.flow.worker_concurrency.last_1_minute' $NS_JSON)
+  local cpu_percent=$(jq -r '.process.cpu.percent' $NS_JSON)
+  local heap=$(jq -r '.jvm.mem.heap_used_in_bytes' $NS_JSON)
+  local non_heap=$(jq -r '.jvm.mem.non_heap_used_in_bytes' $NS_JSON)
+  local q_event_cnt=$(jq -r '.pipelines.main.queue.events_count' $NS_JSON)
+  local q_size=$(jq -r '.pipelines.main.queue.queue_size_in_bytes' $NS_JSON)
   TOTAL_EVENTS_OUT=$(jq -r '.pipelines.main.events.out' $NS_JSON)
-  printf "current: %s, 1m: %s, 5m: %s, worker_utilization: %s, worker_concurrency: %s, cpu: %s, heap: %s, non-heap: %s, q_events: %s, q_size: %s \n" \
-    $CURRENT $EPS_1M $EPS_5M $WORKER_UTIL $WORKER_CONCURR $CPU_PERCENT $HEAP $NON_HEAP $Q_EVENT_CNT $Q_SIZE
-
-  MAX_EPS_1M=$(max -g "$EPS_1M" "$MAX_EPS_1M")
-  MAX_EPS_5M=$(max -g "$EPS_5M" "$MAX_EPS_5M")
-  MAX_WORKER_UTIL=$(max -g "$WORKER_UTIL" "$MAX_WORKER_UTIL")
-  MAX_WORKER_CONCURR=$(max -g "$WORKER_CONCURR" "$MAX_WORKER_CONCURR")
-  MAX_Q_EVENT_CNT=$(max -g "$Q_EVENT_CNT" "$MAX_Q_EVENT_CNT")
-  MAX_Q_SIZE=$(max -g "$Q_SIZE" "$MAX_Q_SIZE")
-
-  SUM_CPU_PERCENT=$((SUM_CPU_PERCENT + CPU_PERCENT))
-  SUM_HEAP=$((SUM_HEAP + HEAP))
-  SUM_NON_HEAP=$((SUM_NON_HEAP + NON_HEAP))
+  printf "current: %s, 1m: %s, 5m: %s, worker_utilization: %s, worker_concurrency: %s, cpu: %s, heap: %s, non-heap: %s, q_events: %s, q_size: %s, total_events_out: %s\n" \
+    $CURRENT $eps_1m $eps_5m $worker_util $worker_concurr $cpu_percent $heap $non_heap $q_event_cnt $q_size $TOTAL_EVENTS_OUT
 }
 
 aggregate_stats() {
-  AVG_CPU_PERCENT=$((SUM_CPU_PERCENT / (i + 1)))
-  AVG_HEAP=$((SUM_HEAP / (i + 1)))
-  AVG_NON_HEAP=$((SUM_NON_HEAP / (i + 1)))
+  local file_glob="$SCRIPT_PATH/$NS_DIR/${QTYPE:0:1}_w${WORKER}b${BATCH_SIZE}_*.json"
+  MAX_EPS_1M=$( jqmax '.flow.output_throughput.last_1_minute' "$file_glob" )
+  MAX_EPS_5M=$( jqmax '.flow.output_throughput.last_5_minutes' "$file_glob" )
+  MAX_WORKER_UTIL=$( jqmax '.pipelines.main.flow.worker_utilization.last_1_minute' "$file_glob" )
+  MAX_WORKER_CONCURR=$( jqmax '.pipelines.main.flow.worker_concurrency.last_1_minute' "$file_glob" )
+  MAX_Q_EVENT_CNT=$( jqmax '.pipelines.main.queue.events_count' "$file_glob" )
+  MAX_Q_SIZE=$( jqmax '.pipelines.main.queue.queue_size_in_bytes' "$file_glob" )
+
+  AVG_CPU_PERCENT=$( jqavg '.process.cpu.percent' "$file_glob" )
+  AVG_HEAP=$( jqavg '.jvm.mem.heap_used_in_bytes' "$file_glob" )
+  AVG_NON_HEAP=$( jqavg '.jvm.mem.non_heap_used_in_bytes' "$file_glob" )
 }
 
 send_summary() {
   echo "Send summary to Elasticsearch"
 
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
-  cat > summary.json << EOF
+  tee summary.json << EOF
 {"index": {}}
 {"timestamp": "$timestamp", "version": "$LS_VERSION", "cpu": "$CPU", "mem": "$MEM", "workers": "$WORKER", "batch_size": "$BATCH_SIZE", "queue_type": "$QTYPE", "total_events_out": "$TOTAL_EVENTS_OUT", "max_eps_1m": "$MAX_EPS_1M", "max_eps_5m": "$MAX_EPS_5M", "max_worker_utilization": "$MAX_WORKER_UTIL", "max_worker_concurrency": "$MAX_WORKER_CONCURR", "avg_cpu_percentage": "$AVG_CPU_PERCENT", "avg_heap": "$AVG_HEAP", "avg_non_heap": "$AVG_NON_HEAP", "max_queue_events": "$MAX_Q_EVENT_CNT", "max_queue_bytes_size": "$MAX_Q_SIZE"}
 EOF
   curl -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json"
-                                                                                                                                                                       echo
+  echo ""
 }
 
 # $1: snapshot index
@@ -275,7 +254,6 @@ batch() {
 
 run_pipeline() {
   echo "--- Run pipeline. queue type: $QTYPE, worker: $WORKER, batch size: $BATCH_SIZE"
-  reset_stats
 
   start_logstash
   start_filebeat
@@ -318,8 +296,9 @@ main() {
   parse_args "$@"
   get_secret
 
-  pull_images
   generate_logs
+  pull_images
+  check_logs
 
   NS_DIR="fb${FB_CNT}c${CPU}m${MEM}" # fb4c4m4
   mkdir -p "$SCRIPT_PATH/$NS_DIR"

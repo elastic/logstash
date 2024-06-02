@@ -12,3 +12,21 @@ arch() { uname -m | sed -e "s|amd|x86_|" -e "s|arm|aarch|"; }
 min() { printf "%s\n" "${@:2}" | sort "$1" | head -n1 ; }
 
 max() { min ${1}r ${@:2} ; }
+
+# return the average of values
+# usage:
+#   jqavg '.process.cpu.percent' m_w8b1000_*.json
+#   $1: jq field
+#   $2: file path in glob pattern
+jqavg() {
+  jq -r "$1 | select(. != null)" $2 | jq -s . | jq 'add / length'
+}
+
+# return the maximum of values
+# usage:
+#   jqmax '.process.cpu.percent' m_w8b1000_*.json
+#   $1: jq field
+#   $2: file path in glob pattern
+jqmax() {
+  jq -r "$1  | select(. != null)" $2 | jq -s . | jq 'max'
+}
