@@ -111,6 +111,66 @@ public class PipelineBusTest {
         assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
+    @Test
+    public void multipleSendersPreventPrune() throws InterruptedException {
+        // begin with 1:1 single output to input
+        bus.registerSender(output, Collections.singleton(address));
+        bus.listen(input, address);
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).contains(output);
+        }));
+        bus.sendEvents(output, Collections.singletonList(rubyEvent()), false);
+        assertThat(input.eventCount.longValue()).isEqualTo(1L);
+
+        // attach another output2 as a sender
+        final TestPipelineOutput output2 = new TestPipelineOutput();
+        bus.registerSender(output2, Collections.singleton(address));
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).contains(output, output2);
+        }));
+        bus.sendEvents(output, Collections.singletonList(rubyEvent()), false);
+        bus.sendEvents(output2, Collections.singletonList(rubyEvent()), false);
+        assertThat(input.eventCount.longValue()).isEqualTo(3L);
+
+        // unlisten with first input, simulating a pipeline restart
+        assertThat(bus.isBlockOnUnlisten()).isFalse();
+        bus.unlisten(input, address);
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isNull();
+            assertThat(addressState.getOutputs()).contains(output, output2);
+        }));
+
+        // unregister one of the two senders, ensuring that the address state remains in-tact
+        bus.unregisterSender(output, Collections.singleton(address));
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isNull();
+            assertThat(addressState.getOutputs()).contains(output2);
+        }));
+
+        // listen with a new input, emulating the completion of a pipeline restart
+        final TestPipelineInput input2 = new TestPipelineInput();
+        assertThat(bus.listen(input2, address)).isTrue();
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input2);
+            assertThat(addressState.getOutputs()).contains(output2);
+        }));
+        bus.sendEvents(output2, Collections.singletonList(rubyEvent()), false);
+        assertThat(input2.eventCount.longValue()).isEqualTo(1L);
+
+        // shut down our remaining sender, ensuring address state remains in-tact
+        bus.unregisterSender(output2, Collections.singleton(address));
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input2);
+            assertThat(addressState.getOutputs()).isEmpty();
+        }));
+
+        // upon unlistening, ensure orphan address state has been cleaned up
+        bus.unlisten(input2, address);
+        assertThat(bus.getAddressState(address)).isNotPresent();
+    }
+
 
     @Test
     public void activeListenerPreventsPrune() throws InterruptedException {
