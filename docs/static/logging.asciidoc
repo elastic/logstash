@@ -64,7 +64,38 @@ This means that for each day, a maximum of 30 files is created. When the 31-st h
 is removed, all the other are renamed, so that 2nd becomes 1st, and 30th becomes 29th, so creating the space for the new file.
 Each file has a date and if the files are older than seven days they are removed on the rollover execution.
 
-
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile <1>
+appender.rolling.name = plain_rolling
+appender.rolling.fileName = ${sys:ls.logs}/logstash-plain.log <2>
+appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}-%i.log.gz <3>
+appender.rolling.policies.type = Policies
+appender.rolling.policies.time.type = TimeBasedTriggeringPolicy <4>
+appender.rolling.policies.time.interval = 1
+appender.rolling.policies.time.modulate = true
+appender.rolling.layout.type = PatternLayout
+appender.rolling.layout.pattern = [%d{ISO8601}][%-5p][%-25c]%notEmpty{[%X{pipeline.id}]}%notEmpty{[%X{plugin.id}]} %m%n
+appender.rolling.policies.size.type = SizeBasedTriggeringPolicy <5>
+appender.rolling.policies.size.size = 100MB
+appender.rolling.strategy.type = DefaultRolloverStrategy
+appender.rolling.strategy.max = 30 <6>
+appender.rolling.strategy.action.type = Delete <7>
+appender.rolling.strategy.action.basepath = ${sys:ls.logs}
+appender.rolling.strategy.action.condition.type = IfFileName
+appender.rolling.strategy.action.condition.glob = logstash-plain-* <8>
+appender.rolling.strategy.action.condition.nested_condition.type = IfLastModified
+appender.rolling.strategy.action.condition.nested_condition.age = 7D <9>
+----------------------------------
+<1> The appender type, which rolls older log files.
+<2> Name of the current log file.
+<3> Name's format definition of the rolled files, in this case a date followed by an incremental number (up to 30, in this case).
+<4> Time policy to trigger a rollover at the end of the day.
+<5> Size policy to trigger a rollover once the plain text file reaches the dimension of 100 MB.
+<6> Rollover strategy defines a maximum of 30 files.
+<7> Action to execute during the rollover.
+<8> The file set to consider by the action.
+<9> Condition to execute the rollover action, so older than 7 days.
 
 The conditions matched by the rollover action can also enforce a space limitation, in such case deletes older files to match
 the requested condition, as an example:
