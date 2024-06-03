@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -34,10 +36,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
 
+@RunWith(Parameterized.class)
 public class PipelineBusTest {
     static String address = "fooAddr";
     static String otherAddress = "fooAddr";
     static Collection<String> addresses = Arrays.asList(address, otherAddress);
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Class<? extends PipelineBus.Testable>> data() {
+        return Set.of(PipelineBusV1.Testable.class, PipelineBusV2.Testable.class);
+    }
+
+    @Parameterized.Parameter
+    public Class<PipelineBus.Testable> busClass;
 
     PipelineBus.Testable bus;
     TestPipelineInput input;
@@ -45,7 +56,7 @@ public class PipelineBusTest {
 
     @Before
     public void setup() throws ReflectiveOperationException {
-        bus = new PipelineBusV1.Testable();
+        bus = busClass.getDeclaredConstructor().newInstance();
         input = new TestPipelineInput();
         output = new TestPipelineOutput();
     }

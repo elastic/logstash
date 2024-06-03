@@ -20,6 +20,8 @@
 package org.logstash.plugins.pipeline;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.Collection;
@@ -34,12 +36,21 @@ import java.util.Set;
  */
 public interface PipelineBus {
 
+    Logger LOGGER = LogManager.getLogger(PipelineBus.class);
+
     /**
      * API-stable entry-point for creating a {@link PipelineBus}
      * @return a new pipeline bus
      */
     static PipelineBus create() {
-        return new PipelineBusV1();
+        final String pipelineBusImplementation = System.getProperty("logstash.pipelinebus.implementation", "v1");
+        switch (pipelineBusImplementation) {
+            case "v1": return new PipelineBusV1();
+            case "v2": return new PipelineBusV2();
+            default:
+                LOGGER.warn("unknown pipeline-bus implementation: {}", pipelineBusImplementation);
+                return new PipelineBusV1();
+        }
     }
 
     /**
