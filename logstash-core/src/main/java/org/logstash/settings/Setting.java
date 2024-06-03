@@ -20,8 +20,13 @@ public class Setting<T> implements Cloneable {
     @SuppressWarnings("unchecked")
     public Setting<T> clone() {
         try {
+            if ("dead_letter_queue.enable".equals(name)) {
+                System.out.println("DNADBG>> Setting.clone, old value: " + value());
+            }
             Setting<T> clone = (Setting<T>) super.clone();
-            // TODO: copy mutable state here, so the clone can't change the internals of the original
+            // copy mutable state here, so the clone can't change the internals of the original
+            clone.value = value;
+            clone.valueIsSet = valueIsSet;
             return clone;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();

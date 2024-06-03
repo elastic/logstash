@@ -338,6 +338,13 @@ module LogStash
       @wrapped_setting.format(output)
     end
 
+    def clone(*args)
+      # TODO copy the object and clone also the @wrapped_setting
+      copy = self.dup
+      copy.update_wrapper(@wrapped_setting.clone())
+      copy
+    end
+
     protected
     def validate(input)
       if !input.is_a?(@klass)
@@ -395,6 +402,8 @@ module LogStash
       end
     end
     ### Specific settings #####
+
+    java_import org.logstash.settings.BooleanSetting
 
     class Boolean < Coercible
       def initialize(name, default, strict = true, &validator_proc)
