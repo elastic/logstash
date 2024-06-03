@@ -69,7 +69,15 @@ Each file has a date and if the files are older than seven days they are removed
 The conditions matched by the rollover action can also enforce a space limitation, in such case deletes older files to match
 the requested condition, as an example:
 
-
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile
+...
+appender.rolling.strategy.action.condition.glob = pipeline_${ctx:pipeline.id}.*.log.gz
+appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize
+appender.rolling.strategy.action.condition.nested_condition.exceeds = 5MB <1>
+----------------------------------
+<1> Only delete if we have accumulated too many compressed logs.
 
 ==== Logging APIs
 
