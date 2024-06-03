@@ -232,6 +232,10 @@ describe LogStash::JavaPipeline do
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
   end
 
+#   after :each do
+#     LogStash::SETTINGS.set_value("dead_letter_queue.enable", LogStash::SETTINGS.get_default("dead_letter_queue.enable"))
+#   end
+
   describe "#ephemeral_id" do
     it "creates an ephemeral_id at creation time" do
       pipeline = mock_java_pipeline_from_string("input { generator { count =>  1 } } output { null {} }")
@@ -1378,7 +1382,15 @@ describe LogStash::JavaPipeline do
         let (:collected_stats) { collected_metric[:stats][:pipelines][:main][:dlq]}
 
         it 'should show dlq stats' do
-          collect_stats
+          expect(LogStash::SETTINGS.get_setting("dead_letter_queue.enable").value).to eq dead_letter_queue_enabled
+
+          #collect_stats
+          subject.collect_dlq_stats
+          ms = subject.metric.collector.snapshot_metric.metric_store
+#           map = ms.get_with_path("stats/pipelines/")
+          map = ms.get_with_path("stats/pipelines/")[:stats][:pipelines][:main]
+#           puts "DNADBG>> map is: #{map}"
+
           # A newly created dead letter queue with no entries will have a size of 1 (the version 'header')
           expect(collected_stats[:queue_size_in_bytes].value).to eq(1)
           expect(collected_stats[:storage_policy].value).to eq("drop_newer")
