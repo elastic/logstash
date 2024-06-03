@@ -55,14 +55,13 @@ In `log4j2.properties` file are defined three appenders to write on log files: o
 and another to split log lines on per pipeline basis when using the `pipeline.separate_logs` setting.
 These appenders define triggering policies and rollover strategy. The triggering policy determines if a rollover
 should be performed, while the strategy defines how the rollover should be done.
-In default definition are used two triggering policies: time and size. The time policy defines to create one file per day
-while the size policy force to create a new file every time the size surpasses a limit (100 MB by default).
+By default definition two triggering policies are used: time and size. The time policy creates one file per day
+while the size policy forces the creation of a new file once the file size surpasses 100 MB.
 
-The default strategy defines to roll logs up to a maximum number of 30 files and also specify to execute the delete action on
-files older than seven days.
-This means that for each day, a maximum of 30 files is created. When the 31-st has to be created a rollover happen, the first
-is removed, all the other are renamed, so that 2nd becomes 1st, and 30th becomes 29th, so creating the space for the new file.
-Each file has a date and if the files are older than seven days they are removed on the rollover execution.
+The default strategy also performs file rollovers to a maximum number of 30 files and also deletes files older than seven days.
+The rollover limit imposes that a maximum of 30 files is created. When the 31-st has to be created a rollover happen the first
+is removed - all the other are renamed - so that 2nd becomes 1st and 30th becomes 29th, creating the space for the new file.
+Each file will have a date and if the files are older than 7 days (by default) they are removed during rollover.
 
 [source,text]
 ----------------------------------
@@ -89,15 +88,15 @@ appender.rolling.strategy.action.condition.nested_condition.age = 7D <9>
 ----------------------------------
 <1> The appender type, which rolls older log files.
 <2> Name of the current log file.
-<3> Name's format definition of the rolled files, in this case a date followed by an incremental number (up to 30, in this case).
+<3> Name's format definition of the rolled files, in this case a date followed by an incremental number, up to 30 (by default).
 <4> Time policy to trigger a rollover at the end of the day.
-<5> Size policy to trigger a rollover once the plain text file reaches the dimension of 100 MB.
+<5> Size policy to trigger a rollover once the plain text file reaches the size of 100 MB.
 <6> Rollover strategy defines a maximum of 30 files.
 <7> Action to execute during the rollover.
 <8> The file set to consider by the action.
-<9> Condition to execute the rollover action, so older than 7 days.
+<9> Condition to execute the rollover action: older than 7 days.
 
-The conditions matched by the rollover action can also enforce a space limitation, in such case deletes older files to match
+The rollover action can also enforce a disk usage limit, deleting older files to match
 the requested condition, as an example:
 
 [source,text]
@@ -108,7 +107,7 @@ appender.rolling.strategy.action.condition.glob = pipeline_${ctx:pipeline.id}.*.
 appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize
 appender.rolling.strategy.action.condition.nested_condition.exceeds = 5MB <1>
 ----------------------------------
-<1> Only delete if we have accumulated too many compressed logs.
+<1> Delete files if total accumulated compressed file size is over 5MB.
 
 ==== Logging APIs
 
