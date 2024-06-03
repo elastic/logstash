@@ -372,12 +372,12 @@
     "skip-list": true
   },
   "logstash-input-snmp": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-snmptrap": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-sqs": {
     "default-plugins": false,
@@ -434,7 +434,7 @@
     "skip-list": false
   },
   "logstash-integration-snmp": {
-    "default-plugins": false,
+    "default-plugins": true,
     "skip-list": false
   },
   "logstash-integration-aws": {
