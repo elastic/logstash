@@ -17,7 +17,6 @@
  * under the License.
  */
 
-
 package org.logstash.plugins.pipeline;
 
 import org.junit.Before;
@@ -28,8 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
+import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
@@ -40,13 +39,13 @@ public class PipelineBusTest {
     static String otherAddress = "fooAddr";
     static Collection<String> addresses = Arrays.asList(address, otherAddress);
 
-    PipelineBus bus;
+    PipelineBus.Testable bus;
     TestPipelineInput input;
     TestPipelineOutput output;
 
     @Before
-    public void setup() {
-        bus = new PipelineBus();
+    public void setup() throws ReflectiveOperationException {
+        bus = new PipelineBusV1.Testable();
         input = new TestPipelineInput();
         output = new TestPipelineOutput();
     }
@@ -54,35 +53,51 @@ public class PipelineBusTest {
     @Test
     public void subscribeUnsubscribe() throws InterruptedException {
         assertThat(bus.listen(input, address)).isTrue();
-        assertThat(bus.addressStates.get(address).getInput()).isSameAs(input);
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+        }));
 
         bus.unlisten(input, address);
 
         // Key should have been pruned
-        assertThat(bus.addressStates.containsKey(address)).isFalse();
+        assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
     @Test
     public void senderRegisterUnregister() {
         bus.registerSender(output, addresses);
 
-        assertThat(bus.addressStates.get(address).hasOutput(output)).isTrue();
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState) -> {
+            assertThat(addressState.getOutputs()).contains(output);
+        });
 
         bus.unregisterSender(output, addresses);
 
         // We should have pruned this address
-        assertThat(bus.addressStates.containsKey(address)).isFalse();
+        assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
     @Test
-    public void activeSenderPreventsPrune() {
+    public void activeSenderPreventsPrune() throws InterruptedException {
         bus.registerSender(output, addresses);
         bus.listen(input, address);
-        bus.unlistenNonblock(input, address);
 
-        assertThat(bus.addressStates.containsKey(address)).isTrue();
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).contains(output);
+        }));
+
+        bus.setBlockOnUnlisten(false);
+        bus.unlisten(input, address);
+
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isNull();
+            assertThat(addressState.getOutputs()).contains(output);
+        }));
+
         bus.unregisterSender(output, addresses);
-        assertThat(bus.addressStates.containsKey(address)).isFalse();
+
+        assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
 
@@ -92,9 +107,15 @@ public class PipelineBusTest {
         bus.listen(input, address);
         bus.unregisterSender(output, addresses);
 
-        assertThat(bus.addressStates.containsKey(address)).isTrue();
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).isEmpty();
+        }));
+
+        bus.setBlockOnUnlisten(false);
         bus.unlisten(input, address);
-        assertThat(bus.addressStates.containsKey(address)).isFalse();
+
+        assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
     @Test
@@ -102,15 +123,25 @@ public class PipelineBusTest {
         bus.registerSender(output, addresses);
         bus.listen(input, address);
 
-        ConcurrentHashMap<String, AddressState> outputAddressesToInputs = bus.outputsToAddressStates.get(output);
-        assertThat(outputAddressesToInputs.size()).isEqualTo(1);
+        assertThat(bus.getAddressStates(output)).hasValueSatisfying((addressStates) -> {
+            assertThat(addressStates).hasSize(1);
+        });
 
         bus.unregisterSender(output, addresses);
-        assertThat(bus.outputsToAddressStates.get(output)).isNull();
+        assertThat(bus.getAddressStates(output)).isNotPresent();
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState) -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).isEmpty();
+        });
 
         bus.registerSender(output, addresses);
-        assertThat(bus.outputsToAddressStates.get(output).size()).isEqualTo(1);
-
+        assertThat(bus.getAddressStates(output)).hasValueSatisfying((addressStates) -> {
+            assertThat(addressStates).hasSize(1);
+        });
+        assertThat(bus.getAddressState(address)).hasValueSatisfying((addressState) -> {
+            assertThat(addressState.getInput()).isSameAs(input);
+            assertThat(addressState.getOutputs()).contains(output);
+        });
     }
 
     @Test
@@ -118,16 +149,15 @@ public class PipelineBusTest {
         bus.registerSender(output, addresses);
         bus.listen(input, address);
 
-        final ConcurrentHashMap<String, AddressState> outputAddressesToInputs = bus.outputsToAddressStates.get(output);
-
-        outputAddressesToInputs.get(address).getInput().internalReceive(Stream.of(rubyEvent()));
+        bus.sendEvents(output, Collections.singletonList(rubyEvent()), false);
         assertThat(input.eventCount.longValue()).isEqualTo(1L);
 
         bus.unlisten(input, address);
 
         TestPipelineInput newInput = new TestPipelineInput();
         bus.listen(newInput, address);
-        outputAddressesToInputs.get(address).getInput().internalReceive(Stream.of(rubyEvent()));
+
+        bus.sendEvents(output, Collections.singletonList(rubyEvent()), false);
 
         // The new event went to the new input, not the old one
         assertThat(newInput.eventCount.longValue()).isEqualTo(1L);
@@ -199,9 +229,11 @@ public class PipelineBusTest {
 
         // This should unblock the listener thread
         bus.unregisterSender(output, addresses);
-        unlistenThread.join();
+        TimeUnit.SECONDS.toMillis(30);
+        unlistenThread.join(Duration.ofSeconds(30).toMillis());
+        assertThat(unlistenThread.getState()).isEqualTo(Thread.State.TERMINATED);
 
-        assertThat(bus.addressStates).isEmpty();
+        assertThat(bus.getAddressState(address)).isNotPresent();
     }
 
     @Test
@@ -253,12 +285,21 @@ public class PipelineBusTest {
         }
 
         @Override
+        public String getId() {
+            return "anonymous";
+        }
+
+        @Override
         public boolean isRunning() {
             return true;
         }
     }
 
     static class TestPipelineOutput implements PipelineOutput {
+        @Override
+        public String getId() {
+            return "anonymous";
+        }
     }
 
     static class TestFailPipelineInput extends TestPipelineInput {
