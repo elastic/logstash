@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-0,Logstash 8.14.0>>
 * <<logstash-8-13-4,Logstash 8.13.4>>
 * <<logstash-8-13-3,Logstash 8.13.3>>
 * <<logstash-8-13-2,Logstash 8.13.2>>
@@ -58,6 +59,44 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-14-0]]
+=== Logstash 8.14.0 Release Notes
+[[featured-8-14-0]]
+==== Announcing the new SNMP integration plugin (Technical Preview)
+
+The new {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[`logstash-integration-snmp`] plugin is now available in _Technical Preview_, and can be installed on {ls} 8.13.
+
+experimental[]
+
+The `logstash-integration-snmp` plugin combines our 
+classic `logstash-input-snmp` and `logstash-input-snmptrap` plugins into a single Ruby gem at v4.0.0.
+Current 1.x versions of the `input-snmp` plugin are bundled with {ls} by default, and will soon be replaced by the 4.0.0+ version contained in this new integration.
+
+If you want to try the new `integration-snmp` plugin while it is in Technical Preview, run `bin/logstash-plugin install logstash-integration-snmp`.
+
+IMPORTANT: Before you install the new integration, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between current stand-alone plugins and the new versions included in `integration-snmp`. 
+
+[[notable-8.14.0]]
+==== Enhancements and notable issues fixed
+
+* Fixed a bug that created duplicated `io.netty.allocator.maxOrder` system property when using environment variable `LS_JAVA_OPTS` in Docker https://github.com/elastic/logstash/pull/16079[#16079]
+
+==== Plugins
+
+*Jdbc Integration - 5.4.10*
+
+* [DOC] Added database-specific considerations https://github.com/logstash-plugins/logstash-integration-jdbc/pull/167[#167]
+
+*Kafka Integration - 11.4.1*
+
+* Added `message_headers` option to set headers of record for Kafka output https://github.com/logstash-plugins/logstash-integration-kafka/pull/162[#162]
+
+[[dependencies-8.14.0]]
+==== Updates to dependencies
+
+* Update JRuby to 9.4.7.0 https://github.com/elastic/logstash/pull/16125[#16125]
 
 
 [[logstash-8-13-4]]
