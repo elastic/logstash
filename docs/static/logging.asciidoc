@@ -48,20 +48,30 @@ The logger is usually identified by a Java class name, such as
 path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
 the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
 
-It's strongly recommended to use the default log4j configuration that's shipped with {ls}, however the
-following section describe in detail how the rolling strategy works, so you have more control on these settings.
+NOTE: Consider using the default log4j configuration that is shipped with {ls}, as it is configured to work well for most deployments.  
+The next section describes how the rolling strategy works in case you need to make adjustments.
 
-In `log4j2.properties` file are defined three appenders to write on log files: one for plain text, one with json format,
-and another to split log lines on per pipeline basis when using the `pipeline.separate_logs` setting.
-These appenders define triggering policies and rollover strategy. The triggering policy determines if a rollover
-should be performed, while the strategy defines how the rollover should be done.
-By default definition two triggering policies are used: time and size. The time policy creates one file per day
-while the size policy forces the creation of a new file once the file size surpasses 100 MB.
+[[rollover]]
+===== Rollover settings
 
-The default strategy also performs file rollovers to a maximum number of 30 files and also deletes files older than seven days.
-The rollover limit imposes that a maximum of 30 files is created. When the 31-st has to be created a rollover happen the first
-is removed - all the other are renamed - so that 2nd becomes 1st and 30th becomes 29th, creating the space for the new file.
-Each file will have a date and if the files are older than 7 days (by default) they are removed during rollover.
+The `log4j2.properties` file has three appenders for writing to log files: 
+one for plain text, one with json format, and one to split log lines on per pipeline basis when you set the `pipeline.separate_logs` value.
+
+These appenders define: 
+
+* **triggering policies** that determine _if_ a rollover should be performed, and 
+* **rollover strategy**  to defines _how_ the rollover should be done.
+
+By default, two triggering policies are defined--time and size.
+
+* The **time** policy creates one file per day.
+* The **size** policy forces the creation of a new file after the file size surpasses 100 MB.
+
+The default strategy also performs file rollovers based on a maximum number files.
+When the limit of 30 files has been reached, the first (oldest) file is removed to create space for the new file.
+Subsequent files are renumbered accordingly. 
+
+Each file has a date, and files older than 7 days (default) are removed during rollover.
 
 [source,text]
 ----------------------------------
@@ -107,7 +117,7 @@ appender.rolling.strategy.action.condition.glob = pipeline_${ctx:pipeline.id}.*.
 appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize
 appender.rolling.strategy.action.condition.nested_condition.exceeds = 5MB <1>
 ----------------------------------
-<1> Delete files if total accumulated compressed file size is over 5MB.
+<1> Deletes files if total accumulated compressed file size is over 5MB.
 
 ==== Logging APIs
 
