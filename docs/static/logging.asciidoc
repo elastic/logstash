@@ -48,6 +48,77 @@ The logger is usually identified by a Java class name, such as
 path as in `org.logstash.dissect`.  For Ruby classes, like `LogStash::Outputs::Elasticsearch`,
 the logger name is obtained by lowercasing the full class name and replacing double colons with a single dot.
 
+NOTE: Consider using the default log4j configuration that is shipped with {ls}, as it is configured to work well for most deployments.  
+The next section describes how the rolling strategy works in case you need to make adjustments.
+
+[[rollover]]
+===== Rollover settings
+
+The `log4j2.properties` file has three appenders for writing to log files: 
+one for plain text, one with json format, and one to split log lines on per pipeline basis when you set the `pipeline.separate_logs` value.
+
+These appenders define: 
+
+* **triggering policies** that determine _if_ a rollover should be performed, and 
+* **rollover strategy**  to defines _how_ the rollover should be done.
+
+By default, two triggering policies are defined--time and size.
+
+* The **time** policy creates one file per day.
+* The **size** policy forces the creation of a new file after the file size surpasses 100 MB.
+
+The default strategy also performs file rollovers based on a **maximum number of files**.
+When the limit of 30 files has been reached, the first (oldest) file is removed to create space for the new file.
+Subsequent files are renumbered accordingly. 
+
+Each file has a date, and files older than 7 days (default) are removed during rollover.
+
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile <1>
+appender.rolling.name = plain_rolling
+appender.rolling.fileName = ${sys:ls.logs}/logstash-plain.log <2>
+appender.rolling.filePattern = ${sys:ls.logs}/logstash-plain-%d{yyyy-MM-dd}-%i.log.gz <3>
+appender.rolling.policies.type = Policies
+appender.rolling.policies.time.type = TimeBasedTriggeringPolicy <4>
+appender.rolling.policies.time.interval = 1
+appender.rolling.policies.time.modulate = true
+appender.rolling.layout.type = PatternLayout
+appender.rolling.layout.pattern = [%d{ISO8601}][%-5p][%-25c]%notEmpty{[%X{pipeline.id}]}%notEmpty{[%X{plugin.id}]} %m%n
+appender.rolling.policies.size.type = SizeBasedTriggeringPolicy <5>
+appender.rolling.policies.size.size = 100MB
+appender.rolling.strategy.type = DefaultRolloverStrategy
+appender.rolling.strategy.max = 30 <6>
+appender.rolling.strategy.action.type = Delete <7>
+appender.rolling.strategy.action.basepath = ${sys:ls.logs}
+appender.rolling.strategy.action.condition.type = IfFileName
+appender.rolling.strategy.action.condition.glob = logstash-plain-* <8>
+appender.rolling.strategy.action.condition.nested_condition.type = IfLastModified
+appender.rolling.strategy.action.condition.nested_condition.age = 7D <9>
+----------------------------------
+<1> The appender type, which rolls older log files.
+<2> Name of the current log file.
+<3> Name's format definition of the rolled files, in this case a date followed by an incremental number, up to 30 (by default).
+<4> Time policy to trigger a rollover at the end of the day.
+<5> Size policy to trigger a rollover once the plain text file reaches the size of 100 MB.
+<6> Rollover strategy defines a maximum of 30 files.
+<7> Action to execute during the rollover.
+<8> The file set to consider by the action.
+<9> Condition to execute the rollover action: older than 7 days.
+
+The rollover action can also enforce a disk usage limit, deleting older files to match
+the requested condition, as an example:
+
+[source,text]
+----------------------------------
+appender.rolling.type = RollingFile
+...
+appender.rolling.strategy.action.condition.glob = pipeline_${ctx:pipeline.id}.*.log.gz
+appender.rolling.strategy.action.condition.nested_condition.type = IfAccumulatedFileSize
+appender.rolling.strategy.action.condition.nested_condition.exceeds = 5MB <1>
+----------------------------------
+<1> Deletes files if total accumulated compressed file size is over 5MB.
+
 ==== Logging APIs
 
 For temporary logging changes, modifying the `log4j2.properties` file and restarting Logstash leads to unnecessary
