@@ -67,7 +67,7 @@ By default, two triggering policies are defined--time and size.
 * The **time** policy creates one file per day.
 * The **size** policy forces the creation of a new file after the file size surpasses 100 MB.
 
-The default strategy also performs file rollovers based on a maximum number files.
+The default strategy also performs file rollovers based on a **maximum number of files**.
 When the limit of 30 files has been reached, the first (oldest) file is removed to create space for the new file.
 Subsequent files are renumbered accordingly. 
 
