@@ -119,8 +119,10 @@ def get_settings(container)
   YAML.load(container.read_file('/usr/share/logstash/config/logstash.yml'))
 end
 
-def java_process(container, column)
-  exec_in_container(container, "ps -C java -o #{column}=")
+def java_process(container)
+  ps_output = exec_in_container(container, "ps -o pid,user,group,args")
+  java_ps = ps_output.split("\n").find {|process| process.match(/java/) } || ""
+  java_ps.match(/^\s+(?<pid>\d+)\s+(?<user>.+?)\s+(?<group>.+?)\s+(?<args>.+?)$/)
 end
 
 # Runs the given command in the given container. This method returns

@@ -78,20 +78,20 @@ shared_examples_for 'the container is configured correctly' do |flavor|
     end
 
     it 'should be running under the logstash user' do
-      expect(java_process(@container, "user")).to eql 'logstash'
+      expect(java_process(@container)["user"]).to eql 'logstash'
     end
 
     it 'should be running under the logstash group' do
-      expect(java_process(@container, "group")).to eql 'logstash'
+      expect(java_process(@container)["group"]).to eql 'logstash'
     end
 
     it 'should have cgroup overrides set' do
-      expect(java_process(@container, "args")).to match /-Dls.cgroup.cpu.path.override=/
-      expect(java_process(@container, "args")).to match /-Dls.cgroup.cpuacct.path.override=/
+      expect(java_process(@container)["args"]).to match /-Dls.cgroup.cpu.path.override=/
+      expect(java_process(@container)["args"]).to match /-Dls.cgroup.cpuacct.path.override=/
     end
 
     it 'should have a pid of 1' do
-      expect(java_process(@container, "pid")).to eql '1'
+      expect(java_process(@container)["pid"]).to eql '1'
     end
   end
 end

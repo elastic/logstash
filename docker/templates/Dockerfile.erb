@@ -143,7 +143,7 @@ sleep 10; done; \
 # Provide a non-root user to run the process.
 <% if image_flavor == 'wolfi' -%>
 RUN addgroup -g 1000 logstash && \
-  adduser -u 10000 -G logstash \
+  adduser -u 1000 -G logstash \
   --disabled-password \
   --gecos "" \
   --home "/usr/share/logstash" \
