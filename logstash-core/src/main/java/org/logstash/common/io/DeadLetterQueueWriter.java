@@ -287,7 +287,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.flusherService = flusherService;
         this.flusherService.repeatedAction(this::scheduledFlushCheck);
 
-        setupConsumedSegmentsNotificationWatcher();
+//        setupConsumedSegmentsNotificationWatcher();
     }
 
     private void setupConsumedSegmentsNotificationWatcher() throws IOException {
