@@ -146,16 +146,17 @@ describe LogStash::Config::Source::MultiLocal do
 
   describe "#pipeline_configs" do
 
-    let(:config_string) {
-     "input {
-        udp {
-          port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
-          host => \"127.0.0.1\"
-        }
-        # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
-      }
-      output {}"
-    }
+#     let(:config_string) {
+#      "input {
+#         udp {
+#           port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
+#           host => \"127.0.0.1\"
+#         }
+#         # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
+#       }
+#       output {}"
+#     }
+    let(:config_string) { "input {} output {}" }
     let(:retrieved_pipelines) do
       [
         { "pipeline.id" => "main", "config.string" => config_string },

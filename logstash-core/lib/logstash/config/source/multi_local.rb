@@ -30,7 +30,7 @@ module LogStash module Config module Source
     end
 
     def pipeline_configs
-      pipelines = retrieve_yaml_pipelines
+      pipelines = deep_replace(retrieve_yaml_pipelines)
       pipelines_settings = pipelines.map do |pipeline_settings|
         clone = @original_settings.clone
         clone.merge_pipeline_settings(pipeline_settings)
