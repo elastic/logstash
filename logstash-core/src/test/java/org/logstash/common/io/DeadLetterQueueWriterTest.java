@@ -551,53 +551,62 @@ public class DeadLetterQueueWriterTest {
 
     @Test
     public void givenDLQWriterCreatedSomeSegmentsWhenReaderWithCleanConsumedNotifyTheDeletionOfSomeThenWriterUpdatesItsMetricsSize() throws IOException, InterruptedException {
-        Event dlqEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        dlqEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
-        DLQEntry dlqEntry = new DLQEntry(dlqEvent, "type", "id", "reason");
-
         try (DeadLetterQueueWriter writer = DeadLetterQueueWriter
-                .newBuilder(dir, 1024 * 1024, 100 * 1024 * 1024, Duration.ofSeconds(1))
+                .newBuilder(dir, 1 * MB, 100 * MB, Duration.ofSeconds(1))
                 .build()) {
 
-            // fill at least a couple of segments
-            int dlqEntryCount = 0;
-            do {
-                writer.writeEntry(dlqEntry);
-                dlqEntryCount ++;
-            } while (countDlqSegments(dir) < 3);
+            // fill at least 3 segments
+            int dlqEntryCount = writeThreeFullSegments(writer);
+
             long beforeConsumptionQueueSize = writer.getCurrentQueueSize();
 
-            final long numberOfSegmentsAfterFill = countDlqSegments(dir);
-            assertEquals("DLQ MUST be composed of 3 segments", 3L, numberOfSegmentsAfterFill);
-
-            // open a DLQ reader with clean consumed
-            long segmentsBeforeReaderDeletesConsumed;
-            int consumedSegments;
-            DeadLetterQueueReaderTest.MockSegmentListener listener = new DeadLetterQueueReaderTest.MockSegmentListener();
-            try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, listener)) {
-                // consume completely a segment
-                int dlqEntryToRead = dlqEntryCount / 3;
-                // consumes 1/3 of overall event counts plus a little bit to be sure the first segment is completely
-                // consumed
-                for (int i = 0; i < dlqEntryToRead + 2; i++) {
-                    DLQEntry entry = reader.pollEntry(100);
-                    assertNotNull("DLQ can't be empties", entry);
-                    assertEquals("reason", entry.getReason());
-                }
-
-                segmentsBeforeReaderDeletesConsumed = countDlqSegments(dir);
-                // mark for delete creates the notification .deleted_segment file if clean_consumed is true
-                reader.markForDelete();
-                consumedSegments = reader.getConsumedSegments();
-            }
-
-            assertEquals("Must have been consumed just one segment", segmentsBeforeReaderDeletesConsumed - consumedSegments, countDlqSegments(dir));
+            // open a DLQ reader with clean consumed and consume fully one segment
+            readOneFullSegmentAndTriggerCleanConsumed(dlqEntryCount);
 
             Awaitility.await("Measured queue size decreases because of the reader consumption")
                     // wait at least the watcher execution period
                     .atMost(Duration.ofSeconds(5))
                     .until(() -> writer.getCurrentQueueSize() < beforeConsumptionQueueSize);
         }
+    }
+
+    private void readOneFullSegmentAndTriggerCleanConsumed(int dlqEntryCount) throws IOException, InterruptedException {
+        long segmentsBeforeReaderDeletesConsumed;
+        int consumedSegments;
+        DeadLetterQueueReaderTest.MockSegmentListener listener = new DeadLetterQueueReaderTest.MockSegmentListener();
+        try (DeadLetterQueueReader reader = new DeadLetterQueueReader(dir, true, listener)) {
+            // consume completely a segment
+            int dlqEntryToRead = dlqEntryCount / 3;
+            // consumes 1/3 of overall event counts plus a little bit to be sure the first segment is completely
+            // consumed
+            for (int i = 0; i < dlqEntryToRead + 2; i++) {
+                DLQEntry entry = reader.pollEntry(100);
+                assertNotNull("DLQ can't be empties", entry);
+                assertEquals("reason", entry.getReason());
+            }
+
+            segmentsBeforeReaderDeletesConsumed = countDlqSegments(dir);
+            // mark for delete creates the notification .deleted_segment file if clean_consumed is true
+            reader.markForDelete();
+            consumedSegments = reader.getConsumedSegments();
+        }
+
+        assertEquals("Must have been consumed just one segment", segmentsBeforeReaderDeletesConsumed - consumedSegments, countDlqSegments(dir));
+    }
+
+    private int writeThreeFullSegments(DeadLetterQueueWriter writer) throws IOException {
+        Event dlqEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
+        dlqEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        DLQEntry dlqEntry = new DLQEntry(dlqEvent, "type", "id", "reason");
+
+        int dlqEntryCount = 0;
+        do {
+            writer.writeEntry(dlqEntry);
+            dlqEntryCount ++;
+        } while (countDlqSegments(dir) < 3);
+        final long numberOfSegmentsAfterFill = countDlqSegments(dir);
+        assertEquals("DLQ MUST be composed of 3 segments", 3L, numberOfSegmentsAfterFill);
+        return dlqEntryCount;
     }
 
     private long countDlqSegments(Path dir) throws IOException {
