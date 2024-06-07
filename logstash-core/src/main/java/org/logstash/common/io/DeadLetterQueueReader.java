@@ -373,62 +373,31 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {
-        final FileTimeResult timestampResult1 = FileTimeResult.readLastModifiedTime(p1);
-        final FileTimeResult timestampResult2 = FileTimeResult.readLastModifiedTime(p2);
-        if (timestampResult1.isNotPresent() && timestampResult2.isNotPresent()) {
-            logger.debug("Both files doesn't exists {} and {}", p1, p2);
-            return 0;
-        }
-        if (timestampResult1.isNotPresent()) {
-            logger.debug("File {} doesn't exist", p1);
-            return -1;
-        }
-        if (timestampResult2.isNotPresent()) {
-            logger.debug("File {} doesn't exist", p2);
-            return 1;
-        }
-        // if one of the getLastModifiedTime raise an error, consider them equals
-        // and fallback to the other comparator
-        if (timestampResult1 == FileTimeResult.INVALID_TIME || timestampResult2 == FileTimeResult.INVALID_TIME) {
+        final Optional<FileTime> timestampResult1 = readLastModifiedTime(p1);
+        final Optional<FileTime> timestampResult2 = readLastModifiedTime(p2);
+
+        // if one of the readLastModifiedTime encountered a file not found error or generic IO error,
+        // consider them equals and fallback to the other comparator
+        if (!timestampResult1.isPresent() || !timestampResult2.isPresent()) {
             return 0;
         }
 
-        return timestampResult1.compareTo(timestampResult2);
+        return timestampResult1.get().compareTo(timestampResult2.get());
     }
 
-    private static class FileTimeResult implements Comparable<FileTimeResult> {
-
-        final static FileTimeResult INVALID_TIME = new FileTimeResult();
-
-        FileTime timestamp;
-        private boolean fileNotExists = false;
-
-        /**
-         * Builder method. Read the timestamp if file on path p is present.
-         * When the file
-         * */
-        static FileTimeResult readLastModifiedTime(Path p) {
-            FileTimeResult result = new FileTimeResult();
-            try {
-                result.timestamp = Files.getLastModifiedTime(p);
-            } catch (NoSuchFileException fileNotFoundEx) {
-                result.fileNotExists = true;
-            } catch (IOException ex) {
-                logger.warn("Error reading file's timestamp for {}", p, ex);
-                return INVALID_TIME;
-            }
-            return result;
-        }
-
-        private FileTimeResult() {}
-
-        public boolean isNotPresent() {
-            return fileNotExists;
-        }
-
-        @Override
-        public int compareTo(FileTimeResult o) {
-            return this.timestamp.compareTo(o.timestamp);
+    /**
+     * Builder method. Read the timestamp if file on path p is present.
+     * When the file
+     * */
+    private static Optional<FileTime> readLastModifiedTime(Path p) {
+        try {
+            return Optional.of(Files.getLastModifiedTime(p));
+        } catch (NoSuchFileException fileNotFoundEx) {
+            logger.debug("File {} doesn't exist", p);
+            return Optional.empty();
+        } catch (IOException ex) {
+            logger.warn("Error reading file's timestamp for {}", p, ex);
+            return Optional.empty();
         }
     }
 
