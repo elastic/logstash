@@ -35,13 +35,21 @@ public final class PipelineIR implements Hashable {
         return graph;
     }
 
+    public Graph getInputGraph() {
+        return inputGraph;
+    }
+
     public QueueVertex getQueue() {
         return queue;
     }
 
-    private final Graph graph;
+    private Graph graph;
 
-    private final QueueVertex queue;
+    private final Graph inputGraph;
+    private final Graph filterGraph;
+    private final Graph outputGraph;
+
+    private QueueVertex queue;
 
     // Temporary until we have LIR execution
     // Then we will no longer need this property here
@@ -53,6 +61,10 @@ public final class PipelineIR implements Hashable {
 
     public PipelineIR(Graph inputSection, Graph filterSection, Graph outputSection, String originalSource) throws InvalidIRException {
         this.originalSource = originalSource;
+
+        this.inputGraph = inputSection.copy(); // useful for checking if partial reload is possible
+        this.filterGraph = filterSection.copy(); // useful for partial reload
+        this.outputGraph = outputSection.copy(); // useful for partial reload
 
         Graph tempGraph = inputSection.copy(); // The input section are our roots, so we can import that wholesale
 
@@ -143,6 +155,21 @@ public final class PipelineIR implements Hashable {
         } catch(NoSuchElementException e) {
             // it's a pipeline without a queue
             return tempQueue;
+        }
+    }
+
+    public void updateFilterOutputLIR(PipelineIR newPipelineIR) {
+        try {
+            this.graph = inputGraph.copy();
+            QueueVertex tempQueueVertex = new QueueVertex();
+            this.graph = this.graph.chain(tempQueueVertex);
+            this.graph = this.graph.chain(newPipelineIR.filterGraph.copy());
+            this.graph = this.graph.chain(new SeparatorVertex("filter_to_output"));
+            this.graph = this.graph.chain(newPipelineIR.outputGraph.copy());
+            this.queue = selectQueueVertex(this.graph, tempQueueVertex);
+            this.graph.validate();
+        } catch (InvalidIRException e) {
+            throw new RuntimeException(e);
         }
     }
 }

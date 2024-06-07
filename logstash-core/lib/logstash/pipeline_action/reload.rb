@@ -63,15 +63,16 @@ module LogStash module PipelineAction
         # important NOT to explicitly return from block here
         # the block must emit a success boolean value
 
-        # First shutdown old pipeline
-        old_pipeline.shutdown
+        if old_pipeline.partial_reload(@pipeline_config)
+          [true, old_pipeline]
+        else
+          old_pipeline.shutdown
+          new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
+          success = new_pipeline.start # block until the pipeline is correctly started or crashed
 
-        # Then create a new pipeline
-        new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
-        success = new_pipeline.start # block until the pipeline is correctly started or crashed
-
-        # return success and new_pipeline to registry reload_pipeline
-        [success, new_pipeline]
+          # return success and new_pipeline to registry reload_pipeline
+          [success, new_pipeline]
+        end
       end
 
       LogStash::ConvergeResult::ActionResult.create(self, success)

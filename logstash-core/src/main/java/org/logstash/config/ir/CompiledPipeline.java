@@ -79,17 +79,19 @@ public final class CompiledPipeline {
     /**
      * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
      */
-    private final Map<String, AbstractFilterDelegatorExt> filters;
+    private Map<String, AbstractFilterDelegatorExt> filters;
 
     /**
      * Configured outputs.
      */
-    private final Map<String, AbstractOutputDelegatorExt> outputs;
+    private Map<String, AbstractOutputDelegatorExt> outputs;
 
     /**
      * Parsed pipeline configuration graph.
      */
-    private final PipelineIR pipelineIR;
+    public final PipelineIR pipelineIR;
+
+    private ConfigVariableExpander cve;
 
     /**
      * Ruby plugin factory instance.
@@ -110,15 +112,22 @@ public final class CompiledPipeline {
     {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
-        try (ConfigVariableExpander cve = new ConfigVariableExpander(
+        this.cve = new ConfigVariableExpander(
                 secretStore,
-                EnvironmentVariableProvider.defaultProvider())) {
+                EnvironmentVariableProvider.defaultProvider());
+        try {
             inputs = setupInputs(cve);
             filters = setupFilters(cve);
             outputs = setupOutputs(cve);
         } catch (Exception e) {
             throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
+    }
+
+    public void resetFilterOutputLIR(PipelineIR newPipelineIR) {
+        this.pipelineIR.updateFilterOutputLIR(newPipelineIR);
+        this.filters = setupFilters(cve);
+        this.outputs = setupOutputs(cve);
     }
 
     public Collection<AbstractOutputDelegatorExt> outputs() {
