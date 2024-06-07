@@ -40,7 +40,6 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -374,24 +373,63 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {
-        FileTime timestamp1;
+        final FileTimeResult timestampResult1 = FileTimeResult.readLastModifiedTime(p1);
+        final FileTimeResult timestampResult2 = FileTimeResult.readLastModifiedTime(p2);
+        if (timestampResult1.isNotPresent() && timestampResult2.isNotPresent()) {
+            logger.debug("Both files doesn't exists {} and {}", p1, p2);
+            return 0;
+        }
+        if (timestampResult1.isNotPresent()) {
+            logger.debug("File {} doesn't exist", p1);
+            return -1;
+        }
+        if (timestampResult2.isNotPresent()) {
+            logger.debug("File {} doesn't exist", p2);
+            return 1;
+        }
         // if one of the getLastModifiedTime raise an error, consider them equals
         // and fallback to the other comparator
-        try {
-            timestamp1 = Files.getLastModifiedTime(p1);
-        } catch (IOException ex) {
-            logger.warn("Error reading file's timestamp for {}", p1, ex);
+        if (timestampResult1 == FileTimeResult.INVALID_TIME || timestampResult2 == FileTimeResult.INVALID_TIME) {
             return 0;
         }
 
-        FileTime timestamp2;
-        try {
-            timestamp2 = Files.getLastModifiedTime(p2);
-        } catch (IOException ex) {
-            logger.warn("Error reading file's timestamp for {}", p2, ex);
-            return 0;
+        return timestampResult1.compareTo(timestampResult2);
+    }
+
+    private static class FileTimeResult implements Comparable<FileTimeResult> {
+
+        final static FileTimeResult INVALID_TIME = new FileTimeResult();
+
+        FileTime timestamp;
+        private boolean fileNotExists = false;
+
+        /**
+         * Builder method. Read the timestamp if file on path p is present.
+         * When the file
+         * */
+        static FileTimeResult readLastModifiedTime(Path p) {
+            FileTimeResult result = new FileTimeResult();
+            try {
+                result.timestamp = Files.getLastModifiedTime(p);
+            } catch (NoSuchFileException fileNotFoundEx) {
+                result.fileNotExists = true;
+            } catch (IOException ex) {
+                logger.warn("Error reading file's timestamp for {}", p, ex);
+                return INVALID_TIME;
+            }
+            return result;
         }
-        return timestamp1.compareTo(timestamp2);
+
+        private FileTimeResult() {}
+
+        public boolean isNotPresent() {
+            return fileNotExists;
+        }
+
+        @Override
+        public int compareTo(FileTimeResult o) {
+            return this.timestamp.compareTo(o.timestamp);
+        }
     }
 
     /**
@@ -407,6 +445,9 @@ public final class DeadLetterQueueReader implements Closeable {
             Files.delete(segment);
             logger.debug("Deleted segment {}", segment);
             return Optional.of(eventsInSegment);
+        } catch (NoSuchFileException fileNotFoundEx) {
+            logger.debug("Expected file segment {} was already removed by a writer", segment);
+            return Optional.empty();
         } catch (IOException ex) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
             return Optional.empty();
