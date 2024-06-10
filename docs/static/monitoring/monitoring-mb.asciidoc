@@ -36,10 +36,11 @@ monitoring.enabled: false
 
 [float]
 [[define-cluster__uuid]]
-==== Define `cluster_uuid`
-If your each pipeline contains <<plugins-outputs-elasticsearch,{es} output plugin>>,
-*Stack Monitoring* automatically figures out the `cluster_uuid` and no need to specify it.
-To bind the metrics of {ls} to a specific cluster, define the `monitoring.cluster_uuid`
+==== Determine target Elasticsearch cluster
+You will need to determine which Elasticsearch cluster that {ls} will bind metrics to in the Stack Monitoring UI by specifying the `cluster_uuid`.
+When pipelines contain <<plugins-outputs-elasticsearch,{es} output plugins>>, the `cluster_uuid` is automatically calculated, and the metrics should be bound without any additional settings.
+
+To override automatic values, or if your pipeline does not contain any <<plugins-outputs-elasticsearch,{es} output plugins>>, you can bind the metrics of {ls} to a specific cluster, by defining the target cluster in the `monitoring.cluster_uuid` setting.
 in the configuration file (logstash.yml):
 
 [source,yaml]

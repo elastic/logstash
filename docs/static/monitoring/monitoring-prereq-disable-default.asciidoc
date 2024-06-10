@@ -1,7 +1,7 @@
 // [[disable-default]]
 // ==== Disable default collection of {ls} monitoring metrics
 
-Set the `monitoring.enabled` to `false` in logstash.yml to disable to default monitoring:
+Set `monitoring.enabled` to `false` in logstash.yml to disable default collection:
 
 [source,yaml]
 ----------------------------------

@@ -1,5 +1,5 @@
 //[[set-up-monitoring]]
 //=== Set up {es} monitoring (stack monitoring only)
 
-With *Stack Monitoring* it is recommended to set up {ref}/monitoring-overview.html[{es} monitoring] together. Otherwise, {ls} becomes a Standalone Cluster.
+To bind {ls} metrics to an {es} cluster, also set up {ref}/monitoring-overview.html[{es} monitoring].
 If you would like to create a dedicated monitoring cluster (optional), check out {ref}/monitoring-production.html[{es} monitoring documentation].
