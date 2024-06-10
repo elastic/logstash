@@ -7,6 +7,22 @@
 * Released on: {release_date}
 * {changelog_url}[Changelog]
 
+ifeval::["{support_level}"=="t1"]
+* Level of support = https://www.elastic.co/support/matrix#logstash_plugins[Elastic Tier 1]
+endif::[]
+
+ifeval::["{support_level}"=="t2"]
+* Level of support = https://www.elastic.co/support/matrix#logstash_plugins[Elastic Tier 2]
+endif::[]
+
+ifeval::["{support_level}"=="comm"]
+* Level of support = Community plugin
+endif::[]
+
+ifeval::["{support_level}"=="partner"]
+* Level of support = Partner plugin
+endif::[]
+
 For other versions, see the
 {lsplugindocs}/{type}-{plugin}-index.html[Versioned plugin docs].
 
