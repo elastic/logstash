@@ -77,7 +77,8 @@ This section summarizes the changes in the following releases:
 
 *Elastic_integration Filter - 0.1.9*
 
-404: Not Found
+  - [DOC] Removes Tech Preview label and adds link to extending integrations topic in LSR https://github.com/elastic/logstash-filter-elastic_integration/pull/142[#142]
+
 
 *Azure_event_hubs Input - 1.4.7*
 
