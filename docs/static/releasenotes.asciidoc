@@ -65,12 +65,9 @@ This section summarizes the changes in the following releases:
 [[logstash-8-14-1]]
 === Logstash 8.14.1 Release Notes
 
-* Handle non-unicode payload in Logstash. (#16072) https://github.com/elastic/logstash/pull/16168[#16168]
-* Backport PR #16176 to 8.14: PQ: avoid blocking writer when precisely full https://github.com/elastic/logstash/pull/16178[#16178]
-* Revert pr #16050 https://github.com/elastic/logstash/pull/16201[#16201]
-* Backport PR #16201 to 8.14: Revert pr #16050 https://github.com/elastic/logstash/pull/16203[#16203]
-* Pin rexml gem version to 3.2.6 https://github.com/elastic/logstash/pull/16209[#16209]
-* Backport PR #16209 to 8.14: Pin rexml gem version to 3.2.6 https://github.com/elastic/logstash/pull/16210[#16210]
+* Fixes JSON serialization of payloads that are not UTF-8, eliminating an issue where the Elasticsearch Output could get stuck in a retry loop (#16072) https://github.com/elastic/logstash/pull/16168[#16168]
+* Fixes Persistent Queue bug in which a PQ configured with `queue.max_bytes` equal to its `queue.page_capacity` could become permanently blocked when _precisely_ full https://github.com/elastic/logstash/pull/16178[#16178]
+* Fixes a regression in multi-local pipeline loader that caused variable-references in a configured `pipelines.yml` to not be replaced by their values in the environment and/or keystore https://github.com/elastic/logstash/pull/16201[#16201]
 
 
 ==== Plugins
