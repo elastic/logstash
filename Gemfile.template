@@ -25,6 +25,7 @@ gem "rubocop", :group => :development
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
+gem "rexml", "3.2.6", :group => :development
 gem "flores", "~> 0.0.8", :group => :development
 gem "json-schema", "~> 2", :group => :development
 gem "logstash-devutils", "~> 2.6.0", :group => :development
