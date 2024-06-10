@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-1,Logstash 8.14.1>>
 * <<logstash-8-14-0,Logstash 8.14.0>>
 * <<logstash-8-13-4,Logstash 8.13.4>>
 * <<logstash-8-13-3,Logstash 8.13.3>>
@@ -59,6 +60,70 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-14-1]]
+=== Logstash 8.14.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.14.1
+
+* Handle non-unicode payload in Logstash. (#16072) https://github.com/elastic/logstash/pull/16168[#16168]
+* Backport PR #16176 to 8.14: PQ: avoid blocking writer when precisely full https://github.com/elastic/logstash/pull/16178[#16178]
+* Revert pr #16050 https://github.com/elastic/logstash/pull/16201[#16201]
+* Backport PR #16201 to 8.14: Revert pr #16050 https://github.com/elastic/logstash/pull/16203[#16203]
+* Pin rexml gem version to 3.2.6 https://github.com/elastic/logstash/pull/16209[#16209]
+* Backport PR #16209 to 8.14: Pin rexml gem version to 3.2.6 https://github.com/elastic/logstash/pull/16210[#16210]
+
+=== Logstash Commits between 8.14 and 8.14.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.14.0..8.14"
+
+8fa13707f - (HEAD -> 8.14, origin/8.14) Update patch plugin versions in gemfile lock (#16211) (2 hours ago) <github-actions[bot]>
+224421f3e - Pin rexml gem version to 3.2.6 (#16209) (#16210) (3 hours ago) <github-actions[bot]>
+550e93583 - Revert PR #16050 (#16203) (4 days ago) <github-actions[bot]>
+7afb42c13 - Bump version to 8.14.1 (#16196) (5 days ago) <Rob Bavey>
+78fb37928 - Release notes for 8.14.0 (#16155) (6 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.14.0..8.14 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 0.1.8 -> 0.1.9
+logstash-input-azure_event_hubs: 1.4.5 -> 1.4.7
+logstash-integration-jdbc: 5.4.10 -> 5.4.11
+logstash-integration-kafka: 11.4.1 -> 11.4.2
+logstash-output-http: 5.6.0 -> 5.6.1
+logstash-output-tcp: 6.2.0 -> 6.2.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.9*
+
+404: Not Found
+
+*Azure_event_hubs Input - 1.4.7*
+
+* [DOCS] Clarify examples for single and multiple event hubs https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/90[#90]
+
+* [DOCS] Add outbound port requirements for Event Hub https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/88[#88]
+
+*Jdbc Integration - 5.4.11*
+
+* Fixes an issue in which any one instance of a JDBC input plugin using `jdbc_default_timezone` changes the behaviour of plugin instances that do _not_ use `jdbc_default_timezone`, ensuring that timezone offsets remain consistent for each instance of the plugin _as configured_ https://github.com/logstash-plugins/logstash-integration-jdbc/pull/151[#151]
+* Fixes an exception that could occur while reloading `jdbc_static` databases when the underlying connection to the remote has been broken https://github.com/logstash-plugins/logstash-integration-jdbc/pull/165[#165]
+
+*Kafka Integration - 11.4.2*
+
+* Add default client_id of logstash to kafka output https://github.com/logstash-plugins/logstash-integration-kafka/pull/169[#169]
+
+*Http Output - 5.6.1*
+
+* Added body logging for non 2xx responses https://github.com/logstash-plugins/logstash-output-http/pull/142[#142]
+
+*Tcp Output - 6.2.1*
+
+* Document correct default plugin codec https://github.com/logstash-plugins/logstash-output-tcp/pull/54[#54]
 
 
 [[logstash-8-14-0]]
