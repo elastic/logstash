@@ -1,9 +1,9 @@
 [[ts-elasticsearch]]
-==== Elasticsearch issues and solutions
+==== {es} issues and solutions
 
 [discrete]
 [[ts-elasticsearch-409]]
-===== Elasticsearch rejects documents with `version_conflict_engine_exception`
+===== {es} rejects documents with `version_conflict_engine_exception`
 
 *Symptoms*
 
@@ -11,25 +11,17 @@ When elastic-agent transmits events to {ls} and {ls} to {es} with <<plugins-outp
 The logs may look like as follows:
 
 -----
-[2024-04-24T14:13:25,988][WARN ][logstash.outputs.elasticsearch][elastic-agent-to-logstash].[abcde1234...] Failed action {:status=>409,
-:action=>["create", {:_id=>nil, :_index=>"metrics-windows.service-default", :routing=>nil}, {"host"=>{"mac"=>["...", "..."], "name"=>"redacted-name",
-"ip"=>[...], "architecture"=>"x86_64", "id"=>"aae15", "os"=>{"name"=>"Windows Server 2016 Datacenter", "platform"=>"windows", "type"=>"windows",
-"kernel"=>"10.0.14393.6897 (rs1_release.240404-1613)", "family"=>"windows", "build"=>"14393.6897", "version"=>"10.0"},
-"hostname"=>"redacted-host"}, "service"=>{"type"=>"windows"}, "elastic_agent"=>{"version"=>"8.11.3",
-"id"=>"48423d1c-5a87-46ef-b6a8-baf90b515e63", "snapshot"=>false}, "metricset"=>{"name"=>"service", "period"=>60000},
-"event"=>{"duration"=>211345500, "module"=>"windows", "dataset"=>"windows.service"}, "cloud"=>{"service"=>{"name"=>"redacted-name"},
-"instance"=>{"id"=>"redacted-id", "name"=>"redacted-name"}, "provider"=>"provider", "machine"=>{"type"=>"t"},
-"availability_zone"=>"zone"}, "@timestamp"=>2024-04-24T14:12:24.991Z, ...., "type"=>"metricbeat",
-"id"=>"48423d1c-5a87-46ef-b6a8-baf90b515e63", "ephemeral_id"=>"fdd26638-3865-4e63-961a-69d8f419538a", "version"=>"8.11.3"},
-"@version"=>"1"}], :response=>{"create"=>{"status"=>409, "error"=>{"type"=>"version_conflict_engine_exception",
-"reason"=>"[abcd][{agent.id=my-agent-id, cloud.availability_zone=zone, cloud.instance.id=i-id, windows.service.pid=996,
-windows.service.state=Running}@2024-04-24T14:12:24.991Z]: version conflict, document already exists (current version [1])",
-"index_uuid"=>"wBkYL16ZSo2fJ7tAC3zbbw", "shard"=>"0", "index"=>".ds-metrics-windows.service-default-2024.04.22-000065"}}}}
+[2024-06-04T12:57:59,670][WARN ][logstash.outputs.elasticsearch][elastic-agent-to-logstash][abcd1....] Failed action {:status=>409, :action=>["create",
+{:_id=>nil, ... {"error"=>{"type"=>"version_conflict_engine_exception", "reason"=>"[Cx8OD9UBQrQcJL5Jv3oJSE5iHUs=]: version conflict, document already exists (current version [1])",
+"index_uuid"=>"-h1tlFaSQK-2plBj_kNTig", "shard"=>"0", "index"=>".ds-logs-m365_defender.log-2024.06.02-000021"}}}}
 -----
 
 *Background*
 
-Should cover:
+For the most cases, underlining data stream has an integration includes fingerprint processor which calculates document `_id`. This can be confirmed by visiting ingest pipelines list in {kb} and
+filtering out with data stream pattern. For the particular error case shown above, it will be `logs-m365_defender.log-{version}` ingest pipeline.
 
-- 409 issue with time series index
-- 409 issue with integrations include fingerprint processor to calculate document `_id`
+*Possible case solutions*
+
+- Some integrations convert the event into JSON shape and JSON fields are used in fingerprinting. Make sure that all JSON fields are available during the `_id` has calculation to provide a persistent granularity.
+- If Logstash is facing a backpressure, it cannot ack the events back to elastic-agent. Agent can throw timeout and resend the event. However, in a reality event is already indexed into {es}. Extending timeout in elastic-agent may help.
