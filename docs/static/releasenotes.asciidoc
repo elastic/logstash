@@ -103,6 +103,13 @@ This section summarizes the changes in the following releases:
 
 [[logstash-8-14-0]]
 === Logstash 8.14.0 Release Notes
+
+[[known-issues-8-14-0]]
+==== Known issues
+
+* Environment and Keystore variable references for pipeline settings are not replaced in pipelines loaded from `pipelines.yml`. This regression is fixed in <<logstash-8-14-1,Logstash 8.14.1>>
+
+
 [[featured-8-14-0]]
 ==== Announcing the new SNMP integration plugin (Technical Preview)
 
