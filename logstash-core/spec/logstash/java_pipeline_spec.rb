@@ -377,6 +377,62 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when if condition" do
+    extend PipelineHelpers
+
+    let(:settings) do
+      s = LogStash::SETTINGS.clone
+      s
+    end
+
+    before do
+      LogStash::PLUGIN_REGISTRY.add(:input, "spec_sampler_input", PipelineHelpers::SpecSamplerInput)
+      LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
+    end
+
+    config <<-CONFIG
+          filter {
+            if [path][to][value] > 100 {
+              mutate { add_tag => "hit" }
+            } else {
+              mutate { add_tag => "miss" }
+            }
+          }
+        CONFIG
+
+    context "raise an error when it's evaluated, should tag the event" do
+      let(:pipeline) do
+        settings.set_value("queue.drain", true)
+        LogStash::JavaPipeline.new(
+          org.logstash.config.ir.PipelineConfig.new(
+            LogStash::Config::Source::Local, :main,
+            SourceWithMetadata.new(
+              "config_string", "config_string",
+              "input { spec_sampler_input {} }\n" + config + "\noutput { spec_sampler_output {} }"
+            ), settings
+          )
+        )
+      end
+      let(:event) { [LogStash::Event.new({ "path" => {"to" => {"value" => "101"}}})] }
+      let(:results) do
+        PipelineHelpers::SpecSamplerInput.set_event event
+        pipeline.run
+        PipelineHelpers::SpecSamplerOutput.seen
+      end
+
+      after do
+        pipeline.close
+      end
+
+      subject {results.length > 1 ? results : results.first}
+
+      it "when processed" do
+        expect(subject).to not_be nil
+        expect(subject.get('tags')).to include("miss")
+      end
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do
