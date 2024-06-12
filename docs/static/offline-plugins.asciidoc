@@ -8,6 +8,8 @@ This procedure requires a staging machine running Logstash that has access to a 
 <<private-rubygem,private Rubygems>> server. The staging machine downloads and packages all the files and dependencies
 required for offline installation.
 
+NOTE: For an true offline installation you need to change the environmentvariable `LOGSTASH_PACK_URL` to something, e.g. `LOGSTASH_PACK_URL=http://localhost:1234`.
+
 [[building-offline-packs]]
 [discrete]
 === Building Offline Plugin Packs
