@@ -380,15 +380,7 @@ describe LogStash::JavaPipeline do
   context "when if condition" do
     extend PipelineHelpers
 
-    let(:settings) do
-      s = LogStash::SETTINGS.clone
-      s
-    end
-
-    before do
-      LogStash::PLUGIN_REGISTRY.add(:input, "spec_sampler_input", PipelineHelpers::SpecSamplerInput)
-      LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
-    end
+    let(:settings) { LogStash::SETTINGS.clone }
 
     config <<-CONFIG
           filter {
@@ -401,34 +393,8 @@ describe LogStash::JavaPipeline do
         CONFIG
 
     context "raise an error when it's evaluated, should tag the event" do
-      let(:pipeline) do
-        settings.set_value("queue.drain", true)
-        LogStash::JavaPipeline.new(
-          org.logstash.config.ir.PipelineConfig.new(
-            LogStash::Config::Source::Local, :main,
-            SourceWithMetadata.new(
-              "config_string", "config_string",
-              "input { spec_sampler_input {} }\n" + config + "\noutput { spec_sampler_output {} }"
-            ), settings
-          )
-        )
-      end
-      let(:event) { [LogStash::Event.new({ "path" => {"to" => {"value" => "101"}}})] }
-      let(:results) do
-        PipelineHelpers::SpecSamplerInput.set_event event
-        pipeline.run
-        PipelineHelpers::SpecSamplerOutput.seen
-      end
-
-      after do
-        pipeline.close
-      end
-
-      subject {results.length > 1 ? results : results.first}
-
-      it "when processed" do
-        expect(subject).to not_be nil
-        expect(subject.get('tags')).to include("miss")
+      sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+        expect(subject.get('tags')).to eq(["_type_error_in_if"])
       end
     end
   end
