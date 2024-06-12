@@ -86,6 +86,8 @@ This section summarizes the changes in the following releases:
 === Logstash 7.17.22 Release Notes
 
 No user-facing changes in Logstash core.
+==== Plugins
+No plugin changes.
 
 [[logstash-7-17-21]]
 === Logstash 7.17.21 Release Notes
