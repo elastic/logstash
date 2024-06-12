@@ -192,9 +192,9 @@ filter {
                 id => "netflow-v9-normalize-dst_port_from_tcp_dst_port"
                 rename => { "[netflow][tcp_dst_port]" => "[netflow][dst_port]" }
             }
-        } else if [netflow][udp_src_port] {
+        } else if [netflow][udp_dst_port] {
             mutate {
-                id => "netflow-v9-normalize-dst_port_from_udp_src_port"
+                id => "netflow-v9-normalize-dst_port_from_udp_dst_port"
                 rename => { "[netflow][udp_dst_port]" => "[netflow][dst_port]" }
             }
         }
