@@ -1,0 +1,15 @@
+http.enabled: false
+filebeat.inputs:
+- type: log
+  symlinks: true
+  paths:
+  - "/usr/share/filebeat/flog/*.log"
+logging.level: info
+output.logstash:
+  hosts:
+    - "localhost:5044"
+  ttl: 10ms
+  bulk_max_size: 2048
+# queue.mem:
+#   events: 4096
+#   flush.min_events: 2048
