@@ -31,6 +31,12 @@ Lint/BigDecimalNew:
 
 #################### Layout ###########################
 ##### Enabled/Disabled Cops #####
+Layout/AccessModifierIndentation:
+  Enabled: true
+  EnforcedStyle: indent
+Layout/ArgumentAlignment:
+  Enabled: true
+  EnforcedStyle: with_first_argument
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 Layout/EmptyLineAfterMagicComment:
@@ -109,10 +115,6 @@ Layout/SpaceInsideStringInterpolation:
   EnforcedStyle: no_space
 
 ##### Need review #####
-Layout/AccessModifierIndentation:
-  Enabled: false
-Layout/ArgumentAlignment:
-  Enabled: false
 Layout/ArrayAlignment:
   Enabled: false
 Layout/AssignmentIndentation:

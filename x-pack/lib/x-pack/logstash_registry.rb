@@ -29,7 +29,7 @@ license_levels.default = LogStash::LicenseChecker::LICENSE_TYPES
 xpack_modules.each do |name|
   path = File.join(File.dirname(__FILE__), "..", "..", "modules", name, "configuration")
   LogStash::PLUGIN_REGISTRY.add(:modules, name,
-    LogStash::Modules::XpackScaffold.new(name, path, license_levels[name]))
+                                LogStash::Modules::XpackScaffold.new(name, path, license_levels[name]))
 end
 
 LogStash::PLUGIN_REGISTRY.add(:filter, "azure_event", LogStash::Filters::AzureEvent)

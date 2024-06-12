@@ -72,7 +72,7 @@ describe "Project licenses" do
       end.compact.each do |runtime_spec|
         runtime_spec.licenses.each do |license|
           expect(license.downcase).to match(expected_licenses),
-            lambda { "Runtime license check failed for gem #{runtime_spec.name} with version #{runtime_spec.version}" }
+                                      lambda { "Runtime license check failed for gem #{runtime_spec.name} with version #{runtime_spec.version}" }
         end
       end
     end

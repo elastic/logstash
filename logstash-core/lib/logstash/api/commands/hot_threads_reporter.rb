@@ -34,10 +34,10 @@ class HotThreadsReport
     report << "\n"
     hash[:threads].each do |thread|
       line_str = I18n.t("logstash.web_api.hot_threads.thread_title",
-        :percent_of_cpu_time => thread[:percent_of_cpu_time],
-        :thread_state => thread[:state],
-        :thread_name => thread[:name],
-        :thread_id => thread[:thread_id])
+                        :percent_of_cpu_time => thread[:percent_of_cpu_time],
+                        :thread_state => thread[:state],
+                        :thread_name => thread[:name],
+                        :thread_id => thread[:thread_id])
       thread_report = "#{line_str} \n"
       thread_report << "#{thread[:path]}\n" if thread[:path]
       thread[:traces].each do |trace|

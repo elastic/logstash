@@ -775,7 +775,7 @@ module LogStash
         return unless invalid_value.any?
 
         raise ArgumentError,
-          "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
+              "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
       end
     end
 
