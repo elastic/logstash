@@ -35,6 +35,7 @@ import org.logstash.plugins.BasicEventFactory;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -163,15 +164,15 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public Instant getEventTimestamp() {
         Timestamp t = getTimestamp();
         return (t != null)
-                ? Instant.ofEpochMilli(t.toEpochMilli())
+                ? t.toInstant()
                 : null;
     }
 
     @Override
-    public void setEventTimestamp(Instant timestamp) {
+    public void setEventTimestamp(final Instant timestamp) {
         setTimestamp(timestamp != null
-                ? new Timestamp(timestamp.toEpochMilli())
-                : new Timestamp(Instant.now().toEpochMilli()));
+                ? new Timestamp(timestamp)
+                : new Timestamp(Instant.now()));
     }
 
     public Timestamp getTimestamp() {
@@ -462,6 +463,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
                 return ((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp();
             } else if (o instanceof Timestamp) {
                 return (Timestamp) o;
+            } else if (o instanceof Instant) {
+                return new Timestamp((Instant) o);
+            } else if (o instanceof ZonedDateTime) {
+                return new Timestamp(((ZonedDateTime) o).toInstant());
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
