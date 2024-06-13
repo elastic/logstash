@@ -207,7 +207,7 @@ aggregate_stats() {
 }
 
 send_summary() {
-  echo "Send summary to Elasticsearch"
+  echo "--- Send summary to Elasticsearch"
 
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   tee summary.json << EOF
@@ -278,7 +278,7 @@ run_pipeline() {
 }
 
 stop_pipeline() {
-  echo "Stop Pipeline"
+  echo "--- Stop Pipeline"
 
   for ((i = 0; i < FB_CNT; i++)); do
     docker stop fb$i
