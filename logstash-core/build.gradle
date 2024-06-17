@@ -161,6 +161,17 @@ test {
 }
 test.dependsOn javaTests, rubyTests
 
+tasks {
+    javadoc {
+        (options as StandardJavadocDocletOptions)
+                .tags(
+                        "apiNote:a:API Note:",
+                        "implSpec:a:Implementation Requirements:",
+                        "implNote:a:Implementation Note:"
+                )
+    }
+}
+
 artifacts {
     sources(sourcesJar) {
         // Weird Gradle quirk where type will be used for the extension, but only for sources
