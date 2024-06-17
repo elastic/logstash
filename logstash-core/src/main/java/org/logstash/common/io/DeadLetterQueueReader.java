@@ -40,7 +40,6 @@ package org.logstash.common.io;
 
 import java.io.Closeable;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.DLQEntry;
@@ -50,10 +49,13 @@ import org.logstash.Timestamp;
 
 import java.io.IOException;
 import java.nio.channels.FileLock;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -73,8 +75,19 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
 import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
 
+/**
+ * Class responsible to read messages from DLQ and manage segments deletion.
+ *
+ * This class is instantiated and used by DeadLetterQueue input plug to retrieve the messages from DLQ.
+ * When the plugin is configured to clean consumed segments, it also deletes the segments that are processed.
+ * The deletion of segments could concur with the {@link org.logstash.common.io.DeadLetterQueueWriter} age and
+ * storage policies. This means that writer side's DLQ size metric needs to be updated everytime a segment is removed.
+ * Given that reader and writer sides of DLQ can be executed on different Logstash process, the reader needs to notify
+ * the writer, to do this, the reader creates a notification file that's monitored by the writer.
+ * */
 public final class DeadLetterQueueReader implements Closeable {
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueReader.class);
+    public static final String DELETED_SEGMENT_PREFIX = ".deleted_segment";
 
     private RecordIOReader currentReader;
     private final Path queuePath;
@@ -371,6 +384,42 @@ public final class DeadLetterQueueReader implements Closeable {
             consumedSegments.add(deletionStats.getCount());
             consumedEvents.add(deletionStats.getSum());
         }
+
+        createSegmentRemovalFile(validSegment);
+    }
+
+    /**
+     * Create a notification file to signal to the upstream pipeline to update its metrics
+     * */
+    private void createSegmentRemovalFile(Path lastDeletedSegment) {
+        final Path notificationFile = queuePath.resolve(DELETED_SEGMENT_PREFIX);
+        byte[] content = (lastDeletedSegment + "\n").getBytes(StandardCharsets.UTF_8);
+        if (Files.exists(notificationFile)) {
+            updateToExistingNotification(notificationFile, content);
+            return;
+        }
+        createNotification(notificationFile, content);
+    }
+
+    private void createNotification(Path notificationFile, byte[] content) {
+        try {
+            final Path tmpNotificationFile = Files.createFile(queuePath.resolve(DELETED_SEGMENT_PREFIX + ".tmp"));
+            Files.write(tmpNotificationFile, content, StandardOpenOption.APPEND);
+            Files.move(tmpNotificationFile, notificationFile, StandardCopyOption.ATOMIC_MOVE);
+            logger.debug("Recreated notification file {}", notificationFile);
+        } catch (IOException e) {
+            logger.error("Can't create file to notify deletion of segments from DLQ reader in path {}", notificationFile, e);
+        }
+    }
+
+    private static void updateToExistingNotification(Path notificationFile, byte[] contentToAppend) {
+        try {
+            Files.write(notificationFile, contentToAppend, StandardOpenOption.APPEND);
+            logger.debug("Updated existing notification file {}", notificationFile);
+        } catch (IOException e) {
+            logger.error("Can't update file to notify deletion of segments from DLQ reader in path {}", notificationFile, e);
+        }
+        logger.debug("Notification segments delete file already exists {}", notificationFile);
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {

@@ -41,10 +41,15 @@ package org.logstash.common.io;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.FileLock;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -76,6 +81,31 @@ import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
 import static org.logstash.common.io.RecordIOWriter.VERSION_SIZE;
 
+/**
+ * Class responsible to write messages into DLQ and manage segments creation.
+ * Head segment is created whenever time or size limits are reached.
+ * Manage the rollover of DLQ segments files, moving the current writing head into a
+ * sealed state, ready to be consumed by the {@link org.logstash.common.io.DeadLetterQueueReader}.
+ * Age and size policies are applied by this class.
+ * The Age policy, which means eliminate DLQ segments older a certain time, is verified in 3 places:
+ * <ul>
+ *     <li>during each write operation</li>
+ *     <li>on a time based, when the head segment needs to be flushed because unused for a certain amount of time</li>
+ *     <li>when a segment is finalized, because reached maximum size (10MB) or during the shutdown of the DLQ</li>
+ * </ul>
+ *
+ * The storage policy, instead, is verified on every write operation. The storage policy is responsible to keep the
+ * size of the DLQ under certain limit, and could be configured to remove newer or older segments. In case of drop newer, if
+ * DLQ is full, new writes are skipped.
+ *
+ * The <code>DeadLetterQueueWriter</code> uses the <code>dlq-segment-checker</code> scheduled thread to watch the filesystem
+ * for notifications when forced updates of DLQ size metric are requested, reading all the segments sizes, because
+ * the {@link org.logstash.common.io.DeadLetterQueueReader} has removed some old segments, in case it was configured
+ * to clean consumed segments.
+ *
+ * This behaviour, the reader that deletes consumed segments and the writer that could eliminate older segments because of
+ * age or size policy application, generates some concurrency in interacting with segment files.
+ * */
 public final class DeadLetterQueueWriter implements Closeable {
 
     private enum FinalizeWhen { ALWAYS, ONLY_IF_STALE }
@@ -123,8 +153,16 @@ public final class DeadLetterQueueWriter implements Closeable {
     private volatile Optional<Timestamp> oldestSegmentTimestamp;
     private volatile Optional<Path> oldestSegmentPath = Optional.empty();
     private final TemporalAmount retentionTime;
-
     private final SchedulerService flusherService;
+    private ScheduledExecutorService scheduledFSWatcher = Executors.newScheduledThreadPool(1, r -> {
+        Thread t = new Thread(r);
+        //Allow this thread to die when the JVM dies
+        t.setDaemon(true);
+        //Set the name
+        t.setName("dlq-segment-checker");
+        return t;
+    });
+    private final WatchService consumedSegmentsCleanWatcher = FileSystems.getDefault().newWatchService();
 
     interface SchedulerService {
 
@@ -273,6 +311,59 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.lastEntryTimestamp = Timestamp.now();
         this.flusherService = flusherService;
         this.flusherService.repeatedAction(this::scheduledFlushCheck);
+
+        setupConsumedSegmentsNotificationWatcher();
+    }
+
+    private void setupConsumedSegmentsNotificationWatcher() throws IOException {
+        this.queuePath.register(consumedSegmentsCleanWatcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+        this.scheduledFSWatcher.scheduleAtFixedRate(this::watchForDeletedNotification, 3, 3, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Executed by an internal scheduler to check the filesystem for a specific file
+     * names as {@value org.logstash.common.io.DeadLetterQueueReader#DELETED_SEGMENT_PREFIX}.
+     * If that file is discovered, created by the consumer of the DLQ, it means that the writer
+     * has update his size metrics because the reader cleaned some consumed segments.
+     * */
+    private void watchForDeletedNotification() {
+        final WatchKey watchKey = consumedSegmentsCleanWatcher.poll();
+        if (watchKey == null) {
+            // no files created since last run
+            return;
+        }
+
+        watchKey.pollEvents().stream()
+                .filter(DeadLetterQueueWriter::isCreatedOrUpdatedEvent)
+                .filter(evt -> evt.context() instanceof Path)
+                .map(this::resolveToPath)
+                .filter(DeadLetterQueueWriter::isDeletedNotificationFile)
+                .forEach(this::deleteNotificationAndUpdateQueueMetricSize);
+
+        // re-register for next execution
+        watchKey.reset();
+    }
+
+    private static boolean isDeletedNotificationFile(Path filePath) {
+        return DeadLetterQueueReader.DELETED_SEGMENT_PREFIX.equals(filePath.getFileName().toString());
+    }
+
+    private Path resolveToPath(WatchEvent<?> evt) {
+        return this.queuePath.resolve((Path) evt.context());
+    }
+
+    private static boolean isCreatedOrUpdatedEvent(WatchEvent<?> watchEvent) {
+        return watchEvent.kind() == StandardWatchEventKinds.ENTRY_CREATE ||
+                watchEvent.kind() == StandardWatchEventKinds.ENTRY_MODIFY;
+    }
+
+    private void deleteNotificationAndUpdateQueueMetricSize(Path filePath) {
+        try {
+            Files.delete(filePath);
+            this.currentQueueSize.set(computeQueueSize());
+        } catch (IOException e) {
+            logger.warn("Can't remove the notification file {}", filePath, e);
+        }
     }
 
     public boolean isOpen() {
@@ -322,6 +413,21 @@ public final class DeadLetterQueueWriter implements Closeable {
             }
 
             flusherService.shutdown();
+            closeConsumedSegmentsNotification();
+        }
+    }
+
+    private void closeConsumedSegmentsNotification() {
+        scheduledFSWatcher.shutdown();
+        try {
+            if (!scheduledFSWatcher.awaitTermination(5, TimeUnit.SECONDS)) {
+                logger.warn("Can't terminate FS monitor thread in 5 seconds");
+            }
+            consumedSegmentsCleanWatcher.close();
+        } catch (InterruptedException e) {
+            logger.error("Interrupted while waiting to shutdown the FS monitor", e);
+        } catch (IOException e) {
+            logger.error("Can't close FS watcher service", e);
         }
     }
 
