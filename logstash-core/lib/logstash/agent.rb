@@ -58,7 +58,7 @@ class LogStash::Agent
     @convergence_lock = Mutex.new
 
     # Special bus object for inter-pipelines communications. Used by the `pipeline` input/output
-    @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.new
+    @pipeline_bus = org.logstash.plugins.pipeline.PipelineBus.create
 
     @pipelines_registry = LogStash::PipelinesRegistry.new
 

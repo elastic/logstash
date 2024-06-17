@@ -24,7 +24,7 @@ describe ::LogStash::Plugins::Builtin::Pipeline do
 
   let(:execution_context) { double("execution_context")}
   let(:agent) { double("agent") }
-  let(:pipeline_bus) { org.logstash.plugins.pipeline.PipelineBus.new }
+  let(:pipeline_bus) { org.logstash.plugins.pipeline.PipelineBus.create }
 
   let(:queue) { Queue.new }
 

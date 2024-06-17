@@ -20,6 +20,7 @@
 
 package org.logstash.plugins.pipeline;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,9 +28,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * Represents the state of an internal address.
  */
 public class AddressState {
+    private final String address;
 
     private final Set<PipelineOutput> outputs = ConcurrentHashMap.newKeySet();
     private volatile PipelineInput input = null;
+
+    private transient ReadOnly readOnlyView;
+
+    public AddressState(final String address) {
+        this.address = address;
+    }
+
+    public String getAddress() {
+        return this.address;
+    }
 
     /**
      * Add the given output and ensure associated input's receivers are updated
@@ -90,5 +102,30 @@ public class AddressState {
 
     public Set<PipelineOutput> getOutputs() {
         return outputs;
+    }
+
+    public ReadOnly getReadOnlyView() {
+        if (readOnlyView == null) {
+            this.readOnlyView = new ReadOnly();
+        }
+        return readOnlyView;
+    }
+
+    public class ReadOnly {
+        public String getAddress() {
+            return AddressState.this.getAddress();
+        }
+        public Set<PipelineOutput> getOutputs() {
+            return Collections.unmodifiableSet(AddressState.this.getOutputs());
+        }
+        public PipelineInput getInput() {
+            return AddressState.this.getInput();
+        }
+        public boolean isRunning() {
+            return AddressState.this.isRunning();
+        }
+        public boolean isEmpty() {
+            return AddressState.this.isEmpty();
+        }
     }
 }
