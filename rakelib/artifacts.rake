@@ -136,7 +136,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8", "build_docker_wolfi"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -313,12 +313,19 @@ namespace "artifact" do
     build_docker('ubi8')
   end
 
+  desc "Build wolfi docker image"
+  task "docker_wolfi" => %w(prepare generate_build_metadata archives) do
+    puts("[docker_wolfi] Building Wolfi docker image")
+    build_docker('wolfi')
+  end
+
   desc "Generate Dockerfiles for full and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('wolfi')
     build_dockerfile('ironbank')
   end
 
@@ -340,6 +347,12 @@ namespace "artifact" do
     build_dockerfile('ubi8')
   end
 
+  desc "Generate Dockerfile for wolfi images"
+  task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building wolfi Dockerfiles")
+    build_dockerfile('wolfi')
+  end
+
   desc "Generate build context for ironbank"
   task "dockerfile_ironbank" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building ironbank Dockerfiles")
@@ -356,6 +369,7 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
+      Rake::Task["artifact:docker_wolfi"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
     end
@@ -378,6 +392,11 @@ namespace "artifact" do
   task "build_docker_ubi8" => [:generate_build_metadata] do
     Rake::Task["artifact:docker_ubi8"].invoke
     Rake::Task["artifact:dockerfile_ubi8"].invoke
+  end
+
+  task "build_docker_wolfi" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_wolfi"].invoke
+    Rake::Task["artifact:dockerfile_wolfi"].invoke
   end
 
   task "generate_build_metadata" do
