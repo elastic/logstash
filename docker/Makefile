@@ -16,7 +16,7 @@ else
   ARCHITECTURE := $(shell uname -m)
 endif
 
-IMAGE_FLAVORS ?= oss full ubi8
+IMAGE_FLAVORS ?= oss full ubi8 wolfi
 DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
@@ -51,6 +51,15 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
+	  (docker kill $(HTTPD); false);
+	-docker kill $(HTTPD)
+
+build-from-local-wolfi-artifacts: dockerfile
+	docker run --rm -d --name=$(HTTPD) \
+	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	docker build --network=host -t $(IMAGE_TAG)-wolfi:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-wolfi data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -109,7 +118,7 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_ironbank
+public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_ubi8 public-dockerfiles_wolfi public-dockerfiles_ironbank
 
 public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -152,6 +161,20 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
+	../vendor/jruby/bin/jruby -S erb -T "-"\
+		created_date="${BUILD_DATE}" \
+		elastic_version="${ELASTIC_VERSION}" \
+		arch="${ARCHITECTURE}" \
+		version_tag="${VERSION_TAG}" \
+	  release="${RELEASE}" \
+		image_flavor="wolfi" \
+		local_artifacts="false" \
+		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
+	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
