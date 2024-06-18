@@ -88,6 +88,13 @@ final class SyntaxFactory {
         );
     }
 
+    public static MethodLevelSyntaxElement tryBlock(final Closure body, final Class<? extends Throwable> exceptionToCatch, Closure exceptionHandlerBlock) {
+        return () -> SyntaxFactory.join(
+                "try {\n", body.generateCode(),
+                "\n} catch (" + exceptionToCatch.getCanonicalName() + " ex) { " + exceptionHandlerBlock.generateCode() + " }"
+        );
+    }
+
     public static MethodLevelSyntaxElement ifCondition(final MethodLevelSyntaxElement condition,
         final Closure body) {
         return ifCondition(condition, body, Closure.EMPTY);
