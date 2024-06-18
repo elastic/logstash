@@ -125,10 +125,18 @@ public final class DatasetCompiler {
             @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
-            compute = withInputBuffering(
-                filterBody(outputBuffer, inputBufferField, fields, plugin),
-                parentFields, inputBufferField
-            );
+            //TODO if parent instance of SplitDataset then input buffering has to contain the try
+            if (parents.size() == 1 && parents.iterator().next() instanceof SplitDataset) {
+                compute = withSafeInputBuffering(
+                        filterBody(outputBuffer, inputBufferField, fields, plugin),
+                        parentFields, inputBufferField, outputBuffer
+                );
+            } else {
+                compute = withInputBuffering(
+                        filterBody(outputBuffer, inputBufferField, fields, plugin),
+                        parentFields, inputBufferField
+                );
+            }
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
     }
@@ -300,6 +308,7 @@ public final class DatasetCompiler {
         final ValueSyntaxElement ifData, final ValueSyntaxElement elseData) {
         final ValueSyntaxElement eventVal = event.access();
         return Closure.wrap(
+//            SyntaxFactory.value("try {"),
             SyntaxFactory.value("org.logstash.config.ir.compiler.Utils").call(
                 "filterEvents",
                 inputBuffer,
@@ -307,6 +316,7 @@ public final class DatasetCompiler {
                 ifData,
                 elseData
             )
+//            SyntaxFactory.value("} catch (org.jruby.exceptions.TypeError ex) {System.out.println(\"Catched type error in if\");}")
         );
     }
 
@@ -334,11 +344,32 @@ public final class DatasetCompiler {
      */
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
-        return Closure.wrap(
-                parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
-                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
-                ).toArray(MethodLevelSyntaxElement[]::new)
-        ).add(compute).add(clear(inputBuffer));
+        return computeNonCancelledEventsBlock(parents, inputBuffer)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    private static Closure withSafeInputBuffering(final Closure compute,
+                                                  final Collection<ValueSyntaxElement> parents,
+                                                  final ValueSyntaxElement inputBuffer, ValueSyntaxElement outputBuffer) {
+        Closure exceptionHandlerBlock = Closure.wrap(
+                new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
+                buffer(outputBuffer, BATCH_ARG),
+                SyntaxFactory.ret(outputBuffer));
+
+        MethodLevelSyntaxElement safeCompute = SyntaxFactory.tryBlock(
+                computeNonCancelledEventsBlock(parents, inputBuffer),
+                ConditionalEvaluationError.class, exceptionHandlerBlock);
+
+        return Closure.wrap(safeCompute)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    private static Closure computeNonCancelledEventsBlock(Collection<ValueSyntaxElement> parents, ValueSyntaxElement inputBuffer) {
+        return Closure.wrap(parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
+        ).toArray(MethodLevelSyntaxElement[]::new));
     }
 
     /**
@@ -490,9 +521,13 @@ public final class DatasetCompiler {
             if (done) {
                 return data;
             }
-            parent.compute(batch, flush, shutdown);
-            done = true;
-            return data;
+            try {
+                parent.compute(batch, flush, shutdown);
+                done = true;
+                return data;
+            } catch (ConditionalEvaluationError ex) {
+                return data;
+            }
         }
 
         @Override
