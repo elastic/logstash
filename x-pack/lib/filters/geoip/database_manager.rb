@@ -136,17 +136,23 @@ module LogStash module Filters module Geoip class DatabaseManager
   end
 
   def update!(database_type, updated_db_info)
-    new_database_path = updated_db_info.path
-    notify_plugins(database_type, :update, new_database_path) do |db_type, ids|
-      logger.info("geoip filter plugin will use database #{new_database_path}",
-                  :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
+    @trigger_lock.synchronize do
+      new_database_path = updated_db_info.path
+      @states[database_type].database_path = new_database_path
+      notify_plugins(database_type, :update, new_database_path) do |db_type, ids|
+        logger.info("geoip filter plugin will use database #{new_database_path}",
+                    :database_type => db_type, :pipeline_ids => ids) unless ids.empty?
+      end
     end
   end
 
   def expire!(database_type)
-    notify_plugins(database_type, :expire) do |db_type, ids|
-      logger.warn("geoip filter plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
-                  :database_type => db_type, :pipeline_ids => ids)
+    @trigger_lock.synchronize do
+      @states[database_type].database_path = nil
+      notify_plugins(database_type, :expire) do |db_type, ids|
+        logger.warn("geoip filter plugin will stop filtering and will tag all events with the '_geoip_expired_database' tag.",
+                    :database_type => db_type, :pipeline_ids => ids)
+      end
     end
   end
 
