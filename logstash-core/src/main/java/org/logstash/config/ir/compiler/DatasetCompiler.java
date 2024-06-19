@@ -349,9 +349,18 @@ public final class DatasetCompiler {
                 .add(clear(inputBuffer));
     }
 
+    /**
+     * Surround the invocation of compute e non-cancelled events with a try block to catch the ConditionalEvaluationError
+     * and return immediately without executing the multiFilter method on the FilterDelegatorExt.
+     * This happens when the compute is invoked on a SplitDataset that throws ConditionalEvaluationError during the
+     * condition evaluation (such as comparing stirng with int).
+     * This block, avoid to crash and move the execution forward the end of the conditional block.
+     * */
     private static Closure withSafeInputBuffering(final Closure compute,
                                                   final Collection<ValueSyntaxElement> parents,
                                                   final ValueSyntaxElement inputBuffer, ValueSyntaxElement outputBuffer) {
+        // return the full list of input batch events (coping in the outputBuffer) and mark as done, so that the execution
+        // can continue with the parent dataflow (which is the next block after the conditional statement).
         Closure exceptionHandlerBlock = Closure.wrap(
                 new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
                 buffer(outputBuffer, BATCH_ARG),
