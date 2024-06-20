@@ -346,7 +346,6 @@ module LogStash
     end
 
     def clone(*args)
-      # TODO copy the object and clone also the @wrapped_setting
       copy = self.dup
       copy.update_wrapper(@wrapped_setting.clone())
       copy
