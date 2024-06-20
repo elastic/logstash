@@ -33,7 +33,7 @@ module LogStash
     end
 
     def jruby_dump(o, options = {})
-      encoding_normalized_data = normalize_encoding(o.dup).freeze
+      encoding_normalized_data = normalize_encoding(o)
 
       # TODO [guyboertje] remove these comments in 5.0
       # test for enumerable here to work around an omission in JrJackson::Json.dump to
