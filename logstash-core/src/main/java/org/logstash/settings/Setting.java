@@ -20,9 +20,6 @@ public class Setting<T> implements Cloneable {
     @SuppressWarnings("unchecked")
     public Setting<T> clone() {
         try {
-            if ("dead_letter_queue.enable".equals(name)) {
-                System.out.println("DNADBG>> Setting.clone, old value: " + value());
-            }
             Setting<T> clone = (Setting<T>) super.clone();
             // copy mutable state here, so the clone can't change the internals of the original
             clone.value = value;
@@ -156,125 +153,6 @@ public class Setting<T> implements Cloneable {
         }
     }
 }
-
-//abstract class Coercible<T> extends Setting<T> {
-//
-//    Coercible(String name, T defaultValue) {
-//        super(name, defaultValue);
-//    }
-//
-//    protected Coercible(String name, T defaultValue, Predicate<T> validator) {
-//        super(name, defaultValue, validator);
-//    }
-//
-//    protected Coercible(String name, T defaultValue, boolean strict, Predicate<T> validator) {
-//        super(name, defaultValue, strict, validator);
-//    }
-//
-//    abstract T coerce(String value);
-//
-//    public void set(String value) {
-//        set(coerce(value));
-//    }
-//}
-//
-//
-//class BooleanSetting extends Coercible<Boolean> {
-//
-//    BooleanSetting(String name, Boolean defaultValue) {
-//        super(name, defaultValue);
-//    }
-//
-//    protected BooleanSetting(String name, Boolean defaultValue, Predicate<Boolean> validator) {
-//        super(name, defaultValue, validator);
-//    }
-//
-//    protected BooleanSetting(String name, Boolean defaultValue, boolean strict, Predicate<Boolean> validator) {
-//        super(name, defaultValue, strict, validator);
-//    }
-//
-//    @Override
-//    Boolean coerce(String value) {
-//        if ("true".equalsIgnoreCase(value)) {
-//            return true;
-//        }
-//        if ("false".equalsIgnoreCase(value)) {
-//            return false;
-//        }
-//        throw new IllegalArgumentException("could not coerce " + value + " into a boolean");
-//    }
-//}
-//
-//class Numeric extends Coercible<Number> {
-//
-//    public Numeric(String name, Number defaultValue) {
-//        super(name, defaultValue);
-//    }
-//
-//    public Numeric(String name, Number defaultValue, boolean strict) {
-//        super(name, defaultValue, strict, noValidator());
-//    }
-//
-//    @Override
-//    Number coerce(String value) {
-//        try {
-//            return Integer.parseInt(value);
-//        } catch (NumberFormatException ex) {}
-//
-//        try {
-//            return Double.parseDouble(value);
-//        } catch (NumberFormatException ex) {}
-//
-//        // can't be parsed into int of double
-//        throw new IllegalArgumentException("Failed to coerce value to Numeric. Received " + value);
-//    }
-//}
-//
-//class IntegerSetting extends Coercible<Integer> {
-//
-//    public IntegerSetting(String name, Integer defaultValue) {
-//        super(name, defaultValue);
-//    }
-//
-//    public IntegerSetting(String name, Integer defaultValue, Predicate<Integer> validator) {
-//        super(name, defaultValue, validator);
-//    }
-//
-//    public IntegerSetting(String name, Integer defaultValue, boolean strict, Predicate<Integer> validator) {
-//        super(name, defaultValue, strict, validator);
-//    }
-//
-//    @Override
-//    Integer coerce(String value) {
-//        try {
-//            return Integer.parseInt(value);
-//        } catch (NumberFormatException ex) {}
-//
-//        // can't be parsed into int of double
-//        throw new IllegalArgumentException("Failed to coerce value to Integer. Received " + value);
-//    }
-//}
-//
-//class PositiveInteger extends IntegerSetting {
-//    public PositiveInteger(String name, Integer defaultValue) {
-//        super(name, defaultValue, true, new Predicate<Integer>() {
-//            @Override
-//            public boolean test(Integer v) {
-//                if (v > 0) {
-//                    return true;
-//                }
-//                throw new IllegalArgumentException("Number must be bigger than 0. Received: " + v);
-//            }
-//        });
-//    }
-//}
-//
-//class Port extends IntegerSetting {
-//
-//    public Port(String name, Integer defaultValue) {
-//        super(name, defaultValue);
-//    }
-//}
 
 
 
