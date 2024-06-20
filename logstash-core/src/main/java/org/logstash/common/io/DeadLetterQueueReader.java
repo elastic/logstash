@@ -374,24 +374,32 @@ public final class DeadLetterQueueReader implements Closeable {
     }
 
     private int compareByFileTimestamp(Path p1, Path p2) {
-        FileTime timestamp1;
-        // if one of the getLastModifiedTime raise an error, consider them equals
-        // and fallback to the other comparator
-        try {
-            timestamp1 = Files.getLastModifiedTime(p1);
-        } catch (IOException ex) {
-            logger.warn("Error reading file's timestamp for {}", p1, ex);
+        final Optional<FileTime> timestampResult1 = readLastModifiedTime(p1);
+        final Optional<FileTime> timestampResult2 = readLastModifiedTime(p2);
+
+        // if one of the readLastModifiedTime encountered a file not found error or generic IO error,
+        // consider them equals and fallback to the other comparator
+        if (!timestampResult1.isPresent() || !timestampResult2.isPresent()) {
             return 0;
         }
 
-        FileTime timestamp2;
+        return timestampResult1.get().compareTo(timestampResult2.get());
+    }
+
+    /**
+     * Builder method. Read the timestamp if file on path p is present.
+     * When the file
+     * */
+    private static Optional<FileTime> readLastModifiedTime(Path p) {
         try {
-            timestamp2 = Files.getLastModifiedTime(p2);
+            return Optional.of(Files.getLastModifiedTime(p));
+        } catch (NoSuchFileException fileNotFoundEx) {
+            logger.debug("File {} doesn't exist", p);
+            return Optional.empty();
         } catch (IOException ex) {
-            logger.warn("Error reading file's timestamp for {}", p2, ex);
-            return 0;
+            logger.warn("Error reading file's timestamp for {}", p, ex);
+            return Optional.empty();
         }
-        return timestamp1.compareTo(timestamp2);
     }
 
     /**
@@ -407,6 +415,9 @@ public final class DeadLetterQueueReader implements Closeable {
             Files.delete(segment);
             logger.debug("Deleted segment {}", segment);
             return Optional.of(eventsInSegment);
+        } catch (NoSuchFileException fileNotFoundEx) {
+            logger.debug("Expected file segment {} was already removed by a writer", segment);
+            return Optional.empty();
         } catch (IOException ex) {
             logger.warn("Problem occurred in cleaning the segment {} after a repositioning", segment, ex);
             return Optional.empty();
