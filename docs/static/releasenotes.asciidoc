@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-1,Logstash 8.14.1>>
 * <<logstash-8-14-0,Logstash 8.14.0>>
 * <<logstash-8-13-4,Logstash 8.13.4>>
 * <<logstash-8-13-3,Logstash 8.13.3>>
@@ -61,8 +62,54 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
 
+[[logstash-8-14-1]]
+=== Logstash 8.14.1 Release Notes
+
+* Fixes JSON serialization of payloads that are not UTF-8, eliminating an issue where the Elasticsearch Output could get stuck in a retry loop (#16072) https://github.com/elastic/logstash/pull/16168[#16168]
+* Fixes Persistent Queue bug in which a PQ configured with `queue.max_bytes` equal to its `queue.page_capacity` could become permanently blocked when _precisely_ full https://github.com/elastic/logstash/pull/16178[#16178]
+* Fixes a regression in multi-local pipeline loader that caused variable-references in a configured `pipelines.yml` to not be replaced by their values in the environment and/or keystore https://github.com/elastic/logstash/pull/16201[#16201]
+
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.9*
+
+  - [DOC] Removes Tech Preview label and adds link to extending integrations topic in LSR https://github.com/elastic/logstash-filter-elastic_integration/pull/142[#142]
+
+
+*Azure_event_hubs Input - 1.4.7*
+
+* [DOCS] Clarify examples for single and multiple event hubs https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/90[#90]
+
+* [DOCS] Add outbound port requirements for Event Hub https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/88[#88]
+
+*Jdbc Integration - 5.4.11*
+
+* Fixes an issue in which any one instance of a JDBC input plugin using `jdbc_default_timezone` changes the behaviour of plugin instances that do _not_ use `jdbc_default_timezone`, ensuring that timezone offsets remain consistent for each instance of the plugin _as configured_ https://github.com/logstash-plugins/logstash-integration-jdbc/pull/151[#151]
+* Fixes an exception that could occur while reloading `jdbc_static` databases when the underlying connection to the remote has been broken https://github.com/logstash-plugins/logstash-integration-jdbc/pull/165[#165]
+
+*Kafka Integration - 11.4.2*
+
+* Add default client_id of logstash to kafka output https://github.com/logstash-plugins/logstash-integration-kafka/pull/169[#169]
+
+*Http Output - 5.6.1*
+
+* Added body logging for non 2xx responses https://github.com/logstash-plugins/logstash-output-http/pull/142[#142]
+
+*Tcp Output - 6.2.1*
+
+* Document correct default plugin codec https://github.com/logstash-plugins/logstash-output-tcp/pull/54[#54]
+
+
 [[logstash-8-14-0]]
 === Logstash 8.14.0 Release Notes
+
+[[known-issues-8-14-0]]
+==== Known issues
+
+* Environment and Keystore variable references for pipeline settings are not replaced in pipelines loaded from `pipelines.yml`. This regression is fixed in <<logstash-8-14-1,Logstash 8.14.1>>
+
+
 [[featured-8-14-0]]
 ==== Announcing the new SNMP integration plugin (Technical Preview)
 
