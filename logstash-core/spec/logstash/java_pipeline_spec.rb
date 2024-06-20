@@ -198,17 +198,18 @@ describe LogStash::JavaPipeline do
   let(:dead_letter_queue_enabled) { false }
   let(:dead_letter_queue_path) { }
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
-  let(:pipeline_settings) { {} }
+  let(:pipeline_settings) do
+    {
+      "dead_letter_queue.enable" => dead_letter_queue_enabled,
+      "path.dead_letter_queue" => dead_letter_queue_path
+    }
+  end
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
 
   before :each do
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
-    dlq_enabled_setting = LogStash::SETTINGS.get_setting("dead_letter_queue.enable")
-    allow(dlq_enabled_setting).to receive(:value).and_return(dead_letter_queue_enabled)
-    dlq_path_setting = LogStash::SETTINGS.get_setting("path.dead_letter_queue")
-    allow(dlq_path_setting).to receive(:value).and_return(dead_letter_queue_path)
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
   end
@@ -297,7 +298,7 @@ describe LogStash::JavaPipeline do
       EOS
     end
     let(:dummyabortingoutput) { DummyAbortingOutput.new }
-    let(:pipeline_settings) { { "pipeline.batch.size" => 2, "queue.type" => "persisted"} }
+    let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 2, "queue.type" => "persisted"}) }
 
     let(:collected_metric) { metric_store.get_with_path("stats/events") }
     let (:queue_client_batch) { double("Acked queue client Mock") }
@@ -381,7 +382,7 @@ describe LogStash::JavaPipeline do
     end
 
     context "a crashing worker using memory queue" do
-      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"}) }
 
       it "does not raise in the main thread, terminates the run thread and finishes execution" do
         # first make sure we keep the input plugin in the run method for now
@@ -408,7 +409,7 @@ describe LogStash::JavaPipeline do
     end
 
     context "a crashing worker using persisted queue" do
-      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"}) }
 
       it "does not raise in the main thread, terminates the run thread and finishes execution" do
         # first make sure we keep the input plugin in the run method for now
@@ -500,7 +501,7 @@ describe LogStash::JavaPipeline do
       end
 
       context "when there is command line -w N set" do
-        let(:pipeline_settings) { {"pipeline.workers" => override_thread_count } }
+        let(:pipeline_settings) { super().merge({"pipeline.workers" => override_thread_count }) }
         it "starts multiple filter thread" do
           msg = "Warning: Manual override - there are filters that might" +
                 " not work with multiple worker threads"
@@ -789,7 +790,7 @@ describe LogStash::JavaPipeline do
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
-    let(:pipeline_settings) { { "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 } }
+    let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 }) }
     let(:pipeline) { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:logger) { pipeline.logger }
     let(:warning_prefix) { Regexp.new("CAUTION: Recommended inflight events max exceeded!") }
@@ -1199,7 +1200,7 @@ describe LogStash::JavaPipeline do
 
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj, metric) }
 
-    let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
+    let(:pipeline_settings) { super().merge({ "pipeline.id" => pipeline_id }) }
     let(:pipeline_id) { "main" }
     let(:number_of_events) { 420 }
     let(:dummy_id) { "my-multiline" }
