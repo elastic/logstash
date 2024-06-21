@@ -402,24 +402,7 @@ module LogStash
     end
     ### Specific settings #####
 
-    java_import org.logstash.settings.BooleanSetting
-
-    class Boolean < Coercible
-      def initialize(name, default, strict = true, &validator_proc)
-        super(name, Object, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        case value
-        when TrueClass, "true"
-          true
-        when FalseClass, "false"
-          false
-        else
-          raise ArgumentError.new("could not coerce #{value} into a boolean")
-        end
-      end
-    end
+    java_import org.logstash.settings.Boolean
 
     class Numeric < Coercible
       def initialize(name, default = nil, strict = true)
