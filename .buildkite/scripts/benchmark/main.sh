@@ -118,8 +118,8 @@ pull_images() {
   fi
 
   # pull filebeat image
-  FB_LATEST_VERSION=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)
-  FB_VERSION=${FB_VERSION:-$FB_LATEST_VERSION}
+  FB_DEFAULT_VERSION="8.13.4"
+  FB_VERSION=${FB_VERSION:-$FB_DEFAULT_VERSION}
   docker pull "docker.elastic.co/beats/filebeat:$FB_VERSION"
 }
 
@@ -202,6 +202,7 @@ aggregate_stats() {
   MAX_Q_SIZE=$( jqmax '.pipelines.main.queue.queue_size_in_bytes' "$file_glob" )
 
   AVG_CPU_PERCENT=$( jqavg '.process.cpu.percent' "$file_glob" )
+  AVG_VIRTUAL_MEM=$( jqavg '.process.mem.total_virtual_in_bytes' "$file_glob" )
   AVG_HEAP=$( jqavg '.jvm.mem.heap_used_in_bytes' "$file_glob" )
   AVG_NON_HEAP=$( jqavg '.jvm.mem.non_heap_used_in_bytes' "$file_glob" )
 }
@@ -212,7 +213,7 @@ send_summary() {
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   tee summary.json << EOF
 {"index": {}}
-{"timestamp": "$timestamp", "version": "$LS_VERSION", "cpu": "$CPU", "mem": "$MEM", "workers": "$WORKER", "batch_size": "$BATCH_SIZE", "queue_type": "$QTYPE", "total_events_out": "$TOTAL_EVENTS_OUT", "max_eps_1m": "$MAX_EPS_1M", "max_eps_5m": "$MAX_EPS_5M", "max_worker_utilization": "$MAX_WORKER_UTIL", "max_worker_concurrency": "$MAX_WORKER_CONCURR", "avg_cpu_percentage": "$AVG_CPU_PERCENT", "avg_heap": "$AVG_HEAP", "avg_non_heap": "$AVG_NON_HEAP", "max_queue_events": "$MAX_Q_EVENT_CNT", "max_queue_bytes_size": "$MAX_Q_SIZE"}
+{"timestamp": "$timestamp", "version": "$LS_VERSION", "cpu": "$CPU", "mem": "$MEM", "workers": "$WORKER", "batch_size": "$BATCH_SIZE", "queue_type": "$QTYPE", "total_events_out": "$TOTAL_EVENTS_OUT", "max_eps_1m": "$MAX_EPS_1M", "max_eps_5m": "$MAX_EPS_5M", "max_worker_utilization": "$MAX_WORKER_UTIL", "max_worker_concurrency": "$MAX_WORKER_CONCURR", "avg_cpu_percentage": "$AVG_CPU_PERCENT", "avg_heap": "$AVG_HEAP", "avg_non_heap": "$AVG_NON_HEAP", "avg_virtual_memory": "$AVG_VIRTUAL_MEM", "max_queue_events": "$MAX_Q_EVENT_CNT", "max_queue_bytes_size": "$MAX_Q_SIZE"}
 EOF
   curl -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json"
   echo ""
@@ -230,6 +231,11 @@ node_stats() {
 snapshot() {
   node_stats $1
   capture_stats
+}
+
+create_directory() {
+  NS_DIR="fb${FB_CNT}c${CPU}m${MEM}" # fb4c4m4
+  mkdir -p "$SCRIPT_PATH/$NS_DIR"
 }
 
 queue() {
@@ -290,6 +296,9 @@ stop_pipeline() {
 
   curl -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" -X DELETE $BENCHMARK_ES_HOST/_data_stream/logs-generic-default
   echo " data stream deleted "
+
+  # TODO: clean page caches, reduce memory fragmentation
+  # https://github.com/elastic/logstash/pull/16191#discussion_r1647050216
 }
 
 main() {
@@ -300,9 +309,7 @@ main() {
   pull_images
   check_logs
 
-  NS_DIR="fb${FB_CNT}c${CPU}m${MEM}" # fb4c4m4
-  mkdir -p "$SCRIPT_PATH/$NS_DIR"
-
+  create_directory
   if [[ $QTYPE == "all" ]]; then
     queue
   else
