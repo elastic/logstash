@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 public class Setting<T> implements Cloneable {
 
     private final String name;
-    private final T defaultValue;
+    T defaultValue;
     private T value = null;
     private final boolean strict;
     private final Predicate<T> validator;
@@ -64,6 +64,16 @@ public class Setting<T> implements Cloneable {
         return new Builder<>(name);
     }
 
+    /**
+     * Specifically used by Coercible subclass to initialize doing validation in a second phase.
+     * */
+    protected Setting(String name, boolean strict, Predicate<T> validator) {
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(validator);
+        this.name = name;
+        this.strict = strict;
+        this.validator = validator;
+    }
     protected Setting(String name, T defaultValue, boolean strict, Predicate<T> validator) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(validator);
