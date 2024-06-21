@@ -26,13 +26,15 @@ final class DeprecatedAlias<T> extends SettingDelegator<T> {
 
     @Override
     public void set(T newValue) {
-        deprecationLogger.deprecated("logstash.settings.deprecation.set deprecated_alias {} canonical_name: {}", getName(), canonicalProxy.getName());
+        deprecationLogger.deprecated("The setting `{}` is a deprecated alias for `{}` and will be removed in a " +
+                "future release of Logstash. Please use {} instead", getName(), canonicalProxy.getName(), canonicalProxy.getName());
         super.set(newValue);
     }
 
     @Override
     public T value() {
-        deprecationLogger.deprecated("logstash.settings.deprecation.queried deprecated_alias {} canonical_name: {}", getName(), canonicalProxy.getName());
+        deprecationLogger.deprecated("The value of setting `{}` has been queried by its deprecated alias `{}`. " +
+                "Code should be updated to query `{}` instead", canonicalProxy.getName(), getName(), canonicalProxy.getName());
         return super.value();
     }
 
