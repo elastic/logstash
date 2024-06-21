@@ -185,7 +185,11 @@ public class Setting<T> implements Cloneable {
     public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias) {
         return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias);
     }
-}
+
+    public Setting<T> nullable() {
+        return new NullableSetting<>(this);
+    }
+ }
 
 
 
