@@ -152,6 +152,10 @@ public class Setting<T> implements Cloneable {
             output.add(String.format("*%s: %s (default: %s)", settingName, effectiveValue, defaultValue));
         }
     }
+
+    public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias) {
+        return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias);
+    }
 }
 
 
