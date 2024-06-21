@@ -1,13 +1,13 @@
 package org.logstash.settings;
 
-public class BooleanSetting extends Coercible<Boolean> {
+public class Boolean extends Coercible<java.lang.Boolean> {
 
-    public BooleanSetting(String name, boolean defaultValue) {
+    public Boolean(String name, boolean defaultValue) {
         super(name, defaultValue, true, noValidator());
     }
 
     @Override
-    public Boolean coerce(Object obj) {
+    public java.lang.Boolean coerce(Object obj) {
         if (obj instanceof String) {
             switch((String) obj) {
                 case "true": return true;
@@ -15,8 +15,8 @@ public class BooleanSetting extends Coercible<Boolean> {
                 default: throw new IllegalArgumentException("could not coerce " + value() + " into a boolean");
             }
         }
-        if (obj instanceof Boolean) {
-            return (Boolean) obj;
+        if (obj instanceof java.lang.Boolean) {
+            return (java.lang.Boolean) obj;
         }
         throw new IllegalArgumentException("could not coerce " + value() + " into a boolean");
     }
