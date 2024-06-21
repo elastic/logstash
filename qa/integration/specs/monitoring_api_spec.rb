@@ -365,6 +365,14 @@ describe "Test Monitoring API" do
   end
 
   context "with unicode pipeline id" do
+    before(:each) do
+      if @fixture.settings.feature_flag == "persistent_queues"
+        skip('behaviour for unicode pipeline ids is unspecified when PQ is enabled')
+        # NOTE: pipeline ids are used verbatim as a part of the queue path, so the subset
+        #       of unicode characters that are supported depend on the OS and Filesystem.
+        #       The pipeline will fail to start, rendering these monitoring specs useless.
+      end
+    end
     let(:pipeline_id) { "변환-verändern-変ずる" }
     include_examples "pipeline metrics"
   end
