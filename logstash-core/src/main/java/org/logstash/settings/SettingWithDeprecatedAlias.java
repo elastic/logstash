@@ -31,7 +31,8 @@ import java.util.function.Predicate;
  * or to produce an error when both the canonical name and deprecated
  * alias are used together.
  * */
-class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
+// This class is public else the getDeprecatedAlias method can't be seen from setting_with_deprecated_alias_spec.rb
+public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
     
     /**
      * Wraps the provided setting, returning a pair of connected settings
@@ -60,6 +61,11 @@ class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
 
     Setting<T> getCanonicalSetting() {
         return getDelegate();
+    }
+
+//    @JRubyMethod(name = "deprecated_alias")
+    public DeprecatedAlias<T> getDeprecatedAlias() {
+        return deprecatedAlias;
     }
 
     @Override

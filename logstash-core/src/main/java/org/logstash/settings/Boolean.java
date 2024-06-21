@@ -25,6 +25,10 @@ public class Boolean extends Coercible<java.lang.Boolean> {
         super(name, defaultValue, true, noValidator());
     }
 
+    public Boolean(String name, boolean defaultValue, boolean strict) {
+        super(name, defaultValue, strict, noValidator());
+    }
+
     @Override
     public java.lang.Boolean coerce(Object obj) {
         if (obj instanceof String) {
