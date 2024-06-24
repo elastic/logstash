@@ -13,6 +13,7 @@ case "$WORKFLOW_TYPE" in
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             rake artifact:docker || error "artifact:docker build failed."
             rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
             rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
@@ -20,6 +21,7 @@ case "$WORKFLOW_TYPE" in
         else
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker || error "artifact:docker build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
@@ -37,6 +39,7 @@ case "$WORKFLOW_TYPE" in
         if [ -z "$VERSION_QUALIFIER_OPT" ]; then
             RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            RELEASE=1 rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
             RELEASE=1 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
@@ -44,6 +47,7 @@ case "$WORKFLOW_TYPE" in
         else
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker || error "artifact:docker build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_oss || error "artifact:docker_oss build failed."
+            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
             VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
             if [ "$ARCH" != "aarch64" ]; then
                 VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
@@ -68,10 +72,10 @@ for file in build/logstash-*; do shasum $file;done
 
 info "Uploading DRA artifacts in buildkite's artifact store ..."
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the build_packages.sh
-images="logstash logstash-oss"
+images="logstash logstash-oss logstash-wolfi"
 if [ "$ARCH" != "aarch64" ]; then
     # No logstash-ubi8 for AARCH64
-    images="logstash logstash-oss logstash-ubi8"
+    images="logstash logstash-oss logstash-wolfi logstash-ubi8"
 fi
 for image in ${images}; do
     buildkite-agent artifact upload "build/$image-${STACK_VERSION}-docker-image-${ARCH}.tar.gz"
@@ -80,7 +84,7 @@ done
 # Upload 'docker-build-context.tar.gz' files only when build x86_64, otherwise they will be
 # overwritten when building aarch64 (or viceversa).
 if [ "$ARCH" != "aarch64" ]; then
-    for image in logstash logstash-oss logstash-ubi8 logstash-ironbank; do
+    for image in logstash logstash-oss logstash-wolfi logstash-ubi8 logstash-ironbank; do
         buildkite-agent artifact upload "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz"
     done
 fi
