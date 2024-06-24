@@ -428,5 +428,32 @@ describe LogStash::Event do
       expect(cloned.get("[@metadata][fancy]")).to eq("foobar")
       expect(event1.get("[@metadata][fancy]")).to eq("pants")
     end
+
+    it "validates that cloned and duped event contents are same" do
+      cloned = event4.clone
+      duped = event4.dup
+      expect(cloned.get("hello")).to eq(duped.get("hello"))
+      expect(cloned.get("@metadata")).to eq(duped.get("@metadata"))
+    end
+  end
+
+  # this test is a guard to ensure that Json#dump does not break (especially if internally processes)
+  # current behavior when Event (Java object) is passed
+  describe "Json#dump the test" do
+    let(:sample_count) { 10 }
+    let(:sample_event) { LogStash::Event.new('message' => 'This is a message') }
+    let(:dumped_sample_event) { LogStash::Json.dump(sample_event) }
+    let(:sample_events) do
+      sample_count.times.map do
+        [sample_event, dumped_sample_event]
+      end
+    end
+
+    it 'validates the Json#dump event' do
+      sample_events.each do |sample_event, dumped_sample_event|
+        # Json#dump internally normalizes Event as it is
+        expect(dumped_sample_event).eql?(sample_event)
+      end
+    end
   end
 end
