@@ -63,7 +63,6 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
         return getDelegate();
     }
 
-//    @JRubyMethod(name = "deprecated_alias")
     public DeprecatedAlias<T> getDeprecatedAlias() {
         return deprecatedAlias;
     }
