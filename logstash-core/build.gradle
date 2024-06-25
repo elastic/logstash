@@ -140,6 +140,7 @@ jacocoTestReport {
 javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
+    dependsOn compileTestJava
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.root.dir', projectDir.parent

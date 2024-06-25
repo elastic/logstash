@@ -47,7 +47,7 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
         final ThreadContext context = RUBY.getCurrentContext();
         @SuppressWarnings("rawtypes")
         final RubyArray namespaces = RubyArray.newArray(RUBY, 1);
-        namespaces.add(0, RubySymbol.newSymbol(RUBY, getBaseMetricsPath().split("/")[0]));
+        namespaces.add(0, RUBY.newString(getBaseMetricsPath().split("/")[0]).intern());
         IRubyObject metricWithCollector =
             runRubyScript("require \"logstash/instrument/collector\"\n" +
                               "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
@@ -70,7 +70,7 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
 
         RubyHash rh = metricStore;
         for (String p : path) {
-            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(p));
+            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern());
         }
         return rh;
     }
@@ -78,13 +78,13 @@ public abstract class PluginDelegatorTestCase extends RubyEnvTestCase {
     protected abstract String getBaseMetricsPath();
 
     protected String getMetricStringValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
         RubyString value = (RubyString) counter.callMethod("value");
         return value.asJavaString();
     }
 
     protected long getMetricLongValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newSymbol(symbolName));
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
         RubyFixnum count = (RubyFixnum) counter.callMethod("value");
         return count.getLongValue();
     }
