@@ -74,6 +74,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "ffi:",https://github.com/ffi/ffi,BSD-3-CLAUSE
 "ffi-binary-libfixposix:",https://github.com/byteit101/subspawn,Ruby
 "filesize:",https://github.com/dominikh,MIT
+"fileutils:",https://github.com/ruby/fileutils,BSD-2-Clause
 "fugit:",https://github.com/floraison/fugit,MIT
 "gelfd2:",https://github.com/ptqa/gelfd2,Apache-2.0
 "gems:",https://github.com/rubygems/gems,MIT
