@@ -877,7 +877,7 @@ DEPENDENCIES
   logstash-input-unix
   logstash-integration-elastic_enterprise_search
   logstash-integration-jdbc
-  logstash-integration-kafka
+  logstash-integration-kafka (~> 10.12.1)
   logstash-integration-rabbitmq
   logstash-output-cloudwatch
   logstash-output-csv
