@@ -113,21 +113,8 @@ class LogstashService < Service
   # Can start LS in stdin and can send messages to stdin
   # Useful to test metrics and such
   def start_with_stdin(pipeline_config = STDIN_CONFIG)
-    puts "Starting Logstash #{@logstash_bin} -e #{pipeline_config}"
-    Bundler.with_unbundled_env do
-      out = Tempfile.new("duplex")
-      out.sync = true
-      @process = build_child_process("-e", pipeline_config)
-      # pipe STDOUT and STDERR to a file
-      @process.io.stdout = @process.io.stderr = out
-      @process.duplex = true
-      @env_variables.map { |k, v|  @process.environment[k] = v} unless @env_variables.nil?
-      java_home = java.lang.System.getProperty('java.home')
-      @process.environment['LS_JAVA_HOME'] = java_home
-      @process.start
-      wait_for_logstash
-      puts "Logstash started with PID #{@process.pid}, LS_JAVA_HOME: #{java_home}" if alive?
-    end
+    spawn_logstash("-e", pipeline_config)
+    wait_for_logstash
   end
 
   def write_to_stdin(input)
@@ -138,6 +125,7 @@ class LogstashService < Service
 
   # Spawn LS as a child process
   def spawn_logstash(*args)
+    $stderr.puts "Starting Logstash #{Shellwords.escape(@logstash_bin)} #{Shellwords.join(args)}"
     Bundler.with_unbundled_env do
       out = Tempfile.new("duplex")
       out.sync = true

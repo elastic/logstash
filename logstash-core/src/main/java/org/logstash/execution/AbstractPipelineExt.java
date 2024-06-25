@@ -651,20 +651,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private void initializePluginThroughputFlowMetric(final ThreadContext context, final UptimeMetric uptime, final String id) {
         final Metric<Number> uptimeInPreciseSeconds = uptime.withUnitsPrecise(SECONDS);
-        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
+        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newString(id).intern(), EVENTS_KEY);
         final LongCounter eventsOut = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
 
         final FlowMetric throughputFlow = createFlowMetric(PLUGIN_THROUGHPUT_KEY, eventsOut, uptimeInPreciseSeconds);
         this.flowMetrics.add(throughputFlow);
 
-        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
+        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, throughputFlow);
     }
 
     private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final UptimeMetric uptime, final RubySymbol key, final String id) {
         final Metric<Number> uptimeInPreciseMillis = uptime.withUnitsPrecise(MILLISECONDS);
 
-        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
+        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newString(id).intern(), EVENTS_KEY);
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_MILLIS_PER_EVENT_KEY, durationInMillis, counterEvents);
@@ -675,7 +675,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
         this.flowMetrics.add(workerUtilization);
 
-        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
+        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, workerCostPerEvent);
         storeMetric(context, flowNamespace, workerUtilization);
     }
@@ -685,7 +685,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                                  final Metric<T> metric) {
         final IRubyObject collector = this.metric.collector(context);
         final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
-        final IRubyObject metricKey = context.runtime.newSymbol(metric.getName());
+        final IRubyObject metricKey = context.runtime.newString(metric.getName()).intern();
 
         final IRubyObject wasRegistered = collector.callMethod(context, "register?", new IRubyObject[]{fullNamespace, metricKey, JavaUtil.convertJavaToUsableRubyObject(context.runtime, metric)});
         if (!wasRegistered.toJava(Boolean.class)) {
@@ -746,7 +746,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         RubyUtil.RUBY.getCurrentContext(),
                         new IRubyObject[]{
                                 inputQueueClient(), pipelineId().convertToString().intern(),
-                                metric(), RubyUtil.RUBY.newSymbol(inputName)
+                                metric(), RubyUtil.RUBY.newString(inputName).intern()
                         }
                 );
     }
