@@ -23,24 +23,62 @@ require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
 
 describe "Test Monitoring API" do
+  before(:each) do |example|
+    $stderr.puts("STARTING: #{example.full_description} (#{example.location})")
+  end
+
   before(:all) {
     @fixture = Fixture.new(__FILE__)
+    ruby_encoding_info = %w(external internal locale filesystem).map do |type|
+      Encoding.find(type)&.name&.then { |name| "#{type}:#{name}" }
+    end.compact.join(", ")
+
+    $stderr.puts <<~ENCODINGINFO.tr("\n", ' ')
+      INFO(spec runner process)
+      Ruby.Encoding=(#{ruby_encoding_info})
+      Java.Locale=`#{java.util.Locale::getDefault().toLanguageTag()}`
+      Java.Charset=`#{java.nio.charset.Charset::defaultCharset().displayName()}`
+    ENCODINGINFO
   }
+
+  let(:settings_overrides) do
+    {}
+  end
+
+  let(:logstash_service) { @fixture.get_service("logstash") }
+
+  before(:each) do
+    # some settings values cannot be reliably passed on the command line
+    # because we are not guaranteed that the shell's encoding supports UTF-8.
+    # Merge our settings into the active settings file, to accommodate feature flags
+    unless settings_overrides.empty?
+      settings_file = logstash_service.application_settings_file
+      FileUtils.cp(settings_file, "#{settings_file}.original")
+
+      base_settings = YAML.load(File.read(settings_file)) || {}
+      effective_settings = base_settings.merge(settings_overrides) do |key, old_val, new_val|
+        warn "Overriding setting `#{key}` with `#{new_val}` (was `#{old_val}`)"
+        new_val
+      end
+
+      IO.write(settings_file, effective_settings.to_yaml)
+    end
+  end
 
   after(:all) {
     @fixture.teardown
   }
 
-  after(:each) {
-    @fixture.get_service("logstash").teardown
-  }
+  after(:each) do
+    settings_file = logstash_service.application_settings_file
+    logstash_service.teardown
+    FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")
+  end
 
   let(:number_of_events) { 5 }
   let(:max_retry) { 120 }
-  let(:plugins_config) { "input { stdin {} } filter { mutate { add_tag => 'integration test adding tag' } } output { stdout {} }" }
 
   it "can retrieve event stats" do
-    logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
     number_of_events.times { logstash_service.write_to_stdin("Hello world") }
@@ -167,38 +205,179 @@ describe "Test Monitoring API" do
     end
   end
 
-  it "can retrieve queue stats" do
-    logstash_service = @fixture.get_service("logstash")
-    logstash_service.start_with_stdin
-    logstash_service.wait_for_logstash
+  shared_examples "pipeline metrics" do
+    # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
+    let(:settings_overrides) do
+      super().merge({'pipeline.id' => pipeline_id})
+    end
 
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-      # node_stats can fail if the stats subsystem isn't ready
-      result = logstash_service.monitoring_api.node_stats rescue nil
-      expect(result).not_to be_nil
-      # we use fetch here since we want failed fetches to raise an exception
-      # and trigger the retry block
-      queue_stats = result.fetch("pipelines").fetch("main").fetch("queue")
-      expect(queue_stats).not_to be_nil
-      if logstash_service.settings.feature_flag == "persistent_queues"
-        expect(queue_stats["type"]).to eq "persisted"
-        queue_data_stats = queue_stats.fetch("data")
-        expect(queue_data_stats["free_space_in_bytes"]).not_to be_nil
-        expect(queue_data_stats["storage_type"]).not_to be_nil
-        expect(queue_data_stats["path"]).not_to be_nil
-        expect(queue_stats["events"]).not_to be_nil
-        queue_capacity_stats = queue_stats.fetch("capacity")
-        expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
-        expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
-        expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
-      else
-        expect(queue_stats["type"]).to eq("memory")
+    it "can retrieve queue stats" do
+      logstash_service.start_with_stdin
+      logstash_service.wait_for_logstash
+
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        # node_stats can fail if the stats subsystem isn't ready
+        result = logstash_service.monitoring_api.node_stats rescue nil
+        expect(result).not_to be_nil
+        # we use fetch here since we want failed fetches to raise an exception
+        # and trigger the retry block
+        queue_stats = result.fetch("pipelines").fetch(pipeline_id).fetch("queue")
+        expect(queue_stats).not_to be_nil
+        if logstash_service.settings.feature_flag == "persistent_queues"
+          expect(queue_stats["type"]).to eq "persisted"
+          queue_data_stats = queue_stats.fetch("data")
+          expect(queue_data_stats["free_space_in_bytes"]).not_to be_nil
+          expect(queue_data_stats["storage_type"]).not_to be_nil
+          expect(queue_data_stats["path"]).not_to be_nil
+          expect(queue_stats["events"]).not_to be_nil
+          queue_capacity_stats = queue_stats.fetch("capacity")
+          expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
+          expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
+          expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
+        else
+          expect(queue_stats["type"]).to eq("memory")
+        end
       end
     end
+
+    it "retrieves the pipeline flow statuses" do
+      logstash_service = @fixture.get_service("logstash")
+      logstash_service.start_with_stdin
+      logstash_service.wait_for_logstash
+      number_of_events.times {
+        logstash_service.write_to_stdin("Testing flow metrics")
+        sleep(1)
+      }
+
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        # node_stats can fail if the stats subsystem isn't ready
+        result = logstash_service.monitoring_api.node_stats rescue nil
+        expect(result).not_to be_nil
+        # we use fetch here since we want failed fetches to raise an exception
+        # and trigger the retry block
+        expect(result).to include('pipelines' => hash_including(pipeline_id => hash_including('flow')))
+        flow_status = result.dig("pipelines", pipeline_id, "flow")
+        expect(flow_status).to_not be_nil
+        expect(flow_status).to include(
+                                 # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
+                                 # to be zero, so we are just looking for these to be _populated_
+                                 'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                 'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                 'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                 # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
+                                 # should be non-zero so long as pipeline uptime is less than ~10 minutes.
+                                 'input_throughput'   => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+                                 'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
+                                 'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
+                               )
+        if logstash_service.settings.feature_flag == "persistent_queues"
+          expect(flow_status).to include(
+                                   'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
+                                   'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
+                                 )
+        else
+          expect(flow_status).to_not include('queue_persisted_growth_bytes')
+          expect(flow_status).to_not include('queue_persisted_growth_events')
+        end
+      end
+    end
+
+    shared_examples "plugin-level flow metrics" do
+      let(:settings_overrides) do
+        super().merge({'config.string' => config_string})
+      end
+
+      let(:config_string) do
+        <<~EOPIPELINE
+          input { stdin { id => '#{plugin_id_input}' } }
+          filter { mutate { id => '#{plugin_id_filter}' add_tag => 'integration test adding tag' } }
+          output { stdout { id => '#{plugin_id_output}' } }
+        EOPIPELINE
+      end
+
+      it "retrieves plugin level flow metrics" do
+        logstash_service.spawn_logstash
+        logstash_service.wait_for_logstash
+        number_of_events.times {
+          logstash_service.write_to_stdin("Testing plugin-level flow metrics")
+          sleep(1)
+        }
+
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          # if the result is nil, we probably aren't ready yet
+          # our assertion failure will cause Stud to retry
+          expect(result).not_to be_nil
+
+          expect(result).to include('pipelines' => hash_including(pipeline_id => hash_including('plugins' => hash_including('inputs', 'filters', 'outputs'))))
+
+          input_plugins = result.dig("pipelines", pipeline_id, "plugins", "inputs")
+          filter_plugins = result.dig("pipelines", pipeline_id, "plugins", "filters")
+          output_plugins = result.dig("pipelines", pipeline_id, "plugins", "outputs")
+          expect(input_plugins[0]).to_not be_nil # not ready...
+
+          expect(input_plugins).to include(a_hash_including(
+                                             'id' => plugin_id_input,
+                                             'flow' => a_hash_including(
+                                               'throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0)
+                                             )
+                                           ))
+
+          expect(filter_plugins).to include(a_hash_including(
+                                              'id' => plugin_id_filter,
+                                              'flow' => a_hash_including(
+                                                'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                                'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                                )
+                                            ))
+
+          expect(output_plugins).to include(a_hash_including(
+                                              'id' => plugin_id_output,
+                                              'flow' => a_hash_including(
+                                                'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                                'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
+                                                )
+                                            ))
+        end
+      end
+    end
+
+    context "with lower-ASCII plugin id's" do
+      let(:plugin_id_input) { "standard-input" }
+      let(:plugin_id_filter) { "Mutations" }
+      let(:plugin_id_output) { "StandardOutput" }
+      include_examples "plugin-level flow metrics"
+    end
+
+    context "with unicode plugin id's" do
+      let(:plugin_id_input) { "입력" }
+      let(:plugin_id_filter) { "変じる" }
+      let(:plugin_id_output) { "le-résultat" }
+      include_examples "plugin-level flow metrics"
+    end
+
+  end
+
+  context "with lower-ASCII pipeline id" do
+    let(:pipeline_id) { "main" }
+    include_examples "pipeline metrics"
+  end
+
+  context "with unicode pipeline id" do
+    before(:each) do
+      if @fixture.settings.feature_flag == "persistent_queues"
+        skip('behaviour for unicode pipeline ids is unspecified when PQ is enabled')
+        # NOTE: pipeline ids are used verbatim as a part of the queue path, so the subset
+        #       of unicode characters that are supported depend on the OS and Filesystem.
+        #       The pipeline will fail to start, rendering these monitoring specs useless.
+      end
+    end
+    let(:pipeline_id) { "변환-verändern-変ずる" }
+    include_examples "pipeline metrics"
   end
 
   it "can configure logging" do
-    logstash_service = @fixture.get_service("logstash")
     logstash_service.start_with_stdin
     logstash_service.wait_for_logstash
 
@@ -246,86 +425,6 @@ describe "Test Monitoring API" do
     logging_get_assert logstash_service, "INFO", "TRACE"
   end
 
-  it "should retrieve the pipeline flow statuses" do
-    logstash_service = @fixture.get_service("logstash")
-    logstash_service.start_with_stdin
-    logstash_service.wait_for_logstash
-    number_of_events.times {
-      logstash_service.write_to_stdin("Testing flow metrics")
-      sleep(1)
-    }
-
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-      # node_stats can fail if the stats subsystem isn't ready
-      result = logstash_service.monitoring_api.node_stats rescue nil
-      expect(result).not_to be_nil
-      # we use fetch here since we want failed fetches to raise an exception
-      # and trigger the retry block
-      expect(result).to include('pipelines' => hash_including('main' => hash_including('flow')))
-      flow_status = result.dig("pipelines", "main", "flow")
-      expect(flow_status).to_not be_nil
-      expect(flow_status).to include(
-        # due to three-decimal-place rounding, it is easy for our worker_concurrency and queue_backpressure
-        # to be zero, so we are just looking for these to be _populated_
-        'worker_concurrency' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-        'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-        'queue_backpressure' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-        # depending on flow capture interval, our current rate can easily be zero, but our lifetime rates
-        # should be non-zero so long as pipeline uptime is less than ~10 minutes.
-        'input_throughput'   => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
-        'filter_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0),
-        'output_throughput'  => hash_including('current' => a_value >= 0, 'lifetime' => a_value >  0)
-      )
-      if logstash_service.settings.feature_flag == "persistent_queues"
-        expect(flow_status).to include(
-                                 'queue_persisted_growth_bytes'  => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric)),
-                                 'queue_persisted_growth_events' => hash_including('current' => a_kind_of(Numeric), 'lifetime' => a_kind_of(Numeric))
-                               )
-      else
-        expect(flow_status).to_not include('queue_persisted_growth_bytes')
-        expect(flow_status).to_not include('queue_persisted_growth_events')
-      end
-    end
-  end
-
-  it "should retrieve plugin level flow metrics" do
-    logstash_service = @fixture.get_service("logstash")
-    logstash_service.start_with_stdin(plugins_config)
-    logstash_service.wait_for_logstash
-    number_of_events.times {
-      logstash_service.write_to_stdin("Testing plugin-level flow metrics")
-      sleep(1)
-    }
-
-    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
-      # node_stats can fail if the stats subsystem isn't ready
-      result = logstash_service.monitoring_api.node_stats rescue nil
-      # if the result is nil, we probably aren't ready yet
-      # our assertion failure will cause Stud to retry
-      expect(result).not_to be_nil
-
-      expect(result).to include('pipelines' => hash_including('main' => hash_including('plugins' => hash_including('inputs', 'filters', 'outputs'))))
-
-      input_plugins = result.dig("pipelines", "main", "plugins", "inputs")
-      filter_plugins = result.dig("pipelines", "main", "plugins", "filters")
-      output_plugins = result.dig("pipelines", "main", "plugins", "outputs")
-      expect(input_plugins[0]).to_not be_nil
-
-      input_plugin_flow_status = input_plugins[0].dig("flow")
-      filter_plugin_flow_status = filter_plugins[0].dig("flow")
-      output_plugin_flow_status = output_plugins[0].dig("flow")
-
-      expect(input_plugin_flow_status).to include('throughput' => hash_including('current' => a_value >= 0, 'lifetime' => a_value > 0))
-      expect(filter_plugin_flow_status).to include(
-                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                           )
-      expect(output_plugin_flow_status).to include(
-                                             'worker_utilization' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                             'worker_millis_per_event' => hash_including('current' => a_value >= 0, 'lifetime' => a_value >= 0),
-                                           )
-    end
-  end
 
   private
 

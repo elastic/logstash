@@ -47,7 +47,7 @@ module LogStash::Api::AppHelpers
       end
 
       content_type "application/json"
-      LogStash::Json.dump(data, {:pretty => pretty?})
+      LogStash::Json.dump(stringify_symbols(data), {:pretty => pretty?})
     else
       content_type "text/plain"
       data.to_s
@@ -79,6 +79,16 @@ module LogStash::Api::AppHelpers
 
   def pretty?
     params.has_key?("pretty")
+  end
+
+  # Recursively stringify symbols in the provided data structure
+  def stringify_symbols(data)
+    case data
+    when Hash   then Hash[data.each_pair.map { |k,v| [stringify_symbols(k), stringify_symbols(v)] }]
+    when Array  then data.map { |v| stringify_symbols(v) }
+    when Symbol then data.to_s.encode('UTF-8')
+    else data
+    end
   end
 
   def generate_error_hash(error)
