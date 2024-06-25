@@ -34,7 +34,7 @@ public class CounterMetricImpl implements CounterMetric {
     public CounterMetricImpl(final ThreadContext threadContext,
                              final AbstractNamespacedMetricExt metrics,
                              final String metric) {
-        this.longCounter = LongCounter.fromRubyBase(metrics, threadContext.getRuntime().newSymbol(metric));
+        this.longCounter = LongCounter.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern());
     }
 
     @Override
