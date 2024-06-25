@@ -554,7 +554,7 @@ GEM
       sequel
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (10.9.0-java)
+    logstash-integration-kafka (10.12.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 6.5.0)
