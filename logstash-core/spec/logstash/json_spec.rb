@@ -119,6 +119,26 @@ describe "LogStash::Json" do
     expect(o).to be_nil
   end
 
+  # a safeguard guard test to ensure that Json#dump does not break (especially if internally processes)
+  # current behavior when Event (RubyEvent object) is passed
+  describe "Json#dump the event" do
+    let(:sample_count) { 10 }
+    let(:sample_event) { LogStash::Event.new('message' => 'This is a message') }
+    let(:dumped_sample_event) { LogStash::Json.dump(sample_event) }
+    let(:sample_events) do
+      sample_count.times.map do
+        [sample_event, dumped_sample_event]
+      end
+    end
+
+    it 'validates the Json#dump event' do
+      sample_events.each do |sample_event, dumped_sample_event|
+        # Json#dump internally normalizes Event as it is
+        expect(sample_event.to_json).to eql(dumped_sample_event)
+      end
+    end
+  end
+
   context "Unicode edge-cases" do
     matcher :be_utf8 do
       match(:notify_expectation_failures => true) do |actual|
