@@ -98,6 +98,7 @@ The `queue_persisted_growth_events` flow metric is useful measure of how much ba
 The Logstash defaults are chosen to provide fast, safe performance for most users.
 However if you notice performance issues, you may need to modify some of the defaults.
 Logstash provides the following configurable options for tuning pipeline performance: `pipeline.workers`, `pipeline.batch.size`, and `pipeline.batch.delay`.
+
 For more information about setting these options, see <<logstash-settings-file>>.
 
 Make sure you've read the <<performance-troubleshooting>> before modifying these options.
@@ -117,9 +118,9 @@ Make sure you've read the <<performance-troubleshooting>> before modifying these
 
 * The `pipeline.batch.delay` setting rarely needs to be tuned.
   This setting adjusts the latency of the Logstash pipeline.
-  Pipeline batch delay is the maximum amount of time in milliseconds that Logstash waits for new messages after receiving an event in the current pipeline worker thread.
-  After this time elapses, Logstash begins to execute filters and outputs.
-  The maximum time that Logstash waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and  `pipeline.batch.size` settings.
+  Pipeline batch delay is the maximum amount of time in milliseconds that a pipeline worker waits for each new event while its current batch is not yet full.
+  After this time elapses without any more events becoming available, the worker begins to execute filters and outputs.
+  The maximum time that the worker waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and `pipeline.batch.size` settings.
 
 [float]
 ==== Notes on pipeline configuration and performance
