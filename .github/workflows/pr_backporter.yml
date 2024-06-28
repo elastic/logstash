@@ -39,7 +39,7 @@ jobs:
       - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
       - run: git config --global user.name "logstashmachine"
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
       - run: |
