@@ -66,39 +66,9 @@ This section summarizes the changes in the following releases:
 [[logstash-8-14-2]]
 === Logstash 8.14.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.14.2
-
-* Unicode pipeline and plugin ids https://github.com/elastic/logstash/pull/15971[#15971]
-* Avoid to log file not found errors when DLQ segments are removed concurrently between writer and reader. https://github.com/elastic/logstash/pull/16204[#16204]
-* json: remove unnecessary dup/freeze in serialization https://github.com/elastic/logstash/pull/16213[#16213]
-* Geoip database management cache invalidation https://github.com/elastic/logstash/pull/16222[#16222]
-* Backport PR #16222 to 8.14: Geoip database management cache invalidation https://github.com/elastic/logstash/pull/16223[#16223]
-* Backport PR #16204 to 8.14: Avoid to log file not found errors when DLQ segments are removed concurrently between writer and reader. https://github.com/elastic/logstash/pull/16249[#16249]
-* Backport PR #16213 to 8.14: json: remove unnecessary dup/freeze in serialization https://github.com/elastic/logstash/pull/16253[#16253]
-* Backport PR #15971 to 8.14: Unicode pipeline and plugin ids https://github.com/elastic/logstash/pull/16257[#16257]
-
-=== Logstash Commits between 8.14 and 8.14.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.14.1..8.14"
-
-bd7e40885 - (HEAD -> 8.14, origin/8.14) Backport 16250 8.14 (#16259) (3 days ago) <Ry Biesemeyer>
-04d193d61 - Update patch plugin versions in gemfile lock (#16258) (3 days ago) <github-actions[bot]>
-ff37802a7 - Unicode pipeline and plugin ids (#15971) (#16257) (3 days ago) <github-actions[bot]>
-a5b7d2bfa - json: remove unnecessary dup/freeze in serialization (#16213) (#16253) (4 days ago) <github-actions[bot]>
-a42c71a90 - Avoid to log file not found errors when DLQ segments are removed concurrently between writer and reader. (#16204) (#16249) (8 days ago) <github-actions[bot]>
-0ba5330b5 - Geoip database management cache invalidation (#16222) (#16223) (10 days ago) <github-actions[bot]>
-8949dc77b - Bump 8.14.2 (#16216) (2 weeks ago) <Edmo Vamerlatti Costa>
-f9d6b42a7 - Release notes for 8.14.1 (#16212) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.14.1..8.14 *.release"
-Changed plugin versions:
-logstash-codec-fluent: 3.4.2 -> 3.4.3
-logstash-filter-elastic_integration: 0.1.9 -> 0.1.10
-logstash-input-elasticsearch: 4.20.2 -> 4.20.3
-logstash-output-elasticsearch: 11.22.6 -> 11.22.7
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixes a regression from Logstash 8.7.0 that prevented pipelines from starting when they included plugins with unicode id's https://github.com/elastic/logstash/pull/15971[#15971]
+* Fixes a regression from Logstash 8.12.0 that prevented pipelines from starting when they included a geoip filter that used the managed databases feature after the databases had been updated https://github.com/elastic/logstash/pull/16222[#16222]
+* Fixes an issue with the dead-letter queue that could cause it to emit superfluous warning messages when age-based retention was enabled while determining whether a fully-consumed segment that had already been removed was also expired https://github.com/elastic/logstash/pull/16204[#16204]
 
 ==== Plugins
 
@@ -108,7 +78,8 @@ logstash-output-elasticsearch: 11.22.6 -> 11.22.7
 
 *Elastic_integration Filter - 0.1.10*
 
-404: Not Found
+* Fixes handling of array-type event fields by treating them as lists https://github.com/elastic/logstash-filter-elastic_integration/pull/146[#146]
+* Syncs with Elasticsearch 8.14, including support for new user-provided GeoIP database types `ConnectionType`, `Domain` and `Isp` https://github.com/elastic/logstash-filter-elastic_integration/pull/147[#147]
 
 *Elasticsearch Input - 4.20.3*
 
