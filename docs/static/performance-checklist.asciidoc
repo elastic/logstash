@@ -1,5 +1,5 @@
 [[performance-tuning]]
-== Performance Tuning
+== Performance tuning
 
 This section includes the following information about tuning Logstash
 performance:
@@ -8,7 +8,7 @@ performance:
 * <<tuning-logstash>>
 
 [[performance-troubleshooting]]
-=== Performance Troubleshooting
+=== Performance troubleshooting
 
 You can use these troubleshooting tips to quickly diagnose and resolve Logstash performance problems. 
 Advanced knowledge of pipeline internals is not required to understand this guide. 
@@ -22,7 +22,7 @@ at a time and measure the results. Starting at the end of this list is a
 sure-fire way to create a confusing situation.
 
 [float]
-==== Performance Checklist
+==== Performance checklist
 
 . *Check the performance of input sources and output destinations:*
 +
@@ -55,7 +55,7 @@ include::config-details.asciidoc[tag=heap-size-tips]
 * You may also tune the output batch size. For many outputs, such as the Elasticsearch output, this setting will correspond to the size of I/O operations. In the case of the Elasticsearch output, this setting corresponds to the batch size.
 
 [[tuning-logstash]]
-=== Tuning and Profiling Logstash Performance
+=== Tuning and profiling logstash performance
 
 The Logstash defaults are chosen to provide fast, safe performance for most
 users. However if you notice performance issues, you may need to modify
@@ -71,7 +71,7 @@ Make sure you've read the <<performance-troubleshooting>> before modifying these
 * The `pipeline.batch.delay` setting rarely needs to be tuned. This setting adjusts the latency of the Logstash pipeline. Pipeline batch delay is the maximum amount of time in milliseconds that Logstash waits for new messages after receiving an event in the current pipeline worker thread. After this time elapses, Logstash begins to execute filters and outputs.The maximum time that Logstash waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and  `pipeline.batch.size` settings.
 
 [float]
-==== Notes on Pipeline Configuration and Performance
+==== Notes on pipeline configuration and performance
 
 If you plan to modify the default pipeline settings, take into account the
 following suggestions:
@@ -90,7 +90,7 @@ following suggestions:
 
 [float]
 [[profiling-the-heap]]
-==== Profiling the Heap
+==== Profiling the heap
 
 When tuning Logstash you may have to adjust the heap size. You can use the https://visualvm.github.io/[VisualVM] tool to profile the heap. The *Monitor* pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample *Monitor* panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
 
