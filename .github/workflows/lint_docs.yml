@@ -38,7 +38,7 @@ jobs:
           echo "::set-output name=LINT_RESULT::$LINT"
 
       - name: Add PR comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -58,7 +58,7 @@ jobs:
             }
 
       - name: Throw error if linter fails
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const report = `${{ steps.run_docs_lint.outputs.LINT_RESULT }}`
