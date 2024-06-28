@@ -455,6 +455,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     # TODO: should we also check against calling shutdown multiple times concurrently?
     stop_inputs
     wait_for_shutdown
+  ensure
     clear_pipeline_metrics
   end # def shutdown
 
