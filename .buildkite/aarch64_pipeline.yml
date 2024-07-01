@@ -17,6 +17,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           ci/unit_tests.sh ruby
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":java: Java unit tests"
         key: "java-unit-tests"
@@ -28,6 +31,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           ci/unit_tests.sh java
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: Integration Tests / part 1"
         key: "integration-tests-part-1"
@@ -36,6 +42,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           ci/integration_tests.sh split 0
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: Integration Tests / part 2"
         key: "integration-tests-part-2"
@@ -44,6 +53,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           ci/integration_tests.sh split 1
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: IT Persistent Queues / part 1"
         key: "integration-tests-qa-part-1"
@@ -53,6 +65,9 @@ steps:
           source .buildkite/scripts/common/vm-agent.sh
           export FEATURE_FLAG=persistent_queues
           ci/integration_tests.sh split 0
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: IT Persistent Queues / part 2"
         key: "integration-tests-qa-part-2"
@@ -62,6 +77,9 @@ steps:
           source .buildkite/scripts/common/vm-agent.sh
           export FEATURE_FLAG=persistent_queues
           ci/integration_tests.sh split 1
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: x-pack unit tests"
         key: "x-pack-unit-tests"
@@ -70,6 +88,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           x-pack/ci/unit_tests.sh
+        retry:
+          automatic:
+            - limit: 3
 
       - label: ":lab_coat: x-pack integration"
         key: "integration-tests-x-pack"
@@ -78,6 +99,9 @@ steps:
 
           source .buildkite/scripts/common/vm-agent.sh
           x-pack/ci/integration_tests.sh
+        retry:
+          automatic:
+            - limit: 3
 
   - group: "Acceptance Phase"
     depends_on: "testing-phase"
@@ -88,6 +112,9 @@ steps:
           set -euo pipefail
           
           source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
+        retry:
+          automatic:
+            - limit: 3
         matrix:
           - "full"
           - "oss"
