@@ -11,7 +11,7 @@
 <%   tarball = "logstash-#{elastic_version}-linux-$(arch).tar.gz" -%>
 <%   license = 'Elastic License' -%>
 <% end -%>
-<% if image_flavor == 'ubi8' -%>
+<% if image_flavor == 'ubi8' %>
 <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
 <%   package_manager = 'microdnf' -%>
 # Minimal distributions do not ship with en language packs.
@@ -26,7 +26,7 @@
 <% if image_flavor == 'ironbank' -%>
 ARG BASE_REGISTRY=registry1.dsop.io
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
-ARG BASE_TAG=8.10
+ARG BASE_TAG=9.2
 ARG LOGSTASH_VERSION=<%= elastic_version %>
 ARG GOLANG_VERSION=1.17.8
 
@@ -75,6 +75,9 @@ export DEBIAN_FRONTEND=noninteractive && \
 <%= package_manager %> upgrade -y && \
 <% end -%>
 <%= package_manager %> install -y procps findutils tar gzip curl && \
+<% if image_flavor == 'ubi8' -%>
+<%= package_manager %> install -y openssl && \
+<% end -%>
 <% if image_flavor == 'ubi8' || image_flavor == 'ironbank' -%>
 <%= package_manager %> install -y which shadow-utils && \
 <% else -%>
@@ -100,7 +103,7 @@ RUN groupadd --gid 1000 logstash && \
     <% if image_flavor != 'ironbank' %>--home <% else %>--home-dir <% end %>/usr/share/logstash --no-create-home \
     logstash
 
-<% if image_flavor == 'ironbank' -%>
+<% if image_flavor == 'ironbank' %>
 WORKDIR /usr/share/logstash
 COPY --from=env2yaml /usr/local/src/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY --from=builder --chown=1000:0 /usr/share/logstash /usr/share/logstash
@@ -123,7 +126,7 @@ RUN \
 <% end -%>
     ln -s /usr/share/logstash /opt/logstash
 
-<% if image_flavor != 'ironbank' -%>
+<% if image_flavor != 'ironbank' %>
 WORKDIR /usr/share/logstash
 <% end -%>
 ENV ELASTIC_CONTAINER true
