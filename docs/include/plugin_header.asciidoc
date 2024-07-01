@@ -18,7 +18,7 @@ For plugins not bundled by default, it is easy to install by running +bin/logsta
 
 endif::[]
 
-==== Getting Help
+==== Getting help
 
 For questions about the plugin, open a topic in the http://discuss.elastic.co[Discuss] forums. For bugs or feature requests, open an issue in https://github.com/logstash-plugins/logstash-{type}-{plugin}[Github].
 For the list of Elastic supported plugins, please consult the https://www.elastic.co/support/matrix#logstash_plugins[Elastic Support Matrix].
