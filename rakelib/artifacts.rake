@@ -102,6 +102,10 @@ namespace "artifact" do
     # exclude ruby-maven-libs 3.3.9 jars until JRuby ships with >= 3.8.9
     @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*'
 
+    # remove this after JRuby includes rexml 3.3.x
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
+
     @exclude_paths
   end
 
