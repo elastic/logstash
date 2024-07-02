@@ -377,6 +377,28 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when if condition" do
+    extend PipelineHelpers
+
+    let(:settings) { LogStash::SETTINGS.clone }
+
+    config <<-CONFIG
+          filter {
+            if [path][to][value] > 100 {
+              mutate { add_tag => "hit" }
+            } else {
+              mutate { add_tag => "miss" }
+            }
+          }
+        CONFIG
+
+    context "raise an error when it's evaluated, should tag the event" do
+      sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+        expect(subject.get('tags')).to eq(["_type_error_in_if"])
+      end
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do
