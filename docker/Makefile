@@ -177,12 +177,7 @@ push:
 env2yaml:
 	docker run --rm \
 	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
-		-e GOARCH=arm64 -e GOOS=linux \
-		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-arm64
-	docker run --rm \
-	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
-		-e GOARCH=amd64 -e GOOS=linux \
-		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-amd64
+	  -w /usr/src/env2yaml golang:1 go build
 
 # Generate the Dockerfiles from ERB templates.
 dockerfile: templates/Dockerfile.erb
