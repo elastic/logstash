@@ -31,7 +31,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     allow(LogStash::Settings).to receive(:logger).and_return(double("SettingsLogger").as_null_object)
     allow(LogStash::Settings).to receive(:deprecation_logger).and_return(double("SettingsDeprecationLogger").as_null_object)
 
-    settings.register(canonical_setting.with_deprecated_alias(deprecated_setting_name))
+    settings.register([canonical_setting.with_deprecated_alias(deprecated_setting_name)].flatten)
   end
 
   shared_examples '#validate_value success' do
