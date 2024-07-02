@@ -1,10 +1,10 @@
-==== Common Options
+==== Common options
 
 // Contributors: You must conditionally code all internal links and IDs in this
 // file to make the common files work in both the LS Reference and the versioned
 // plugin docs
 
-The following configuration options are supported by all input plugins:
+These configuration options are supported by all input plugins:
 
 [cols="<,<,<",options="header",]
 ifeval::["{versioned_docs}"!="true"]
@@ -34,9 +34,6 @@ endif::no_codec[]
 |=======================================================================
 endif::[]
 
-==== Details
-
-&nbsp;
 
 ifeval::["{versioned_docs}"!="true"]
 [id="plugins-{type}s-{plugin}-add_field"]
