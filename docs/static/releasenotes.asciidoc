@@ -69,7 +69,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.14.2]]
 ==== Notable issues fixed
 
-* Fixes a regression from Logstash 8.7.0 that prevented pipelines from starting when they included plugins with unicode id's https://github.com/elastic/logstash/pull/15971[#15971]
+* Fixes a regression from Logstash 8.7.0 that prevented pipelines from starting when they included plugins with unicode ids https://github.com/elastic/logstash/pull/15971[#15971]
 * Fixes a regression from Logstash 8.12.0 that prevented pipelines from starting when they included a geoip filter that used the managed databases feature after the databases had been updated https://github.com/elastic/logstash/pull/16222[#16222]
 * Fixes an issue with the dead-letter queue that could cause it to emit superfluous warning messages when age-based retention was enabled while determining whether a fully-consumed segment that had already been removed was also expired https://github.com/elastic/logstash/pull/16204[#16204]
 
