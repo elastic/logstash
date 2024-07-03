@@ -58,7 +58,7 @@ def package_aarch64_docker_step(branch, workflow_type):
   key: "logstash_build_aarch64_docker_dra"
   agents:
     provider: aws
-    image: ami-079bcacbab6be53eb  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e995-4112-b76d-ba4054137942/523-543 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
+    image: 079bcacbab6be53eb  # see https://buildkite.com/elastic/vm-images-platform-ingest/builds/233#0190780d-e995-4112-b76d-ba4054137942/523-543 and https://github.com/elastic/ci-agent-images/pull/575#issuecomment-2205648206
     instanceType: "m6g.4xlarge"
     diskSizeGb: 200
   command: |
