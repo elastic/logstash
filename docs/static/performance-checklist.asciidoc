@@ -58,7 +58,7 @@ include::config-details.asciidoc[tag=heap-size-tips]
 === Tuning and profiling logstash pipeline performance
 
 The <<flow-stats,Flow Metrics>> in Logstash's Monitoring API can provide excellent insight into how events are flowing through your pipelines.
-They can reveal whether your pipeline is constrained for resources, which parts of your pipeline are consuming the most resources, and can provide useful feedback when tuning.
+They can reveal whether your pipeline is constrained for resources, which parts of your pipeline are consuming the most resources, and provide useful feedback when tuning.
 
 [float]
 [[tuning-logstash-worker-utilization]]
