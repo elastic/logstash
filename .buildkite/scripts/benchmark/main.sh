@@ -107,6 +107,9 @@ pull_images() {
     docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
   else
     LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/versions | jq -r ".versions[-1]" )
+    if [[ ! $LS_VERSION == *-SNAPSHOT ]]; then
+      LS_VERSION="${LS_VERSION}-SNAPSHOT"
+    fi
     BUILD_ID=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/branches/master/builds | jq -r ".builds[0]" )
     ARCH=$(arch)
     IMAGE_URL="https://snapshots.elastic.co/${BUILD_ID}/downloads/logstash/logstash-$LS_VERSION-docker-image-$ARCH.tar.gz"
