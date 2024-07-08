@@ -373,60 +373,66 @@ describe LogStash::Event do
     end
   end
 
-  describe "#clone" do
-    let(:fieldref) { "[@metadata][fancy]" }
-    let(:event1) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
-    let(:event2) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => "pants2"} }) }
-    let(:event3) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => {"fancy3" => "pants2"}} }) }
-    let(:event4) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => ["pants1", "pants2"]} }) }
-    let(:event5) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants", "smarty" => "pants2" }) }
+  %i(dup clone).each do |clone_method|
+    describe "##{clone_method}" do
 
-    it "should clone metadata fields" do
-      cloned = event1.clone
-      expect(cloned.get(fieldref)).to eq("pants")
-      expect(cloned.to_hash_with_metadata).to include("@metadata")
-    end
+      let(:fieldref) { "[@metadata][fancy]" }
+      let(:event1) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
+      let(:event2) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => "pants2"} }) }
+      let(:event3) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => {"fancy3" => "pants2"}} }) }
+      let(:event4) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => {"fancy2" => ["pants1", "pants2"]} }) }
+      let(:event5) { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants", "smarty" => "pants2" }) }
 
-    it "should clone metadata fields with nested json" do
-      cloned = event2.clone
-      expect(cloned.get(fieldref)).to eq({"fancy2" => "pants2"})
-      expect(cloned.get("hello")).to eq("world")
-      expect(cloned.to_hash).not_to include("@metadata")
-      expect(cloned.to_hash_with_metadata).to include("@metadata")
-    end
+      acting = clone_method == :dup ? "duplicates" : "clones"
+      acted = clone_method == :dup ? "duplicated" : "cloned"
 
-    it "should clone metadata fields with 2-level nested json" do
-      cloned = event3.clone
-      expect(cloned.get(fieldref)).to eq({"fancy2" => {"fancy3" => "pants2"}})
-      expect(cloned.to_hash).not_to include("@metadata")
-      expect(cloned.to_hash_with_metadata).to include("@metadata")
-    end
+      it "#{acting} metadata fields" do
+        cloned = event1.public_send(clone_method)
+        expect(cloned.get(fieldref)).to eq("pants")
+        expect(cloned.to_hash_with_metadata).to include("@metadata")
+      end
 
-    it "should clone metadata fields with nested json and array value" do
-      cloned = event4.clone
-      expect(cloned.get(fieldref)).to eq({"fancy2" => ["pants1", "pants2"]})
-      expect(cloned.to_hash_with_metadata).to include("@metadata")
-    end
+      it "#{acting} metadata fields with nested json" do
+        cloned = event2.public_send(clone_method)
+        expect(cloned.get(fieldref)).to eq({"fancy2" => "pants2"})
+        expect(cloned.get("hello")).to eq("world")
+        expect(cloned.to_hash).not_to include("@metadata")
+        expect(cloned.to_hash_with_metadata).to include("@metadata")
+      end
 
-    it "should clone metadata fields with multiple keys" do
-      cloned = event5.clone
-      expect(cloned.get(fieldref)).to eq("pants")
-      expect(cloned.get("[@metadata][smarty]")).to eq("pants2")
-      expect(cloned.to_hash_with_metadata).to include("@metadata")
-    end
+      it "#{acting} metadata fields with 2-level nested json" do
+        cloned = event3.public_send(clone_method)
+        expect(cloned.get(fieldref)).to eq({"fancy2" => {"fancy3" => "pants2"}})
+        expect(cloned.to_hash).not_to include("@metadata")
+        expect(cloned.to_hash_with_metadata).to include("@metadata")
+      end
 
-    it "mutating cloned event should not affect the original event" do
-      cloned = event1.clone
-      cloned.set("hello", "foobar")
-      expect(cloned.get("hello")).to eq("foobar")
-      expect(event1.get("hello")).to eq("world")
-    end
+      it "#{acting} metadata fields with nested json and array value" do
+        cloned = event4.public_send(clone_method)
+        expect(cloned.get(fieldref)).to eq({"fancy2" => ["pants1", "pants2"]})
+        expect(cloned.to_hash_with_metadata).to include("@metadata")
+      end
 
-    it "mutating cloned event's metadata should not affect the original event metadata" do
-      cloned = event1.clone
-      cloned.set("[@metadata][fancy]", "foobar")
-      expect(cloned.get("[@metadata][fancy]")).to eq("foobar")
-      expect(event1.get("[@metadata][fancy]")).to eq("pants")
+      it "#{acting} metadata fields with multiple keys" do
+        cloned = event5.public_send(clone_method)
+        expect(cloned.get(fieldref)).to eq("pants")
+        expect(cloned.get("[@metadata][smarty]")).to eq("pants2")
+        expect(cloned.to_hash_with_metadata).to include("@metadata")
+      end
+
+      it "mutating #{acted} event should not affect the original event" do
+        cloned = event1.public_send(clone_method)
+        cloned.set("hello", "foobar")
+        expect(cloned.get("hello")).to eq("foobar")
+        expect(event1.get("hello")).to eq("world")
+      end
+
+      it "mutating #{acted} event's metadata should not affect the original event metadata" do
+        cloned = event1.public_send(clone_method)
+        cloned.set("[@metadata][fancy]", "foobar")
+        expect(cloned.get("[@metadata][fancy]")).to eq("foobar")
+        expect(event1.get("[@metadata][fancy]")).to eq("pants")
+      end
     end
   end
 end

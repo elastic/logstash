@@ -77,7 +77,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
                                                  final IRubyObject pluginId) {
         this.writeClient = queueWriteClientExt;
 
-        final RubySymbol pipelineIdSym = getRuntime().newSymbol(pipelineId);
+        final RubySymbol pipelineIdSym = getRuntime().newString(pipelineId).intern();
         final RubySymbol pluginIdSym = pluginId.asString().intern();
 
         // Synchronize on the metric since setting up new fields on it is not threadsafe

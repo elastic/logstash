@@ -1,41 +1,42 @@
 [[performance-tuning]]
-== Performance Tuning
+== Performance tuning
 
-This section includes the following information about tuning Logstash
-performance:
+This section includes the following information about tuning Logstash performance:
 
 * <<performance-troubleshooting>>
 * <<tuning-logstash>>
 
 [[performance-troubleshooting]]
-=== Performance Troubleshooting
+=== Performance troubleshooting
 
-You can use these troubleshooting tips to quickly diagnose and resolve Logstash performance problems. 
-Advanced knowledge of pipeline internals is not required to understand this guide. 
+You can use these troubleshooting tips to quickly diagnose and resolve Logstash performance problems.
+Advanced knowledge of pipeline internals is not required to understand this guide.
 However, the <<pipeline,pipeline documentation>> is recommended reading if you want to go beyond these tips.
 
-You may be tempted to jump ahead and change settings like `pipeline.workers`
-(`-w`) as a first attempt to improve performance. In our experience, changing
-this setting makes it more difficult to troubleshoot performance problems
-because you increase the number of variables in play. Instead, make one change
-at a time and measure the results. Starting at the end of this list is a
-sure-fire way to create a confusing situation.
+You may be tempted to jump ahead and change settings like `pipeline.workers` (`-w`) as a first attempt to improve performance.
+In our experience, changing this setting makes it more difficult to troubleshoot performance problems because you increase the number of variables in play.
+Instead, make one change at a time and measure the results.
+Starting at the end of this list is a sure-fire way to create a confusing situation.
 
 [float]
-==== Performance Checklist
+==== Performance checklist
 
 . *Check the performance of input sources and output destinations:*
 +
-* Logstash is only as fast as the services it connects to. Logstash can only consume and produce data as fast as its input and output destinations can!
+* Logstash is only as fast as the services it connects to.
+  Logstash can only consume and produce data as fast as its input and output destinations can!
 
 . *Check system statistics:*
 +
 * CPU
-** Note whether the CPU is being heavily used. On Linux/Unix, you can run `top -H` to see process statistics broken out by thread, as well as total CPU statistics.
+** Note whether the CPU is being heavily used.
+   On Linux/Unix, you can run `top -H` to see process statistics broken out by thread, as well as total CPU statistics.
 ** If CPU usage is high, skip forward to the section about checking the JVM heap and then read the section about tuning Logstash worker settings.
 * Memory
-** Be aware of the fact that Logstash runs on the Java VM. This means that Logstash will always use the maximum amount of memory you allocate to it.
-** Look for other applications that use large amounts of memory and may be causing Logstash to swap to disk. This can happen if the total memory used by applications exceeds physical memory.
+** Be aware of the fact that Logstash runs on the Java VM.
+   This means that Logstash will always use the maximum amount of memory you allocate to it.
+** Look for other applications that use large amounts of memory and may be causing Logstash to swap to disk.
+   This can happen if the total memory used by applications exceeds physical memory.
 * I/O Utilization
 ** Monitor disk I/O to check for disk saturation.
 *** Disk saturation can happen if you’re using Logstash plugins (such as the file output) that may saturate your storage.
@@ -49,59 +50,130 @@ sure-fire way to create a confusing situation.
 +
 include::config-details.asciidoc[tag=heap-size-tips]
 
-. *Tune Logstash worker settings:*
+. *Tune Logstash pipeline settings:*
 +
-* Begin by scaling up the number of pipeline workers by using the `-w` flag. This will increase the number of threads available for filters and outputs. It is safe to scale this up to a multiple of CPU cores, if need be, as the threads can become idle on I/O.
-* You may also tune the output batch size. For many outputs, such as the Elasticsearch output, this setting will correspond to the size of I/O operations. In the case of the Elasticsearch output, this setting corresponds to the batch size.
+* Continue on to <<tuning-logstash>> to learn about tuning individual pipelines.
 
 [[tuning-logstash]]
-=== Tuning and Profiling Logstash Performance
+=== Tuning and profiling logstash pipeline performance
 
-The Logstash defaults are chosen to provide fast, safe performance for most
-users. However if you notice performance issues, you may need to modify
-some of the defaults. Logstash provides the following configurable options
-for tuning pipeline performance: `pipeline.workers`, `pipeline.batch.size`, and `pipeline.batch.delay`. For more information about setting these options, see <<logstash-settings-file>>.
+The <<flow-stats,Flow Metrics>> in Logstash's Monitoring API can provide excellent insight into how events are flowing through your pipelines.
+They can reveal whether your pipeline is constrained for resources, which parts of your pipeline are consuming the most resources, and provide useful feedback when tuning.
+
+[float]
+[[tuning-logstash-worker-utilization]]
+==== Worker utilization
+
+When a pipeline's `worker_utilization` flow metric is consistently near 100, all of its workers are occupied processing the filters and outputs of the pipeline.
+We can see _which_ plugins in the pipeline are consuming the available worker capacity by looking at the plugin-level `worker_utilization` and `worker_millis_per_event` flow metrics.
+Using this information, we can gain intuition about how to tune the pipeline's settings to add resources, how to find and eliminate wasteful computation, or realize the need to scale up/out the capacity of downstream destinations.
+
+In general, plugins fit into one of two categories:
+
+- *CPU-bound*: plugins that perform computation on the contents of events _without_ the use of the network or disk IO tend to benefit from incrementally increasing `pipeline.workers` as long as the process has available CPU; once CPU is exhausted additional concurrency can result in _lower_ throughput as the pipeline workers contend for resources and the amount of time spent in context-switching increases.
+- *IO-bound*: plugins that use the network to either enrich events or transmit events tend to benefit from incrementally increasing `pipeline.workers` and/or tuning the `pipeline.batch.*` parameters described below.
+  This allows them to make better use of network resources, as long as those external services are not exerting back-pressure (even if Logstash is using nearly all of its available CPU).
+
+The further a pipeline's `worker_utilization` is from 100, the more time its workers are spending waiting for events to arrive in the queue.
+Because the volume of data in most pipelines is often inconsistent, the goal should be to tune the pipeline such that it has the resources to avoid propagating back-pressure to its inputs during peak periods.
+
+[float]
+[[tuning-logstash-queue-backpressure]]
+==== Queue back-pressure
+
+When a pipeline receives events faster than it can process them, the inputs eventually experience back-pressure that prevents them from receiving additional events.
+Depending on the input plugin being used, back-pressure can either propagate upstream or lead to data loss.
+
+A pipeline's `queue_backpressure` flow metric reflects how much time the inputs are spending attempting to push events into the queue.
+The metric isn't precisely comparable across pipelines, but instead allows you to compare a single pipeline's current behaviour to _itself_ over time.
+When this metric is growing, look _downstream_ at the pipeline's filters and outputs to see if they are using resources effectively, have sufficient resources allocated, or are experiencing back-pressure of their own.
+
+NOTE: A persisted queue offers durability guarantees and can absorb back-pressure for longer than the default in-memory queue, but once it is full it too propagates back-pressure.
+The `queue_persisted_growth_events` flow metric is useful measure of how much back-pressure is being actively absorbed by the persisted queue, and should trend toward zero (or less) over the pipeline's lifetime.
+Negative numbers indicate that the queue is _shrinking_, and that the workers are catching up on lag that had previously developed.
+
+[float]
+[[tuning-logstash-settings]]
+==== Tuning-related settings
+
+The Logstash defaults are chosen to provide fast, safe performance for most users.
+However if you notice performance issues, you may need to modify some of the defaults.
+Logstash provides the following configurable options for tuning pipeline performance: `pipeline.workers`, `pipeline.batch.size`, and `pipeline.batch.delay`.
+
+For more information about setting these options, see <<logstash-settings-file>>.
 
 Make sure you've read the <<performance-troubleshooting>> before modifying these options.
 
-* The `pipeline.workers` setting determines how many threads to run for filter and output processing. If you find that events are backing up, or that the CPU is not saturated, consider increasing the value of this parameter to make better use of available processing power. Good results can even be found increasing this number past the number of available processors as these threads may spend significant time in an I/O wait state when writing to external systems. Legal values for this parameter are positive integers.
+* The `pipeline.workers` setting determines how many threads to run for filter and output processing.
+  If you find that events are backing up, or that the CPU is not saturated, consider increasing the value of this parameter to make better use of available processing power.
+  Good results can even be found increasing this number past the number of available processors as these threads may spend significant time in an I/O wait state when writing to external systems.
 
-* The `pipeline.batch.size` setting defines the maximum number of events an individual worker thread collects before attempting to execute filters and outputs. Larger batch sizes are generally more efficient, but increase memory overhead. Some hardware configurations require you to increase JVM heap space in the `jvm.options` config file to avoid performance degradation. (See <<config-setting-files>> for more info.) Values in excess of the optimum range cause performance degradation due to frequent garbage collection or JVM crashes related to out-of-memory exceptions. Output plugins can process each batch as a logical unit. The Elasticsearch output, for example, issues https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html[bulk requests] for each batch received. Tuning the `pipeline.batch.size` setting adjusts the size of bulk requests sent to Elasticsearch.
+* The `pipeline.batch.size` setting defines the maximum number of events an individual worker thread collects from the queue before attempting to execute filters and outputs.
+  Larger batch sizes are generally more efficient, but increase memory overhead.
+  Output plugins can process each batch as a logical unit.
+  The Elasticsearch output, for example, attempts to send a single https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html[bulk request] for each batch received.
+  Tuning the `pipeline.batch.size` setting adjusts the size of bulk requests sent to Elasticsearch.
 
-* The `pipeline.batch.delay` setting rarely needs to be tuned. This setting adjusts the latency of the Logstash pipeline. Pipeline batch delay is the maximum amount of time in milliseconds that Logstash waits for new messages after receiving an event in the current pipeline worker thread. After this time elapses, Logstash begins to execute filters and outputs.The maximum time that Logstash waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and  `pipeline.batch.size` settings.
+* The `pipeline.batch.delay` setting rarely needs to be tuned.
+  This setting adjusts the latency of the Logstash pipeline.
+  Pipeline batch delay is the maximum amount of time in milliseconds that a pipeline worker waits for each new event while its current batch is not yet full.
+  After this time elapses without any more events becoming available, the worker begins to execute filters and outputs.
+  The maximum time that the worker waits between receiving an event and processing that event in a filter is the product of the `pipeline.batch.delay` and `pipeline.batch.size` settings.
 
 [float]
-==== Notes on Pipeline Configuration and Performance
+==== Notes on pipeline configuration and performance
 
 If you plan to modify the default pipeline settings, take into account the
 following suggestions:
 
-* The total number of inflight events is determined by the product of the  `pipeline.workers` and `pipeline.batch.size` settings. This product is referred to as the _inflight count_.  Keep the value of the inflight count in mind as you adjust the `pipeline.workers` and `pipeline.batch.size` settings. Pipelines that intermittently receive large events at irregular intervals require sufficient memory to handle these spikes. Set the JVM heap space accordingly in the `jvm.options` config file. (See <<config-setting-files>> for more info.)
+* The total number of inflight events is determined by the product of the  `pipeline.workers` and `pipeline.batch.size` settings.
+  This product is referred to as the _inflight count_.
+  Keep the value of the inflight count in mind as you adjust the `pipeline.workers` and `pipeline.batch.size` settings.
+  Pipelines that intermittently receive large events at irregular intervals require sufficient memory to handle these spikes.
+  Set the JVM heap space accordingly in the `jvm.options` config file (See <<config-setting-files>> for more info).
 
 * Measure each change to make sure it increases, rather than decreases, performance.
 
-* Ensure that you leave enough memory available to cope with a sudden increase in event size. For example, an application that generates exceptions that are represented as large blobs of text.
+* Ensure that you leave enough memory available to cope with a sudden increase in event size.
+  For example, an application that generates exceptions that are represented as large blobs of text.
 
 * The number of workers may be set higher than the number of CPU cores since outputs often spend idle time in I/O wait conditions.
 
 * Threads in Java have names and you can use the `jstack`, `top`, and the VisualVM graphical tools to figure out which resources a given thread uses.
 
-* On Linux platforms, Logstash labels all the threads it can with something descriptive. For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer.  Where possible, other threads are also labeled to help you identify their purpose.
+* On Linux platforms, Logstash labels its threads with descriptive names.
+  For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer.
+  Where possible, other threads are also labeled to help you identify their purpose.
 
 [float]
 [[profiling-the-heap]]
-==== Profiling the Heap
+==== Profiling the heap
 
-When tuning Logstash you may have to adjust the heap size. You can use the https://visualvm.github.io/[VisualVM] tool to profile the heap. The *Monitor* pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample *Monitor* panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
+When tuning Logstash you may have to adjust the heap size.
+You can use the https://visualvm.github.io/[VisualVM] tool to profile the heap.
+The *Monitor* pane in particular is useful for checking whether your heap allocation is sufficient for the current workload.
+The screenshots below show sample *Monitor* panes.
+The first pane examines a Logstash instance configured with too many inflight events.
+The second pane examines a Logstash instance configured with an appropriate amount of inflight events.
+Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
 
 image::static/images/pipeline_overload.png[]
 
 image::static/images/pipeline_correct_load.png[]
 
-In the first example we see that the CPU isn’t being used very efficiently. In fact, the JVM is often times having to stop the VM for “full GCs”. Full garbage collections are a common symptom of excessive memory pressure. This is visible in the spiky pattern on the CPU chart. In the more efficiently configured example, the GC graph pattern is more smooth, and the CPU is used in a more uniform manner. You can also see that there is ample headroom between the allocated heap size, and the maximum allowed, giving the JVM GC a lot of room to work with.
+In the first example we see that the CPU isn’t being used very efficiently.
+In fact, the JVM is often times having to stop the VM for “full GCs”.
+Full garbage collections are a common symptom of excessive memory pressure.
+This is visible in the spiky pattern on the CPU chart.
+In the more efficiently configured example, the GC graph pattern is more smooth, and the CPU is used in a more uniform manner.
+You can also see that there is ample headroom between the allocated heap size, and the maximum allowed, giving the JVM GC a lot of room to work with.
 
 Examining the in-depth GC statistics with a tool similar to the excellent https://visualvm.github.io/plugins.html[VisualGC] plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
 
-NOTE: As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum.
-This document is not a comprehensive guide to JVM GC tuning. Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic. We also recommend reading https://www.semicomplete.com/blog/geekery/debugging-java-performance/[Debugging Java Performance].
+NOTE: As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable.
+      Such heap size spikes happen in response to a burst of large events passing through the pipeline.
+      In general practice, maintain a gap between the used amount of heap memory and the maximum.
+      This document is not a comprehensive guide to JVM GC tuning.
+      Read the official http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html[Oracle guide] for more information on the topic.
+      We also recommend reading https://www.semicomplete.com/blog/geekery/debugging-java-performance/[Debugging Java Performance].
 

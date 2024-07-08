@@ -18,6 +18,8 @@ steps:
         multiple: true
         default: "${DEFAULT_MATRIX_OS}"
         options:
+          - label: "Ubuntu 24.04"
+            value: "ubuntu-2404"
           - label: "Ubuntu 22.04"
             value: "ubuntu-2204"
           - label: "Ubuntu 20.04"
@@ -32,8 +34,6 @@ steps:
             value: "rhel-9"
           - label: "RHEL 8"
             value: "rhel-8"
-          - label: "CentOS 7"
-            value: "centos-7"
           - label: "Oracle Linux 8"
             value: "oraclelinux-8"
           - label: "Oracle Linux 7"

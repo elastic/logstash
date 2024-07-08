@@ -37,7 +37,7 @@ buildscript {
   }
   dependencies {
     classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
+    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 
@@ -45,7 +45,7 @@ dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:4.6'
   implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
   testImplementation "junit:junit:4.13.2"
-  testImplementation 'commons-io:commons-io:2.13.0'
+  testImplementation 'commons-io:commons-io:2.16.1'
 }
 
 javadoc {

@@ -1,4 +1,16 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
+<% if image_flavor == 'wolfi' -%>
+FROM docker.elastic.co/wolfi/go:1-dev as builder-env2yaml
+
+COPY env2yaml/env2yaml.go /tmp/go/src/env2yaml/env2yaml.go
+COPY env2yaml/go.mod      /tmp/go/src/env2yaml/go.mod
+COPY env2yaml/go.sum      /tmp/go/src/env2yaml/go.sum
+
+WORKDIR /tmp/go/src/env2yaml
+
+RUN go build
+<% end -%>
+
 <% if image_flavor == 'ironbank' -%>
 <%# Start image_flavor 'ironbank' %>
 ARG BASE_REGISTRY=registry1.dso.mil
@@ -58,7 +70,7 @@ RUN dnf -y upgrade && \
   rm /tmp/logstash.tar.gz
 <%# End image_flavor 'ironbank' %>
 <% else -%>
-<%# Start image_flavor 'full', oss', 'ubi8' %>
+<%# Start image_flavor 'full', oss', 'ubi8', 'wolfi' %>
   <% if local_artifacts == 'false' -%>
     <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
   <% else -%>
@@ -77,6 +89,12 @@ RUN dnf -y upgrade && \
     <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
+  <% elsif image_flavor == 'wolfi' %>
+    <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
+    <%   package_manager = 'apk' -%>
+    <%   arch_command = 'uname -m' -%>
+    # Minimal distributions do not ship with en language packs.
+    <%   locale = 'C.UTF-8' -%>
   <% else -%>
     <%   base_image = 'ubuntu:20.04' -%>
     <%   package_manager = 'apt-get' -%>
@@ -87,27 +105,31 @@ RUN dnf -y upgrade && \
 FROM <%= base_image %>
 
 RUN for iter in {1..10}; do \
-<% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  export DEBIAN_FRONTEND=noninteractive && \
-<% end -%>
-<%= package_manager %> update -y && \
-<%= package_manager %> upgrade -y && \
-<%= package_manager %> install -y procps findutils tar gzip && \
-<% if image_flavor == 'ubi8' -%>
-  <%= package_manager %> install -y openssl && \
-<% end -%>
-<% if image_flavor == 'ubi8' -%>
-  <%= package_manager %> install -y which shadow-utils && \
+<% if image_flavor == 'wolfi' %>
+  <%= package_manager %> add --no-cache curl bash && \
 <% else -%>
-  <%= package_manager %> install -y locales && \
-<% end -%>
-<% if image_flavor != 'ubi9' -%>
-  <%= package_manager %> install -y curl && \
-<% end -%>
-<%= package_manager %> clean all && \
-<% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  locale-gen 'en_US.UTF-8' && \
-  <%= package_manager %> clean metadata && \
+  <% if image_flavor == 'full' || image_flavor == 'oss' -%>
+    export DEBIAN_FRONTEND=noninteractive && \
+  <% end -%>
+  <%= package_manager %> update -y && \
+  <%= package_manager %> upgrade -y && \
+  <%= package_manager %> install -y procps findutils tar gzip && \
+  <% if image_flavor == 'ubi8' -%>
+    <%= package_manager %> install -y openssl && \
+  <% end -%>
+  <% if image_flavor == 'ubi8' -%>
+    <%= package_manager %> install -y which shadow-utils && \
+  <% else -%>
+    <%= package_manager %> install -y locales && \
+  <% end -%>
+  <% if image_flavor != 'ubi9' -%>
+    <%= package_manager %> install -y curl && \
+  <% end -%>
+  <%= package_manager %> clean all && \
+  <% if image_flavor == 'full' || image_flavor == 'oss' -%>
+    locale-gen 'en_US.UTF-8' && \
+    <%= package_manager %> clean metadata && \
+  <% end -%>
 <% end -%>
 exit_code=0 && break || exit_code=$? && \
 echo "packaging error: retry $iter in 10s" && \
@@ -119,8 +141,19 @@ sleep 10; done; \
 (exit $exit_code)
 
 # Provide a non-root user to run the process.
+<% if image_flavor == 'wolfi' -%>
+RUN addgroup -g 1000 logstash && \
+  adduser -u 1000 -G logstash \
+  --disabled-password \
+  --gecos "" \
+  --home "/usr/share/logstash" \
+  --shell "/sbin/nologin" \
+  --no-create-home \
+  logstash
+<% else -%>
 RUN groupadd --gid 1000 logstash && \
   adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
+<% end -%>
 
 # Add Logstash itself.
 RUN curl -Lo - <%= url_root %>/<%= tarball %> | \
@@ -148,12 +181,15 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 <% end -%>
 COPY config/pipelines.yml config/log4j2.properties config/log4j2.file.properties config/
 COPY pipeline/default.conf pipeline/logstash.conf
-COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 
 RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
+<% if image_flavor == 'wolfi' -%>
+COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
+<% else -%>
+COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 # Copy over the appropriate env2yaml artifact
 RUN env2yamlarch="$(<%= arch_command %>)"; \
   case "${env2yamlarch}" in \
@@ -165,13 +201,15 @@ RUN env2yamlarch="$(<%= arch_command %>)"; \
       ;; \
     *) echo >&2 "error: unsupported architecture '$env2yamlarch'"; exit 1 ;; \
   esac; \
+  mkdir -p /usr/local/bin; \
   cp env2yaml/env2yaml-${env2yamlarch} /usr/local/bin/env2yaml; \
   rm -rf env2yaml
+<% end -%>
 # Place the startup wrapper script.
 COPY bin/docker-entrypoint /usr/local/bin/
 
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
-<%# End image_flavor 'full', oss', 'ubi8' %>
+<%# End image_flavor 'full', oss', 'ubi8', 'wolfi' %>
 <% end -%>
 
 USER 1000

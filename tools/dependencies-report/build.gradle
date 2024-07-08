@@ -37,13 +37,13 @@ buildscript {
   }
   dependencies {
     classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
+    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 
 dependencies {
-  implementation 'commons-io:commons-io:2.13.0'
-  implementation 'org.apache.commons:commons-csv:1.5'
+  implementation 'commons-io:commons-io:2.16.1'
+  implementation 'org.apache.commons:commons-csv:1.7'
   implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
   implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
   implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
