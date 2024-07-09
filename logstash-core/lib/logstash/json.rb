@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/environment"
-require "logstash/util/unicode_normalizer"
 require "jrjackson"
 
 module LogStash
