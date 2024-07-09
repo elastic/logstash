@@ -67,44 +67,10 @@ This section summarizes the changes in the following releases:
 [[logstash-8-14-3]]
 === Logstash 8.14.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.14.3
+[[notable-8.14.3]]
+==== Enhancements and notable issues fixed
 
-* Adding quotes in pqcheck.bat to support spaces in path https://github.com/elastic/logstash/pull/16205[#16205]
-* Ensure pipeline metrics are cleared on the shutdown https://github.com/elastic/logstash/pull/16264[#16264]
-* add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16265[#16265]
-* Backport PR #16265 to 8.14: add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16290[#16290]
-* Backport PR #16264 to 8.14: Ensure pipeline metrics are cleared on the shutdown https://github.com/elastic/logstash/pull/16291[#16291]
-* Backport PR #16205 to 8.14: Adding quotes in pqcheck.bat to support spaces in path https://github.com/elastic/logstash/pull/16292[#16292]
-* Remove CentOS 7 from CI https://github.com/elastic/logstash/pull/16293[#16293]
-* Backport PR #16293 to 8.14: Remove CentOS 7 from CI https://github.com/elastic/logstash/pull/16297[#16297]
-* Add Ubuntu 24.04 to CI https://github.com/elastic/logstash/pull/16299[#16299]
-* Backport PR #16299 to 8.14: Add Ubuntu 24.04 to CI https://github.com/elastic/logstash/pull/16303[#16303]
-* Revert 8.14.3 lock https://github.com/elastic/logstash/pull/16311[#16311]
-
-=== Logstash Commits between 8.14 and 8.14.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.14.2..8.14"
-
-daf9d031f - (HEAD -> 8.14, origin/8.14) Revert 8.14.3 lock (#16311) (9 minutes ago) <Andrea Selva>
-139f93732 - Update patch plugin versions in gemfile lock (#16310) (5 hours ago) <github-actions[bot]>
-d087a54f5 - Update patch plugin versions in gemfile lock (#16304) (24 hours ago) <github-actions[bot]>
-7351c5c59 - Remove CentOS 7 from CI (#16293) (#16297) (5 days ago) <github-actions[bot]>
-ae83326dc - Add quotes to fix path handling in pqcheck.bat (#16205) (#16292) (5 days ago) <github-actions[bot]>
-47e64cfe2 - add flow-informed tuning guidance (#16265) (#16290) (5 days ago) <github-actions[bot]>
-692af323f - Ensure pipeline metrics are cleared on the pipeline shutdown (#16264) (#16291) (5 days ago) <github-actions[bot]>
-6861ea613 - bump to 8.4.3 (#16288) (5 days ago) <Ry Biesemeyer>
-7d75395e7 - Release notes for 8.14.2 (#16266) (6 days ago) <github-actions[bot]>
-9f71e0331 - Add retries to aarch64 CI pipeline (#16271) (#16272) (8 days ago) <github-actions[bot]>
-6b8968476 - Doc: Add ecs and datastream requirement for intg filter (#16268) (#16270) (11 days ago) <github-actions[bot]>
-3467751f9 - Doc: Remove include statements for screenshots not rendering properly (#15981) (#16269) (11 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.14.2..8.14 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+* Ensure pipeline metrics are cleared on the shutdown. https://github.com/elastic/logstash/pull/16264[#16264].
 
 [[logstash-8-14-2]]
 === Logstash 8.14.2 Release Notes
