@@ -28,8 +28,6 @@ steps:
             value: "debian-12"
           - label: "Debian 11"
             value: "debian-11"
-          - label: "Debian 10"
-            value: "debian-10"
           - label: "RHEL 9"
             value: "rhel-9"
           - label: "RHEL 8"
