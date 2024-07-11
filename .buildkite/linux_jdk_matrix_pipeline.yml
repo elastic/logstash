@@ -18,6 +18,8 @@ steps:
         multiple: true
         default: "${DEFAULT_MATRIX_OS}"
         options:
+          - label: "Ubuntu 24.04"
+            value: "ubuntu-2404"
           - label: "Ubuntu 22.04"
             value: "ubuntu-2204"
           - label: "Ubuntu 20.04"
@@ -26,8 +28,6 @@ steps:
             value: "debian-12"
           - label: "Debian 11"
             value: "debian-11"
-          - label: "Debian 10"
-            value: "debian-10"
           - label: "RHEL 9"
             value: "rhel-9"
           - label: "RHEL 8"
