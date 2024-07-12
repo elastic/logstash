@@ -392,7 +392,7 @@ describe LogStash::JavaPipeline do
           }
         CONFIG
 
-    context "raise an error when it's evaluated, should tag the event" do
+    context "raise an error when it's evaluated, should cancel the event execution and log the error" do
       sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
         expect(subject).to be nil
         expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)

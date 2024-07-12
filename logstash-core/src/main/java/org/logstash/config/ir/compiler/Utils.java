@@ -53,7 +53,7 @@ public class Utils {
             } catch (org.jruby.exceptions.TypeError ex) {
                 // in case of error evaluation of an if condition, cancel the event
                 e.getEvent().cancel();
-                throw new ConditionalEvaluationError(ex);
+                throw new ConditionalEvaluationError(ex, e.getEvent());
             }
             if (isFulfilled) {
                 fulfilled.add(e);

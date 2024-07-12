@@ -178,7 +178,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         @Override
         public void notify(ConditionalEvaluationError err) {
             lastErrorEvaluationReceived = err.getMessage();
-            LOGGER.warn("Error in condition evaluation", err);
+            LOGGER.warn("Error in condition evaluation with event {}", err.failedEvent().getField("[event][original]"), err);
         }
     }
 
