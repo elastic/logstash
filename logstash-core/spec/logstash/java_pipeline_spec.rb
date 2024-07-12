@@ -394,7 +394,8 @@ describe LogStash::JavaPipeline do
 
     context "raise an error when it's evaluated, should tag the event" do
       sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
-        expect(subject.get('tags')).to eq(["_type_error_in_if"])
+        expect(subject).to be nil
+        expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
       end
     end
   end

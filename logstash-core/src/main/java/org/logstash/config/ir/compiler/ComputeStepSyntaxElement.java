@@ -207,7 +207,7 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     /**
-     * @return Array of constructor arguments
+     * @return Map of constructor arguments, key is field's name, value is the instance of the parameter to pass.
      */
     private Map<String, Object> ctorArguments() {
         final Map<String, Object> result = new HashMap<>();

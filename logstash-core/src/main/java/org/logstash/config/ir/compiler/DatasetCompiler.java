@@ -31,6 +31,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -108,10 +109,12 @@ public final class DatasetCompiler {
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(
         final Collection<Dataset> parents,
-        final AbstractFilterDelegatorExt plugin)
+        final AbstractFilterDelegatorExt plugin,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
+        final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
@@ -125,11 +128,13 @@ public final class DatasetCompiler {
             @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
-            //TODO if parent instance of SplitDataset then input buffering has to contain the try
+
+            // when the parent Dataset is a SplitDataset (essentially an if statement) cover
+            // with try..catch in case of evaluation errors.
             if (parents.size() == 1 && parents.iterator().next() instanceof SplitDataset) {
                 compute = withSafeInputBuffering(
                         filterBody(outputBuffer, inputBufferField, fields, plugin),
-                        parentFields, inputBufferField, outputBuffer
+                        parentFields, inputBufferField, outputBuffer, errorNotifier
                 );
             } else {
                 compute = withInputBuffering(
@@ -350,25 +355,29 @@ public final class DatasetCompiler {
     }
 
     /**
-     * Surround the invocation of compute e non-cancelled events with a try block to catch the ConditionalEvaluationError
+     * Surround the invocation of compute non-cancelled events with a try block to catch the ConditionalEvaluationError
      * and return immediately without executing the multiFilter method on the FilterDelegatorExt.
-     * This happens when the compute is invoked on a SplitDataset that throws ConditionalEvaluationError during the
+     * This happens when compute method is invoked on a SplitDataset that throws ConditionalEvaluationError during the
      * condition evaluation (such as comparing stirng with int).
      * This block, avoid to crash and move the execution forward the end of the conditional block.
      * */
     private static Closure withSafeInputBuffering(final Closure compute,
                                                   final Collection<ValueSyntaxElement> parents,
-                                                  final ValueSyntaxElement inputBuffer, ValueSyntaxElement outputBuffer) {
+                                                  final ValueSyntaxElement inputBuffer,
+                                                  final ValueSyntaxElement outputBuffer,
+                                                  final ValueSyntaxElement errorNotifier) {
         // return the full list of input batch events (coping in the outputBuffer) and mark as done, so that the execution
         // can continue with the parent dataflow (which is the next block after the conditional statement).
+        ValueSyntaxElement exception = SyntaxFactory.value("ex");
         Closure exceptionHandlerBlock = Closure.wrap(
                 new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
-                buffer(outputBuffer, BATCH_ARG),
+                errorNotifier.call("notify", exception),
+                buffer(outputBuffer, inputBuffer),
                 SyntaxFactory.ret(outputBuffer));
 
         MethodLevelSyntaxElement safeCompute = SyntaxFactory.tryBlock(
                 computeNonCancelledEventsBlock(parents, inputBuffer),
-                ConditionalEvaluationError.class, exceptionHandlerBlock);
+                ConditionalEvaluationError.class, exceptionHandlerBlock, exception);
 
         return Closure.wrap(safeCompute)
                 .add(compute)
