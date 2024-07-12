@@ -88,3 +88,8 @@
 # Sets the maximum nesting depth. The depth is a count of objects and arrays that have not
 # been closed, `{` and `[` respectively.
 #-Dlogstash.jackson.stream-read-constraints.max-nesting-depth=1000
+
+-Dorg.codehaus.janino.source_debugging.enable=true
+-Dorg.codehaus.janino.source_debugging.dir=/Users/andrea/workspace/logstash_andsel/tmpjanino_logstash_datasets
+
+#-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005

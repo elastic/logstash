@@ -127,11 +127,16 @@ public final class DatasetCompiler {
             final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
 
             // when the parent Dataset is a SplitDataset (essentially an if statement) cover
-            // with try..catch in case of evaluation errors.
+            // with try..catch in case of evaluation errors. Same happens also on the outputDataset
             if (parents.size() == 1 && parents.iterator().next() instanceof SplitDataset) {
+                Closure exceptionHandlerBlock = Closure.wrap(
+                        new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
+                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                        buffer(outputBuffer, inputBufferField),
+                        SyntaxFactory.ret(outputBuffer));
                 compute = withSafeInputBuffering(
                         filterBody(outputBuffer, inputBufferField, fields, plugin),
-                        parentFields, inputBufferField, outputBuffer, errorNotifier
+                        parentFields, inputBufferField, exceptionHandlerBlock
                 );
             } else {
                 compute = withInputBuffering(
@@ -250,7 +255,8 @@ public final class DatasetCompiler {
     public static ComputeStepSyntaxElement<Dataset> outputDataset(
         final Collection<Dataset> parents,
         final AbstractOutputDelegatorExt output,
-        final boolean terminal)
+        final boolean terminal,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
@@ -275,15 +281,32 @@ public final class DatasetCompiler {
                 clearSyntax = clearSyntax(parentFields);
             }
             final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", buffer);
-            computeSyntax = withInputBuffering(
-                Closure.wrap(
-                    setPluginIdForLog4j(outputField),
-                    invokeOutput(outputField, inputBuffer),
-                    inlineClear,
-                    unsetPluginIdForLog4j()
-                ),
-                parentFields, inputBuffer
-            );
+            if (parents.size() == 1 && parents.iterator().next() instanceof SplitDataset) {
+                final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
+                Closure exceptionHandlerBlock = Closure.wrap(
+                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                        MethodLevelSyntaxElement.RETURN_NULL
+                );
+                computeSyntax = withSafeInputBuffering(
+                        Closure.wrap(
+                                setPluginIdForLog4j(outputField),
+                                invokeOutput(outputField, inputBuffer),
+                                inlineClear,
+                                unsetPluginIdForLog4j()
+                        ),
+                        parentFields, inputBuffer, exceptionHandlerBlock
+                );
+            } else {
+                computeSyntax = withInputBuffering(
+                        Closure.wrap(
+                                setPluginIdForLog4j(outputField),
+                                invokeOutput(outputField, inputBuffer),
+                                inlineClear,
+                                unsetPluginIdForLog4j()
+                        ),
+                        parentFields, inputBuffer
+                );
+            }
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
     }
@@ -367,16 +390,10 @@ public final class DatasetCompiler {
     private static Closure withSafeInputBuffering(final Closure compute,
                                                   final Collection<ValueSyntaxElement> parents,
                                                   final ValueSyntaxElement inputBuffer,
-                                                  final ValueSyntaxElement outputBuffer,
-                                                  final ValueSyntaxElement errorNotifier) {
+                                                  final Closure exceptionHandlerBlock) {
         // return the full list of input batch events (coping in the outputBuffer) and mark as done, so that the execution
         // can continue with the parent dataflow (which is the next block after the conditional statement).
         ValueSyntaxElement exception = SyntaxFactory.value("ex");
-        Closure exceptionHandlerBlock = Closure.wrap(
-                new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
-                errorNotifier.call("notify", exception),
-                buffer(outputBuffer, inputBuffer),
-                SyntaxFactory.ret(outputBuffer));
 
         MethodLevelSyntaxElement safeCompute = SyntaxFactory.tryBlock(
                 computeNonCancelledEventsBlock(parents, inputBuffer),

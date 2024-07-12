@@ -467,7 +467,8 @@ public final class CompiledPipeline {
                     DatasetCompiler.outputDataset(
                         flatten(datasets, vertex),
                         outputs.get(vertexId),
-                        outputs.size() == 1
+                        outputs.size() == 1,
+                        conditionalErrListener
                     );
 
                 plugins.put(vertexId, prepared.instantiate());
