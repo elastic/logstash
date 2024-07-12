@@ -26,14 +26,7 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
-import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
-import org.logstash.config.ir.compiler.Dataset;
-import org.logstash.config.ir.compiler.DatasetCompiler;
-import org.logstash.config.ir.compiler.EventCondition;
-import org.logstash.config.ir.compiler.RubyIntegration;
-import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.compiler.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
@@ -102,13 +95,19 @@ public final class CompiledPipeline {
      * */
     private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
 
+    public static final class NoopEvaluationListener implements AbstractPipelineExt.ConditionalEvaluationListener {
+
+        @Override
+        public void notify(ConditionalEvaluationError err) {
+            // NO-OP
+        }
+    }
+
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null, err -> {
-            // NO-OP
-        });
+        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener());
     }
 
     public CompiledPipeline(
