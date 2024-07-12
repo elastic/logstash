@@ -76,6 +76,7 @@ import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.ConditionalEvaluationError;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -163,8 +164,22 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
 
+    private String lastErrorEvaluationReceived = "";
+
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    public interface ConditionalEvaluationListener {
+        void notify(ConditionalEvaluationError err);
+    }
+
+    public final class LogErrorEvaluationListener implements ConditionalEvaluationListener {
+        @Override
+        public void notify(ConditionalEvaluationError err) {
+            lastErrorEvaluationReceived = err.getMessage();
+            LOGGER.warn("Error in condition evaluation", err);
+        }
     }
 
     @JRubyMethod(required = 4)
@@ -183,7 +198,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         ).initialize(context, args[3], this, dlqWriter(context)),
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
-                getSecretStore(context)
+                getSecretStore(context),
+                new LogErrorEvaluationListener()
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -827,5 +843,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public IRubyObject isShutdownRequested(final ThreadContext context) {
         // shutdown_requested? MUST be implemented in the concrete implementation of this class.
         throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
+    }
+
+    @VisibleForTesting
+    @JRubyMethod(name = "last_error_evaluation_received")
+    public final RubyString getLastErrorEvaluationReceived(final ThreadContext context) {
+        return RubyString.newString(context.runtime, lastErrorEvaluationReceived);
     }
 }

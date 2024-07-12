@@ -88,10 +88,11 @@ final class SyntaxFactory {
         );
     }
 
-    public static MethodLevelSyntaxElement tryBlock(final Closure body, final Class<? extends Throwable> exceptionToCatch, Closure exceptionHandlerBlock) {
+    public static MethodLevelSyntaxElement tryBlock(final Closure body, final Class<? extends Throwable> exceptionToCatch, Closure exceptionHandlerBlock,
+                                                    ValueSyntaxElement exception) {
         return () -> SyntaxFactory.join(
                 "try {\n", body.generateCode(),
-                "\n} catch (" + exceptionToCatch.getCanonicalName() + " ex) { " + exceptionHandlerBlock.generateCode() + " }"
+                "\n} catch (" + exceptionToCatch.getCanonicalName() + " " + exception.generateCode() + ") { " + exceptionHandlerBlock.generateCode() + " }"
         );
     }
 

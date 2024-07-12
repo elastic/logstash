@@ -51,8 +51,8 @@ public class Utils {
             try {
                 isFulfilled = filter.fulfilled(e);
             } catch (org.jruby.exceptions.TypeError ex) {
-                logger.error("Error in condition evaluation", ex);
-                e.getEvent().tag("_type_error_in_if");
+//                logger.error("Error in condition evaluation", ex);
+                e.getEvent().cancel();
                 throw new ConditionalEvaluationError(ex);
             }
             if (isFulfilled) {

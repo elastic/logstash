@@ -26,19 +26,13 @@ import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.EnvironmentVariableProvider;
 import org.logstash.common.SourceWithMetadata;
-import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
-import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
-import org.logstash.config.ir.compiler.ComputeStepSyntaxElement;
-import org.logstash.config.ir.compiler.Dataset;
-import org.logstash.config.ir.compiler.DatasetCompiler;
-import org.logstash.config.ir.compiler.EventCondition;
-import org.logstash.config.ir.compiler.RubyIntegration;
-import org.logstash.config.ir.compiler.SplitDataset;
+import org.logstash.config.ir.compiler.*;
 import org.logstash.config.ir.graph.SeparatorVertex;
 import org.logstash.config.ir.graph.IfVertex;
 import org.logstash.config.ir.graph.PluginVertex;
 import org.logstash.config.ir.graph.Vertex;
 import org.logstash.config.ir.imperative.PluginStatement;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
@@ -96,20 +90,29 @@ public final class CompiledPipeline {
      */
     private final RubyIntegration.PluginFactory pluginFactory;
 
+    /**
+     * Callback listener to manage failed condition evaluation
+     * */
+    private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
+
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null);
+        this(pipelineIR, pluginFactory, null, err -> {
+            // NO-OP
+        });
     }
 
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory,
-            final SecretStore secretStore)
+            final SecretStore secretStore,
+            final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
+        this.conditionalErrListener = conditionalErrListener;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -433,7 +436,8 @@ public final class CompiledPipeline {
                 final ComputeStepSyntaxElement<Dataset> prepared =
                     DatasetCompiler.filterDataset(
                         flatten(datasets, vertex),
-                        filters.get(vertexId)
+                        filters.get(vertexId),
+                        conditionalErrListener
                     );
 
                 plugins.put(vertexId, prepared.instantiate());
