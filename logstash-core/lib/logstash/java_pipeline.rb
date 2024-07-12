@@ -285,8 +285,9 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # compiles and initializes the worker pipelines
 
       workers_init_start = Time.now
+      execution = lir_execution.buildExecution(@preserve_event_order)
       worker_loops = pipeline_workers.times
-        .map { Thread.new { init_worker_loop } }
+        .map { Thread.new { init_worker_loop(execution) } }
         .map(&:value)
       workers_init_elapsed = Time.now - workers_init_start
 
@@ -582,11 +583,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
-  def init_worker_loop
+  def init_worker_loop(execution)
     begin
       org.logstash.execution.WorkerLoop.new(
         filter_queue_client,   # QueueReadClient
-        lir_execution,         # CompiledPipeline
+        execution,         # CompiledPipeline
         @worker_observer,      # WorkerObserver
         # pipeline reporter counters
         @events_consumed,      # LongAdder
@@ -602,6 +603,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @logger.error(
         "Worker loop initialization error",
         default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+      nil
+    rescue Java::java.lang.StackOverflowError => se
+      @logger.error(
+        "Stack overflow error while compiling Pipeline. Please increase thread stack size using -Xss",
+        default_logging_keys())
       nil
     end
   end
