@@ -52,7 +52,7 @@ public final class WorkerLoop implements Runnable {
 
     public WorkerLoop(
             final QueueReadClient readClient,
-            final CompiledPipeline.Execution<QueueBatch> execution,
+            final CompiledPipeline compiledPipeline,
             final WorkerObserver workerObserver,
             final LongAdder consumedCounter,
             final LongAdder filteredCounter,
@@ -62,7 +62,7 @@ public final class WorkerLoop implements Runnable {
             final boolean drainQueue,
             final boolean preserveEventOrder)
     {
-        this.observedExecution = workerObserver.ofExecution(execution);
+        this.observedExecution = workerObserver.ofExecution(compiledPipeline.buildExecution(preserveEventOrder));
         this.readClient = readClient;
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;

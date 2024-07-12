@@ -285,9 +285,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # compiles and initializes the worker pipelines
 
       workers_init_start = Time.now
-      execution = lir_execution.buildExecution(@preserve_event_order)
       worker_loops = pipeline_workers.times
-        .map { Thread.new { init_worker_loop(execution) } }
+        .map { Thread.new { init_worker_loop } }
         .map(&:value)
       workers_init_elapsed = Time.now - workers_init_start
 
@@ -583,11 +582,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
-  def init_worker_loop(execution)
+  def init_worker_loop
     begin
       org.logstash.execution.WorkerLoop.new(
         filter_queue_client,   # QueueReadClient
-        execution,         # CompiledPipeline
+        lir_execution,         # CompiledPipeline
         @worker_observer,      # WorkerObserver
         # pipeline reporter counters
         @events_consumed,      # LongAdder
