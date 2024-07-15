@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-14-3,Logstash 8.14.3>>
 * <<logstash-8-14-2,Logstash 8.14.2>>
 * <<logstash-8-14-1,Logstash 8.14.1>>
 * <<logstash-8-14-0,Logstash 8.14.0>>
@@ -62,6 +63,14 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-14-3]]
+=== Logstash 8.14.3 Release Notes
+
+[[notable-8.14.3]]
+==== Enhancements and notable issues fixed
+
+* Ensure pipeline metrics are cleared on shutdown https://github.com/elastic/logstash/pull/16264[#16264]
 
 [[logstash-8-14-2]]
 === Logstash 8.14.2 Release Notes

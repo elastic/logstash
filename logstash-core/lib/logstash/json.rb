@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/environment"
-require "logstash/util/unicode_normalizer"
 require "jrjackson"
 
 module LogStash
@@ -51,7 +50,12 @@ module LogStash
     def normalize_encoding(data)
       case data
       when String
-        LogStash::UnicodeNormalizer.normalize_string_encoding(data)
+        if data.encoding == Encoding::ASCII_8BIT
+          # when given BINARY-flagged string, assume it is UTF-8 so that
+          # subsequent cleanup retains valid UTF-8 sequences
+          data = data.dup.force_encoding(Encoding::UTF_8)
+        end
+        data
       when Array
         data.map { |item| normalize_encoding(item) }
       when Hash
