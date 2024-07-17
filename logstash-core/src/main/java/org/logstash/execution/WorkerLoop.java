@@ -34,7 +34,7 @@ public final class WorkerLoop implements Runnable {
 
     private static final Logger LOGGER = LogManager.getLogger(WorkerLoop.class);
 
-    private final ObservedExecution<QueueBatch> observedExecution;
+    private final ObservedExecution<QueueBatch> execution;
 
     private final QueueReadClient readClient;
 
@@ -62,7 +62,7 @@ public final class WorkerLoop implements Runnable {
             final boolean drainQueue,
             final boolean preserveEventOrder)
     {
-        this.observedExecution = workerObserver.ofExecution(compiledPipeline.buildExecution(preserveEventOrder));
+        this.execution = workerObserver.ofExecution(compiledPipeline.buildExecution(preserveEventOrder));
         this.readClient = readClient;
         this.consumedCounter = consumedCounter;
         this.filteredCounter = filteredCounter;
@@ -110,7 +110,7 @@ public final class WorkerLoop implements Runnable {
     private boolean abortableCompute(QueueBatch batch, boolean flush, boolean shutdown) {
         boolean isNackBatch = false;
         try {
-            observedExecution.compute(batch, flush, shutdown);
+            execution.compute(batch, flush, shutdown);
         } catch (Exception ex) {
             if (ex instanceof AbortedBatchException) {
                 isNackBatch = true;
