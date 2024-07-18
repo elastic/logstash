@@ -1017,6 +1017,8 @@ describe LogStash::JavaPipeline do
     end
   end
   context "Pipeline created with too many filters" do
+    # create pipeline with 2000 filters
+    # 2000 filters is more than a thread stack of size 2MB can handle
     let(:config) do
       <<-EOS
       input { dummy_input {} }
