@@ -86,7 +86,10 @@ module LogStash
     end
 
     def register(setting)
-      return setting.map { |s| register(s) } if setting.kind_of?(Array)
+      # Method #with_deprecated_alias returns collection containing couple of other settings.
+      # In case the method is implemented in Ruby returns an Array while for the Java implementation
+      # return a List, so the following type checking before going deep by one layer.
+      return setting.map { |s| register(s) } if setting.kind_of?(Array) || setting.kind_of?(java.util.List)
 
       if @settings.key?(setting.name)
         raise ArgumentError.new("Setting \"#{setting.name}\" has already been registered as #{setting.inspect}")
