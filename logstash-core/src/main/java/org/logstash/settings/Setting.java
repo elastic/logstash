@@ -28,7 +28,7 @@ import java.util.function.Predicate;
  * */
 public class Setting<T> implements Cloneable {
 
-    private final String name;
+    private String name; // not final because can be updated by deprecate
     T defaultValue;
     private T value = null;
     private final boolean strict;
@@ -109,7 +109,15 @@ public class Setting<T> implements Cloneable {
      * Creates a copy of the setting with the original name to deprecate
      * */
     protected Setting<T> deprecate(String deprecatedName) {
-        return new Setting<T>(deprecatedName, this.defaultValue, this.strict, this.validator);
+        // this force to get a copy of the original Setting, in case of a BooleanSetting it retains also all of its
+        // coercing mechanisms
+        Setting<T> clone = this.clone();
+        clone.updateName(deprecatedName);
+        return clone;
+    }
+
+    private void updateName(String deprecatedName) {
+        this.name = deprecatedName;
     }
 
     protected static <T> Predicate<T> noValidator() {

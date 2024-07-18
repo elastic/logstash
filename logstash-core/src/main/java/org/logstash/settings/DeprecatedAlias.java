@@ -39,7 +39,7 @@ final class DeprecatedAlias<T> extends SettingDelegator<T> {
     }
 
     DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName) {
-        super(canonicalProxy.getCanonicalSetting().clone().deprecate(aliasName));
+        super(canonicalProxy.getCanonicalSetting().deprecate(aliasName));
         this.canonicalProxy = canonicalProxy;
     }
 
