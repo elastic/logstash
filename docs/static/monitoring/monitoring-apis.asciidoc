@@ -985,6 +985,18 @@ A positive number indicates that the queue size-on-disk is growing, and a negati
 
 NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events.
       This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: <<garbage-collection, PQ disk garbage collection>>).
+
+| worker_utilization | Filters, Outputs |
+This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
+It is useful for identifying which plugins in a pipeline are using the available worker resources.
+
+A _pipeline_ is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy.
+This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
+Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+A _pipeline_ is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy.
+This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
+Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
 |===
 
 [discrete]
@@ -1004,14 +1016,6 @@ It includes events that are blocked by the queue and have not yet been accepted.
 | worker_utilization | Filters, Outputs |
 This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
 It is useful for identifying which plugins in a pipeline are using the available worker resources.
-
-A _pipeline_ is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy.
-This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
-Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
-
-A _pipeline_ is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy.
-This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
-Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
 
 | worker_millis_per_event | Filters, Outputs |
 This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event.
