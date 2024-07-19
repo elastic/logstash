@@ -253,7 +253,7 @@ module LogStash
       unless klass.is_a?(Class)
         raise ArgumentError.new("Setting \"#{name}\" must be initialized with a class (received #{klass})")
       end
-      setting_builder = Java::org.logstash.settings.Setting.create(name)
+      setting_builder = Java::org.logstash.settings.BaseSetting.create(name)
                             .defaultValue(default)
                             .strict(strict)
       if validator_proc
@@ -375,7 +375,7 @@ module LogStash
         @validator_proc = validator_proc
 
         # needed to have the name method accessible when invoking validate
-        @wrapped_setting = Java::org.logstash.settings.Setting.create(name)
+        @wrapped_setting = Java::org.logstash.settings.BaseSetting.create(name)
                                       .defaultValue(default)
                                       .strict(strict)
                                       .build()
@@ -389,7 +389,7 @@ module LogStash
         end
 
         # default value must be coerced to the right type before being set
-        setting_builder = Java::org.logstash.settings.Setting.create(name)
+        setting_builder = Java::org.logstash.settings.BaseSetting.create(name)
                               .defaultValue(updated_default)
                               .strict(strict)
         if validator_proc
