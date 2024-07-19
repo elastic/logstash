@@ -986,7 +986,7 @@ A positive number indicates that the queue size-on-disk is growing, and a negati
 NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events.
       This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: <<garbage-collection, PQ disk garbage collection>>).
 
-| worker_utilization | Filters, Outputs |
+| worker_utilization |
 This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
 It is useful for identifying which plugins in a pipeline are using the available worker resources.
 
