@@ -52,6 +52,13 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     include_examples '#validate_value success'
+
+    context "#observe_post_process" do
+      it 'does not emit a deprecation warning' do
+        expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
+        settings.get_setting(deprecated_setting_name).observe_post_process
+      end
+    end
   end
 
   context "when only the deprecated alias is set" do
@@ -70,6 +77,13 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     include_examples '#validate_value success'
+
+    context "#observe_post_process" do
+      it 're-emits the deprecation warning' do
+        expect(LogStash::Settings.deprecation_logger).to receive(:deprecated).with(a_string_including(deprecated_setting_name))
+        settings.get_setting(deprecated_setting_name).observe_post_process
+      end
+    end
 
     it 'validates deprecated alias' do
       expect { settings.get_setting(canonical_setting_name).deprecated_alias.validate_value }.to_not raise_error
@@ -107,6 +121,13 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     include_examples '#validate_value success'
+
+    context "#observe_post_process" do
+      it 'does not emit a deprecation warning' do
+        expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
+        settings.get_setting(deprecated_setting_name).observe_post_process
+      end
+    end
   end
 
   context "when both the canonical setting and deprecated alias are set" do
