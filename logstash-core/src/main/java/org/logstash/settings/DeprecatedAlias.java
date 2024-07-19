@@ -34,10 +34,6 @@ final class DeprecatedAlias<T> extends SettingDelegator<T> {
 
     private SettingWithDeprecatedAlias<T> canonicalProxy;
 
-    protected DeprecatedAlias(String name, T defaultValue, boolean strict, Predicate<T> validator) {
-        super(name, defaultValue, strict, validator);
-    }
-
     DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName) {
         super(canonicalProxy.getCanonicalSetting().deprecate(aliasName));
         this.canonicalProxy = canonicalProxy;

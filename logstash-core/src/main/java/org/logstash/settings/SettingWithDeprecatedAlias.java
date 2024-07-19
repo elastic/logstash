@@ -42,24 +42,20 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
      *
      * @return List of [SettingWithDeprecatedAlias, DeprecatedAlias]
      * */
-    static <T> List<Setting<T>> wrap(Setting<T> canonicalSetting, String deprecatedAliasName) {
+    static <T> List<Setting<T>> wrap(BaseSetting<T> canonicalSetting, String deprecatedAliasName) {
         final SettingWithDeprecatedAlias<T> settingProxy = new SettingWithDeprecatedAlias<>(canonicalSetting, deprecatedAliasName);
         return Arrays.asList(settingProxy, settingProxy.deprecatedAlias);
     }
 
     private DeprecatedAlias<T> deprecatedAlias;
 
-    protected SettingWithDeprecatedAlias(String name, T defaultValue, boolean strict, Predicate<T> validator) {
-        super(name, defaultValue, strict, validator);
-    }
-
-    protected SettingWithDeprecatedAlias(Setting<T> canonicalSetting, String deprecatedAliasName) {
+    protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName) {
         super(canonicalSetting);
 
         this.deprecatedAlias = new DeprecatedAlias<T>(this, deprecatedAliasName);
     }
 
-    Setting<T> getCanonicalSetting() {
+    BaseSetting<T> getCanonicalSetting() {
         return getDelegate();
     }
 

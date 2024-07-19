@@ -21,26 +21,19 @@ package org.logstash.settings;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 
-abstract class SettingDelegator<T> extends Setting<T> {
-    private Setting<T> delegate;
-
-    protected SettingDelegator(String name, T defaultValue, boolean strict, Predicate<T> validator) {
-        super(name, defaultValue, strict, validator);
-        throw new RuntimeException("This constructor shouldn't be invoked");
-    }
+abstract class SettingDelegator<T> implements Setting<T> {
+    private BaseSetting<T> delegate;
 
     /**
      * Use this constructor to wrap another setting.
      * */
-    SettingDelegator(Setting<T> delegate) {
-        super(delegate.getName(), delegate.getDefault(), delegate.isStrict(), noValidator());
+    SettingDelegator(BaseSetting<T> delegate) {
         Objects.requireNonNull(delegate);
         this.delegate = delegate;
     }
 
-    Setting<T> getDelegate() {
+    BaseSetting<T> getDelegate() {
         return delegate;
     }
 
@@ -87,5 +80,10 @@ abstract class SettingDelegator<T> extends Setting<T> {
     @Override
     public void format(List<String> output) {
         delegate.format(output);
+    }
+
+    @Override
+    public void validate(T input) {
+        delegate.validate(input);
     }
 }

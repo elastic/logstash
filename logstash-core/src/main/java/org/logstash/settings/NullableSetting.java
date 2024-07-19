@@ -20,12 +20,12 @@ package org.logstash.settings;
 
 public class NullableSetting<T> extends SettingDelegator<T> {
 
-    NullableSetting(Setting<T> delegate) {
+    NullableSetting(BaseSetting<T> delegate) {
         super(delegate);
     }
 
     @Override
-    protected void validate(T input) throws IllegalArgumentException {
+    public void validate(T input) throws IllegalArgumentException {
         if (input == null) {
             return;
         }
