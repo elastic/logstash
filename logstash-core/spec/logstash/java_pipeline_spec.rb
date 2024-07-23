@@ -393,9 +393,27 @@ describe LogStash::JavaPipeline do
         CONFIG
 
     context "raise an error when it's evaluated, should cancel the event execution and log the error" do
-      sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
-        expect(subject).to be nil
-        expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+      context "when type of evaluation doesn't have same type" do
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when left and right operands of event condition are not comparable" do
+        context "comparing a non existing field" do
+          sample_one( [{ "path" => {"to" => "Rome"}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/<no-class>:<null-value>/)
+          end
+        end
+
+        context "comparing incompatible types" do
+          sample_one( [{ "path" => {"to" => {"value" => [101, 102]}}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/Unexpected input type combination.*List.*RubyFixnum/)
+          end
+        end
       end
     end
   end
