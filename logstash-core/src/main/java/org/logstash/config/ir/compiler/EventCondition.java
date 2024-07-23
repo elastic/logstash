@@ -709,9 +709,13 @@ public interface EventCondition {
                     details = (expression.getSourceWithMetadata() != null) ? expression.getSourceWithMetadata().toString()
                                                                            : expression.toString();
                 } else {
-                    details = unexpected.toString();
+                    if (unexpected == null) {
+                        details = "<null-value>";
+                    } else {
+                        details = unexpected.toString();
+                    }
                 }
-                return String.format("%s:%s", unexpected.getClass(), details);
+                return String.format("%s:%s", unexpected == null ? "<no-class>" : unexpected.getClass(), details);
             }
         }
     }

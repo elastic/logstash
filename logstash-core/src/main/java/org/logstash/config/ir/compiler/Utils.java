@@ -50,7 +50,7 @@ public class Utils {
             boolean isFulfilled;
             try {
                 isFulfilled = filter.fulfilled(e);
-            } catch (org.jruby.exceptions.TypeError ex) {
+            } catch (org.jruby.exceptions.TypeError | IllegalArgumentException ex) {
                 // in case of error evaluation of an if condition, cancel the event
                 e.getEvent().cancel();
                 throw new ConditionalEvaluationError(ex, e.getEvent());
