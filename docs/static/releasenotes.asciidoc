@@ -92,7 +92,7 @@ No user-facing changes in Logstash core.
 
 *Fluent Codec - 3.4.3*
 
-* Fix: reduce overhead of unpacking packforward-payloads by reusing a single instance https://github.com/logstash-plugins/logstash-codec-fluent/pull/32[#32]
+* Fix: Reduce overhead of unpacking packforward-payloads by reusing a single instance https://github.com/logstash-plugins/logstash-codec-fluent/pull/32[#32]
 
 *Azure_event_hubs Input - 1.4.7*
 
@@ -101,9 +101,9 @@ No user-facing changes in Logstash core.
 
 *Kafka Integration - 10.12.1*
 
-* Fix: update Avro library on 10.x https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/149[#149]
-* bump kafka client to 2.8.1 https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/115[#115]
-* Feat: added connections_max_idle_ms setting for output https://github.com/logstash-plugins/logstash-integration-kafka/pull/118[#118]
+* Fix: Update Avro library on 10.x https://github.com/logstash-plugins/logstash-integration-kafka/pull/149[#149]
+* Bump kafka client to 2.8.1 https://github.com/logstash-plugins/logstash-integration-kafka/pull/115[#115]
+* Feat: Added connections_max_idle_ms setting for output https://github.com/logstash-plugins/logstash-integration-kafka/pull/118[#118]
 * Added config setting to enable 'zstd' compression in the Kafka output https://github.com/logstash-plugins/logstash-integration-kafka/pull/112[#112]
 
 
