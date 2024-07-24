@@ -197,6 +197,13 @@ module LogStash
           callback.call(self)
         end
       end
+
+      # because we cannot rely on deprecation logger being wired up when the setters
+      # are initially used, we re-emit setter-related deprecations after all post-processing
+      # hooks have been activated (and therefore after logging has been configured)
+      @settings.each_value do |setting|
+        setting.observe_post_process if setting.respond_to?(:observe_post_process)
+      end
     end
 
     def on_post_process(&block)
@@ -839,9 +846,7 @@ module LogStash
       end
 
       def set(value)
-        deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
-                                             :deprecated_alias => name,
-                                             :canonical_name => canonical_proxy.name))
+        do_log_setter_deprecation
         super
       end
 
@@ -855,6 +860,18 @@ module LogStash
       def validate_value
         # bypass deprecation warning
         wrapped.validate_value if set?
+      end
+
+      def observe_post_process
+        do_log_setter_deprecation if set?
+      end
+
+      private
+
+      def do_log_setter_deprecation
+        deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
+                                             :deprecated_alias => name,
+                                             :canonical_name => canonical_proxy.name))
       end
     end
 

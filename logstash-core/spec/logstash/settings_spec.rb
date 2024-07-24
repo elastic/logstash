@@ -144,6 +144,18 @@ describe LogStash::Settings do
     it "should preserve original settings" do
       expect(settings.get("foo")).to eq("bar")
     end
+
+    context 'when a registered setting responds to `observe_post_process`' do
+      let(:observe_post_process_setting) do
+        LogStash::Setting::Boolean.new("this.that", true).tap { |s| allow(s).to receive(:observe_post_process) }
+      end
+      subject(:settings) do
+        described_class.new.tap { |s| s.register(observe_post_process_setting) }
+      end
+      it 'it sends `observe_post_process`' do
+        expect(observe_post_process_setting).to have_received(:observe_post_process)
+      end
+    end
   end
 
   context "transient settings" do
