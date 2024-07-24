@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-23,Logstash 7.17.23>>
 * <<logstash-7-17-22,Logstash 7.17.22>>
 * <<logstash-7-17-21,Logstash 7.17.21>>
 * <<logstash-7-17-20,Logstash 7.17.20>>
@@ -80,6 +81,71 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-23]]
+=== Logstash 7.17.23 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.23
+
+* Require kafka integration to 10.12 for 7.17 https://github.com/elastic/logstash/pull/16256[#16256]
+* Add retries to aarch64 CI pipeline https://github.com/elastic/logstash/pull/16271[#16271]
+* Backport PR #16271 to 7.17: Add retries to aarch64 CI pipeline https://github.com/elastic/logstash/pull/16273[#16273]
+* Remove CentOS 7 from CI https://github.com/elastic/logstash/pull/16293[#16293]
+* Backport PR #16293 to 7.17: Remove CentOS 7 from CI https://github.com/elastic/logstash/pull/16298[#16298]
+* Remove Debian 10 from CI https://github.com/elastic/logstash/pull/16300[#16300]
+* regenerate webserver test certificates https://github.com/elastic/logstash/pull/16331[#16331]
+* Backport PR #16331 to 7.17: regenerate webserver test certificates https://github.com/elastic/logstash/pull/16334[#16334]
+
+=== Logstash Commits between 7.17 and 7.17.22
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.22..7.17"
+
+5b13f973d - (HEAD -> 7.17, origin/7.17) bump lock file for 7.17 (#16341) (24 hours ago) <github-actions[bot]>
+2cf071716 - regenerate webserver test certificates (#16331) (#16334) (7 days ago) <github-actions[bot]>
+f22b574b3 - Remove Debian 10 from CI (#16300) (#16329) (9 days ago) <Dimitrios Liappis>
+9c201ecde - Remove CentOS 7 from CI (#16293) (#16298) (3 weeks ago) <github-actions[bot]>
+92a601ce2 - move j2 template to erb in 7.17 (#16274) (3 weeks ago) <João Duarte>
+70be95709 - Add retries to aarch64 CI pipeline (#16271) (#16273) (3 weeks ago) <github-actions[bot]>
+28cb00b6e - Require kafka integration to 10.12 for 7.17 (#16256) (4 weeks ago) <Andrea Selva>
+8b2c6de48 - update ironbank UBI version (#16247) (5 weeks ago) <kaisecheng>
+185d800c0 - Version bump for 7.17.23 (#16215) (6 weeks ago) <Andrea Selva>
+6faf0d721 - Release notes for 7.17.22 (#16184) (6 weeks ago) <github-actions[bot]>
+0ccc0c3ff - [DOC] Remove reference to puppet LS module (#12356) (#16167) (10 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.22..7.17 *.release"
+Changed plugin versions:
+logstash-codec-fluent: 3.4.2 -> 3.4.3
+logstash-input-azure_event_hubs: 1.4.5 -> 1.4.7
+logstash-integration-kafka: 10.9.0 -> 10.12.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Fluent Codec - 3.4.3*
+
+* Fix: reduce overhead of unpacking packforward-payloads by reusing a single instance https://github.com/logstash-plugins/logstash-codec-fluent/pull/32[#32]
+
+*Azure_event_hubs Input - 1.4.7*
+
+* [DOCS] Clarify examples for single and multiple event hubs https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/90[#90]
+
+* [DOCS] Add outbound port requirements for Event Hub https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/88[#88]
+
+*Kafka Integration - 10.12.1*
+
+* Fix: update Avro library on 10.x https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/149[#149]
+
+* bump kafka client to 2.8.1 https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/115[#115]
+
+* Feat: added connections_max_idle_ms setting for output https://github.com/logstash-plugins/logstash-integration-kafka/pull/118[#118]
+* Refactor: mixins to follow shared mixin module naming
+
+* Update CHANGELOG.md https://api.github.com/repos/logstash-plugins/logstash-integration-kafka/pulls/114[#114]
+
+* Added config setting to enable 'zstd' compression in the Kafka output https://github.com/logstash-plugins/logstash-integration-kafka/pull/112[#112]
 
 
 [[logstash-7-17-22]]
