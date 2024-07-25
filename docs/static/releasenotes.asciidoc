@@ -131,24 +131,6 @@ bf8846d4a - Update logstash_releases.json (#16123) (3 months ago) <kaisecheng>
 
 cb45cd28c - Doc: Remove include statements for screenshots not rendering properly (#15981) (3 months ago) <Karen Metts>
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.14.3..8.15 *.release"
-Changed plugin versions:
-logstash-filter-de_dot: 1.0.4 -> 1.1.0
-logstash-filter-elastic_integration: 0.1.10 -> 0.1.13
-logstash-filter-geoip: 7.2.13 -> 7.3.0
-logstash-filter-http: 1.5.1 -> 1.6.0
-logstash-input-http_poller: 5.5.1 -> 5.6.0
-logstash-input-snmp: 1.3.3 -> 1.3.3
-logstash-input-snmptrap: 3.1.0 -> 3.1.0
-logstash-integration-aws: 7.1.6 -> 7.1.7
-logstash-integration-kafka: 11.4.2 -> 11.5.0
-logstash-integration-snmp: 4.0.4 -> 4.0.4
-logstash-mixin-http_client: 7.3.0 -> 7.4.0
-logstash-output-http: 5.6.1 -> 5.7.0
-logstash-output-redis: 5.0.0 -> 5.2.0
----------- GENERATED CONTENT ENDS HERE ------------
-
 ==== Plugins
 
 *De_dot Filter - 1.1.0*
@@ -157,13 +139,12 @@ logstash-output-redis: 5.0.0 -> 5.2.0
 
 *Elastic_integration Filter - 0.1.13*
 
-404: Not Found
+* Update default elasticsearch tree branch to 8.15 https://github.com/elastic/logstash-filter-elastic_integration/pull/156[#156]
 
 *Geoip Filter - 7.3.0*
 
-* Added support for MaxMind GeoIP2 Enterprise and Anonymous-IP databases (https://github.com/logstash-plugins/logstash-filter-geoip/pull/223[#223])
+* Added support for MaxMind GeoIP2 Enterprise and Anonymous-IP databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/223[#223]
 * Updated MaxMind dependencies.
-* Added tests for the Java classes.
 
 *Http Filter - 1.6.0*
 
@@ -172,10 +153,6 @@ logstash-output-redis: 5.0.0 -> 5.2.0
 *Http_poller Input - 5.6.0*
 
 * Added new `ssl_enabled` setting for enabling/disabling the SSL configurations https://github.com/logstash-plugins/logstash-input-http_poller/pull/146[#146]
-
-*Snmp Input - 1.3.3*
-
-*Snmptrap Input - 3.1.0*
 
 *Aws Integration - 7.1.7*
 
@@ -186,6 +163,8 @@ logstash-output-redis: 5.0.0 -> 5.2.0
 * Add "auto_create_topics" option to allow disabling of topic auto creation https://github.com/logstash-plugins/logstash-integration-kafka/pull/172[#172]
 
 *Snmp Integration - 4.0.4*
+
+* Introduce Snmp Integration by default, replacing Snmp Input v1.3.3 and Snmptrap Input v3.1.0
 
 *Http_client Mixin - 7.4.0*
 
@@ -198,15 +177,14 @@ logstash-output-redis: 5.0.0 -> 5.2.0
 *Redis Output - 5.2.0*
 
 * Added support to SSL/TLS configurations https://github.com/logstash-plugins/logstash-output-redis/pull/69[#69]
-* `ssl_enabled` 
-* `ssl_certificate_authorities`
-* `ssl_certificate`
-* `ssl_key`
-* `ssl_verification_mode`
-* `ssl_supported_protocols`
-* `ssl_cipher_suites`
-
-* Added basic support for SSL  https://github.com/logstash-plugins/logstash-output-redis/pull/59[#59]
+  * `ssl_enabled` 
+  * `ssl_certificate_authorities`
+  * `ssl_certificate`
+  * `ssl_key`
+  * `ssl_verification_mode`
+  * `ssl_supported_protocols`
+  * `ssl_cipher_suites`
+* Added basic support for SSL https://github.com/logstash-plugins/logstash-output-redis/pull/59[#59]
 * Fixed documentation of required settings https://github.com/logstash-plugins/logstash-output-redis/pull/61[#61]
 
 
