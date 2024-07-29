@@ -31,7 +31,7 @@ describe "Project licenses" do
                    /ruby/,
                    /lgpl/,
                    /epl/,
-                   /elastic/i
+                   /elastic|elv2/i
 ])
   }
 
