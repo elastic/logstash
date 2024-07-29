@@ -62,6 +62,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     # @ready requires thread safety since it is typically polled from outside the pipeline thread
     @ready = Concurrent::AtomicBoolean.new(false)
     @running = Concurrent::AtomicBoolean.new(false)
+    @partialReloading = Concurrent::AtomicBoolean.new(false)
     @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
@@ -201,7 +202,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
     transition_to_running
     start_flusher # Launches a non-blocking thread for flush events
     begin
-      monitor_inputs_and_workers
+      loop do
+        monitor_inputs_and_workers
+        break if @partialReloading.false?
+        start_workers
+        @partialReloading.make_false
+      end
     ensure
       transition_to_stopped
 
@@ -273,7 +279,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.batch.delay" => batch_delay,
         "pipeline.max_inflight" => max_inflight,
         "pipeline.sources" => pipeline_source_details)
-      @logger.info("Starting pipeline", pipeline_log_params)
+      @logger.info("Starting pipeline workers", pipeline_log_params)
 
       if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
         @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
@@ -317,7 +323,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # Finally inputs should be started last, after all workers have been initialized and started
 
       begin
-        start_inputs
+        start_inputs if @partialReloading.false?
       rescue => e
         # if there is any exception in starting inputs, make sure we shutdown workers.
         # exception will already by logged in start_inputs
@@ -328,6 +334,17 @@ module LogStash; class JavaPipeline < AbstractPipeline
       # it is important to guarantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
       @ready.make_true
+    end
+  end
+
+  def partial_reload(new_pipeline_config)
+    if reload_workers(new_pipeline_config)
+      @partialReloading.make_true
+      shutdown_workers
+      @shutdownRequested.set(false)
+      true
+    else
+      false
     end
   end
 
@@ -349,6 +366,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
       if @input_threads.delete(terminated_thread).nil?
         # this is an abnormal worker thread termination, we need to terminate the pipeline
+        break if @partialReloading
 
         @worker_threads.delete(terminated_thread)
 
