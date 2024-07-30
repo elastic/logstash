@@ -237,7 +237,7 @@ No user-facing changes in Logstash core.
 [[logstash-8-13-1]]
 === Logstash 8.13.1 Release Notes
 
-No user-facing changes in Logstash core.
+* Inject variable reference instead of variable value in `logstash.yaml` to ensure keystore values take precedence over Environment Variables https://github.com/elastic/logstash/pull/16037[#16037]
 
 [[logstash-8-13-0]]
 === Logstash 8.13.0 Release Notes
