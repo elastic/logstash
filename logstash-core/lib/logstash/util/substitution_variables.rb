@@ -74,9 +74,13 @@ module ::LogStash::Util::SubstitutionVariables
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
             "or as an Environment entry and there is no default value given."
       end
-      # if array string, remove literal brackets and make array
-      replacements = replacement.gsub(/[\[\]]/, '')
-      return replacements.split(', ').map(&:strip)
+      # if ENV carries array string, remove literal brackets and make array
+      if replacement.is_a?(String) && replacement.start_with?('[') && replacement.end_with?(']')
+        replacements = replacement.gsub(/[\[\]]/, '')
+        return replacements.split(', ').map(&:strip)
+      else
+        replacement.to_s
+      end
     end
   end # def replace_placeholders
 
