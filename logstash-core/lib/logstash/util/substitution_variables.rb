@@ -20,6 +20,8 @@ java_import "org.logstash.secret.store.SecretStoreExt"
 require_relative 'lazy_singleton'
 require_relative 'password'
 
+require 'yaml'
+
 module ::LogStash::Util::SubstitutionVariables
   include LogStash::Util::Loggable
 
@@ -74,13 +76,10 @@ module ::LogStash::Util::SubstitutionVariables
         raise LogStash::ConfigurationError, "Cannot evaluate `#{placeholder}`. Replacement variable `#{name}` is not defined in a Logstash secret store " +
             "or as an Environment entry and there is no default value given."
       end
-      # if ENV carries array string, remove literal brackets and make array
-      if replacement.is_a?(String) && replacement.start_with?('[') && replacement.end_with?(']')
-        replacements = replacement.gsub(/[\[\]]/, '')
-        return replacements.split(', ').map(&:strip)
-      else
-        replacement.to_s
-      end
+      # if ENV may carry array string, remove literal brackets and make array
+      # use YAML for backward compatibility to cover the cases with escaped chars (ex "[\"*\"]" => ["*"])
+      # YAML.load('*') fails but it is a valid use case
+      return replacement.is_a?(String) && replacement != '*' ? YAML.load(replacement) : replacement.to_s
     end
   end # def replace_placeholders
 
