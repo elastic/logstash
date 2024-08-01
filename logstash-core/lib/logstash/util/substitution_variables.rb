@@ -20,8 +20,6 @@ java_import "org.logstash.secret.store.SecretStoreExt"
 require_relative 'lazy_singleton'
 require_relative 'password'
 
-require 'yaml'
-
 module ::LogStash::Util::SubstitutionVariables
   include LogStash::Util::Loggable
 
@@ -58,6 +56,7 @@ module ::LogStash::Util::SubstitutionVariables
     end
     return value unless value.is_a?(String)
 
+    is_placeholder_found = false
     placeholder_value = value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
@@ -66,6 +65,8 @@ module ::LogStash::Util::SubstitutionVariables
       name = Regexp.last_match(:name)
       default = Regexp.last_match(:default)
       logger.debug("Replacing `#{placeholder}` with actual value")
+
+      is_placeholder_found = true
 
       #check the secret store if it exists
       secret_store = SECRET_STORE.instance
@@ -78,6 +79,9 @@ module ::LogStash::Util::SubstitutionVariables
       end
       replacement.to_s
     end
+
+    # no further action need if substitution didn't happen
+    return placeholder_value unless is_placeholder_found
 
     # ENV ${var} value may carry single quote or escaped double quote
     # or single/double quoted entries in array string, needs to be refined
