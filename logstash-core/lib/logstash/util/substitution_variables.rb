@@ -85,7 +85,7 @@ module ::LogStash::Util::SubstitutionVariables
 
     # ENV ${var} value may carry single quote or escaped double quote
     # or single/double quoted entries in array string, needs to be refined
-    refined_value = placeholder_value.strip.gsub(/[\\"\\']/, '')
+    refined_value = placeholder_value.gsub(/[\\"\\']/, '')
     if refined_value.start_with?('[') && refined_value.end_with?(']')
       # remove square brackets, split by comma and cleanup leading/trailing whitespace
       refined_value[1..-2].split(',').map(&:strip)
