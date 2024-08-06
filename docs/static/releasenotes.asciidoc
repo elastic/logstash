@@ -68,6 +68,31 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-0]]
 === Logstash 8.15.0 Release Notes
 
+[[snmp-ga-8.15.0]]
+==== Announcing the new {ls} SNMP integration plugin
+
+The new `logstash-integration-snmp` plugin is available and bundled with {ls} 8.15.0 (and later) by default.
+This plugin combines our classic `logstash-input-snmp` and `logstash-input-snmptrap` plugins into a single Ruby gem at v4.0.0 and later.
+
+The `logstash-integration-snmp` plugin combines the 
+`logstash-input-snmp` and `logstash-input-snmptrap` plugins into one integrated plugin that encompasses
+the capabilities of both. 
+This integrated plugin package provides better alignment in snmp processing, better resource management, 
+easier package maintenance, and a smaller installation footprint. 
+
+Earlier versions of the stand-alone plugins that were bundled with {ls} by default will be replaced by the 4.0.0+ version contained in this new integration.
+
+IMPORTANT: Before you upgrade to {ls} 8.15.0 that includes this new integration by default, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between stand-alone plugins and the new versions included in `integration-snmp`.
+If you need to maintain current mappings for the `input-snmptrap` plugin, you have options to {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-input-snmptrap-compat[preserve existing behavior].
+
+[[featured-8.15.0]]
+==== New features and enhancements
+
+[[notable-8.15.0]]
+==== Performance improvements and notable issues fixed
+
+[[core-8.15.0]]
+==== Other changes to Logstash core
 * Update bundled JDK to 21 https://github.com/elastic/logstash/pull/16055[#16055]
 * Handle non-unicode payload in Logstash. https://github.com/elastic/logstash/pull/16072[#16072]
 * Update log4j rollover to configure time retention https://github.com/elastic/logstash/pull/16179[#16179]
@@ -131,7 +156,8 @@ bf8846d4a - Update logstash_releases.json (#16123) (3 months ago) <kaisecheng>
 
 cb45cd28c - Doc: Remove include statements for screenshots not rendering properly (#15981) (3 months ago) <Karen Metts>
 
-==== Plugins
+[[plugins-8.15.0]]
+Plugin releases
 
 *De_dot Filter - 1.1.0*
 
