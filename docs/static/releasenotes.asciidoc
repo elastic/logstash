@@ -129,8 +129,7 @@ This new image flavor builds on top of a smaller and more secure base image, and
 * Remove reference to puppet {ls} module https://github.com/elastic/logstash/pull/12356[#12356]
 * Add section to describe intended usage of https://www.elastic.co/guide/en/logstash/master/jvm-settings.html#reducing-off-heap-usage[`pipeline.buffer.type`] https://github.com/elastic/logstash/pull/16083[#16083] 
 * Reposition https://www.elastic.co/guide/en/logstash/master/node-stats-api.html#pipeline-stats[worker-utilization] for better placement and flow https://github.com/elastic/logstash/pull/16337[#16337]
-
-* Backport PR #16265 to 8.15: add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16289[#16289]
+* Add tuning guidance based on Flow metrics https://github.com/elastic/logstash/pull/16289[#16289]
 
 
 [[plugins-8.15.0]]
