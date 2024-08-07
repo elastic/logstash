@@ -92,33 +92,34 @@ If you need to maintain current mappings for the `input-snmptrap` plugin, you ha
 [[featured-8.15.0]]
 ==== New features and enhancements
 
+[[wolfi-8.15.0]]
+===== Wolfi-flavored Docker Image
+Starting with 8.15.0, {ls} will provide an extra Docker image flavor based on the https://github.com/wolfi-dev[wolfi] Linux distribution (https://github.com/elastic/logstash/pull/16189[#16189]). To use the image append "-wolfi" to the image name:
+
+```
+docker run docker.elastic.co/logstash/logstash-wolfi:8.15.0
+```
+
+This new image flavor builds on top of a smaller and more secure base image, and is planned to become the default flavor in the next major version of {ls}.
+
 [[notable-8.15.0]]
 ==== Performance improvements and notable issues fixed
+* Improved performance in pipeline-to-pipeline workloads by removing lock contention in event serialization https://github.com/elastic/logstash/pull/16194[#16194]
+* Fixed pqcheck handling of paths with spaces on Windows https://github.com/elastic/logstash/pull/16205[#16205]
 
 [[core-8.15.0]]
 ==== Other changes to Logstash core
 
-* Update log4j rollover to configure time retention https://github.com/elastic/logstash/pull/16179[#16179]
-* Adding quotes in pqcheck.bat to support spaces in path https://github.com/elastic/logstash/pull/16205[#16205]
-* Backport PR #16265 to 8.15: add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16289[#16289]
-* Json normalization performance https://github.com/elastic/logstash/pull/16313[#16313]
-* Backport PR #16323 to 8.15: make pipeline resilient to stack overflow during compilation https://github.com/elastic/logstash/pull/16336[#16336]
-* Backport PR #16339 to 8.15: settings: add support for observing settings after post-process hooks https://github.com/elastic/logstash/pull/16348[#16348]
-
-* 0cfe6b080 - Add `RubyEvent#dup` support and unit test case to keep `Json#dump(Event)` safe. (#16255) (4 weeks ago) <Mashhur>
-* 92909cb1c - json: remove unnecessary dup/freeze in serialization (#16213) (5 weeks ago) <Ry Biesemeyer>
-* 0f6fa5c8f - p2p: adds opt-in pipeline bus with less synchronization (#16194) (5 weeks ago) <Ry Biesemeyer>
-* fab345881 - Introduce filesystem signalling from DLQ read to writer to update byte size metric accordingly when the reader uses `clean_consumed` (#16195) (5 weeks ago) <Andrea Selva>
-
-* 148461440 - Wolfi-based image flavor (#16189) (5 weeks ago) <João Duarte>
-
-
+* Changed rollover strategy in log4j2.properties to delete compressed files older than 7 days https://github.com/elastic/logstash/pull/16179[#16179]
+* Fixed handling and reporting of compilation error when a pipeline didn't fit the JVM's ThreadStackSize https://github.com/elastic/logstash/pull/16336[#16336]
+* Fixed missing deprecation logging in deprecated Logstash core settings https://github.com/elastic/logstash/pull/16348[#16348]
+* Fixed innacurate accounting of `queue_size_in_bytes` metric when using `clean_consumed` option in dead_letter_queue input plugin https://github.com/elastic/logstash/pull/16195[#16195]
 
 [[dependencies-8.15.0]]
 ==== Updates to dependencies
 
-* Update bundled JDK to 21 https://github.com/elastic/logstash/pull/16055[#16055]
-* 121b1c963 - Update jruby to 9.4.8.0 (#16278) (3 weeks ago) <João Duarte>
+* Updated bundled JDK to 21 https://github.com/elastic/logstash/pull/16055[#16055]
+* Updated JRuby to 9.4.8.0 https://github.com/elastic/logstash/pull/16278[#16278]
 
 [[docs-8.15.0]]
 ==== Documentation enhancements
@@ -128,6 +129,8 @@ If you need to maintain current mappings for the `input-snmptrap` plugin, you ha
 * Remove reference to puppet {ls} module https://github.com/elastic/logstash/pull/12356[#12356]
 * Add section to describe intended usage of https://www.elastic.co/guide/en/logstash/master/jvm-settings.html#reducing-off-heap-usage[`pipeline.buffer.type`] https://github.com/elastic/logstash/pull/16083[#16083] 
 * Reposition https://www.elastic.co/guide/en/logstash/master/node-stats-api.html#pipeline-stats[worker-utilization] for better placement and flow https://github.com/elastic/logstash/pull/16337[#16337]
+
+* Backport PR #16265 to 8.15: add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16289[#16289]
 
 
 [[plugins-8.15.0]]
