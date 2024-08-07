@@ -32,12 +32,12 @@ module ::LogStash::Util::SubstitutionVariables
   def deep_replace(value, refine = false)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, refine)
       end
     else
       if value.is_a?(Array)
         value.each_with_index do |single_value, i|
-          value[i] = deep_replace(single_value)
+          value[i] = deep_replace(single_value, refine)
         end
       else
         return replace_placeholders(value, refine)
