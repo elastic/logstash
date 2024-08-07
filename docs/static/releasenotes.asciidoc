@@ -98,11 +98,6 @@ If you need to maintain current mappings for the `input-snmptrap` plugin, you ha
 [[core-8.15.0]]
 ==== Other changes to Logstash core
 
-* Handle non-unicode payload in Logstash. https://github.com/elastic/logstash/pull/16072[#16072] - 8.14.1
-* Ensure pipeline metrics are cleared on the shutdown https://github.com/elastic/logstash/pull/16264[#16264] - 8.14.3
-* 0ec16ca39 - Unicode pipeline and plugin ids (#15971) (4 weeks ago) <Ry Biesemeyer> - 8.14.2
-* 801f0f441 - Geoip database management cache invalidation (#16222) (5 weeks ago) <Ry Biesemeyer> - 8.14.2
-
 * Update log4j rollover to configure time retention https://github.com/elastic/logstash/pull/16179[#16179]
 * Adding quotes in pqcheck.bat to support spaces in path https://github.com/elastic/logstash/pull/16205[#16205]
 * Backport PR #16265 to 8.15: add flow-informed tuning guidance https://github.com/elastic/logstash/pull/16289[#16289]
@@ -112,45 +107,18 @@ If you need to maintain current mappings for the `input-snmptrap` plugin, you ha
 
 * 0cfe6b080 - Add `RubyEvent#dup` support and unit test case to keep `Json#dump(Event)` safe. (#16255) (4 weeks ago) <Mashhur>
 * 92909cb1c - json: remove unnecessary dup/freeze in serialization (#16213) (5 weeks ago) <Ry Biesemeyer>
-* ed930f820 - Avoid mocking the value returned in global SETTINGS constant. (#16245) (5 weeks ago) <Andrea Selva>
 * 0f6fa5c8f - p2p: adds opt-in pipeline bus with less synchronization (#16194) (5 weeks ago) <Ry Biesemeyer>
 * fab345881 - Introduce filesystem signalling from DLQ read to writer to update byte size metric accordingly when the reader uses `clean_consumed` (#16195) (5 weeks ago) <Andrea Selva>
 
-* 0d6ba8d1b - Allow comments in hashes and before EOF (#16058) (3 months ago) <Jonas L. B>
-* 734405dcb - Replace stack traces with logger in DSL. (#16159) (2 months ago) <Mashhur>
-* 830733d75 - (origin/8.10.2) Provide opt-in flag to avoid fields name clash when log format is json (#15969) (3 months ago) <Andrea Selva>
 * 148461440 - Wolfi-based image flavor (#16189) (5 weeks ago) <João Duarte>
 
 
-**DELETE???** 
-
-* bf8846d4a - Update logstash_releases.json (#16123) (3 months ago) <kaisecheng>
-* 21148f160 - Set correct pipeline ownership (#16149) (3 months ago) <Andres Rodriguez>
-* 440aa98e4 - [CI] Benchmark pipeline (#16191) (5 weeks ago) <kaisecheng>
-* 0d385a961 - Update pull-requests.json (#16220) (5 weeks ago) <ev1yehor>
-* 3068934c6 - upgrade java_input_example to 1.0.3 (#16152) (3 months ago) <João Duarte>
-* 1e431b47c - Update releases inventory after 8.13.4 (#16147) (3 months ago) <Andrea Selva>
-* 7f424c1f5 - Update logstash_releases.json to account for 7.17.22 (#16185) (6 weeks ago) <João Duarte>
-* 1d4038b27 - Add initial buildkite pipeline for Benchmark (#16190) (8 weeks ago) <kaisecheng>
-* 14afa851d - Bump `logstash-releases.json` after 8.14.0 release (#16197) (7 weeks ago) <Rob Bavey>
-* 881f7605f - Bump logstash-releases.json after 8.14.1 release (#16217) (6 weeks ago) <Edmo Vamerlatti Costa>
-* 0e1d67eda - produce wolfi docker image in ci (#16252) (4 weeks ago) <João Duarte>
-* efa83787a - Revert PR #16050 (7 weeks ago) <Andrea Selva> - ???
 
 [[dependencies-8.15.0]]
 ==== Updates to dependencies
 
 * Update bundled JDK to 21 https://github.com/elastic/logstash/pull/16055[#16055]
-* 4350855e7 - Upgrade jruby to 9.4.7.0 (#16125) (3 months ago) <João Duarte>
 * 121b1c963 - Update jruby to 9.4.8.0 (#16278) (3 weeks ago) <João Duarte>
-* 2a7f05975 - Upgrade jrjackson to 0.4.20 (#16153) (9 weeks ago) <João Duarte>
-* 973c2ba3a - Force ruby-maven-libs constraint to >= 3.9.6.1 (#16130) (3 months ago) <João Duarte>
-* 9e452d2e5 - Update junit 4 13 (#16138) (3 months ago) <Ry Biesemeyer>
-* e6682c94b - Pin fileutils version to 1.7+ (#16250) (4 weeks ago) <Mashhur>
-* 0d6117173 - Update multiple dependencies (#16136) (3 months ago) <João Duarte>
-* 13a8c4f1a - remove version pinning from rexml (#16224) (5 weeks ago) <João Duarte>
-* 8e8a5b08d - Updated target and source Java definitions in build.gradle because deprecated and planned for removal in next major (#16156) (3 months ago) <Andrea Selva>
-* 23221cadd - Pin rexml gem version to 3.2.6 (#16209) (6 weeks ago) <Edmo Vamerlatti Costa>
 
 [[docs-8.15.0]]
 ==== Documentation enhancements
@@ -197,10 +165,6 @@ If you need to maintain current mappings for the `input-snmptrap` plugin, you ha
 *Snmp Integration - 4.0.4*
 
 * Introduce Snmp Integration by default, replacing Snmp Input v1.3.3 and Snmptrap Input v3.1.0 https://github.com/logstash-plugins/logstash-integration-snmp/pull/67[#67]
-
-*Http_client Mixin - 7.4.0*
-
-* Adds new `ssl_enabled` setting for enabling/disabling the SSL configurations https://github.com/logstash-plugins/logstash-mixin-http_client/pull/44[#44]
 
 *Http Output - 5.7.0*
 
