@@ -34,6 +34,7 @@ describe "Test Logstash service when multiple pipelines are used" do
 
   let(:temporary_out_file_1) { Stud::Temporary.pathname }
   let(:temporary_out_file_2) { Stud::Temporary.pathname }
+  ENV['TEMP_FILE_PATH'] = Stud::Temporary.pathname
 
   let(:pipelines) {[
     {
@@ -47,6 +48,12 @@ describe "Test Logstash service when multiple pipelines are used" do
       "pipeline.workers" => 1,
       "pipeline.batch.size" => 1,
       "config.string" => "input { generator { count => 1 } } output { file { path => \"#{temporary_out_file_2}\" } }"
+    },
+    {
+      "pipeline.id" => "config-string-with-env-var-pipeline",
+      "pipeline.workers" => 1,
+      "pipeline.batch.size" => 1,
+      "config.string" => "input { generator { count => 1 } } output { file { path => \"${TEMP_FILE_PATH}\" } }"
     }
   ]}
 
@@ -74,6 +81,8 @@ describe "Test Logstash service when multiple pipelines are used" do
     expect(IO.readlines(temporary_out_file_1).size).to eq(1)
     expect(File.exist?(temporary_out_file_2)).to be(true)
     expect(IO.readlines(temporary_out_file_2).size).to eq(1)
+    expect(File.exist?(ENV['TEMP_FILE_PATH'])).to be(true)
+    expect(IO.readlines(ENV['TEMP_FILE_PATH']).size).to eq(1)
   end
 
   context 'effectively-empty pipelines.yml file' do
