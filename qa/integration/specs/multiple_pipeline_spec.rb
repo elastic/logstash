@@ -82,8 +82,8 @@ describe "Test Logstash service when multiple pipelines are used" do
     expect(IO.readlines(temporary_out_file_1).size).to eq(1)
     expect(File.exist?(temporary_out_file_2)).to be(true)
     expect(IO.readlines(temporary_out_file_2).size).to eq(1)
-    expect(File.exist?(ENV['TEMP_FILE_PATH'])).to be(true)
-    expect(IO.readlines(ENV['TEMP_FILE_PATH']).size).to eq(1)
+    expect(File.exist?(temporary_out_file_3)).to be(true)
+    expect(IO.readlines(temporary_out_file_3).size).to eq(1)
   end
 
   context 'effectively-empty pipelines.yml file' do
