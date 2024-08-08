@@ -48,7 +48,7 @@ def elasticsearch(options = {})
   # Launch in the background and wait for /started/ stdout
   cmd = "bin/elasticsearch #{settings_arguments.join(' ')}"
   puts "Running elasticsearch: #{cmd}"
-  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path, :wait_condition => /license.*valid/, :timeout => 15 * 60 })
+  response = Belzebuth.run(cmd, { :directory => get_elasticsearch_path, :wait_condition => /ClusterStateLicenseService.*license.*valid/, :timeout => 15 * 60 })
   unless response.successful?
     raise "Could not start Elasticsearch, response: #{response}"
   end
