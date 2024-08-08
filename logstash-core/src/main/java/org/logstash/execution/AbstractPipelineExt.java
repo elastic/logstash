@@ -21,6 +21,8 @@
 package org.logstash.execution;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -178,7 +180,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         @Override
         public void notify(ConditionalEvaluationError err) {
             lastErrorEvaluationReceived = err.getMessage();
-            LOGGER.warn("Error in condition evaluation with event {}", err.failedEvent().getField("[event][original]"), err);
+            LOGGER.warn("Error in condition evaluation with error {} on event {}", lastErrorEvaluationReceived, err.failedEvent().getField("[event][original]"));
+            try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+                err.printStackTrace(pw);
+                LOGGER.debug("{}", sw);
+            } catch (IOException ioex) {
+                LOGGER.warn("Invalid operation on closing internal resources", ioex);
+            }
         }
     }
 
