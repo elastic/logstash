@@ -259,6 +259,23 @@ module LogStash
 
       validate(default) if @strict
       @default = default
+
+      set_from_env_or_keystore(@name)
+    end
+
+    def set_from_env_or_keystore(name)
+      result = lookup_env(name)
+      set(result) if result
+    end
+
+    def lookup_env(name)
+      env_ish_name = name.upcase.tr(".", "_")
+      result ||= ENV["name"]
+      result ||= ENV[env_ish_name]
+      if result && result.start_with?("[")
+        result = instance_eval(result)
+      end
+      result
     end
 
     def value
@@ -367,6 +384,8 @@ module LogStash
         else
           @default = default
         end
+
+        set_from_env_or_keystore(@name)
       end
 
       def set(value)
