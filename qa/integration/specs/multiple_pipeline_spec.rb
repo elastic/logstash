@@ -34,7 +34,7 @@ describe "Test Logstash service when multiple pipelines are used" do
 
   let(:temporary_out_file_1) { Stud::Temporary.pathname }
   let(:temporary_out_file_2) { Stud::Temporary.pathname }
-  ENV['TEMP_FILE_PATH'] = Stud::Temporary.pathname
+  let(:temporary_out_file_3) { Stud::Temporary.pathname }
 
   let(:pipelines) {[
     {
@@ -72,6 +72,7 @@ describe "Test Logstash service when multiple pipelines are used" do
 
   it "executes the multiple pipelines" do
     logstash_service = @fixture.get_service("logstash")
+    logstash_service.env_variables = {'TEMP_FILE_PATH' => temporary_out_file_3}
     logstash_service.spawn_logstash("--path.settings", settings_dir, "--log.level=debug")
     try(retry_attempts) do
       expect(logstash_service.exited?).to be(true)
