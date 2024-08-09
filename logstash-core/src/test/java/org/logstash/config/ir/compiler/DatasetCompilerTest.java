@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.PipelineTestUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -44,7 +45,8 @@ public final class DatasetCompilerTest {
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
-                true
+                true,
+                new CompiledPipeline.NoopEvaluationListener()
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );

@@ -377,6 +377,68 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when if condition" do
+    extend PipelineHelpers
+
+    let(:settings) { LogStash::SETTINGS.clone }
+
+    config <<-CONFIG
+          filter {
+            if [path][to][value] > 100 {
+              mutate { add_tag => "hit" }
+            } else {
+              mutate { add_tag => "miss" }
+            }
+          }
+        CONFIG
+
+    context "raise an error when it's evaluated, should cancel the event execution and log the error" do
+      context "when type of evaluation doesn't have same type" do
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when left and right operands of event condition are not comparable" do
+        context "comparing a non existing field" do
+          sample_one( [{ "path" => {"to" => "Rome"}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/<no-class>:<null-value>/)
+          end
+        end
+
+        context "comparing incompatible types" do
+          sample_one( [{ "path" => {"to" => {"value" => [101, 102]}}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/Unexpected input type combination.*List.*RubyFixnum/)
+          end
+        end
+      end
+
+      context "when the offending condition is in a nested if structure" do
+        config <<-CONFIG
+                  filter {
+                    if "a" == "a" {
+                      if "b" == "b" {
+                        if [path][to][value] > 100 {
+                          mutate { add_tag => "hit" }
+                        } else {
+                          mutate { add_tag => "miss" }
+                        }
+                      }
+                    }
+                  }
+                CONFIG
+
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do

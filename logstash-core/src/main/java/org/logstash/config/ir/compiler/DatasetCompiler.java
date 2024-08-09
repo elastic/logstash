@@ -31,6 +31,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -108,10 +109,19 @@ public final class DatasetCompiler {
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(
         final Collection<Dataset> parents,
-        final AbstractFilterDelegatorExt plugin)
+        final AbstractFilterDelegatorExt plugin,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
+        final ValueSyntaxElement errorNotifier;
+        if (isContainedUnderIfStatement(parents)) {
+            errorNotifier = fields.add(conditionalErrListener);
+        } else {
+            // avoids to create a field that wouldn't be used in the target class
+            errorNotifier = null;
+        }
+
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
@@ -125,12 +135,31 @@ public final class DatasetCompiler {
             @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
-            compute = withInputBuffering(
-                filterBody(outputBuffer, inputBufferField, fields, plugin),
-                parentFields, inputBufferField
-            );
+
+            // when the parent Dataset is a SplitDataset (essentially an if statement) cover
+            // with try..catch in case of evaluation errors. Same happens also on the outputDataset
+            if (isContainedUnderIfStatement(parents)) {
+                Closure exceptionHandlerBlock = Closure.wrap(
+                        new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
+                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                        buffer(outputBuffer, inputBufferField),
+                        SyntaxFactory.ret(outputBuffer));
+                compute = withSafeInputBuffering(
+                        filterBody(outputBuffer, inputBufferField, fields, plugin),
+                        parentFields, inputBufferField, exceptionHandlerBlock
+                );
+            } else {
+                compute = withInputBuffering(
+                        filterBody(outputBuffer, inputBufferField, fields, plugin),
+                        parentFields, inputBufferField
+                );
+            }
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
+    }
+
+    private static boolean isContainedUnderIfStatement(Collection<Dataset> parents) {
+        return parents.size() == 1 && parents.iterator().next() instanceof SplitDataset;
     }
 
     /**
@@ -231,7 +260,8 @@ public final class DatasetCompiler {
     public static ComputeStepSyntaxElement<Dataset> outputDataset(
         final Collection<Dataset> parents,
         final AbstractOutputDelegatorExt output,
-        final boolean terminal)
+        final boolean terminal,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
@@ -257,15 +287,32 @@ public final class DatasetCompiler {
                 clearSyntax = clearSyntax(parentFields);
             }
             final ValueSyntaxElement inputBuffer = fields.add(buffer);
-            computeSyntax = withInputBuffering(
-                Closure.wrap(
-                    setPluginIdForLog4j(outputField),
-                    invokeOutput(outputField, inputBuffer),
-                    inlineClear,
-                    unsetPluginIdForLog4j()
-                ),
-                parentFields, inputBuffer
-            );
+            if (isContainedUnderIfStatement(parents)) {
+                final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
+                Closure exceptionHandlerBlock = Closure.wrap(
+                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                        MethodLevelSyntaxElement.RETURN_NULL
+                );
+                computeSyntax = withSafeInputBuffering(
+                        Closure.wrap(
+                                setPluginIdForLog4j(outputField),
+                                invokeOutput(outputField, inputBuffer),
+                                inlineClear,
+                                unsetPluginIdForLog4j()
+                        ),
+                        parentFields, inputBuffer, exceptionHandlerBlock
+                );
+            } else {
+                computeSyntax = withInputBuffering(
+                        Closure.wrap(
+                                setPluginIdForLog4j(outputField),
+                                invokeOutput(outputField, inputBuffer),
+                                inlineClear,
+                                unsetPluginIdForLog4j()
+                        ),
+                        parentFields, inputBuffer
+                );
+            }
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
     }
@@ -334,11 +381,39 @@ public final class DatasetCompiler {
      */
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
-        return Closure.wrap(
-                parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
-                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
-                ).toArray(MethodLevelSyntaxElement[]::new)
-        ).add(compute).add(clear(inputBuffer));
+        return computeNonCancelledEventsBlock(parents, inputBuffer)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    /**
+     * Surround the invocation of compute non-cancelled events with a try block to catch the ConditionalEvaluationError
+     * and return immediately without executing the multiFilter method on the FilterDelegatorExt.
+     * This happens when compute method is invoked on a SplitDataset that throws ConditionalEvaluationError during the
+     * condition evaluation (such as comparing stirng with int).
+     * This block, avoid to crash and move the execution forward the end of the conditional block.
+     * */
+    private static Closure withSafeInputBuffering(final Closure compute,
+                                                  final Collection<ValueSyntaxElement> parents,
+                                                  final ValueSyntaxElement inputBuffer,
+                                                  final Closure exceptionHandlerBlock) {
+        // return the full list of input batch events (coping in the outputBuffer) and mark as done, so that the execution
+        // can continue with the parent dataflow (which is the next block after the conditional statement).
+        ValueSyntaxElement exception = SyntaxFactory.value("ex");
+
+        MethodLevelSyntaxElement safeCompute = SyntaxFactory.tryBlock(
+                computeNonCancelledEventsBlock(parents, inputBuffer),
+                ConditionalEvaluationError.class, exceptionHandlerBlock, exception);
+
+        return Closure.wrap(safeCompute)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    private static Closure computeNonCancelledEventsBlock(Collection<ValueSyntaxElement> parents, ValueSyntaxElement inputBuffer) {
+        return Closure.wrap(parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
+        ).toArray(MethodLevelSyntaxElement[]::new));
     }
 
     /**
@@ -490,9 +565,13 @@ public final class DatasetCompiler {
             if (done) {
                 return data;
             }
-            parent.compute(batch, flush, shutdown);
-            done = true;
-            return data;
+            try {
+                parent.compute(batch, flush, shutdown);
+                done = true;
+                return data;
+            } catch (ConditionalEvaluationError ex) {
+                return data;
+            }
         }
 
         @Override
