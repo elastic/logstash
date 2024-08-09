@@ -33,6 +33,13 @@ module LogStash
     end
   end
 
+  # First register keystore settings
+  [
+    Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
+    Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false) # will be populated on
+  ].each {|setting| SETTINGS.register(setting) }
+  require 'logstash/util/keystore'
+
   [
            Setting::Boolean.new("allow_superuser", true),
             Setting::String.new("node.name", Socket.gethostname),
@@ -108,8 +115,6 @@ module LogStash
          Setting::TimeValue.new("slowlog.threshold.info", "-1"),
          Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
-            Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
-            Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableString.new("monitoring.cluster_uuid"),
             Setting::String.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
   # post_process
