@@ -187,7 +187,7 @@ module LogStash
 
     def from_yaml(yaml_path, file_name = "logstash.yml")
       settings = read_yaml(::File.join(yaml_path, file_name))
-      self.merge(deep_replace(flatten_hash(settings)), true)
+      self.merge(deep_replace(flatten_hash(settings), true), true)
       self
     end
 
