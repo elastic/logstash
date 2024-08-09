@@ -28,19 +28,19 @@ module ::LogStash::Util::SubstitutionVariables
   SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
   private_constant :SECRET_STORE
 
-  # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value)
+  # Recursive method to replace substitution variable references in parameters and refine if required
+  def deep_replace(value, refine = false)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, refine)
       end
     else
       if value.is_a?(Array)
         value.each_with_index do |single_value, i|
-          value[i] = deep_replace(single_value)
+          value[i] = deep_replace(single_value, refine)
         end
       else
-        return replace_placeholders(value)
+        return replace_placeholders(value, refine)
       end
     end
   end
@@ -49,9 +49,11 @@ module ::LogStash::Util::SubstitutionVariables
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
-  def replace_placeholders(value)
+  # When setting refine to true, substituted value will be cleaned against escaped single/double quotes
+  #   and generates array if resolved substituted value is array string
+  def replace_placeholders(value, refine)
     if value.kind_of?(::LogStash::Util::Password)
-      interpolated = replace_placeholders(value.value)
+      interpolated = replace_placeholders(value.value, refine)
       return ::LogStash::Util::Password.new(interpolated)
     end
     return value unless value.is_a?(String)
@@ -80,8 +82,8 @@ module ::LogStash::Util::SubstitutionVariables
       replacement.to_s
     end
 
-    # no further action need if substitution didn't happen
-    return placeholder_value unless is_placeholder_found
+    # no further action need if substitution didn't happen or refine isn't required
+    return placeholder_value unless is_placeholder_found && refine
 
     # ENV ${var} value may carry single quote or escaped double quote
     # or single/double quoted entries in array string, needs to be refined
