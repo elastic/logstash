@@ -415,6 +415,27 @@ describe LogStash::JavaPipeline do
           end
         end
       end
+
+      context "when the offending condition is in a nested if structure" do
+        config <<-CONFIG
+                  filter {
+                    if "a" == "a" {
+                      if "b" == "b" {
+                        if [path][to][value] > 100 {
+                          mutate { add_tag => "hit" }
+                        } else {
+                          mutate { add_tag => "miss" }
+                        }
+                      }
+                    }
+                  }
+                CONFIG
+
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
     end
   end
 
