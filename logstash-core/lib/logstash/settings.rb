@@ -266,6 +266,8 @@ module LogStash
     def set_from_env_or_keystore(name)
       result = lookup_env(name)
       puts "found #{name} in env: #{result}" if result
+      set(result) if result
+
       result = lookup_keystore(name)
       puts "found #{name} in keystore: #{result}" if result
       set(result) if result
