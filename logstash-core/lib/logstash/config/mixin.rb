@@ -93,7 +93,7 @@ module LogStash::Config::Mixin
 
     # Resolve environment variables references
     params.each do |name, value|
-      params[name.to_s] = deep_replace(value)
+      params[name.to_s] = deep_replace(value, true)
     end
 
     # Intercept codecs that have not been instantiated
