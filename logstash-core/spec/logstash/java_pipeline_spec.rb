@@ -377,7 +377,7 @@ describe LogStash::JavaPipeline do
     end
   end
 
-  context "when if condition" do
+  context "when logical expression in conditional" do
     extend PipelineHelpers
 
     let(:settings) { LogStash::SETTINGS.clone }
@@ -416,7 +416,7 @@ describe LogStash::JavaPipeline do
         end
       end
 
-      context "when the offending condition is in a nested if structure" do
+      context "when the offending logic expression is used in a nested conditional structure" do
         config <<-CONFIG
                   filter {
                     if "a" == "a" {
@@ -434,6 +434,48 @@ describe LogStash::JavaPipeline do
         sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
           expect(subject).to be nil
           expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when the offending condition is in the output section" do
+        before do
+          LogStash::PLUGIN_REGISTRY.add(:input, "spec_sampler_input", PipelineHelpers::SpecSamplerInput)
+          LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
+        end
+
+        describe "given a pipeline executing an event that would trigger an evaluation error" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [path][to][value] > 100 { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "path" => {"to" => {"value" => "101"}}})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+          end
         end
       end
     end
