@@ -56,7 +56,8 @@ public final class DatasetCompilerTest {
     public void compilesSplitDataset() {
         final FieldReference key = FieldReference.from("foo");
         final SplitDataset left = DatasetCompiler.splitDataset(
-            Collections.emptyList(), event -> event.getEvent().includes(key)
+            Collections.emptyList(), event -> event.getEvent().includes(key),
+            new CompiledPipeline.NoopEvaluationListener()
         ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");

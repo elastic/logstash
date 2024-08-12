@@ -450,8 +450,7 @@ public final class CompiledPipeline {
                 final ComputeStepSyntaxElement<Dataset> prepared =
                     DatasetCompiler.filterDataset(
                         flatten(datasets, vertex),
-                        filters.get(vertexId),
-                        conditionalErrListener
+                        filters.get(vertexId)
                     );
 
                 plugins.put(vertexId, prepared.instantiate());
@@ -507,7 +506,7 @@ public final class CompiledPipeline {
                 // by requiring its else branch.
                 if (conditional == null) {
                     final ComputeStepSyntaxElement<SplitDataset> prepared =
-                        DatasetCompiler.splitDataset(dependencies, condition);
+                        DatasetCompiler.splitDataset(dependencies, condition, conditionalErrListener);
 
                     conditional = prepared.instantiate();
                     iffs.put(vertexId, conditional);

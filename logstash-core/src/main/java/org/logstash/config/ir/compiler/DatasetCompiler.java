@@ -57,7 +57,8 @@ public final class DatasetCompiler {
 
     public static ComputeStepSyntaxElement<SplitDataset> splitDataset(
         final Collection<Dataset> parents,
-        final EventCondition condition)
+        final EventCondition condition,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement ifData = fields.add("ifData", new ArrayList<>());
@@ -79,20 +80,36 @@ public final class DatasetCompiler {
         );
         final ValueSyntaxElement conditionField = fields.add("condition", condition);
         final DatasetCompiler.ComputeAndClear compute;
+
+        final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
+        Closure exceptionHandlerBlock = Closure.wrap(
+                new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
+                errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                SyntaxFactory.ret(ifData));
+        ValueSyntaxElement exception = SyntaxFactory.value("ex");
+
         if (parents.isEmpty()) {
+            MethodLevelSyntaxElement safeLoop = SyntaxFactory.tryBlock(
+                    conditionalLoop(event, BATCH_ARG, conditionField, ifData, elseData),
+                    ConditionalEvaluationError.class, exceptionHandlerBlock, exception
+            );
             compute = withOutputBuffering(
-                conditionalLoop(event, BATCH_ARG, conditionField, ifData, elseData),
+                    Closure.wrap(safeLoop),
                 Closure.wrap(clear(elseData)), ifData, fields
             );
         } else {
-            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
+            final Collection<ValueSyntaxElement> parentFields =
+                parents.stream().map(fields::add).collect(Collectors.toList());
             final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", new ArrayList<>());
+            MethodLevelSyntaxElement safeLoop = SyntaxFactory.tryBlock(
+                    conditionalLoop(event, inputBuffer, conditionField, ifData, elseData),
+                    ConditionalEvaluationError.class, exceptionHandlerBlock, exception);
             compute = withOutputBuffering(
                 withInputBuffering(
-                    conditionalLoop(event, inputBuffer, conditionField, ifData, elseData),
+                        Closure.wrap(safeLoop),
                     parentFields, inputBuffer
                 ),
-                clearSyntax(parentFields).add(clear(elseData)), ifData, fields
+                clearSyntax(parentFields).add(clear(elseData)).add(clear(inputBuffer)), ifData, fields
             );
         }
         return ComputeStepSyntaxElement.create(
@@ -109,18 +126,10 @@ public final class DatasetCompiler {
      */
     public static ComputeStepSyntaxElement<Dataset> filterDataset(
         final Collection<Dataset> parents,
-        final AbstractFilterDelegatorExt plugin,
-        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
+        final AbstractFilterDelegatorExt plugin)
     {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add("outputBuffer", new ArrayList<>());
-        final ValueSyntaxElement errorNotifier;
-        if (isContainedUnderIfStatement(parents)) {
-            errorNotifier = fields.add("errorListener", conditionalErrListener);
-        } else {
-            // avoids to create a field that wouldn't be used in the target class
-            errorNotifier = null;
-        }
 
         final Closure clear = Closure.wrap();
         final Closure compute;
@@ -133,24 +142,10 @@ public final class DatasetCompiler {
             clear.add(clearSyntax(parentFields));
             final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
 
-            // when the parent Dataset is a SplitDataset (essentially an if statement) cover
-            // with try..catch in case of evaluation errors. Same happens also on the outputDataset
-            if (isContainedUnderIfStatement(parents)) {
-                Closure exceptionHandlerBlock = Closure.wrap(
-                        new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
-                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
-                        buffer(outputBuffer, inputBufferField),
-                        SyntaxFactory.ret(outputBuffer));
-                compute = withSafeInputBuffering(
-                        filterBody(outputBuffer, inputBufferField, fields, plugin),
-                        parentFields, inputBufferField, exceptionHandlerBlock
-                );
-            } else {
-                compute = withInputBuffering(
-                        filterBody(outputBuffer, inputBufferField, fields, plugin),
-                        parentFields, inputBufferField
-                );
-            }
+            compute = withInputBuffering(
+                    filterBody(outputBuffer, inputBufferField, fields, plugin),
+                    parentFields, inputBufferField
+            );
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
     }
@@ -292,22 +287,6 @@ public final class DatasetCompiler {
                 clearSyntax = clearSyntax(parentFields);
             }
             final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", buffer);
-            if (isContainedUnderIfStatement(parents)) {
-                final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
-                Closure exceptionHandlerBlock = Closure.wrap(
-                        errorNotifier.call("notify", SyntaxFactory.value("ex")),
-                        MethodLevelSyntaxElement.RETURN_NULL
-                );
-                computeSyntax = withSafeInputBuffering(
-                        Closure.wrap(
-                                setPluginIdForLog4j(outputField),
-                                invokeOutput(outputField, inputBuffer),
-                                inlineClear,
-                                unsetPluginIdForLog4j()
-                        ),
-                        parentFields, inputBuffer, exceptionHandlerBlock
-                );
-            } else {
                 computeSyntax = withInputBuffering(
                         Closure.wrap(
                                 setPluginIdForLog4j(outputField),
@@ -317,7 +296,6 @@ public final class DatasetCompiler {
                         ),
                         parentFields, inputBuffer
                 );
-            }
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
     }
@@ -387,30 +365,6 @@ public final class DatasetCompiler {
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
         return computeNonCancelledEventsBlock(parents, inputBuffer)
-                .add(compute)
-                .add(clear(inputBuffer));
-    }
-
-    /**
-     * Surround the invocation of compute non-cancelled events with a try block to catch the ConditionalEvaluationError
-     * and return immediately without executing the multiFilter method on the FilterDelegatorExt.
-     * This happens when compute method is invoked on a SplitDataset that throws ConditionalEvaluationError during the
-     * condition evaluation (such as comparing stirng with int).
-     * This block, avoid to crash and move the execution forward the end of the conditional block.
-     * */
-    private static Closure withSafeInputBuffering(final Closure compute,
-                                                  final Collection<ValueSyntaxElement> parents,
-                                                  final ValueSyntaxElement inputBuffer,
-                                                  final Closure exceptionHandlerBlock) {
-        // return the full list of input batch events (coping in the outputBuffer) and mark as done, so that the execution
-        // can continue with the parent dataflow (which is the next block after the conditional statement).
-        ValueSyntaxElement exception = SyntaxFactory.value("ex");
-
-        MethodLevelSyntaxElement safeCompute = SyntaxFactory.tryBlock(
-                computeNonCancelledEventsBlock(parents, inputBuffer),
-                ConditionalEvaluationError.class, exceptionHandlerBlock, exception);
-
-        return Closure.wrap(safeCompute)
                 .add(compute)
                 .add(clear(inputBuffer));
     }
