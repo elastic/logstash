@@ -130,7 +130,6 @@ public final class DatasetCompiler {
     {
         final ClassFields fields = new ClassFields();
         final ValueSyntaxElement outputBuffer = fields.add("outputBuffer", new ArrayList<>());
-
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
@@ -143,8 +142,8 @@ public final class DatasetCompiler {
             final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
 
             compute = withInputBuffering(
-                    filterBody(outputBuffer, inputBufferField, fields, plugin),
-                    parentFields, inputBufferField
+                filterBody(outputBuffer, inputBufferField, fields, plugin),
+                parentFields, inputBufferField
             );
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
@@ -261,8 +260,7 @@ public final class DatasetCompiler {
     public static ComputeStepSyntaxElement<Dataset> outputDataset(
         final Collection<Dataset> parents,
         final AbstractOutputDelegatorExt output,
-        final boolean terminal,
-        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
+        final boolean terminal)
     {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
@@ -287,15 +285,15 @@ public final class DatasetCompiler {
                 clearSyntax = clearSyntax(parentFields);
             }
             final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", buffer);
-                computeSyntax = withInputBuffering(
-                        Closure.wrap(
-                                setPluginIdForLog4j(outputField),
-                                invokeOutput(outputField, inputBuffer),
-                                inlineClear,
-                                unsetPluginIdForLog4j()
-                        ),
-                        parentFields, inputBuffer
-                );
+            computeSyntax = withInputBuffering(
+                Closure.wrap(
+                    setPluginIdForLog4j(outputField),
+                    invokeOutput(outputField, inputBuffer),
+                    inlineClear,
+                    unsetPluginIdForLog4j()
+                ),
+                parentFields, inputBuffer
+            );
         }
         return compileOutput(computeSyntax, clearSyntax, fields);
     }

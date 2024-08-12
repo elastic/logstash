@@ -45,8 +45,7 @@ public final class DatasetCompilerTest {
             DatasetCompiler.outputDataset(
                 Collections.emptyList(),
                 PipelineTestUtil.buildOutput(events -> {}),
-                true,
-                new CompiledPipeline.NoopEvaluationListener()
+                true
             ).instantiate().compute(RubyUtil.RUBY.newArray(), false, false),
             nullValue()
         );
