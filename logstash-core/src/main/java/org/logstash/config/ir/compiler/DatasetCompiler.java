@@ -20,10 +20,7 @@
 
 package org.logstash.config.ir.compiler;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -58,8 +55,8 @@ public final class DatasetCompiler {
         final EventCondition condition)
     {
         final ClassFields fields = new ClassFields();
-        final ValueSyntaxElement ifData = fields.add(new ArrayList<>());
-        final ValueSyntaxElement elseData = fields.add(new ArrayList<>());
+        final ValueSyntaxElement ifData = fields.add("ifData", new ArrayList<>());
+        final ValueSyntaxElement elseData = fields.add("elseData", new ArrayList<>());
         final ValueSyntaxElement right = fields.add(DatasetCompiler.Complement.class);
         final VariableDefinition event =
             new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
@@ -75,7 +72,7 @@ public final class DatasetCompiler {
                 )
             )
         );
-        final ValueSyntaxElement conditionField = fields.add(condition);
+        final ValueSyntaxElement conditionField = fields.add("condition", condition);
         final DatasetCompiler.ComputeAndClear compute;
         if (parents.isEmpty()) {
             compute = withOutputBuffering(
@@ -85,7 +82,7 @@ public final class DatasetCompiler {
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
-            final ValueSyntaxElement inputBuffer = fields.add(new ArrayList<>());
+            final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", new ArrayList<>());
             compute = withOutputBuffering(
                 withInputBuffering(
                     conditionalLoop(event, inputBuffer, conditionField, ifData, elseData),
@@ -111,26 +108,38 @@ public final class DatasetCompiler {
         final AbstractFilterDelegatorExt plugin)
     {
         final ClassFields fields = new ClassFields();
-        final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
+        final ValueSyntaxElement outputBuffer = fields.add("outputBuffer", new ArrayList<>());
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
             compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
         } else {
-            final Collection<ValueSyntaxElement> parentFields = parents
-                .stream()
-                .map(fields::add)
-                .collect(Collectors.toList()
-            );
+            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
+
             @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
-            final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
+            final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
             compute = withInputBuffering(
                 filterBody(outputBuffer, inputBufferField, fields, plugin),
                 parentFields, inputBufferField
             );
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
+    }
+
+    private static Collection<ValueSyntaxElement> createParentStatementsFields(Collection<Dataset> parents, ClassFields fields) {
+        if (parents.size() == 1) {
+            return List.of(fields.add("parentStatement", parents.iterator().next()));
+        }
+
+        final Collection<ValueSyntaxElement> parentFields = new ArrayList<>();
+        int i = 0;
+        for (Dataset parent : parents) {
+            ValueSyntaxElement add = fields.add("parentStatement" + i, parent);
+            parentFields.add(add);
+            i++;
+        }
+        return parentFields;
     }
 
     /**
@@ -283,7 +292,7 @@ public final class DatasetCompiler {
         final ClassFields fields,
         final AbstractFilterDelegatorExt plugin)
     {
-        final ValueSyntaxElement filterField = fields.add(plugin);
+        final ValueSyntaxElement filterField = fields.add("plugin", plugin);
         final Closure body = Closure.wrap(
             setPluginIdForLog4j(filterField),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
