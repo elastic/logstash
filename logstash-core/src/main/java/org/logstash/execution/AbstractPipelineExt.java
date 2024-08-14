@@ -180,7 +180,10 @@ public class AbstractPipelineExt extends RubyBasicObject {
         @Override
         public void notify(ConditionalEvaluationError err) {
             lastErrorEvaluationReceived = err.getMessage();
-            LOGGER.warn("Error in condition evaluation with error {} on event {}", lastErrorEvaluationReceived, err.failedEvent().getField("[event][original]"));
+            LOGGER.warn("Error in condition evaluation with error {}", lastErrorEvaluationReceived);
+            LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
+
+            // logs the exception at debug level
             try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
                 err.printStackTrace(pw);
                 LOGGER.debug("{}", sw);
