@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-0,Logstash 8.15.0>>
 * <<logstash-8-14-3,Logstash 8.14.3>>
 * <<logstash-8-14-2,Logstash 8.14.2>>
 * <<logstash-8-14-1,Logstash 8.14.1>>
@@ -62,6 +63,128 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-0]]
+=== Logstash 8.15.0 Release Notes
+
+[[snmp-ga-8.15.0]]
+==== Announcing the new {ls} SNMP integration plugin
+
+The new `logstash-integration-snmp` plugin is available and bundled with {ls} 8.15.0 (and later) by default.
+This plugin combines our classic `logstash-input-snmp` and `logstash-input-snmptrap` plugins into a single Ruby gem at v4.0.0 and later.
+
+The `logstash-integration-snmp` plugin combines the 
+`logstash-input-snmp` and `logstash-input-snmptrap` plugins into one integrated plugin that encompasses
+the capabilities of both. 
+This integrated plugin package provides better alignment in snmp processing, better resource management, 
+easier package maintenance, and a smaller installation footprint. 
+
+[[breaking-8.15.0]]
+===== Breaking change with release of `logstash-integration-snmp`
+
+Prior to 8.15.0, {ls} bundled stand-alone versions of the `input-snmp` and `input-snmptrap` plugins by default. 
+When you upgrade to 8.15.0, the stand-alone plugins are replaced by the 4.0.0+ version contained in the new integration.
+
+IMPORTANT: Before you upgrade to {ls} 8.15.0, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between stand-alone plugins and the new versions included in `integration-snmp`.
+If you need to maintain current mappings for the `input-snmptrap` plugin, you have options to {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-input-snmptrap-compat[preserve existing behavior].
+
+[[featured-8.15.0]]
+==== New features and enhancements
+
+[[wolfi-8.15.0]]
+===== Wolfi-flavored Docker Image
+Starting with 8.15.0, {ls} provides an extra Docker image flavor based on the Wolfi Linux distribution: https://github.com/wolfi-dev. (https://github.com/elastic/logstash/pull/16189[#16189]). 
+To use the image append "-wolfi" to the image name:
+
+```
+docker run docker.elastic.co/logstash/logstash-wolfi:8.15.0
+```
+
+This new image flavor builds on top of a smaller and more secure base image, and is planned to become the default flavor in the next major version of {ls}.
+
+[[notable-8.15.0]]
+==== Performance improvements and notable issues fixed
+* Improved performance in pipeline-to-pipeline workloads by removing lock contention in event serialization https://github.com/elastic/logstash/pull/16194[#16194]
+* Fixed pqcheck handling of paths with spaces on Windows https://github.com/elastic/logstash/pull/16205[#16205]
+
+[[core-8.15.0]]
+==== Other changes to Logstash core
+
+* Changed rollover strategy in log4j2.properties to delete compressed files older than 7 days https://github.com/elastic/logstash/pull/16179[#16179]
+* Fixed handling and reporting of compilation error when a pipeline didn't fit the JVM's ThreadStackSize https://github.com/elastic/logstash/pull/16336[#16336]
+* Fixed missing deprecation logging in deprecated Logstash core settings https://github.com/elastic/logstash/pull/16348[#16348]
+* Fixed innacurate accounting of `queue_size_in_bytes` metric when using `clean_consumed` option in dead_letter_queue input plugin https://github.com/elastic/logstash/pull/16195[#16195]
+
+[[dependencies-8.15.0]]
+==== Updates to dependencies
+
+* Updated bundled JDK to 21 https://github.com/elastic/logstash/pull/16055[#16055]
+* Updated JRuby to 9.4.8.0 https://github.com/elastic/logstash/pull/16278[#16278]
+
+[[docs-8.15.0]]
+==== Documentation enhancements
+
+* Logstash {logstash-ref}/monitoring-with-ea.html[monitoring doc] improvements https://github.com/elastic/logstash/pull/16208[#16208] 
+* Add ecs and datastream requirement for {logstash-ref}/ea-integrations.html#es-tips[integration filter] https://github.com/elastic/logstash/pull/16268[#16268] 
+* Remove reference to puppet {ls} module https://github.com/elastic/logstash/pull/12356[#12356]
+* Add section to describe intended usage of {logstash-ref}/jvm-settings.html#reducing-off-heap-usage[`pipeline.buffer.type`] https://github.com/elastic/logstash/pull/16083[#16083] 
+* Reposition {logstash-ref}/node-stats-api.html#pipeline-stats[`worker-utilization`] stat for better placement and flow https://github.com/elastic/logstash/pull/16337[#16337]
+* Add {logstash-ref}/performance-troubleshooting.html[tuning guidance] based on Flow metrics https://github.com/elastic/logstash/pull/16289[#16289]
+
+
+[[plugins-8.15.0]]
+==== Plugin releases
+
+*De_dot Filter - 1.1.0*
+
+* Add support for recursively searching sub-fields with the new `recusive =>` config option https://github.com/logstash-plugins/logstash-filter-de_dot/pull/24[#24]
+
+*Elastic_integration Filter - 0.1.13*
+
+* Update default elasticsearch tree branch to 8.15 https://github.com/elastic/logstash-filter-elastic_integration/pull/156[#156]
+
+*Geoip Filter - 7.3.0*
+
+* Added support for MaxMind GeoIP2 Enterprise and Anonymous-IP databases https://github.com/logstash-plugins/logstash-filter-geoip/pull/223[#223]
+* Updated MaxMind dependencies.
+
+*Http Filter - 1.6.0*
+
+* Added new `ssl_enabled` setting for enabling/disabling the SSL configurations https://github.com/logstash-plugins/logstash-filter-http/pull/52[#52]
+
+*Http_poller Input - 5.6.0*
+
+* Added new `ssl_enabled` setting for enabling/disabling the SSL configurations https://github.com/logstash-plugins/logstash-input-http_poller/pull/146[#146]
+
+*Aws Integration - 7.1.7*
+
+* Remove empty temporary dirs at plugin close https://github.com/logstash-plugins/logstash-integration-aws/pull/46[#46]
+
+*Kafka Integration - 11.5.0*
+
+* Add "auto_create_topics" option to allow disabling of topic auto creation https://github.com/logstash-plugins/logstash-integration-kafka/pull/172[#172]
+
+*Snmp Integration - 4.0.4*
+
+* Introduce Snmp Integration by default, replacing Snmp Input v1.3.3 and Snmptrap Input v3.1.0 https://github.com/logstash-plugins/logstash-integration-snmp/pull/67[#67]
+
+*Http Output - 5.7.0*
+
+* Added new `ssl_enabled` setting for enabling/disabling the SSL configurations https://github.com/logstash-plugins/logstash-output-http/pull/144[#144]
+
+*Redis Output - 5.2.0*
+
+* Added support to SSL/TLS configurations https://github.com/logstash-plugins/logstash-output-redis/pull/69[#69]
+  * `ssl_enabled` 
+  * `ssl_certificate_authorities`
+  * `ssl_certificate`
+  * `ssl_key`
+  * `ssl_verification_mode`
+  * `ssl_supported_protocols`
+  * `ssl_cipher_suites`
+* Added basic support for SSL https://github.com/logstash-plugins/logstash-output-redis/pull/59[#59]
+* Fixed documentation of required settings https://github.com/logstash-plugins/logstash-output-redis/pull/61[#61]
 
 
 [[logstash-8-14-3]]
