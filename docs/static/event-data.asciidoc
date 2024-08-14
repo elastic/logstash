@@ -149,6 +149,11 @@ filter {
 }
 ----------------------------------
 
+If the evaluation of the expression generates an error, like comparing the integer value `100`
+with the string value `"100"`, then the processing of the event is stopped and a warning message is logged.
+To have the full content of the message as it is at the time of evaluation, enable debug log,
+see <<logging, Logging>> for more information about log levels and how to configure it.
+
 You can specify multiple expressions in a single condition:
 
 [source,js]
