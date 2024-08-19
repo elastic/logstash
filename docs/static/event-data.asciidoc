@@ -149,10 +149,11 @@ filter {
 }
 ----------------------------------
 
-If the evaluation of the expression generates an error, like comparing the integer value `100`
-with the string value `"100"`, then the processing of the event is stopped and a warning message is logged.
-To have the full content of the message as it is at the time of evaluation, enable debug log,
-see <<logging, Logging>> for more information about log levels and how to configure it.
+If an expression generates an error when it is evaluated, event processing stops and a warning message is written to the log. 
+For example, comparing integer value `100` with string value `"100"` cannot be evaluated with certainty, and so processing stops and the error is logged. 
+
+To capture the full content of the message at the time the error occurs, set the log level to `debug`.
+Check out <<logging, Logging>> for more information about how to configure logging and available log levels.
 
 You can specify multiple expressions in a single condition:
 
