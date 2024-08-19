@@ -411,7 +411,7 @@ describe LogStash::JavaPipeline do
         context "comparing incompatible types" do
           sample_one( [{ "path" => {"to" => {"value" => [101, 102]}}}] ) do
             expect(subject).to be nil
-            expect(pipeline.last_error_evaluation_received).to match(/Unexpected input type combination.*List.*RubyFixnum/)
+            expect(pipeline.last_error_evaluation_received).to match(/Unexpected conditional input combination of.*List.*RubyFixnum/)
           end
         end
       end
