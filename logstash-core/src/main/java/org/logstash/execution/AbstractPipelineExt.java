@@ -179,8 +179,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final class LogErrorEvaluationListener implements ConditionalEvaluationListener {
         @Override
         public void notify(ConditionalEvaluationError err) {
-            lastErrorEvaluationReceived = err.getMessage();
-            LOGGER.warn("Error in condition evaluation with error {}", lastErrorEvaluationReceived);
+            lastErrorEvaluationReceived = err.getCause().getMessage();
+            LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
             LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
 
             // logs the exception at debug level
