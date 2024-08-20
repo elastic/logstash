@@ -15,33 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/pipeline_action/base"
+module LogStash
+  module Api
+    module Modules
+      class HealthReport < ::LogStash::Api::Modules::Base
 
-module LogStash module PipelineAction
-  class StopAndDelete < Base
-    attr_reader :pipeline_id
+        get "/" do
+          payload = health_report.all.then do |health_report_pojo|
+            # The app_helper needs a ruby-hash.
+            # Manually creating a map of properties works around the issue.
+            {
+              status:     health_report_pojo.status,
+              symptom:    health_report_pojo.symptom,
+              indicators: health_report_pojo.indicators,
+            }
+          end
 
-    def initialize(pipeline_id)
-      @pipeline_id = pipeline_id
-    end
+          respond_with(payload, {exclude_default_metadata: true})
+        end
 
-    def execute(agent, pipelines_registry)
-      pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
-        pipeline.shutdown
+        private
+
+        def health_report
+          @health_report ||= factory.build(:health_report)
+        end
       end
-
-      success = pipelines_registry.delete_pipeline(@pipeline_id)
-      detach_health_indicator(agent) if success
-
-      LogStash::ConvergeResult::ActionResult.create(self, success)
-    end
-
-    def detach_health_indicator(agent)
-      agent.health_observer.detach_pipeline_indicator(pipeline_id)
-    end
-
-    def to_s
-      "PipelineAction::StopAndDelete<#{pipeline_id}>"
     end
   end
-end end
+end

@@ -54,7 +54,7 @@ class LogStash::Agent
     @ephemeral_id = SecureRandom.uuid
 
     java_import("org.logstash.health.HealthObserver")
-    @health_observer = HealthObserver.new
+    @health_observer ||= HealthObserver.new
 
     # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
@@ -154,6 +154,30 @@ class LogStash::Agent
     return 0
   ensure
     transition_to_stopped
+  end
+
+  include org.logstash.health.PipelineIndicator::PipelineDetailsProvider
+  def pipeline_details(pipeline_id)
+    logger.trace("fetching pipeline details for `#{pipeline_id}`")
+    pipeline_id = pipeline_id.to_sym
+
+    java_import org.logstash.health.PipelineIndicator
+
+    pipeline_state = @pipelines_registry.states.get(pipeline_id)
+    if pipeline_state.nil?
+      return PipelineIndicator::Details.new(PipelineIndicator::RunState::UNKNOWN)
+    end
+
+    run_state = pipeline_state.synchronize do |sync_state|
+      case
+      when sync_state.loading?    then PipelineIndicator::RunState::LOADING
+      when sync_state.running?    then PipelineIndicator::RunState::RUNNING
+      when sync_state.finished?   then PipelineIndicator::RunState::FINISHED # must check before terminated
+      when sync_state.terminated? then PipelineIndicator::RunState::TERMINATED
+      end
+    end
+
+    return PipelineIndicator::Details.new(run_state)
   end
 
   def auto_reload?

@@ -87,6 +87,10 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @finished_execution.true?
   end
 
+  def finished_run?
+    @finished_run.true?
+  end
+
   def ready?
     @ready.value
   end

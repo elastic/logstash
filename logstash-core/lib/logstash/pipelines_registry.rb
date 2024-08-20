@@ -28,10 +28,19 @@ module LogStash
       @lock = Monitor.new
     end
 
+    # a terminated pipeline has either crashed OR finished normally
     def terminated?
       @lock.synchronize do
         # a loading pipeline is never considered terminated
         @loading.false? && @pipeline.finished_execution?
+      end
+    end
+
+    # a finished pipeline finished _normally_ without exception
+    def finished?
+      @lock.synchronize do
+        # a loading pipeline is never considered terminated
+        @loading.false? && @pipeline.finished_run?
       end
     end
 
@@ -101,6 +110,12 @@ module LogStash
     def size
       @lock.synchronize do
         @states.size
+      end
+    end
+
+    def list
+      @lock.synchronize do
+        @states.keys.dup
       end
     end
 
@@ -286,6 +301,10 @@ module LogStash
     # @return [Hash{String=>Pipeline}]
     def non_running_pipelines
       select_pipelines { |state| state.terminated? }
+    end
+
+    def completed_pipelines
+      select_pipelines { |state| state.finished? }
     end
 
     # @return [Hash{String=>Pipeline}]
