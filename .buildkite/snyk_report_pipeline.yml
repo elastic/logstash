@@ -10,3 +10,6 @@ steps:
   - label: ":hammer: Report to Snyk"
     command:
       - .buildkite/scripts/snyk/report.sh
+    retry:
+      automatic:
+        - limit: 3

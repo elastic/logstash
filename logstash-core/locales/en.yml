@@ -446,6 +446,12 @@ en:
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
           If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
+        version_17_minimum: >-
+          Starting from Logstash 9.0, the minimum required version of Java will be Java 17;
+          your Java version from `%{java_home}` does not meet this requirement.
+          Running Logstash with the bundled JDK is recommended.
+          The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), the version you supply with LS_JAVA_HOME must meet the minimum requirements.
     agent:
       sighup: >-
         SIGHUP received.

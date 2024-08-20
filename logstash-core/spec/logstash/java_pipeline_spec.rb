@@ -1016,6 +1016,39 @@ describe LogStash::JavaPipeline do
       it_behaves_like 'it flushes correctly'
     end
   end
+  context "Pipeline created with too many filters" do
+    # create pipeline with 2000 filters
+    # 2000 filters is more than a thread stack of size 2MB can handle
+    let(:config) do
+      <<-EOS
+      input { dummy_input {} }
+      filter {
+        #{"          nil_flushing_filter {}\n" * 2000}
+      }
+      output { dummy_output {} }
+      EOS
+    end
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+    before do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "nil_flushing_filter").and_return(NilFlushingFilterPeriodic)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+    end
+
+    let(:pipeline) { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
+
+    it "informs the user that a stack overflow occurred" do
+      allow(pipeline.logger).to receive(:error)
+
+      pipeline.start
+      pipeline.shutdown
+
+      expect(pipeline.logger).to have_received(:error).with(/Stack overflow/, anything).at_least(:once)
+    end
+  end
   context "Periodic Flush that intermittently returns nil" do
     let(:config) do
       <<-EOS
