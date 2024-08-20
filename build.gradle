@@ -707,9 +707,9 @@ def selectArch() {
 }
 
 class JDKDetails {
-    final String revision
-    final String build
-    final String vendor
+//    final String revision
+//    final String build
+//    final String vendor
     final int major
     private final String osName
     private final String extension
@@ -718,10 +718,7 @@ class JDKDetails {
     private String arch
 
     JDKDetails(versionYml, osName, jdkArch) {
-        revision = versionYml.bundled_jdk.revision
-        build = versionYml.bundled_jdk.build
-        vendor = versionYml.bundled_jdk.vendor
-        major = revision.split('\\.').first() as int
+        major = versionYml.bundled_jdk.major as int
         this.osName = osName
 
         switch (osName) {
@@ -732,7 +729,7 @@ class JDKDetails {
                 extension = "tar.gz"
         }
         arch = parseJdkArchitecture(jdkArch)
-        unpackedJdkName = "jdk-${revision}-${osName}"
+        unpackedJdkName = "jdk-${major}-${osName}"
         localPackageName = "${unpackedJdkName}-${arch}.${extension}"
     }
 
@@ -750,36 +747,17 @@ class JDKDetails {
         if (arch == "aarch64") {
             url += "_${arch}"
         }
-        println "Retrieving JDK from catalog..."
+        println "Retrieving JDK ${major} from catalog..."
         def catalogMetadataUrl = URI.create(url).toURL()
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
         assert catalogConnection.responseCode == 200
 
         def metadataRetrieved = catalogConnection.content.text
-        println "Retrieved!"
-
         def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-        return catalogMetadata.url
-    }
-
-    private String createAdoptDownloadUrl() {
-        String releaseName = major > 8 ?
-                "jdk-${revision}+${build}" :
-                "jdk${revision}u${build}"
-        String vendorOsName = vendorOsName(osName)
-        switch (vendor) {
-            case "adoptium":
-                return "https://api.adoptium.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/adoptium"
-            default:
-                throw RuntimeException("Can't handle vendor: ${vendor}")
-        }
-    }
-
-    private String vendorOsName(String osName) {
-        if (osName == "darwin")
-            return "mac"
-        return osName
+        def downloadUrl = catalogMetadata.url
+        println "Retrieved! Download path: ${new URI(downloadUrl).path}"
+        return downloadUrl
     }
 
     private String parseJdkArchitecture(String jdkArch) {
