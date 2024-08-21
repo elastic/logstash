@@ -477,6 +477,41 @@ describe LogStash::JavaPipeline do
             expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
           end
         end
+
+        describe "given a pipeline executing an event with invalid UTF-8 string" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [message] =~ /^(NOSQL|SQL):/ { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "message" => "abrac\xC5adabra"})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/invalid byte sequence in UTF-8/)
+          end
+        end
       end
     end
   end
