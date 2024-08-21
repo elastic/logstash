@@ -12,7 +12,22 @@ Logstash 8.0.0 and later.
 
 NOTE: Migrating directly between non-consecutive major versions (6.x to
 8.x) is not recommended. 
-We suggest that you upgrade to {prev-major-last} before you upgrade to 8.0, 
+We suggest that you upgrade to {prev-major-last} before you upgrade to 8.0.
+
+[discrete]
+[[breaking-8.15]]
+=== 8.15
+
+*New {ls} SNMP integration plugin*
+
+Prior to 8.15.0, {ls} bundled stand-alone versions of the `input-snmp` and `input-snmptrap` plugins by default. 
+When you upgrade to 8.15.0, the stand-alone plugins are replaced by the 4.0.0+ version contained in the new SNMP integration plugin.
+
+IMPORTANT: Before you upgrade to {ls} 8.15.0, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between stand-alone plugins and the new versions included in the {logstash-ref}/plugins-integrations-snmp.html[SNMP integration plugin].
+If you need to maintain current mappings for the `input-snmptrap` plugin, you have some options to {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-input-snmptrap-compat[preserve existing behavior].
+
+[discrete]
+=== Breaking changes in earlier releases
 
 See these topics for breaking changes in earlier releases:
 
