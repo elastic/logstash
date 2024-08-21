@@ -20,7 +20,11 @@
 
 package org.logstash.config.ir.compiler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -80,8 +84,7 @@ public final class DatasetCompiler {
                 Closure.wrap(clear(elseData)), ifData, fields
             );
         } else {
-            final Collection<ValueSyntaxElement> parentFields =
-                parents.stream().map(fields::add).collect(Collectors.toList());
+            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
             final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", new ArrayList<>());
             compute = withOutputBuffering(
                 withInputBuffering(
@@ -164,10 +167,7 @@ public final class DatasetCompiler {
         }
 
         final ClassFields fields = new ClassFields();
-        final Collection<ValueSyntaxElement> parentFields = parents
-            .stream()
-            .map(fields::add)
-            .collect(Collectors.toList());
+        final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
         @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
         final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
         final ValueSyntaxElement outputBufferField = fields.add(new ArrayList<>());
@@ -208,10 +208,7 @@ public final class DatasetCompiler {
         }
 
         final ClassFields fields = new ClassFields();
-        final Collection<ValueSyntaxElement> parentFields = parents
-            .stream()
-            .map(fields::add)
-            .collect(Collectors.toList());
+        final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
         final Closure compute =  Closure.wrap(parentFields
                 .stream()
                 .map(DatasetCompiler::computeDataset)
@@ -245,7 +242,7 @@ public final class DatasetCompiler {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
-        final ValueSyntaxElement outputField = fields.add(output);
+        final ValueSyntaxElement outputField = fields.add("outputDelegator", output);
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
             computeSyntax = Closure.wrap(
@@ -253,8 +250,7 @@ public final class DatasetCompiler {
                 invokeOutput(outputField, BATCH_ARG),
                 unsetPluginIdForLog4j());
         } else {
-            final Collection<ValueSyntaxElement> parentFields =
-                parents.stream().map(fields::add).collect(Collectors.toList());
+            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
             @SuppressWarnings("rawtypes")
             final RubyArray buffer = RubyUtil.RUBY.newArray();
             final Closure inlineClear;
@@ -265,7 +261,7 @@ public final class DatasetCompiler {
                 inlineClear = Closure.EMPTY;
                 clearSyntax = clearSyntax(parentFields);
             }
-            final ValueSyntaxElement inputBuffer = fields.add(buffer);
+            final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", buffer);
             computeSyntax = withInputBuffering(
                 Closure.wrap(
                     setPluginIdForLog4j(outputField),
@@ -387,14 +383,14 @@ public final class DatasetCompiler {
         final boolean shutdownOnly) {
         final MethodLevelSyntaxElement condition;
         final ValueSyntaxElement flushArgs;
-        final ValueSyntaxElement flushFinal = fields.add(flushOpts(true));
+        final ValueSyntaxElement flushFinal = fields.add("flushFlag", flushOpts(true));
         if (shutdownOnly) {
             condition = SyntaxFactory.and(FLUSH_ARG, SHUTDOWN_ARG);
             flushArgs = flushFinal;
         } else {
             condition = FLUSH_ARG;
             flushArgs = SyntaxFactory.ternary(
-                SHUTDOWN_ARG, flushFinal, fields.add(flushOpts(false))
+                SHUTDOWN_ARG, flushFinal, fields.add("flushFlag", flushOpts(false))
             );
         }
         return SyntaxFactory.ifCondition(
