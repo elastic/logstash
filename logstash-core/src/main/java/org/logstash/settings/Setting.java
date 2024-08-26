@@ -30,7 +30,13 @@ public interface Setting<T> extends Cloneable {
 
     boolean isStrict();
 
-    void set(T newValue);
+    void setSafely(T newValue);
+
+    @SuppressWarnings("unchecked")
+    default void set(Object newValue) {
+        //this could throw a class cast error
+        setSafely((T) newValue);
+    }
 
     void reset();
 

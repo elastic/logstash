@@ -35,10 +35,15 @@ public abstract class Coercible<T> extends BaseSetting<T> {
     }
 
     @Override
-    public void set(T value) {
+    public void set(Object value) {
         T coercedValue = coerce(value);
         validate(coercedValue);
-        super.set(coercedValue);
+        super.setSafely(coercedValue);
+    }
+
+    @Override
+    public void setSafely(T value) {
+        this.set(value);
     }
 
     public abstract T coerce(Object obj);

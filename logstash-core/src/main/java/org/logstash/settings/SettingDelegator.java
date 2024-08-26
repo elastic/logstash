@@ -58,8 +58,8 @@ abstract class SettingDelegator<T> implements Setting<T> {
     }
 
     @Override
-    public void set(T newValue) {
-        delegate.set(newValue);
+    public void setSafely(T newValue) {
+        delegate.setSafely(newValue);
     }
 
     @Override

@@ -23,8 +23,6 @@ import co.elastic.logstash.api.DeprecationLogger;
 import org.apache.logging.log4j.LogManager;
 import org.logstash.log.DefaultDeprecationLogger;
 
-import java.util.function.Predicate;
-
 /**
  * A <code>DeprecatedAlias</code> provides a deprecated alias for a setting, and is meant
  * to be used exclusively through @see org.logstash.settings.SettingWithDeprecatedAlias#wrap()
@@ -40,10 +38,10 @@ final class DeprecatedAlias<T> extends SettingDelegator<T> {
     }
 
     @Override
-    public void set(T newValue) {
+    public void setSafely(T newValue) {
         deprecationLogger.deprecated("The setting `{}` is a deprecated alias for `{}` and will be removed in a " +
                 "future release of Logstash. Please use {} instead", getName(), canonicalProxy.getName(), canonicalProxy.getName());
-        super.set(newValue);
+        super.setSafely(newValue);
     }
 
     @Override

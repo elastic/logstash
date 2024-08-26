@@ -21,7 +21,6 @@ package org.logstash.settings;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Predicate;
 
 
 /**
@@ -64,8 +63,8 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
     }
 
     @Override
-    public void set(T value) {
-        getCanonicalSetting().set(value);
+    public void setSafely(T value) {
+        getCanonicalSetting().setSafely(value);
     }
 
     @Override

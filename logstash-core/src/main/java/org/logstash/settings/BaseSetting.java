@@ -150,7 +150,7 @@ public class BaseSetting<T> implements Setting<T> {
         return strict;
     }
 
-    public void set(T newValue) {
+    public void setSafely(T newValue) {
         if (strict) {
             validate(newValue);
         }
