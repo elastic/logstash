@@ -21,14 +21,17 @@ package org.logstash.settings;
 
 import co.elastic.logstash.api.DeprecationLogger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.log.DefaultDeprecationLogger;
 
 /**
  * A <code>DeprecatedAlias</code> provides a deprecated alias for a setting, and is meant
  * to be used exclusively through @see org.logstash.settings.SettingWithDeprecatedAlias#wrap()
  * */
-final class DeprecatedAlias<T> extends SettingDelegator<T> {
-    private final DeprecationLogger deprecationLogger = new DefaultDeprecationLogger(LogManager.getLogger(DeprecatedAlias.class));
+public final class DeprecatedAlias<T> extends SettingDelegator<T> {
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    private static final DeprecationLogger DEPRECATION_LOGGER = new DefaultDeprecationLogger(LOGGER);
 
     private SettingWithDeprecatedAlias<T> canonicalProxy;
 
@@ -37,16 +40,18 @@ final class DeprecatedAlias<T> extends SettingDelegator<T> {
         this.canonicalProxy = canonicalProxy;
     }
 
-    @Override
-    public void setSafely(T newValue) {
-        deprecationLogger.deprecated("The setting `{}` is a deprecated alias for `{}` and will be removed in a " +
-                "future release of Logstash. Please use {} instead", getName(), canonicalProxy.getName(), canonicalProxy.getName());
-        super.setSafely(newValue);
+    // Because loggers are configure after the Settings declaration, this method is intended for lazy-logging
+    // check https://github.com/elastic/logstash/pull/16339
+    public void observePostProcess() {
+        if (isSet()) {
+            DEPRECATION_LOGGER.deprecated("The setting `{}` is a deprecated alias for `{}` and will be removed in a " +
+                    "future release of Logstash. Please use `{}` instead", getName(), canonicalProxy.getName(), canonicalProxy.getName());
+        }
     }
 
     @Override
     public T value() {
-        deprecationLogger.deprecated("The value of setting `{}` has been queried by its deprecated alias `{}`. " +
+        LOGGER.warn("The value of setting `{}` has been queried by its deprecated alias `{}`. " +
                 "Code should be updated to query `{}` instead", canonicalProxy.getName(), getName(), canonicalProxy.getName());
         return super.value();
     }
