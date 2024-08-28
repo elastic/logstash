@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-1,Logstash 8.15.1>>
 * <<logstash-8-15-0,Logstash 8.15.0>>
 * <<logstash-8-14-3,Logstash 8.14.3>>
 * <<logstash-8-14-2,Logstash 8.14.2>>
@@ -63,6 +64,64 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-1]]
+=== Logstash 8.15.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.15.1
+
+* deprecate java less-than 17 https://github.com/elastic/logstash/pull/16370[#16370]
+* Doc: Add SNMP integration to breaking changes https://github.com/elastic/logstash/pull/16374[#16374]
+* Exclude substitution refinement on pipelines.yml https://github.com/elastic/logstash/pull/16375[#16375]
+* Backport PR #16374 to 8.15: Doc: Add SNMP integration to breaking changes https://github.com/elastic/logstash/pull/16380[#16380]
+* Backport PR #16370 to 8.15: deprecate java less-than 17 https://github.com/elastic/logstash/pull/16381[#16381]
+* Backport PR #16375 to 8.15: Exclude substitution refinement on pipelines.yml https://github.com/elastic/logstash/pull/16384[#16384]
+
+=== Logstash Commits between 8.15 and 8.15.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.0..8.15"
+
+3aee7aecd - (HEAD -> 8.15, origin/8.15) Update patch plugin versions in gemfile lock (#16401) (22 hours ago) <github-actions[bot]>
+425e79684 - Exclude substitution refinement on pipelines.yml (#16375) (#16384) (3 weeks ago) <github-actions[bot]>
+f0fe4ce43 - deprecate java less-than 17 (#16370) (#16381) (3 weeks ago) <github-actions[bot]>
+30735bf02 - Doc: Add SNMP integration to breaking changes (#16374) (#16380) (3 weeks ago) <github-actions[bot]>
+e92911fc8 - Update patch plugin versions in gemfile lock (#16378) (3 weeks ago) <github-actions[bot]>
+3086aab1c - fix line used to determine ES is up (#16349) (#16350) (3 weeks ago) <github-actions[bot]>
+dced3202f - Json normalization performance (#16313) (#16314) (3 weeks ago) <github-actions[bot]>
+2f82e3ba3 - bump version to 8.15.1 (#16377) (3 weeks ago) <João Duarte>
+86aab5f9d - Release notes for 8.15.0 (#16351) (3 weeks ago) <github-actions[bot]>
+0ab0e759c - [Bugfix] Resolve the array and char (single | double quote) escaped values of ${ENV} (#16365) (#16371) (3 weeks ago) <github-actions[bot]>
+0dd7d41c4 - bump lock file for 8.15 (#16369) (3 weeks ago) <github-actions[bot]>
+8735847a7 - Fix 8.13.1 release notes (#16363) (#16367) (4 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.15.0..8.15 *.release"
+Changed plugin versions:
+logstash-input-elasticsearch: 4.20.3 -> 4.20.4
+logstash-input-redis: 3.7.0 -> 3.7.1
+logstash-integration-aws: 7.1.7 -> 7.1.8
+logstash-integration-kafka: 11.5.0 -> 11.5.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elasticsearch Input - 4.20.4*
+
+* Fix issue where the `index` parameter was being ignored when using `response_type => aggregations` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/209[#209]
+
+*Redis Input - 3.7.1*
+
+* Add documentation to "threads" option https://github.com/logstash-plugins/logstash-input-redis/pull/95[#95]
+
+*Aws Integration - 7.1.8*
+
+* adding all supported storage classes for s3 output https://github.com/logstash-plugins/logstash-integration-aws/pull/49[#49]
+
+*Kafka Integration - 11.5.1*
+
+* Specify that only headers with UTF-8 encoded values are supported in extended decoration https://github.com/logstash-plugins/logstash-integration-kafka/pull/174[#174]
 
 
 [[logstash-8-15-0]]
