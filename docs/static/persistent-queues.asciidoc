@@ -102,6 +102,14 @@ Required Queue Capacity = (Bytes Received Per Hour * Tolerated Hours of Downtime
 ------
 <1> To start, you can set the `Multiplication Factor` to `1.10`, and then refine it for specific data types as indicated in the tables below. 
 
+*Example*
+
+Let's consider a {ls} instance that receives 1000 EPS and each event is 1KB (1024 bytes),
+which is 1000 KB per second or 3.5GB (1*1000*3600 KB) every hour.
+In order to tolerate a downstream component being unavailable
+for 12h without {ls} exerting back-pressure upstream, the persistent queue's
+`max_bytes` would have to be set to 3.5*12*1.10 = 46.2GB, or about 50GB.
+
 [[sizing-by-type]]
 ====== Queue size by data type
 
@@ -130,13 +138,7 @@ These tables show examples of overhead by event type and how that affects the mu
 | 58901 | 59693 | 792 | 1% | 1.01
 |=======================================================================
 
-*Example*
 
-Let's consider a {ls} instance that receives 1000 EPS and each event is 1KB (1024 bytes),
-which is 1000 KB per second or 3.5GB (1*1000*3600 KB) every hour.
-In order to tolerate a downstream component being unavailable
-for 12h without {ls} exerting back-pressure upstream, the persistent queue's
-`max_bytes` would have to be set to 3.5*12*1.17 = 49.14GB, or about 50GB for plain text events.
 
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
