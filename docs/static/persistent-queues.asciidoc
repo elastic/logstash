@@ -126,16 +126,17 @@ These tables show examples of overhead by event type and how that affects the mu
 | JSON document size (bytes) | Serialized {ls} event size (bytes) | Overhead (bytes) | Overhead (%) | Multiplication Factor
 | 947 | 1133 | 186 | 20% | 1.20
 | 2707 | 3206 | 499 | 18% | 1.18
-| 6751 | 7388 | 637 | 9% | 1.9
-| 58901 | 59693 | 792 | 1% | 1.1
+| 6751 | 7388 | 637 | 9% | 1.09
+| 58901 | 59693 | 792 | 1% | 1.01
 |=======================================================================
 
 *Example*
 
-Let's consider a {ls} instance that receives 1000 EPS and each event is 1KB,
-or 3.5GB every hour. In order to tolerate a downstream component being unavailable
+Let's consider a {ls} instance that receives 1000 EPS and each event is 1KB (1024 bytes),
+which is 1000 KB per second or 3.5GB (1*1000*3600 KB) every hour.
+In order to tolerate a downstream component being unavailable
 for 12h without {ls} exerting back-pressure upstream, the persistent queue's
-`max_bytes` would have to be set to 3.6*12*1.10 = 47.25GB, or about 50GB.
+`max_bytes` would have to be set to 3.5*12*1.17 = 49.14GB, or about 50GB for plain text events.
 
 [[pq-lower-max_bytes]]
 ===== Smaller queue size
