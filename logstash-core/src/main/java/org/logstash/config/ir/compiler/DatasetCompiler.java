@@ -383,14 +383,14 @@ public final class DatasetCompiler {
         final boolean shutdownOnly) {
         final MethodLevelSyntaxElement condition;
         final ValueSyntaxElement flushArgs;
-        final ValueSyntaxElement flushFinal = fields.add("flushFinalFlag", flushOpts(true));
+        final ValueSyntaxElement flushFinal = fields.add("shutdownFlushOptions", flushOpts(true));
         if (shutdownOnly) {
             condition = SyntaxFactory.and(FLUSH_ARG, SHUTDOWN_ARG);
             flushArgs = flushFinal;
         } else {
             condition = FLUSH_ARG;
             flushArgs = SyntaxFactory.ternary(
-                SHUTDOWN_ARG, flushFinal, fields.add("flushFlag", flushOpts(false))
+                SHUTDOWN_ARG, flushFinal, fields.add("flushOptions", flushOpts(false))
             );
         }
         return SyntaxFactory.ifCondition(
