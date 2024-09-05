@@ -36,6 +36,9 @@ source "$SCRIPT_PATH/util.sh"
 ##   MEM=4                      # number of GB for Logstash container
 ##   QTYPE=memory               # queue type to test {persisted|memory|all}
 ##   FB_CNT=4                   # number of filebeats to use in benchmark
+##   FLOG_FILE_CNT=4            # number of files to generate for ingestion
+##   VAULT_PATH=secret/path     # vault path point to server credentials
+##   TAGS=test,other            # tags with "," separator
 usage() {
   echo "Usage: $0 [FB_CNT] [QTYPE] [CPU] [MEM]"
   echo "Example: $0 4 {persisted|memory|all} 2 2"
@@ -82,6 +85,10 @@ parse_args() {
   read -ra MULTIPLIERS <<< "$MULTIPLIERS"
   BATCH_SIZES="${BATCH_SIZES:-500}"
   read -ra BATCH_SIZES <<< "$BATCH_SIZES"
+  # tags to json array
+  read -ra TAG_ARRAY <<< "$TAGS"
+  JSON_TAGS=$(printf '"%s",' "${TAG_ARRAY[@]}" | sed 's/,$//')
+  JSON_TAGS="[$JSON_TAGS]"
 
   IFS=' '
   echo "filebeats: $FB_CNT, cpu: $CPU, mem: $MEM, Queue: $QTYPE, worker multiplier: ${MULTIPLIERS[@]}, batch size: ${BATCH_SIZES[@]}"
@@ -125,12 +132,15 @@ pull_images() {
 }
 
 generate_logs() {
+  FLOG_FILE_CNT=${FLOG_FILE_CNT:-4}
+  SINGLE_SIZE=524288000
+  TOTAL_SIZE="$((FLOG_FILE_CNT * SINGLE_SIZE))"
   FLOG_PATH="$SCRIPT_PATH/flog"
   mkdir -p $FLOG_PATH
 
-  if [[ ! -e "$FLOG_PATH/log4.log" ]]; then
-    echo "--- Generate logs in background. log: 5, size: 500mb"
-    docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b 2621440000 -p 524288000
+  if [[ ! -e "$FLOG_PATH/log${FLOG_FILE_CNT}.log" ]]; then
+    echo "--- Generate logs in background. log: ${FLOG_FILE_CNT}, each size: 500mb"
+    docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b $TOTAL_SIZE -p $SINGLE_SIZE
   fi
 }
 
@@ -138,7 +148,7 @@ check_logs() {
   echo "--- Check log generation"
 
   local cnt=0
-  until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt 600 ]]; do
+  until [[ -e "$FLOG_PATH/log${FLOG_FILE_CNT}.log" || $cnt -gt 600 ]]; do
     echo "wait 30s" && sleep 30
     cnt=$((cnt + 30))
   done
@@ -213,6 +223,8 @@ aggregate_stats() {
 send_summary() {
   echo "--- Send summary to Elasticsearch"
 
+  # build json
+  local timestamp
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   SUMMARY="{\"timestamp\": \"$timestamp\", \"version\": \"$LS_VERSION\", \"cpu\": \"$CPU\", \"mem\": \"$MEM\", \"workers\": \"$WORKER\", \"batch_size\": \"$BATCH_SIZE\", \"queue_type\": \"$QTYPE\""
   not_empty "$TOTAL_EVENTS_OUT" && SUMMARY="$SUMMARY, \"total_events_out\": \"$TOTAL_EVENTS_OUT\""
@@ -226,6 +238,7 @@ send_summary() {
   not_empty "$AVG_VIRTUAL_MEM" && SUMMARY="$SUMMARY, \"avg_virtual_memory\": \"$AVG_VIRTUAL_MEM\""
   not_empty "$MAX_Q_EVENT_CNT" && SUMMARY="$SUMMARY, \"max_queue_events\": \"$MAX_Q_EVENT_CNT\""
   not_empty "$MAX_Q_SIZE" && SUMMARY="$SUMMARY, \"max_queue_bytes_size\": \"$MAX_Q_SIZE\""
+  not_empty "$TAGS" && SUMMARY="$SUMMARY, \"tags\": $JSON_TAGS"
   SUMMARY="$SUMMARY}"
 
   tee summary.json << EOF
@@ -234,10 +247,12 @@ $SUMMARY
 EOF
 
   # send to ES
-  RESP=$(curl -s -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json")
-  echo "$RESP"
-  ERR_STATUS=$(echo "$RESP" | jq -r ".errors")
-  if [[ "$ERR_STATUS" == "true" ]]; then
+  local resp
+  local err_status
+  resp=$(curl -s -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json")
+  echo "$resp"
+  err_status=$(echo "$resp" | jq -r ".errors")
+  if [[ "$err_status" == "true" ]]; then
     echo "Failed to send summary"
     exit 1
   fi
