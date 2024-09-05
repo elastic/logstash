@@ -20,6 +20,8 @@
 
 package org.logstash.config.ir.compiler;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.util.Collection;
@@ -29,6 +31,7 @@ import java.util.List;
  * Static utility methods that replace common blocks of generated code in the Java execution.
  */
 public class Utils {
+    private static final Logger logger = LogManager.getLogger(Utils.class);
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     // has field1.compute(batchArg, flushArg, shutdownArg) passed as input
@@ -44,7 +47,15 @@ public class Utils {
     public static void filterEvents(Collection<JrubyEventExtLibrary.RubyEvent> input, EventCondition filter,
                                     List fulfilled, List unfulfilled) {
         for (JrubyEventExtLibrary.RubyEvent e : input) {
-            if (filter.fulfilled(e)) {
+            boolean isFulfilled;
+            try {
+                isFulfilled = filter.fulfilled(e);
+            } catch (org.jruby.exceptions.TypeError | IllegalArgumentException | org.jruby.exceptions.ArgumentError ex) {
+                // in case of error evaluation of an if condition, cancel the event
+                e.getEvent().cancel();
+                throw new ConditionalEvaluationError(ex, e.getEvent());
+            }
+            if (isFulfilled) {
                 fulfilled.add(e);
             } else {
                 unfulfilled.add(e);

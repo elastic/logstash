@@ -21,6 +21,8 @@
 package org.logstash.execution;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -76,6 +78,7 @@ import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.ConditionalEvaluationError;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -163,8 +166,31 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
 
+    private String lastErrorEvaluationReceived = "";
+
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    public interface ConditionalEvaluationListener {
+        void notify(ConditionalEvaluationError err);
+    }
+
+    public final class LogErrorEvaluationListener implements ConditionalEvaluationListener {
+        @Override
+        public void notify(ConditionalEvaluationError err) {
+            lastErrorEvaluationReceived = err.getCause().getMessage();
+            LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+            LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
+
+            // logs the exception at debug level
+            try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+                err.printStackTrace(pw);
+                LOGGER.debug("{}", sw);
+            } catch (IOException ioex) {
+                LOGGER.warn("Invalid operation on closing internal resources", ioex);
+            }
+        }
     }
 
     @JRubyMethod(required = 4)
@@ -183,7 +209,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         ).initialize(context, args[3], this, dlqWriter(context)),
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
-                getSecretStore(context)
+                getSecretStore(context),
+                new LogErrorEvaluationListener()
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -827,5 +854,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public IRubyObject isShutdownRequested(final ThreadContext context) {
         // shutdown_requested? MUST be implemented in the concrete implementation of this class.
         throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
+    }
+
+    @VisibleForTesting
+    @JRubyMethod(name = "last_error_evaluation_received")
+    public final RubyString getLastErrorEvaluationReceived(final ThreadContext context) {
+        return RubyString.newString(context.runtime, lastErrorEvaluationReceived);
     }
 }

@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.FieldReference;
 import org.logstash.RubyUtil;
+import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.PipelineTestUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -54,7 +55,8 @@ public final class DatasetCompilerTest {
     public void compilesSplitDataset() {
         final FieldReference key = FieldReference.from("foo");
         final SplitDataset left = DatasetCompiler.splitDataset(
-            Collections.emptyList(), event -> event.getEvent().includes(key)
+            Collections.emptyList(), event -> event.getEvent().includes(key),
+            new CompiledPipeline.NoopEvaluationListener()
         ).instantiate();
         final Event trueEvent = new Event();
         trueEvent.setField(key, "val");
