@@ -233,8 +233,14 @@ send_summary() {
 $SUMMARY
 EOF
 
-  curl -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json"
-  echo ""
+  # send to ES
+  RESP=$(curl -s -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json")
+  echo "$RESP"
+  ERR_STATUS=$(echo "$RESP" | jq -r ".errors")
+  if [[ "$ERR_STATUS" == "true" ]]; then
+    echo "Failed to send summary"
+    exit 1
+  fi
 }
 
 # $1: snapshot index
