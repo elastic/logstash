@@ -21,9 +21,10 @@ loss in this situation, you can <<configuring-dlq,configure Logstash>> to write
 unsuccessful events to a dead letter queue instead of dropping them.
 
 NOTE: The dead letter queue is currently supported only for the
-<<plugins-outputs-elasticsearch,{es} output>>. The dead letter queue is used for
-documents with response codes of 400 or 404, both of which indicate an event
+<<plugins-outputs-elasticsearch,{es} output>> and <<conditionals, conditional statements evaluation>>.
+The dead letter queue is used for documents with response codes of 400 or 404, both of which indicate an event
 that cannot be retried.
+It's also used when a conditional evaluation encounter an error.
 
 Each event written to the dead letter queue includes the original event,
 metadata that describes the reason the event could not be processed, information
@@ -57,7 +58,12 @@ status code per entry to indicate why the action could not be performed.
 If the DLQ is configured, individual indexing failures are routed there.
 
 Even if you regularly process events, events remain in the dead letter queue.
-The dead letter queue requires <<dlq-clear,manual intervention>> to clear it. 
+The dead letter queue requires <<dlq-clear,manual intervention>> to clear it.
+
+[[conditionals-dlq]]
+==== Conditional statements and the dead letter queue
+When a conditional statement reaches an error in processing an event, such as comparing string and integer values,
+the event, as it is at the time of evaluation, is inserted into the dead letter queue.
 
 [[configuring-dlq]]
 ==== Configuring {ls} to use dead letter queues
