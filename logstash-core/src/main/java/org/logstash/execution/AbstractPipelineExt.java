@@ -188,16 +188,17 @@ public class AbstractPipelineExt extends RubyBasicObject {
             try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
                 err.printStackTrace(pw);
                 LOGGER.debug("{}", sw);
-                if (javaDlqWriter != null) {
-                    // if DLQ is enabled for pipeline
-                    try {
-                        javaDlqWriter.writeEntry(err.failedEvent(), "if-statement", "if-statement", "condition evaluation error, " + lastErrorEvaluationReceived);
-                    } catch (IOException ioex) {
-                        LOGGER.error("Can't write in DLQ", ioex);
-                    }
-                }
             } catch (IOException ioex) {
                 LOGGER.warn("Invalid operation on closing internal resources", ioex);
+            }
+
+            // if pipeline has DLQ enabled, send also there the event
+            if (javaDlqWriter != null) {
+                try {
+                    javaDlqWriter.writeEntry(err.failedEvent(), "if-statement", "if-statement", "condition evaluation error, " + lastErrorEvaluationReceived);
+                } catch (IOException ioex) {
+                    LOGGER.error("Can't write in DLQ", ioex);
+                }
             }
         }
     }
