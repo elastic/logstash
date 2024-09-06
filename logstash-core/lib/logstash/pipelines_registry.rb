@@ -44,6 +44,12 @@ module LogStash
       end
     end
 
+    def crashed?
+      @lock.synchronize do
+        @pipeline&.crashed?
+      end
+    end
+
     def running?
       @lock.synchronize do
         # not terminated and not loading
