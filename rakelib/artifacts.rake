@@ -523,7 +523,7 @@ namespace "artifact" do
     if stat.directory?
       tar.mkdir(path_in_tar, :mode => stat.mode)
     elsif stat.symlink?
-      tar.add_symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
+      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
     else
       tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
         File.open(path, 'rb') do |fd|
