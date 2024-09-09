@@ -1,0 +1,3 @@
+- setup index mapping and alias from ./setup/*
+- import kibana dashboard from ./save-objects/*
+- run the script `main.sh`
