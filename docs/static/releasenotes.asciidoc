@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-24,Logstash 7.17.24>>
 * <<logstash-7-17-23,Logstash 7.17.23>>
 * <<logstash-7-17-22,Logstash 7.17.22>>
 * <<logstash-7-17-21,Logstash 7.17.21>>
@@ -81,6 +82,23 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-24]]
+=== Logstash 7.17.24 Release Notes
+
+No user-facing changes in Logstash core.
+
+[[dependencies-7-17-24]]
+==== Updates to dependencies
+
+* Update JDK to 11.0.24 https://github.com/elastic/logstash/pull/16394[#16394]
+
+==== Plugins
+
+*Redis Input - 3.7.1*
+
+* Docs: Add `threads` option https://github.com/logstash-plugins/logstash-input-redis/pull/95[#95]
 
 
 [[logstash-7-17-23]]
