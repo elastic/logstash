@@ -15,8 +15,9 @@ RELEASE_VER=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.
 if [ -n "$(git ls-remote --heads origin $RELEASE_VER)" ] ; then
     RELEASE_BRANCH=$RELEASE_VER
 else
-    RELEASE_BRANCH=main
+    RELEASE_BRANCH="${BUILDKITE_BRANCH:="main"}"
 fi
+echo "RELEASE BRANCH: $RELEASE_BRANCH"
 
 if [ -n "$VERSION_QUALIFIER_OPT" ]; then
   # Qualifier is passed from CI as optional field and specify the version postfix
