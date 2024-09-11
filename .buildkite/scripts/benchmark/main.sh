@@ -37,8 +37,8 @@ source "$SCRIPT_PATH/util.sh"
 ##   QTYPE=memory               # queue type to test {persisted|memory|all}
 ##   FB_CNT=4                   # number of filebeats to use in benchmark
 ##   FLOG_FILE_CNT=4            # number of files to generate for ingestion
-##   VAULT_PATH=secret/path     # vault path point to server credentials
-##   TAGS=test,other            # tags with "," separator
+##   VAULT_PATH=secret/path     # vault path point to Elasticsearch credentials. The default value points to benchmark cluster.
+##   TAGS=test,other            # tags with "," separator.
 usage() {
   echo "Usage: $0 [FB_CNT] [QTYPE] [CPU] [MEM]"
   echo "Example: $0 4 {persisted|memory|all} 2 2"
@@ -109,10 +109,11 @@ get_secret() {
 pull_images() {
   echo "--- Pull docker images"
 
-  # pull the latest snapshot logstash image
   if [[ -n "$LS_VERSION" ]]; then
-    docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
+    # pull image if it doesn't exist in local
+    [[ -z $(docker images -q docker.elastic.co/logstash/logstash:$LS_VERSION) ]] && docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
   else
+    # pull the latest snapshot logstash image
     # select the SNAPSHOT artifact with the highest semantic version number
     LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/versions | jq -r '.versions | map(select(endswith("-SNAPSHOT"))) | max_by(rtrimstr("-SNAPSHOT")|split(".")|map(tonumber))' )
     BUILD_ID=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://artifacts-api.elastic.co/v1/versions/${LS_VERSION}/builds/latest" | jq -re '.build.build_id')
