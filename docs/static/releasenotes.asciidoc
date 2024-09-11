@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-1,Logstash 8.15.1>>
 * <<logstash-8-15-0,Logstash 8.15.0>>
 * <<logstash-8-14-3,Logstash 8.14.3>>
 * <<logstash-8-14-2,Logstash 8.14.2>>
@@ -63,6 +64,39 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-1]]
+=== Logstash 8.15.1 Release Notes
+
+[[notable-8.15.1]]
+==== Performance improvements and notable issues fixed
+
+* Fixed issue where `${VAR}` incorrectly treated array as a string https://github.com/elastic/logstash/pull/16375[#16375]
+
+[[core-8.15.1]]
+==== Other changes to Logstash core
+
+* Emit warning message for java version less than 17. Starting from Logstash 9.0, the minimum required version of Java will be Java 17 https://github.com/elastic/logstash/pull/16370[#16370]
+
+[[plugins-8.15.1]]
+==== Plugin releases
+
+*Elasticsearch Input - 4.20.4*
+
+* Fixed issue where the `index` parameter was being ignored when using `response_type => aggregations` https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/209[#209]
+
+*Redis Input - 3.7.1*
+
+* [Doc] Added `threads` option https://github.com/logstash-plugins/logstash-input-redis/pull/95[#95]
+
+*Aws Integration - 7.1.8*
+
+* Added support to all storage classes for s3 output https://github.com/logstash-plugins/logstash-integration-aws/pull/49[#49]
+
+*Kafka Integration - 11.5.1*
+
+* [Doc] Added only headers with UTF-8 encoded values are supported in `decorate_events` https://github.com/logstash-plugins/logstash-integration-kafka/pull/174[#174]
 
 
 [[logstash-8-15-0]]

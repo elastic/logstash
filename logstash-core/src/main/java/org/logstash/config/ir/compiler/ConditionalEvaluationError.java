@@ -7,7 +7,10 @@ import org.logstash.Event;
  * */
 public class ConditionalEvaluationError extends RuntimeException {
     private static final long serialVersionUID = -8633589068902565868L;
-    private final Event failedEvent;
+
+    // This class is serializable because of inheritance from Throwable, however it's not expected
+    // to be ever transmitted on wire on stored in some binary storage.
+    private final transient Event failedEvent;
 
     ConditionalEvaluationError(Throwable cause, Event failedEvent) {
         super(cause);
