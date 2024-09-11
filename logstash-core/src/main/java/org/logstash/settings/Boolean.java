@@ -35,12 +35,16 @@ public class Boolean extends Coercible<java.lang.Boolean> {
             switch((String) obj) {
                 case "true": return true;
                 case "false": return false;
-                default: throw new IllegalArgumentException("could not coerce " + value() + " into a boolean");
+                default: throw new IllegalArgumentException(coercionFailureMessage(obj));
             }
         }
         if (obj instanceof java.lang.Boolean) {
             return (java.lang.Boolean) obj;
         }
-        throw new IllegalArgumentException("could not coerce " + value() + " into a boolean");
+        throw new IllegalArgumentException(coercionFailureMessage(obj));
+    }
+
+    private String coercionFailureMessage(Object obj) {
+        return String.format("Cannot coerce `%s` to boolean (%s)", obj, getName());
     }
 }
