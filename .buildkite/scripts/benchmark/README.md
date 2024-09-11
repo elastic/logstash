@@ -13,4 +13,9 @@
 - Run the benchmark script
   - Send data to your own Elasticsearch. Customise `VAULT_PATH="secret/ci/elastic-logstash/your/path"`
   - Run the script `main.sh` 
-    - or run in background `nohup bash -x main.sh > log.log 2>&1 &` 
+    - or run in background `nohup bash -x main.sh > log.log 2>&1 &`
+
+## Notes
+- Benchmarks should only be compared using the same hardware setup.
+- Please do not send the test metrics to the benchmark cluster. You can set `VAULT_PATH` to send data and metrics to your own server.
+- Run `all.sh` as calibration which gives you a baseline of performance in different versions.
