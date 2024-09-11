@@ -14,5 +14,5 @@ VERSIONS="${VERSIONS:-8.6.0,8.7.0,8.8.0,8.9.0,8.10.0,8.11.0,8.12.0,8.13.0,8.14.0
 read -ra VERSIONS <<< "$VERSIONS"
 
 for V in "${VERSIONS[@]}" ; do
-  LS_VERSION="$V" VERSIONS="2,4" "main.sh" 4 memory
+  LS_VERSION="$V" "main.sh"
 done
