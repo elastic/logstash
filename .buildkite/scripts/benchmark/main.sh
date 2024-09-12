@@ -36,6 +36,9 @@ source "$SCRIPT_PATH/util.sh"
 ##   MEM=4                      # number of GB for Logstash container
 ##   QTYPE=memory               # queue type to test {persisted|memory|all}
 ##   FB_CNT=4                   # number of filebeats to use in benchmark
+##   FLOG_FILE_CNT=4            # number of files to generate for ingestion
+##   VAULT_PATH=secret/path     # vault path point to Elasticsearch credentials. The default value points to benchmark cluster.
+##   TAGS=test,other            # tags with "," separator.
 usage() {
   echo "Usage: $0 [FB_CNT] [QTYPE] [CPU] [MEM]"
   echo "Example: $0 4 {persisted|memory|all} 2 2"
@@ -82,13 +85,17 @@ parse_args() {
   read -ra MULTIPLIERS <<< "$MULTIPLIERS"
   BATCH_SIZES="${BATCH_SIZES:-500}"
   read -ra BATCH_SIZES <<< "$BATCH_SIZES"
+  # tags to json array
+  read -ra TAG_ARRAY <<< "$TAGS"
+  JSON_TAGS=$(printf '"%s",' "${TAG_ARRAY[@]}" | sed 's/,$//')
+  JSON_TAGS="[$JSON_TAGS]"
 
   IFS=' '
   echo "filebeats: $FB_CNT, cpu: $CPU, mem: $MEM, Queue: $QTYPE, worker multiplier: ${MULTIPLIERS[@]}, batch size: ${BATCH_SIZES[@]}"
 }
 
 get_secret() {
-  VAULT_PATH=secret/ci/elastic-logstash/benchmark
+  VAULT_PATH=${VAULT_PATH:-secret/ci/elastic-logstash/benchmark}
   VAULT_DATA=$(vault kv get -format json $VAULT_PATH)
   BENCHMARK_ES_HOST=$(echo $VAULT_DATA | jq -r '.data.es_host')
   BENCHMARK_ES_USER=$(echo $VAULT_DATA | jq -r '.data.es_user')
@@ -102,10 +109,11 @@ get_secret() {
 pull_images() {
   echo "--- Pull docker images"
 
-  # pull the latest snapshot logstash image
   if [[ -n "$LS_VERSION" ]]; then
-    docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
+    # pull image if it doesn't exist in local
+    [[ -z $(docker images -q docker.elastic.co/logstash/logstash:$LS_VERSION) ]] && docker pull "docker.elastic.co/logstash/logstash:$LS_VERSION"
   else
+    # pull the latest snapshot logstash image
     # select the SNAPSHOT artifact with the highest semantic version number
     LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/versions | jq -r '.versions | map(select(endswith("-SNAPSHOT"))) | max_by(rtrimstr("-SNAPSHOT")|split(".")|map(tonumber))' )
     BUILD_ID=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://artifacts-api.elastic.co/v1/versions/${LS_VERSION}/builds/latest" | jq -re '.build.build_id')
@@ -125,12 +133,15 @@ pull_images() {
 }
 
 generate_logs() {
+  FLOG_FILE_CNT=${FLOG_FILE_CNT:-4}
+  SINGLE_SIZE=524288000
+  TOTAL_SIZE="$((FLOG_FILE_CNT * SINGLE_SIZE))"
   FLOG_PATH="$SCRIPT_PATH/flog"
   mkdir -p $FLOG_PATH
 
-  if [[ ! -e "$FLOG_PATH/log4.log" ]]; then
-    echo "--- Generate logs in background. log: 5, size: 500mb"
-    docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b 2621440000 -p 524288000
+  if [[ ! -e "$FLOG_PATH/log${FLOG_FILE_CNT}.log" ]]; then
+    echo "--- Generate logs in background. log: ${FLOG_FILE_CNT}, each size: 500mb"
+    docker run -d --name=flog --rm -v $FLOG_PATH:/go/src/data mingrammer/flog -t log -w -o "/go/src/data/log.log" -b $TOTAL_SIZE -p $SINGLE_SIZE
   fi
 }
 
@@ -138,7 +149,7 @@ check_logs() {
   echo "--- Check log generation"
 
   local cnt=0
-  until [[ -e "$FLOG_PATH/log4.log" || $cnt -gt 600 ]]; do
+  until [[ -e "$FLOG_PATH/log${FLOG_FILE_CNT}.log" || $cnt -gt 600 ]]; do
     echo "wait 30s" && sleep 30
     cnt=$((cnt + 30))
   done
@@ -152,6 +163,7 @@ start_logstash() {
 
   cp $CONFIG_PATH/pipelines.yml $LS_CONFIG_PATH/pipelines.yml
   cp $CONFIG_PATH/logstash.yml $LS_CONFIG_PATH/logstash.yml
+  cp $CONFIG_PATH/uuid $LS_CONFIG_PATH/uuid
 
   LS_JAVA_OPTS=${LS_JAVA_OPTS:--Xmx${XMX}g}
   docker run -d --name=ls --net=host --cpus=$CPU --memory=${MEM}g -e LS_JAVA_OPTS="$LS_JAVA_OPTS" \
@@ -160,6 +172,7 @@ start_logstash() {
     -e MONITOR_ES_HOST="$MONITOR_ES_HOST" -e MONITOR_ES_USER="$MONITOR_ES_USER" -e MONITOR_ES_PW="$MONITOR_ES_PW" \
     -v $LS_CONFIG_PATH/logstash.yml:/usr/share/logstash/config/logstash.yml:ro \
     -v $LS_CONFIG_PATH/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro \
+    -v $LS_CONFIG_PATH/uuid:/usr/share/logstash/data/uuid:ro \
     docker.elastic.co/logstash/logstash:$LS_VERSION
 }
 
@@ -211,13 +224,39 @@ aggregate_stats() {
 send_summary() {
   echo "--- Send summary to Elasticsearch"
 
+  # build json
+  local timestamp
   timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
+  SUMMARY="{\"timestamp\": \"$timestamp\", \"version\": \"$LS_VERSION\", \"cpu\": \"$CPU\", \"mem\": \"$MEM\", \"workers\": \"$WORKER\", \"batch_size\": \"$BATCH_SIZE\", \"queue_type\": \"$QTYPE\""
+  not_empty "$TOTAL_EVENTS_OUT" && SUMMARY="$SUMMARY, \"total_events_out\": \"$TOTAL_EVENTS_OUT\""
+  not_empty "$MAX_EPS_1M" && SUMMARY="$SUMMARY, \"max_eps_1m\": \"$MAX_EPS_1M\""
+  not_empty "$MAX_EPS_5M" && SUMMARY="$SUMMARY, \"max_eps_5m\": \"$MAX_EPS_5M\""
+  not_empty "$MAX_WORKER_UTIL" && SUMMARY="$SUMMARY, \"max_worker_utilization\": \"$MAX_WORKER_UTIL\""
+  not_empty "$MAX_WORKER_CONCURR" && SUMMARY="$SUMMARY, \"max_worker_concurrency\": \"$MAX_WORKER_CONCURR\""
+  not_empty "$AVG_CPU_PERCENT" && SUMMARY="$SUMMARY, \"avg_cpu_percentage\": \"$AVG_CPU_PERCENT\""
+  not_empty "$AVG_HEAP" && SUMMARY="$SUMMARY, \"avg_heap\": \"$AVG_HEAP\""
+  not_empty "$AVG_NON_HEAP" && SUMMARY="$SUMMARY, \"avg_non_heap\": \"$AVG_NON_HEAP\""
+  not_empty "$AVG_VIRTUAL_MEM" && SUMMARY="$SUMMARY, \"avg_virtual_memory\": \"$AVG_VIRTUAL_MEM\""
+  not_empty "$MAX_Q_EVENT_CNT" && SUMMARY="$SUMMARY, \"max_queue_events\": \"$MAX_Q_EVENT_CNT\""
+  not_empty "$MAX_Q_SIZE" && SUMMARY="$SUMMARY, \"max_queue_bytes_size\": \"$MAX_Q_SIZE\""
+  not_empty "$TAGS" && SUMMARY="$SUMMARY, \"tags\": $JSON_TAGS"
+  SUMMARY="$SUMMARY}"
+
   tee summary.json << EOF
 {"index": {}}
-{"timestamp": "$timestamp", "version": "$LS_VERSION", "cpu": "$CPU", "mem": "$MEM", "workers": "$WORKER", "batch_size": "$BATCH_SIZE", "queue_type": "$QTYPE", "total_events_out": "$TOTAL_EVENTS_OUT", "max_eps_1m": "$MAX_EPS_1M", "max_eps_5m": "$MAX_EPS_5M", "max_worker_utilization": "$MAX_WORKER_UTIL", "max_worker_concurrency": "$MAX_WORKER_CONCURR", "avg_cpu_percentage": "$AVG_CPU_PERCENT", "avg_heap": "$AVG_HEAP", "avg_non_heap": "$AVG_NON_HEAP", "avg_virtual_memory": "$AVG_VIRTUAL_MEM", "max_queue_events": "$MAX_Q_EVENT_CNT", "max_queue_bytes_size": "$MAX_Q_SIZE"}
+$SUMMARY
 EOF
-  curl -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json"
-  echo ""
+
+  # send to ES
+  local resp
+  local err_status
+  resp=$(curl -s -X POST -u "$BENCHMARK_ES_USER:$BENCHMARK_ES_PW" "$BENCHMARK_ES_HOST/benchmark_summary/_bulk" -H 'Content-Type: application/json' --data-binary @"summary.json")
+  echo "$resp"
+  err_status=$(echo "$resp" | jq -r ".errors")
+  if [[ "$err_status" == "true" ]]; then
+    echo "Failed to send summary"
+    exit 1
+  fi
 }
 
 # $1: snapshot index
@@ -225,7 +264,7 @@ node_stats() {
   NS_JSON="$SCRIPT_PATH/$NS_DIR/${QTYPE:0:1}_w${WORKER}b${BATCH_SIZE}_$1.json" # m_w8b1000_0.json
 
   # curl inside container because docker on mac cannot resolve localhost to host network interface
-  docker exec -it ls curl localhost:9600/_node/stats > "$NS_JSON" 2> /dev/null
+  docker exec -i ls curl localhost:9600/_node/stats > "$NS_JSON" 2> /dev/null
 }
 
 # $1: index
@@ -302,6 +341,13 @@ stop_pipeline() {
   # https://github.com/elastic/logstash/pull/16191#discussion_r1647050216
 }
 
+clean_up() {
+  # stop log generation if it has not done yet
+  [[ -n $(docker ps | grep flog) ]] && docker stop flog || true
+  # remove image
+  docker image rm docker.elastic.co/logstash/logstash:$LS_VERSION
+}
+
 main() {
   parse_args "$@"
   get_secret
@@ -317,8 +363,7 @@ main() {
     worker
   fi
 
-  # stop log generation if it has not done yet
-  [[ -n $(docker ps | grep flog) ]] && docker stop flog || true
+  clean_up
 }
 
 main "$@"
