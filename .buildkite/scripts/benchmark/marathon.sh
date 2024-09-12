@@ -3,6 +3,7 @@ set -eo pipefail
 
 # *******************************************************
 # Run benchmark for versions that have flow metrics
+# When the hardware changes, run the marathon task to establish a new baseline.
 # Usage:
 #   nohup bash -x all.sh > log.log 2>&1 &
 # Accept env vars:

@@ -614,7 +614,7 @@ spec:
     kind: Pipeline
     metadata:
       name: logstash-benchmark-pipeline
-      description: ':logstash: The Benchmark pipeline for snapshot version'
+      description: ':running: The Benchmark pipeline for snapshot version'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/benchmark_pipeline.yml"
@@ -667,7 +667,7 @@ spec:
     kind: Pipeline
     metadata:
       name: logstash-benchmark-marathon-pipeline
-      description: ':logstash: The Benchmark Marathon for multi-version'
+      description: ':running: The Benchmark Marathon for multi-version'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/benchmark_marathon_pipeline.yml"
