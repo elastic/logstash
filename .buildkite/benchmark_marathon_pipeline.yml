@@ -8,4 +8,4 @@ agents:
 
 steps:
   - label: "Benchmark multiple versions"
-    command: .buildkite/scripts/benchmark/marathon.sh
+    command: .buildkite/scripts/benchmark/all.sh
