@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
     "logstash_plugin" => "true",
     "logstash_group" => "integration",
     "integration_plugins" => %w(
-      logstash-input-failure_injector
       logstash-filter-failure_injector
       logstash-output-failure_injector
     ).join(",")
