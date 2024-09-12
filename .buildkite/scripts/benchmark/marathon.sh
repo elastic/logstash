@@ -10,12 +10,32 @@ set -eo pipefail
 #   STACK_VERSIONS=8.15.0,8.15.1,8.16.0-SNAPSHOT # versions to test. It is comma separator string
 # *******************************************************
 
-SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd)"
+SCRIPT_PATH="$(dirname "${BASH_SOURCE[0]}")"
+source "$SCRIPT_PATH/core.sh"
 
-IFS=','
-STACK_VERSIONS="${STACK_VERSIONS:-8.6.0,8.7.0,8.8.0,8.9.0,8.10.0,8.11.0,8.12.0,8.13.0,8.14.0,8.15.0}"
-read -ra STACK_VERSIONS <<< "$STACK_VERSIONS"
+parse_stack_versions() {
+  IFS=','
+  STACK_VERSIONS="${STACK_VERSIONS:-8.6.0,8.7.0,8.8.0,8.9.0,8.10.0,8.11.0,8.12.0,8.13.0,8.14.0,8.15.0}"
+  read -ra STACK_VERSIONS <<< "$STACK_VERSIONS"
+}
 
-for V in "${STACK_VERSIONS[@]}" ; do
-  LS_VERSION="$V" source "$SCRIPT_PATH/main.sh"
-done
+main() {
+  parse_stack_versions
+  parse_args "$@"
+  get_secret
+  generate_logs
+  check_logs
+
+  for V in "${STACK_VERSIONS[@]}" ; do
+    LS_VERSION="$V"
+    pull_images
+    create_directory
+    if [[ $QTYPE == "all" ]]; then
+      queue
+    else
+      worker
+    fi
+  done
+}
+
+main "$@"
