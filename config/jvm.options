@@ -16,10 +16,6 @@
 ##
 ################################################################
 
-## GC configuration
-11-13:-XX:+UseConcMarkSweepGC
-11-13:-XX:CMSInitiatingOccupancyFraction=75
-11-13:-XX:+UseCMSInitiatingOccupancyOnly
 
 ## Locale
 # Set the locale language
@@ -59,11 +55,7 @@
 #-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof
 
 ## GC logging
-#-Xlog:gc*,gc+age=trace,safepoint:file=@loggc@:utctime,pid,tags:filecount=32,filesize=64m
-
-# log GC status to a file with time stamps
-# ensure the directory exists
-#-Xloggc:${LS_GC_LOG_FILE}
+#-Xlog:gc*,gc+age=trace,safepoint:file=${LS_GC_LOG_FILE}:utctime,pid,tags:filecount=32,filesize=64m
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom

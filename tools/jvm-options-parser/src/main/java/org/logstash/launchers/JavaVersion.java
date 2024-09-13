@@ -30,10 +30,10 @@ import java.util.Objects;
 public class JavaVersion implements Comparable<JavaVersion> {
 
     public static final JavaVersion CURRENT = parse(System.getProperty("java.specification.version"));
-    public static final JavaVersion JAVA_11 = parse("11");
+    public static final JavaVersion JAVA_17 = parse("17");
     private final List<Integer> version;
 
-    private JavaVersion(List<Integer> version){
+    private JavaVersion(List<Integer> version) {
         this.version = version;
     }
 
