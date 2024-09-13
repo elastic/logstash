@@ -21,10 +21,6 @@ analyze:
       type: gradle
       target: 'dependencies-report:'
       path: .
-    - name: ingest-converter
-      type: gradle
-      target: 'ingest-converter:'
-      path: .
     - name: logstash-core
       type: gradle
       target: 'logstash-core:'
