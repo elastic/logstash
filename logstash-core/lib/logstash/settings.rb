@@ -259,6 +259,33 @@ module LogStash
 
       validate(default) if @strict
       @default = default
+
+      set_from_env_or_keystore(@name) unless (@name == "keystore.classname" or @name == "keystore.file")
+    end
+
+    def set_from_env_or_keystore(name)
+      result = lookup_env(name)
+      puts "found #{name} in env: #{result}" if result
+      set(result) if result
+
+      result = lookup_keystore(name)
+      puts "found #{name} in keystore: #{result}" if result
+      set(result) if result
+    end
+
+    def lookup_keystore(name)
+      env_ish_name = name.upcase.tr(".", "_")
+      ::LogStash::Util::KeyStore.lookup(name) || ::LogStash::Util::KeyStore.lookup(env_ish_name)
+    end
+
+    def lookup_env(name)
+      env_ish_name = name.upcase.tr(".", "_")
+      result ||= ENV["name"]
+      result ||= ENV[env_ish_name]
+      if result && result.start_with?("[")
+        result = instance_eval(result)
+      end
+      result
     end
 
     def value
@@ -367,6 +394,8 @@ module LogStash
         else
           @default = default
         end
+
+        set_from_env_or_keystore(@name)
       end
 
       def set(value)
@@ -426,7 +455,9 @@ module LogStash
       end
 
       def coerce(value)
-        return value unless value.is_a?(::String)
+        return value if value.is_a?(::Integer)
+
+        value = value.to_s unless value.is_a?(::String)
 
         coerced_value = Integer(value) rescue nil
 
