@@ -27,17 +27,6 @@ shared_examples_for 'a container with xpack features' do |flavor|
     context 'with running with env vars' do
       let(:env) {
         [
-          'CONFIG_STRING=input {
-              stdin { }
-              beats { port => 5040 }
-            }
-            output {
-              elasticsearch {
-                hosts => ["https://es:9200"]
-                user => "elastic"
-                password => "changeme"
-              }
-            }',
           'XPACK_MONITORING_ENABLED=true',
           'XPACK_MONITORING_ELASTICSEARCH_HOSTS="http://node1:9200"',
           'XPACK_MANAGEMENT_ENABLED=true',
@@ -46,7 +35,7 @@ shared_examples_for 'a container with xpack features' do |flavor|
         ]
       }
 
-      it 'persists var keys into logstas.yaml and uses their resolved actual values' do
+      it 'persists var keys into logstash.yml and uses their resolved actual values' do
         container = create_container(@image, {'ENV' => env})
 
         sleep(15) # wait for container run
