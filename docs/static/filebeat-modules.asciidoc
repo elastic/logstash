@@ -134,10 +134,6 @@ For a full example, see <<use-filebeat-modules-kafka>>.
 //* <<parsing-nginx>>
 //* <<parsing-system>>
 //
-//TIP: {ls} provides an <<ingest-converter,ingest pipeline conversion tool>>
-//to help you migrate ingest pipeline definitions to {ls} configs. The tool does
-//not currently support all the processors that are available for ingest node, but
-//it's a good starting point.
 //
 //[[parsing-apache2]]
 //==== Apache 2 Logs

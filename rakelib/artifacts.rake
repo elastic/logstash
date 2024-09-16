@@ -50,7 +50,6 @@ namespace "artifact" do
       "logstash-core-plugin-api/*.gemspec",
 
       "patterns/**/*",
-      "tools/ingest-converter/build/libs/ingest-converter.jar",
       "vendor/??*/**/*",
       # To include ruby-maven's hidden ".mvn" directory, we need to
       # do add the line below. This directory contains a file called

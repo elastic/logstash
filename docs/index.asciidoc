@@ -116,8 +116,6 @@ include::static/managing-multiline-events.asciidoc[]
 
 include::static/glob-support.asciidoc[]
 
-include::static/ingest-convert.asciidoc[]
-
 include::static/field-reference.asciidoc[]
 
 //The `field-reference.asciidoc` file (included above) contains a
