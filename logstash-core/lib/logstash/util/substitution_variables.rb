@@ -87,7 +87,8 @@ module ::LogStash::Util::SubstitutionVariables
 
     # ENV ${var} value may carry single quote or escaped double quote
     # or single/double quoted entries in array string, needs to be refined
-    refined_value = placeholder_value.gsub(/[\\"\\']/, '')
+    refined_value = strip_enclosing_char(placeholder_value, "'")
+    refined_value = strip_enclosing_char(refined_value, '"')
     if refined_value.start_with?('[') && refined_value.end_with?(']')
       # remove square brackets, split by comma and cleanup leading/trailing whitespace
       refined_value[1..-2].split(',').map(&:strip)
@@ -95,6 +96,20 @@ module ::LogStash::Util::SubstitutionVariables
       refined_value
     end
   end # def replace_placeholders
+
+  private
+
+  # removes removed_char of string_value if string_value is wrapped with removed_char
+  def strip_enclosing_char(string_value, remove_char)
+    return string_value unless string_value.is_a?(String)
+    return string_value if string_value.empty?
+
+    if string_value.start_with?(remove_char) && string_value.end_with?(remove_char)
+      string_value[1..-2] # Remove the first and last characters
+    else
+      string_value
+    end
+  end
 
   class << self
     private

@@ -27,6 +27,17 @@ shared_examples_for 'a container with xpack features' do |flavor|
     context 'with running with env vars' do
       let(:env) {
         [
+          'CONFIG_STRING=input {
+              stdin { }
+              beats { port => 5040 }
+            }
+            output {
+              elasticsearch {
+                hosts => ["https://es:9200"]
+                user => "elastic"
+                password => "changeme"
+              }
+            }',
           'XPACK_MONITORING_ENABLED=true',
           'XPACK_MONITORING_ELASTICSEARCH_HOSTS="http://node1:9200"',
           'XPACK_MANAGEMENT_ENABLED=true',
