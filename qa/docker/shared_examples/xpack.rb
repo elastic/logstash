@@ -35,7 +35,7 @@ shared_examples_for 'a container with xpack features' do |flavor|
         ]
       }
 
-      it 'persists var keys into logstas.yaml and uses their resolved actual values' do
+      it 'persists var keys into logstash.yml and uses their resolved actual values' do
         container = create_container(@image, {'ENV' => env})
 
         sleep(15) # wait for container run
