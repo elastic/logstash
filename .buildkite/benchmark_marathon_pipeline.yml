@@ -7,5 +7,5 @@ agents:
   diskType: pd-ssd
 
 steps:
-  - label: "Benchmark multiple versions"
-    command: .buildkite/scripts/benchmark/all.sh
+  - label: "Benchmark Marathon"
+    command: .buildkite/scripts/benchmark/marathon.sh
