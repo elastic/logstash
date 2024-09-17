@@ -66,17 +66,20 @@ describe "Guard reserved tags field against incorrect use" do
 
   describe 'create event' do
     it_behaves_like 'assign illegal value to tags', 'rename', 'create_tags_map', /"tags":\["_tagsparsefailure"\]/, /"_tags":\[{"poison":true}\]/
-    it_behaves_like 'assign illegal value to tags', 'warn',  'create_tags_map', /"tags":{"poison":true}/, /(?!_tags)/
     it_behaves_like 'assign illegal value to tags', 'rename', 'create_tags_number', /"tags":\["_tagsparsefailure"\]/, /"_tags":\[\[1,2,3\]\]/
-    it_behaves_like 'assign illegal value to tags', 'warn', 'create_tags_number', /"tags":\[1,2,3\]/, /(?!_tags)/
   end
 
   it "should throw exception when assigning two illegal values" do
-    ['rename', 'warn'].each do |mode|
-      logstash = @logstash.run_cmd(["bin/logstash", "-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
-                                    "--path.settings", settings_dir, "--event_api.tags.illegal", mode],
-                                   true, test_env)
-      expect(logstash.stderr_and_stdout).to match(/Ruby exception occurred/)
-    end
+    logstash = @logstash.run_cmd(["bin/logstash", "-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
+                                  "--path.settings", settings_dir, "--event_api.tags.illegal", "rename"],
+                                 true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/Ruby exception occurred/)
+  end
+
+  it "fails to start with 'warn' option" do
+    logstash = @logstash.run_cmd(["bin/logstash", "-e", @fixture.config('set_illegal_tags').gsub("\n", ""),
+                                  "--path.settings", settings_dir, "--event_api.tags.illegal", "warn"],
+                                 true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/Invalid value/)
   end
 end

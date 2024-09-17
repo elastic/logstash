@@ -354,12 +354,6 @@ class LogStash::Runner < Clamp::StrictCommand
     logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
     org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
 
-    tags_illegal_setting = settings.get_setting('event_api.tags.illegal').value
-    if tags_illegal_setting == 'warn'
-      deprecation_logger.deprecated(I18n.t("logstash.runner.tags-illegal-warning"))
-      org.logstash.Event::set_illegal_tags_action(tags_illegal_setting)
-    end
-
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
     module_parser = LogStash::Modules::CLIParser.new(setting("modules_list"), setting("modules_variable_list"))

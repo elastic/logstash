@@ -20,30 +20,21 @@
 
 package org.logstash;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
+
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.logstash.Event.getIllegalTagsAction;
+import static org.junit.Assert.*;
 
 public final class EventTest extends RubyTestBase {
 
@@ -564,40 +555,5 @@ public final class EventTest extends RubyTestBase {
 
         assertNull(event.getField(Event.TAGS_FAILURE));
         assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
-    }
-
-    @Test
-    public void allowTopLevelTagsWithMap() {
-        withIllegalTagsAction(Event.IllegalTagsAction.WARN, () -> {
-            final Event event = new Event();
-            event.setField("[tags][foo]", "bar");
-
-            assertNull(event.getField(Event.TAGS_FAILURE));
-            assertEquals(event.getField("[tags][foo]"), "bar");
-        });
-    }
-
-    @Test
-    public void allowCreatingEventWithTopLevelTagsWithMap() {
-        withIllegalTagsAction(Event.IllegalTagsAction.WARN, () -> {
-            Map<String, Object> inner = new HashMap<>();
-            inner.put("poison", "true");
-            Map<String, Object> data = new HashMap<>();
-            data.put("tags", inner);
-            final Event event = new Event(data);
-
-            assertNull(event.getField(Event.TAGS_FAILURE));
-            assertEquals(event.getField("[tags][poison]"), "true");
-        });
-    }
-    
-    private void withIllegalTagsAction(final Event.IllegalTagsAction temporaryIllegalTagsAction, final Runnable runnable) {
-        final Event.IllegalTagsAction previous = getIllegalTagsAction();
-        try {
-            Event.setIllegalTagsAction(temporaryIllegalTagsAction.toString());
-            runnable.run();
-        } finally {
-            Event.setIllegalTagsAction(previous.toString());
-        }
     }
 }
