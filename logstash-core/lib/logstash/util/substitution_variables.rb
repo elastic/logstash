@@ -87,11 +87,14 @@ module ::LogStash::Util::SubstitutionVariables
 
     # ENV ${var} value may carry single quote or escaped double quote
     # or single/double quoted entries in array string, needs to be refined
-    refined_value = strip_enclosing_char(placeholder_value, "'")
-    refined_value = strip_enclosing_char(refined_value, '"')
+    refined_value = strip_enclosing_char(strip_enclosing_char(placeholder_value, "'"), '"')
     if refined_value.start_with?('[') && refined_value.end_with?(']')
       # remove square brackets, split by comma and cleanup leading/trailing whitespace
-      refined_value[1..-2].split(',').map(&:strip)
+      refined_array = refined_value[1..-2].split(',').map(&:strip)
+      refined_array.each_with_index do |str, index|
+        refined_array[index] = strip_enclosing_char(strip_enclosing_char(str, "'"), '"')
+      end
+      refined_array
     else
       refined_value
     end
