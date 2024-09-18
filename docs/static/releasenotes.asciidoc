@@ -72,7 +72,7 @@ This section summarizes the changes in the following releases:
 [[known-issues-8-15-1]]
 ==== Known issues
 
-* When using Environment or Keystore variable references, single quotes are stripped from the settings or parameters where those are used. Logstash might fail to start or some plugins might use a malformed configuration.
+* Logstash might fail to start when using Environment or Keystore variable references in pipeline configurations due to single and double quotes are stripped from the settings. See https://github.com/elastic/logstash/issues/16437[16437] for the details.
 ** We recommend downgrading to {ls} 8.15.0 or temporarily avoid using Environment or Keystore variable references.
 
 [[notable-8.15.1]]
