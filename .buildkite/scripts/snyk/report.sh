@@ -7,7 +7,7 @@ TARGET_BRANCHES=("main")
 install_java() {
   # TODO: let's think about using BK agent which has Java installed
   #   Current caveat is Logstash BK agent doesn't support docker operatioins in it
-  sudo apt update && sudo apt install -y openjdk-17-jdk && sudo apt install -y openjdk-17-jre
+  sudo apt update && sudo apt install -y openjdk-21-jdk && sudo apt install -y openjdk-21-jre
 }
 
 # Resolves the branches we are going to track
