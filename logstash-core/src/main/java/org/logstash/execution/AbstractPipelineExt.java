@@ -181,24 +181,37 @@ public class AbstractPipelineExt extends RubyBasicObject {
         @Override
         public void notify(ConditionalEvaluationError err) {
             lastErrorEvaluationReceived = err.getCause().getMessage();
-            LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+            if (isDLQEnabled()) {
+                LOGGER.warn("{}. Failing event was sent to dead letter queue", lastErrorEvaluationReceived);
+            } else {
+                LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+            }
             LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
 
             // logs the exception at debug level
-            try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
-                err.printStackTrace(pw);
-                LOGGER.debug("{}", sw);
-            } catch (IOException ioex) {
-                LOGGER.warn("Invalid operation on closing internal resources", ioex);
+            if (LOGGER.isDebugEnabled()) {
+                debugLogStackTrace(err);
             }
 
-            // if pipeline has DLQ enabled, send also there the event
-            if (javaDlqWriter != null) {
+            if (isDLQEnabled()) {
                 try {
                     javaDlqWriter.writeEntry(err.failedEvent(), "if-statement", "if-statement", "condition evaluation error, " + lastErrorEvaluationReceived);
                 } catch (IOException ioex) {
                     LOGGER.error("Can't write in DLQ", ioex);
                 }
+            }
+        }
+
+        private boolean isDLQEnabled() {
+            return javaDlqWriter != null;
+        }
+
+        private void debugLogStackTrace(ConditionalEvaluationError err) {
+            try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+                err.printStackTrace(pw);
+                LOGGER.debug("{}", sw);
+            } catch (IOException ioex) {
+                LOGGER.warn("Invalid operation on closing internal resources", ioex);
             }
         }
     }
