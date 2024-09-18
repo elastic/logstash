@@ -184,7 +184,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             if (isDLQEnabled()) {
                 LOGGER.warn("{}. Failing event was sent to dead letter queue", lastErrorEvaluationReceived);
             } else {
-                LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+                LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload", lastErrorEvaluationReceived);
             }
             LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
 
