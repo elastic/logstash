@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-2,Logstash 8.15.2>>
 * <<logstash-8-15-1,Logstash 8.15.1>>
 * <<logstash-8-15-0,Logstash 8.15.0>>
 * <<logstash-8-14-3,Logstash 8.14.3>>
@@ -64,6 +65,62 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-2]]
+=== Logstash 8.15.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.15.2
+
+* Known issue for 8.15.1 related to env vars references https://github.com/elastic/logstash/pull/16455[#16455]
+* Fixes the issue where LS wipes out all quotes from docker env variables. https://github.com/elastic/logstash/pull/16456[#16456]
+* Backport PR #16456 to 8.15: Fixes the issue where LS wipes out all quotes from docker env variables. https://github.com/elastic/logstash/pull/16458[#16458]
+* Backport PR #16455 to 8.15: Known issue for 8.15.1 related to env vars references https://github.com/elastic/logstash/pull/16470[#16470]
+
+=== Logstash Commits between 8.15 and 8.15.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.1..8.15"
+
+a426e1b7f - (HEAD -> 8.15, origin/8.15) Known issue for 8.15.1 related to env vars references (#16455) (#16470) (3 hours ago) <github-actions[bot]>
+7a9f41a0f - Fixes the issue where LS wipes out all quotes from docker env variables. (#16456) (#16458) (2 days ago) <github-actions[bot]>
+58ab36f11 - Update patch plugin versions in gemfile lock (#16454) (2 days ago) <github-actions[bot]>
+c14926cc0 - bump core (#16424) (2 weeks ago) <kaisecheng>
+2fca7e39e - Release notes for 8.15.1 (#16405) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.15.1..8.15 *.release"
+Changed plugin versions:
+logstash-input-beats: 6.8.3 -> 6.8.4
+logstash-input-dead_letter_queue: 2.0.0 -> 2.0.1
+logstash-input-elastic_serverless_forwarder: 0.1.4 -> 0.1.5
+logstash-integration-logstash: 1.0.2 -> 1.0.3
+logstash-output-elasticsearch: 11.22.7 -> 11.22.9
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Beats Input - 6.8.4*
+
+* Fixed to populate the `@metadata` fields even if the source's metadata value is `nil` https://github.com/logstash-plugins/logstash-input-beats/pull/502[#502]
+
+*Dead_letter_queue Input - 2.0.1*
+
+* Fix NullPointerException when the plugin closes https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/53[#53]
+
+*Elastic_serverless_forwarder Input - 0.1.5*
+
+* [DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/8[#8]
+
+*Logstash Integration - 1.0.3*
+
+*[DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-integration-logstash/pull/23[#23]
+
+*Elasticsearch Output - 11.22.9*
+
+* Vendor ECS template for Elasticsearch 9.x in built gem https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1188[#1188]
+
+* Added ECS template for Elasticsearch 9.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1187[#1187]
 
 
 [[logstash-8-15-1]]
