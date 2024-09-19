@@ -40,6 +40,8 @@ public interface PipelineInput {
      */
     ReceiveResponse internalReceive(Stream<JrubyEventExtLibrary.RubyEvent> events);
 
+    String getId();
+
     /**
      * @return true if the input is running
      */

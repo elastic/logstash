@@ -19,49 +19,46 @@
 
 package org.logstash.util;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.logstash.RubyTestBase;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 public class CloudSettingAuthTest extends RubyTestBase {
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void testThrowExceptionWhenGivenStringWithoutSeparatorOrPassword() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("foobarbaz");
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingAuth("foobarbaz");
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Auth username and password format should be"));
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutPassword() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("foo:");
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingAuth("foo:");
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Auth username and password format should be"));
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWithoutUsername() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth(":bar");
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingAuth(":bar");
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Auth username and password format should be"));
     }
 
     @Test
     public void testThrowExceptionWhenGivenStringWhichIsEmpty() {
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Auth username and password format should be");
-
-        new CloudSettingAuth("");
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingAuth("");
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Auth username and password format should be"));
     }
 
     @Test

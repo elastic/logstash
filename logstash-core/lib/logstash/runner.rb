@@ -232,6 +232,11 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "log.format",
     :default => LogStash::SETTINGS.get_default("log.format")
 
+  option ["--log.format.json.fix_duplicate_message_fields"], "FORMAT_JSON_STRICT",
+    I18n.t("logstash.runner.flag.log_format_json_fix_duplicate_message_fields"),
+    :attribute_name => "log.format.json.fix_duplicate_message_fields",
+    :default => LogStash::SETTINGS.get_default("log.format.json.fix_duplicate_message_fields")
+
   option ["--path.settings"], "SETTINGS_DIR",
     I18n.t("logstash.runner.flag.path_settings"),
     :attribute_name => "path.settings",
@@ -305,14 +310,17 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
+    if setting("pipeline.buffer.type") != nil
+      configure_pipeline_buffer_type
+    end
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
     end
 
-    if JavaVersion::CURRENT < JavaVersion::JAVA_11
-      logger.warn I18n.t("logstash.runner.java.version",
-                                             :java_home => java.lang.System.getProperty("java.home"))
+    if JavaVersion::CURRENT < JavaVersion::JAVA_17
+      deprecation_logger.deprecated I18n.t("logstash.runner.java.version_17_minimum",
+                                           :java_home => java.lang.System.getProperty("java.home"))
     end
 
     logger.warn I18n.t("logstash.runner.java.home") if ENV["JAVA_HOME"]
@@ -599,6 +607,21 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def setting(key)
     @settings.get_value(key)
+  end
+
+  def configure_pipeline_buffer_type
+    # if user hasn't explicitly set Netty's interested property
+    if java.lang.System.getProperty("io.netty.noPreferDirect") == nil
+      if setting("pipeline.buffer.type") == "heap"
+        # set Netty's Java properties to prefer heap memory allocation
+        java.lang.System.setProperty("io.netty.noPreferDirect", "true")
+      else
+        # set Netty's Java properties to prefer direct memory allocation
+        java.lang.System.setProperty("io.netty.noPreferDirect", "false")
+      end
+    else
+      logger.warn("Ignoring 'pipeline.buffer.type' since the 'io.netty.noPreferDirect' Java property has already been set (check LS_JAVA_OPTS or jvm.options file.")
+    end
   end
 
 end

@@ -26,7 +26,7 @@ module ServiceTester
       stdout.force_encoding(Encoding::UTF_8)
       (
         stdout.match(/Active: active \(running\)/) &&
-        stdout.match(/^\s*(└─|`-)\d*\s.*#{jdk_path}/) &&
+        stdout.match(/^\s*(└─|`-)\d*\s.*#{jdk_path}.*org\.logstash\.Logstash/) &&
         stdout.match(/#{package}.service - #{package}/)
       )
     end

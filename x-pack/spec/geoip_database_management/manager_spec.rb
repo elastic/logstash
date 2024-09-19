@@ -37,10 +37,13 @@ describe LogStash::GeoipDatabaseManagement::Manager, aggregate_failures: true, v
   let(:geoip_data_path) { ::File.expand_path("geoip_database_management", settings_path_data)}
   let(:geoip_metadata_path) { ::File.expand_path("metadata.csv", geoip_data_path) }
 
+  let(:populate_geoip_data_path) { true }
   let(:metadata_contents) { nil }
   before(:each) do
-    ::FileUtils.mkdir_p(::File.dirname(geoip_metadata_path))
-    ::File.write(geoip_metadata_path, metadata_contents) unless metadata_contents.nil?
+    if populate_geoip_data_path
+      ::FileUtils.mkdir_p(::File.dirname(geoip_metadata_path))
+      ::File.write(geoip_metadata_path, metadata_contents) unless metadata_contents.nil?
+    end
   end
 
   after(:each) do
@@ -105,6 +108,18 @@ describe LogStash::GeoipDatabaseManagement::Manager, aggregate_failures: true, v
 
         expect(Pathname(existing_city_db_path)).to_not be_file
         expect(Pathname(existing_asn_db_path)).to_not be_file
+      end
+
+      context "and data directory does not exist" do
+        let(:populate_geoip_data_path) { false }
+        let(:existing_city_db_path) { nil }
+        let(:existing_asn_db_path) { nil }
+
+        it 'logs info about database manager being disabled' do
+          manager_instance # instantiate
+
+          expect(mock_logger).to have_received(:info).with(a_string_including "database manager is disabled")
+        end
       end
     end
   end

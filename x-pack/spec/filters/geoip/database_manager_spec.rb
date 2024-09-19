@@ -8,11 +8,14 @@ require "filters/geoip/database_manager"
 describe LogStash::Filters::Geoip do
   describe 'DatabaseManager', :aggregate_failures do
     let(:pipeline_id) { SecureRandom.hex(16) }
-    let(:mock_geoip_plugin) do
-      double("LogStash::Filters::Geoip").tap do |c|
-        allow(c).to receive(:execution_context).and_return(double("EC", pipeline_id: pipeline_id))
-        allow(c).to receive(:update_filter).with(anything)
-      end
+    let(:mock_geoip_plugin) { mock_geoip_plugin_factory.call }
+    let(:mock_geoip_plugin_factory) do
+      ->() {
+        double("LogStash::Filters::Geoip").tap do |c|
+          allow(c).to receive(:execution_context).and_return(double("EC", pipeline_id: pipeline_id))
+          allow(c).to receive(:update_filter).with(anything)
+        end
+      }
     end
 
     let(:eula_database_infos) { Hash.new { LogStash::GeoipDatabaseManagement::DbInfo::PENDING } }
@@ -119,9 +122,18 @@ describe LogStash::Filters::Geoip do
 
           shared_examples "subscribed to expire notifications" do
             context "when the manager expires the db" do
-              it "notifies the plugin" do
+              before(:each) do
                 db_manager.eula_subscription("City").notify(LogStash::GeoipDatabaseManagement::DbInfo::EXPIRED)
+              end
+              it "notifies the plugin" do
                 expect(mock_geoip_plugin).to have_received(:update_filter).with(:expire)
+              end
+              context "subsequent subscriptions" do
+                it "are given the nil path" do
+                  plugin2 = mock_geoip_plugin_factory.call
+                  path2 = db_manager.subscribe_database_path("City", nil, plugin2)
+                  expect(path2).to be_nil
+                end
               end
             end
             context "when the manager expires a different DB" do
@@ -135,9 +147,18 @@ describe LogStash::Filters::Geoip do
           shared_examples "subscribed to update notifications" do
             context "when the manager updates the db" do
               let(:updated_db_path) { "/this/that/another.mmdb" }
-              it "notifies the plugin" do
+              before(:each) do
                 db_manager.eula_subscription("City").notify(LogStash::GeoipDatabaseManagement::DbInfo.new(path: updated_db_path))
+              end
+              it "notifies the plugin" do
                 expect(mock_geoip_plugin).to have_received(:update_filter).with(:update, updated_db_path)
+              end
+              context "subsequent subscriptions" do
+                it "are given the updated path" do
+                  plugin2 = mock_geoip_plugin_factory.call
+                  path2 = db_manager.subscribe_database_path("City", nil, plugin2)
+                  expect(path2).to eq updated_db_path
+                end
               end
             end
             context "when the manager updates a different DB" do

@@ -120,8 +120,9 @@
     "skip-list": false
   },
   "logstash-filter-elastic_integration": {
-    "default-plugins": false,
-    "skip-list": false
+    "default-plugins": true,
+    "skip-list": false,
+    "skip-oss": true
   },
   "logstash-filter-elasticsearch": {
     "default-plugins": true,
@@ -315,7 +316,7 @@
     "skip-list": false
   },
   "logstash-input-imap": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   },
   "logstash-input-java_input_example": {
@@ -371,12 +372,12 @@
     "skip-list": true
   },
   "logstash-input-snmp": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-snmptrap": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-sqs": {
     "default-plugins": false,
@@ -432,9 +433,21 @@
     "default-plugins": true,
     "skip-list": false
   },
+  "logstash-integration-snmp": {
+    "default-plugins": true,
+    "skip-list": false
+  },
   "logstash-integration-aws": {
     "default-plugins": true,
     "skip-list": false
+  },
+  "logstash-integration-internal": {
+    "default-plugins": false,
+    "skip-list": true
+  },
+  "logstash-integration-zeromq": {
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-cloudwatch": {
     "default-plugins": false,

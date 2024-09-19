@@ -50,7 +50,6 @@ namespace "artifact" do
       "logstash-core-plugin-api/*.gemspec",
 
       "patterns/**/*",
-      "tools/ingest-converter/build/libs/ingest-converter.jar",
       "vendor/??*/**/*",
       # To include ruby-maven's hidden ".mvn" directory, we need to
       # do add the line below. This directory contains a file called
@@ -99,6 +98,12 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rake-*'
+    # exclude ruby-maven-libs 3.3.9 jars until JRuby ships with >= 3.8.9
+    @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*'
+
+    # remove this after JRuby includes rexml 3.3.x
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
 
     @exclude_paths
   end
@@ -134,7 +139,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8", "build_docker_wolfi"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -193,7 +198,7 @@ namespace "artifact" do
   end
 
   desc "Build all (jdk bundled and not) OSS tar.gz and zip of default logstash plugins with all dependencies"
-  task "archives_oss" => ["prepare", "generate_build_metadata"] do
+  task "archives_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
@@ -224,7 +229,7 @@ namespace "artifact" do
   end
 
   desc "Build an RPM of logstash with all dependencies"
-  task "rpm_oss" => ["prepare", "generate_build_metadata"] do
+  task "rpm_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     puts("[artifact:rpm] building rpm OSS package x86_64")
@@ -256,7 +261,7 @@ namespace "artifact" do
   end
 
   desc "Build a DEB of logstash with all dependencies"
-  task "deb_oss" => ["prepare", "generate_build_metadata"] do
+  task "deb_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
     puts("[artifact:deb_oss] building deb OSS package x86_64")
@@ -300,7 +305,7 @@ namespace "artifact" do
   end
 
   desc "Build OSS docker image"
-  task "docker_oss" => ["prepare", "generate_build_metadata", "archives_oss"] do
+  task "docker_oss" => ["prepare-oss", "generate_build_metadata", "archives_oss"] do
     puts("[docker_oss] Building OSS docker image")
     build_docker('oss')
   end
@@ -311,17 +316,24 @@ namespace "artifact" do
     build_docker('ubi8')
   end
 
+  desc "Build wolfi docker image"
+  task "docker_wolfi" => %w(prepare generate_build_metadata archives) do
+    puts("[docker_wolfi] Building Wolfi docker image")
+    build_docker('wolfi')
+  end
+
   desc "Generate Dockerfiles for full and oss images"
   task "dockerfiles" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building Dockerfiles")
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('ubi8')
+    build_dockerfile('wolfi')
     build_dockerfile('ironbank')
   end
 
   desc "Generate Dockerfile for oss images"
-  task "dockerfile_oss" => ["prepare", "generate_build_metadata"] do
+  task "dockerfile_oss" => ["prepare-oss", "generate_build_metadata"] do
     puts("[dockerfiles] Building oss Dockerfile")
     build_dockerfile('oss')
   end
@@ -332,10 +344,16 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
-  desc "Generate Dockerfile for full images"
+  desc "Generate Dockerfile for UBI8 images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
+  end
+
+  desc "Generate Dockerfile for wolfi images"
+  task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
+    puts("[dockerfiles] Building wolfi Dockerfiles")
+    build_dockerfile('wolfi')
   end
 
   desc "Generate build context for ironbank"
@@ -348,17 +366,20 @@ namespace "artifact" do
   task "build" => [:generate_build_metadata] do
     Rake::Task["artifact:gems"].invoke unless SNAPSHOT_BUILD
     Rake::Task["artifact:deb"].invoke
-    Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm"].invoke
-    Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives"].invoke
-    Rake::Task["artifact:archives_oss"].invoke
+
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
-      Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_ubi8"].invoke
+      Rake::Task["artifact:docker_wolfi"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
+      Rake::Task["artifact:docker_oss"].invoke
     end
+
+    Rake::Task["artifact:deb_oss"].invoke
+    Rake::Task["artifact:rpm_oss"].invoke
+    Rake::Task["artifact:archives_oss"].invoke
   end
 
   task "build_docker_full" => [:generate_build_metadata] do
@@ -376,8 +397,14 @@ namespace "artifact" do
     Rake::Task["artifact:dockerfile_ubi8"].invoke
   end
 
+  task "build_docker_wolfi" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_wolfi"].invoke
+    Rake::Task["artifact:dockerfile_wolfi"].invoke
+  end
+
   task "generate_build_metadata" do
     require 'time'
+    require 'tempfile'
 
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
@@ -446,6 +473,12 @@ namespace "artifact" do
     end
   end
 
+  task "prepare-oss" do
+    if ENV['SKIP_PREPARE'] != "1"
+      %w[bootstrap plugin:install-default plugin:remove-non-oss-plugins artifact:clean-bundle-config].each {|task| Rake::Task[task].invoke }
+    end
+  end
+
   def ensure_logstash_version_constant_defined
     # we do not want this file required when rake (ruby) parses this file
     # only when there is a task executing, not at the very top of this file
@@ -458,6 +491,7 @@ namespace "artifact" do
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
+    require 'minitar'
     ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.tar.gz"
     if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
@@ -466,7 +500,7 @@ namespace "artifact" do
     end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
-    Gem::Package::TarWriter.new(gz) do |tar|
+    Minitar::Writer.open(gz) do |tar|
       files(exclude_paths).each do |path|
         write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
       end
@@ -486,11 +520,11 @@ namespace "artifact" do
   def write_to_tar(tar, path, path_in_tar)
     stat = File.lstat(path)
     if stat.directory?
-      tar.mkdir(path_in_tar, stat.mode)
+      tar.mkdir(path_in_tar, :mode => stat.mode)
     elsif stat.symlink?
-      tar.add_symlink(path_in_tar, File.readlink(path), stat.mode)
+      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
     else
-      tar.add_file_simple(path_in_tar, stat.mode, stat.size) do |io|
+      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
         File.open(path, 'rb') do |fd|
           chunk = nil
           size = 0

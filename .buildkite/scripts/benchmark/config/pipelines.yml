@@ -1,0 +1,44 @@
+- pipeline.id: main
+  config.string: |
+    input { 
+      beats {
+        port => 5044
+      }
+    } 
+    output { 
+      elasticsearch {
+        hosts => [ "${BENCHMARK_ES_HOST}" ]
+        user => "${BENCHMARK_ES_USER}"
+        password => "${BENCHMARK_ES_PW}"
+      }
+    }
+- pipeline.id: node_stats
+  config.string: |
+    input {
+      http_poller {
+        urls => {
+          NodeStats => {
+            method => get
+            url => "http://localhost:9600/_node/stats"
+          }
+        }
+        schedule => { every => "30s"}
+        codec => "json"
+      }
+    }
+    filter {
+      mutate { 
+        remove_field => [ "host", "[pipelines][.monitoring-logstash]", "event" ]
+        add_field => { "[benchmark][label]" => "${QTYPE}_w${WORKER}b${BATCH_SIZE}" }
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => [ "${BENCHMARK_ES_HOST}" ]
+        user => "${BENCHMARK_ES_USER}"
+        password => "${BENCHMARK_ES_PW}"
+        data_stream_type => "metrics"
+        data_stream_dataset => "nodestats"
+        data_stream_namespace => "logstash"
+      }
+    }

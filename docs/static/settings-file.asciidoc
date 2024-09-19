@@ -336,6 +336,10 @@ The log level. Valid options are:
 | The log format. Set to `json` to log in JSON format, or `plain` to use `Object#.inspect`.
 | `plain`
 
+| `log.format.json.fix_duplicate_message_fields`
+| When the log format is `json` avoid collision of field names in log lines.
+| `false`
+
 | `path.logs`
 | The directory where Logstash will write its log to.
 | `LOGSTASH_HOME/logs`
@@ -362,4 +366,9 @@ separating each log lines per pipeline could be helpful in case you need to trou
 When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
 Setting this flag to `warn` is deprecated and will be removed in a future release.
 | `rename`
+
+| `pipeline.buffer.type`
+| Determine where to allocate memory buffers, for plugins that leverage them.
+Currently defaults to `direct` but can be switched to `heap` to select Java heap space, which will become the default in the future.
+| `direct` Check out <<reducing-off-heap-usage>> for more info.
 |=======================================================================

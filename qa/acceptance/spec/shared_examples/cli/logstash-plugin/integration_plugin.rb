@@ -24,6 +24,7 @@ shared_examples "integration plugins compatible" do |logstash|
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after :each do
@@ -60,6 +61,7 @@ shared_examples "integration plugins compatible" do |logstash|
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after :each do
@@ -83,6 +85,7 @@ shared_examples "integration plugins compatible" do |logstash|
     let(:plugin) { "logstash-integration-rabbitmq" }
     before :each do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after :each do

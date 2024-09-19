@@ -23,6 +23,7 @@ shared_examples "logstash list" do |logstash|
   describe "logstash-plugin list on [#{logstash.human_name}]" do
     before(:all) do
       logstash.install({:version => LOGSTASH_VERSION})
+      logstash.write_default_pipeline
     end
 
     after(:all) do

@@ -21,6 +21,8 @@
 package org.logstash.execution;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -76,6 +78,7 @@ import org.logstash.config.ir.PipelineConfig;
 import org.logstash.config.ir.PipelineIR;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
+import org.logstash.config.ir.compiler.ConditionalEvaluationError;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
@@ -163,8 +166,31 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
 
+    private String lastErrorEvaluationReceived = "";
+
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    public interface ConditionalEvaluationListener {
+        void notify(ConditionalEvaluationError err);
+    }
+
+    public final class LogErrorEvaluationListener implements ConditionalEvaluationListener {
+        @Override
+        public void notify(ConditionalEvaluationError err) {
+            lastErrorEvaluationReceived = err.getCause().getMessage();
+            LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+            LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
+
+            // logs the exception at debug level
+            try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+                err.printStackTrace(pw);
+                LOGGER.debug("{}", sw);
+            } catch (IOException ioex) {
+                LOGGER.warn("Invalid operation on closing internal resources", ioex);
+            }
+        }
     }
 
     @JRubyMethod(required = 4)
@@ -183,7 +209,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         ).initialize(context, args[3], this, dlqWriter(context)),
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
-                getSecretStore(context)
+                getSecretStore(context),
+                new LogErrorEvaluationListener()
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -651,20 +678,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private void initializePluginThroughputFlowMetric(final ThreadContext context, final UptimeMetric uptime, final String id) {
         final Metric<Number> uptimeInPreciseSeconds = uptime.withUnitsPrecise(SECONDS);
-        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
+        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newString(id).intern(), EVENTS_KEY);
         final LongCounter eventsOut = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
 
         final FlowMetric throughputFlow = createFlowMetric(PLUGIN_THROUGHPUT_KEY, eventsOut, uptimeInPreciseSeconds);
         this.flowMetrics.add(throughputFlow);
 
-        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
+        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, throughputFlow);
     }
 
     private void initializePluginWorkerFlowMetrics(final ThreadContext context, final int workerCount, final UptimeMetric uptime, final RubySymbol key, final String id) {
         final Metric<Number> uptimeInPreciseMillis = uptime.withUnitsPrecise(MILLISECONDS);
 
-        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), EVENTS_KEY);
+        final RubySymbol[] eventsNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newString(id).intern(), EVENTS_KEY);
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_MILLIS_PER_EVENT_KEY, durationInMillis, counterEvents);
@@ -675,7 +702,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
         this.flowMetrics.add(workerUtilization);
 
-        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newSymbol(id), FLOW_KEY);
+        final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, workerCostPerEvent);
         storeMetric(context, flowNamespace, workerUtilization);
     }
@@ -685,7 +712,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                                  final Metric<T> metric) {
         final IRubyObject collector = this.metric.collector(context);
         final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
-        final IRubyObject metricKey = context.runtime.newSymbol(metric.getName());
+        final IRubyObject metricKey = context.runtime.newString(metric.getName()).intern();
 
         final IRubyObject wasRegistered = collector.callMethod(context, "register?", new IRubyObject[]{fullNamespace, metricKey, JavaUtil.convertJavaToUsableRubyObject(context.runtime, metric)});
         if (!wasRegistered.toJava(Boolean.class)) {
@@ -746,7 +773,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         RubyUtil.RUBY.getCurrentContext(),
                         new IRubyObject[]{
                                 inputQueueClient(), pipelineId().convertToString().intern(),
-                                metric(), RubyUtil.RUBY.newSymbol(inputName)
+                                metric(), RubyUtil.RUBY.newString(inputName).intern()
                         }
                 );
     }
@@ -827,5 +854,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public IRubyObject isShutdownRequested(final ThreadContext context) {
         // shutdown_requested? MUST be implemented in the concrete implementation of this class.
         throw new IllegalStateException("Pipeline implementation does not provide `shutdown_requested?`, which is a Logstash internal error.");
+    }
+
+    @VisibleForTesting
+    @JRubyMethod(name = "last_error_evaluation_received")
+    public final RubyString getLastErrorEvaluationReceived(final ThreadContext context) {
+        return RubyString.newString(context.runtime, lastErrorEvaluationReceived);
     }
 }

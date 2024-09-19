@@ -72,6 +72,7 @@ module LogStash
            Setting::Boolean.new("help", false),
            Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
+           Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", false),
            Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled"),
             Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host"),
          Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port"),
@@ -88,7 +89,7 @@ module LogStash
            Setting::Boolean.new("api.ssl.enabled", false),
   Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
-          Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
+       Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
             Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::Boolean.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
@@ -109,7 +110,8 @@ module LogStash
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
-    Setting::NullableString.new("monitoring.cluster_uuid")
+    Setting::NullableString.new("monitoring.cluster_uuid"),
+            Setting::String.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
@@ -123,6 +125,7 @@ module LogStash
   SETTINGS.on_post_process do |settings|
     # Configure Logstash logging facility. This needs to be done as early as possible to
     # make sure the logger has the correct settings tnd the log level is correctly defined.
+    java.lang.System.setProperty("ls.log.format.json.fix_duplicate_message_fields", settings.get("log.format.json.fix_duplicate_message_fields").to_s)
     java.lang.System.setProperty("ls.logs", settings.get("path.logs"))
     java.lang.System.setProperty("ls.log.format", settings.get("log.format"))
     java.lang.System.setProperty("ls.log.level", settings.get("log.level"))

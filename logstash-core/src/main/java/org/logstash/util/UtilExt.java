@@ -34,6 +34,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 public class UtilExt {
 
     @JRubyMethod(module = true)
+    @SuppressWarnings("deprecation")
     public static IRubyObject get_thread_id(final ThreadContext context, IRubyObject self, IRubyObject thread) {
         if (!(thread instanceof RubyThread)) {
             throw context.runtime.newTypeError(thread, context.runtime.getThread());
@@ -41,6 +42,7 @@ public class UtilExt {
         final Thread javaThread = ((RubyThread) thread).getNativeThread(); // weak-reference
         // even if thread is dead the RubyThread instance might stick around while the Java thread
         // instance already could have been garbage collected - let's return nil for dead meat :
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         return javaThread == null ? context.nil : context.runtime.newFixnum(javaThread.getId());
     }
 

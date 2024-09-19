@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
@@ -93,7 +94,7 @@ public final class JrubyEventExtLibraryTest extends RubyTestBase {
         try {
             event.ruby_set_field(context, key, value);
         } catch (RuntimeError rubyRuntimeError) {
-            Assert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
+            MatcherAssert.assertThat(rubyRuntimeError.getLocalizedMessage(), CoreMatchers.containsString("Invalid FieldReference"));
             return;
         }
         Assert.fail("expected ruby RuntimeError was not thrown.");
@@ -109,7 +110,7 @@ public final class JrubyEventExtLibraryTest extends RubyTestBase {
 
         event.ruby_set_field(context, key, value);
         IRubyObject retrievedValue = event.ruby_get_field(context, key);
-        Assert.assertThat(retrievedValue, CoreMatchers.equalTo(value));
+        MatcherAssert.assertThat(retrievedValue, CoreMatchers.equalTo(value));
 
         RubyHash eventHash = (RubyHash) event.ruby_to_hash_with_metadata(context);
         IRubyObject nestedValue = eventHash.dig(context, rubyString("foo"), rubyString("il[[]]]legal"));

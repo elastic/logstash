@@ -43,6 +43,10 @@ final class ClassFields {
         return addField(FieldDefinition.fromValue(definitions.size(), obj));
     }
 
+    public ValueSyntaxElement add(final String fieldName, final Object obj) {
+        return addField(FieldDefinition.fromValue(fieldName, obj));
+    }
+
     /**
      * Adds a mutable field of the given type, that doesn't have a default value and is not
      * initialized by a constructor assignment.
@@ -52,6 +56,10 @@ final class ClassFields {
      */
     public ValueSyntaxElement add(final Class<?> type) {
         return addField(FieldDefinition.mutableUnassigned(definitions.size(), type));
+    }
+
+    public ValueSyntaxElement add(final String fieldName, final Class<?> type) {
+        return addField(FieldDefinition.mutableUnassigned(fieldName, type));
     }
 
     /**

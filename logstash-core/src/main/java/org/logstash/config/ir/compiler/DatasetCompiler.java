@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
@@ -31,6 +32,7 @@ import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.execution.AbstractPipelineExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
@@ -55,11 +57,12 @@ public final class DatasetCompiler {
 
     public static ComputeStepSyntaxElement<SplitDataset> splitDataset(
         final Collection<Dataset> parents,
-        final EventCondition condition)
+        final EventCondition condition,
+        final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
         final ClassFields fields = new ClassFields();
-        final ValueSyntaxElement ifData = fields.add(new ArrayList<>());
-        final ValueSyntaxElement elseData = fields.add(new ArrayList<>());
+        final ValueSyntaxElement ifData = fields.add("ifData", new ArrayList<>());
+        final ValueSyntaxElement elseData = fields.add("elseData", new ArrayList<>());
         final ValueSyntaxElement right = fields.add(DatasetCompiler.Complement.class);
         final VariableDefinition event =
             new VariableDefinition(JrubyEventExtLibrary.RubyEvent.class, "event");
@@ -75,23 +78,38 @@ public final class DatasetCompiler {
                 )
             )
         );
-        final ValueSyntaxElement conditionField = fields.add(condition);
+        final ValueSyntaxElement conditionField = fields.add("condition", condition);
         final DatasetCompiler.ComputeAndClear compute;
+
+        final ValueSyntaxElement errorNotifier = fields.add(conditionalErrListener);
+        Closure exceptionHandlerBlock = Closure.wrap(
+                new SyntaxFactory.MethodCallReturnValue(SyntaxFactory.value("this"), "setDone"),
+                errorNotifier.call("notify", SyntaxFactory.value("ex")),
+                SyntaxFactory.ret(ifData));
+        ValueSyntaxElement exception = SyntaxFactory.value("ex");
+
         if (parents.isEmpty()) {
+            MethodLevelSyntaxElement safeLoop = SyntaxFactory.tryBlock(
+                    conditionalLoop(event, BATCH_ARG, conditionField, ifData, elseData),
+                    ConditionalEvaluationError.class, exceptionHandlerBlock, exception
+            );
             compute = withOutputBuffering(
-                conditionalLoop(event, BATCH_ARG, conditionField, ifData, elseData),
+                Closure.wrap(safeLoop),
                 Closure.wrap(clear(elseData)), ifData, fields
             );
         } else {
             final Collection<ValueSyntaxElement> parentFields =
                 parents.stream().map(fields::add).collect(Collectors.toList());
-            final ValueSyntaxElement inputBuffer = fields.add(new ArrayList<>());
+            final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", new ArrayList<>());
+            MethodLevelSyntaxElement safeLoop = SyntaxFactory.tryBlock(
+                    conditionalLoop(event, inputBuffer, conditionField, ifData, elseData),
+                    ConditionalEvaluationError.class, exceptionHandlerBlock, exception);
             compute = withOutputBuffering(
                 withInputBuffering(
-                    conditionalLoop(event, inputBuffer, conditionField, ifData, elseData),
+                    Closure.wrap(safeLoop),
                     parentFields, inputBuffer
                 ),
-                clearSyntax(parentFields).add(clear(elseData)), ifData, fields
+                clearSyntax(parentFields).add(clear(elseData)).add(clear(inputBuffer)), ifData, fields
             );
         }
         return ComputeStepSyntaxElement.create(
@@ -111,26 +129,43 @@ public final class DatasetCompiler {
         final AbstractFilterDelegatorExt plugin)
     {
         final ClassFields fields = new ClassFields();
-        final ValueSyntaxElement outputBuffer = fields.add(new ArrayList<>());
+        final ValueSyntaxElement outputBuffer = fields.add("outputBuffer", new ArrayList<>());
         final Closure clear = Closure.wrap();
         final Closure compute;
         if (parents.isEmpty()) {
             compute = filterBody(outputBuffer, BATCH_ARG, fields, plugin);
         } else {
-            final Collection<ValueSyntaxElement> parentFields = parents
-                .stream()
-                .map(fields::add)
-                .collect(Collectors.toList()
-            );
+            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
+
             @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
             clear.add(clearSyntax(parentFields));
-            final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
+            final ValueSyntaxElement inputBufferField = fields.add("inputBuffer", inputBuffer);
+
             compute = withInputBuffering(
                 filterBody(outputBuffer, inputBufferField, fields, plugin),
                 parentFields, inputBufferField
             );
         }
         return prepare(withOutputBuffering(compute, clear, outputBuffer, fields));
+    }
+
+    private static Collection<ValueSyntaxElement> createParentStatementsFields(Collection<Dataset> parents, ClassFields fields) {
+        if (parents.size() == 1) {
+            return List.of(fields.add("parentStatement", parents.iterator().next()));
+        }
+
+        final Collection<ValueSyntaxElement> parentFields = new ArrayList<>();
+        int i = 0;
+        for (Dataset parent : parents) {
+            ValueSyntaxElement add = fields.add("parentStatement" + i, parent);
+            parentFields.add(add);
+            i++;
+        }
+        return parentFields;
+    }
+
+    private static boolean isContainedUnderIfStatement(Collection<Dataset> parents) {
+        return parents.size() == 1 && parents.iterator().next() instanceof SplitDataset;
     }
 
     /**
@@ -155,10 +190,7 @@ public final class DatasetCompiler {
         }
 
         final ClassFields fields = new ClassFields();
-        final Collection<ValueSyntaxElement> parentFields = parents
-            .stream()
-            .map(fields::add)
-            .collect(Collectors.toList());
+        final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
         @SuppressWarnings("rawtypes") final RubyArray inputBuffer = RubyUtil.RUBY.newArray();
         final ValueSyntaxElement inputBufferField = fields.add(inputBuffer);
         final ValueSyntaxElement outputBufferField = fields.add(new ArrayList<>());
@@ -199,10 +231,7 @@ public final class DatasetCompiler {
         }
 
         final ClassFields fields = new ClassFields();
-        final Collection<ValueSyntaxElement> parentFields = parents
-            .stream()
-            .map(fields::add)
-            .collect(Collectors.toList());
+        final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
         final Closure compute =  Closure.wrap(parentFields
                 .stream()
                 .map(DatasetCompiler::computeDataset)
@@ -236,7 +265,7 @@ public final class DatasetCompiler {
         final ClassFields fields = new ClassFields();
         final Closure clearSyntax;
         final Closure computeSyntax;
-        final ValueSyntaxElement outputField = fields.add(output);
+        final ValueSyntaxElement outputField = fields.add("outputDelegator", output);
         if (parents.isEmpty()) {
             clearSyntax = Closure.EMPTY;
             computeSyntax = Closure.wrap(
@@ -244,8 +273,7 @@ public final class DatasetCompiler {
                 invokeOutput(outputField, BATCH_ARG),
                 unsetPluginIdForLog4j());
         } else {
-            final Collection<ValueSyntaxElement> parentFields =
-                parents.stream().map(fields::add).collect(Collectors.toList());
+            final Collection<ValueSyntaxElement> parentFields = createParentStatementsFields(parents, fields);
             @SuppressWarnings("rawtypes")
             final RubyArray buffer = RubyUtil.RUBY.newArray();
             final Closure inlineClear;
@@ -256,7 +284,7 @@ public final class DatasetCompiler {
                 inlineClear = Closure.EMPTY;
                 clearSyntax = clearSyntax(parentFields);
             }
-            final ValueSyntaxElement inputBuffer = fields.add(buffer);
+            final ValueSyntaxElement inputBuffer = fields.add("inputBuffer", buffer);
             computeSyntax = withInputBuffering(
                 Closure.wrap(
                     setPluginIdForLog4j(outputField),
@@ -283,7 +311,7 @@ public final class DatasetCompiler {
         final ClassFields fields,
         final AbstractFilterDelegatorExt plugin)
     {
-        final ValueSyntaxElement filterField = fields.add(plugin);
+        final ValueSyntaxElement filterField = fields.add("plugin", plugin);
         final Closure body = Closure.wrap(
             setPluginIdForLog4j(filterField),
             buffer(outputBuffer, filterField.call("multiFilter", inputBuffer))
@@ -334,11 +362,15 @@ public final class DatasetCompiler {
      */
     private static Closure withInputBuffering(final Closure compute,
         final Collection<ValueSyntaxElement> parents, final ValueSyntaxElement inputBuffer) {
-        return Closure.wrap(
-                parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
-                        .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
-                ).toArray(MethodLevelSyntaxElement[]::new)
-        ).add(compute).add(clear(inputBuffer));
+        return computeNonCancelledEventsBlock(parents, inputBuffer)
+                .add(compute)
+                .add(clear(inputBuffer));
+    }
+
+    private static Closure computeNonCancelledEventsBlock(Collection<ValueSyntaxElement> parents, ValueSyntaxElement inputBuffer) {
+        return Closure.wrap(parents.stream().map(par -> SyntaxFactory.value("org.logstash.config.ir.compiler.Utils")
+                .call("copyNonCancelledEvents", computeDataset(par), inputBuffer)
+        ).toArray(MethodLevelSyntaxElement[]::new));
     }
 
     /**
@@ -378,14 +410,14 @@ public final class DatasetCompiler {
         final boolean shutdownOnly) {
         final MethodLevelSyntaxElement condition;
         final ValueSyntaxElement flushArgs;
-        final ValueSyntaxElement flushFinal = fields.add(flushOpts(true));
+        final ValueSyntaxElement flushFinal = fields.add("shutdownFlushOptions", flushOpts(true));
         if (shutdownOnly) {
             condition = SyntaxFactory.and(FLUSH_ARG, SHUTDOWN_ARG);
             flushArgs = flushFinal;
         } else {
             condition = FLUSH_ARG;
             flushArgs = SyntaxFactory.ternary(
-                SHUTDOWN_ARG, flushFinal, fields.add(flushOpts(false))
+                SHUTDOWN_ARG, flushFinal, fields.add("flushOptions", flushOpts(false))
             );
         }
         return SyntaxFactory.ifCondition(
@@ -490,9 +522,13 @@ public final class DatasetCompiler {
             if (done) {
                 return data;
             }
-            parent.compute(batch, flush, shutdown);
-            done = true;
-            return data;
+            try {
+                parent.compute(batch, flush, shutdown);
+                done = true;
+                return data;
+            } catch (ConditionalEvaluationError ex) {
+                return data;
+            }
         }
 
         @Override

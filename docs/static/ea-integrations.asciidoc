@@ -1,5 +1,5 @@
 [[ea-integrations]]
-== Using {ls} with Elastic {integrations} (Beta)
+== Using {ls} with Elastic {integrations}
 
 You can take advantage of the extensive, built-in capabilities of Elastic {integrations}--such as managing data collection, transformation, and visualization--and then use {ls} for additional data processing and output options. 
 {ls} can further expand capabilities for use cases where you need additional processing, or if you need your data delivered to multiple destinations. 
@@ -24,7 +24,7 @@ When you find an integration for your data source, the UI walks you through addi
 
 [discrete]
 [[integrations-and-ls]]
-=== Extend {integrations} with {ls} (Beta)
+=== Extend {integrations} with {ls}
 
 Logstash can run the ingest pipeline component of your Elastic integration when you use the Logstash `filter-elastic_integration` plugin in your {ls} pipeline. 
 
@@ -81,5 +81,20 @@ output { <3>
 <2> You can use additional filters as long as they follow `filter-elastic_integration`. They will have access to the event as-transformed by your enabled integrations.
 <3> Sample config to output data to multiple destinations
 
+<<<<<<< 15871-tutorial
 
 include::ea-integration-tutorial.asciidoc[]
+=======
+[discrete]
+[[es-tips]]
+==== Using `filter-elastic_integration` with `output-elasticsearch`
+
+Elastic {integrations} are designed to work with {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-data-streams[data streams] and {logstash-ref}/plugins-outputs-elasticsearch.html#_compatibility_with_the_elastic_common_schema_ecs[ECS-compatible] output.
+Be sure that these features are enabled in the {logstash-ref}/plugins-outputs-elasticsearch.html[`output-elasticsearch`] plugin. 
+
+* Set {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-data_stream[`data-stream`] to `true`. + 
+  (Check out {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-data-streams[Data streams] for additional data streams settings.) 
+* Set {logstash-ref}/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-ecs_compatibility[`ecs-compatibility`] to `v1` or `v8`.
+
+Check out the {logstash-ref}/plugins-outputs-elasticsearch.html[`output-elasticsearch` plugin] docs for additional settings. 
+>>>>>>> main

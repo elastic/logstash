@@ -37,7 +37,7 @@ buildscript {
   }
   dependencies {
     classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:${shadowGradlePluginVersion}"
+    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
 
@@ -57,8 +57,8 @@ dependencies {
   implementation project(':logstash-core')
   implementation "org.openjdk.jmh:jmh-core:$jmh"
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-  implementation 'com.google.guava:guava:24.1.1-jre'
-  implementation 'commons-io:commons-io:2.13.0'
+  implementation 'com.google.guava:guava:33.1.0-jre'
+  implementation 'commons-io:commons-io:2.16.1'
   runtimeOnly 'joda-time:joda-time:2.8.2'
   api "org.jruby:jruby-core:$jrubyVersion"
 }

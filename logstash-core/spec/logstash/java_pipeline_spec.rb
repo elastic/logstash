@@ -21,6 +21,7 @@ require "logstash/filters/drop"
 require_relative "../support/mocks_classes"
 require_relative "../support/helpers"
 require 'support/pipeline/pipeline_helpers'
+require 'logstash/pipeline_action/reload'
 require "stud/try"
 require 'timeout'
 require "thread"
@@ -72,6 +73,23 @@ class DummyManualInputGenerator < LogStash::Inputs::Base
 
   def push_once
     @queue << LogStash::Event.new
+  end
+end
+
+class DummyCrashingInput  < LogStash::Inputs::Base
+  config_name "dummycrashinginput"
+
+  config :on_register, :validate => :boolean
+
+  def register
+    raise(LogStash::ConfigurationError, 'crashing input on register') if @on_register
+  end
+
+  def run(queue)
+    while !stop?
+      queue << LogStash::Event.new
+      sleep(0.5)
+    end
   end
 end
 
@@ -198,17 +216,18 @@ describe LogStash::JavaPipeline do
   let(:dead_letter_queue_enabled) { false }
   let(:dead_letter_queue_path) { }
   let(:pipeline_settings_obj) { LogStash::SETTINGS.clone }
-  let(:pipeline_settings) { {} }
+  let(:pipeline_settings) do
+    {
+      "dead_letter_queue.enable" => dead_letter_queue_enabled,
+      "path.dead_letter_queue" => dead_letter_queue_path
+    }
+  end
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
 
   before :each do
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
-    dlq_enabled_setting = LogStash::SETTINGS.get_setting("dead_letter_queue.enable")
-    allow(dlq_enabled_setting).to receive(:value).and_return(dead_letter_queue_enabled)
-    dlq_path_setting = LogStash::SETTINGS.get_setting("path.dead_letter_queue")
-    allow(dlq_path_setting).to receive(:value).and_return(dead_letter_queue_path)
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
   end
@@ -297,7 +316,7 @@ describe LogStash::JavaPipeline do
       EOS
     end
     let(:dummyabortingoutput) { DummyAbortingOutput.new }
-    let(:pipeline_settings) { { "pipeline.batch.size" => 2, "queue.type" => "persisted"} }
+    let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 2, "queue.type" => "persisted"}) }
 
     let(:collected_metric) { metric_store.get_with_path("stats/events") }
     let (:queue_client_batch) { double("Acked queue client Mock") }
@@ -358,6 +377,145 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when logical expression in conditional" do
+    extend PipelineHelpers
+
+    let(:settings) { LogStash::SETTINGS.clone }
+
+    config <<-CONFIG
+          filter {
+            if [path][to][value] > 100 {
+              mutate { add_tag => "hit" }
+            } else {
+              mutate { add_tag => "miss" }
+            }
+          }
+        CONFIG
+
+    context "raise an error when it's evaluated, should cancel the event execution and log the error" do
+      context "when type of evaluation doesn't have same type" do
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when left and right operands of event condition are not comparable" do
+        context "comparing a non existing field" do
+          sample_one( [{ "path" => {"to" => "Rome"}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/<no-class>:<null-value>/)
+          end
+        end
+
+        context "comparing incompatible types" do
+          sample_one( [{ "path" => {"to" => {"value" => [101, 102]}}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/Unexpected conditional input combination of.*List.*RubyFixnum/)
+          end
+        end
+      end
+
+      context "when the offending logic expression is used in a nested conditional structure" do
+        config <<-CONFIG
+                  filter {
+                    if "a" == "a" {
+                      if "b" == "b" {
+                        if [path][to][value] > 100 {
+                          mutate { add_tag => "hit" }
+                        } else {
+                          mutate { add_tag => "miss" }
+                        }
+                      }
+                    }
+                  }
+                CONFIG
+
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when the offending condition is in the output section" do
+        before do
+          LogStash::PLUGIN_REGISTRY.add(:input, "spec_sampler_input", PipelineHelpers::SpecSamplerInput)
+          LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
+        end
+
+        describe "given a pipeline executing an event that would trigger an evaluation error" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [path][to][value] > 100 { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "path" => {"to" => {"value" => "101"}}})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+          end
+        end
+
+        describe "given a pipeline executing an event with invalid UTF-8 string" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [message] =~ /^(NOSQL|SQL):/ { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "message" => "abrac\xC5adabra"})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/invalid byte sequence in UTF-8/)
+          end
+        end
+      end
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do
@@ -381,7 +539,7 @@ describe LogStash::JavaPipeline do
     end
 
     context "a crashing worker using memory queue" do
-      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"} }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "memory"}) }
 
       it "does not raise in the main thread, terminates the run thread and finishes execution" do
         # first make sure we keep the input plugin in the run method for now
@@ -408,7 +566,7 @@ describe LogStash::JavaPipeline do
     end
 
     context "a crashing worker using persisted queue" do
-      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"} }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => 1, "pipeline.workers" => 1, "queue.type" => "persisted"}) }
 
       it "does not raise in the main thread, terminates the run thread and finishes execution" do
         # first make sure we keep the input plugin in the run method for now
@@ -500,7 +658,7 @@ describe LogStash::JavaPipeline do
       end
 
       context "when there is command line -w N set" do
-        let(:pipeline_settings) { {"pipeline.workers" => override_thread_count } }
+        let(:pipeline_settings) { super().merge({"pipeline.workers" => override_thread_count }) }
         it "starts multiple filter thread" do
           msg = "Warning: Manual override - there are filters that might" +
                 " not work with multiple worker threads"
@@ -789,7 +947,7 @@ describe LogStash::JavaPipeline do
   describe "max inflight warning" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
     let(:batch_size) { 1 }
-    let(:pipeline_settings) { { "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 } }
+    let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size, "pipeline.workers" => 1 }) }
     let(:pipeline) { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:logger) { pipeline.logger }
     let(:warning_prefix) { Regexp.new("CAUTION: Recommended inflight events max exceeded!") }
@@ -997,6 +1155,39 @@ describe LogStash::JavaPipeline do
       it_behaves_like 'it flushes correctly'
     end
   end
+  context "Pipeline created with too many filters" do
+    # create pipeline with 2000 filters
+    # 2000 filters is more than a thread stack of size 2MB can handle
+    let(:config) do
+      <<-EOS
+      input { dummy_input {} }
+      filter {
+        #{"          nil_flushing_filter {}\n" * 2000}
+      }
+      output { dummy_output {} }
+      EOS
+    end
+    let(:output) { ::LogStash::Outputs::DummyOutput.new }
+
+    before do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(output)
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummy_input").and_return(LogStash::Inputs::DummyBlockingInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "nil_flushing_filter").and_return(NilFlushingFilterPeriodic)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummy_output").and_return(::LogStash::Outputs::DummyOutput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+    end
+
+    let(:pipeline) { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
+
+    it "informs the user that a stack overflow occurred" do
+      allow(pipeline.logger).to receive(:error)
+
+      pipeline.start
+      pipeline.shutdown
+
+      expect(pipeline.logger).to have_received(:error).with(/Stack overflow/, anything).at_least(:once)
+    end
+  end
   context "Periodic Flush that intermittently returns nil" do
     let(:config) do
       <<-EOS
@@ -1199,7 +1390,7 @@ describe LogStash::JavaPipeline do
 
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj, metric) }
 
-    let(:pipeline_settings) { { "pipeline.id" => pipeline_id } }
+    let(:pipeline_settings) { super().merge({ "pipeline.id" => pipeline_id }) }
     let(:pipeline_id) { "main" }
     let(:number_of_events) { 420 }
     let(:dummy_id) { "my-multiline" }
@@ -1404,6 +1595,102 @@ describe LogStash::JavaPipeline do
 
       it "returns true" do
         expect(pipeline.reloadable?).to be_falsey
+      end
+    end
+  end
+
+  context "#shutdown" do
+    subject(:pipeline) { mock_java_pipeline_from_string(config, pipeline_settings_obj, pipeline_metric) }
+    let(:pipeline_metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
+    let(:dummyinput_class) { DummyManualInputGenerator }
+    let(:dummyinput_config) { {'enable_metric' => true} }
+    let(:dummyinput) { dummyinput_class.new(dummyinput_config) }
+    let(:pipeline_id) { "shutdown" }
+    let(:config) { build_pipeline_string_config(dummyinput_config) }
+
+    def build_pipeline_string_config(dummyinput_config)
+      <<-"EOS"
+      input { dummyinput { #{ dummyinput_config.to_s.tr('{},', '') } } }
+      filter { dummyfilter {} }
+      output { dummyoutput {} }
+      EOS
+    end
+
+    before(:each) do
+      allow(::LogStash::Outputs::DummyOutput).to receive(:new).with(any_args).and_return(::LogStash::Outputs::DummyOutput::new)
+      allow(DummyManualInputGenerator).to receive(:new).with(any_args).and_return(dummyinput)
+
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(dummyinput_class)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(LogStash::Codecs::Plain)
+      allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(DummyFilter)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+
+      allow(pipeline).to receive(:clear_pipeline_metrics).and_call_original
+      allow(pipeline).to receive(:stop_inputs).and_call_original
+      allow(pipeline).to receive(:wait_for_shutdown).and_return(double(new: nil))
+    end
+
+    context "of a running pipeline" do
+      let(:pipeline_settings) { { "pipeline.batch.size" => 1, "pipeline.workers" => 1, "pipeline.id" => pipeline_id, "metric.collect" => true } }
+
+      it "should clear the pipeline metrics" do
+        dummyinput.keep_running.make_true
+
+        expect { pipeline.start }.to_not raise_error
+
+        pipeline.shutdown
+
+        expect(pipeline).to have_received(:clear_pipeline_metrics)
+        expect(pipeline).to have_received(:stop_inputs)
+        expect(pipeline).to have_received(:wait_for_shutdown)
+      end
+    end
+
+    context "of a failed reloading pipeline" do
+      let(:agent) { double("agent") }
+      let(:dummyinput_class) { DummyCrashingInput }
+      let(:pipeline_settings) { {
+        "pipeline.id" => pipeline_id,
+        "pipeline.batch.size" => 1,
+        "pipeline.workers" => 1,
+        "metric.collect" => true,
+        "config.reload.automatic" => true
+      } }
+      let(:pipelines) do
+        registry = LogStash::PipelinesRegistry.new
+        registry.create_pipeline(pipeline_id.to_sym, pipeline) { true }
+        registry
+      end
+
+      # This test ensure that even for failed pipeline reloads, the shutdown method cleans
+      # the pipeline's metric store. If those metrics are not cleaned, it would pilling up
+      # data from previous reloads attempts.
+      it "should clear the pipeline metrics for every shutdown" do
+        expect { pipeline.start }.to_not raise_error
+
+        wait(10).for { pipeline.running? }
+
+        new_config_string = build_pipeline_string_config({'on_register' => 'true' })
+        reload_action = LogStash::PipelineAction::Reload.new(
+          mock_pipeline_config(pipeline_id, new_config_string, pipeline_settings),
+          pipeline_metric
+        )
+
+        # 1st failed attempt (finished_execution? = > false)
+        action_result = reload_action.execute(agent, pipelines)
+        expect(action_result.successful?).to be_falsy
+        expect(pipeline).to have_received(:clear_pipeline_metrics)
+        expect(pipeline).to have_received(:stop_inputs)
+        expect(pipeline).to have_received(:wait_for_shutdown)
+
+        # 2nd failed attempt (finished_execution? = > true, as the previous reload failed)
+        pipeline = pipelines.states.get(pipeline_id.to_sym).pipeline
+        allow(pipeline).to receive(:wait_for_shutdown).and_return(double(new: nil))
+        allow(pipeline).to receive(:clear_pipeline_metrics).and_call_original
+
+        action_result = reload_action.execute(agent, pipelines)
+        expect(action_result.successful?).to be_falsy
+        expect(pipeline).to have_received(:clear_pipeline_metrics)
       end
     end
   end

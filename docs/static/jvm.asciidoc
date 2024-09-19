@@ -4,8 +4,8 @@
 
 {ls} requires one of these versions:
 
-* Java 11
 * Java 17 (default). Check out <<jdk17-upgrade>> for settings info.
+* Java 21
 
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
@@ -17,13 +17,13 @@ for the official word on supported versions across releases.
 [[bundled-jdk]]
 .Bundled JDK
 [NOTE]
-===== 
+=====
 {ls} offers architecture-specific
 https://www.elastic.co/downloads/logstash[downloads] that include
-Adoptium Eclipse Temurin 17, the latest long term support (LTS) release of the JDK.
+Adoptium Eclipse Temurin 17, a long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the
-version that is bundled. 
+version that is bundled.
 If you have the LS_JAVA_HOME environment variable set to use a custom JDK, Logstash
 will continue to use the JDK version you have specified, even after you upgrade.
 =====
@@ -40,9 +40,9 @@ On systems with Java installed, this command produces output similar to the foll
 
 [source,shell]
 -----
-java version "11.0.1" 2018-10-16 LTS
-Java(TM) SE Runtime Environment 18.9 (build 11.0.1+13-LTS)
-Java HotSpot(TM) 64-Bit Server VM 18.9 (build 11.0.1+13-LTS, mixed mode)
+openjdk version "17.0.12" 2024-07-16
+OpenJDK Runtime Environment Temurin-17.0.12+7 (build 17.0.12+7)
+OpenJDK 64-Bit Server VM Temurin-17.0.12+7 (build 17.0.12+7, mixed mode)
 -----
 
 [float]

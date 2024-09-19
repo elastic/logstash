@@ -36,7 +36,7 @@ module LogStash module Instrument module PeriodicPoller
   class JVM < Base
     class GarbageCollectorName
       YOUNG_GC_NAMES = Set.new(["Copy", "PS Scavenge", "ParNew", "G1 Young Generation", "scavenge", "GPGC New"])
-      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation", "global", "GPGC Old"])
+      OLD_GC_NAMES = Set.new(["MarkSweepCompact", "PS MarkSweep", "ConcurrentMarkSweep", "G1 Old Generation", "G1 Concurrent GC", "global", "GPGC Old"])
 
       YOUNG = :young
       OLD = :old

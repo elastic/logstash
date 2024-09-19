@@ -33,6 +33,7 @@ public abstract class Edge implements SourceComponent {
 
     private Graph graph;
 
+    @SuppressWarnings("this-escape")
     protected Edge(Vertex from, Vertex to) throws InvalidIRException {
         this.from = from;
         this.to = to;
@@ -41,6 +42,9 @@ public abstract class Edge implements SourceComponent {
             throw new InvalidIRException("Cannot create a cyclic vertex! " + to);
         }
 
+        // This is the reason why of the "this-escape" suppress warning. The instance is passed to the method acceptsOutgoingEdge
+        // before the constructor completes, so could potentially reach some runtime errors due to fields not initialized.
+        // This is not the case because actually that method just does type check on reference.
         if (!this.from.acceptsOutgoingEdge(this)) {
             throw new Vertex.InvalidEdgeTypeException(String.format("Invalid outgoing edge %s for edge %s", this.from, this));
         }

@@ -51,7 +51,7 @@ public final class ConfigCompiler {
      * @param supportEscapes The value of the setting {@code config.support_escapes}
      * @param cve Config variable expander. Substitute variable with value in secret store, env, default config value
      * @return Compiled {@link PipelineIR}
-     * @throws InvalidIRException if the the configuration contains errors
+     * @throws InvalidIRException if the configuration contains errors
      */
     @SuppressWarnings("unchecked")
     public static PipelineIR configToPipelineIR(final List<SourceWithMetadata> sourcesWithMetadata,
@@ -105,7 +105,7 @@ public final class ConfigCompiler {
     }
 
     private static Statement readStatementFromRubyHash(RubyHash hash, String key) {
-        IRubyObject inputValue = hash.fastARef(RubyUtil.RUBY.newSymbol(key));
+        IRubyObject inputValue = hash.fastARef(RubyUtil.RUBY.newString(key).intern());
         return inputValue.toJava(Statement.class);
     }
 

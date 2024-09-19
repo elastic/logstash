@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -113,11 +114,11 @@ public class JvmOptionsParser {
         handleJvmOptions(args, System.getenv("LS_JAVA_OPTS"));
     }
 
-    static void bailOnOldJava(){
-        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_11) < 0) {
+    static void bailOnOldJava() {
+        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_17) < 0) {
             final String message = String.format(
                     Locale.ROOT,
-                    "The minimum required Java version is 11; your Java version from [%s] does not meet this requirement",
+                    "The minimum required Java version is 17; your Java version from [%s] does not meet this requirement",
                     System.getProperty("java.home")
             );
             System.err.println(message);
@@ -175,12 +176,35 @@ public class JvmOptionsParser {
             if (isDebugEnabled()) {
                 System.err.println("Appending jvm options from environment LS_JAVA_OPTS");
             }
-            jvmOptionsContent.add(lsJavaOpts);
+            Arrays.stream(lsJavaOpts.split(" "))
+                    .filter(s -> !s.isBlank())
+                    .forEach(jvmOptionsContent::add);
         }
         // Set mandatory JVM options
         jvmOptionsContent.addAll(getMandatoryJvmOptions(javaMajorVersion));
 
-        System.out.println(String.join(" ", jvmOptionsContent));
+        final Set<String> jvmFinalOptions = nettyMaxOrderDefaultTo11(jvmOptionsContent);
+
+        System.out.println(String.join(" ", jvmFinalOptions));
+    }
+
+    /**
+     * Inplace method that verifies if Netty's maxOrder option is already set, else configure it to have
+     * the default value of 11.
+     *
+     * @param options the collection of options to examine.
+     * @return the collection of input option eventually with Netty maxOrder added.
+     * */
+    private Set<String> nettyMaxOrderDefaultTo11(Set<String> options) {
+        boolean maxOrderAlreadyContained = options.stream().anyMatch(s -> s.startsWith("-Dio.netty.allocator.maxOrder"));
+        if (maxOrderAlreadyContained) {
+            return options;
+        }
+        // Order is important because LS_JAVA_OPTS is added last and must take precedence 
+        // over settings in jvm.options
+        final Set<String> acc = new LinkedHashSet<>(options);
+        acc.add("-Dio.netty.allocator.maxOrder=11");
+        return acc;
     }
 
     /**

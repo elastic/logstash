@@ -499,10 +499,6 @@ Example response:
     "worker_concurrency" : {
       "current": 1.973,
       "lifetime": 1.721
-    },
-    "worker_utilization" : {
-      "current": 49.32,
-      "lifetime": 43.02
     }
   }
 }
@@ -539,19 +535,6 @@ A _pipeline_ is considered "saturated" when its `worker_concurrency` flow metric
 Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
 
 A _process_ is also considered "saturated" when its top-level `worker_concurrency` flow metric approaches the _cumulative_ `pipeline.workers` across _all_ pipelines, and similarly can be addressed by tuning the <<pipeline-stats,individual pipelines>> that are saturated.
-
-| worker_utilization |
-
-This is a unitless metric that indicates the percentage of available worker time being used by all plugins in a given pipeline (`duration` / (`uptime` * `pipeline.workers`).
-It is useful for determining whether the pipeline has consistently-idle resources or is under resource contention.
-
-A _pipeline_ is considered "saturated" when its `worker_utilization` flow metric approaches 100, because it indicates that all of its workers are being kept busy.
-This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
-Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
-
-A _pipeline_ is considered "starved" when its `worker_utilization` flow metric approaches 0, because it indicates that none of its workers are being kept busy.
-This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
-Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
 
 | queue_backpressure |
 This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline's queue, relative to wall-clock time (`queue_push_duration_in_millis` / millisecond).
@@ -1002,6 +985,18 @@ A positive number indicates that the queue size-on-disk is growing, and a negati
 
 NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events.
       This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: <<garbage-collection, PQ disk garbage collection>>).
+
+| worker_utilization |
+This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`).
+It is useful for identifying which plugins in a pipeline are using the available worker resources.
+
+A _pipeline_ is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy.
+This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
+Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+A _pipeline_ is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy.
+This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
+Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
 |===
 
 [discrete]

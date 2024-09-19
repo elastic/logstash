@@ -27,22 +27,37 @@ import org.jruby.RubyHash;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class NamespacedMetricImplTest extends MetricTestCase {
     @Test
     public void testGauge() {
-        final NamespacedMetric metrics = this.getInstance().namespace("test");
+        doTestGauge("test");
+    }
+    @Test
+    public void testGaugeNested() {
+        doTestGauge("test", "deep");
+    }
+
+    @Test
+    public void testGaugeUnicode() {
+        doTestGauge("test", "Ümlãut-åccênt", "okay");
+    }
+
+    public void doTestGauge(final String... metricNamespace) {
+        final NamespacedMetric metrics = this.getInstance().namespace(metricNamespace);
 
         metrics.gauge("abc", "def");
         {
-            final RubyHash metricStore = getMetricStore(new String[]{"test"});
+            final RubyHash metricStore = getMetricStore(Arrays.copyOf(metricNamespace, metricNamespace.length));
             assertThat(this.getMetricStringValue(metricStore, "abc")).isEqualTo("def");
         }
 
         metrics.gauge("abc", "123");
         {
-            final RubyHash metricStore = getMetricStore(new String[]{"test"});
+            final RubyHash metricStore = getMetricStore(Arrays.copyOf(metricNamespace, metricNamespace.length));
             assertThat(this.getMetricStringValue(metricStore, "abc")).isEqualTo("123");
         }
     }
@@ -123,6 +138,17 @@ public class NamespacedMetricImplTest extends MetricTestCase {
 
         final NamespacedMetric namespaced2 = namespaced.namespace("12345", "qwerty");
         assertThat(namespaced2.namespaceName()).containsExactly("test", "abcdef", "12345", "qwerty");
+    }
+
+    @Test
+    public void testNamespaceUnicodeFragment() {
+        final NamespacedMetric metrics = this.getInstance().namespace("test", "Ünîcødé", "nÉs†iñG");
+
+        final NamespacedMetric namespaced = metrics.namespace("abcdef");
+        assertThat(namespaced.namespaceName()).containsExactly("test", "Ünîcødé", "nÉs†iñG", "abcdef");
+
+        final NamespacedMetric namespaced2 = namespaced.namespace("12345", "qwerty");
+        assertThat(namespaced2.namespaceName()).containsExactly("test", "Ünîcødé", "nÉs†iñG", "abcdef", "12345", "qwerty");
     }
 
     @Test

@@ -12,6 +12,6 @@ jruby-openssl,0.9.21,,https://rubygems.org/gems/jruby-openssl/versions/0.9.20-ja
 jruby-readline,1.1.1,,https://rubygems.org/gems/jruby-readline/versions/1.1.1-java,Apache-2.0,,
 json-generator,,,https://github.com/flori/json,Ruby,,
 json-parser,,,https://rubygems.org/gems/json-parser/versions/0.0.1,Apache-2.0,,
-junit:junit,4.12,,https://github.com/junit-team/junit4,Apache-2.0,,
+junit:junit,4.13.2,,https://github.com/junit-team/junit4,Apache-2.0,,
 org.codehaus.janino:commons-compiler,3.0.8,,https://github.com/janino-compiler/janino,BSD-3-Clause-Attribution,,
 tzinfo,,,https://github.com/tzinfo/tzinfo,MIT,Philip Ross,

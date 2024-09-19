@@ -33,7 +33,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PipelineConfigTest extends RubyEnvTestCase {
 
@@ -103,7 +108,7 @@ public class PipelineConfigTest extends RubyEnvTestCase {
     public void setUp() throws IncompleteSourceWithMetadataException {
 
         source = RubyUtil.RUBY.getClass("LogStash::Config::Source::Local");
-        pipelineIdSym = RubySymbol.newSymbol(RubyUtil.RUBY, PIPELINE_ID);
+        pipelineIdSym = RubyUtil.RUBY.newString(PIPELINE_ID).intern();
 
         final SourceCollector sourceCollector = new SourceCollector();
         sourceCollector.appendSource("file", "/tmp/1", 0, 0, "input { generator1 }\n", "{\"version\": \"1\"}");

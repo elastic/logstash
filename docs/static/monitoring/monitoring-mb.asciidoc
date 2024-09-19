@@ -8,12 +8,14 @@
 
 You can use {metricbeat} to collect data about {ls} and ship it to the
 monitoring cluster. The benefit of Metricbeat collection is that the monitoring
-agent remains active even if the {ls} instance does not. 
+agent remains active even if the {ls} instance does not.
+
+This step requires {ref}/configuring-metricbeat.html[{es} with {metricbeat} monitoring setup].
 
 To collect and ship monitoring data:
 
 . <<disable-default,Disable default collection of monitoring metrics>>
-. <<define-cluster__uuid,Specify the target `cluster_uuid` (optional)>>
+. <<define-cluster__uuid,Specify the target `cluster_uuid`>>
 . <<configure-metricbeat,Install and configure {metricbeat} to collect monitoring data>>
 
 Want to use {agent} instead? Refer to <<monitoring-with-elastic-agent>>.
@@ -23,28 +25,29 @@ Want to use {agent} instead? Refer to <<monitoring-with-elastic-agent>>.
 ==== Disable default collection of {ls} monitoring metrics
 
 --
-The `monitoring` setting is in the {ls} configuration file (logstash.yml), but is
-commented out: 
+Set the `monitoring.enabled` to `false` in logstash.yml to disable to default monitoring:
 
 [source,yaml]
 ----------------------------------
 monitoring.enabled: false
 ----------------------------------
 
-Remove the `#` at the beginning of the line to enable the setting.
-
 --
 
 [float]
 [[define-cluster__uuid]]
-==== Define `cluster_uuid` (optional)
-To bind the metrics of {ls} to a specific cluster, optionally define the `monitoring.cluster_uuid`
+==== Determine target Elasticsearch cluster
+You will need to determine which Elasticsearch cluster that {ls} will bind metrics to in the Stack Monitoring UI by specifying the `cluster_uuid`.
+When pipelines contain <<plugins-outputs-elasticsearch,{es} output plugins>>, the `cluster_uuid` is automatically calculated, and the metrics should be bound without any additional settings.
+
+To override automatic values, or if your pipeline does not contain any <<plugins-outputs-elasticsearch,{es} output plugins>>, you can bind the metrics of {ls} to a specific cluster, by defining the target cluster in the `monitoring.cluster_uuid` setting.
 in the configuration file (logstash.yml):
 
 [source,yaml]
 ----------------------------------
 monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ----------------------------------
+Refer to {ref}/cluster-stats.html[{es} cluster stats page] to figure out how to get your cluster `cluster_uuid`.
 
 [float]
 [[configure-metricbeat]]

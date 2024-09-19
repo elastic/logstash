@@ -972,7 +972,7 @@ public class DeadLetterQueueReaderTest {
         }
     }
 
-    private static class MockSegmentListener implements SegmentListener {
+    static class MockSegmentListener implements SegmentListener {
         boolean notified = false;
         long events = 0L;
         int segments = 0;

@@ -19,8 +19,8 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.0'
-        shadowGradlePluginVersion = '7.0.0'
+        snakeYamlVersion = '2.2'
+        shadowGradlePluginVersion = '8.1.1'
     }
 
     repositories {
@@ -37,8 +37,6 @@ buildscript {
 plugins {
     id "de.undercouch.download" version "4.0.4"
     id "com.dorongold.task-tree" version "2.1.0"
-//    id "jacoco"
-//    id "org.sonarqube" version "4.3.0.3225"
 }
 
 apply plugin: 'de.undercouch.download'
@@ -59,8 +57,11 @@ allprojects {
   apply plugin: 'java'
   apply plugin: 'idea'
   apply plugin: 'java-library'
-  project.sourceCompatibility = JavaVersion.VERSION_11
-  project.targetCompatibility = JavaVersion.VERSION_11
+
+  java {
+      sourceCompatibility = JavaVersion.VERSION_11
+      targetCompatibility = JavaVersion.VERSION_11
+  }
 
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
@@ -100,8 +101,8 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
-      //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
-      testLogging {
+    //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
+    testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
       showExceptions true
@@ -750,7 +751,7 @@ class JDKDetails {
             url += "_${arch}"
         }
         println "Retrieving JDK from catalog..."
-        def catalogMetadataUrl = new URL(url)
+        def catalogMetadataUrl = URI.create(url).toURL()
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
         assert catalogConnection.responseCode == 200
@@ -896,6 +897,11 @@ tasks.register("copyJdk", Copy) {
 tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
     dependsOn "decompressJdk"
     osName = selectOsType()
+}
+
+tasks.register("javaTests") {
+    dependsOn ":logstash-core:javaTests"
+    dependsOn ":jvm-options-parser:test"
 }
 
 clean {

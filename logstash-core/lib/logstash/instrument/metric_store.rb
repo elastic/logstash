@@ -239,7 +239,7 @@ module LogStash module Instrument
     # Look at the rspec test for more usage.
     #
     # @param key_paths [Array<Symbol>] The list of keys part to filter
-    # @param map [Concurrent::Map] The the part of map to search in
+    # @param map [Concurrent::Map] The part of map to search in
     # @param new_hash [Hash] The hash to populate with the results.
     # @return Hash
     def get_recursively(key_paths, map, new_hash)

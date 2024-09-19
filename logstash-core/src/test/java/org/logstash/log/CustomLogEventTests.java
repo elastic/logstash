@@ -59,9 +59,11 @@ import org.logstash.RubyUtil;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
+    public static final String STRICT_JSON_PROPERTY_NAME = "ls.log.format.json.fix_duplicate_message_fields";
 
     @ClassRule
     public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
@@ -173,5 +175,35 @@ public class CustomLogEventTests {
         final Map<String, Object> logEventMapValue = (Map<String, Object>) logEvent.get("map");
         assertEquals(1, logEventMapValue.get("first"));
         assertEquals(2, logEventMapValue.get("second"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testJSONLayoutWhenParamsContainsAnotherMessageField() throws JsonProcessingException {
+        String prevSetting = System.getProperty(STRICT_JSON_PROPERTY_NAME);
+        System.setProperty(STRICT_JSON_PROPERTY_NAME, Boolean.TRUE.toString());
+
+        ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
+        Logger logger = LogManager.getLogger("JSONEventLogger");
+
+        Map<String, String> paramsWithAnotherMessageField = Collections.singletonMap("message", "something to say");
+        logger.error("here is a map: {}", paramsWithAnotherMessageField);
+
+        List<String> messages = appender.getMessages();
+        assertEquals(1, messages.size());
+
+        Map<String, Object> loggedMessage = ObjectMappers.JSON_MAPPER.readValue(messages.get(0), Map.class);
+        assertEquals(5, loggedMessage.size());
+
+        Map<String, Object> actualLogEvent = (Map<String, Object>) loggedMessage.get("logEvent");
+        assertEquals("here is a map: {}", actualLogEvent.get("message"));
+        assertEquals("something to say", actualLogEvent.get("message_1"));
+
+        // tear down
+        if (prevSetting == null) {
+            System.clearProperty(STRICT_JSON_PROPERTY_NAME);
+        } else {
+            System.setProperty(STRICT_JSON_PROPERTY_NAME, prevSetting);
+        }
     }
 }

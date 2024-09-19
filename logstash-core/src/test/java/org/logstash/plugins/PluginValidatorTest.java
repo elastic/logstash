@@ -71,7 +71,7 @@ public class PluginValidatorTest {
         try {
             tempJar = Files.createTempFile("pluginValidationTest", "inputPlugin.jar");
             final InputStream resourceJar =
-                    getClass().getResourceAsStream("logstash-input-java_input_example-0.0.1.jar");
+                    getClass().getResourceAsStream("logstash-input-java_input_example-1.0.3.jar");
             Files.copy(resourceJar, tempJar, REPLACE_EXISTING);
 
             URL[] jarUrl = {tempJar.toUri().toURL()};

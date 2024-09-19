@@ -10,10 +10,10 @@ function error {
 function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
-    local images="logstash logstash-oss"
+    local images="logstash logstash-oss logstash-wolfi"
     if [ "${arch}" != "aarch64" ]; then
         # No logstash-ubi8 for AARCH64
-        images="logstash logstash-oss logstash-ubi8"
+        images="logstash logstash-oss logstash-wolfi logstash-ubi8"
     fi
 
     for image in ${images}; do
@@ -29,7 +29,7 @@ function save_docker_tarballs {
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
-export JRUBY_OPTS="-J-Xmx1g"
+export JRUBY_OPTS="-J-Xmx2g"
 
 # Extract the version number from the version.yml file
 # e.g.: 8.6.0

@@ -47,7 +47,7 @@ You can now generate the documentation from main for all the plugin in the *logs
  bundle install
  ```
 
-You can use the the `bin/logstash-docgen` command to generate any plugin that you want, this executable can generate all the plugins or specific one from their main branch.
+You can use the `bin/logstash-docgen` command to generate any plugin that you want, this executable can generate all the plugins or specific one from their main branch.
 
 Usages:
 

@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
 import org.logstash.config.ir.expression.BooleanExpression;
@@ -56,6 +58,9 @@ import org.logstash.config.ir.imperative.PluginStatement;
 import org.logstash.config.ir.imperative.Statement;
 
 public class DSL {
+
+    private static final Logger logger = LogManager.getLogger(DSL.class);
+
     public static EventValueExpression eEventValue(SourceWithMetadata meta, String fieldName) {
         return new EventValueExpression(meta, fieldName);
     }
@@ -84,7 +89,7 @@ public class DSL {
         try {
             return eValue(null, value);
         } catch (InvalidIRException e) {
-            e.printStackTrace(); // Can't happen with an int
+            logger.debug(e.getMessage(), e);
             return null;
         }
     }
@@ -93,7 +98,7 @@ public class DSL {
         try {
             return eValue(null, value);
         } catch (InvalidIRException e) {
-            e.printStackTrace(); // Can't happen with an int
+            logger.debug(e.getMessage(), e);
             return null;
         }
     }

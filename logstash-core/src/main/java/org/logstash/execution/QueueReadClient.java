@@ -25,7 +25,7 @@ import co.elastic.logstash.api.TimerMetric;
 import java.io.IOException;
 
 /**
- * Defines the methods to interact with queues from the the reader perspective
+ * Defines the methods to interact with queues from the reader perspective
  * */
 public interface QueueReadClient {
     QueueBatch readBatch() throws InterruptedException;

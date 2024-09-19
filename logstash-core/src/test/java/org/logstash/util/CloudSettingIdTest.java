@@ -20,21 +20,21 @@
 package org.logstash.util;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import org.logstash.RubyTestBase;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 public class CloudSettingIdTest extends RubyTestBase {
 
     private String input = "foobar:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy";
     private CloudSettingId sut;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -63,40 +63,45 @@ public class CloudSettingIdTest extends RubyTestBase {
     public void testThrowExceptionWhenMalformedValueIsGiven() {
         String[] raw = new String[] {"first", "second"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
 
-        new CloudSettingId(encoded);
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingId(encoded);
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\"."));
     }
 
     @Test
     public void testThrowExceptionWhenAtLeatOneSegmentIsEmpty() {
         String[] raw = new String[] {"first", "", "third"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\".");
 
-        new CloudSettingId(encoded);
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingId(encoded);
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Id, after decoding, is invalid. Format: '<segment1>$<segment2>$<segment3>'. Received: \"" + String.join("$", raw) + "\"."));
     }
 
     @Test
     public void testThrowExceptionWhenElasticSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "undefined", "my-kibana"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally.");
 
-        new CloudSettingId(encoded);
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingId(encoded);
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Id, after decoding, elasticsearch segment is 'undefined', literally."));
     }
 
     @Test
     public void testThrowExceptionWhenKibanaSegmentSegmentIsUndefined() {
         String[] raw = new String[] {"us-east-1.aws.found.io", "my-elastic-cluster", "undefined"};
         String encoded = CloudSettingId.cloudIdEncode(raw);
-        exceptionRule.expect(org.jruby.exceptions.ArgumentError.class);
-        exceptionRule.expectMessage("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI.");
 
-        new CloudSettingId(encoded);
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            new CloudSettingId(encoded);
+        });
+        assertThat(thrownException.getMessage(), containsString("Cloud Id, after decoding, the kibana segment is 'undefined', literally. You may need to enable Kibana in the Cloud UI."));
+
     }
 
     // without a label

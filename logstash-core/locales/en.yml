@@ -423,6 +423,8 @@ en:
         log_format: |+
           Specify if Logstash should write its own logs in JSON form (one
           event per line) or in plain text (using Ruby's Object#inspect)
+        log_format_json_fix_duplicate_message_fields: |+
+          Enable to avoid duplication of message fields in JSON form.
         debug: |+
           Set the log level to debug.
           DEPRECATED: use --log.level=debug instead.
@@ -438,12 +440,12 @@ en:
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
           If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
-        version: >-
-          Starting from Logstash 8.0, the minimum required version of Java is Java 11; your Java version from
-          %{java_home} does not meet this requirement. Please reconfigure your version of Java to one that is supported.
+        version_17_minimum: >-
+          Starting from Logstash 9.0, the minimum required version of Java is Java 17;
+          your Java version from `%{java_home}` does not meet this requirement.
           Running Logstash with the bundled JDK is recommended.
           The bundled JDK has been verified to work with each specific version of Logstash, and generally provides best performance and reliability.
-          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), you can configure LS_JAVA_HOME to use that version instead.
+          If you have compelling reasons for using your own JDK (organizational-specific compliance requirements, for example), the version you supply with LS_JAVA_HOME must meet the minimum requirements.
     agent:
       sighup: >-
         SIGHUP received.

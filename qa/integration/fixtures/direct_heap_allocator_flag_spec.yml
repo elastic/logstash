@@ -1,0 +1,23 @@
+---
+services:
+  - logstash
+config: |-
+ input {
+   http {
+     host => "localhost"
+     port => 8080
+     response_headers => {"Content-Type" => "application/json"}
+     ecs_compatibility => disabled
+   }
+ }
+  
+ filter {
+   ruby {
+     init => "Thread.new { loop { logger.info 'Direct pinned: ' + Java::io.netty.buffer.ByteBufAllocator::DEFAULT.pinned_direct_memory.to_s + ' - Heap pinned: ' + Java::io.netty.buffer.ByteBufAllocator::DEFAULT.pinned_heap_memory.to_s; sleep 5 } }"
+     code => "start = Time.now; while Time.now - start < 10; Java::io.netty.buffer.ByteBufAllocator::DEFAULT.buffer(1024); sleep 0.5 end"
+   }
+ }
+ 
+ output {
+   sink {}
+ }

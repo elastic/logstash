@@ -77,6 +77,11 @@ public class DeadLetterQueueWriterAgeRetentionTest {
             this.action = action;
         }
 
+        @Override
+        public void shutdown() {
+            // Noop
+        }
+
         void executeAction() {
             action.run();
         }
@@ -335,15 +340,8 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         }
     }
 
-    private static boolean isWindows() {
-        return System.getProperty("os.name").startsWith("Windows");
-    }
-
     @Test
     public void testDLQWriterFlusherRemovesExpiredSegmentWhenCurrentHeadSegmentIsEmpty() throws IOException {
-        // https://github.com/elastic/logstash/issues/15768
-        assumeThat(isWindows(), is(not(true)));
-
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(
                 Collections.singletonMap("message", "Not so important content"));
 
@@ -360,7 +358,15 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 .build()) {
 
             DLQEntry entry = new DLQEntry(event, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(fakeClock));
+            Instant beforeWriteEntry = Instant.now();
             writeManager.writeEntry(entry);
+
+            // WARN: writeEntry set the lastWrite instant which is later checked by isStale in RecordIOWriter
+            // against now - flush period. Given that flush period is 0, it could be that now is the same
+            // instant as lastWrite, while should be greater than, so put an artificial small delay
+            Awaitility.await("Let the time flow a little so that last write is recognized to be in the past")
+                      .atMost(Duration.ofSeconds(1))
+                      .until(() -> Instant.now().isAfter(beforeWriteEntry));
 
             triggerExecutionOfFlush();
 

@@ -10,7 +10,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 
-ACCEPTANCE_LINUX_OSES = ["ubuntu-2204", "ubuntu-2004", "debian-11", "debian-10", "rhel-8", "oraclelinux-7", "rocky-linux-8", "opensuse-leap-15", "amazonlinux-2023"]
+ACCEPTANCE_LINUX_OSES = ["ubuntu-2404", "ubuntu-2204", "ubuntu-2004", "debian-11", "rhel-8", "oraclelinux-7", "rocky-linux-8", "opensuse-leap-15", "amazonlinux-2023"]
 
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -160,7 +160,7 @@ ci/acceptance_tests.sh"""),
 
 def acceptance_docker_steps()-> list[typing.Any]:
     steps = []
-    for flavor in ["full", "oss", "ubi8"]:
+    for flavor in ["full", "oss", "ubi8", "wolfi"]:
         steps.append({
             "label": f":docker: {flavor} flavor acceptance",
             "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),

@@ -455,6 +455,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     # TODO: should we also check against calling shutdown multiple times concurrently?
     stop_inputs
     wait_for_shutdown
+  ensure
     clear_pipeline_metrics
   end # def shutdown
 
@@ -601,6 +602,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @logger.error(
         "Worker loop initialization error",
         default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+      nil
+    rescue Java::java.lang.StackOverflowError => se
+      @logger.error(
+        "Stack overflow error while compiling Pipeline. Please increase thread stack size using -Xss",
+        default_logging_keys())
       nil
     end
   end

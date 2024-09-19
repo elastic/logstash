@@ -38,6 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testInflightBatchesTracking() throws InterruptedException, IOException {
         final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue =
             new ArrayBlockingQueue<>(10);
@@ -47,6 +48,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));
+        // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         assertThat(inflight.get(Thread.currentThread().getId()), is(batch));
         client.closeBatch(batch);
         assertThat(client.rubyGetInflightBatches(context).size(), is(0));

@@ -8,11 +8,15 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
 
@@ -35,12 +39,23 @@ public class JvmOptionsParserTest {
     }
 
     @Test
-    public void test_LS_JAVA_OPTS_isUsedWhenNoJvmOptionsIsAvailable() throws IOException, InterruptedException, ReflectiveOperationException {
+    public void test_LS_JAVA_OPTS_isUsedWhenNoJvmOptionsIsAvailable() {
         JvmOptionsParser.handleJvmOptions(new String[] {temp.toString()}, "-Xblabla");
 
         // Verify
         final String output = outputStreamCaptor.toString();
         assertTrue("Output MUST contains the options present in LS_JAVA_OPTS", output.contains("-Xblabla"));
+    }
+
+    @Test
+    public void givenLS_JAVA_OPTS_containingMultipleDefinitionsWithAlsoMaxOrderThenNoDuplicationOfMaxOrderOptionShouldHappen() throws IOException {
+        JvmOptionsParser.handleJvmOptions(new String[] {temp.toString()}, "-Xblabla -Dio.netty.allocator.maxOrder=13");
+
+        // Verify
+        final String output = outputStreamCaptor.toString();
+        int firstMatch = output.indexOf("-Dio.netty.allocator.maxOrder");
+        int lastMatch = output.lastIndexOf("-Dio.netty.allocator.maxOrder");
+        assertEquals("No duplication of options (io.netty.allocator.maxOrder) are admitted \n raw data[" + output + "]", firstMatch, lastMatch);
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -123,6 +138,58 @@ public class JvmOptionsParserTest {
         assertEquals("anotherInvalidOption", res.getInvalidLines().get(4));
     }
 
+    @Test
+    public void testNettyMaxOrderRuleAppliesIfNotAlreadyDefinedExplicitlyByUser() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Dsome.other.netty.property=123"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        // Verify
+        final String output = outputStreamCaptor.toString();
+        assertTrue("Existing properties other than Netty's maxOrder ar preserved", output.contains("-Dsome.other.netty.property=123"));
+        assertTrue("Netty's maxOrder MUST be forcibly defined to the expected default", output.contains("-Dio.netty.allocator.maxOrder=11"));
+    }
+
+    @Test
+    public void testNettyMaxOrderRuleDoNotAppliesIfAlreadyDefinedExplicitlyByUser() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Dio.netty.allocator.maxOrder=10"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        // Verify
+        final String output = outputStreamCaptor.toString();
+        assertTrue("Netty's maxOrder MUST be forcibly defined to the expected default", output.contains("-Dio.netty.allocator.maxOrder=10"));
+
+    }
+
+    @Test
+    public void testEnvironmentOPTSVariableTakesPrecedenceOverOptionsFile() throws IOException {
+        String regex = "Xmx[^ ]+";
+        String expected = "Xmx25g";
+        File optionsFile = writeIntoTempOptionsFile(writer -> writer.println("-Xmx1g"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, expected);
+
+        final String output = outputStreamCaptor.toString();
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
+        String lastMatch = pattern.matcher(output)
+                .results()
+                .map(java.util.regex.MatchResult::group)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+        assertEquals("LS_JAVA_OPTS env must take precedence over jvm.options file", expected, lastMatch);
+    }
+
+    private File writeIntoTempOptionsFile(Consumer<PrintWriter> writer) throws IOException {
+        File optionsFile = temp.newFile("jvm.options");
+        PrintWriter optionsWriter = new PrintWriter(new FileWriter(optionsFile));
+        writer.accept(optionsWriter);
+        optionsWriter.close();
+        return optionsFile;
+    }
+
     private void verifyOptions(String message, String expected, JvmOptionsParser.ParseResult res) {
         assertEquals(message, expected, String.join(System.lineSeparator(), res.getJvmOptions()));
     }
@@ -130,4 +197,5 @@ public class JvmOptionsParserTest {
     private BufferedReader asReader(String s) {
         return new BufferedReader(new StringReader(s));
     }
+
 }

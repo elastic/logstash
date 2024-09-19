@@ -53,7 +53,7 @@ public final class PluginMetricsFactoryExt extends RubyBasicObject {
     @JRubyMethod
     public AbstractNamespacedMetricExt create(final ThreadContext context, final IRubyObject pluginType) {
         return getRoot(context).namespace(
-            context, RubyUtil.RUBY.newSymbol(String.format("%ss", pluginType.asJavaString()))
+            context, RubyUtil.RUBY.newString(String.format("%ss", pluginType.asJavaString())).intern()
         );
     }
 }

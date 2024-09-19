@@ -28,20 +28,19 @@ module ::LogStash::Util::SubstitutionVariables
   SECRET_STORE = ::LogStash::Util::LazySingleton.new { load_secret_store }
   private_constant :SECRET_STORE
 
-  # Recursive method to replace substitution variable references in parameters
-  def deep_replace(value)
+  # Recursive method to replace substitution variable references in parameters and refine if required
+  def deep_replace(value, refine = false)
     if value.is_a?(Hash)
       value.each do |valueHashKey, valueHashValue|
-        value[valueHashKey.to_s] = deep_replace(valueHashValue)
+        value[valueHashKey.to_s] = deep_replace(valueHashValue, refine)
       end
     else
       if value.is_a?(Array)
-        value_array_index = 0
         value.each_with_index do |single_value, i|
-          value[i] = deep_replace(single_value)
+          value[i] = deep_replace(single_value, refine)
         end
       else
-        return replace_placeholders(value)
+        return replace_placeholders(value, refine)
       end
     end
   end
@@ -50,14 +49,17 @@ module ::LogStash::Util::SubstitutionVariables
   # Process following patterns : ${VAR}, ${VAR:defaultValue}
   # If value matches the pattern, returns the following precedence : Secret store value, Environment entry value, default value as provided in the pattern
   # If the value does not match the pattern, the 'value' param returns as-is
-  def replace_placeholders(value)
+  # When setting refine to true, substituted value will be cleaned against escaped single/double quotes
+  #   and generates array if resolved substituted value is array string
+  def replace_placeholders(value, refine)
     if value.kind_of?(::LogStash::Util::Password)
-      interpolated = replace_placeholders(value.value)
+      interpolated = replace_placeholders(value.value, refine)
       return ::LogStash::Util::Password.new(interpolated)
     end
     return value unless value.is_a?(String)
 
-    value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
+    is_placeholder_found = false
+    placeholder_value = value.gsub(SUBSTITUTION_PLACEHOLDER_REGEX) do |placeholder|
       # Note: Ruby docs claim[1] Regexp.last_match is thread-local and scoped to
       # the call, so this should be thread-safe.
       #
@@ -65,6 +67,8 @@ module ::LogStash::Util::SubstitutionVariables
       name = Regexp.last_match(:name)
       default = Regexp.last_match(:default)
       logger.debug("Replacing `#{placeholder}` with actual value")
+
+      is_placeholder_found = true
 
       #check the secret store if it exists
       secret_store = SECRET_STORE.instance
@@ -77,7 +81,38 @@ module ::LogStash::Util::SubstitutionVariables
       end
       replacement.to_s
     end
+
+    # no further action need if substitution didn't happen or refine isn't required
+    return placeholder_value unless is_placeholder_found && refine
+
+    # ENV ${var} value may carry single quote or escaped double quote
+    # or single/double quoted entries in array string, needs to be refined
+    refined_value = strip_enclosing_char(strip_enclosing_char(placeholder_value, "'"), '"')
+    if refined_value.start_with?('[') && refined_value.end_with?(']')
+      # remove square brackets, split by comma and cleanup leading/trailing whitespace
+      refined_array = refined_value[1..-2].split(',').map(&:strip)
+      refined_array.each_with_index do |str, index|
+        refined_array[index] = strip_enclosing_char(strip_enclosing_char(str, "'"), '"')
+      end
+      refined_array
+    else
+      refined_value
+    end
   end # def replace_placeholders
+
+  private
+
+  # removes removed_char of string_value if string_value is wrapped with removed_char
+  def strip_enclosing_char(string_value, remove_char)
+    return string_value unless string_value.is_a?(String)
+    return string_value if string_value.empty?
+
+    if string_value.start_with?(remove_char) && string_value.end_with?(remove_char)
+      string_value[1..-2] # Remove the first and last characters
+    else
+      string_value
+    end
+  end
 
   class << self
     private
