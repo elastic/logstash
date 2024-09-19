@@ -69,6 +69,15 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-1]]
 === Logstash 8.15.1 Release Notes
 
+[[known-issues-8-15-1]]
+==== Known issues
+
+* **{ls} may fail to start under some circumstances.** Single and double quotes are stripped from a pipeline configuration if the configuration includes environment or keystore variable references.
+If this situation occurs, {ls} may fail to start or some plugins may use a malformed configuration.
+Check out issue https://github.com/elastic/logstash/issues/16437[#16437] for details.
++
+Workaround: Downgrade to {ls} 8.15.0, or temporarily avoid using environment and keystore variable references.
+
 [[notable-8.15.1]]
 ==== Performance improvements and notable issues fixed
 
