@@ -26,8 +26,11 @@ main() {
   generate_logs
   check_logs
 
+  USER_QTYPE="$QTYPE"
+
   for V in "${STACK_VERSIONS[@]}" ; do
     LS_VERSION="$V"
+    QTYPE="$USER_QTYPE"
     pull_images
     create_directory
     if [[ $QTYPE == "all" ]]; then
