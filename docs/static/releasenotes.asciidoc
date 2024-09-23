@@ -73,7 +73,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.15.2]]
 ==== Notable issues fixed
 
-* Fixed a [regression](https://github.com/elastic/logstash/issues/16437) from {ls} 8.15.1 in which {ls} removes all quotes from docker env variables, possibly causing {ls} not to start https://github.com/elastic/logstash/pull/16456[#16456]
+* Fixed a https://github.com/elastic/logstash/issues/16437[regression] from {ls} 8.15.1 in which {ls} removes all quotes from docker env variables, possibly causing {ls} not to start https://github.com/elastic/logstash/pull/16456[#16456]
 
 ==== Plugins
 
