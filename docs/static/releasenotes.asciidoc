@@ -73,13 +73,13 @@ This section summarizes the changes in the following releases:
 [[notable-8.15.2]]
 ==== Notable issues fixed
 
-* Fixes a regression from Logstash 8.15.1, where {ls} wipes out all quotes from docker env variables https://github.com/elastic/logstash/pull/15971[#15971]
+* Fixed a [regression](https://github.com/elastic/logstash/issues/16437) from {ls} 8.15.1 in which {ls} removes all quotes from docker env variables, possibly causing {ls} not to start https://github.com/elastic/logstash/pull/16456[#16456]
 
 ==== Plugins
 
 *Beats Input - 6.8.4*
 
-* Fixed to populate the `@metadata` fields even if the source's metadata value is `nil` https://github.com/logstash-plugins/logstash-input-beats/pull/502[#502]
+* Fix to populate the `@metadata` fields even if the source's metadata value is `nil` https://github.com/logstash-plugins/logstash-input-beats/pull/502[#502]
 
 *Dead_letter_queue Input - 2.0.1*
 
@@ -91,7 +91,7 @@ This section summarizes the changes in the following releases:
 
 *Logstash Integration - 1.0.3*
 
-*[DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-integration-logstash/pull/23[#23]
+* [DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-integration-logstash/pull/23[#23]
 
 *Elasticsearch Output - 11.22.9*
 
