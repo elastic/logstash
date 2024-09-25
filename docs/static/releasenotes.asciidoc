@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-2,Logstash 8.15.2>>
 * <<logstash-8-15-1,Logstash 8.15.1>>
 * <<logstash-8-15-0,Logstash 8.15.0>>
 * <<logstash-8-14-3,Logstash 8.14.3>>
@@ -64,6 +65,38 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-2]]
+=== Logstash 8.15.2 Release Notes
+
+[[notable-8.15.2]]
+==== Notable issues fixed
+
+* Fixed a https://github.com/elastic/logstash/issues/16437[regression] from {ls} 8.15.1 in which {ls} removes all quotes from docker env variables, possibly causing {ls} not to start https://github.com/elastic/logstash/pull/16456[#16456]
+
+==== Plugins
+
+*Beats Input - 6.8.4*
+
+* Fix to populate the `@metadata` fields even if the source's metadata value is `nil` https://github.com/logstash-plugins/logstash-input-beats/pull/502[#502]
+
+*Dead_letter_queue Input - 2.0.1*
+
+* Fix NullPointerException when the plugin closes https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/53[#53]
+
+*Elastic_serverless_forwarder Input - 0.1.5*
+
+* [DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/8[#8]
+
+*Logstash Integration - 1.0.3*
+
+* [DOC] Fix attributes to accurately set and clear default codec values https://github.com/logstash-plugins/logstash-integration-logstash/pull/23[#23]
+
+*Elasticsearch Output - 11.22.9*
+
+* Vendor ECS template for Elasticsearch 9.x in built gem https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1188[#1188]
+* Added ECS template for Elasticsearch 9.x https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1187[#1187]
 
 
 [[logstash-8-15-1]]
