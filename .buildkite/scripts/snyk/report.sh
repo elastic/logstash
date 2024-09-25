@@ -4,12 +4,6 @@ set -e
 
 TARGET_BRANCHES=("main")
 
-install_java() {
-  # TODO: let's think about using BK agent which has Java installed
-  #   Current caveat is Logstash BK agent doesn't support docker operatioins in it
-  sudo apt update && sudo apt install -y openjdk-17-jdk && sudo apt install -y openjdk-17-jre
-}
-
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
@@ -55,7 +49,6 @@ report() {
   ./snyk monitor --prune-repeated-subdependencies --all-projects --org=logstash --remote-repo-url="$REMOTE_REPO_URL" --target-reference="$REMOTE_REPO_URL" --detection-depth=6 --exclude=qa,tools,devtools,requirements.txt --project-tags=branch="$TARGET_BRANCH",git_head="$GIT_HEAD" || :
 }
 
-install_java
 resolve_latest_branches
 download_auth_snyk
 
@@ -72,69 +65,3 @@ do
     echo "$TARGET_BRANCH branch doesn't exist."
   fi
 done
-
-# Scan Logstash docker images and report
-REPOSITORY_BASE_URL="docker.elastic.co/logstash/"
-
-report_docker_image() {
-  image=$1
-  project_name=$2
-  platform=$3
-  echo "Reporting $image to Snyk started..."
-  docker pull "$image"
-  if [[ $platform != null ]]; then
-    ./snyk container monitor "$image" --org=logstash --platform="$platform" --project-name="$project_name" --project-tags=version="$version" || :
-  else
-    ./snyk container monitor "$image" --org=logstash --project-name="$project_name" --project-tags=version="$version" || :
-  fi
-}
-
-report_docker_images() {
-  version=$1
-  echo "Version value: $version"
-
-  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT"
-  snyk_project_name="logstash-$version-SNAPSHOT"
-  report_docker_image "$image" "$snyk_project_name"
-
-  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT"
-  snyk_project_name="logstash-oss-$version-SNAPSHOT"
-  report_docker_image "$image" "$snyk_project_name"
-
-  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT-arm64"
-  snyk_project_name="logstash-$version-SNAPSHOT-arm64"
-  report_docker_image "$image" "$snyk_project_name" "linux/arm64"
-
-  image=$REPOSITORY_BASE_URL"logstash:$version-SNAPSHOT-amd64"
-  snyk_project_name="logstash-$version-SNAPSHOT-amd64"
-  report_docker_image "$image" "$snyk_project_name" "linux/amd64"
-
-  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT-arm64"
-  snyk_project_name="logstash-oss-$version-SNAPSHOT-arm64"
-  report_docker_image "$image" "$snyk_project_name" "linux/arm64"
-
-  image=$REPOSITORY_BASE_URL"logstash-oss:$version-SNAPSHOT-amd64"
-  snyk_project_name="logstash-oss-$version-SNAPSHOT-amd64"
-  report_docker_image "$image" "$snyk_project_name" "linux/amd64"
-}
-
-resolve_version_and_report_docker_images() {
-  git reset --hard HEAD # reset if any generated files appeared
-  git checkout "$1"
-
-  # parse version (ex: 8.8.2 from 8.8 branch, or 8.9.0 from main branch)
-  versions_file="$PWD/versions.yml"
-  version=$(awk '/logstash:/ { print $2 }' "$versions_file")
-  report_docker_images "$version"
-}
-
-# resolve docker artifact and report
-#for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
-#do
-#  if git show-ref --quiet refs/heads/"$TARGET_BRANCH"; then
-#    echo "Using $TARGET_BRANCH branch for docker images."
-#    resolve_version_and_report_docker_images "$TARGET_BRANCH"
-#  else
-#    echo "$TARGET_BRANCH branch doesn't exist."
-#  fi
-#done
