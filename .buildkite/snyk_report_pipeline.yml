@@ -1,9 +1,8 @@
 agents:
-  provider: gcp
-  imageProject: elastic-images-prod
-  image: family/platform-ingest-logstash-ubuntu-2204
-  machineType: "n2-standard-4"
-  diskSizeGb: 120
+  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+  cpu: "2"
+  memory: "4Gi"
+  ephemeralStorage: "64Gi"
 
 steps:
   # reports main, previous (ex: 7.latest) and current (ex: 8.latest) release branches to Snyk
