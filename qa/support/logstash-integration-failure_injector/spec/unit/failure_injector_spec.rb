@@ -44,8 +44,8 @@ require "logstash/outputs/failure_injector"
       context "when degrades at #{phase}" do
         let(:params) { { 'degrade_at' => [phase] } }
 
-        it 'calls the degrate method' do
-          expect(plugin).to receive(:degrate).with(phase)
+        it 'calls the degrade method' do
+          expect(plugin).to receive(:degrade).with(phase)
           case phase
           when 'filter'
             plugin.filter(event)
@@ -112,10 +112,10 @@ require "logstash/outputs/failure_injector"
       it_behaves_like 'a phase that can degrade or crash', 'close'
     end
 
-    describe '#degrate' do
+    describe '#degrade' do
       it 'sleeps for a certain period of time' do
         expect(plugin).to receive(:sleep).at_least(:once)
-        plugin.degrate('filter')
+        plugin.degrade('filter')
       end
     end
 

@@ -53,11 +53,11 @@ class LogStash::Outputs::FailureInjector < LogStash::Outputs::Base
   end
 
   def degrade_or_crash_if_required(phase)
-    degrate(phase) if @degrade_at.include?(phase)
+    degrade(phase) if @degrade_at.include?(phase)
     crash(phase) if @crash_at && @crash_at == phase
   end
 
-  def degrate(phase)
+  def degrade(phase)
     @logger.debug("Degraded at #{phase} phase")
     (1..100).each { |i|
       sleep(i * 0.01)
