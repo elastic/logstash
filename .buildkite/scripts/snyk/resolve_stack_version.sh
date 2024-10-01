@@ -10,4 +10,4 @@ VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/logstash
 
 echo "Fetching versions from $VERSION_URL"
 VERSIONS=$(curl --silent $VERSION_URL)
-TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.snapshots | keys | .[]')
+TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.snapshots | keys | join(" ")')
