@@ -10,10 +10,4 @@ VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/logstash
 
 echo "Fetching versions from $VERSION_URL"
 VERSIONS=$(curl --silent $VERSION_URL)
-SNAPSHOT_KEYS=$(echo "$VERSIONS" | jq -r '.snapshots | .[]')
-
-SNAPSHOT_VERSIONS=()
-while IFS= read -r line; do
-  SNAPSHOT_VERSIONS+=("$line")
-  echo "Resolved snapshot version: $line"
-done <<< "$SNAPSHOT_KEYS"
+TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.snapshots | keys | .[]')

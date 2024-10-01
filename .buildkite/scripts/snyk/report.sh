@@ -7,13 +7,6 @@ TARGET_BRANCHES=("main")
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
-  for SNAPSHOT_VERSION in "${SNAPSHOT_VERSIONS[@]}"
-  do
-    IFS='.'
-    read -a versions <<< "$SNAPSHOT_VERSION"
-    version=${versions[0]}.${versions[1]}
-    TARGET_BRANCHES+=("$version")
-  done
 }
 
 # Build Logstash specific branch to generate Gemlock file where Snyk scans
