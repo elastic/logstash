@@ -11,7 +11,7 @@ class ScenarioExecutor:
     def __init__(self):
         pass
 
-    def __meets_expectation(self, scenario_content: list) -> None:
+    def __is_expected(self, scenario_content: list) -> None:
         logstash_health = self.logstash_health_report_api.get()
         print(f"Logstash health report: {logstash_health}")
 
@@ -39,5 +39,5 @@ class ScenarioExecutor:
 
     def on(self, scenario_name: str, scenario_content: list) -> None:
         print(f"Testing the scenario: {scenario_content}")
-        if self.__meets_expectation(scenario_content) is False:
+        if self.__is_expected(scenario_content) is False:
             raise Exception(f"{scenario_name} failed.")
