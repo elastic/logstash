@@ -83,7 +83,7 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
     @Test
     public void shouldTokenizeEmptyPayloadWithNewline() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n"));
-        assertEquals(List.of(""), tokens);;
+        assertEquals(List.of(""), tokens);
 
         tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n\n\n"));
         assertEquals(List.of("", "", ""), tokens);

@@ -31,8 +31,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static org.logstash.RubyUtil.RUBY;
 
 @SuppressWarnings("unchecked")
@@ -72,7 +71,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\nanother"));
-        assertEquals("After buffer full error should resume form the end of line", List.of("kaboom", "another"), tokens);
+        assertEquals("After buffer full error should resume from the end of line", List.of("kaboom"), tokens);
     }
 
     @Test
@@ -84,7 +83,28 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbb"));
+        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbb\nccc"));
         assertEquals(List.of("bbbb"), tokens);
+    }
+
+    @Test
+    public void giveMultipleSegmentsThatGeneratesMultipleBufferFullErrorsThenIsAbleToRecoverTokenization() {
+        sut.extract(context, RubyUtil.RUBY.newString("aaaa"));
+
+        //first buffer full on 13 "a" letters
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> {
+            sut.extract(context, RubyUtil.RUBY.newString("aaaaaaa"));
+        });
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
+
+        // second buffer full on 11 "b" letters
+        Exception secondThrownException = assertThrows(IllegalStateException.class, () -> {
+            sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbbbbbbbbb\ncc"));
+        });
+        assertThat(secondThrownException.getMessage(), containsString("input buffer full"));
+
+        // now should resemble processing on c and d
+        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("ccc\nddd\n"));
+        assertEquals(List.of("ccccc", "ddd"), tokens);
     }
 }
