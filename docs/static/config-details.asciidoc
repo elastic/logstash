@@ -126,7 +126,7 @@ to provide better performance, especially when interacting with the network stac
 Under heavy load, namely large number of connections and large messages, the direct memory space can be exhausted and lead to Out of Memory (OOM) errors in off-heap space.
 
 An off-heap OOM is difficult to debug, so {ls} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate memory buffers for plugins that use them. 
-Currently it is set to `direct` by default, but you can change it to `heap` to use Java heap space instead, which will be become the default in the future.
+Currently it is set to `heap` by default, but you can change it to `direct` to use direct memory space instead.
 When set to `heap`, buffer allocations used by plugins are configured to **prefer** the
 Java Heap instead of direct memory, as direct memory allocations may still be necessary depending on the plugin.
 
