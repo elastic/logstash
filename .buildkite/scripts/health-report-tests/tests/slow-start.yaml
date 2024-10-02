@@ -1,17 +1,17 @@
-- name: "Slow start pipeline"
-- config:
+name: "Slow start pipeline"
+config:
   - pipeline.id: slow-start-pp
     config.string: |
       input { heartbeat {} }
       filter { failure_injector { degrade_at => [register] } }
       output { stdout {} }
-- expectation:
-    - status: yellow
-    - symptom: "The pipeline is degraded or at risk of becoming unhealthy; 1 area is impacted and 1 diagnosis is available."
-    - diagnosis:
-        - cause: "pipeline is loading"
-    - impacts:
-      - description: "pipeline is loading"
-      - impact_areas: "pipeline_execution"
-    - details:
-      - run_state: "LOADING"
+expectation:
+  - status: yellow
+  - symptom: "The pipeline is degraded or at risk of becoming unhealthy; 1 area is impacted and 1 diagnosis is available."
+  - diagnosis:
+      - cause: "pipeline is loading"
+  - impacts:
+    - description: "pipeline is loading"
+    - impact_areas: "pipeline_execution"
+  - details:
+    - run_state: "LOADING"

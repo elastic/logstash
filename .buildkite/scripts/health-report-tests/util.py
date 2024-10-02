@@ -1,10 +1,12 @@
 import requests
 import subprocess
-from typing import Any, List, Dict, Union
 from requests.adapters import HTTPAdapter, Retry
 
 
 def call_url_with_retry(url: str, max_retries: int = 5, delay: int = 1) -> requests.Response:
+    f"""
+    Calls the given {url} with maximum of {max_retries} retries with {delay} delay.
+    """
     schema = "https://" if "https://" in url else "http://"
     session = requests.Session()
     # retry on most common failures such as connection timeout(408), etc...
@@ -13,21 +15,21 @@ def call_url_with_retry(url: str, max_retries: int = 5, delay: int = 1) -> reque
     return session.get(url)
 
 
-def git_check_out_branch(branch_name: str) -> bool:
+def git_check_out_branch(branch_name: str) -> None:
+    f"""
+    Checks out specified branch or fails with error if checkout operation fails.
+    """
     run_or_raise_error(["git", "checkout", branch_name],
                        "Error occurred while checking out the " + branch_name + " branch")
 
 
 def run_or_raise_error(commands: list, error_message):
+    f"""
+    Executes the {list} commands and raises an {Exception} if opration fails.
+    """
     result = subprocess.run(commands, universal_newlines=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
         full_error_message = (error_message + ", output: " + result.stdout.decode('utf-8')) \
             if result.stdout else error_message
         raise Exception(f"{full_error_message}")
 
-
-def get_element_of_array(data: Union[List[Dict[str, Any]], None], key: str) -> str:
-    for element in data:
-        if key in element:
-            return element[key]
-    return None

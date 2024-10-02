@@ -7,7 +7,6 @@ from bootstrap import Bootstrap
 from scenario_executor import ScenarioExecutor
 from config_validator import ConfigValidator
 import yaml
-import util
 
 
 class BootstrapContextManager:
@@ -18,7 +17,7 @@ class BootstrapContextManager:
     def __enter__(self):
         print(f"Starting Logstash Health Report Integration test.")
         self.bootstrap = Bootstrap()
-        # self.bootstrap.build_logstash()
+        self.bootstrap.build_logstash()
 
         plugin_path = os.getcwd() + "/qa/support/logstash-integration-failure_injector/logstash-integration" \
                                     "-failure_injector-*.gem"
@@ -26,7 +25,7 @@ class BootstrapContextManager:
         if len(matching_files) == 0:
             raise ValueError(f"Could not find logstash-integration-failure_injector plugin.")
 
-        # self.bootstrap.install_plugin(matching_files[0])
+        self.bootstrap.install_plugin(matching_files[0])
         print(f"logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
@@ -56,13 +55,13 @@ def main():
 
         for scenario_file in scenario_files:
             with open(scenario_file, 'r') as file:
-                # scenario_content: Union[List[Dict[str, Any]], None] = None
+                # scenario_content: Dict[str, Any] = None
                 scenario_content = yaml.safe_load(file)
-                scenario_name = util.get_element_of_array(scenario_content, 'name')
-                config = util.get_element_of_array(scenario_content, 'config')
+                scenario_name = scenario_content['name']
+                config = scenario_content['config']
                 if config is not None:
                     bootstrap.apply_config(config)
-                    expectation = util.get_element_of_array(scenario_content, 'expectation')
+                    expectation = scenario_content['expectation']
                     process = bootstrap.run_logstash()
                     if process is not None:
                         scenario_executor.on(scenario_name, expectation)

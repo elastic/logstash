@@ -17,20 +17,20 @@ class Bootstrap:
         f"""
         A constructor of the {Bootstrap}.
         Returns:
-            Resolves Logstash branch considering provided LS_VERSION
+            Resolves Logstash branch considering provided LS_BRANCH
             Checks out git branch
         """
-        logstash_version = os.environ.get("LS_VERSION")
-        if logstash_version is None:
+        logstash_branch = os.environ.get("LS_BRANCH")
+        if logstash_branch is None:
             # version is not specified, use the main branch, no need to git checkout
-            print(f"LS_VERSION is not specified, using main branch.")
+            print(f"LS_BRANCH is not specified, using main branch.")
         else:
-            # LS_VERSION accepts major latest as a major.x or specific version as X.Y
-            if logstash_version.find(".x") == -1:
-                print(f"Using specified branch: {logstash_version}")
-                util.git_check_out_branch(logstash_version)
+            # LS_BRANCH accepts major latest as a major.x or specific branch as X.Y
+            if logstash_branch.find(".x") == -1:
+                print(f"Using specified branch: {logstash_branch}")
+                util.git_check_out_branch(logstash_branch)
             else:
-                major_version = logstash_version.split(".")[0]
+                major_version = logstash_branch.split(".")[0]
                 if major_version and major_version.isnumeric():
                     resolved_version = self.__resolve_latest_stack_version_for(major_version)
                     minor_version = resolved_version.split(".")[1]
@@ -38,10 +38,10 @@ class Bootstrap:
                     print(f"Using resolved branch: {branch}")
                     util.git_check_out_branch(branch)
                 else:
-                    raise ValueError(f"Invalid value set to LS_VERSION. Please set it properly (ex: 8.x or 9.0) and "
+                    raise ValueError(f"Invalid value set to LS_BRANCH. Please set it properly (ex: 8.x or 9.0) and "
                                      f"rerun again")
 
-    def __resolve_latest_stack_version_for(self, major_version: str) -> None:
+    def __resolve_latest_stack_version_for(self, major_version: str) -> str:
         resolved_version = ""
         response = util.call_url_with_retry(self.ELASTIC_STACK_VERSIONS_URL)
         release_versions = response.json()["versions"]

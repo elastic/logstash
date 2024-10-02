@@ -3,55 +3,45 @@ from typing import Any, List, Dict, Union
 
 
 class ConfigValidator:
-
-    REQUIRED_KEYS: Dict[str, List[str]] = {
+    REQUIRED_KEYS: Dict[str, List[Any]] = {
         "config": ["pipeline.id", "config.string"],
-        "expectation": ["status", "symptom", "diagnosis", "impacts", "details"],
-        "diagnosis": ["cause"],
-        "impacts": ["description", "impact_areas"],
-        "details": ["run_state"],
+        "expectation": ["status", "symptom", {"diagnosis": ["cause"]},
+                        {"impacts": ["description", "impact_areas"], "details": ["run_state"]}]
     }
 
     def __init__(self):
         self.yaml_content = None
 
-    def __validate_keys(self, actual_keys: List[str], expected_keys: List[str], section: str) -> bool:
-        """Validate the keys at the current level."""
-        missing_keys = set(expected_keys) - set(actual_keys)
-        if len(missing_keys) == len(expected_keys):
-            print(f"Missing keys in {section}: {missing_keys}")
-            return False
+    def __validate_keys(self, data: Dict[str, Any], required_keys: Dict[str, List[Any]]) -> bool:
+        for key, required_list in required_keys.items():
+            if key not in data:
+                print(f"Missing top-level key: {key}")
+                return False
+            for item in required_list:
+                if isinstance(item, str):
+                    if not self.__check_nested_key(data[key], item):
+                        print(f"Missing nested key: {item} in {key}")
+                        return False
+                elif isinstance(item, dict):
+                    for sub_key, sub_value in item.items():
+                        if sub_key not in data[key]:
+                            print(f"Missing key: {sub_key} in {key}")
+                            return False
+                        # Recursively check the nested dictionary
+                        if not self.__validate_keys(data[key][sub_key], {sub_key: sub_value}):
+                            return False
         return True
 
-    def __validate_config(self, config_list: List[Dict[str, Any]]) -> bool:
-        """Validate the 'config' section."""
-        for config_item in config_list:
-            if not self.__validate_keys(list(config_item.keys()), self.REQUIRED_KEYS["config"], "config"):
+    def __check_nested_key(self, data: Dict[str, Any], nested_key: str) -> bool:
+        keys = nested_key.split('.')
+        for key in keys:
+            if key not in data:
                 return False
-        return True
-
-    def __validate_expectation(self, expectation_list: List[Dict[str, Any]]) -> bool:
-        """Validate the 'expectation' section."""
-        for expectation_item in expectation_list:
-            if not self.__validate_keys(list(expectation_item.keys()), self.REQUIRED_KEYS["expectation"], "expectation"):
-                return False
-            if "diagnosis" in expectation_item:
-                for diagnosis in expectation_item["diagnosis"]:
-                    if not self.__validate_keys(list(diagnosis.keys()), self.REQUIRED_KEYS["diagnosis"], "diagnosis"):
-                        return False
-            if "impacts" in expectation_item:
-                for impact in expectation_item["impacts"]:
-                    if not self.__validate_keys(list(impact.keys()), self.REQUIRED_KEYS["impacts"], "impacts"):
-                        return False
-            if "details" in expectation_item:
-                for detail in expectation_item["details"]:
-                    if not self.__validate_keys(list(detail.keys()), self.REQUIRED_KEYS["details"], "details"):
-                        return False
         return True
 
     def load(self, file_path: str) -> None:
         """Load the YAML file content into self.yaml_content."""
-        self.yaml_content: Union[List[Dict[str, Any]], None] = None
+        self.yaml_content: [Dict[str, Any]] = None
         try:
             with open(file_path, 'r') as file:
                 self.yaml_content = yaml.safe_load(file)
@@ -65,16 +55,19 @@ class ConfigValidator:
             print(f"YAML content is empty.")
             return False
 
-        if not isinstance(self.yaml_content, list):
-            print(f"YAML structure is not as expected, it should start with a list.")
+        if not isinstance(self.yaml_content, Dict):
+            print(f"YAML structure is not as expected, it should start with a Dict.")
             return False
 
+        required_config_keys = list(self.REQUIRED_KEYS.keys())
         for item in self.yaml_content:
-            if "config" in item and not self.__validate_config(item["config"]):
+            if item == "name":
+                continue
+            if item not in required_config_keys:
                 return False
 
-            if "expectation" in item and not self.__validate_expectation(item["expectation"]):
-                return False
-
-        print(f"YAML file validation successful!")
+        if self.__validate_keys(self.yaml_content, self.REQUIRED_KEYS):
+            print("Valid YAML content detected.")
+        else:
+            print("YAML validation failed.")
         return True
