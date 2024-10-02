@@ -12,24 +12,17 @@ class ConfigValidator:
     def __init__(self):
         self.yaml_content = None
 
-    def __validate_keys(self, data: Dict[str, Any], required_keys: Dict[str, List[Any]]) -> bool:
-        for key, required_list in required_keys.items():
-            if key not in data:
-                print(f"Missing top-level key: {key}")
-                return False
-            for item in required_list:
-                if isinstance(item, str):
-                    if not self.__check_nested_key(data[key], item):
-                        print(f"Missing nested key: {item} in {key}")
-                        return False
-                elif isinstance(item, dict):
-                    for sub_key, sub_value in item.items():
-                        if sub_key not in data[key]:
-                            print(f"Missing key: {sub_key} in {key}")
-                            return False
-                        # Recursively check the nested dictionary
-                        if not self.__validate_keys(data[key][sub_key], {sub_key: sub_value}):
-                            return False
+    def __validate_keys(self, yaml_sub_keys: List[Dict[str, Any]], required_sub_keys: Dict[str, List[Any]]) -> bool:
+        for required_sub_key in required_sub_keys:
+            if isinstance(required_sub_key, str):
+                is_key_found = False
+                for yaml_sub_key in yaml_sub_keys:
+                    if yaml_sub_key.get(required_sub_key):
+                        is_key_found = True
+                        break
+                if not is_key_found:
+                    print(f"Required {required_sub_key} key is not found in {yaml_sub_keys}")
+                    return False
         return True
 
     def __check_nested_key(self, data: Dict[str, Any], nested_key: str) -> bool:
@@ -60,14 +53,13 @@ class ConfigValidator:
             return False
 
         required_config_keys = list(self.REQUIRED_KEYS.keys())
-        for item in self.yaml_content:
-            if item == "name":
+        for yaml_key in self.yaml_content:
+            if yaml_key == "name":
                 continue
-            if item not in required_config_keys:
+            if yaml_key not in required_config_keys:
+                return False
+            if not self.__validate_keys(self.yaml_content.get(yaml_key), self.REQUIRED_KEYS.get(yaml_key)):
                 return False
 
-        if self.__validate_keys(self.yaml_content, self.REQUIRED_KEYS):
-            print("Valid YAML content detected.")
-        else:
-            print("YAML validation failed.")
+        print(f"YAML config validation succeeded.")
         return True

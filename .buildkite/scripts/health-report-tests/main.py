@@ -29,9 +29,6 @@ class BootstrapContextManager:
         print(f"logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
-    def apply_config(self, bootstrap: Bootstrap, config: str):
-        bootstrap.apply_config(config)
-
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type is not None:
             traceback.print_exception(exc_type, exc_value, traceback)
