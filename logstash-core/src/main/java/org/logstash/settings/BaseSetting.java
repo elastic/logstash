@@ -93,6 +93,8 @@ public class BaseSetting<T> implements Setting<T> {
         this.strict = strict;
         this.validator = validator;
     }
+
+    @SuppressWarnings("this-escape")
     protected BaseSetting(String name, T defaultValue, boolean strict, Predicate<T> validator) {
         Objects.requireNonNull(name);
         Objects.requireNonNull(validator);
