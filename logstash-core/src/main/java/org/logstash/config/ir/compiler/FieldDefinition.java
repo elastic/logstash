@@ -46,6 +46,12 @@ final class FieldDefinition implements SyntaxElement {
         );
     }
 
+    public static FieldDefinition fromValue(final String fieldName, final Object value) {
+        return new FieldDefinition(
+                variableDefinition(value.getClass(), fieldName), false, null, value
+        );
+    }
+
     /**
      * Creates a mutable field with given type and without an assigned value.
      * @param index Index for naming
@@ -55,6 +61,12 @@ final class FieldDefinition implements SyntaxElement {
     public static FieldDefinition mutableUnassigned(final int index, final Class<?> type) {
         return new FieldDefinition(
             variableDefinition(type, index), true, null, null
+        );
+    }
+
+    public static FieldDefinition mutableUnassigned(final String fieldName, final Class<?> type) {
+        return new FieldDefinition(
+            variableDefinition(type, fieldName), true, null, null
         );
     }
 
@@ -98,4 +110,9 @@ final class FieldDefinition implements SyntaxElement {
     private static VariableDefinition variableDefinition(final Class<?> type, final int index) {
         return new VariableDefinition(type, String.format("field%d", index));
     }
+
+    private static VariableDefinition variableDefinition(final Class<?> type, final String fieldName) {
+        return new VariableDefinition(type, String.format("%sField", fieldName));
+    }
+
 }

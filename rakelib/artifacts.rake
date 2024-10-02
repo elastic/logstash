@@ -492,6 +492,7 @@ namespace "artifact" do
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
+    require 'minitar'
     ensure_logstash_version_constant_defined
     tarpath = "build/logstash#{tar_suffix}-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}#{platform}.tar.gz"
     if File.exist?(tarpath) && ENV['SKIP_PREPARE'] == "1" && !source_modified_since?(File.mtime(tarpath))
@@ -500,7 +501,7 @@ namespace "artifact" do
     end
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
-    Gem::Package::TarWriter.new(gz) do |tar|
+    Minitar::Writer.open(gz) do |tar|
       files(exclude_paths).each do |path|
         write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
       end
@@ -520,11 +521,11 @@ namespace "artifact" do
   def write_to_tar(tar, path, path_in_tar)
     stat = File.lstat(path)
     if stat.directory?
-      tar.mkdir(path_in_tar, stat.mode)
+      tar.mkdir(path_in_tar, :mode => stat.mode)
     elsif stat.symlink?
-      tar.add_symlink(path_in_tar, File.readlink(path), stat.mode)
+      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
     else
-      tar.add_file_simple(path_in_tar, stat.mode, stat.size) do |io|
+      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
         File.open(path, 'rb') do |fd|
           chunk = nil
           size = 0

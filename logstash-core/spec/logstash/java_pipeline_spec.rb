@@ -377,6 +377,145 @@ describe LogStash::JavaPipeline do
     end
   end
 
+  context "when logical expression in conditional" do
+    extend PipelineHelpers
+
+    let(:settings) { LogStash::SETTINGS.clone }
+
+    config <<-CONFIG
+          filter {
+            if [path][to][value] > 100 {
+              mutate { add_tag => "hit" }
+            } else {
+              mutate { add_tag => "miss" }
+            }
+          }
+        CONFIG
+
+    context "raise an error when it's evaluated, should cancel the event execution and log the error" do
+      context "when type of evaluation doesn't have same type" do
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when left and right operands of event condition are not comparable" do
+        context "comparing a non existing field" do
+          sample_one( [{ "path" => {"to" => "Rome"}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/<no-class>:<null-value>/)
+          end
+        end
+
+        context "comparing incompatible types" do
+          sample_one( [{ "path" => {"to" => {"value" => [101, 102]}}}] ) do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/Unexpected conditional input combination of.*List.*RubyFixnum/)
+          end
+        end
+      end
+
+      context "when the offending logic expression is used in a nested conditional structure" do
+        config <<-CONFIG
+                  filter {
+                    if "a" == "a" {
+                      if "b" == "b" {
+                        if [path][to][value] > 100 {
+                          mutate { add_tag => "hit" }
+                        } else {
+                          mutate { add_tag => "miss" }
+                        }
+                      }
+                    }
+                  }
+                CONFIG
+
+        sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
+          expect(subject).to be nil
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+        end
+      end
+
+      context "when the offending condition is in the output section" do
+        before do
+          LogStash::PLUGIN_REGISTRY.add(:input, "spec_sampler_input", PipelineHelpers::SpecSamplerInput)
+          LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
+        end
+
+        describe "given a pipeline executing an event that would trigger an evaluation error" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [path][to][value] > 100 { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "path" => {"to" => {"value" => "101"}}})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+          end
+        end
+
+        describe "given a pipeline executing an event with invalid UTF-8 string" do
+          let(:pipeline) do
+            settings.set_value("queue.drain", true)
+            LogStash::JavaPipeline.new(
+              org.logstash.config.ir.PipelineConfig.new(
+                LogStash::Config::Source::Local, :main,
+                SourceWithMetadata.new(
+                  "config_string", "config_string",
+                  "input { spec_sampler_input {} }\n output { if [message] =~ /^(NOSQL|SQL):/ { spec_sampler_output {} } }"
+                ), settings
+              )
+            )
+          end
+          let(:event) do
+            [LogStash::Event.new({ "message" => "abrac\xC5adabra"})]
+          end
+
+          let(:results) do
+            PipelineHelpers::SpecSamplerInput.set_event event
+            pipeline.run
+            PipelineHelpers::SpecSamplerOutput.seen
+          end
+
+          after do
+            pipeline.close
+          end
+
+          subject {results.length > 1 ? results : results.first}
+
+          it "should raise an error without killing the pipeline" do
+            expect(subject).to be nil
+            expect(pipeline.last_error_evaluation_received).to match(/invalid byte sequence in UTF-8/)
+          end
+        end
+      end
+    end
+  end
+
   context "a crashing worker terminates the pipeline and all inputs and workers" do
     subject { mock_java_pipeline_from_string(config, pipeline_settings_obj) }
     let(:config) do

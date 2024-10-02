@@ -685,19 +685,19 @@ public interface EventCondition {
             UnexpectedTypeException(final Expression left, final Expression right) {
                 super(
                         String.format(
-                                "Unexpected input types left: %s, right: %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                                "Unexpected conditional input combination of '%s' (left) and '%s' (right)", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
                         )
                 );
             }
 
             UnexpectedTypeException(final Object inner) {
-                super(String.format("Unexpected input type %s", getUnexpectedTypeDetails(inner)));
+                super(String.format("Unexpected conditional input type '%s'", getUnexpectedTypeDetails(inner)));
             }
 
             UnexpectedTypeException(final Object left, final Object right) {
                 super(
                         String.format(
-                                "Unexpected input type combination left %s, right %s", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
+                                "Unexpected conditional input combination of '%s' (left) and '%s' (right)", getUnexpectedTypeDetails(left), getUnexpectedTypeDetails(right)
                         )
                 );
             }
@@ -709,9 +709,13 @@ public interface EventCondition {
                     details = (expression.getSourceWithMetadata() != null) ? expression.getSourceWithMetadata().toString()
                                                                            : expression.toString();
                 } else {
-                    details = unexpected.toString();
+                    if (unexpected == null) {
+                        details = "<null-value>";
+                    } else {
+                        details = unexpected.toString();
+                    }
                 }
-                return String.format("%s:%s", unexpected.getClass(), details);
+                return String.format("%s:%s", unexpected == null ? "<no-class>" : unexpected.getClass(), details);
             }
         }
     }

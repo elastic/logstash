@@ -56,4 +56,40 @@ shared_examples_for 'it applies settings correctly' do |flavor|
       expect(get_settings(@container)['pipeline.unsafe_shutdown']).to be_truthy
     end
   end
+
+  context 'when setting config.string' do
+    let(:options) {
+      {
+        'ENV' => [
+          'USER=kimchy',
+          'CONFIG_STRING=input {
+              beats { port => 5040 }
+            }
+            output {
+              elasticsearch {
+                hosts => ["https://es:9200"]
+                user => "${USER}"
+                password => \'changeme\'
+              }
+            }'
+        ]
+      }
+    }
+
+    it "persists ${CONFIG_STRING} key in logstash.yml, resolves when running and spins up without issue" do
+      settings = get_settings(@container)
+      expect(settings['config.string']).to eq("${CONFIG_STRING}")
+
+      pipeline_config = get_pipeline_stats(@container)
+      input_plugins = pipeline_config.dig('plugins', 'inputs')
+      expect(input_plugins[0].dig('name')).to eql('beats')
+
+      output_plugins = pipeline_config.dig('plugins', 'outputs')
+      expect(output_plugins[0].dig('name')).to eql('elasticsearch')
+
+      # check if logs contain the ES request with the resolved ${USER}
+      container_logs = @container.logs(stdout: true)
+      expect(container_logs.include?('https://kimchy:xxxxxx@es:9200')).to be true
+    end
+  end
 end
