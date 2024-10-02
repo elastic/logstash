@@ -150,7 +150,7 @@ source /etc/os-release
 if [[ "$$(echo $$ID_LIKE | tr '[:upper:]' '[:lower:]')" =~ (rhel|fedora) && "$${VERSION_ID%.*}" -le 7 ]]; then
   # jruby-9.3.10.0 unavailable on centos-7 / oel-7, see https://github.com/jruby/jruby/issues/7579#issuecomment-1425885324 / https://github.com/jruby/jruby/issues/7695
   # we only need a working jruby to run the acceptance test framework -- the packages have been prebuilt in a previous stage
-  rbenv local jruby-9.4.5.0
+  rbenv local jruby-9.4.8.0
 fi
 ci/acceptance_tests.sh"""),
         }
