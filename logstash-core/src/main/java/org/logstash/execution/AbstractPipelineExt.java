@@ -167,7 +167,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray outputs;
 
     private String lastErrorEvaluationReceived = "";
-    private DeadLetterQueueWriter javaDlqWriter;
+    private transient DeadLetterQueueWriter javaDlqWriter;
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
