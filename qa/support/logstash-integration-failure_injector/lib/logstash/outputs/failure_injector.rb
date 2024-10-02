@@ -26,10 +26,29 @@ class LogStash::Outputs::FailureInjector < LogStash::Outputs::Base
 
   config_name "failure_injector"
 
-  # one or any of [register, receive, close]
+  # Defines the phases where plugin needs to make a pipeline degraded state.
+  # Accepts one or any of [register, receive, close]
+  # Note that, order of the phases doesn't matter as it obeys on plugin phase
+  # Example config to degrade the pipeline status at register and receive phase:
+  # failure_injector {
+  #    degrade_at => ['register', 'receive']
+  # }
   config :degrade_at, :validate => :array, :default => []
 
-  # one of [register, receive, close]
+  # Defines the phases where plugin needs to be crashed, causes pipeline terminated.
+  # Accepts one of [register, receive, close]
+  # Example config to degrade the pipeline status at register and receive phase:
+  # failure_injector {
+  #    crash_at => 'register'
+  # }
+  #
+  # Note that, order of the phases doesn't matter as it obeys on plugin phase
+  #   Plugin doesn't validate the order, if `crash_at` is combined with `degrade_at`, and plugin cannot simulate degraded state after crash phase
+  #   Example,
+  #     failure_injector {
+  #       crash_at => 'register'
+  #        degrade_at => ['receive']
+  #     }
   config :crash_at, :validate => :string
 
   def initialize(params)
