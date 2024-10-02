@@ -48,6 +48,7 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
 
     private DeprecatedAlias<T> deprecatedAlias;
 
+    @SuppressWarnings("this-escape")
     protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName) {
         super(canonicalSetting);
 
