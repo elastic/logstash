@@ -10,24 +10,16 @@ import java.util.function.UnaryOperator;
 
 @JsonSerialize(using = Diagnosis.JsonSerializer.class)
 public final class Diagnosis {
-    final String cause;
-    final String action;
-    final String helpUrl;
+    public final String id;
+    public final String cause;
+    public final String action;
+    public final String helpUrl;
 
     private Diagnosis(final Builder builder) {
+        this.id = builder.id;
         this.cause = builder.cause;
         this.action = builder.action;
         this.helpUrl = builder.helpUrl;
-    }
-
-    String cause() {
-        return cause;
-    }
-    String action() {
-        return action;
-    }
-    String helpUrl() {
-        return helpUrl;
     }
 
     static Builder builder() {
@@ -35,25 +27,51 @@ public final class Diagnosis {
     }
 
     public static class Builder {
-        private String cause;
-        private String action;
-        private String helpUrl;
-        public synchronized Builder setCause(final String cause) {
-            assert Objects.isNull(this.cause) : "cause has already been set";
+        private final String id;
+        private final String cause;
+        private final String action;
+        private final String helpUrl;
+
+        public Builder() {
+            this(null, null, null, null);
+        }
+
+        Builder(final String id,
+                final String cause,
+                final String action,
+                final String helpUrl) {
+            this.id = id;
             this.cause = cause;
-            return this;
-        }
-        public synchronized Builder setAction(final String action) {
-            assert Objects.isNull(this.action) : "action has already been set";
             this.action = action;
-            return this;
-        }
-        public synchronized Builder setHelpUrl(final String helpUrl) {
-            assert Objects.isNull(this.helpUrl) : "helpUrl has already been set";
             this.helpUrl = helpUrl;
-            return this;
         }
-        public synchronized Builder configure(final UnaryOperator<Builder> configurator) {
+
+        public Builder withId(final String id) {
+            if (Objects.equals(id, this.id)) {
+                return this;
+            }
+            return new Builder(id, cause, action, helpUrl);
+        }
+
+        public Builder withCause(final String cause) {
+            if (Objects.equals(cause, this.cause)) {
+                return this;
+            }
+            return new Builder(id, cause, action, helpUrl);
+        }
+        public Builder withAction(final String action) {
+            if (Objects.equals(action, this.action)) {
+                return this;
+            }
+            return new Builder(id, cause, action, helpUrl);
+        }
+        public Builder withHelpUrl(final String helpUrl) {
+            if (Objects.equals(helpUrl, this.helpUrl)) {
+                return this;
+            }
+            return new Builder(id, cause, action, helpUrl);
+        }
+        public Builder transform(final UnaryOperator<Builder> configurator) {
             return configurator.apply(this);
         }
         public synchronized Diagnosis build() {
@@ -65,9 +83,12 @@ public final class Diagnosis {
         @Override
         public void serialize(Diagnosis diagnosis, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("cause", diagnosis.cause());
-            jsonGenerator.writeStringField("action", diagnosis.action());
-            jsonGenerator.writeStringField("help_url", diagnosis.helpUrl());
+            if (diagnosis.id != null) {
+                jsonGenerator.writeStringField("id", diagnosis.id);
+            }
+            jsonGenerator.writeStringField("cause", diagnosis.cause);
+            jsonGenerator.writeStringField("action", diagnosis.action);
+            jsonGenerator.writeStringField("help_url", diagnosis.helpUrl);
             jsonGenerator.writeEndObject();
         }
     }

@@ -51,11 +51,14 @@ module LogStash module PipelineAction
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
+
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 
     def attach_health_indicator(agent)
-      agent.health_observer.attach_pipeline_indicator(pipeline_id, agent)
+      health_observer = agent.health_observer
+      health_observer.detach_pipeline_indicator(pipeline_id) # just in case ...
+      health_observer.attach_pipeline_indicator(pipeline_id, agent)
     end
 
     def to_s

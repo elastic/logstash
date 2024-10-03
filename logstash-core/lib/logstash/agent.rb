@@ -170,10 +170,10 @@ class LogStash::Agent
 
     run_state = pipeline_state.synchronize do |sync_state|
       case
-      when sync_state.loading?    then PipelineIndicator::RunState::LOADING
-      when sync_state.crashed?    then PipelineIndicator::RunState::TERMINATED
-      when sync_state.running?    then PipelineIndicator::RunState::RUNNING
-      when sync_state.finished?   then PipelineIndicator::RunState::FINISHED
+      when sync_state.loading?    then PipelineIndicator::Status::LOADING
+      when sync_state.crashed?    then PipelineIndicator::Status::TERMINATED
+      when sync_state.running?    then PipelineIndicator::Status::RUNNING
+      when sync_state.finished?   then PipelineIndicator::Status::FINISHED
       end
     end
 

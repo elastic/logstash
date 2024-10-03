@@ -7,9 +7,9 @@ public interface Probe<OBSERVATION extends ProbeIndicator.Observation> {
     Analysis analyze(OBSERVATION observation);
 
     final class Analysis {
-        private final Status status;
-        private final Diagnosis diagnosis;
-        private final Impact impact;
+        public final Status status;
+        public final Diagnosis diagnosis;
+        public final Impact impact;
 
         Analysis(final Builder builder) {
             this.status = builder.status;
@@ -17,45 +17,54 @@ public interface Probe<OBSERVATION extends ProbeIndicator.Observation> {
             this.impact = builder.impact;
         }
 
-        Status status(){
-            return status;
-        }
-        Diagnosis diagnosis() {
-            return diagnosis;
-        }
-        Impact impact() {
-            return impact;
-        }
-
         public static Builder builder() {
             return new Builder();
         }
 
         public static class Builder {
-            private Status status = Status.UNKNOWN;
-            private Diagnosis diagnosis;
-            private Impact impact;
+            private final Status status;
+            private final Diagnosis diagnosis;
+            private final Impact impact;
 
-            public synchronized Builder setStatus(final Status status) {
-                assert Objects.isNull(this.status) : "status has already been set";
+            public Builder() {
+                this(Status.UNKNOWN, null, null);
+            }
+
+            public Builder(final Status status,
+                           final Diagnosis diagnosis,
+                           final Impact impact) {
                 this.status = status;
-                return this;
-            }
-            public synchronized Builder setDiagnosis(final Diagnosis diagnosis) {
-                assert Objects.isNull(this.diagnosis) : "diagnosis has already been set";
                 this.diagnosis = diagnosis;
-                return this;
-            }
-            public synchronized Builder setDiagnosis(final UnaryOperator<Diagnosis.Builder> diagnosisConfigurator) {
-                return this.setDiagnosis(Diagnosis.builder().configure(diagnosisConfigurator).build());
-            }
-            public synchronized Builder setImpact(final Impact impact) {
-                assert Objects.isNull(this.impact) : "impact has already been set";
                 this.impact = impact;
-                return this;
             }
-            public synchronized Builder setImpact(final UnaryOperator<Impact.Builder> impactConfigurator) {
-                return this.setImpact(Impact.builder().configure(impactConfigurator).build());
+
+            public Builder withStatus(final Status status) {
+                if (Objects.equals(this.status, status)) {
+                    return this;
+                }
+                return new Builder(status, this.diagnosis, this.impact);
+            }
+
+            public Builder withDiagnosis(final Diagnosis diagnosis) {
+                if (Objects.equals(this.diagnosis, diagnosis)) {
+                    return this;
+                }
+                return new Builder(status, diagnosis, impact);
+            }
+
+            public Builder withDiagnosis(final UnaryOperator<Diagnosis.Builder> diagnosisConfigurator) {
+                return this.withDiagnosis(Diagnosis.builder().transform(diagnosisConfigurator).build());
+            }
+
+            public synchronized Builder withImpact(final Impact impact) {
+                if (Objects.equals(this.impact, impact)) {
+                    return this;
+                }
+                return new Builder(status, this.diagnosis, impact);
+            }
+
+            public Builder withImpact(final UnaryOperator<Impact.Builder> impactConfigurator) {
+                return this.withImpact(Impact.builder().transform(impactConfigurator).build());
             }
 
             public synchronized Analysis build() {

@@ -5,32 +5,21 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 @JsonSerialize(using=Impact.JsonSerializer.class)
 public final class Impact {
-    private final int severity;
-    private final String description;
-    private final Set<ImpactArea> impactAreas;
+    public final String id;
+    public final int severity;
+    public final String description;
+    public final Set<ImpactArea> impactAreas;
 
     public Impact(final Builder builder) {
+        this.id = builder.id;
         this.severity = Objects.requireNonNullElse(builder.severity, 0);
         this.description = builder.description;
         this.impactAreas = Set.copyOf(builder.impactAreas);
-    }
-
-    int severity() {
-        return severity;
-    }
-    String description() {
-        return description;
-    }
-    Set<ImpactArea> impactAreas() {
-        return impactAreas;
     }
 
     static Builder builder() {
@@ -38,33 +27,48 @@ public final class Impact {
     }
 
     public static class Builder {
+        private String id;
         private Integer severity;
         private String description;
-        private Set<ImpactArea> impactAreas = new HashSet<>();
+        private Set<ImpactArea> impactAreas;
 
-        public synchronized Builder setSeverity(int severity) {
-            assert Objects.isNull(this.severity) : "severity is already set";
+        public Builder() {
+            this.impactAreas = Set.of();
+        }
+
+        private Builder(String id, Integer severity, String description, Set<ImpactArea> impactAreas) {
+            this.id = id;
             this.severity = severity;
-            return this;
-        }
-
-        public synchronized Builder setDescription(String description) {
-            assert Objects.isNull(this.description) : "description is already set";
             this.description = description;
-            return this;
+            this.impactAreas = Set.copyOf(impactAreas);
         }
 
-        public synchronized Builder addImpactArea(ImpactArea impactArea) {
-            this.impactAreas.add(impactArea);
-            return this;
+        public synchronized Builder withId(final String id) {
+            return new Builder(id, severity, description, impactAreas);
         }
 
-        public synchronized Builder addImpactAreas(Collection<ImpactArea> impactAreas) {
-            this.impactAreas.addAll(impactAreas);
-            return this;
+        public synchronized Builder withSeverity(int severity) {
+            return new Builder(id, severity, description, impactAreas);
         }
 
-        public synchronized Builder configure(final UnaryOperator<Builder> configurator) {
+        public synchronized Builder withDescription(String description) {
+            return new Builder(id, severity, description, impactAreas);
+        }
+
+        public synchronized Builder withAdditionalImpactArea(ImpactArea impactArea) {
+            final Set<ImpactArea> mergedImpactAreas = new HashSet<>(impactAreas);
+            if (!mergedImpactAreas.add(impactArea)) {
+                return this;
+            } else {
+                return this.withImpactAreas(mergedImpactAreas);
+            }
+        }
+
+        public synchronized Builder withImpactAreas(Collection<ImpactArea> impactAreas) {
+            return new Builder(id, severity, description, Set.copyOf(impactAreas));
+        }
+
+        public synchronized Builder transform(final UnaryOperator<Builder> configurator) {
             return configurator.apply(this);
         }
 
@@ -77,9 +81,12 @@ public final class Impact {
         @Override
         public void serialize(Impact impact, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeNumberField("severity", impact.severity());
-            jsonGenerator.writeStringField("description", impact.description());
-            jsonGenerator.writeObjectField("impactAreas", impact.impactAreas());
+            if (impact.id != null) {
+                jsonGenerator.writeStringField("id", impact.id);
+            }
+            jsonGenerator.writeNumberField("severity", impact.severity);
+            jsonGenerator.writeStringField("description", impact.description);
+            jsonGenerator.writeObjectField("impact_areas", impact.impactAreas);
             jsonGenerator.writeEndObject();
         }
     }

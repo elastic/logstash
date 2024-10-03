@@ -15,7 +15,7 @@ import java.util.function.Supplier;
  * A {@code ProbeIndicator} is an {@link Indicator} that has one or more {@link Probe}s attached, and can be used
  * to produce a {@link Report}.
  */
-public abstract class ProbeIndicator<OBSERVATION extends ProbeIndicator.Observation> implements Indicator<ProbeIndicator.Report<OBSERVATION>> {
+public class ProbeIndicator<OBSERVATION extends ProbeIndicator.Observation> implements Indicator<ProbeIndicator.Report<OBSERVATION>> {
     private static final Logger LOGGER = LogManager.getLogger();
 
     // Marker Interface
@@ -42,20 +42,28 @@ public abstract class ProbeIndicator<OBSERVATION extends ProbeIndicator.Observat
         this.observer = observer;
     }
 
-    public void attachProbe(final String name,
-                            final Probe<OBSERVATION> probeToAttach) {
+    public final void attachProbe(final String name,
+                                  final Probe<OBSERVATION> probeToAttach) {
         final Probe<OBSERVATION> existing = probes.putIfAbsent(name, probeToAttach);
         if (Objects.nonNull(existing) && !Objects.equals(existing, probeToAttach)) {
             throw new IllegalArgumentException("Cannot attach probe " + name + " because a different one of the same name is already attached.");
         }
     }
 
-    public void detachProbe(final String name,
-                            final Probe<OBSERVATION> probeToDetach) {
+    public final void detachProbe(final String name,
+                                  final Probe<OBSERVATION> probeToDetach) {
         Probe<OBSERVATION> remaining = probes.computeIfPresent(name, (key, existing) -> Objects.equals(probeToDetach, existing) ? null : existing);
         if (Objects.nonNull(remaining)) {
             throw new IllegalArgumentException("Cannot detach probe " + name + " because a different one of the same name is attached.");
         }
+    }
+
+    public final void detachProbe(final String name) {
+        probes.remove(name);
+    }
+
+    Probe<OBSERVATION> getProbe(final String name) {
+        return probes.get(name);
     }
 
     @Override
@@ -77,22 +85,26 @@ public abstract class ProbeIndicator<OBSERVATION extends ProbeIndicator.Observat
             if (reportContext.isMuted(probeName)) {
                 LOGGER.trace("probe {} is muted", probeName);
             } else {
-                combinedStatus.reduce(probeAnalysis.status());
-                Optional.ofNullable(probeAnalysis.diagnosis())
+                combinedStatus.reduce(probeAnalysis.status);
+                Optional.ofNullable(probeAnalysis.diagnosis)
                         .ifPresent(diagnoses::add);
-                Optional.ofNullable(probeAnalysis.impact())
+                Optional.ofNullable(probeAnalysis.impact)
                         .filter(impacts::add)
-                        .map(Impact::impactAreas)
+                        .map(impact -> impact.impactAreas)
                         .ifPresent(distinctImpactAreas::addAll);
             }
         }
 
         final Status status = combinedStatus.value();
-        final String symptom = String.format("The %s is %s; ", this.subject, status.descriptiveValue()) +
-                String.format(distinctImpactAreas.size() == 1 ? "%s area is impacted" : "%s areas are impacted", distinctImpactAreas.size()) +
-                " and " +
-                String.format(diagnoses.size() == 1 ? "%s diagnosis is available" : "%s diagnoses are available", diagnoses.size()) +
-                ".";
+        final StringBuilder symptomBuilder = new StringBuilder();
+        symptomBuilder.append(String.format("The %s is %s", this.subject, status.descriptiveValue()));
+        if (distinctImpactAreas.size() + diagnoses.size() > 0) {
+            symptomBuilder.append("; ")
+                    .append(String.format(distinctImpactAreas.size() == 1 ? "%s area is impacted" : "%s areas are impacted", distinctImpactAreas.size()))
+                    .append(" and ")
+                    .append(String.format(diagnoses.size() == 1 ? "%s diagnosis is available" : "%s diagnoses are available", diagnoses.size()));
+        }
+        final String symptom = symptomBuilder.toString();
 
         return new Report<>(status, observation, symptom, diagnoses, impacts);
     }

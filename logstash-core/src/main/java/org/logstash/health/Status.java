@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum Status {
     UNKNOWN("unknown"),
     GREEN("healthy"),
-    YELLOW("degraded or at risk of becoming unhealthy"),
+    YELLOW("concerning"),
     RED("unhealthy"),
     ;
 
