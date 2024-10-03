@@ -244,20 +244,6 @@ en:
              HTML-style ampersand-hash encoding notation
              representing decimal unicode codepoints
              (`[` is `&#91;`; `]` is `&#93;`).
-        event_api:
-          tags:
-            illegal: |+
-              The top-level `tags` field is reserved, and may only contain a
-              single `string` or an array of `string`s -- other values will cause
-              subsequent access of the `tags` field to crash the pipeline.
-              This flag controls how the Event API handles a `tags` field that is
-              an illegal shape, such as a key-value map.
-              
-              Available option:
-               - `rename`: illegal value in `tags` will be moved to `_tags`.
-                 A tag `_tagsparsefailure` is added to `tags` field to 
-                 indicate the illegal assignment. Doing `set` operation with 
-                 illegal value will throw exception. This is the default option.
         modules: |+
           Load Logstash modules.
           Modules can be defined using multiple instances

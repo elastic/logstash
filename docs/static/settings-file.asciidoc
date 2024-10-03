@@ -361,11 +361,6 @@ separating each log lines per pipeline could be helpful in case you need to trou
 | Setting to `true` to allow or `false` to block running Logstash as a superuser.
 | `true`
 
-| `event_api.tags.illegal`
-| When set to `rename`, Logstash events can't be created with an illegal value in `tags`. This value will be moved to `_tags` and a `_tagsparsefailure` tag is added to indicate the illegal operation. Doing `set` operation with illegal value will throw exception.
-Setting this flag to `warn` is deprecated and removed.
-| `rename`
-
 | `pipeline.buffer.type`
 | Determine where to allocate memory buffers, for plugins that leverage them.
 Currently defaults to `direct` but can be switched to `heap` to select Java heap space, which will become the default in the future.

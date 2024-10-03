@@ -92,11 +92,6 @@ class LogStash::Runner < Clamp::StrictCommand
          :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
          :attribute_name => "config.field_reference.escape_style"
 
-  option ["--event_api.tags.illegal"], "STRING",
-         I18n.t("logstash.runner.flag.event_api.tags.illegal"),
-         :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
-         :attribute_name => "event_api.tags.illegal"
-
   # Module settings
   option ["--modules"], "MODULES",
     I18n.t("logstash.runner.flag.modules"),
