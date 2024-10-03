@@ -29,7 +29,7 @@ download_auth_snyk() {
 report() {
   REMOTE_REPO_URL=$1
   echo "Reporting $REMOTE_REPO_URL branch."
-  if [ "$REMOTE_REPO_URL" != "main" ]; then
+  if [ "$REMOTE_REPO_URL" != "main" ] && [ "$REMOTE_REPO_URL" != "8.x" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
     echo "Using '$REMOTE_REPO_URL' remote repo url."

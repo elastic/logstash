@@ -6,9 +6,9 @@
 
 set -e
 
-VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/logstash_releases.json"
+VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/branches.json"
 
 echo "Fetching versions from $VERSION_URL"
 VERSIONS=$(curl --silent $VERSION_URL)
-TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.snapshots | keys | join(" ")')
+TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.branches | map(.branch) | join(" ")')
 TARGET_BRANCHES=($TARGET_BRANCHES)
