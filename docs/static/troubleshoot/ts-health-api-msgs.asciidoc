@@ -1,0 +1,20 @@
+[[ts-health-api-msgs]] 
+=== Health API has messages
+
+Messaging about messages
+
+[[ts-health-msg1]] 
+==== Health API message 1
+
+Helpful text goes here
+
+
+[[ts-health-msg2]] 
+==== Health API message 2
+
+Helpful text goes here
+
+[[ts-health-msg3]] 
+==== Health API message 3
+
+Helpful text goes here 
