@@ -7,13 +7,6 @@ TARGET_BRANCHES=("main")
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
-  for SNAPSHOT_VERSION in "${SNAPSHOT_VERSIONS[@]}"
-  do
-    IFS='.'
-    read -a versions <<< "$SNAPSHOT_VERSION"
-    version=${versions[0]}.${versions[1]}
-    TARGET_BRANCHES+=("$version")
-  done
 }
 
 # Build Logstash specific branch to generate Gemlock file where Snyk scans
@@ -36,7 +29,7 @@ download_auth_snyk() {
 report() {
   REMOTE_REPO_URL=$1
   echo "Reporting $REMOTE_REPO_URL branch."
-  if [ "$REMOTE_REPO_URL" != "main" ]; then
+  if [ "$REMOTE_REPO_URL" != "main" ] && [ "$REMOTE_REPO_URL" != "8.x" ]; then
     MAJOR_VERSION=$(echo "$REMOTE_REPO_URL"| cut -d'.' -f 1)
     REMOTE_REPO_URL="$MAJOR_VERSION".latest
     echo "Using '$REMOTE_REPO_URL' remote repo url."
