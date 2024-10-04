@@ -5,7 +5,7 @@ set -e
 TARGET_BRANCHES=("main")
 
 install_java_11() {
-  sudo apt update && sudo apt install -y openjdk-11-jdk
+  curl "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.24%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.24_8.tar.gz" | tar -zxf -
 }
 
 # Resolves the branches we are going to track
@@ -54,14 +54,17 @@ for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
   if [ "$TARGET_BRANCH" == "7.17" ]; then
     install_java_11
-  fi
-  git reset --hard HEAD # reset if any generated files appeared
-  # check if target branch exists
-  echo "Checking out $TARGET_BRANCH branch."
-  if git checkout "$TARGET_BRANCH"; then
-    build_logstash
-    report "$TARGET_BRANCH"
+    export PATH=$PWD/jdk-11.0.24+8/bin:$PATH
+    git reset --hard HEAD # reset if any generated files appeared
+    # check if target branch exists
+    echo "Checking out $TARGET_BRANCH branch."
+    if git checkout "$TARGET_BRANCH"; then
+      build_logstash
+      report "$TARGET_BRANCH"
+    else
+      echo "$TARGET_BRANCH branch doesn't exist."
+    fi
   else
-    echo "$TARGET_BRANCH branch doesn't exist."
+    echo "skipping $TARGET_BRANCH"
   fi
 done
