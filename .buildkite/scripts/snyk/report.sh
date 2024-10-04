@@ -5,7 +5,7 @@ set -e
 TARGET_BRANCHES=("main")
 
 install_java_11() {
-  curl "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.24%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.24_8.tar.gz" | tar -zxf -
+  curl -L -s "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.24%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.24_8.tar.gz" | tar -zxf -
 }
 
 # Resolves the branches we are going to track
