@@ -55,16 +55,14 @@ do
   if [ "$TARGET_BRANCH" == "7.17" ]; then
     install_java_11
     export PATH=$PWD/jdk-11.0.24+8/bin:$PATH
-    git reset --hard HEAD # reset if any generated files appeared
-    # check if target branch exists
-    echo "Checking out $TARGET_BRANCH branch."
-    if git checkout "$TARGET_BRANCH"; then
-      build_logstash
-      report "$TARGET_BRANCH"
-    else
-      echo "$TARGET_BRANCH branch doesn't exist."
-    fi
+  fi
+  git reset --hard HEAD # reset if any generated files appeared
+  # check if target branch exists
+  echo "Checking out $TARGET_BRANCH branch."
+  if git checkout "$TARGET_BRANCH"; then
+    build_logstash
+    report "$TARGET_BRANCH"
   else
-    echo "skipping $TARGET_BRANCH"
+    echo "$TARGET_BRANCH branch doesn't exist."
   fi
 done
