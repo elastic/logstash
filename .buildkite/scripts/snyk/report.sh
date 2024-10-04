@@ -4,6 +4,10 @@ set -e
 
 TARGET_BRANCHES=("main")
 
+install_java_11() {
+  sudo apt update && sudo apt install -y openjdk-11-jdk
+}
+
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
@@ -48,6 +52,9 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
+  if [ "$TARGET_BRANCH" == "7.17" ]; then
+    install_java_11
+  fi
   git reset --hard HEAD # reset if any generated files appeared
   # check if target branch exists
   echo "Checking out $TARGET_BRANCH branch."
