@@ -1,0 +1,29 @@
+name: "Successfully terminated pipeline"
+config:
+  - pipeline.id: normally-terminated-pp
+    config.string: |
+      input { generator { count => 1 } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+conditions:
+  - full_start_required: true
+expectation:
+  status: "yellow"
+  symptom: "1 indicator is concerning (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "yellow"
+      symptom: "1 indicator is concerning (`normally-terminated-pp`)"
+      indicators:
+        normally-terminated-pp:
+          status: "yellow"
+          symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
+            - action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+          impacts:
+            - impact_areas: ["pipeline_execution"]
+          details:
+            status:
+              state: "FINISHED"

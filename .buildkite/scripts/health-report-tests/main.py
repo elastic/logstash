@@ -3,10 +3,12 @@
 """
 import glob
 import os
+import time
+import traceback
+import yaml
 from bootstrap import Bootstrap
 from scenario_executor import ScenarioExecutor
 from config_validator import ConfigValidator
-import yaml
 
 
 class BootstrapContextManager:
@@ -29,9 +31,9 @@ class BootstrapContextManager:
         print(f"logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         if exc_type is not None:
-            traceback.print_exception(exc_type, exc_value, traceback)
+            print(traceback.format_exception(exc_type, exc_value, exc_traceback))
 
 
 def main():
@@ -46,24 +48,39 @@ def main():
         for scenario_file in scenario_files:
             print(f"Validating {scenario_file} scenario file.")
             config_validator.load(scenario_file)
-            if not config_validator.is_valid():
+            if config_validator.is_valid() is False:
                 print(f"{scenario_file} scenario file is not valid.")
                 return
+            else:
+                print(f"Validation succeeded.")
 
+        has_failed_scenario = False
         for scenario_file in scenario_files:
             with open(scenario_file, 'r') as file:
                 # scenario_content: Dict[str, Any] = None
                 scenario_content = yaml.safe_load(file)
+                print(f"Testing `{scenario_content.get('name')}` scenario.")
                 scenario_name = scenario_content['name']
+
+                is_full_start_required = next(sub.get('full_start_required') for sub in
+                                              scenario_content.get('conditions') if 'full_start_required' in sub)
                 config = scenario_content['config']
                 if config is not None:
                     bootstrap.apply_config(config)
-                    expectation = scenario_content['expectation']
-                    process = bootstrap.run_logstash()
+                    expectations = scenario_content.get("expectation")
+                    process = bootstrap.run_logstash(is_full_start_required)
                     if process is not None:
-                        scenario_executor.on(scenario_name, expectation)
+                        try:
+                            scenario_executor.on(scenario_name, expectations)
+                        except Exception as e:
+                            print(e)
+                            has_failed_scenario = True
                         process.terminate()
-                    break
+                        time.sleep(5)   # leave some window to terminate the process
+
+        if has_failed_scenario:
+            # intentionally fail due to visibility
+            raise Exception("Some of scenarios failed, check the log for details.")
 
 
 if __name__ == "__main__":

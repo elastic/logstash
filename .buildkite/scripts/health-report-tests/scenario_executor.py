@@ -1,7 +1,7 @@
 """
 A class to execute the given scenario for Logstash Health Report integration test
 """
-from deepdiff import DeepDiff
+import time
 from logstash_health_report import LogstashHealthReport
 
 
@@ -11,33 +11,55 @@ class ScenarioExecutor:
     def __init__(self):
         pass
 
-    def __is_expected(self, scenario_content: list) -> None:
-        logstash_health = self.logstash_health_report_api.get()
-        print(f"Logstash health report: {logstash_health}")
+    def __has_intersection(self, expects, results):
+        # we expect expects to be existing in results
+        for expect in expects:
+            for result in results:
+                if not all(key in result and result[key] == value for key, value in expect.items()):
+                    return False
+        return True
 
-        differences = []
-        for index, item in enumerate(scenario_content):
-            if "expectation" in item:
-                key = f"Item {index + 1}"
-                stat_value = logstash_health.get(key, {}).get("expectation")
+    def __get_difference(self, differences: list, expectations: dict, reports: dict) -> dict:
+        for key in expectations.keys():
+            if key == "help_url":   # help_url URL value may change
+                continue
 
-                if stat_value:
-                    diff = DeepDiff(item["expectation"], stat_value, ignore_order=True).to_dict()
-                    if diff:
-                        differences.append({key: diff})
-                else:
-                    print(f"Stats do not contain an 'expectation' entry for {key}")
+            if type(expectations.get(key)) != type(reports.get(key)):
+                differences.append(f"Scenario expectation and Health API report structure differs for {key}.")
+                return differences
 
+            if isinstance(expectations.get(key), str):
+                if expectations.get(key) != reports.get(key):
+                    differences.append({key: {"expected": expectations.get(key), "got": reports.get(key)}})
+                continue
+            elif isinstance(expectations.get(key), dict):
+                self.__get_difference(differences, expectations.get(key), reports.get(key))
+            elif isinstance(expectations.get(key), list):
+                if not self.__has_intersection(expectations.get(key), reports.get(key)):
+                    differences.append({key: {"expected": expectations.get(key), "got": reports.get(key)}})
+        return differences
+
+    def __is_expected(self, expectations: dict) -> None:
+        reports = self.logstash_health_report_api.get()
+        differences = self.__get_difference([], expectations, reports)
         if differences:
             print("Differences found in 'expectation' section between YAML content and stats:")
             for diff in differences:
-                print(diff)
+                print(f"Difference: {diff}")
             return False
         else:
-            print("YAML 'expectation' section matches the stats.")
             return True
 
-    def on(self, scenario_name: str, scenario_content: list) -> None:
-        print(f"Testing the scenario: {scenario_content}")
-        if self.__is_expected(scenario_content) is False:
+    def on(self, scenario_name: str, expectations: dict) -> None:
+        # retriable check the expectations
+        attempts = 5
+        while self.__is_expected(expectations) is False:
+            attempts = attempts - 1
+            if attempts == 0:
+                break
+            time.sleep(1)
+
+        if attempts == 0:
             raise Exception(f"{scenario_name} failed.")
+        else:
+            print(f"Scenario `{scenario_name}` expectaion meets the health report stats.")

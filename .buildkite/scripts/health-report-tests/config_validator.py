@@ -1,35 +1,48 @@
 import yaml
-from typing import Any, List, Dict, Union
+from typing import Any, List, Dict
 
 
 class ConfigValidator:
-    REQUIRED_KEYS: Dict[str, List[Any]] = {
+    REQUIRED_KEYS = {
+        "root": ["name", "config", "conditions", "expectation"],
         "config": ["pipeline.id", "config.string"],
-        "expectation": ["status", "symptom", {"diagnosis": ["cause"]},
-                        {"impacts": ["description", "impact_areas"], "details": ["run_state"]}]
+        "conditions": ["full_start_required"],
+        "expectation": ["status", "symptom", "indicators"],
+        "indicators": ["pipelines"],
+        "pipelines": ["status", "symptom", "indicators"],
+        "DYNAMIC": ["status", "symptom", "diagnosis", "impacts", "details"],
+        "details": ["status"],
+        "status": ["state"]
     }
 
     def __init__(self):
         self.yaml_content = None
 
-    def __validate_keys(self, yaml_sub_keys: List[Dict[str, Any]], required_sub_keys: Dict[str, List[Any]]) -> bool:
-        for required_sub_key in required_sub_keys:
-            if isinstance(required_sub_key, str):
-                is_key_found = False
-                for yaml_sub_key in yaml_sub_keys:
-                    if yaml_sub_key.get(required_sub_key):
-                        is_key_found = True
-                        break
-                if not is_key_found:
-                    print(f"Required {required_sub_key} key is not found in {yaml_sub_keys}")
-                    return False
-        return True
+    def __has_valid_keys(self, data: any, key_path: str, repeated: bool) -> bool:
+        if isinstance(data, str) or isinstance(data, bool):   # we reached values
+            return True
 
-    def __check_nested_key(self, data: Dict[str, Any], nested_key: str) -> bool:
-        keys = nested_key.split('.')
-        for key in keys:
-            if key not in data:
-                return False
+        # we have two indicators section and for the next repeated ones, we go deeper
+        first_key = next(iter(data))
+        data = data[first_key] if repeated and key_path == "indicators" else data
+
+        if isinstance(data, dict):
+            # pipeline-id is a DYNAMIC
+            required = self.REQUIRED_KEYS.get("DYNAMIC" if repeated and key_path == "indicators" else key_path, [])
+            repeated = not repeated if key_path == "indicators" else repeated
+            for key in required:
+                if key not in data:
+                    print(f"Missing key '{key}' in '{key_path}'")
+                    return False
+                else:
+                    dic_keys_result = self.__has_valid_keys(data[key], key, repeated)
+                    if dic_keys_result is False:
+                        return False
+        elif isinstance(data, list):
+            for item in data:
+                list_keys_result = self.__has_valid_keys(item, key_path, repeated)
+                if list_keys_result is False:
+                    return False
         return True
 
     def load(self, file_path: str) -> None:
@@ -48,18 +61,9 @@ class ConfigValidator:
             print(f"YAML content is empty.")
             return False
 
-        if not isinstance(self.yaml_content, Dict):
+        if not isinstance(self.yaml_content, dict):
             print(f"YAML structure is not as expected, it should start with a Dict.")
             return False
 
-        required_config_keys = list(self.REQUIRED_KEYS.keys())
-        for yaml_key in self.yaml_content:
-            if yaml_key == "name":
-                continue
-            if yaml_key not in required_config_keys:
-                return False
-            if not self.__validate_keys(self.yaml_content.get(yaml_key), self.REQUIRED_KEYS.get(yaml_key)):
-                return False
-
-        print(f"YAML config validation succeeded.")
-        return True
+        result = self.__has_valid_keys(self.yaml_content, "root", False)
+        return True if result is True else False

@@ -70,11 +70,15 @@ class Bootstrap:
         print(f"Logstash has successfully built.")
 
     def apply_config(self, config: dict) -> None:
-        with open(os.getcwd() + "/config/pipelines.yml", 'w') as pipelines_file:
+        with open(os.getcwd() + "/.buildkite/scripts/health-report-tests/config/pipelines.yml", 'w') as pipelines_file:
             yaml.dump(config, pipelines_file)
 
-    def run_logstash(self) -> subprocess.Popen:
-        process = subprocess.Popen(["bin/logstash"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    def run_logstash(self, full_start_required: bool) -> subprocess.Popen:
+        # --config.reload.automatic is to make instance active
+        # it is helpful when testing crash pipeline cases
+        config_path = os.getcwd() + "/.buildkite/scripts/health-report-tests/config"
+        process = subprocess.Popen(["bin/logstash", "--config.reload.automatic", "--path.settings", config_path,
+                                    "-w 1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=False)
         if process.poll() is not None:
             print(f"Logstash failed to run, check the the config and logs, then rerun.")
             return None
@@ -82,18 +86,16 @@ class Bootstrap:
         # Read stdout and stderr in real-time
         logs = []
         for stdout_line in iter(process.stdout.readline, ""):
-            # print("STDOUT:", stdout_line.strip())
             logs.append(stdout_line.strip())
-            if "Starting pipeline" in stdout_line:
+            # we don't wait for Logstash fully start as we also test slow pipeline start scenarios
+            if full_start_required is False and "Starting pipeline" in stdout_line:
                 break
-            if "Logstash shut down" in stdout_line:
+            if full_start_required is True and "Pipeline started" in stdout_line:
+                break
+            if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash couldn't spin up.")
                 print(logs)
                 return None
 
         print(f"Logstash is running with PID: {process.pid}.")
         return process
-
-    def stop_logstash(self, process: subprocess.Popen) -> None:
-        process.terminate()
-        print(f"Stopping Logstash...")
