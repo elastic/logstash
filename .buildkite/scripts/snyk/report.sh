@@ -4,6 +4,10 @@ set -e
 
 TARGET_BRANCHES=("main")
 
+install_java_11() {
+  curl -L -s "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.24%2B8/OpenJDK11U-jdk_x64_linux_hotspot_11.0.24_8.tar.gz" | tar -zxf -
+}
+
 # Resolves the branches we are going to track
 resolve_latest_branches() {
   source .buildkite/scripts/snyk/resolve_stack_version.sh
@@ -48,6 +52,12 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
+  if [ "$TARGET_BRANCH" == "7.17" ]; then
+    echo "Installing and configuring JDK11."
+    export OLD_PATH=$PATH
+    install_java_11
+    export PATH=$PWD/jdk-11.0.24+8/bin:$PATH
+  fi
   git reset --hard HEAD # reset if any generated files appeared
   # check if target branch exists
   echo "Checking out $TARGET_BRANCH branch."
@@ -56,5 +66,11 @@ do
     report "$TARGET_BRANCH"
   else
     echo "$TARGET_BRANCH branch doesn't exist."
+  fi
+  if [ "$TARGET_BRANCH" == "7.17" ]; then
+    # reset state
+    echo "Removing JDK11 installation."
+    rm -rf jdk-11.0.24+8
+    export PATH=$OLD_PATH
   fi
 done
