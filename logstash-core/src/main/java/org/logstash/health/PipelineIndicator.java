@@ -65,7 +65,7 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
         private final Status status;
 
         public Details(final Status status) {
-            this.status = Objects.requireNonNull(status, "runState cannot be null");
+            this.status = Objects.requireNonNull(status, "status cannot be null");
         }
         public Status getStatus() {
             return this.status;

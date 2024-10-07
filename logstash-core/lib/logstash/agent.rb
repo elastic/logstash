@@ -168,16 +168,17 @@ class LogStash::Agent
       return PipelineIndicator::Details.new(PipelineIndicator::RunState::UNKNOWN)
     end
 
-    run_state = pipeline_state.synchronize do |sync_state|
+    status = pipeline_state.synchronize do |sync_state|
       case
       when sync_state.loading?    then PipelineIndicator::Status::LOADING
       when sync_state.crashed?    then PipelineIndicator::Status::TERMINATED
       when sync_state.running?    then PipelineIndicator::Status::RUNNING
       when sync_state.finished?   then PipelineIndicator::Status::FINISHED
+      else                             PipelineIndicator::Status::UNKNOWN
       end
     end
 
-    return PipelineIndicator::Details.new(run_state)
+    return PipelineIndicator::Details.new(status)
   end
 
   def auto_reload?
