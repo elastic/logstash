@@ -57,6 +57,7 @@ def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml")
 
 description = """Logstash Core Java"""
 
+String logstashCoreVersion = versionMap['logstash-core']
 String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
@@ -182,6 +183,23 @@ artifacts {
         type 'javadoc'
     }
 }
+
+task generateVersionInfoResources(type: DefaultTask) {
+    ext.outDir = layout.buildDirectory.dir("generated-resources/version-info").get()
+
+    inputs.property("version-info:logstash-core", logstashCoreVersion)
+    outputs.dir(ext.outDir)
+
+    doLast {
+        mkdir outDir;
+        def resourceFile = outDir.file('version-info.properties').asFile
+        resourceFile.text = "logstash-core: ${logstashCoreVersion}"
+    }
+}
+sourceSets {
+    main { output.dir(generateVersionInfoResources.outputs.files) }
+}
+processResources.dependsOn generateVersionInfoResources
 
 configurations {
     provided

@@ -111,6 +111,8 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                 .withDescription("the pipeline is not currently processing")
                 .withAdditionalImpactArea(ImpactArea.PIPELINE_EXECUTION);
 
+        static final HelpUrl HELP_URL = new HelpUrl("health-report-pipeline-status");
+
         @Override
         public Analysis analyze(final Details details) {
             switch (details.getStatus().getState()) {
@@ -120,7 +122,8 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                             .withDiagnosis(db -> db
                                     .withId(diagnosisId("loading"))
                                     .withCause("pipeline is loading")
-                                    .withAction("if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"))
+                                    .withAction("if pipeline does not come up quickly, you may need to check the logs to see if it is stalled")
+                                    .withHelpUrl(HELP_URL.withAnchor("loading").toString()))
                             .withImpact(NOT_PROCESSING.withSeverity(1).withDescription("pipeline is loading").build())
                             .build();
                 case RUNNING:
@@ -133,7 +136,8 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                             .withDiagnosis(db -> db
                                     .withId(diagnosisId("finished"))
                                     .withCause("pipeline has finished running because its inputs have been closed and events have been processed")
-                                    .withAction("if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"))
+                                    .withAction("if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events")
+                                    .withHelpUrl(HELP_URL.withAnchor("finished").toString()))
                             .withImpact(NOT_PROCESSING.withSeverity(10).withDescription("pipeline has finished running").build())
                             .build();
                 case TERMINATED:
@@ -142,7 +146,8 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                             .withDiagnosis(db -> db
                                     .withId(diagnosisId("terminated"))
                                     .withCause("pipeline is not running, likely because it has encountered an error")
-                                    .withAction("view logs to determine the cause of abnormal pipeline shutdown"))
+                                    .withAction("view logs to determine the cause of abnormal pipeline shutdown")
+                                    .withHelpUrl(HELP_URL.withAnchor("terminated").toString()))
                             .withImpact(NOT_PROCESSING.withSeverity(1).build())
                             .build();
                 case UNKNOWN:
@@ -151,8 +156,9 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                             .withStatus(YELLOW)
                             .withDiagnosis(db -> db
                                     .withId(diagnosisId("unknown"))
-                                    .withCause("pipeline is not known; it may have been recently deleted")
-                                    .withAction("check logs"))
+                                    .withCause("pipeline is not known; it may have been recently deleted or failed to start")
+                                    .withAction("view logs to determine if the pipeline failed to start")
+                                    .withHelpUrl(HELP_URL.withAnchor("unknown").toString()))
                             .withImpact(NOT_PROCESSING.withSeverity(2).build())
                             .build();
             }
