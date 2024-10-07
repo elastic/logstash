@@ -7,8 +7,6 @@ visualizing it with purpose-built dashboards.
 These modules are available:
 
 * <<arcsight-module>>
-* <<netflow-module,Netflow Module (deprecated)>>
-* <<azure-module, Microsoft Azure Module (deprecated)>>
 
 Each module comes pre-packaged with Logstash configurations, Kibana dashboards,
 and other meta files that make it easier for you to set up the Elastic Stack for
