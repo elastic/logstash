@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/api/commands/base"
-require_relative "hot_threads_reporter"
 
 module LogStash
   module Api

@@ -72,6 +72,7 @@ describe LogStash::PipelineAction::Delete do
       expect(action_result).to be_successful
 
       expect(pipelines.get_pipeline(pipeline_id)).to be_nil
+      expect(agent.health_observer).to have_received(:detach_pipeline_indicator).with(pipeline_id)
     end
   end
 end

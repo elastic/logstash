@@ -165,7 +165,7 @@ class LogStash::Agent
 
     pipeline_state = @pipelines_registry.states.get(pipeline_id)
     if pipeline_state.nil?
-      return PipelineIndicator::Details.new(PipelineIndicator::RunState::UNKNOWN)
+      return PipelineIndicator::Details.new(PipelineIndicator::Status::UNKNOWN)
     end
 
     status = pipeline_state.synchronize do |sync_state|

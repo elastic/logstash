@@ -119,11 +119,6 @@ module LogStash
       end
     end
 
-    def list
-      @lock.synchronize do
-        @states.keys.dup
-      end
-    end
 
     def empty?
       @lock.synchronize do
@@ -307,10 +302,6 @@ module LogStash
     # @return [Hash{String=>Pipeline}]
     def non_running_pipelines
       select_pipelines { |state| state.terminated? }
-    end
-
-    def completed_pipelines
-      select_pipelines { |state| state.finished? }
     end
 
     # @return [Hash{String=>Pipeline}]
