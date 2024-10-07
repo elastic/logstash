@@ -21,8 +21,8 @@ package org.logstash.health;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
-    UNKNOWN("unknown"),
     GREEN("healthy"),
+    UNKNOWN("unknown"),
     YELLOW("concerning"),
     RED("unhealthy"),
     ;
@@ -56,7 +56,7 @@ public enum Status {
     }
 
     public static class Holder {
-        private Status status = Status.UNKNOWN;
+        private Status status = Status.GREEN;
         public synchronized Status reduce(Status status) {
             return this.status = this.status.reduce(status);
         }
