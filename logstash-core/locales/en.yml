@@ -143,7 +143,7 @@ en:
         The flag '--event_api.tags.illegal' is deprecated and will be removed in version 9.
       tags-illegal-warning: >-
         Setting `event_api.tags.illegal` to `warn` allows illegal values in the reserved `tags` field, which may crash pipeline unexpectedly.
-        This flag value is deprecated and will be removed in version 9.
+        This flag is deprecated and will be removed in version 9.
       # YAML named reference to the logstash.runner.configuration
       # so we can later alias it from logstash.agent.configuration
       configuration: &runner_configuration
