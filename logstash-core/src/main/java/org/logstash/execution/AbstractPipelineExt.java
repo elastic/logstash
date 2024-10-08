@@ -167,6 +167,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private @SuppressWarnings("rawtypes") RubyArray outputs;
 
     private String lastErrorEvaluationReceived = "";
+    private transient DeadLetterQueueWriter javaDlqWriter;
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -180,10 +181,32 @@ public class AbstractPipelineExt extends RubyBasicObject {
         @Override
         public void notify(ConditionalEvaluationError err) {
             lastErrorEvaluationReceived = err.getCause().getMessage();
-            LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload.", lastErrorEvaluationReceived);
+            if (isDLQEnabled()) {
+                LOGGER.warn("{}. Failing event was sent to dead letter queue", lastErrorEvaluationReceived);
+            } else {
+                LOGGER.warn("{}. Event was dropped, enable debug logging to see the event's payload", lastErrorEvaluationReceived);
+            }
             LOGGER.debug("Event generating the fault: {}", err.failedEvent().toMap().toString());
 
             // logs the exception at debug level
+            if (LOGGER.isDebugEnabled()) {
+                debugLogStackTrace(err);
+            }
+
+            if (isDLQEnabled()) {
+                try {
+                    javaDlqWriter.writeEntry(err.failedEvent(), "if-statement", "if-statement", "condition evaluation error, " + lastErrorEvaluationReceived);
+                } catch (IOException ioex) {
+                    LOGGER.error("Can't write in DLQ", ioex);
+                }
+            }
+        }
+
+        private boolean isDLQEnabled() {
+            return javaDlqWriter != null;
+        }
+
+        private void debugLogStackTrace(ConditionalEvaluationError err) {
             try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
                 err.printStackTrace(pw);
                 LOGGER.debug("{}", sw);
@@ -372,7 +395,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject dlqWriter(final ThreadContext context) {
         if (dlqWriter == null) {
             if (dlqEnabled(context).isTrue()) {
-                final DeadLetterQueueWriter javaDlqWriter = createDeadLetterQueueWriterFromSettings(context);
+                javaDlqWriter = createDeadLetterQueueWriterFromSettings(context);
                 dlqWriter = JavaUtil.convertJavaToUsableRubyObject(context.runtime, javaDlqWriter);
             } else {
                 dlqWriter = RubyUtil.DUMMY_DLQ_WRITER_CLASS.callMethod(context, "new");
