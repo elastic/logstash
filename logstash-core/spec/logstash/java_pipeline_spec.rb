@@ -443,9 +443,8 @@ describe LogStash::JavaPipeline do
           LogStash::PLUGIN_REGISTRY.add(:output, "spec_sampler_output", PipelineHelpers::SpecSamplerOutput)
         end
 
-        describe "given a pipeline executing an event that would trigger an evaluation error" do
+        context "given a pipeline executing an event that would trigger an evaluation error" do
           let(:pipeline) do
-            settings.set_value("queue.drain", true)
             LogStash::JavaPipeline.new(
               org.logstash.config.ir.PipelineConfig.new(
                 LogStash::Config::Source::Local, :main,
@@ -470,11 +469,50 @@ describe LogStash::JavaPipeline do
             pipeline.close
           end
 
-          subject {results.length > 1 ? results : results.first}
+          describe "when DLQ is disabled" do
+            let(:settings) do
+              s = super()
+              s.set_value("queue.drain", true)
+              s
+            end
 
-          it "should raise an error without killing the pipeline" do
-            expect(subject).to be nil
-            expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+            subject {results.length > 1 ? results : results.first}
+
+            it "should raise an error without killing the pipeline" do
+              expect(subject).to be nil
+              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+            end
+          end
+
+          describe "when DLQ is enabled" do
+            let(:dlq_path) { Dir.mktmpdir }
+
+            let(:settings) do
+              s = super()
+              s.set_value("queue.drain", true)
+              s.set_value("pipeline.id", "test_dlq")
+              s.set_value("dead_letter_queue.enable", true)
+              s.set_value("path.dead_letter_queue", dlq_path)
+              s
+            end
+
+            after do
+              FileUtils.rm_rf(settings.get_value("path.dead_letter_queue"))
+            end
+
+            subject {results.length > 1 ? results : results.first}
+
+            it "should raise an error without killing the pipeline and insert the event into DLQ" do
+              expect(subject).to be nil
+              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+              dlq_path = java.nio.file.Paths.get(settings.get_value("path.dead_letter_queue"), "test_dlq")
+              dlq_reader = org.logstash.common.io.DeadLetterQueueReader.new(dlq_path)
+              entry = dlq_reader.pollEntry(40)
+              expect(entry).to_not be_nil
+              expect(entry.reason).to match(/condition evaluation error.*no implicit conversion of nil into Integer/)
+              expect(entry.plugin_id).to eq("if-statement")
+              expect(entry.plugin_type).to eq("if-statement")
+            end
           end
         end
 

@@ -86,7 +86,10 @@ module LogStash
     end
 
     def register(setting)
-      return setting.map { |s| register(s) } if setting.kind_of?(Array)
+      # Method #with_deprecated_alias returns collection containing couple of other settings.
+      # In case the method is implemented in Ruby returns an Array while for the Java implementation
+      # return a List, so the following type checking before going deep by one layer.
+      return setting.map { |s| register(s) } if setting.kind_of?(Array) || setting.kind_of?(java.util.List)
 
       if @settings.key?(setting.name)
         raise ArgumentError.new("Setting \"#{setting.name}\" has already been registered as #{setting.inspect}")
@@ -151,7 +154,7 @@ module LogStash
     def to_hash
       hash = {}
       @settings.each do |name, setting|
-        next if setting.kind_of? Setting::DeprecatedAlias
+        next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias)
         hash[name] = setting.value
       end
       hash
@@ -244,54 +247,73 @@ module LogStash
   class Setting
     include LogStash::Settings::LOGGABLE_PROXY
 
-    attr_reader :name, :default
+    attr_reader :wrapped_setting
 
     def initialize(name, klass, default = nil, strict = true, &validator_proc)
-      @name = name
       unless klass.is_a?(Class)
-        raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+        raise ArgumentError.new("Setting \"#{name}\" must be initialized with a class (received #{klass})")
       end
+      setting_builder = Java::org.logstash.settings.BaseSetting.create(name)
+                            .defaultValue(default)
+                            .strict(strict)
+      if validator_proc
+        setting_builder = setting_builder.validator(validator_proc)
+      end
+
+      @wrapped_setting = setting_builder.build()
+
       @klass = klass
       @validator_proc = validator_proc
-      @value = nil
-      @value_is_set = false
-      @strict = strict
 
-      validate(default) if @strict
-      @default = default
+      validate(default) if strict?
+    end
+
+    def default
+      @wrapped_setting.default
+    end
+
+    def name
+      @wrapped_setting.name
+    end
+
+    def initialize_copy(original)
+      @wrapped_setting = original.wrapped_setting.clone
+    end
+
+    # To be used only internally
+    def update_wrapper(wrapped_setting)
+      @wrapped_setting = wrapped_setting
     end
 
     def value
-      @value_is_set ? @value : default
+      @wrapped_setting.value()
     end
 
     def set?
-      @value_is_set
+      @wrapped_setting.set?
     end
 
     def strict?
-      @strict
+      @wrapped_setting.strict?
     end
 
     def set(value)
-      validate(value) if @strict
-      @value = value
-      @value_is_set = true
-      @value
+      validate(value) if strict?
+      @wrapped_setting.set(value)
+      @wrapped_setting.value
     end
 
     def reset
-      @value = nil
-      @value_is_set = false
+      @wrapped_setting.reset
     end
 
     def to_hash
       {
-        "name" => @name,
+        "name" => @wrapped_setting.name,
         "klass" => @klass,
-        "value" => @value,
-        "value_is_set" => @value_is_set,
-        "default" => @default,
+        "value" => @wrapped_setting.value,
+        "value_is_set" => @wrapped_setting.set?,
+        "default" => @wrapped_setting.default,
         # Proc#== will only return true if it's the same obj
         # so no there's no point in comparing it
         # also thereś no use case atm to return the proc
@@ -301,7 +323,7 @@ module LogStash
     end
 
     def inspect
-      "<#{self.class.name}(#{name}): #{value.inspect}" + (@value_is_set ? '' : ' (DEFAULT)') + ">"
+      "<#{self.class.name}(#{name}): #{value.inspect}" + (@wrapped_setting.set? ? '' : ' (DEFAULT)') + ">"
     end
 
     def ==(other)
@@ -323,58 +345,65 @@ module LogStash
     end
 
     def format(output)
-      effective_value = self.value
-      default_value = self.default
-      setting_name = self.name
+      @wrapped_setting.format(output)
+    end
 
-      if default_value == value # print setting and its default value
-        output << "#{setting_name}: #{effective_value.inspect}" unless effective_value.nil?
-      elsif default_value.nil? # print setting and warn it has been set
-        output << "*#{setting_name}: #{effective_value.inspect}"
-      elsif effective_value.nil? # default setting not set by user
-        output << "#{setting_name}: #{default_value.inspect}"
-      else # print setting, warn it has been set, and show default value
-        output << "*#{setting_name}: #{effective_value.inspect} (default: #{default_value.inspect})"
-      end
+    def clone(*args)
+      copy = self.dup
+      copy.update_wrapper(@wrapped_setting.clone())
+      copy
     end
 
     protected
     def validate(input)
       if !input.is_a?(@klass)
-        raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+        raise ArgumentError.new("Setting \"#{@wrapped_setting.name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
       end
 
       if @validator_proc && !@validator_proc.call(input)
-        raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+        raise ArgumentError.new("Failed to validate setting \"#{@wrapped_setting.name}\" with value: #{input}")
       end
     end
 
     class Coercible < Setting
       def initialize(name, klass, default = nil, strict = true, &validator_proc)
-        @name = name
         unless klass.is_a?(Class)
-          raise ArgumentError.new("Setting \"#{@name}\" must be initialized with a class (received #{klass})")
+          raise ArgumentError.new("Setting \"#{name}\" must be initialized with a class (received #{klass})")
         end
+
         @klass = klass
         @validator_proc = validator_proc
-        @value = nil
-        @value_is_set = false
+
+        # needed to have the name method accessible when invoking validate
+        @wrapped_setting = Java::org.logstash.settings.BaseSetting.create(name)
+                                      .defaultValue(default)
+                                      .strict(strict)
+                                      .build()
 
         if strict
           coerced_default = coerce(default)
           validate(coerced_default)
-          @default = coerced_default
+          updated_default = coerced_default
         else
-          @default = default
+          updated_default = default
         end
+
+        # default value must be coerced to the right type before being set
+        setting_builder = Java::org.logstash.settings.BaseSetting.create(name)
+                              .defaultValue(updated_default)
+                              .strict(strict)
+        if validator_proc
+          setting_builder = setting_builder.validator(validator_proc)
+        end
+
+        @wrapped_setting = setting_builder.build()
       end
 
       def set(value)
         coerced_value = coerce(value)
         validate(coerced_value)
-        @value = coerce(coerced_value)
-        @value_is_set = true
-        @value
+        @wrapped_setting.set(coerced_value)
+        coerced_value
       end
 
       def coerce(value)
@@ -383,22 +412,7 @@ module LogStash
     end
     ### Specific settings #####
 
-    class Boolean < Coercible
-      def initialize(name, default, strict = true, &validator_proc)
-        super(name, Object, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        case value
-        when TrueClass, "true"
-          true
-        when FalseClass, "false"
-          false
-        else
-          raise ArgumentError.new("could not coerce #{value} into a boolean")
-        end
-      end
-    end
+    java_import org.logstash.settings.Boolean
 
     class Numeric < Coercible
       def initialize(name, default = nil, strict = true)
@@ -733,15 +747,15 @@ module LogStash
       protected
       def validate(input)
         if !input.is_a?(@klass)
-          raise ArgumentError.new("Setting \"#{@name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
+          raise ArgumentError.new("Setting \"#{@wrapped_setting.name}\" must be a #{@klass}. Received: #{input} (#{input.class})")
         end
 
         unless input.all? {|el| el.kind_of?(@element_class) }
-          raise ArgumentError.new("Values of setting \"#{@name}\" must be #{@element_class}. Received: #{input.map(&:class)}")
+          raise ArgumentError.new("Values of setting \"#{@wrapped_setting.name}\" must be #{@element_class}. Received: #{input.map(&:class)}")
         end
 
         if @validator_proc && !@validator_proc.call(input)
-          raise ArgumentError.new("Failed to validate setting \"#{@name}\" with value: #{input}")
+          raise ArgumentError.new("Failed to validate setting \"#{@wrapped_setting.name}\" with value: #{input}")
         end
       end
     end
@@ -782,7 +796,7 @@ module LogStash
         return unless invalid_value.any?
 
         raise ArgumentError,
-          "Failed to validate the setting \"#{@name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
+          "Failed to validate the setting \"#{@wrapped_setting.name}\" value(s): #{invalid_value.inspect}. Valid options are: #{@possible_strings.inspect}"
       end
     end
 
@@ -792,9 +806,9 @@ module LogStash
       end
 
       def set(value)
-        @value = coerce(value)
-        @value_is_set = true
-        @value
+        coerced_value = coerce(value)
+        @wrapped_setting.set(coerced_value)
+        coerced_value
       end
 
       def coerce(value)
@@ -839,8 +853,7 @@ module LogStash
         @canonical_proxy = canonical_proxy
 
         clone = @canonical_proxy.canonical_setting.clone
-        clone.instance_variable_set(:@name, alias_name)
-        clone.instance_variable_set(:@default, nil)
+        clone.update_wrapper(clone.wrapped_setting.deprecate(alias_name))
 
         super(clone)
       end

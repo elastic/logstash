@@ -51,7 +51,7 @@ module ::LogStash::Util::SubstitutionVariables
   # If the value does not match the pattern, the 'value' param returns as-is
   # When setting refine to true, substituted value will be cleaned against escaped single/double quotes
   #   and generates array if resolved substituted value is array string
-  def replace_placeholders(value, refine)
+  def replace_placeholders(value, refine = false)
     if value.kind_of?(::LogStash::Util::Password)
       interpolated = replace_placeholders(value.value, refine)
       return ::LogStash::Util::Password.new(interpolated)

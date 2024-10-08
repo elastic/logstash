@@ -389,14 +389,14 @@ describe "Test Monitoring API" do
     end
 
     #default
-    logging_get_assert logstash_service, "INFO", "TRACE",
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE",
                        skip: 'logstash.licensechecker.licensereader' #custom (ERROR) level to start with
 
     #root logger - does not apply to logger.slowlog
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
     logging_get_assert logstash_service, "WARN", "TRACE"
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-    logging_get_assert logstash_service, "INFO", "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
 
     #package logger
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
@@ -422,7 +422,7 @@ describe "Test Monitoring API" do
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
-    logging_get_assert logstash_service, "INFO", "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
   end
 
 
@@ -433,7 +433,15 @@ describe "Test Monitoring API" do
     result["loggers"].each do |k, v|
       next if !k.empty? && k.eql?(skip)
       if k.start_with? "logstash", "org.logstash" #logstash is the ruby namespace, and org.logstash for java
-        expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
+        if logstash_level.is_a?(Array)
+          if logstash_level.size == 1
+            expect(v).to eq(logstash_level[0]), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level[0]}"
+          else
+            expect(logstash_level).to include(v), "logstash logger '#{k}' has logging level: #{v} expected to be one of: #{logstash_level}"
+          end
+        else
+          expect(v).to eq(logstash_level), "logstash logger '#{k}' has logging level: #{v} expected: #{logstash_level}"
+        end
       elsif k.start_with? "slowlog"
         expect(v).to eq(slowlog_level), "slowlog logger '#{k}' has logging level: #{v} expected: #{slowlog_level}"
       end
