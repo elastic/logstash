@@ -18,6 +18,7 @@
 require "logstash/api/service"
 require "logstash/api/commands/system/basicinfo_command"
 require "logstash/api/commands/system/plugins_command"
+require "logstash/api/commands/health_report"
 require "logstash/api/commands/stats"
 require "logstash/api/commands/node"
 require "logstash/api/commands/default_metadata"
@@ -34,6 +35,7 @@ module LogStash
           :plugins_command => ::LogStash::Api::Commands::System::Plugins,
           :stats => ::LogStash::Api::Commands::Stats,
           :node => ::LogStash::Api::Commands::Node,
+          :health_report => ::LogStash::Api::Commands::HealthReport,
           :default_metadata => ::LogStash::Api::Commands::DefaultMetadata
         }
       end

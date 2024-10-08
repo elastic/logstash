@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,25 @@ import javax.annotation.Nullable;
  * Logstash Main Entrypoint.
  */
 public final class Logstash implements Runnable, AutoCloseable {
+
+    public static final String VERSION_FULL;
+    public static final String VERSION_MAJOR;
+    public static final String VERSION_MINOR;
+    public static final String VERSION_PATCH;
+
+    static {
+        final Properties properties = new Properties();
+        try {
+            properties.load(Logstash.class.getResourceAsStream("/version-info.properties"));
+            VERSION_FULL = properties.getProperty("logstash-core");
+            final String[] versions = VERSION_FULL.split("\\.");
+            VERSION_MAJOR = versions[0];
+            VERSION_MINOR = versions[1];
+            VERSION_PATCH = versions[2];
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final Logger LOGGER = LogManager.getLogger(Logstash.class);
 
