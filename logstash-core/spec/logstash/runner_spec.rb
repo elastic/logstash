@@ -388,7 +388,7 @@ describe LogStash::Runner do
 
       it "gives deprecation message when setting to `warn`" do
         expect(runner_deprecation_logger_stub).to receive(:deprecated)
-          .with(a_string_including "This flag value is deprecated and will be removed in version 9")
+          .with(a_string_including "This flag is deprecated and will be removed in version 9")
           .with(a_string_including DEPRECATED_MSG)
         subject.run("bin/logstash", args)
       end
