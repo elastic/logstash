@@ -1320,10 +1320,10 @@ The details have contents and a structure that is unique to each indicator.
 [[logstash-health-api-response-details-pipeline]]
 ===== Pipeline Indicator Details
 
-`+pipelines/indicators/<pipeline_id>/details+`::
+`pipelines/indicators/<pipeline_id>/details`::
 (object) Information about the specified pipeline.
 +
-.Properties of `+pipelines/indicators/<pipeline_id>/details+`
+.Properties of `pipelines/indicators/<pipeline_id>/details`
 [%collapsible%open]
 ====
 `status`::
