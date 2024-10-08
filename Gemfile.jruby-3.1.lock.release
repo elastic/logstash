@@ -720,7 +720,7 @@ GEM
       hitimes (~> 1.1)
     mini_mime (1.1.5)
     minitar (0.9)
-    msgpack (1.7.2-java)
+    msgpack (1.7.3-java)
     multi_json (1.15.0)
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
