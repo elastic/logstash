@@ -18,22 +18,47 @@
  */
 package org.logstash.health;
 
-import com.google.common.collect.Iterables;
-
-import java.util.EnumSet;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class HealthObserver {
+
+    private static final Logger LOGGER = LogManager.getLogger();
+
+    private final MultiIndicator rootIndicator = new MultiIndicator();
+    private final MultiIndicator pipelinesIndicator = new MultiIndicator();
+
+    public HealthObserver() {
+        this.rootIndicator.attachIndicator("pipelines", this.pipelinesIndicator);
+    }
+
     public final Status getStatus() {
-        // INTERNAL-ONLY Proof-of-concept to show flow-through to API results
-        switch (System.getProperty("logstash.apiStatus", "green")) {
-            case "green":  return Status.GREEN;
-            case "yellow": return Status.YELLOW;
-            case "red":    return Status.RED;
-            case "random":
-                final EnumSet<Status> statuses = EnumSet.allOf(Status.class);
-                return Iterables.get(statuses, new java.util.Random().nextInt(statuses.size()));
-            default:
-                return Status.UNKNOWN;
+        return getReport().getStatus();
+    }
+
+    public MultiIndicator getIndicator() {
+        return this.rootIndicator;
+    }
+
+    public ApiHealthReport getReport() {
+        return new ApiHealthReport(this.rootIndicator.report());
+    }
+
+    public void attachPipelineIndicator(final String pipelineId, final PipelineIndicator.PipelineDetailsProvider detailsProvider) {
+        try {
+            this.pipelinesIndicator.attachIndicator(pipelineId, PipelineIndicator.forPipeline(pipelineId, detailsProvider));
+            LOGGER.debug(String.format("attached pipeline indicator [%s]", pipelineId));
+        } catch (final Exception e) {
+            LOGGER.warn(String.format("failed to attach pipeline indicator [%s]", pipelineId), e);
+        }
+    }
+
+    public void detachPipelineIndicator(final String pipelineId) {
+        try {
+            this.pipelinesIndicator.detachIndicator(pipelineId, null);
+            LOGGER.debug(String.format("detached pipeline indicator [%s]", pipelineId));
+        } catch (final Exception e) {
+            LOGGER.warn(String.format("failed to detach pipeline indicator [%s]", pipelineId), e);
         }
     }
 }

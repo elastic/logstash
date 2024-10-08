@@ -28,10 +28,25 @@ module LogStash
       @lock = Monitor.new
     end
 
+    # a terminated pipeline has either crashed OR finished normally
     def terminated?
       @lock.synchronize do
         # a loading pipeline is never considered terminated
         @loading.false? && @pipeline.finished_execution?
+      end
+    end
+
+    # a finished pipeline finished _normally_ without exception
+    def finished?
+      @lock.synchronize do
+        # a loading pipeline is never considered terminated
+        @loading.false? && @pipeline.finished_run?
+      end
+    end
+
+    def crashed?
+      @lock.synchronize do
+        @pipeline&.crashed?
       end
     end
 
@@ -103,6 +118,7 @@ module LogStash
         @states.size
       end
     end
+
 
     def empty?
       @lock.synchronize do

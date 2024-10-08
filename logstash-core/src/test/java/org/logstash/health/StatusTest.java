@@ -28,14 +28,14 @@ public class StatusTest {
         @Test
         public void testReduceUnknown() {
             assertThat(UNKNOWN.reduce(UNKNOWN), is(UNKNOWN));
-            assertThat(UNKNOWN.reduce(GREEN), is(GREEN));
+            assertThat(UNKNOWN.reduce(GREEN), is(UNKNOWN));
             assertThat(UNKNOWN.reduce(YELLOW), is(YELLOW));
             assertThat(UNKNOWN.reduce(RED), is(RED));
         }
 
         @Test
         public void testReduceGreen() {
-            assertThat(GREEN.reduce(UNKNOWN), is(GREEN));
+            assertThat(GREEN.reduce(UNKNOWN), is(UNKNOWN));
             assertThat(GREEN.reduce(GREEN), is(GREEN));
             assertThat(GREEN.reduce(YELLOW), is(YELLOW));
             assertThat(GREEN.reduce(RED), is(RED));

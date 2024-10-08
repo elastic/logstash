@@ -549,6 +549,7 @@ describe LogStash::JavaPipeline do
 
         # wait until there is no more worker thread since we have a single worker that should have died
         wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+        expect(subject.crashed?).to be true
 
         # at this point the input plugin should have been asked to stop
         wait(5).for {dummyinput.stop?}.to be_truthy
@@ -576,6 +577,7 @@ describe LogStash::JavaPipeline do
 
         # wait until there is no more worker thread since we have a single worker that should have died
         wait(5).for {subject.worker_threads.any?(&:alive?)}.to be_falsey
+        expect(subject.crashed?).to be true
 
         # at this point the input plugin should have been asked to stop
         wait(5).for {dummyinput.stop?}.to be_truthy
@@ -741,6 +743,7 @@ describe LogStash::JavaPipeline do
         expect(input).to receive(:do_close).once
         pipeline.start
         pipeline.shutdown
+        expect(pipeline.crashed?).to be false
       end
     end
   end

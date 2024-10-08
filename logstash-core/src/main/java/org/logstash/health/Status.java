@@ -21,18 +21,25 @@ package org.logstash.health;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
-    UNKNOWN,
-    GREEN,
-    YELLOW,
-    RED,
+    GREEN("healthy"),
+    UNKNOWN("unknown"),
+    YELLOW("concerning"),
+    RED("unhealthy"),
     ;
 
     private final String externalValue = name().toLowerCase();
+    private final String descriptiveValue;
+
+    Status(String descriptiveValue) {
+        this.descriptiveValue = descriptiveValue;
+    }
 
     @JsonValue
     public String externalValue() {
         return externalValue;
     }
+
+    public String descriptiveValue() { return descriptiveValue; }
 
     /**
      * Combine this status with another status.
@@ -45,6 +52,16 @@ public enum Status {
             return this;
         } else {
             return status;
+        }
+    }
+
+    public static class Holder {
+        private Status status = Status.GREEN;
+        public synchronized Status reduce(Status status) {
+            return this.status = this.status.reduce(status);
+        }
+        public synchronized Status value() {
+            return this.status;
         }
     }
 }
