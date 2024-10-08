@@ -380,32 +380,6 @@ describe LogStash::Runner do
       end
     end
 
-    context "event_api.tags.illegal" do
-      let(:runner_deprecation_logger_stub) { double("DeprecationLogger(Runner)").as_null_object }
-      let(:args) { ["--event_api.tags.illegal", "warn", "-e", pipeline_string] }
-      before(:each) { allow(runner).to receive(:deprecation_logger).and_return(runner_deprecation_logger_stub) }
-      DEPRECATED_MSG="The flag '--event_api.tags.illegal' is deprecated and will be removed in version 9"
-
-      it "gives deprecation message when setting to `warn`" do
-        expect(runner_deprecation_logger_stub).to receive(:deprecated)
-          .with(a_string_including "This flag is deprecated and will be removed in version 9")
-          .with(a_string_including DEPRECATED_MSG)
-        subject.run("bin/logstash", args)
-      end
-
-      it "gives deprecation message when setting to `rename`" do
-        expect(runner_deprecation_logger_stub).to receive(:deprecated)
-          .with(a_string_including DEPRECATED_MSG)
-        subject.run("bin/logstash", args)
-      end
-
-      it "does not give deprecation message when unset" do
-        expect(runner_deprecation_logger_stub).not_to receive(:deprecated)
-          .with(a_string_including DEPRECATED_MSG)
-        subject.run("bin/logstash", ["-e", pipeline_string])
-      end
-    end
-
     context "when :pipeline_workers is not defined by the user" do
       it "should not pass the value to the pipeline" do
         expect(LogStash::Agent).to receive(:new) do |settings|
