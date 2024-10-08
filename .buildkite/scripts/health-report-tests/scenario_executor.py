@@ -15,14 +15,14 @@ class ScenarioExecutor:
         # we expect expects to be existing in results
         for expect in expects:
             for result in results:
+                if result.get('help_url') and "health-report-pipeline-status.html#" not in result.get('help_url'):
+                    return False
                 if not all(key in result and result[key] == value for key, value in expect.items()):
                     return False
         return True
 
     def __get_difference(self, differences: list, expectations: dict, reports: dict) -> dict:
         for key in expectations.keys():
-            if key == "help_url":   # help_url URL value may change
-                continue
 
             if type(expectations.get(key)) != type(reports.get(key)):
                 differences.append(f"Scenario expectation and Health API report structure differs for {key}.")
