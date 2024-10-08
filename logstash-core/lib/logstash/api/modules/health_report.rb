@@ -24,11 +24,11 @@ module LogStash
           payload = health_report.all.then do |health_report_pojo|
             # The app_helper needs a ruby-hash.
             # Manually creating a map of properties works around the issue.
-            {
+            base_metadata.merge({
               status:     health_report_pojo.status,
               symptom:    health_report_pojo.symptom,
               indicators: health_report_pojo.indicators,
-            }
+            })
           end
 
           respond_with(payload, {exclude_default_metadata: true})
@@ -38,6 +38,10 @@ module LogStash
 
         def health_report
           @health_report ||= factory.build(:health_report)
+        end
+
+        def base_metadata
+          @factory.build(:default_metadata).base_info
         end
       end
     end

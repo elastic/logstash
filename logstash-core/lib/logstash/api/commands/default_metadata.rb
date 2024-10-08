@@ -22,20 +22,14 @@ module LogStash
     module Commands
       class DefaultMetadata < Commands::Base
         def all
-          res = {:host => host,
-             :version => version,
-             :http_address => http_address,
-             :id => service.agent.id,
-             :name => service.agent.name,
-             :ephemeral_id => service.agent.ephemeral_id,
+          res = base_info.merge({
              :status => service.agent.health_observer.status,
-             :snapshot => ::BUILD_INFO["build_snapshot"],
              :pipeline => {
                :workers => LogStash::SETTINGS.get("pipeline.workers"),
                :batch_size => LogStash::SETTINGS.get("pipeline.batch.size"),
                :batch_delay => LogStash::SETTINGS.get("pipeline.batch.delay"),
              },
-            }
+            })
           monitoring = {}
           if enabled_xpack_monitoring?
             monitoring = monitoring.merge({
@@ -47,6 +41,18 @@ module LogStash
             monitoring = monitoring.merge({:cluster_uuid => LogStash::SETTINGS.get("monitoring.cluster_uuid")})
           end
           res.merge(monitoring.empty? ? {} : {:monitoring => monitoring})
+        end
+
+        def base_info
+          {
+            :host => host,
+            :version => version,
+            :http_address => http_address,
+            :id => service.agent.id,
+            :name => service.agent.name,
+            :ephemeral_id => service.agent.ephemeral_id,
+            :snapshot => ::BUILD_INFO["build_snapshot"],
+          }
         end
 
         def host
