@@ -30,6 +30,7 @@ describe LogStash::PipelineAction::Create do
 
   before do
     clear_data_dir
+    allow(agent).to receive(:health_observer).and_return(double("HealthObserver").as_null_object)
   end
 
   subject { described_class.new(pipeline_config, metric) }
@@ -65,6 +66,11 @@ describe LogStash::PipelineAction::Create do
 
     it "returns a successful execution status" do
       expect(subject.execute(agent, pipelines)).to be_truthy
+    end
+
+    it "attached an indicator to the agent's health observer" do
+      expect(agent.health_observer).to receive(:attach_pipeline_indicator).with(:main, agent)
+      subject.execute(agent, pipelines)
     end
   end
 

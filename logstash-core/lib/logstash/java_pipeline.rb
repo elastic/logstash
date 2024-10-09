@@ -65,6 +65,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
     @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
+    @crash_detected = Concurrent::AtomicBoolean.new(false)
     @outputs_registered = Concurrent::AtomicBoolean.new(false)
 
     # @finished_execution signals that the pipeline thread has finished its execution
@@ -85,6 +86,10 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
   def finished_execution?
     @finished_execution.true?
+  end
+
+  def finished_run?
+    @finished_run.true?
   end
 
   def ready?
@@ -229,6 +234,10 @@ module LogStash; class JavaPipeline < AbstractPipeline
     @running.false?
   end
 
+  def crashed?
+    @crash_detected.true?
+  end
+
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
   # @param plugins [Array[Plugin]] the list of plugins to register
   def register_plugins(plugins)
@@ -305,6 +314,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
           rescue => e
             # WorkerLoop.run() catches all Java Exception class and re-throws as IllegalStateException with the
             # original exception as the cause
+            @crash_detected.make_true
             @logger.error(
               "Pipeline worker error, the pipeline will be stopped",
               default_logging_keys(:error => e.cause.message, :exception => e.cause.class, :backtrace => e.cause.backtrace)
@@ -319,6 +329,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       begin
         start_inputs
       rescue => e
+        @crash_detected.make_true
         # if there is any exception in starting inputs, make sure we shutdown workers.
         # exception will already by logged in start_inputs
         shutdown_workers

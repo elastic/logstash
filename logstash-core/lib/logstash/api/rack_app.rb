@@ -18,6 +18,7 @@
 require "rack"
 require "sinatra/base"
 require "logstash/api/modules/base"
+require "logstash/api/modules/health_report"
 require "logstash/api/modules/node"
 require "logstash/api/modules/node_stats"
 require "logstash/api/modules/plugins"
@@ -123,6 +124,7 @@ module LogStash
 
       def self.rack_namespaces(agent)
         {
+          "/_health_report" => LogStash::Api::Modules::HealthReport,
           "/_node" => LogStash::Api::Modules::Node,
           "/_stats" => LogStash::Api::Modules::Stats,
           "/_node/stats" => LogStash::Api::Modules::NodeStats,
