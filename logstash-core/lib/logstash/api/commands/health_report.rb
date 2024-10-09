@@ -15,33 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/pipeline_action/base"
+require "logstash/api/commands/base"
 
-module LogStash module PipelineAction
-  class StopAndDelete < Base
-    attr_reader :pipeline_id
+module LogStash
+  module Api
+    module Commands
+      class HealthReport < Commands::Base
 
-    def initialize(pipeline_id)
-      @pipeline_id = pipeline_id
-    end
-
-    def execute(agent, pipelines_registry)
-      pipelines_registry.terminate_pipeline(pipeline_id) do |pipeline|
-        pipeline.shutdown
+        def all(selected_fields = [])
+          service.agent.health_observer.report
+        end
       end
-
-      success = pipelines_registry.delete_pipeline(@pipeline_id)
-      detach_health_indicator(agent) if success
-
-      LogStash::ConvergeResult::ActionResult.create(self, success)
-    end
-
-    def detach_health_indicator(agent)
-      agent.health_observer.detach_pipeline_indicator(pipeline_id)
-    end
-
-    def to_s
-      "PipelineAction::StopAndDelete<#{pipeline_id}>"
     end
   end
-end end
+end

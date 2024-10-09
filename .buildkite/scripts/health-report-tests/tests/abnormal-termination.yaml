@@ -1,0 +1,31 @@
+name: "Abnormally terminated pipeline"
+config:
+  - pipeline.id: abnormally-terminated-pp
+    config.string: |
+      input { heartbeat { interval => 1 } }
+      filter { failure_injector { crash_at => filter } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+conditions:
+  - full_start_required: true
+expectation:
+  status: "red"
+  symptom: "1 indicator is unhealthy (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "red"
+      symptom: "1 indicator is unhealthy (`abnormally-terminated-pp`)"
+      indicators:
+        abnormally-terminated-pp:
+          status: "red"
+          symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline is not running, likely because it has encountered an error"
+            - action: "view logs to determine the cause of abnormal pipeline shutdown"
+          impacts:
+            - description: "the pipeline is not currently processing"
+            - impact_areas: ["pipeline_execution"]
+          details:
+            status:
+              state: "TERMINATED"
