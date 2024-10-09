@@ -10,8 +10,10 @@ steps:
   # todo: add a step for 8.latest when Health Report MVP is landed
   - label: ":logstash: Health Report Integration tests on main branch."
     command: |
-      source .buildkite/scripts/common/vm-agent.sh
-      ./.buildkite/scripts/health-report-tests/main.sh
+      echo "--- Installing dependencies"
+      python3 -m pip install -r .buildkite/scripts/health-report-tests/requirements.txt
+      echo "--- running tests"
+      python3 .buildkite/scripts/health-report-tests/main.py
     retry:
       automatic:
         - limit: 3
