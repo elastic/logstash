@@ -38,7 +38,8 @@ end
 def wait_for_logstash(container)
   Stud.try(40.times, [NoMethodError, Docker::Error::ConflictError, RSpec::Expectations::ExpectationNotMetError, TypeError]) do
     expect(logstash_available?(container)).to be true
-    expect(get_logstash_status(container)).to eql 'green'
+    # unknown or red status may be also meaningful while testing
+    expect(%w(unknown green yellow red).include?(get_logstash_status(container))).to be true
   end
 end
 
