@@ -16,7 +16,7 @@ steps:
             - limit: 3
 
       - label: "8.latest branch"
-        key: "integ-tests-on-8.x-branch"
+        key: "integ-tests-on-eight-latest-branch"
         env:
           LS_BRANCH: "8.x"
         command: |
