@@ -50,7 +50,6 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   let(:pipeline_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone.merge({
     "pipeline.id" => "main",
     "config.string" => config,
-    "api.enabled" => webserver_enabled,
   }) }
 
   let(:agent) { LogStash::Agent.new(pipeline_settings) }
@@ -95,11 +94,7 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   context "new model" do
     context "with webserver disabled" do
       it_behaves_like("new model monitoring event with webserver setting") do
-<<<<<<< HEAD
         let(:webserver_enabled) {false}
-=======
-         let(:webserver_enabled) {false}
->>>>>>> df87295f0 ([Test] Fixed x-pack tests of StatsEventFactory to verify the web server binding iff the webserver setting is enabled)
       end
     end
 
