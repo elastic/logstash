@@ -71,46 +71,15 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-3]]
 === Logstash 8.15.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.15.3
+* Improved the pipeline bootstrap error logs, it now includes the cause's backtrace giving a hint where the issue occurred https://github.com/elastic/logstash/pull/16495[#16495]
 
-* Change SubstitutionVariables.replace_placeholders `refine` argument to optional https://github.com/elastic/logstash/pull/16485[#16485]
-* Backport PR #16485 to 8.15: Change SubstitutionVariables.replace_placeholders `refine` argument to optional https://github.com/elastic/logstash/pull/16487[#16487]
-* Use jruby-9.4.8.0 in exhaustive CIs. https://github.com/elastic/logstash/pull/16489[#16489]
-* Backport PR #16489 to 8.15: Use jruby-9.4.8.0 in exhaustive CIs. https://github.com/elastic/logstash/pull/16492[#16492]
-* Improve pipeline bootstrap error logs https://github.com/elastic/logstash/pull/16495[#16495]
-* Don't use an older JRuby with oraclelinux-7 https://github.com/elastic/logstash/pull/16499[#16499]
-* Backport PR #16499 to 8.15: Don't use an older JRuby with oraclelinux-7 https://github.com/elastic/logstash/pull/16502[#16502]
-* Backport PR #16495 to 8.15: Improve pipeline bootstrap error logs https://github.com/elastic/logstash/pull/16503[#16503]
-
-=== Logstash Commits between 8.15 and 8.15.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.2..8.15"
-
-8364c8e89 - (HEAD -> 8.15, origin/8.15) Update patch plugin versions in gemfile lock (#16516) (2 days ago) <github-actions[bot]>
-228d19e1f - Update patch plugin versions in gemfile lock (#16509) (3 days ago) <github-actions[bot]>
-0d49d92cc - Improve pipeline bootstrap error logs (#16495) (#16503) (7 days ago) <github-actions[bot]>
-d08555908 - Don't use an older JRuby with oraclelinux-7 (#16499) (#16502) (8 days ago) <github-actions[bot]>
-bbac28d7a - Use jruby-9.4.8.0 in exhaustive CIs. (#16489) (#16492) (8 days ago) <github-actions[bot]>
-1a8676dc7 - Change LogStash::Util::SubstitutionVariables#replace_placeholders refine argument to optional (#16485) (#16487) (9 days ago) <github-actions[bot]>
-97513f76d - Bump 8.15.3 (#16473) (2 weeks ago) <Andrea Selva>
-604bb86e0 - bump .ruby_version to jruby-9.4.8.0 (#16477) (#16479) (2 weeks ago) <github-actions[bot]>
-01dc76f3b - Release notes for 8.15.2 (#16471) (2 weeks ago) <github-actions[bot]>
-a426e1b7f - Known issue for 8.15.1 related to env vars references (#16455) (#16470) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.15.2..8.15 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 0.1.13 -> 0.1.14
-logstash-input-azure_event_hubs: 1.4.7 -> 1.4.9
-logstash-integration-kafka: 11.5.1 -> 11.5.2
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed Logstash core compatibility issues with `logstash-input-azure_event_hubs` previous versions `<1.4.8` https://github.com/elastic/logstash/pull/16485[#16485]
 
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.14*
 
-404: Not Found
+* Fix register available PainlessExtension-s, resolving an issue where the pipelines for some integrations would fail to compile https://github.com/elastic/logstash-filter-elastic_integration/pull/162[#162]
 
 *Azure_event_hubs Input - 1.4.9*
 
@@ -120,7 +89,7 @@ logstash-integration-kafka: 11.5.1 -> 11.5.2
 
 *Kafka Integration - 11.5.2*
 
-* Update avro to 1.11.4 and confluent kafka to 7.4.7 https://github.com/logstash-plugins/logstash-integration-kafka/pull/184[#184]
+* Updated avro to 1.11.4 and confluent kafka to 7.4.7 https://github.com/logstash-plugins/logstash-integration-kafka/pull/184[#184]
 
 
 [[logstash-8-15-2]]
