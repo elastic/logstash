@@ -63,7 +63,7 @@ class Bootstrap:
             f"Failed to install {plugin_path}")
 
     def build_logstash(self):
-        print(f"Building Logstash.")
+        print(f"Building Logstash...")
         util.run_or_raise_error(
             ["./gradlew", "clean", "bootstrap", "assemble", "installDefaultGems"],
             "Failed to build Logstash")
