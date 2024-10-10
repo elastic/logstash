@@ -73,6 +73,7 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.15.3]]
 ==== Notable issues fixed
+
 * Improved the pipeline bootstrap error logs, it now includes the cause's backtrace giving a hint where the issue occurred https://github.com/elastic/logstash/pull/16495[#16495]
 
 * Fixed Logstash core compatibility issues with `logstash-input-azure_event_hubs` previous versions `<1.4.8` https://github.com/elastic/logstash/pull/16485[#16485]
