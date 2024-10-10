@@ -21,9 +21,13 @@ package org.logstash.health;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.logstash.instrument.metrics.MetricKeys;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalDouble;
+import java.util.stream.Collectors;
 
 import static org.logstash.health.Status.*;
 
@@ -37,6 +41,7 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                                                 final PipelineDetailsProvider pipelineDetailsProvider) {
         PipelineIndicator pipelineIndicator = new PipelineIndicator(new DetailsSupplier(pipelineId, pipelineDetailsProvider));
         pipelineIndicator.attachProbe("status", new StatusProbe());
+        pipelineIndicator.attachProbe("flow:worker_utilization", new FlowWorkerUtilizationProbe());
         return pipelineIndicator;
     }
 
@@ -81,13 +86,21 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
     @JsonSerialize(using = Details.JsonSerializer.class)
     public static class Details implements Observation {
         private final Status status;
+        private final FlowObservation flow;
+
+        public Details(Status status, FlowObservation flow) {
+            this.status = Objects.requireNonNull(status, "status cannot be null");
+            this.flow = Objects.requireNonNullElse(flow, FlowObservation.EMPTY);
+        }
 
         public Details(final Status status) {
-            this.status = Objects.requireNonNull(status, "status cannot be null");
+            this(status, null);
         }
+
         public Status getStatus() {
             return this.status;
         }
+        public FlowObservation getFlow() { return this.flow; }
 
         public static class JsonSerializer extends com.fasterxml.jackson.databind.JsonSerializer<Details> {
             @Override
@@ -96,10 +109,51 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                                   final SerializerProvider serializerProvider) throws IOException {
                 jsonGenerator.writeStartObject();
                 jsonGenerator.writeObjectField("status", details.getStatus());
+                FlowObservation flow = details.getFlow();
+                if (flow != null && !flow.isEmpty()) {
+                    jsonGenerator.writeObjectField("flow", flow);
+                }
                 jsonGenerator.writeEndObject();
             }
         }
     }
+
+    @JsonSerialize(using = FlowObservation.JsonSerializer.class)
+    public static class FlowObservation {
+        private static FlowObservation EMPTY = new FlowObservation(Map.of());
+        Map<String, Map<String,Double>> capture;
+
+        public FlowObservation(final Map<String, Map<String,Double>> capture) {
+            this.capture = Objects.requireNonNull(capture, "capture cannot be null").entrySet()
+                                    .stream()
+                                    .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, (e) -> Map.copyOf(e.getValue())));
+        }
+
+        public OptionalDouble getRate(final String flowMetricName, final String flowMetricWindow) {
+            final Map<String, Double> flowMetrics = capture.get(flowMetricName);
+            if (flowMetrics == null) {
+                return OptionalDouble.empty();
+            }
+            final Double rate = flowMetrics.get(flowMetricWindow);
+            if (rate == null) {
+                return OptionalDouble.empty();
+            } else {
+                return OptionalDouble.of(rate);
+            }
+        }
+
+        public boolean isEmpty() {
+            return capture.isEmpty() || capture.values().stream().allMatch(Map::isEmpty);
+        }
+
+        static class JsonSerializer extends com.fasterxml.jackson.databind.JsonSerializer<FlowObservation> {
+            @Override
+            public void serialize(FlowObservation value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                gen.writeObject(value.capture);
+            }
+        }
+    }
+
 
     /**
      * This interface is implemented by the ruby-Agent
@@ -171,7 +225,7 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                 case UNKNOWN:
                 default:
                     return Analysis.builder()
-                            .withStatus(YELLOW)
+                            .withStatus(UNKNOWN)
                             .withDiagnosis(db -> db
                                     .withId(diagnosisId("unknown"))
                                     .withCause("pipeline is not known; it may have been recently deleted or failed to start")
@@ -191,5 +245,92 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
         }
 
 
+    }
+
+    static class FlowWorkerUtilizationProbe implements Probe<Details> {
+        static final String LAST_1_MINUTE = "last_1_minute";
+        static final String LAST_5_MINUTES = "last_5_minutes";
+
+        static final String WORKER_UTILIZATION = MetricKeys.WORKER_UTILIZATION_KEY.asJavaString();
+
+        static final Impact.Builder BLOCKED_PROCESSING = Impact.builder()
+                .withId(impactId("blocked_processing"))
+                .withDescription("the pipeline is blocked")
+                .withAdditionalImpactArea(ImpactArea.PIPELINE_EXECUTION);
+
+        static final HelpUrl HELP_URL = new HelpUrl("health-report-pipeline-flow-worker-utilization");
+
+        @Override
+        public Analysis analyze(Details observation) {
+
+            final OptionalDouble lastFiveMinutes = observation.flow.getRate(WORKER_UTILIZATION, LAST_5_MINUTES);
+            final OptionalDouble lastOneMinute = observation.flow.getRate(WORKER_UTILIZATION, LAST_1_MINUTE);
+
+            if (lastFiveMinutes.isPresent()) {
+                if (lastFiveMinutes.getAsDouble() > 99.999) {
+                    return Analysis.builder()
+                            .withStatus(RED)
+                            .withDiagnosis(db -> db
+                                    .withId(diagnosisId("5m-blocked"))
+                                    .withCause(diagnosisCause("completely blocked", "five minutes", false))
+                                    .withAction("address bottleneck or add resources")
+                                    .withHelpUrl(HELP_URL.withAnchor("blocked-5m").toString()))
+                            .withImpact(BLOCKED_PROCESSING.withSeverity(1).build())
+                            .build();
+                } else if (lastFiveMinutes.getAsDouble() >= 95.00) {
+                    final boolean isRecovering = lastOneMinute.isPresent() && lastOneMinute.getAsDouble() <= 80.00;
+                    return Analysis.builder()
+                            .withStatus(YELLOW)
+                            .withDiagnosis(db -> db
+                                    .withId(diagnosisId("5m-nearly-blocked"))
+                                    .withCause(diagnosisCause("nearly blocked", "five minutes", isRecovering))
+                                    .withAction(isRecovering ? "continue to monitor" : "address bottleneck or add resources")
+                                    .withHelpUrl(HELP_URL.withAnchor("nearly-blocked-5m").toString()))
+                            .withImpact(BLOCKED_PROCESSING.withSeverity(1).build())
+                            .build();
+                }
+            }
+
+            if (lastOneMinute.isPresent()) {
+                if (lastOneMinute.getAsDouble() > 99.999) {
+                    return Analysis.builder().withStatus(YELLOW)
+                            .withDiagnosis(db -> db
+                                    .withId(diagnosisId("1m-blocked"))
+                                    .withCause(diagnosisCause("completely blocked", "one minute", false))
+                                    .withAction("address bottleneck or add resources")
+                                    .withHelpUrl(HELP_URL.withAnchor("blocked-1m").toString()))
+                            .withImpact(BLOCKED_PROCESSING.withSeverity(2).build())
+                            .build();
+                } else if (lastOneMinute.getAsDouble() >= 95.00) {
+                        return Analysis.builder().withStatus(YELLOW)
+                                .withDiagnosis(db -> db
+                                        .withId(diagnosisId("1m-nearly-blocked"))
+                                        .withCause(diagnosisCause("nearly blocked", "one minute", false))
+                                        .withAction("address bottleneck or add resources")
+                                        .withHelpUrl(HELP_URL.withAnchor("nearly-blocked-1m").toString()))
+                                .withImpact(BLOCKED_PROCESSING.withSeverity(2).build())
+                                .build();
+                }
+            }
+
+
+            return Analysis.builder().build();
+        }
+
+        static String diagnosisCause(String condition, String period, boolean isRecovering) {
+            final StringBuilder cause = new StringBuilder("pipeline workers have been ").append(condition).append(" for at least ").append(period);
+            if (isRecovering) {
+                cause.append(", but they appear to be recovering");
+            }
+            return cause.toString();
+        }
+
+        static String diagnosisId(final String state) {
+            return String.format("logstash:health:pipeline:flow:worker_utilization:diagnosis:%s", state);
+        }
+
+        static String impactId(final String state) {
+            return String.format("logstash:health:pipeline:flow:impact:%s", state);
+        }
     }
 }

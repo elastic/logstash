@@ -40,9 +40,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -84,6 +86,7 @@ import org.logstash.config.ir.compiler.ConditionalEvaluationError;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
+import org.logstash.health.PipelineIndicator;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.FlowMetric;
@@ -163,7 +166,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private QueueReadClientBase filterQueueClient;
 
-    private final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
+    private transient final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
@@ -604,6 +607,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public final IRubyObject collectFlowMetrics(final ThreadContext context) {
         this.scopedFlowMetrics.captureAll();
         return context.nil;
+    }
+
+    // short-term limits the scope of what is included in the flow observations
+    public final PipelineIndicator.FlowObservation collectWorkerUtilizationFlowObservation() {
+        return this.collectFlowObservation(WORKER_UTILIZATION_KEY.asJavaString()::equals);
+    }
+
+    public final PipelineIndicator.FlowObservation collectFlowObservation(final Predicate<String> filter) {
+        Map<String, Map<String, Double>> collect = this.scopedFlowMetrics.getFlowMetrics(ScopedFlowMetrics.Scope.WORKER).stream()
+                .filter(fm -> filter.test(fm.getName()))
+                .collect(Collectors.toUnmodifiableMap(FlowMetric::getName, FlowMetric::getValue));
+        return new PipelineIndicator.FlowObservation(collect);
     }
 
     private static FlowMetric createFlowMetric(final RubySymbol name,
