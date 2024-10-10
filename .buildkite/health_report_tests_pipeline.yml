@@ -1,18 +1,20 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
+agents:
+  provider: gcp
+  imageProject: elastic-images-prod
+  image: family/platform-ingest-logstash-ubuntu-2204
+  machineType: "n2-standard-4"
+  diskSizeGb: 64
+
 steps:
   - group: ":logstash: Health API integration tests"
     key: "testing-phase"
     steps:
       - label: "main branch"
         key: "integ-tests-on-main-branch"
-        command: |
-          set -euo pipefail
-
-          echo "--- Installing dependencies"
-          python3 -m pip install -r .buildkite/scripts/health-report-tests/requirements.txt
-          echo "--- running tests"
-          python3 .buildkite/scripts/health-report-tests/main.py
+        command:
+          - .buildkite/scripts/health-report-tests/main.sh
         retry:
           automatic:
             - limit: 3
