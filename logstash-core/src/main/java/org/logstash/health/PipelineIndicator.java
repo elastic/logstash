@@ -121,7 +121,7 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
     @JsonSerialize(using = FlowObservation.JsonSerializer.class)
     public static class FlowObservation {
         private static FlowObservation EMPTY = new FlowObservation(Map.of());
-        Map<String, Map<String,Double>> capture;
+        final Map<String, Map<String,Double>> capture;
 
         public FlowObservation(final Map<String, Map<String,Double>> capture) {
             this.capture = Objects.requireNonNull(capture, "capture cannot be null").entrySet()

@@ -12,7 +12,7 @@ The issue typically stems from one or more causes:
 * a plugin consuming more resources than expected, and/or
 * insufficient resources being allocated to the pipeline.
 
-To address the issue, observe the <<plugin-flow-rates>> from the <<node-stats-api>>, and identify which plugin(s) have the highest `worker_utilization`.
+To address the issue, observe the <<plugin-flow-rates>> from the <<node-stats-api>>, and identify which plugins have the highest `worker_utilization`.
 This will tell you which plugins are spending the most of the pipeline's worker resources.
 
 * If the offending plugin connects to a downstream service or another pipeline that is exerting back-pressure, the issue needs to be addressed in the downstream service or pipeline.
