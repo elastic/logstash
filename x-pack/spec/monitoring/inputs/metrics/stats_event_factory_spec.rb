@@ -89,14 +89,19 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
     LogStash::SETTINGS.set_value("monitoring.enabled", false)
   end
 
- context "new model" do
-   it_behaves_like("new model monitoring event with webserver setting") do
-     let(:webserver_enabled) {false}
-   end
-   it_behaves_like("new model monitoring event with webserver setting") do
-     let(:webserver_enabled) {true}
-   end
- end
+  context "new model" do
+    context "with webserver disabled" do
+      it_behaves_like("new model monitoring event with webserver setting") do
+        let(:webserver_enabled) {false}
+      end
+    end
+
+    context "with webserver enabled" do
+      it_behaves_like("new model monitoring event with webserver setting") do
+        let(:webserver_enabled) {true}
+      end
+    end
+  end
 
  # TODO: fix issue https://github.com/elastic/logstash/issues/12711
  xcontext "old model" do
