@@ -1,0 +1,30 @@
+name: "Slow start pipeline"
+config:
+  - pipeline.id: slow-start-pp
+    config.string: |
+      input { heartbeat {} }
+      filter { failure_injector { degrade_at => [register] } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+conditions:
+  - full_start_required: false
+expectation:
+  status: "yellow"
+  symptom: "1 indicator is concerning (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "yellow"
+      symptom: "1 indicator is concerning (`slow-start-pp`)"
+      indicators:
+        slow-start-pp:
+          status: "yellow"
+          symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline is loading"
+            - action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+          impacts:
+            - impact_areas: ["pipeline_execution"]
+          details:
+            status:
+              state: "LOADING"
