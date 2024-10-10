@@ -16,12 +16,12 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
-	"fmt"
 )
 
 var validSettings = []string{
@@ -49,7 +49,6 @@ var validSettings = []string{
 	"config.debug",
 	"config.support_escapes",
 	"config.field_reference.escape_style",
-	"event_api.tags.illegal",
 	"queue.type",
 	"path.queue",
 	"queue.page_capacity",

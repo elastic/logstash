@@ -67,9 +67,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     public static final String TAGS_FAILURE_TAG = "_tagsparsefailure";
     public static final String TAGS_FAILURE = "_tags";
 
-    enum IllegalTagsAction { RENAME, WARN }
-    private static IllegalTagsAction ILLEGAL_TAGS_ACTION = IllegalTagsAction.RENAME;
-
     private static final FieldReference TAGS_FIELD = FieldReference.from(TAGS);
     private static final FieldReference TAGS_FAILURE_FIELD = FieldReference.from(TAGS_FAILURE);
 
@@ -115,12 +112,10 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         this.cancelled = false;
 
         // guard tags field from key/value map, only string or list is allowed
-        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
-            final Object tags = Accessors.get(data, TAGS_FIELD);
-            if (!isLegalTagValue(tags)) {
-                initFailTag(tags);
-                initTag(TAGS_FAILURE_TAG);
-            }
+        final Object tags = Accessors.get(data, TAGS_FIELD);
+        if (!isLegalTagValue(tags)) {
+            initFailTag(tags);
+            initTag(TAGS_FAILURE_TAG);
         }
 
         Object providedTimestamp = data.get(TIMESTAMP);
@@ -217,11 +212,8 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
 
     @SuppressWarnings("unchecked")
     public void setField(final FieldReference field, final Object value) {
-        if (ILLEGAL_TAGS_ACTION == IllegalTagsAction.RENAME) {
-            if ((field.equals(TAGS_FIELD) && !isLegalTagValue(value)) ||
-                    isTagsWithMap(field)) {
-                throw new InvalidTagsTypeException(field, value);
-            }
+        if ((field.equals(TAGS_FIELD) && !isLegalTagValue(value)) || isTagsWithMap(field)) {
+            throw new InvalidTagsTypeException(field, value);
         }
 
         switch (field.type()) {
@@ -542,14 +534,6 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         final List<String> tags = new ArrayList<>(2);
         tags.add(existing);
         appendTag(tags, tag);
-    }
-
-    public static void setIllegalTagsAction(final String action) {
-        ILLEGAL_TAGS_ACTION = IllegalTagsAction.valueOf(action.toUpperCase());
-    }
-
-    public static IllegalTagsAction getIllegalTagsAction() {
-        return ILLEGAL_TAGS_ACTION;
     }
 
     @Override
