@@ -384,7 +384,7 @@ describe LogStash::Runner do
       let(:runner_deprecation_logger_stub) { double("DeprecationLogger(Runner)").as_null_object }
       let(:args) { ["--event_api.tags.illegal", "warn", "-e", pipeline_string] }
       before(:each) { allow(runner).to receive(:deprecation_logger).and_return(runner_deprecation_logger_stub) }
-      DEPRECATED_MSG="The flag '--event_api.tags.illegal' is deprecated and will be removed in version 9"
+      DEPRECATED_MSG="The flag [\"--event_api.tags.illegal\"] has been deprecated and will be removed in version 9"
 
       it "gives deprecation message when setting to `warn`" do
         expect(runner_deprecation_logger_stub).to receive(:deprecated)
