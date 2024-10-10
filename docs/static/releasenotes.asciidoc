@@ -71,6 +71,8 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-3]]
 === Logstash 8.15.3 Release Notes
 
+[[notable-8.15.3]]
+==== Notable issues fixed
 * Improved the pipeline bootstrap error logs, it now includes the cause's backtrace giving a hint where the issue occurred https://github.com/elastic/logstash/pull/16495[#16495]
 
 * Fixed Logstash core compatibility issues with `logstash-input-azure_event_hubs` previous versions `<1.4.8` https://github.com/elastic/logstash/pull/16485[#16485]
@@ -79,7 +81,7 @@ This section summarizes the changes in the following releases:
 
 *Elastic_integration Filter - 0.1.14*
 
-* Fix register available PainlessExtension-s, resolving an issue where the pipelines for some integrations would fail to compile https://github.com/elastic/logstash-filter-elastic_integration/pull/162[#162]
+* Enabled the use of org.elasticsearch.ingest.common.Processors in Ingest Pipelines, resolving an issue where some integrations would fail to load https://github.com/elastic/logstash-filter-elastic_integration/pull/162[#162]
 
 *Azure_event_hubs Input - 1.4.9*
 
