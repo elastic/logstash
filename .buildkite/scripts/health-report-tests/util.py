@@ -1,3 +1,4 @@
+import os
 import requests
 import subprocess
 from requests.adapters import HTTPAdapter, Retry
@@ -27,7 +28,7 @@ def run_or_raise_error(commands: list, error_message):
     f"""
     Executes the {list} commands and raises an {Exception} if opration fails.
     """
-    result = subprocess.run(commands, universal_newlines=True, stdout=subprocess.PIPE)
+    result = subprocess.run(commands, env=os.environ.copy(), universal_newlines=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
         full_error_message = (error_message + ", output: " + result.stdout.decode('utf-8')) \
             if result.stdout else error_message
