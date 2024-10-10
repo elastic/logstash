@@ -50,6 +50,7 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   let(:pipeline_settings) { LogStash::Runner::SYSTEM_SETTINGS.clone.merge({
     "pipeline.id" => "main",
     "config.string" => config,
+    "api.enabled" => webserver_enabled,
   }) }
 
   let(:agent) { LogStash::Agent.new(pipeline_settings) }
@@ -58,7 +59,6 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   let(:agent_task) { start_agent(agent) }
 
   before :each do
-    LogStash::SETTINGS.set_value("api.enabled", webserver_enabled)
     agent
     agent_task
 
