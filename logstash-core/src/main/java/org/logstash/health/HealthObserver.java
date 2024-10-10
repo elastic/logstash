@@ -25,6 +25,8 @@ public class HealthObserver {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
+    static final String FORCE_API_STATUS_PROPERTY = "logstash.forceApiStatus";
+
     private final MultiIndicator rootIndicator = new MultiIndicator();
     private final MultiIndicator pipelinesIndicator = new MultiIndicator();
 
@@ -33,6 +35,15 @@ public class HealthObserver {
     }
 
     public final Status getStatus() {
+        // Short-term escape-hatch
+        final String forceApiStatus = System.getProperty(FORCE_API_STATUS_PROPERTY);
+        if (forceApiStatus != null) {
+            if (forceApiStatus.equals("green")) {
+                return Status.GREEN;
+            } else {
+                LOGGER.warn("Unsupported `logstash.forceApiStatus`: {} (health report status will be propagated)", forceApiStatus);
+            }
+        }
         return getReport().getStatus();
     }
 
