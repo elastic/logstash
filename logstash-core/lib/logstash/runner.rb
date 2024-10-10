@@ -267,7 +267,7 @@ class LogStash::Runner < Clamp::StrictCommand
          I18n.t("logstash.runner.flag.event_api.tags.illegal"),
          :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
          :attribute_name => "event_api.tags.illegal", :passthrough => true,
-         :deprecated_msg => I18n.t("logstash.runner.tags-illegal-deprecated")
+         :obsoleted_version => "9"
 
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
