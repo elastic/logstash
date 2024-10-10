@@ -35,12 +35,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -82,6 +86,7 @@ import org.logstash.config.ir.compiler.ConditionalEvaluationError;
 import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
+import org.logstash.health.PipelineIndicator;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.FlowMetric;
@@ -161,7 +166,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private QueueReadClientBase filterQueueClient;
 
-    private ArrayList<FlowMetric> flowMetrics = new ArrayList<>();
+    private transient final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
@@ -563,34 +568,34 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final LongCounter eventsInCounter = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric inputThroughput = createFlowMetric(INPUT_THROUGHPUT_KEY, eventsInCounter, uptimeInPreciseSeconds);
-        this.flowMetrics.add(inputThroughput);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, inputThroughput);
         storeMetric(context, flowNamespace, inputThroughput);
 
         final LongCounter eventsFilteredCounter = initOrGetCounterMetric(context, eventsNamespace, FILTERED_KEY);
         final FlowMetric filterThroughput = createFlowMetric(FILTER_THROUGHPUT_KEY, eventsFilteredCounter, uptimeInPreciseSeconds);
-        this.flowMetrics.add(filterThroughput);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, filterThroughput);
         storeMetric(context, flowNamespace, filterThroughput);
 
         final LongCounter eventsOutCounter = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
         final FlowMetric outputThroughput = createFlowMetric(OUTPUT_THROUGHPUT_KEY, eventsOutCounter, uptimeInPreciseSeconds);
-        this.flowMetrics.add(outputThroughput);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, outputThroughput);
         storeMetric(context, flowNamespace, outputThroughput);
 
         final TimerMetric queuePushWaitInMillis = initOrGetTimerMetric(context, eventsNamespace, PUSH_DURATION_KEY);
         final FlowMetric backpressureFlow = createFlowMetric(QUEUE_BACKPRESSURE_KEY, queuePushWaitInMillis, uptimeInPreciseMillis);
-        this.flowMetrics.add(backpressureFlow);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, backpressureFlow);
         storeMetric(context, flowNamespace, backpressureFlow);
 
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final FlowMetric concurrencyFlow = createFlowMetric(WORKER_CONCURRENCY_KEY, durationInMillis, uptimeInPreciseMillis);
-        this.flowMetrics.add(concurrencyFlow);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
         final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
         final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
         final UpScaledMetric availableWorkerTimeInMillis = new UpScaledMetric(uptimeInPreciseMillis, workerCount);
         final FlowMetric utilizationFlow = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
-        this.flowMetrics.add(utilizationFlow);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, utilizationFlow);
         storeMetric(context, flowNamespace, utilizationFlow);
 
         initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
@@ -600,8 +605,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "collect_flow_metrics")
     public final IRubyObject collectFlowMetrics(final ThreadContext context) {
-        this.flowMetrics.forEach(FlowMetric::capture);
+        this.scopedFlowMetrics.captureAll();
         return context.nil;
+    }
+
+    // short-term limits the scope of what is included in the flow observations
+    public final PipelineIndicator.FlowObservation collectWorkerUtilizationFlowObservation() {
+        return this.collectFlowObservation(WORKER_UTILIZATION_KEY.asJavaString()::equals);
+    }
+
+    public final PipelineIndicator.FlowObservation collectFlowObservation(final Predicate<String> filter) {
+        Map<String, Map<String, Double>> collect = this.scopedFlowMetrics.getFlowMetrics(ScopedFlowMetrics.Scope.WORKER).stream()
+                .filter(fm -> filter.test(fm.getName()))
+                .collect(Collectors.toUnmodifiableMap(FlowMetric::getName, FlowMetric::getValue));
+        return new PipelineIndicator.FlowObservation(collect);
     }
 
     private static FlowMetric createFlowMetric(final RubySymbol name,
@@ -671,12 +688,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
             final Supplier<NumberGauge> eventsGaugeMetricSupplier = () -> initOrGetNumberGaugeMetric(context, queueNamespace, EVENTS_KEY).orElse(null);
             final FlowMetric growthEventsFlow = createFlowMetric(QUEUE_PERSISTED_GROWTH_EVENTS_KEY, eventsGaugeMetricSupplier, () -> uptimeInPreciseSeconds);
-            this.flowMetrics.add(growthEventsFlow);
+            this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, growthEventsFlow);
             storeMetric(context, flowNamespace, growthEventsFlow);
 
             final Supplier<NumberGauge> queueSizeInBytesMetricSupplier = () -> initOrGetNumberGaugeMetric(context, queueCapacityNamespace, QUEUE_SIZE_IN_BYTES_KEY).orElse(null);
             final FlowMetric growthBytesFlow = createFlowMetric(QUEUE_PERSISTED_GROWTH_BYTES_KEY, queueSizeInBytesMetricSupplier, () -> uptimeInPreciseSeconds);
-            this.flowMetrics.add(growthBytesFlow);
+            this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, growthBytesFlow);
+
             storeMetric(context, flowNamespace, growthBytesFlow);
         }
     }
@@ -705,7 +723,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final LongCounter eventsOut = initOrGetCounterMetric(context, eventsNamespace, OUT_KEY);
 
         final FlowMetric throughputFlow = createFlowMetric(PLUGIN_THROUGHPUT_KEY, eventsOut, uptimeInPreciseSeconds);
-        this.flowMetrics.add(throughputFlow);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.PLUGIN, throughputFlow);
 
         final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, INPUTS_KEY, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, throughputFlow);
@@ -718,12 +736,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final TimerMetric durationInMillis = initOrGetTimerMetric(context, eventsNamespace, DURATION_IN_MILLIS_KEY);
         final LongCounter counterEvents = initOrGetCounterMetric(context, eventsNamespace, IN_KEY);
         final FlowMetric workerCostPerEvent = createFlowMetric(WORKER_MILLIS_PER_EVENT_KEY, durationInMillis, counterEvents);
-        this.flowMetrics.add(workerCostPerEvent);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.PLUGIN, workerCostPerEvent);
 
         final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
         final UpScaledMetric availableWorkerTimeInMillis = new UpScaledMetric(uptimeInPreciseMillis, workerCount);
         final FlowMetric workerUtilization = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
-        this.flowMetrics.add(workerUtilization);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.PLUGIN, workerUtilization);
 
         final RubySymbol[] flowNamespace = buildNamespace(PLUGINS_KEY, key, RubyUtil.RUBY.newString(id).intern(), FLOW_KEY);
         storeMetric(context, flowNamespace, workerCostPerEvent);
@@ -883,5 +901,34 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "last_error_evaluation_received")
     public final RubyString getLastErrorEvaluationReceived(final ThreadContext context) {
         return RubyString.newString(context.runtime, lastErrorEvaluationReceived);
+    }
+
+    private static class ScopedFlowMetrics {
+        enum Scope {
+            WORKER,
+            PLUGIN
+        }
+        private final Map<Scope, List<FlowMetric>> flowsByScope = new ConcurrentHashMap<>();
+
+        void register(final Scope scope, final FlowMetric metric) {
+            flowsByScope.compute(scope, (s, scopedFlows) -> {
+                if (scopedFlows == null) {
+                    return List.of(metric);
+                } else {
+                    final ArrayList<FlowMetric> mutable = new ArrayList<>(scopedFlows.size() + 1);
+                    mutable.addAll(scopedFlows);
+                    mutable.add(metric);
+                    return List.copyOf(mutable);
+                }
+            });
+        }
+
+        void captureAll() {
+            flowsByScope.values().stream().flatMap(List::stream).forEach(FlowMetric::capture);
+        }
+
+        List<FlowMetric> getFlowMetrics(final Scope scope) {
+            return flowsByScope.getOrDefault(scope, List.of());
+        }
     }
 }
