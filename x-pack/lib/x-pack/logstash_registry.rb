@@ -3,7 +3,7 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/runner" # needed for LogStash::XPACK_PATH
-xpack_modules = ["azure", "arcsight"]
+xpack_modules = ["arcsight"]
 xpack_modules.each do |name|
   $LOAD_PATH << File.join(LogStash::XPACK_PATH, "modules", name, "lib")
 end
@@ -15,7 +15,6 @@ require "monitoring/outputs/elasticsearch_monitoring"
 require "config_management/extension"
 require "geoip_database_management/extension"
 require "modules/xpack_scaffold"
-require "filters/azure_event"
 
 LogStash::PLUGIN_REGISTRY.add(:input, "metrics", LogStash::Inputs::Metrics)
 LogStash::PLUGIN_REGISTRY.add(:output, "elasticsearch_monitoring", LogStash::Outputs::ElasticSearchMonitoring)
@@ -31,5 +30,3 @@ xpack_modules.each do |name|
   LogStash::PLUGIN_REGISTRY.add(:modules, name,
     LogStash::Modules::XpackScaffold.new(name, path, license_levels[name]))
 end
-
-LogStash::PLUGIN_REGISTRY.add(:filter, "azure_event", LogStash::Filters::AzureEvent)

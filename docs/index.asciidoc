@@ -142,10 +142,6 @@ include::static/modules.asciidoc[]
 
 include::static/arcsight-module.asciidoc[]
 
-include::static/netflow-module.asciidoc[]
-
-include::static/azure-module.asciidoc[]
-
 // Working with Filebeat Modules
 include::static/filebeat-modules.asciidoc[]
 
