@@ -19,9 +19,14 @@
 
 package org.logstash.settings;
 
+import org.jruby.RubySymbol;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Root class for all setting definitions.
@@ -193,7 +198,16 @@ public class BaseSetting<T> implements Setting<T> {
     }
 
     public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias) {
-        return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias);
+        return withDeprecatedAlias(deprecatedAlias, Collections.emptyMap());
+    }
+    public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias, Map<RubySymbol, String> kwargs) {
+        Map<String, String> extra = kwargs.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().toString(),
+                        Map.Entry::getValue
+                ));
+        return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias, extra);
     }
 
     public Setting<T> nullable() {

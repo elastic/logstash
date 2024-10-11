@@ -472,6 +472,9 @@ en:
         set: >-
           The setting `%{deprecated_alias}` is a deprecated alias for `%{canonical_name}`
           and will be removed in a future release of Logstash. Please use %{canonical_name} instead
+        set_version: >-
+          The setting `%{deprecated_alias}` is a deprecated alias for `%{canonical_name}`
+          and will be removed in version %{obsoleted_version}. Please use %{canonical_name} instead
         queried: >-
           The value of setting `%{canonical_name}` has been queried by its deprecated alias `%{deprecated_alias}`.
           Code should be updated to query `%{canonical_name}` instead

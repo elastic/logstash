@@ -253,15 +253,18 @@ class LogStash::Runner < Clamp::StrictCommand
 
   deprecated_option ["--http.enabled"], :flag,
     I18n.t("logstash.runner.flag.http_enabled"),
-    :new_flag => "api.enabled", :passthrough => true # use settings to disambiguate
+    :new_flag => "api.enabled", :passthrough => true, # use settings to disambiguate
+    :obsoleted_version => "9"
 
   deprecated_option ["--http.host"], "HTTP_HOST",
     I18n.t("logstash.runner.flag.http_host"),
-    :new_flag => "api.http.host", :passthrough => true # use settings to disambiguate
+    :new_flag => "api.http.host", :passthrough => true, # use settings to disambiguate
+    :obsoleted_version => "9"
 
   deprecated_option ["--http.port"], "HTTP_PORT",
     I18n.t("logstash.runner.flag.http_port"),
-    :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
+    :new_flag => "api.http.port", :passthrough => true, # use settings to disambiguate
+    :obsoleted_version => "9"
 
   deprecated_option ["--event_api.tags.illegal"], "STRING",
          I18n.t("logstash.runner.flag.event_api.tags.illegal"),
