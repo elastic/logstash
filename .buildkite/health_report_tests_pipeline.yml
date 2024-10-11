@@ -1,17 +1,20 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 agents:
-  image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
-  cpu: "2"
-  memory: "4Gi"
-  ephemeralStorage: "64Gi"
+  provider: gcp
+  imageProject: elastic-images-prod
+  image: family/platform-ingest-logstash-ubuntu-2204
+  machineType: "n2-standard-4"
+  diskSizeGb: 64
 
 steps:
-  # todo: add a step for 8.latest when Health Report MVP is landed
-  - label: ":logstash: Health Report Integration tests on main branch."
-    command: |
-      source .buildkite/scripts/common/vm-agent.sh
-      ./.buildkite/scripts/health-report-tests/main.sh
-    retry:
-      automatic:
-        - limit: 3
+  - group: ":logstash: Health API integration tests"
+    key: "testing-phase"
+    steps:
+      - label: "main branch"
+        key: "integ-tests-on-main-branch"
+        command:
+          - .buildkite/scripts/health-report-tests/main.sh
+        retry:
+          automatic:
+            - limit: 3

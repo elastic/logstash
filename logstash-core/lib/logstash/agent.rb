@@ -40,6 +40,8 @@ class LogStash::Agent
   attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus
   attr_accessor :logger
 
+  attr_reader :health_observer
+
   # initialize method for LogStash::Agent
   # @param params [Hash] potential parameters are:
   #   :name [String] - identifier for the agent
@@ -50,6 +52,9 @@ class LogStash::Agent
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
     @ephemeral_id = SecureRandom.uuid
+
+    java_import("org.logstash.health.HealthObserver")
+    @health_observer ||= HealthObserver.new
 
     # Mutex to synchronize in the exclusive method
     # Initial usage for the Ruby pipeline initialization which is not thread safe
@@ -149,6 +154,31 @@ class LogStash::Agent
     return 0
   ensure
     transition_to_stopped
+  end
+
+  include org.logstash.health.PipelineIndicator::PipelineDetailsProvider
+  def pipeline_details(pipeline_id)
+    logger.trace("fetching pipeline details for `#{pipeline_id}`")
+    pipeline_id = pipeline_id.to_sym
+
+    java_import org.logstash.health.PipelineIndicator
+
+    pipeline_state = @pipelines_registry.states.get(pipeline_id)
+    if pipeline_state.nil?
+      return PipelineIndicator::Details.new(PipelineIndicator::Status::UNKNOWN)
+    end
+
+    pipeline_state.synchronize do |sync_state|
+      status = case
+               when sync_state.loading?    then PipelineIndicator::Status::LOADING
+               when sync_state.crashed?    then PipelineIndicator::Status::TERMINATED
+               when sync_state.running?    then PipelineIndicator::Status::RUNNING
+               when sync_state.finished?   then PipelineIndicator::Status::FINISHED
+               else                             PipelineIndicator::Status::UNKNOWN
+               end
+
+      PipelineIndicator::Details.new(status, sync_state.pipeline&.to_java.collectWorkerUtilizationFlowObservation)
+    end
   end
 
   def auto_reload?

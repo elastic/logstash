@@ -46,11 +46,19 @@ module LogStash module PipelineAction
     # The execute assume that the thread safety access of the pipeline
     # is managed by the caller.
     def execute(agent, pipelines_registry)
+      attach_health_indicator(agent)
       new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
+
       LogStash::ConvergeResult::ActionResult.create(self, success)
+    end
+
+    def attach_health_indicator(agent)
+      health_observer = agent.health_observer
+      health_observer.detach_pipeline_indicator(pipeline_id) # just in case ...
+      health_observer.attach_pipeline_indicator(pipeline_id, agent)
     end
 
     def to_s
