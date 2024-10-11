@@ -1,16 +1,23 @@
 
 openapi: 3.1.0
 info:
-  title: Observability Intake Serverless APIs
+  title: Logstash APIs
   description: |
-    **Technical preview**  
-    This functionality is in technical preview and may be changed or removed in a future release.
-    Elastic will work to fix any issues, but features in technical preview are not subject to the support SLA of official GA features.
+    When you run Logstash, it automatically captures runtime metrics that you can use to monitor the health and performance of your Logstash deployment.
+    The metrics collected by Logstash include:
+    
+    - Logstash node info, like pipeline settings, OS info, and JVM info.
+    - Plugin info, including a list of installed plugins.
+    - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    - Hot threads.
+
+    The APIs that retrieve these metrics are available by default without requiring any extra configuration.
 
     ## Documentation source and versions
-    This documentation is derived from a private repository.
+
+    This documentation is derived from the `main` branch of the [logstash](https://github.com/elastic/logstash) repository.
     It is provided under license [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
-  version: '0.1'
+  version: '1.0'
   x-doc-license:
     name: Attribution-NonCommercial-NoDerivatives 4.0 International
     url: https://creativecommons.org/licenses/by-nc-nd/4.0/
@@ -21,39 +28,31 @@ servers:
   - url: /
 security:
   - apiKeyAuth: []
-tags:
-  - name: event intake
-    description: >-
-      The events intake API is the internal protocol that APM agents use to talk to the Elastic Stack.
-    x-displayName: APM event intake
-  - name: opentelemetry intake
-    description: >
-      The OpenTelemetry intake API uses the OpenTelemetry Protocol (OTLP) to send traces, metrics, and logs to the Elastic Stack.
-      OTLP is the default transfer protocol for OpenTelemetry and is supported natively.
-      The Observability Intake Serverless API supports two OTLP communication protocols on the same port: OTLP/HTTP (protobuf) and OTLP/gRPC.
-    x-displayName: APM OpenTelemetry intake
-  - name: service info
-    description: These APIs provide information that can be used by Elastic APM agents, for example.
-    x-displayName: Observability Intake Serverless APIs information
-paths:
-  /: 
-    $ref: paths/service_version.yaml
-  /opentelemetry.proto.collector.metrics.v1.MetricsService/Export:
-    $ref: paths/opentelemetry.proto.collector.metrics.v1.MetricsService_Export.yaml
-  /opentelemetry.proto.collector.trace.v1.TraceService/Export:
-    $ref: paths/opentelemetry.proto.collector.trace.v1.TraceService_Export.yaml
-  /opentelemetry.proto.collector.logs.v1.LogsService/Export:
-    $ref: paths/opentelemetry.proto.collector.logs.v1.LogsService_Export.yaml
-  /v1/metrics:
-    $ref: paths/v1_metrics.yaml
-  /v1/traces:
-    $ref: paths/v1_traces.yaml
-  /v1/logs:
-    $ref: paths/v1_logs.yaml
-components:
-  securitySchemes:
-    apiKeyAuth:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: 'e.g. Authorization: ApiKey base64AccessApiKey'
+paths: 
+  /_node/plugins:
+    get:
+      summary: Get plugin info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 4.1.2
+                 
+
