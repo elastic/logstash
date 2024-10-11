@@ -528,6 +528,18 @@ This metric is expressed in events-per-second, and is the rate of events flowing
 | output_throughput |
 This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
 
+| [[flow-pipeline-worker_utilization]]worker_utilization |
+This is a unitless metric that indicates the percentage of allocated worker time being utilized (`duration` / (`uptime` * `pipeline.workers`).
+It is useful for identifying whether a pipeline has the resources it needs to complete its work.
+
+A _pipeline_ is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy.
+This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline.
+Tuning a saturated pipeline to have more workers can often work to increase that pipeline's throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+A _pipeline_ is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy.
+This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy.
+Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
+
 | worker_concurrency |
 This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (`duration_in_millis` / millisecond).
 
@@ -1335,4 +1347,25 @@ The details have contents and a structure that is unique to each indicator.
 `state`::
 (string) The current state of the pipeline, including whether it is `loading`, `running`, `finished`, or `terminated`.
 ========
+`flow`::
+(object) A mapping of `<flow_metric>` to its rate values in various windows.
++
+.Available `<flow_metric>`-s:
+[%collapsible%open]
+==========
+`worker_utilization`::: A unitless metric indicating the percent of allocated worker-time that is being spent processing work (see: <<flow-pipeline-worker_utilization, Node Stats API metrics documentation>>).
+==========
++
+.Properties of each `<flow_metric>` are the value of the metric over various windows of time:
+[%collapsible%open]
+==========
+`current`::: the near-instantaneous _current_ rate
+`last_1_minute`::: the rate over the last minute (available when the pipeline has been running for at least one minute)
+`last_5_minutes`::: the rate over the last five minutes (available when the pipeline has been running for at least five minutes)
+`last_15_minutes`::: the rate over the last fifteen minutes (available when the pipeline has been running for at least fifteen minutes)
+`last_1_hour`::: the rate over the last hour (available when the pipeline has been running for at least one hour)
+`last_24_hours`::: the rate over the last twenty-four hours (available when the pipeline has been running for at least twenty-four hours)
+`lifetime`::: the _lifetime_ rate, since the pipeline was started
+==========
+
 ====
