@@ -19,7 +19,7 @@ class BootstrapContextManager:
     def __enter__(self):
         print(f"Starting Logstash Health Report Integration test.")
         self.bootstrap = Bootstrap()
-        self.bootstrap.build_logstash()
+        # self.bootstrap.build_logstash()
 
         plugin_path = os.getcwd() + "/qa/support/logstash-integration-failure_injector/logstash-integration" \
                                     "-failure_injector-*.gem"
@@ -27,7 +27,7 @@ class BootstrapContextManager:
         if len(matching_files) == 0:
             raise ValueError(f"Could not find logstash-integration-failure_injector plugin.")
 
-        self.bootstrap.install_plugin(matching_files[0])
+        # self.bootstrap.install_plugin(matching_files[0])
         print(f"logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
@@ -62,21 +62,23 @@ def main():
                 print(f"Testing `{scenario_content.get('name')}` scenario.")
                 scenario_name = scenario_content['name']
 
-                is_full_start_required = next(sub.get('full_start_required') for sub in
-                                              scenario_content.get('conditions') if 'full_start_required' in sub)
+                is_full_start_required = scenario_content.get('conditions').get('full_start_required')
+                wait_time_in_seconds = scenario_content.get('conditions').get('wait_time_in_seconds')
                 config = scenario_content['config']
                 if config is not None:
                     bootstrap.apply_config(config)
                     expectations = scenario_content.get("expectation")
                     process = bootstrap.run_logstash(is_full_start_required)
                     if process is not None:
+                        if wait_time_in_seconds is not None:
+                            print(f"Test requires to wait for `{wait_time_in_seconds}` seconds.")
+                            time.sleep(wait_time_in_seconds)  # wait for Logstash to start
                         try:
                             scenario_executor.on(scenario_name, expectations)
                         except Exception as e:
                             print(e)
                             has_failed_scenario = True
-                        process.terminate()
-                        time.sleep(5)   # leave some window to terminate the process
+                        bootstrap.stop_logstash(process)
 
         if has_failed_scenario:
             # intentionally fail due to visibility

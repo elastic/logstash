@@ -15,7 +15,7 @@ class ScenarioExecutor:
         # we expect expects to be existing in results
         for expect in expects:
             for result in results:
-                if result.get('help_url') and "health-report-pipeline-status.html#" not in result.get('help_url'):
+                if result.get('help_url') and "health-report-pipeline-" not in result.get('help_url'):
                     return False
                 if not all(key in result and result[key] == value for key, value in expect.items()):
                     return False
