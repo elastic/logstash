@@ -19,7 +19,7 @@ class BootstrapContextManager:
     def __enter__(self):
         print(f"Starting Logstash Health Report Integration test.")
         self.bootstrap = Bootstrap()
-        # self.bootstrap.build_logstash()
+        self.bootstrap.build_logstash()
 
         plugin_path = os.getcwd() + "/qa/support/logstash-integration-failure_injector/logstash-integration" \
                                     "-failure_injector-*.gem"
@@ -27,7 +27,7 @@ class BootstrapContextManager:
         if len(matching_files) == 0:
             raise ValueError(f"Could not find logstash-integration-failure_injector plugin.")
 
-        # self.bootstrap.install_plugin(matching_files[0])
+        self.bootstrap.install_plugin(matching_files[0])
         print(f"logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
