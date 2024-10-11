@@ -45,7 +45,7 @@ public interface Probe<OBSERVATION extends ProbeIndicator.Observation> {
             private final Impact impact;
 
             public Builder() {
-                this(Status.UNKNOWN, null, null);
+                this(Status.GREEN, null, null);
             }
 
             public Builder(final Status status,
