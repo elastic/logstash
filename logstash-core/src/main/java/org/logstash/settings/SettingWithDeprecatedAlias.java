@@ -38,6 +38,7 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
      * including the canonical setting and a deprecated alias.
      * @param canonicalSetting the setting to wrap
      * @param deprecatedAliasName the name for the deprecated alias
+     * @param obsoletedVersion the version of Logstash that deprecated alias will be removed
      *
      * @return List of [SettingWithDeprecatedAlias, DeprecatedAlias]
      * */

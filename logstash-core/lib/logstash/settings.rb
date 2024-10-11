@@ -908,6 +908,7 @@ module LogStash
       # including the canonical setting and a deprecated alias.
       # @param canonical_setting [Setting]: the setting to wrap
       # @param deprecated_alias_name [String]: the name for the deprecated alias
+      # @param obsoleted_version [String]: the version of Logstash that deprecated alias will be removed
       #
       # @return [SettingWithDeprecatedAlias,DeprecatedSetting]
       def self.wrap(canonical_setting, deprecated_alias_name, obsoleted_version=nil)
