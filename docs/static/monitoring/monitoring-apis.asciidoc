@@ -1349,13 +1349,13 @@ The details have contents and a structure that is unique to each indicator.
 ========
 `flow`::
 (object) A mapping of `<flow_metric>` to its rate values in various windows.
-
++
 .Available `<flow_metric>`-s:
 [%collapsible%open]
 ==========
 `worker_utilization`::: A unitless metric indicating the percent of allocated worker-time that is being spent processing work (see: <<flow-pipeline-worker_utilization, Node Stats API metrics documentation>>).
 ==========
-
++
 .Properties of each `<flow_metric>` are the value of the metric over various windows of time:
 [%collapsible%open]
 ==========
