@@ -16,6 +16,7 @@
 # under the License.
 
 require 'elasticsearch'
+require 'elastic-transport'
 require_relative '../specs/spec_helper'
 
 class ElasticsearchService < Service
