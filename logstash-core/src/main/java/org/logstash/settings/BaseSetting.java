@@ -83,6 +83,12 @@ public class BaseSetting<T> implements Setting<T> {
         return new Builder<>(name);
     }
 
+    static <T> void validateValue(String name, T input, Predicate<T> validator) throws IllegalArgumentException {
+        if (!validator.test(input)) {
+            throw new IllegalArgumentException(String.format("Failed to validate setting `%s` with value: `%s`", name, input));
+        }
+    }
+
     /**
      * Specifically used by Coercible subclass to initialize doing validation in a second phase.
      * */
@@ -102,7 +108,7 @@ public class BaseSetting<T> implements Setting<T> {
         this.strict = strict;
         this.validator = validator;
         if (strict) {
-           validate(defaultValue);
+            validateValue(name, defaultValue, validator);
         }
     }
 
@@ -126,9 +132,7 @@ public class BaseSetting<T> implements Setting<T> {
     }
 
     public void validate(T input) throws IllegalArgumentException {
-        if (!validator.test(input)) {
-            throw new IllegalArgumentException("Failed to validate setting " + this.name + " with value: " + input);
-        }
+        validateValue(this.name, input, this.validator);
     }
 
     public String getName() {
