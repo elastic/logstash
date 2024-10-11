@@ -21,7 +21,6 @@ package org.logstash.settings;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -42,18 +41,18 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
      *
      * @return List of [SettingWithDeprecatedAlias, DeprecatedAlias]
      * */
-    static <T> List<Setting<T>> wrap(BaseSetting<T> canonicalSetting, String deprecatedAliasName, Map<String, String> kwargs) {
-        final SettingWithDeprecatedAlias<T> settingProxy = new SettingWithDeprecatedAlias<>(canonicalSetting, deprecatedAliasName, kwargs);
+    static <T> List<Setting<T>> wrap(BaseSetting<T> canonicalSetting, String deprecatedAliasName, String obsoletedVersion) {
+        final SettingWithDeprecatedAlias<T> settingProxy = new SettingWithDeprecatedAlias<>(canonicalSetting, deprecatedAliasName, obsoletedVersion);
         return Arrays.asList(settingProxy, settingProxy.deprecatedAlias);
     }
 
     private DeprecatedAlias<T> deprecatedAlias;
 
     @SuppressWarnings("this-escape")
-    protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName, Map<String, String> kwargs) {
+    protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName, String obsoletedVersion) {
         super(canonicalSetting);
 
-        this.deprecatedAlias = new DeprecatedAlias<T>(this, deprecatedAliasName, kwargs);
+        this.deprecatedAlias = new DeprecatedAlias<T>(this, deprecatedAliasName, obsoletedVersion);
     }
 
     BaseSetting<T> getCanonicalSetting() {

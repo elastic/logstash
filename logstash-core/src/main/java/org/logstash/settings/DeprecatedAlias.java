@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.logstash.log.DefaultDeprecationLogger;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * A <code>DeprecatedAlias</code> provides a deprecated alias for a setting, and is meant
@@ -38,13 +37,12 @@ public final class DeprecatedAlias<T> extends SettingDelegator<T> {
 
     private final SettingWithDeprecatedAlias<T> canonicalProxy;
 
-    private final Map<String, String> kwargs;
-    private static final String OBSOLETED_VERSION = "obsoleted_version";
+    private final String obsoletedVersion;
 
-    DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName, Map<String, String> kwargs) {
+    DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName, String obsoletedVersion) {
         super(canonicalProxy.getCanonicalSetting().deprecate(aliasName));
         this.canonicalProxy = canonicalProxy;
-        this.kwargs = kwargs;
+        this.obsoletedVersion = obsoletedVersion;
     }
 
     // Because loggers are configure after the Settings declaration, this method is intended for lazy-logging
@@ -56,9 +54,9 @@ public final class DeprecatedAlias<T> extends SettingDelegator<T> {
             params.add(getName());
             params.add(canonicalProxy.getName());
 
-            if (kwargs != null && kwargs.get(OBSOLETED_VERSION) != null) {
+            if (this.obsoletedVersion != null && !this.obsoletedVersion.isEmpty()) {
                 dmsg += " and will be removed in version {}.";
-                params.add(kwargs.get(OBSOLETED_VERSION));
+                params.add(this.obsoletedVersion);
             } else {
                 dmsg += " and will be removed in a future release of Logstash.";
             }
