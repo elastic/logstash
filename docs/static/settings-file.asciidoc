@@ -370,5 +370,5 @@ Setting this flag to `warn` is deprecated and will be removed in a future releas
 | `pipeline.buffer.type`
 | Determine where to allocate memory buffers, for plugins that leverage them.
 Currently defaults to `heap` but can be switched to `direct` to select direct memory space.
-| `heap` Check out <<reducing-off-heap-usage>> for more info.
+| `heap` Check out <<off-heap-buffers-allocation>> for more info.
 |=======================================================================
