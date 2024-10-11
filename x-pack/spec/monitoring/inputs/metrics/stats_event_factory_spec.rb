@@ -59,6 +59,8 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   let(:agent_task) { start_agent(agent) }
 
   before :each do
+    @existing_api_enabled = LogStash::SETTINGS.get_value("api.enabled")
+    LogStash::SETTINGS.set_value("api.enabled", webserver_enabled)
     agent
     agent_task
 
@@ -86,6 +88,7 @@ describe LogStash::Inputs::Metrics::StatsEventFactory do
   after :each do
     agent.shutdown
     agent_task.wait
+    LogStash::SETTINGS.set_value("api.enabled", @existing_api_enabled)
     LogStash::SETTINGS.set_value("monitoring.enabled", false)
   end
 
