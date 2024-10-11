@@ -62,6 +62,28 @@ describe LogStash::Settings do
     end
   end
 
+  describe "#to_hash" do
+    let(:java_deprecated_alias) { LogStash::Setting::Boolean.new("java.actual", true).with_deprecated_alias("java.deprecated") }
+    let(:ruby_deprecated_alias) { LogStash::Setting::PortRange.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
+    let(:non_deprecated) { LogStash::Setting::Boolean.new("plain_setting", false) }
+
+    before :each do
+      subject.register(java_deprecated_alias)
+      subject.register(ruby_deprecated_alias)
+      subject.register(non_deprecated)
+    end
+
+    it "filter deprecated alias settings" do
+      generated_settings_hash = subject.to_hash
+
+      expect(generated_settings_hash).not_to have_key("java.deprecated")
+      expect(generated_settings_hash).not_to have_key("ruby.deprecated")
+      expect(generated_settings_hash).to have_key("java.actual")
+      expect(generated_settings_hash).to have_key("ruby.actual")
+      expect(generated_settings_hash).to have_key("plain_setting")
+    end
+  end
+
   describe "#get_subset" do
     let(:numeric_setting_1) { LogStash::Setting.new("num.1", Numeric, 1) }
     let(:numeric_setting_2) { LogStash::Setting.new("num.2", Numeric, 2) }
