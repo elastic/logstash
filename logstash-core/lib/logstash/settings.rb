@@ -883,14 +883,15 @@ module LogStash
       private
 
       def do_log_setter_deprecation
-        @obsoleted_version.nil? ?
-          deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
-                                               :deprecated_alias => name,
-                                               :canonical_name => canonical_proxy.name)) :
-          deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set_version",
-                                               :deprecated_alias => name,
-                                               :canonical_name => canonical_proxy.name,
-                                               :obsoleted_version => @obsoleted_version))
+        deprecation_logger.deprecated(
+          I18n.t("logstash.settings.deprecation.set",
+                 :deprecated_alias => name,
+                 :canonical_name => canonical_proxy.name,
+                 :obsoleted_sentences =>
+                   @obsoleted_version.nil? ?
+                     I18n.t("logstash.settings.deprecation.obsoleted_future") :
+                     I18n.t("logstash.settings.deprecation.obsoleted_version", :obsoleted_version => @obsoleted_version))
+        )
       end
     end
 
