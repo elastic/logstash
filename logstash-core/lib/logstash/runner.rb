@@ -313,7 +313,7 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("pipeline.buffer.type") == nil
       deprecation_logger.deprecated(
         "'pipeline.buffer.type' setting is not explicitly defined."\
-        "Before moving to 9.x set it to 'heap' and tune heap size upward or set it to 'direct' to maintain existing behavior."
+        "Before moving to 9.x set it to 'heap' and tune heap size upward, or set it to 'direct' to maintain existing behavior."
       )
 
       # set to direct to keep backward ecs_compatibility
