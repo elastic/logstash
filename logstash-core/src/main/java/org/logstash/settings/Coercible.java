@@ -23,13 +23,12 @@ import java.util.function.Predicate;
 
 public abstract class Coercible<T> extends BaseSetting<T> {
 
-    @SuppressWarnings("this-escape")
     public Coercible(String name, T defaultValue, boolean strict, Predicate<T> validator) {
         super(name, strict, validator);
 
         if (strict) {
             T coercedDefault = coerce(defaultValue);
-            validate(coercedDefault);
+            BaseSetting.validateValue(name, coercedDefault, validator);
             this.defaultValue = coercedDefault;
         } else {
             this.defaultValue = defaultValue;
