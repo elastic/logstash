@@ -105,6 +105,37 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
         expect { settings.get_setting(canonical_setting_name).deprecated_alias.validate_value }.to_not raise_error
       end
     end
+
+    context 'obsoleted version' do
+      context "ruby string setting" do
+        let(:string_new_value) { "ironman" }
+        let(:string_default_value) { "iron man" }
+        let(:string_canonical_name) { "iron.setting" }
+        let(:string_deprecated_name) { "iron.oxide.setting" }
+        let(:string_setting) { LogStash::Setting::String.new(string_canonical_name, string_default_value, true) }
+
+        it 'logs a deprecation warning with target remove version' do
+          settings.register(string_setting.with_deprecated_alias(string_deprecated_name, "9"))
+          settings.set(string_deprecated_name, string_new_value)
+          expect(LogStash::Settings.deprecation_logger).to have_received(:deprecated)
+                                                             .with(a_string_including(string_deprecated_name))
+                                                             .with(a_string_including("version 9"))
+        end
+      end
+
+      context "java boolean setting" do
+        let(:bool_new_value) { false }
+        let(:bool_default_value) { true }
+        let(:bool_canonical_name) { "bool.setting" }
+        let(:bool_deprecated_name) { "boo.setting" }
+        let(:bool_setting) { LogStash::Setting::Boolean.new(bool_canonical_name, bool_default_value, true) }
+
+        it 'does not raise error' do
+          settings.register(bool_setting.with_deprecated_alias(bool_deprecated_name, "9"))
+          expect { settings.set(bool_deprecated_name, bool_new_value) }.to_not raise_error
+        end
+      end
+    end
   end
 
   context "when only the canonical setting is set" do
