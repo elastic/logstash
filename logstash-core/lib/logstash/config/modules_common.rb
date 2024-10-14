@@ -72,7 +72,7 @@ module LogStash module Config
         .each { |mn| deprecation_logger.deprecated("The #{mn} module has been deprecated and will be removed in version 9.") }
 
       if specified_and_available_names.include?("arcsight")
-        deprecation_logger.deprecated("The arcsight module has been deprecated and will be removed in future version.")
+        deprecation_logger.deprecated("The ArcSight module has been deprecated and will be removed in future version.")
       end
 
       specified_and_available_names.each do |module_name|
