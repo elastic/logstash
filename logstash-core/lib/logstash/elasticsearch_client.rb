@@ -16,7 +16,7 @@
 # under the License.
 
 require "elasticsearch"
-require "elasticsearch/transport/transport/http/manticore"
+require "elastic-transport"
 require 'logstash/util/manticore_ssl_config_helper'
 require 'logstash/util/password'
 
