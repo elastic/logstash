@@ -204,7 +204,7 @@ This new image flavor builds on top of a smaller and more secure base image, and
 * Logstash {logstash-ref}/monitoring-with-ea.html[monitoring doc] improvements https://github.com/elastic/logstash/pull/16208[#16208] 
 * Add ecs and datastream requirement for {logstash-ref}/ea-integrations.html#es-tips[integration filter] https://github.com/elastic/logstash/pull/16268[#16268] 
 * Remove reference to puppet {ls} module https://github.com/elastic/logstash/pull/12356[#12356]
-* Add section to describe intended usage of {logstash-ref}/jvm-settings.html#reducing-off-heap-usage[`pipeline.buffer.type`] https://github.com/elastic/logstash/pull/16083[#16083] 
+* Add section to describe intended usage of https://www.elastic.co/guide/en/logstash/8.15/jvm-settings.html#reducing-off-heap-usage[`pipeline.buffer.type`] https://github.com/elastic/logstash/pull/16083[#16083] 
 * Reposition {logstash-ref}/node-stats-api.html#pipeline-stats[`worker-utilization`] stat for better placement and flow https://github.com/elastic/logstash/pull/16337[#16337]
 * Add {logstash-ref}/performance-troubleshooting.html[tuning guidance] based on Flow metrics https://github.com/elastic/logstash/pull/16289[#16289]
 
