@@ -300,16 +300,6 @@ en:
           e.g. 'username:<password>'
         configtest: |+
           Check configuration for valid syntax and then exit.
-        http_enabled: |+
-          Can be used to disable the Web API, which is
-          enabled by default.
-          DEPRECATED: use `--api.enabled=false`
-        http_host: |+
-          Web API binding host
-          DEPRECATED: use `--api.http.host=IP`
-        http_port: |+
-          Web API http port
-          DEPRECATED: use `--api.http.port=PORT`
         api_enabled: |+
           Can be used to disable the Web API, which is
           enabled by default.
