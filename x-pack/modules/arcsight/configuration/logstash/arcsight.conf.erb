@@ -2,6 +2,7 @@
 # or more contributor license agreements. Licensed under the Elastic License;
 # you may not use this file except in compliance with the Elastic License.
 
+<% deprecation_logger.deprecated("The ArcSight module has been deprecated to be removed in a future release.") %>
 <%
 # Define the default inputs to use and a list of valid aliases
 defined_inputs = configured_inputs(["kafka"], {"eventbroker" => "kafka", "smartconnector" => "tcp"})
