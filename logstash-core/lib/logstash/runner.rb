@@ -263,12 +263,6 @@ class LogStash::Runner < Clamp::StrictCommand
     I18n.t("logstash.runner.flag.http_port"),
     :new_flag => "api.http.port", :passthrough => true # use settings to disambiguate
 
-  deprecated_option ["--event_api.tags.illegal"], "STRING",
-         I18n.t("logstash.runner.flag.event_api.tags.illegal"),
-         :default => LogStash::SETTINGS.get_default("event_api.tags.illegal"),
-         :attribute_name => "event_api.tags.illegal", :passthrough => true,
-         :obsoleted_version => "9"
-
   # We configure the registry and load any plugin that can register hooks
   # with logstash, this needs to be done before any operation.
   SYSTEM_SETTINGS = LogStash::SETTINGS.clone
@@ -355,12 +349,6 @@ class LogStash::Runner < Clamp::StrictCommand
     field_reference_escape_style = field_reference_escape_style_setting.value
     logger.debug("Setting global FieldReference escape style: #{field_reference_escape_style}")
     org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
-
-    tags_illegal_setting = settings.get_setting('event_api.tags.illegal').value
-    if tags_illegal_setting == 'warn'
-      deprecation_logger.deprecated(I18n.t("logstash.runner.tags-illegal-warning"))
-      org.logstash.Event::set_illegal_tags_action(tags_illegal_setting)
-    end
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
 
