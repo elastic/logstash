@@ -36,7 +36,7 @@ expectation:
           symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
           diagnosis:
             - cause: "pipeline is loading"
-            - action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+              action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
           impacts:
             - impact_areas: ["pipeline_execution"]
           details:
@@ -47,7 +47,7 @@ expectation:
           symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
           diagnosis:
             - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
-            - action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+              action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
           impacts:
             - impact_areas: [ "pipeline_execution" ]
           details:
@@ -58,10 +58,10 @@ expectation:
           symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
           diagnosis:
             - cause: "pipeline is not running, likely because it has encountered an error"
-            - action: "view logs to determine the cause of abnormal pipeline shutdown"
+              action: "view logs to determine the cause of abnormal pipeline shutdown"
           impacts:
             - description: "the pipeline is not currently processing"
-            - impact_areas: [ "pipeline_execution" ]
+              impact_areas: [ "pipeline_execution" ]
           details:
             status:
               state: "TERMINATED"

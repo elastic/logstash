@@ -111,8 +111,8 @@ class Bootstrap:
                 return None
             # shudown watcher keep running, we should be good with considering time spent
             if time.time() - start_time > 60:
-                process.kill()
                 print(f"Logstash didn't stop in 1min, sending SIGTERM signal.")
+                process.kill()
             if time.time() - start_time > 70:
                 print(f"Logstash didn't stop over 1min, exiting.")
                 return None
