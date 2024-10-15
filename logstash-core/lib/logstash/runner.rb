@@ -312,9 +312,17 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("config.debug") && !logger.debug?
       logger.warn("--config.debug was specified, but log.level was not set to \'debug\'! No config info will be logged.")
     end
-    if setting("pipeline.buffer.type") != nil
-      configure_pipeline_buffer_type
+    if setting("pipeline.buffer.type") == nil
+      deprecation_logger.deprecated(
+        "'pipeline.buffer.type' setting is not explicitly defined."\
+        "Before moving to 9.x set it to 'heap' and tune heap size upward, or set it to 'direct' to maintain existing behavior."
+      )
+
+      # set to direct to keep backward ecs_compatibility
+      buffer_type_setting = @settings.get_setting("pipeline.buffer.type")
+      buffer_type_setting.set("direct")
     end
+    configure_pipeline_buffer_type
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
