@@ -482,8 +482,17 @@ class LogStash::Runner < Clamp::StrictCommand
 
   def running_as_superuser
     if Process.euid() == 0
+      unless @settings.set?("allow_superuser")
+        deprecation_logger.deprecated("WARNING: You are currently running Logstash with superuser privileges. " +
+          "Starting from version 9, this will be disabled by default. " +
+          "To avoid disruption during the upgrade, set 'allow_superuser' to true now if you wish to continue running as superuser temporarily after the upgrade. " +
+          "Note that this is not recommended for security reasons.")
+      end
+
       if setting("allow_superuser")
-        deprecation_logger.deprecated("NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'allow_superuser' to 'false' to avoid startup errors in future releases.")
+        deprecation_logger.deprecated("NOTICE: Running Logstash as superuser will be completely disallowed in future versions. " +
+          "To prepare for this and avoid startup errors in future releases, it is strongly recommended to set 'allow_superuser' to false now " +
+          "and adjust your configuration accordingly.")
       else
         raise(RuntimeError, "Logstash cannot be run as superuser.")
       end
