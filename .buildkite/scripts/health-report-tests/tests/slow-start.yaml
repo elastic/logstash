@@ -9,7 +9,7 @@ config:
     pipeline.batch.size: 1
 conditions:
   full_start_required: false
-  wait_time_in_seconds: 0
+  wait_seconds: 0
 expectation:
   status: "yellow"
   symptom: "1 indicator is concerning (`pipelines`)"

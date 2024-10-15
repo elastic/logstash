@@ -22,7 +22,7 @@ config:
     pipeline.batch.size: 1
 conditions:
   full_start_required: false
-  wait_time_in_seconds: 10
+  wait_seconds: 10
 expectation:
   status: "red"
   symptom: "1 indicator is unhealthy (`pipelines`)"

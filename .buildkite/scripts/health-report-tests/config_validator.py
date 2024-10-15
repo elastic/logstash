@@ -6,7 +6,7 @@ class ConfigValidator:
     REQUIRED_KEYS = {
         "root": ["name", "config", "conditions", "expectation"],
         "config": ["pipeline.id", "config.string"],
-        "conditions": ["full_start_required", "wait_time_in_seconds"],
+        "conditions": ["full_start_required", "wait_seconds"],
         "expectation": ["status", "symptom", "indicators"],
         "indicators": ["pipelines"],
         "pipelines": ["status", "symptom", "indicators"],

@@ -12,6 +12,8 @@ class ScenarioExecutor:
         pass
 
     def __has_intersection(self, expects, results):
+        # TODO: this logic is aligned on current Health API response
+        #   there is no guarantee that method correctly runs if provided multi expects and results
         # we expect expects to be existing in results
         for expect in expects:
             for result in results:
