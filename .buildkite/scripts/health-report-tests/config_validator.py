@@ -6,11 +6,11 @@ class ConfigValidator:
     REQUIRED_KEYS = {
         "root": ["name", "config", "conditions", "expectation"],
         "config": ["pipeline.id", "config.string"],
-        "conditions": ["full_start_required"],
+        "conditions": ["full_start_required", "wait_seconds"],
         "expectation": ["status", "symptom", "indicators"],
         "indicators": ["pipelines"],
         "pipelines": ["status", "symptom", "indicators"],
-        "DYNAMIC": ["status", "symptom", "diagnosis", "impacts", "details"],
+        "DYNAMIC": ["status", "symptom", "diagnosis", "impacts", "details"],    # pipeline-id is a DYNAMIC
         "details": ["status"],
         "status": ["state"]
     }
@@ -19,7 +19,8 @@ class ConfigValidator:
         self.yaml_content = None
 
     def __has_valid_keys(self, data: any, key_path: str, repeated: bool) -> bool:
-        if isinstance(data, str) or isinstance(data, bool):   # we reached values
+        # we reached the value
+        if isinstance(data, str) or isinstance(data, bool) or isinstance(data, int) or isinstance(data, float):
             return True
 
         # we have two indicators section and for the next repeated ones, we go deeper

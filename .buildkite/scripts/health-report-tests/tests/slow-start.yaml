@@ -8,7 +8,8 @@ config:
     pipeline.workers: 1
     pipeline.batch.size: 1
 conditions:
-  - full_start_required: false
+  full_start_required: false
+  wait_seconds: 0
 expectation:
   status: "yellow"
   symptom: "1 indicator is concerning (`pipelines`)"
@@ -22,7 +23,7 @@ expectation:
           symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
           diagnosis:
             - cause: "pipeline is loading"
-            - action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+              action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
           impacts:
             - impact_areas: ["pipeline_execution"]
           details:

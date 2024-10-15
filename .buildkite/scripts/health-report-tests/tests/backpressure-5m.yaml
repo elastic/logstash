@@ -1,0 +1,39 @@
+name: "Backpressured in 5min pipeline"
+config:
+  - pipeline.id: backpressure-5m-pp
+    config.string: |
+      input { heartbeat { interval => 0.1 } }
+      filter { failure_injector { degrade_at => [filter] } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+conditions:
+  full_start_required: true
+  wait_seconds: 310 # give more seconds to make sure time is over the threshold, 1m in this case
+expectation:
+  status: "red"
+  symptom: "1 indicator is unhealthy (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "red"
+      symptom: "1 indicator is unhealthy (`backpressure-5m-pp`)"
+      indicators:
+        backpressure-5m-pp:
+          status: "red"
+          symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+              cause: "pipeline workers have been completely blocked for at least five minutes"
+              action: "address bottleneck or add resources"
+          impacts:
+            - id: "logstash:health:pipeline:flow:impact:blocked_processing"
+              severity: 1
+              description: "the pipeline is blocked"
+              impact_areas: ["pipeline_execution"]
+          details:
+            status:
+              state: "RUNNING"
+            flow:
+              worker_utilization:
+                last_1_minute: 100.0
+                last_5_minutes: 100.0

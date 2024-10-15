@@ -8,7 +8,8 @@ config:
     pipeline.workers: 1
     pipeline.batch.size: 1
 conditions:
-  - full_start_required: true
+  full_start_required: true
+  wait_seconds: 5
 expectation:
   status: "red"
   symptom: "1 indicator is unhealthy (`pipelines`)"
@@ -22,10 +23,10 @@ expectation:
           symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
           diagnosis:
             - cause: "pipeline is not running, likely because it has encountered an error"
-            - action: "view logs to determine the cause of abnormal pipeline shutdown"
+              action: "view logs to determine the cause of abnormal pipeline shutdown"
           impacts:
             - description: "the pipeline is not currently processing"
-            - impact_areas: ["pipeline_execution"]
+              impact_areas: ["pipeline_execution"]
           details:
             status:
               state: "TERMINATED"
