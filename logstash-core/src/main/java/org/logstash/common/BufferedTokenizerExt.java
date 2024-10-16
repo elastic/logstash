@@ -118,12 +118,22 @@ public class BufferedTokenizerExt extends RubyObject {
             }
             this.inputSize = inputSize + entitiesSize;
         }
-        headToken.append(input.shift(context)); // remove head
-        if (input.isEmpty()) {
+
+        if (input.getLength() < 2) {
+            // this is a specialization case which avoid adding and removing from input accumulator
+            // when it contains just one element
+            headToken.append(input.shift(context)); // remove head
             return RubyUtil.RUBY.newArray();
         }
-        input.unshift(RubyUtil.toRubyObject(headToken.toString())); // insert new head
-        headToken = new StringBuilder(input.pop(context).toJava(String.class)); // remove the tail of the data segment
+
+        if (headToken.length() > 0) {
+            // if there is a pending token part, merge it with the first token segment present
+            // in the accumulator, and clean the pending token part.
+            headToken.append(input.shift(context)); // append buffer to first element and
+            input.unshift(RubyUtil.toRubyObject(headToken.toString())); // reinsert it into the array
+            headToken = new StringBuilder();
+        }
+        headToken.append(input.pop(context)); // put the leftovers in headToken for later
         inputSize = headToken.length();
         return input;
     }
