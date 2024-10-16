@@ -28,7 +28,6 @@ import static org.logstash.RubyUtil.RUBY;
 @Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
-//@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
 public class BufferedTokenizerExtBenchmark {
