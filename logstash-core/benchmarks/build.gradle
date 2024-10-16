@@ -50,7 +50,7 @@ jar {
 }
 
 ext {
-  jmh = 1.22
+  jmh = 1.37
 }
 
 dependencies {
@@ -86,8 +86,9 @@ tasks.register("jmh", JavaExec) {
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
-            "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
+//            "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+//            ""-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
+//            "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
             "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
             shadowJar.archivePath,
             include
