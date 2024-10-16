@@ -471,7 +471,7 @@ en:
       deprecation:
         set: >-
           The setting `%{deprecated_alias}` is a deprecated alias for `%{canonical_name}`
-          %{obsoleted_sentences} Please use %{canonical_name} instead
+          %{obsoleted_sentences} Please use `%{canonical_name}` instead
         obsoleted_future: >-
           and will be removed in a future release of Logstash.
         obsoleted_version: >-

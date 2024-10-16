@@ -24,8 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.log.DefaultDeprecationLogger;
 
-import java.util.ArrayList;
-
 /**
  * A <code>DeprecatedAlias</code> provides a deprecated alias for a setting, and is meant
  * to be used exclusively through @see org.logstash.settings.SettingWithDeprecatedAlias#wrap()
@@ -49,22 +47,18 @@ public final class DeprecatedAlias<T> extends SettingDelegator<T> {
     // check https://github.com/elastic/logstash/pull/16339
     public void observePostProcess() {
         if (isSet()) {
-            String dmsg = "The setting `{}` is a deprecated alias for `{}`";
-            ArrayList<Object> params = new ArrayList<>();
-            params.add(getName());
-            params.add(canonicalProxy.getName());
+            StringBuilder sb = new StringBuilder();
+            sb.append("The setting `").append(getName()).append("` is a deprecated alias for `").append(canonicalProxy.getName()).append("`");
 
             if (this.obsoletedVersion != null && !this.obsoletedVersion.isEmpty()) {
-                dmsg += " and will be removed in version {}.";
-                params.add(this.obsoletedVersion);
+                sb.append(" and will be removed in version ").append(this.obsoletedVersion).append(".");
             } else {
-                dmsg += " and will be removed in a future release of Logstash.";
+                sb.append(" and will be removed in a future release of Logstash.");
             }
 
-            dmsg += " Please use `{}` instead";
-            params.add(canonicalProxy.getName());
+            sb.append(" Please use `").append(canonicalProxy.getName()).append("` instead");
 
-            DEPRECATION_LOGGER.deprecated(dmsg, params.toArray());
+            DEPRECATION_LOGGER.deprecated(sb.toString());
         }
     }
 
