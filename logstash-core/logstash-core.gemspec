@@ -66,7 +66,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "thwait"
 
   # filetools and rakelib
-  gem.add_runtime_dependency "minitar", "~> 0.8"
+  gem.add_runtime_dependency "minitar", "~> 1"
   gem.add_runtime_dependency "rubyzip", "~> 1"
   gem.add_runtime_dependency "thread_safe", "~> 0.3.6" #(Apache 2.0 license)
 
