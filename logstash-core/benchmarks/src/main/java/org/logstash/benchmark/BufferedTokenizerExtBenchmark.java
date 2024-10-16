@@ -57,7 +57,6 @@ public class BufferedTokenizerExtBenchmark {
 
     @SuppressWarnings("unchecked")
     @Benchmark
-    @OperationsPerInvocation(10_000_000)
     public final void onlyOneTokenPerFragment(Blackhole blackhole) {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, singleTokenPerFragment);
         blackhole.consume(tokens);
@@ -65,7 +64,6 @@ public class BufferedTokenizerExtBenchmark {
 
     @SuppressWarnings("unchecked")
     @Benchmark
-    @OperationsPerInvocation(10_000_000)
     public final void multipleTokenPerFragment(Blackhole blackhole) {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, multipleTokensPerFragment);
         blackhole.consume(tokens);
@@ -73,7 +71,6 @@ public class BufferedTokenizerExtBenchmark {
 
     @SuppressWarnings("unchecked")
     @Benchmark
-    @OperationsPerInvocation(10_000_000)
     public final void multipleTokensCrossingMultipleFragments(Blackhole blackhole) {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, multipleTokensSpreadMultipleFragments_1);
         blackhole.consume(tokens);
