@@ -50,7 +50,7 @@ jar {
 }
 
 ext {
-  jmh = 1.22
+  jmh = 1.37
 }
 
 dependencies {
@@ -79,17 +79,15 @@ tasks.register("jmh", JavaExec) {
 
  dependsOn=[':logstash-core-benchmarks:clean', ':logstash-core-benchmarks:shadowJar']
 
-  main = "-jar"
+  mainClass = "-jar"
 
   def include = project.properties.get('include', '')
 
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+UseConcMarkSweepGC", "-XX:CMSInitiatingOccupancyFraction=75",
-            "-XX:+UseCMSInitiatingOccupancyOnly", "-XX:+DisableExplicitGC",
             "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
-            shadowJar.archivePath,
+            shadowJar.archiveFile.get().asFile,
             include
     ]
   }
