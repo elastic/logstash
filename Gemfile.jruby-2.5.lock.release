@@ -104,7 +104,7 @@ GEM
     equalizer (0.0.11)
     erb (2.2.3)
       cgi
-    faraday (1.10.3)
+    faraday (1.10.4)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
@@ -370,7 +370,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri
       xml-simple
-    logstash-input-azure_event_hubs (1.4.7)
+    logstash-input-azure_event_hubs (1.4.9)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -705,10 +705,10 @@ GEM
       method_source (~> 1.0)
       spoon (~> 0.0)
     public_suffix (3.1.1)
-    puma (5.6.8-java)
+    puma (5.6.9-java)
       nio4r (~> 2.0)
     racc (1.5.2-java)
-    rack (2.2.9)
+    rack (2.2.10)
     rack-protection (2.2.1)
       rack
     rack-test (1.1.0)
