@@ -64,10 +64,6 @@ var validSettings = []string{
 	"dead_letter_queue.storage_policy",
 	"dead_letter_queue.retain.age",
 	"path.dead_letter_queue",
-	"http.enabled",     // DEPRECATED: prefer `api.enabled`
-	"http.environment", // DEPRECATED: prefer `api.environment`
-	"http.host",        // DEPRECATED: prefer `api.http.host`
-	"http.port",        // DEPRECATED: prefer `api.http.port`
 	"log.level",
 	"log.format",
 	"log.format.json.fix_duplicate_message_fields",
