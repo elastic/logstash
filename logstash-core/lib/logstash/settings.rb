@@ -524,6 +524,9 @@ module LogStash
       end
     end
 
+
+    java_import org.logstash.settings.StringSetting
+
     class String < Setting
       def initialize(name, default = nil, strict = true, possible_strings = [])
         @possible_strings = possible_strings
