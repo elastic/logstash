@@ -1,0 +1,67 @@
+name: "Multi pipeline"
+config:
+  - pipeline.id: slow-start-pp-multipipeline
+    config.string: |
+      input { heartbeat {} }
+      filter { failure_injector { degrade_at => [register] } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+  - pipeline.id: normally-terminated-pp-multipipeline
+    config.string: |
+      input { generator { count => 1 } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+  - pipeline.id: abnormally-terminated-pp-multipipeline
+    config.string: |
+      input { heartbeat { interval => 1 } }
+      filter { failure_injector { crash_at => filter } }
+      output { stdout {} }
+    pipeline.workers: 1
+    pipeline.batch.size: 1
+conditions:
+  full_start_required: false
+  wait_seconds: 10
+expectation:
+  status: "red"
+  symptom: "1 indicator is unhealthy (`pipelines`)"
+  indicators:
+    pipelines:
+      status: "red"
+      symptom: "1 indicator is unhealthy (`abnormally-terminated-pp-multipipeline`) and 2 indicators are concerning (`slow-start-pp-multipipeline`, `normally-terminated-pp-multipipeline`)"
+      indicators:
+        slow-start-pp-multipipeline:
+          status: "yellow"
+          symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline is loading"
+              action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+          impacts:
+            - impact_areas: ["pipeline_execution"]
+          details:
+            status:
+              state: "LOADING"
+        normally-terminated-pp-multipipeline:
+          status: "yellow"
+          symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
+              action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+          impacts:
+            - impact_areas: [ "pipeline_execution" ]
+          details:
+            status:
+              state: "FINISHED"
+        abnormally-terminated-pp-multipipeline:
+          status: "red"
+          symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+          diagnosis:
+            - cause: "pipeline is not running, likely because it has encountered an error"
+              action: "view logs to determine the cause of abnormal pipeline shutdown"
+          impacts:
+            - description: "the pipeline is not currently processing"
+              impact_areas: [ "pipeline_execution" ]
+          details:
+            status:
+              state: "TERMINATED"

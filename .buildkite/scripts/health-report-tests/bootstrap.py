@@ -6,6 +6,7 @@ Health Report Integration test bootstrapper with Python script
 """
 import os
 import subprocess
+import time
 import util
 import yaml
 
@@ -99,3 +100,19 @@ class Bootstrap:
 
         print(f"Logstash is running with PID: {process.pid}.")
         return process
+
+    def stop_logstash(self, process: subprocess.Popen):
+        start_time = time.time()    # in seconds
+        process.terminate()
+        for stdout_line in iter(process.stdout.readline, ""):
+            # print(f"STDOUT: {stdout_line.strip()}")
+            if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
+                print(f"Logstash stopped.")
+                return None
+            # shudown watcher keep running, we should be good with considering time spent
+            if time.time() - start_time > 60:
+                print(f"Logstash didn't stop in 1min, sending SIGTERM signal.")
+                process.kill()
+            if time.time() - start_time > 70:
+                print(f"Logstash didn't stop over 1min, exiting.")
+                return None

@@ -49,7 +49,6 @@ var validSettings = []string{
 	"config.debug",
 	"config.support_escapes",
 	"config.field_reference.escape_style",
-	"event_api.tags.illegal",
 	"queue.type",
 	"path.queue",
 	"queue.page_capacity",

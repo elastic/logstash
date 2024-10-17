@@ -3,8 +3,10 @@
 === Logstash ArcSight Module
 
 ++++
-<titleabbrev>ArcSight Module</titleabbrev>
+<titleabbrev>ArcSight Module (deprecated)</titleabbrev>
 ++++
+
+deprecated[8.16.0, Replace by https://docs.elastic.co/integrations/cef[Common Event Format (CEF)] from Elastic {integrations}]
 
 NOTE: The Logstash ArcSight module is an
 https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
@@ -16,6 +18,8 @@ The Logstash ArcSight module enables you to easily integrate your ArcSight data 
 With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker,
 parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards
 to get you exploring your data immediately.
+
+NOTE: The {ls} ArsSight Module has been deprecated and replaced by https://docs.elastic.co/integrations/cef[Common Event Format (CEF)] from Elastic {integrations}.
 
 [[arcsight-prereqs]]
 ==== Prerequisites
