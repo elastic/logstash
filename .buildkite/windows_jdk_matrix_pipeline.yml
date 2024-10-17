@@ -2,7 +2,7 @@
 
 env:
   DEFAULT_MATRIX_OS: "windows-2022"
-  DEFAULT_MATRIX_JDK: "adoptiumjdk_17"
+  DEFAULT_MATRIX_JDK: "adoptiumjdk_21"
 
 steps:
   - input: "Test Parameters"
