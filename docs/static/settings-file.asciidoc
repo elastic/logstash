@@ -338,7 +338,7 @@ The log level. Valid options are:
 
 | `log.format.json.fix_duplicate_message_fields`
 | When the log format is `json` avoid collision of field names in log lines.
-| `false`
+| `true`
 
 | `path.logs`
 | The directory where Logstash will write its log to.
