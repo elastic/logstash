@@ -7,7 +7,7 @@ env:
   # Every run tests all supported JDKs on the default OS. To narrow or broaden a run, set
   # MATRIX_OSES and/or MATRIX_JDKS (space-separated) in the build environment.
   DEFAULT_MATRIX_OS: "ubuntu-2204"
-  DEFAULT_MATRIX_JDKS: "adoptiumjdk_21 adoptiumjdk_17 openjdk_21 openjdk_17 zulu_21 zulu_17"
+  DEFAULT_MATRIX_JDKS: "adoptiumjdk_21 openjdk_21 zulu_21"
 
 steps:
   - command: |
