@@ -314,7 +314,7 @@
 #   * json
 #
 # log.format: plain
-# log.format.json.fix_duplicate_message_fields: false
+# log.format.json.fix_duplicate_message_fields: true
 #
 # path.logs:
 #

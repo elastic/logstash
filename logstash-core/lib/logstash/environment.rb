@@ -71,7 +71,7 @@ module LogStash
            Setting::Boolean.new("help", false),
            Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
-           Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", false),
+           Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", true),
            Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled", "9"),
             Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host", "9"),
          Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port", "9"),
