@@ -25,17 +25,16 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.RubyUtil.RUBY;
 
 @SuppressWarnings("unchecked")
-public final class BufferedTokenizerExtTest extends RubyTestBase {
+public final class BufferedTokenizerExtTest {
 
     private BufferedTokenizerExt sut;
     private ThreadContext context;
@@ -52,7 +51,7 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
     public void shouldTokenizeASingleToken() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\n"));
 
-        assertEquals(List.of("foo"), tokens);
+        assertEquals(Arrays.asList("foo"), tokens);
     }
 
     @Test
@@ -61,14 +60,14 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
         assertTrue(tokens.isEmpty());
 
         tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("bar\n"));
-        assertEquals(List.of("foobar"), tokens);
+        assertEquals(Arrays.asList("foobar"), tokens);
     }
 
     @Test
     public void shouldTokenizeMultipleToken() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar\n"));
 
-        assertEquals(List.of("foo", "bar"), tokens);
+        assertEquals(Arrays.asList("foo", "bar"), tokens);
     }
 
     @Test
@@ -77,15 +76,15 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
         assertTrue(tokens.isEmpty());
 
         tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar"));
-        assertEquals(List.of("foo"), tokens);
+        assertEquals(Arrays.asList("foo"), tokens);
     }
 
     @Test
     public void shouldTokenizeEmptyPayloadWithNewline() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n"));
-        assertEquals(List.of(""), tokens);
+        assertEquals(Arrays.asList(""), tokens);
 
         tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n\n\n"));
-        assertEquals(List.of("", "", ""), tokens);
+        assertEquals(Arrays.asList("", "", ""), tokens);
     }
 }

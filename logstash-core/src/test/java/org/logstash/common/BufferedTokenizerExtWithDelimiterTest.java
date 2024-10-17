@@ -25,17 +25,16 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.RubyUtil.RUBY;
 
 @SuppressWarnings("unchecked")
-public final class BufferedTokenizerExtWithDelimiterTest extends RubyTestBase {
+public final class BufferedTokenizerExtWithDelimiterTest {
 
     private BufferedTokenizerExt sut;
     private ThreadContext context;
@@ -52,7 +51,7 @@ public final class BufferedTokenizerExtWithDelimiterTest extends RubyTestBase {
     public void shouldTokenizeMultipleToken() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo||b|r||"));
 
-        assertEquals(List.of("foo", "b|r"), tokens);
+        assertEquals(Arrays.asList("foo", "b|r"), tokens);
     }
 
     @Test
@@ -61,6 +60,6 @@ public final class BufferedTokenizerExtWithDelimiterTest extends RubyTestBase {
         assertTrue(tokens.isEmpty());
 
         tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo||bar"));
-        assertEquals(List.of("foo"), tokens);
+        assertEquals(Arrays.asList("foo"), tokens);
     }
 }

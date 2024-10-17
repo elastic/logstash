@@ -24,10 +24,9 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
-import java.util.List;
+import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -35,7 +34,7 @@ import static org.junit.Assert.*;
 import static org.logstash.RubyUtil.RUBY;
 
 @SuppressWarnings("unchecked")
-public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
+public final class BufferedTokenizerExtWithSizeLimitTest {
 
     private BufferedTokenizerExt sut;
     private ThreadContext context;
@@ -52,7 +51,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     public void givenTokenWithinSizeLimitWhenExtractedThenReturnTokens() {
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar\n"));
 
-        assertEquals(List.of("foo", "bar"), tokens);
+        assertEquals(Arrays.asList("foo", "bar"), tokens);
     }
 
     @Test
@@ -71,7 +70,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\nanother"));
-        assertEquals("After buffer full error should resume from the end of line", List.of("kaboom"), tokens);
+        assertEquals("After buffer full error should resume from the end of line", Arrays.asList("kaboom"), tokens);
     }
 
     @Test
@@ -84,7 +83,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbb\nccc"));
-        assertEquals(List.of("bbbb"), tokens);
+        assertEquals(Arrays.asList("bbbb"), tokens);
     }
 
     @Test
@@ -105,6 +104,17 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
 
         // now should resemble processing on c and d
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("ccc\nddd\n"));
-        assertEquals(List.of("ccccc", "ddd"), tokens);
+        assertEquals(Arrays.asList("ccccc", "ddd"), tokens);
+    }
+
+    private static <T extends Throwable> Exception assertThrows(Class<T> excpClass, Runnable action) {
+        try {
+            action.run();
+            fail("Expected an exception");
+            return new IllegalStateException("Can't be reached");
+        } catch (Exception t) {
+            assertTrue(excpClass.isAssignableFrom(t.getClass()));
+            return t;
+        }
     }
 }
