@@ -231,7 +231,7 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
    (using Ruby's Object#inspect). The default is "plain".
 
 *`--log.format.json.fix_duplicate_message_fields ENABLED`*::
-  Avoid `message` field collision using JSON log format. Possible values are `false` (default) and `true`.
+  Avoid `message` field collision using JSON log format. Possible values are `true` (default) and `false`.
 
 *`--path.settings SETTINGS_DIR`*::
   Set the directory containing the `logstash.yml` <<logstash-settings-file,settings file>> as well
