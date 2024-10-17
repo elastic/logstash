@@ -1,4 +1,4 @@
-http.enabled: false
+api.http.enabled: false
 filebeat.inputs:
 - type: log
   symlinks: true
