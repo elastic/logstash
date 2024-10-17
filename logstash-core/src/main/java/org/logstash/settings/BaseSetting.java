@@ -193,7 +193,10 @@ public class BaseSetting<T> implements Setting<T> {
     }
 
     public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias) {
-        return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias);
+        return withDeprecatedAlias(deprecatedAlias, null);
+    }
+    public List<Setting<T>> withDeprecatedAlias(String deprecatedAlias, String obsoletedVersion) {
+        return SettingWithDeprecatedAlias.wrap(this, deprecatedAlias, obsoletedVersion);
     }
 
     public Setting<T> nullable() {
