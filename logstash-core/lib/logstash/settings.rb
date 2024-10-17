@@ -334,8 +334,8 @@ module LogStash
       validate(value)
     end
 
-    def with_deprecated_alias(deprecated_alias_name)
-      SettingWithDeprecatedAlias.wrap(self, deprecated_alias_name)
+    def with_deprecated_alias(deprecated_alias_name, obsoleted_version=nil)
+      SettingWithDeprecatedAlias.wrap(self, deprecated_alias_name, obsoleted_version)
     end
 
     ##
@@ -847,10 +847,11 @@ module LogStash
     class DeprecatedAlias < SimpleDelegator
       # include LogStash::Util::Loggable
       alias_method :wrapped, :__getobj__
-      attr_reader :canonical_proxy
+      attr_reader :canonical_proxy, :obsoleted_version
 
-      def initialize(canonical_proxy, alias_name)
+      def initialize(canonical_proxy, alias_name, obsoleted_version)
         @canonical_proxy = canonical_proxy
+        @obsoleted_version = obsoleted_version
 
         clone = @canonical_proxy.canonical_setting.clone
         clone.update_wrapper(clone.wrapped_setting.deprecate(alias_name))
@@ -882,9 +883,15 @@ module LogStash
       private
 
       def do_log_setter_deprecation
-        deprecation_logger.deprecated(I18n.t("logstash.settings.deprecation.set",
-                                             :deprecated_alias => name,
-                                             :canonical_name => canonical_proxy.name))
+        deprecation_logger.deprecated(
+          I18n.t("logstash.settings.deprecation.set",
+                 :deprecated_alias => name,
+                 :canonical_name => canonical_proxy.name,
+                 :obsoleted_sentences =>
+                   @obsoleted_version.nil? ?
+                     I18n.t("logstash.settings.deprecation.obsoleted_future") :
+                     I18n.t("logstash.settings.deprecation.obsoleted_version", :obsoleted_version => @obsoleted_version))
+        )
       end
     end
 
@@ -901,10 +908,11 @@ module LogStash
       # including the canonical setting and a deprecated alias.
       # @param canonical_setting [Setting]: the setting to wrap
       # @param deprecated_alias_name [String]: the name for the deprecated alias
+      # @param obsoleted_version [String]: the version of Logstash that deprecated alias will be removed
       #
       # @return [SettingWithDeprecatedAlias,DeprecatedSetting]
-      def self.wrap(canonical_setting, deprecated_alias_name)
-        setting_proxy = new(canonical_setting, deprecated_alias_name)
+      def self.wrap(canonical_setting, deprecated_alias_name, obsoleted_version=nil)
+        setting_proxy = new(canonical_setting, deprecated_alias_name, obsoleted_version)
 
         [setting_proxy, setting_proxy.deprecated_alias]
       end
@@ -912,10 +920,10 @@ module LogStash
       attr_reader :deprecated_alias
       alias_method :canonical_setting, :__getobj__
 
-      def initialize(canonical_setting, deprecated_alias_name)
+      def initialize(canonical_setting, deprecated_alias_name, obsoleted_version)
         super(canonical_setting)
 
-        @deprecated_alias = DeprecatedAlias.new(self, deprecated_alias_name)
+        @deprecated_alias = DeprecatedAlias.new(self, deprecated_alias_name, obsoleted_version)
       end
 
       def set(value)
