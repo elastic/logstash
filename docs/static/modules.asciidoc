@@ -52,23 +52,6 @@ dashboards and visualizations. Running `--setup` is a one-time setup step. Omit
 this option for subsequent runs of the module to avoid overwriting existing
 Kibana dashboards.
 
-For example, the following command runs the Netflow module with the default
-settings, and sets up the netflow index pattern and dashboards:
-
-[source,shell]
-----
-bin/logstash --modules netflow --setup 
-----
-
-The following command runs the Netflow module and overrides the Elasticsearch
-`host` setting. Here it's assumed that you've already run the setup step.
-
-[source,shell]
-----
-bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com"
-----
-
-
 [discrete]
 [[configuring-logstash-modules]]
 === Configuring modules
@@ -91,14 +74,13 @@ settings. For example:
 [source,shell]
 ----
 modules:
-- name: netflow
+- name: arcsight
   var.elasticsearch.hosts: "es.mycloud.com"
   var.elasticsearch.username: "foo"
   var.elasticsearch.password: "password"
   var.kibana.host: "kb.mycloud.com"
   var.kibana.username: "foo"
   var.kibana.password: "password"
-  var.input.tcp.port: 5606
 ----
 
 For a list of available module settings, see the documentation for the module.
@@ -150,7 +132,7 @@ Elasticsearch `host` setting and the `udp.port` setting:
 
 [source,shell]
 ----
-bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" -M "netflow.var.elasticsearch.hosts=my-es-cloud"
+bin/logstash --modules arcsight -M "arcsight.var.elasticsearch.hosts=my-es-cloud"
 ----
 
 Any settings defined in the command line are ephemeral and will not persist across
@@ -200,7 +182,7 @@ These settings can be also specified at the command line, like this:
 
 ["source","sh",subs="attributes,callouts"]
 ----
-bin/logstash --modules netflow -M "netflow.var.input.udp.port=3555" --cloud.id <your-cloud-id> --cloud.auth <your-cloud-auth>
+bin/logstash --modules arcsight --cloud.id <your-cloud-id> --cloud.auth <your-cloud-auth>
 ----
 
 NOTE: When working with modules, use the dot notation to specify cloud.id and
