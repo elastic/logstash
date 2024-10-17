@@ -34,7 +34,7 @@ module LogStash
   end
 
   [
-           Setting::Boolean.new("allow_superuser", true),
+           Setting::Boolean.new("allow_superuser", false),
             Setting::String.new("node.name", Socket.gethostname),
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
