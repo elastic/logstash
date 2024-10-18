@@ -123,7 +123,7 @@ Keep these memory requirements in mind as you calculate your ideal memory alloca
 Input plugins such as {agent}, {beats}, TCP, and HTTP will allocate buffers in Java heap memory to read events from the network.
 This is the preferred allocation method as it facilitates debugging memory usage problems (such as leaks and Out of Memory errors) through the analysis of heap dumps.
 
-Before version 9.0.0, Logstash defaulted to allocate direct memory for this purpose, instead of heap. To re-enable the previous behaviour {ls} provides
+Before version 9.0.0, Logstash defaulted to allocate direct memory for this purpose instead of heap. To re-enable the previous behaviour {ls} provides
 a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate
 memory buffers for plugins that use them.
 
