@@ -359,7 +359,7 @@ separating each log lines per pipeline could be helpful in case you need to trou
 
 | `allow_superuser`
 | Setting to `true` to allow or `false` to block running Logstash as a superuser.
-| `true`
+| `false`
 
 | `pipeline.buffer.type`
 | Determine where to allocate memory buffers, for plugins that leverage them.
