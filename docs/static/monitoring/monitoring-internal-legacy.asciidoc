@@ -7,6 +7,8 @@
 
 deprecated[7.9.0]
 
+NOTE: Starting from version 9.0 legacy monitoring is disabled, to force it use the flag `legacy.monitoring.enabled`.
+
 ==== Components for legacy collection
 
 Monitoring {ls} with legacy collection uses these components:
