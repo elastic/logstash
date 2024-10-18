@@ -363,6 +363,6 @@ separating each log lines per pipeline could be helpful in case you need to trou
 
 | `pipeline.buffer.type`
 | Determine where to allocate memory buffers, for plugins that leverage them.
-Currently defaults to `direct` but can be switched to `heap` to select Java heap space, which will become the default in the future.
-| `direct` Check out <<reducing-off-heap-usage>> for more info.
+Defaults to `heap` but can be switched to `direct` to instruct Logstash to prefer allocation of buffers in direct memory.
+| `heap` Check out <<off-heap-buffers-allocation>> for more info.
 |=======================================================================
