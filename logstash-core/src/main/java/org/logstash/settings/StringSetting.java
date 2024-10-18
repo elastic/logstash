@@ -17,6 +17,10 @@ public class StringSetting extends BaseSetting<String> {
         }
     }
 
+    public StringSetting(String name, String defaultValue) {
+        this(name, defaultValue, true, Collections.emptyList());
+    }
+
     @Override
     public void validate(String input) throws IllegalArgumentException {
         staticValidate(input, possibleStrings, this.getName());

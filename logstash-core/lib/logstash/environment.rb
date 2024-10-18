@@ -35,7 +35,7 @@ module LogStash
 
   [
            Setting::Boolean.new("allow_superuser", false),
-            Setting::String.new("node.name", Socket.gethostname),
+            Setting::StringSetting.new("node.name", Socket.gethostname),
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableString.new("config.string", nil, false),
@@ -52,7 +52,7 @@ module LogStash
            Setting::Boolean.new("config.support_escapes", false),
             Setting::StringSetting.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::Boolean.new("metric.collect", true),
-            Setting::String.new("pipeline.id", "main"),
+            Setting::StringSetting.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
@@ -73,9 +73,9 @@ module LogStash
             Setting::StringSetting.new("log.format", "plain", true, ["json", "plain"]),
            Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", true),
            Setting::Boolean.new("api.enabled", true),
-            Setting::String.new("api.http.host", "127.0.0.1"),
+            Setting::StringSetting.new("api.http.host", "127.0.0.1"),
          Setting::PortRange.new("api.http.port", 9600..9700),
-            Setting::String.new("api.environment", "production"),
+            Setting::StringSetting.new("api.environment", "production"),
             Setting::StringSetting.new("api.auth.type", "none", true, %w(none basic)),
             Setting::String.new("api.auth.basic.username", nil, false).nullable,
           Setting::Password.new("api.auth.basic.password", nil, false).nullable,
@@ -107,7 +107,7 @@ module LogStash
          Setting::TimeValue.new("slowlog.threshold.info", "-1"),
          Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
-            Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
+            Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableString.new("monitoring.cluster_uuid"),
             Setting::StringSetting.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
