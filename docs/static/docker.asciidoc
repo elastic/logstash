@@ -208,7 +208,7 @@ The following settings have different default values when using the Docker
 images:
 
 [horizontal]
-`http.host`:: `0.0.0.0`
+`api.http.host`:: `0.0.0.0`
 `monitoring.elasticsearch.hosts`:: `http://elasticsearch:9200`
 
 NOTE: The setting `monitoring.elasticsearch.hosts` is not
