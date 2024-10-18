@@ -334,6 +334,11 @@
 # Default to direct, optionally can be switched to heap to select Java heap space.
 # pipeline.buffer.type: direct
 #
+#
+# Flag to enable the legacy internal monitoring.
+# Default is false
+# legacy.monitoring.enabled false
+#
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #
 # X-Pack Monitoring
