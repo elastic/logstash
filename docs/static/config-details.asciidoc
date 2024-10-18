@@ -127,9 +127,9 @@ Before version 9.0.0, Logstash defaulted to allocate direct memory for this purp
 a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate
 memory buffers for plugins that use them.
 
-Performance-wise there shouldn't be a noticeable impact in switching to `direct`, since while direct memory IO is faster,
-Logstash Event objects produced by these plugins end up being allocated on the Java Heap,
-incurring the cost of copying from direct memory to heap memory regardless of the setting.
+There shouldn't be a noticeable performance impact in switching between `direct` and `heap`. 
+While copying bytes from OS buffers to direct memory buffers is faster, Logstash Event objects produced by these plugins end up 
+being allocated on the Java Heap incurring the cost of copying from direct memory to heap memory, regardless of the setting.
 
 [[memory-size-calculation]]
 ===== Memory sizing
