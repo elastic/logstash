@@ -365,4 +365,8 @@ separating each log lines per pipeline could be helpful in case you need to trou
 | Determine where to allocate memory buffers, for plugins that leverage them.
 Currently defaults to `direct` but can be switched to `heap` to select Java heap space, which will become the default in the future.
 | `direct` Check out <<reducing-off-heap-usage>> for more info.
+
+| `monitoring.legacy.enabled`
+| Setting to explicitly enable <<monitoring-internal-collection-legacy,internal legacy monitoring>>.
+| `false`
 |=======================================================================

@@ -146,6 +146,7 @@ def logstash_command_append(cmd, argument, value)
 end
 
 def logstash(cmd, options = {})
+  # logstash_with_empty_default(cmd, options, {"xpack.monitoring.enabled" => true, "legacy.monitoring.enabled" => true})
   logstash_with_empty_default(cmd, options, {"xpack.monitoring.enabled" => true})
 end
 
