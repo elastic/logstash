@@ -24,6 +24,18 @@ describe LogStash::MonitoringExtension::PipelineRegisterHook do
   }
 
   context 'validate monitoring settings' do
+    it "it's not enabled with just xpack.monitoring.enabled set to true" do
+      expect(subject.monitoring_enabled?(settings)).to be_falsey
+    end
+
+    context 'when legacy.monitoring is overridden' do
+      let(:settings) { super().merge({"legacy.monitoring.enabled" => true}) }
+
+      it "should be enabled" do
+        expect(subject.monitoring_enabled?(settings)).to be_truthy
+      end
+    end
+
     it "work without any monitoring settings" do
       settings.set_value("xpack.monitoring.enabled", true)
       expect(subject.generate_pipeline_config(settings)).to be_truthy
