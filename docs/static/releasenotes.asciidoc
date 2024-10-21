@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-25,Logstash 7.17.25>>
 * <<logstash-7-17-24,Logstash 7.17.24>>
 * <<logstash-7-17-23,Logstash 7.17.23>>
 * <<logstash-7-17-22,Logstash 7.17.22>>
@@ -82,6 +83,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-25]]
+=== Logstash 7.17.25 Release Notes
+
+No user-facing changes in Logstash core.
+
+==== Plugins
+
+*Azure_event_hubs Input - 1.4.9*
+
+* Fixed issue with `getHostContext` method accessibility, causing plugin not to be able to run  https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/93[#93]
+* Fixed connection placeholder replacements errors with Logstash `8.15.1` and `8.15.2` https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/92[#92]
 
 
 [[logstash-7-17-24]]
