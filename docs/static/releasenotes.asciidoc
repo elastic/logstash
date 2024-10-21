@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-25,Logstash 7.17.25>>
 * <<logstash-7-17-24,Logstash 7.17.24>>
 * <<logstash-7-17-23,Logstash 7.17.23>>
 * <<logstash-7-17-22,Logstash 7.17.22>>
@@ -82,6 +83,37 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-25]]
+=== Logstash 7.17.25 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.25
+
+=== Logstash Commits between 7.17 and 7.17.24
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.24..7.17"
+
+de7e0d04c - (HEAD -> 7.17, origin/7.17) bump lock file for 7.17 (#16559) (5 days ago) <github-actions[bot]>
+0e19e42a4 - Pin CI container images to v0.4 for 7.17 branch (#16497) (3 weeks ago) <Dimitrios Liappis>
+34c84f6f7 - bump core to 7.17.25 (#16438) (6 weeks ago) <kaisecheng>
+9ea8a15af - Release notes for 7.17.24 (#16415) (6 weeks ago) <github-actions[bot]>
+d8a5f4977 - Update z_rubycheck.rake to no longer inject Xmx1g (#16420) (7 weeks ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.24..7.17 *.release"
+Changed plugin versions:
+logstash-input-azure_event_hubs: 1.4.7 -> 1.4.9
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Azure_event_hubs Input - 1.4.9*
+
+* Fixed issue with `getHostContext` method accessibility, causing plugin not to be able to run  https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/93[#93]
+
+* Fixed connection placeholder replacements errors with Logstash `8.15.1` and `8.15.2` https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/92[#92]
 
 
 [[logstash-7-17-24]]
