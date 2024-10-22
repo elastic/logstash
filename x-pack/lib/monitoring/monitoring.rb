@@ -176,7 +176,7 @@ module LogStash
         allowed = settings.get_value("allow.legacy.monitoring")
         legacy_monitoring_enabled = (settings.get_value("xpack.monitoring.enabled") || settings.get_value("monitoring.enabled"))
         if !allowed && legacy_monitoring_enabled
-          logger.warn("Legacy internal monitoring is enabled (xpack.monitoring.enabled or monitoring.enabled is true) but not allowed. Please check your configuration and eventually set allow.legacy.monitoring")
+          logger.warn("You have enabled legacy internal monitoring. However, starting from version 9.0, this feature is deactivated and behind a feature flag. Set `allow.legacy.monitoring` to `true` to allow access to the feature.)
         end
       end
       private :log_warn_if_legacy_is_enabled_and_not_allowed
