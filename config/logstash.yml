@@ -337,7 +337,7 @@
 #
 # Flag to allow the legacy internal monitoring.
 # Default is false
-# legacy.monitoring.enabled: false
+# allow.legacy.monitoring: false
 #
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #

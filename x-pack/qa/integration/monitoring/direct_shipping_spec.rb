@@ -15,7 +15,7 @@ describe "Direct shipping" do
 
     @logstash_service = logstash_with_empty_default("bin/logstash -e '#{config}' -w 1  --pipeline.id #{SecureRandom.hex(8)}", {
       :settings => {
-        "legacy.monitoring.enabled" => true,
+        "allow.legacy.monitoring" => true,
         "monitoring.enabled" => true,
         "monitoring.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:9200"],
         "monitoring.collection.interval" => "1s",
