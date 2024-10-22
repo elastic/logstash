@@ -7,7 +7,7 @@
 
 deprecated[7.9.0]
 
-NOTE: Starting from version 9.0 legacy monitoring is disabled, to force it use the flag `allow.legacy.monitoring`.
+NOTE: Starting from version 9.0, legacy monitoring is deactivated and behind a feature flag. Set `allow.legacy.monitoring` to `true` to allow access to the feature.
 
 ==== Components for legacy collection
 

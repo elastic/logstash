@@ -335,8 +335,7 @@
 # pipeline.buffer.type: direct
 #
 #
-# Flag to allow the legacy internal monitoring.
-# Default is false
+# Flag to allow the legacy internal monitoring (default: false)
 # allow.legacy.monitoring: false
 #
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
