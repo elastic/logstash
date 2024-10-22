@@ -27,7 +27,7 @@ steps:
           watch:
             - path: .buildkite
               config:
-                command:  "buildkite-agent pipeline upload .buildkite/bump-sh-ci.sh"
+                command:  "buildkite-agent pipeline upload .buildkite/bump-sh-ci.yml"
 
   - label: ":rspec: Ruby unit tests"
     key: "ruby-unit-tests"
