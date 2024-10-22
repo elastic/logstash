@@ -20,13 +20,14 @@ steps:
       ci/license_check.sh -m 4G
 
   - label: "Docs bump check"
+    if: build.pull_request.id != null
     plugins:
       - monorepo-diff#v1.0.1:
           diff: "git diff --name-only origin/${GITHUB_PR_TARGET_BRANCH}...HEAD"
           watch:
             - path: .buildkite
               config:
-                command:  "buildkite-agent pipeline upload bump-sh-ci.sh"
+                command:  "buildkite-agent pipeline upload .buildkite/bump-sh-ci.sh"
 
   - label: ":rspec: Ruby unit tests"
     key: "ruby-unit-tests"
