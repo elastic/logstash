@@ -367,6 +367,6 @@ Currently defaults to `direct` but can be switched to `heap` to select Java heap
 | `direct` Check out <<reducing-off-heap-usage>> for more info.
 
 | `legacy.monitoring.enabled`
-| Setting to explicitly enable <<monitoring-internal-collection-legacy,internal legacy monitoring>>.
+| Set to `true` to allow <<monitoring-internal-collection-legacy,internal legacy monitoring>>.
 | `false`
 |=======================================================================
