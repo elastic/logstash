@@ -157,6 +157,7 @@ module LogStash
       # To help keep passivity, assume that if "xpack.monitoring.elasticsearch.hosts" has been set that monitoring should be enabled.
       # return true if allow.legacy.monitoring=true and xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
       def monitoring_enabled?(settings)
+        log_warn_if_legacy_is_enabled_and_not_allowed(settings)
         return false unless settings.get_value("allow.legacy.monitoring")
         return settings.get_value("monitoring.enabled") if settings.set?("monitoring.enabled")
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
@@ -170,6 +171,15 @@ module LogStash
           default # false as of 6.3
         end
       end
+
+      def log_warn_if_legacy_is_enabled_and_not_allowed(settings)
+        allowed = settings.get_value("allow.legacy.monitoring")
+        legacy_monitoring_enabled = (settings.get_value("xpack.monitoring.enabled") || settings.get_value("monitoring.enabled"))
+        if !allowed && legacy_monitoring_enabled
+          logger.warn("Legacy internal monitoring is enabled (xpack.monitoring.enabled or monitoring.enabled is true) but not allowed. Please check your configuration and eventually set allow.legacy.monitoring")
+        end
+      end
+      private :log_warn_if_legacy_is_enabled_and_not_allowed
 
       def setup_metrics_pipeline
         settings = LogStash::SETTINGS.clone
