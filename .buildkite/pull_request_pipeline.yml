@@ -19,8 +19,7 @@ steps:
       export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
       ci/license_check.sh -m 4G
 
-  - label: "Docs bump check"
-    if: build.pull_request.id != null
+  - label: "Docs bump"
     plugins:
       - monorepo-diff#v1.0.1:
           diff: "git diff --name-only origin/${GITHUB_PR_TARGET_BRANCH}...HEAD"
