@@ -155,9 +155,9 @@ module LogStash
       # For versions prior to 6.3 the default value of "xpack.monitoring.enabled" was true
       # For versions 6.3+ the default of "xpack.monitoring.enabled" is false.
       # To help keep passivity, assume that if "xpack.monitoring.elasticsearch.hosts" has been set that monitoring should be enabled.
-      # return true if legacy.monitoring.enabled=true and xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
+      # return true if allow.legacy.monitoring=true and xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
       def monitoring_enabled?(settings)
-        return false unless settings.get_value("legacy.monitoring.enabled")
+        return false unless settings.get_value("allow.legacy.monitoring")
         return settings.get_value("monitoring.enabled") if settings.set?("monitoring.enabled")
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
 
