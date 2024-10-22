@@ -1,0 +1,6 @@
+steps:
+  - label: "Test"
+    if: build.pull_request.id != null
+    command: echo "Test"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/pipelib"
