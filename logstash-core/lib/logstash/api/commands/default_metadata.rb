@@ -71,6 +71,7 @@ module LogStash
 
         private
         def enabled_xpack_monitoring?
+          LogStash::SETTINGS.get_value("allow.legacy.monitoring") &&
           LogStash::SETTINGS.registered?("xpack.monitoring.enabled") &&
           LogStash::SETTINGS.get("xpack.monitoring.enabled")
         end
