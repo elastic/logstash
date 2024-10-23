@@ -82,6 +82,7 @@ var validSettings = []string{
 	"api.auth.basic.password_policy.include.symbol",
 	"allow_superuser",
 	"monitoring.cluster_uuid",
+	"allow.legacy.monitoring",
 	"xpack.monitoring.enabled",
 	"xpack.monitoring.collection.interval",
 	"xpack.monitoring.elasticsearch.hosts",
