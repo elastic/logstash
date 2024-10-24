@@ -18,6 +18,7 @@
 namespace "artifact" do
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"]
+  LOCAL_ARTIFACTS = ENV["LOCAL_ARTIFACTS"] || "true"
   if VERSION_QUALIFIER
     PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-#{VERSION_QUALIFIER}-SNAPSHOT" : "-#{VERSION_QUALIFIER}"
   else
@@ -779,7 +780,8 @@ namespace "artifact" do
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE
+      "BUILD_DATE" => BUILD_DATE,
+      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
@@ -791,7 +793,8 @@ namespace "artifact" do
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE
+      "BUILD_DATE" => BUILD_DATE,
+      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make public-dockerfiles_#{flavor}")
