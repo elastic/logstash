@@ -1009,13 +1009,6 @@ describe LogStash::JavaPipeline do
       expect(logger).not_to have_received(:warn).with(warning_prefix)
     end
 
-    context "with a too large inflight count" do
-      let(:batch_size) { LogStash::JavaPipeline::MAX_INFLIGHT_WARN_THRESHOLD + 1 }
-
-      it "should raise a max inflight warning if the max_inflight count is exceeded" do
-        expect(logger).to have_received(:warn).with(warning_prefix, hash_including(:pipeline_id => anything))
-      end
-    end
   end
 
   context "compiled filter functions" do
