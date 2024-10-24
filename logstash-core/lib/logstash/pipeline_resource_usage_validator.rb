@@ -28,6 +28,8 @@ module LogStash
     # TODO
     # @param pipelines_registry
     def check(pipelines_registry)
+      return if pipelines_registry.size == 0
+
       percentage_of_heap = compute_percentage(pipelines_registry)
 
       if percentage_of_heap >= WARN_HEAP_THRESHOLD
@@ -44,11 +46,11 @@ module LogStash
     end
 
     def sum_event_count(pipelines_registry)
-      pipelines_registry.loaded_pipelines.map do |pipeline_id, pipeline|
+      pipelines_registry.loaded_pipelines.inject(0) do |sum, (pipeline_id, pipeline)|
         batch_size = pipeline.settings.get("pipeline.batch.size")
         pipeline_workers = pipeline.settings.get("pipeline.workers")
-        batch_size * pipeline_workers
-      end.reduce(:+)
+        sum + (batch_size * pipeline_workers)
+      end
     end
   end
 end
