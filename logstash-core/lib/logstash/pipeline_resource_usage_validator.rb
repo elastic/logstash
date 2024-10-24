@@ -25,8 +25,6 @@ module LogStash
       @max_heap_size = max_heap_size
     end
 
-    # TODO
-    # @param pipelines_registry
     def check(pipelines_registry)
       return if pipelines_registry.size == 0
 
