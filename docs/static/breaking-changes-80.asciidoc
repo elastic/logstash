@@ -1,5 +1,5 @@
 [[breaking-8.0]]
-=== Breaking changes in 8.0 and 8.x 
+=== Breaking changes in 8.0 series 
 
 [discrete]
 [[breaking-8.15]]
