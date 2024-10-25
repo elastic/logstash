@@ -196,7 +196,7 @@ GEM
       semantic_logger
     jruby-openssl (0.15.1-java)
     jruby-stdin-channel (0.2.0-java)
-    json (2.7.3-java)
+    json (2.7.2-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
     jwt (2.9.3)
