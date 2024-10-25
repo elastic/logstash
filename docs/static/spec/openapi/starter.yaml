@@ -29,12 +29,15 @@ servers:
 security:
   - apiKeyAuth: []
 paths: 
+
+## Node info API
+
   /_node/plugins:
     get:
-      summary: Get plugin info
+      summary: Get node info
       description: >
         Get information about all Logstash plugins that are currently installed.
-        This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
+        This API returns the output of running the `bin/logstash-plugin list --verbose` command.
       operationId: nodePlugins
       parameters:
         - name: pretty
@@ -54,5 +57,123 @@ paths:
                   plugins:
                     - name: logstash-codec-cef
                       version: 4.1.2
-                 
 
+
+
+  /_node/plugins:
+    get:
+      summary: Get plugin info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API returns the output of running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 6.2.7
+                 
+## Plugins info API (LISA)
+
+  /_node/plugins:
+    get:
+      summary: Get plugin info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API returns the output of running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 6.2.7          
+
+## Node stats API
+
+  /_node/plugins:
+    get:
+      summary: Get node info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API returns the output of running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 4.1.2
+
+
+## Hot Threads API
+
+  /_node/hot_threads:
+    get:
+      summary: Get hot threads
+      description: >
+        Get information about current hot threads for Logstash.
+        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute. 
+      operationId: nodeHot_threads
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+        - name: human
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
+
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 4.1.2
