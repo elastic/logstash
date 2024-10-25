@@ -14,7 +14,7 @@ ifdef DOCKER_ARCHITECTURE
   ARCHITECTURE := $(DOCKER_ARCHITECTURE)
 else
   ARCHITECTURE := $(shell uname -m)
-  # macOS
+  # For MacOS
   ifeq ($(ARCHITECTURE), arm64)
 	ARCHITECTURE := aarch64
   endif

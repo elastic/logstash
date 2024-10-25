@@ -97,11 +97,11 @@ WORKDIR /tmp/go/src/env2yaml
 RUN go build
 
 # Build main image
+# Minimal distributions do not ship with en language packs.
 FROM <%= base_image %>
 
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
-# Minimal distributions do not ship with en language packs.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
 WORKDIR /usr/share
