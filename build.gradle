@@ -778,25 +778,6 @@ class JDKDetails {
         }
     }
 
-    private String createAdoptDownloadUrl() {
-        String releaseName = major > 8 ?
-                "jdk-${revision}+${build}" :
-                "jdk${revision}u${build}"
-        String vendorOsName = vendorOsName(osName)
-        switch (vendor) {
-            case "adoptium":
-                return "https://api.adoptium.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/adoptium"
-            default:
-                throw RuntimeException("Can't handle vendor: ${vendor}")
-        }
-    }
-
-    private String vendorOsName(String osName) {
-        if (osName == "darwin")
-            return "mac"
-        return osName
-    }
-
     private String parseJdkArchitecture(String jdkArch) {
         switch (jdkArch) {
             case "x86_64":
