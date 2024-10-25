@@ -743,24 +743,39 @@ class JDKDetails {
     private String createElasticCatalogDownloadUrl() {
         // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
 
-        // arch x86_64 never used, only aarch64 if macos
-        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
+        // arch x86_64 is default, aarch64 if macos or linux
+        def url = "https://jvm-catalog.elastic.co/jdk/adoptiumjdk-${revision}+${build}-${osName}"
 
-        // Append the cpu's arch only if Mac on aarch64, all the other OSes doesn't have CPU extension
+        // Append the cpu's arch only if not x86_64, which is the default
         if (arch == "aarch64") {
-            url += "_${arch}"
+            url += "-${arch}"
         }
         println "Retrieving JDK from catalog..."
         def catalogMetadataUrl = URI.create(url).toURL()
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
-        assert catalogConnection.responseCode == 200
+        if (catalogConnection.responseCode != 200) {
+            println "Can't find adoptiumjdk ${revision} for ${osName} on Elastic JVM catalog"
+            throw new GradleException("JVM not present on catalog")
+        }
 
         def metadataRetrieved = catalogConnection.content.text
         println "Retrieved!"
 
         def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
+        validateMetadata(catalogMetadata)
+
         return catalogMetadata.url
+    }
+
+    //Verify that the artifact metadata correspond to the request, if not throws an error
+    private void validateMetadata(Map metadata) {
+        if (metadata.version != revision) {
+            throw new GradleException("Expected to retrieve a JDK for version ${revision} but received: ${metadata.version}")
+        }
+        if (metadata.architecture != arch) {
+            throw new GradleException("Expected to retrieve a JDK for architecture ${arch} but received: ${metadata.architecture}")
+        }
     }
 
     private String createAdoptDownloadUrl() {
@@ -791,7 +806,7 @@ class JDKDetails {
                 return "aarch64"
                 break
             default:
-                throw RuntimeException("Can't handle CPU architechture: ${jdkArch}")
+                throw new GradleException("Can't handle CPU architechture: ${jdkArch}")
         }
     }
 }
