@@ -740,6 +740,21 @@ class JDKDetails {
         return createElasticCatalogDownloadUrl()
     }
 
+    // return true iff local version in versions.yml matches the latest from JVM catalog.
+    boolean isLocalVersionMatchingLatest() {
+        // retrieve the metadata from remote
+        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
+        def catalogMetadataUrl = URI.create(url).toURL()
+        def catalogConnection = catalogMetadataUrl.openConnection()
+        catalogConnection.requestMethod = 'GET'
+        assert catalogConnection.responseCode == 200
+
+        def metadataRetrieved = catalogConnection.content.text
+        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
+
+        return catalogMetadata.version == revision && catalogMetadata.revision == build
+    }
+
     private String createElasticCatalogDownloadUrl() {
         // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
 
@@ -833,6 +848,16 @@ tasks.register("downloadJdk", Download) {
     doLast {
         mkdir project.ext.jdkBundlingDirectory
         println "Downloaded to ${project.ext.jdkDownloadLocation}"
+    }
+}
+
+tasks.register("checkNewJdkVersion") {
+    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
+
+    // use Linux x86_64 as canary platform
+    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
+    if (!jdkDetails.isLocalVersionMatchingLatest()) {
+        throw new GradleException("New version available for major: ${jdkDetails.major}")
     }
 }
 
