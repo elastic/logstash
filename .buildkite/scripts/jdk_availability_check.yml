@@ -1,11 +1,7 @@
 steps:
-  - group: "JDK Availability Phase"
-    key: "jdk-availability-phase"
-    steps:
-      - label: "Check catalog for new version of JDK"
-        key: "ruby-unit-tests"
-        command: |
-          set -euo pipefail
+  - label: "JDK Availability check"
+    command: |
+      set -euo pipefail
 
-          source .buildkite/scripts/common/vm-agent.sh
-          ci/check_jdk_version_availability.sh
+      source .buildkite/scripts/common/vm-agent.sh
+      ci/check_jdk_version_availability.sh
