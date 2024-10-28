@@ -80,17 +80,16 @@ providing actionable insights https://github.com/elastic/logstash/pull/16520[#16
 
 For a more detailed view please check <<logstash-health-report-api>>.
 
-[[notable-8.16.0]]
-==== Notable issues fixed
+[[featured-8.16.0]]
+==== New features and enhancements
 
-* When a conditional evaluation encounter an error in the expression, the event that triggered the issue is sent to pipeline's DLQ, if enabled for the executing pipeline. https://github.com/elastic/logstash/pull/16423[#16423]
+* {ls} now gracefully handles `if` conditionals that can't be evaluated (https://github.com/elastic/logstash/pull/16322[#16322]), either by dropping
+the event or by sending it to the pipeline's DLQ if enabled. https://github.com/elastic/logstash/pull/16423[#16423]
 
-* Fixed the `if` statement expression evaluation against runtime errors that could crash the pipeline, just logging the offending event and continuing with the next in the batch. https://github.com/elastic/logstash/pull/16322[#16322]
+* Added an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. By setting the `logstash.forceApiStatus` system property to `green` you can force the other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
 
 [[core-8.16.0]]
 ==== Other changes to Logstash core
-
-* Added an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. By setting the `logstash.forceApiStatus` system property to `green` you can force the other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
 
 * Added deprecation logs for modules `netflow`, `fb_apache` and `azure`. https://github.com/elastic/logstash/pull/16548[#16548]
 
