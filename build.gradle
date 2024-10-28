@@ -788,9 +788,16 @@ class JDKDetails {
         if (metadata.version != revision) {
             throw new GradleException("Expected to retrieve a JDK for version ${revision} but received: ${metadata.version}")
         }
-        if (metadata.architecture != arch) {
+        if (!isSameArchitecture(metadata.architecture)) {
             throw new GradleException("Expected to retrieve a JDK for architecture ${arch} but received: ${metadata.architecture}")
         }
+    }
+
+    private boolean isSameArchitecture(String metadataArch) {
+        if (arch == 'x64') {
+            return metadataArch == 'x86_64'
+        }
+        return metadata.architecture == arch
     }
 
     private String parseJdkArchitecture(String jdkArch) {
