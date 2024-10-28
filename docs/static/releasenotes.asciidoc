@@ -72,10 +72,10 @@ This section summarizes the changes in the following releases:
 [[logstash-8-16-0]]
 === Logstash 8.16.0 Release Notes
 
-==== Announcing the new {ls} health report API
+==== Announcing the new {ls} Health Report API
 
-The new health report API (`GET /_health_report`) is available with {ls} `8.16.0` and later,
-with indicators that are capable of detecting degraded status of configured pipelines and
+The new Health Report API (`GET /_health_report`) is available starting with {ls} `8.16.0`.
+This API leverages indicators capable of detecting the degraded status of pipelines and
 providing actionable insights https://github.com/elastic/logstash/pull/16520[#16520], https://github.com/elastic/logstash/pull/16532[#16532].
 
 For a more detailed view please check <<logstash-health-report-api>>.
@@ -90,11 +90,11 @@ For a more detailed view please check <<logstash-health-report-api>>.
 [[core-8.16.0]]
 ==== Other changes to Logstash core
 
-* Added an escape hatch to prevent the new health API's status from affecting the status field of other API responses; by setting the `logstash.forceApiStatus` system property to `green`, you can force the other APIs to continue to use hard-coded green value. https://github.com/elastic/logstash/pull/16535[#16535]
+* Added an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. By setting the `logstash.forceApiStatus` system property to `green` you can force the other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
 
 * Added deprecation logs for modules `netflow`, `fb_apache` and `azure`. https://github.com/elastic/logstash/pull/16548[#16548]
 
-* Added deprecation logs for users that doesn't explicitly select a value for `pipeline.buffer.type` and resort to the default setting. https://github.com/elastic/logstash/pull/16498[#16498]
+* Added deprecation logs for users that doesn't explicitly select a value for `pipeline.buffer.type` forcing them to proactively make a choice before version `9.0` when this setting will default to heap. https://github.com/elastic/logstash/pull/16498[#16498]
 
 * The flag `--event_api.tags.illegal` was deprecated and will be removed in version 9. This flag remains available throughout all version 8.x releases. Users who rely on this flag to allow non strings assignment to `tags` field should update their pipeline. https://github.com/elastic/logstash/pull/16507[#16507]
 
@@ -113,11 +113,11 @@ For a more detailed view please check <<logstash-health-report-api>>.
 
 *Elastic_integration Filter - 0.1.15*
 
-* Applied Elasticsearch GeoIP changes and synced with Elasticsearch `8.16` https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
+* Use Elasticsearch code from its `8.16` branch and adapt to changes in Elasticsearch GeoIP processor https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
 
 *Geoip Filter - 7.3.1*
 
-* Fixed to not crash pipelines when looking up a database with customised fields https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+* Fixed a pipeline crash when looking up a database with customised fields https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
 
 *Azure_event_hubs Input - 1.5.0*
 
@@ -125,11 +125,11 @@ For a more detailed view please check <<logstash-health-report-api>>.
 
 *Beats Input - 6.9.0*
 
-* Improved plugin's shutdown process and fixed to not crash when the connection is terminated while processing messages https://github.com/logstash-plugins/logstash-input-beats/pull/500[#500]
+* Improved plugin's shutdown process and fixed a crash when a connection is terminated while processing messages https://github.com/logstash-plugins/logstash-input-beats/pull/500[#500]
 
 *Http Input - 3.9.1*
 
-* Fixed to correctly log the state of `ssl_enabled` during `run` https://github.com/logstash-plugins/logstash-input-http/pull/180[#180]
+* Fixed an issue where the value of `ssl_enabled` during `run` wasn't correctly logged https://github.com/logstash-plugins/logstash-input-http/pull/180[#180]
 
 * Separated Netty boss and worker groups to improve the graceful shutdown https://github.com/logstash-plugins/logstash-input-http/pull/178[#178]
 
