@@ -83,7 +83,7 @@ For a more detailed view please check <<logstash-health-report-api>>.
 [[featured-8.16.0]]
 ==== New features and enhancements
 
-* {ls} now gracefully handles `if` conditionals that can't be evaluated (https://github.com/elastic/logstash/pull/16322[#16322]), either by dropping
+* {ls} now gracefully handles `if` conditionals in pipeline definitions that can't be evaluated (https://github.com/elastic/logstash/pull/16322[#16322]), either by dropping
 the event or by sending it to the pipeline's DLQ if enabled. https://github.com/elastic/logstash/pull/16423[#16423]
 
 * Added an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. By setting the `logstash.forceApiStatus` system property to `green` you can force the other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
