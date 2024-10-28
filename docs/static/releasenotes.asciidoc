@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-0,Logstash 8.16.0>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
 * <<logstash-8-15-2,Logstash 8.15.2>>
 * <<logstash-8-15-1,Logstash 8.15.1>>
@@ -66,6 +67,179 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-0]]
+=== Logstash 8.16.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.16.0
+
+* [Spacetime] Reimplement config Setting classe in java https://github.com/elastic/logstash/pull/15679[#15679]
+* Release notes for 8.14.3 https://github.com/elastic/logstash/pull/16312[#16312]
+* Backport PR #16312 to main: Release notes for 8.14.3 https://github.com/elastic/logstash/pull/16318[#16318]
+* Release notes for 8.15.1 https://github.com/elastic/logstash/pull/16405[#16405]
+* Logstash Health Report Tests Buildkite pipeline setup. https://github.com/elastic/logstash/pull/16416[#16416]
+* DLQ-ing events that trigger an conditional evaluation error. https://github.com/elastic/logstash/pull/16423[#16423]
+* Backport PR #16405 to main: Release notes for 8.15.1 https://github.com/elastic/logstash/pull/16427[#16427]
+* Exclude inner event field from ConditionalEvaluationError serialization https://github.com/elastic/logstash/pull/16429[#16429]
+* Backport PR #16429 to 8.x: Exclude inner event field from ConditionalEvaluationError serialization https://github.com/elastic/logstash/pull/16430[#16430]
+* use gnu tar compatible minitar to generate tar artifact https://github.com/elastic/logstash/pull/16432[#16432]
+* Backport PR #16432 to 8.x: use gnu tar compatible minitar to generate tar artifact https://github.com/elastic/logstash/pull/16434[#16434]
+* account for the 8.x branch in DRA publishing task https://github.com/elastic/logstash/pull/16436[#16436]
+* Backport PR #16436 to 8.x: account for the 8.x branch in DRA publishing task https://github.com/elastic/logstash/pull/16440[#16440]
+* Make health report test runner script executable. https://github.com/elastic/logstash/pull/16446[#16446]
+* Known issue for 8.15.1 related to env vars references https://github.com/elastic/logstash/pull/16455[#16455]
+* Fixes the issue where LS wipes out all quotes from docker env variables. https://github.com/elastic/logstash/pull/16456[#16456]
+* Backport PR #16456 to 8.x: Fixes the issue where LS wipes out all quotes from docker env variables. https://github.com/elastic/logstash/pull/16459[#16459]
+* Backport PR #16455 to 8.x: Known issue for 8.15.1 related to env vars references https://github.com/elastic/logstash/pull/16469[#16469]
+* Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16471[#16471]
+* bump .ruby_version to jruby-9.4.8.0 https://github.com/elastic/logstash/pull/16477[#16477]
+* Backport PR #16471 to 8.x: Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16478[#16478]
+* Backport PR #16477 to 8.x: bump .ruby_version to jruby-9.4.8.0 https://github.com/elastic/logstash/pull/16480[#16480]
+* Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16482[#16482]
+* Change SubstitutionVariables.replace_placeholders `refine` argument to optional https://github.com/elastic/logstash/pull/16485[#16485]
+* Backport PR #16485 to 8.x: Change SubstitutionVariables.replace_placeholders `refine` argument to optional https://github.com/elastic/logstash/pull/16488[#16488]
+* Use jruby-9.4.8.0 in exhaustive CIs. https://github.com/elastic/logstash/pull/16489[#16489]
+* Backport PR #15679 to 8.x: [Spacetime] Reimplement config Setting classe in java https://github.com/elastic/logstash/pull/16490[#16490]
+* Backport PR #16489 to 8.x: Use jruby-9.4.8.0 in exhaustive CIs. https://github.com/elastic/logstash/pull/16491[#16491]
+* Backport PR #16423 to 8.x: DLQ-ing events that trigger an conditional evaluation error. https://github.com/elastic/logstash/pull/16493[#16493]
+* Improve pipeline bootstrap error logs https://github.com/elastic/logstash/pull/16495[#16495]
+
+=== Logstash Commits between 8.16 and 8.15.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.3..8.16"
+
+efe776eee - (HEAD -> 8.16, origin/8.16) bump lock file for 8.16 (#16600) (3 days ago) <github-actions[bot]>
+8c460d6a2 - Release notes for 8.15.3 (#16527) (#16583) (10 days ago) <github-actions[bot]>
+c2d6e9636 - Update minor plugin versions in gemfile lock (#16568) (12 days ago) <github-actions[bot]>
+d32b98758 - Add lockfile from 8.15 branch (#16561) (12 days ago) <Rob Bavey>
+f25fcc303 - ensure minitar 1.x is used instead of 0.x (#16565) (#16567) (12 days ago) <github-actions[bot]>
+c1374a1d8 - Log deprecation warn if memory buffer type not defined (#16498) (13 days ago) <Andrea Selva>
+4677cb22e - add modules deprecation log for netflow, fb_apache and azure (#16548) (2 weeks ago) <kaisecheng>
+dc0739bda - refactor log for event_api.tags.illegal (#16545) (#16547) (2 weeks ago) <github-actions[bot]>
+a1f4633b5 - Backport PR #16525 to 8.x: [test] Fix xpack test to check for http_address stats only if the webserver is enabled (#16531) (2 weeks ago) <github-actions[bot]>
+8c6832e3d - Backport PR #16506 to 8.x: Avoid to access Java DeprecatedAlias value other than Ruby's one (2 weeks ago) <github-actions[bot]>
+0594c8867 - Backport PR #15679 to 8.x: [Spacetime] Reimplement config Setting classe in java (#16490) (2 weeks ago) <github-actions[bot]>
+26c2f6127 - Flow worker utilization probe (#16532) (#16537) (2 weeks ago) <github-actions[bot]>
+986a253db - health: add `logstash.forceApiStatus: green` escape hatch (#16535) (#16536) (2 weeks ago) <github-actions[bot]>
+ad7c61448 - Health api minor followups (#16533) (#16534) (3 weeks ago) <github-actions[bot]>
+1e5105fcd - Fix QA failure introduced by Health API changes and update rspec dependency of the QA package. (#16521) (3 weeks ago) <Mashhur>
+7eb5185b4 - Feature: health report api (#16520) (3 weeks ago) <Ry Biesemeyer>
+c2c62fdce - add deprecation log for `--event_api.tags.illegal` (#16507) (#16515) (3 weeks ago) <github-actions[bot]>
+e854ac7bf - Backport PR #16423 to 8.x: DLQ-ing events that trigger an conditional evaluation error. (#16493) (3 weeks ago) <github-actions[bot]>
+3b751d979 - Make health report test runner script executable. (#16446) (#16512) (3 weeks ago) <github-actions[bot]>
+2f3f6a965 - Logstash Health Report Tests Buildkite pipeline setup. (#16416) (#16511) (3 weeks ago) <github-actions[bot]>
+d1155988c - Improve pipeline bootstrap error logs (#16495) (#16504) (4 weeks ago) <github-actions[bot]>
+476b9216f - Don't use an older JRuby with oraclelinux-7 (#16499) (#16501) (4 weeks ago) <github-actions[bot]>
+2c024daec - Use jruby-9.4.8.0 in exhaustive CIs. (#16489) (#16491) (4 weeks ago) <github-actions[bot]>
+eafcf577d - Change LogStash::Util::SubstitutionVariables#replace_placeholders refine argument to optional (#16485) (#16488) (4 weeks ago) <github-actions[bot]>
+8f20bd90c - Release notes for 8.15.2 (#16471) (#16478) (5 weeks ago) <github-actions[bot]>
+1ccfb161d - bump .ruby_version to jruby-9.4.8.0 (#16477) (#16480) (5 weeks ago) <github-actions[bot]>
+30803789f - Known issue for 8.15.1 related to env vars references (#16455) (#16469) (6 weeks ago) <github-actions[bot]>
+14f52c047 - Fixes the issue where LS wipes out all quotes from docker env variables. (#16456) (#16459) (6 weeks ago) <github-actions[bot]>
+d2b19001d - account for the 8.x in DRA publishing task (#16436) (#16440) (7 weeks ago) <github-actions[bot]>
+32e7a25a1 - use gnu tar compatible minitar to generate tar artifact (#16432) (#16434) (7 weeks ago) <github-actions[bot]>
+5ef86a8aa - Fix ConditionalEvaluationError to do not include the event that errored in its serialiaxed form, because it's not expected that this class is ever serialized. (#16429) (#16430) (7 weeks ago) <github-actions[bot]>
+58b6a0ac7 - Release notes for 8.15.1 (#16405) (#16427) (8 weeks ago) <github-actions[bot]>
+285d13a51 - Update logstash_releases.json (#16426) (8 weeks ago) <kaisecheng>
+b88e23702 - Implements safe evaluation of conditional expressions, logging the error without killing the pipeline (#16322) (8 weeks ago) <Andrea Selva>
+ac034a14e - Generate Dataset code with meaningful fields names (#16386) (8 weeks ago) <Andrea Selva>
+6e93b30c7 - Increase Jruby -Xmx to avoid OOM during zip task in DRA (#16408) (9 weeks ago) <kaisecheng>
+b2796afc9 - Removing 8.14 from ci/branches.json as we have 8.15. (#16390) (2 months ago) <Mashhur>
+d4519711a - Doc: Forwardport 8.15.0 release notes to main (#16388) (3 months ago) <Karen Metts>
+e10470483 - Exclude substitution refinement on pipelines.yml (#16375) (3 months ago) <Mashhur>
+3d13ebe33 - deprecate java less-than 17 (#16370) (3 months ago) <Ry Biesemeyer>
+2db2a224e - Doc: Add SNMP integration to breaking changes (#16374) (3 months ago) <Karen Metts>
+62ef8a084 - [Bugfix] Resolve the array and char (single | double quote) escaped values of ${ENV} (#16365) (3 months ago) <Mashhur>
+09a282780 - Update logstash_releases.json (#16347) (3 months ago) <Andrea Selva>
+03841cace - Fix 8.13.1 release notes (#16363) (3 months ago) <João Duarte>
+629d8fe5a - add retries to snyk buildkite job (#16343) (3 months ago) <João Duarte>
+90f303e40 - fix line used to determine ES is up (#16349) (3 months ago) <João Duarte>
+c633ad256 - settings: add support for observing settings after post-process hooks (#16339) (3 months ago) <Ry Biesemeyer>
+eff9b540d - Doc: Reposition worker-utilization in doc (#16335) (3 months ago) <Karen Metts>
+8f2dae618 - correctly handle stack overflow errors during pipeline compilation (#16323) (3 months ago) <João Duarte>
+c30aa1c7f - regenerate webserver test certificates (#16331) (3 months ago) <João Duarte>
+e065088cd - Add GH vault plugin bot to allowed list (#16301) (3 months ago) <ev1yehor>
+758098cdc - Release notes for 8.14.3 (#16312) (#16318) (4 months ago) <github-actions[bot]>
+01b08c764 - Update logstash_releases.json after 8.14.3 (#16306) (4 months ago) <Andrea Selva>
+9c6550a0d - Doc: Update headers for plugins (LSR) (#16277) (4 months ago) <Karen Metts>
+f728c44a0 - Remove Debian 10 from CI (#16300) (4 months ago) <Dimitrios Liappis>
+66aeeeef8 - Json normalization performance (#16313) (4 months ago) <Ry Biesemeyer>
+2404bad9a - [CI] fix benchmark to pull snapshot version  (#16308) (4 months ago) <kaisecheng>
+ea0c16870 - Add Ubuntu 24.04 to CI (#16299) (4 months ago) <Dimitrios Liappis>
+db06ec415 - Remove CentOS 7 from CI (#16293) (4 months ago) <Dimitrios Liappis>
+a63d8a831 - bump ci releases for 8.14.2 (#16287) (4 months ago) <Ry Biesemeyer>
+b51b5392e - Release notes for 8.14.2 (#16266) (#16286) (4 months ago) <Ry Biesemeyer>
+e3271db94 - add flow-informed tuning guidance (#16265) (4 months ago) <Ry Biesemeyer>
+9872159c7 - bump version to 8.16.0 (#16281) (4 months ago) <João Duarte>
+83506eabe - add 8.15 and remove 8.13 from CI testing (#16282) (4 months ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.15.3..8.16 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.7 -> 6.2.8
+logstash-codec-json_lines: 3.1.0 -> 3.2.2
+logstash-filter-elastic_integration: 0.1.14 -> 0.1.15
+logstash-filter-geoip: 7.3.0 -> 7.3.1
+logstash-input-azure_event_hubs: 1.4.9 -> 1.5.0
+logstash-input-beats: 6.8.4 -> 6.9.0
+logstash-input-http: 3.8.1 -> 3.9.1
+logstash-input-tcp: 6.4.2 -> 6.4.3
+logstash-integration-jdbc: 5.4.11 -> 5.5.0
+logstash-integration-rabbitmq: 7.3.3 -> 7.4.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.8*
+
+* [Doc] Added `raw_data_field` to docs. https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
+
+*Json_lines Codec - 3.2.2*
+
+* Fix: updated the way to check if the `decode_size_limit_bytes` has been explicitly customised. https://github.com/logstash-plugins/logstash-codec-json_lines/pull/47[#47]
+
+* Raise the default value of `decode_size_limit_bytes` up to 512 MB. https://github.com/logstash-plugins/logstash-codec-json_lines/pull/46[#46]
+
+* Add decode_size_limit_bytes option to limit the maximum size of each JSON line that can be parsed.https://github.com/logstash-plugins/logstash-codec-json_lines/pull/43[#43]
+
+*Elastic_integration Filter - 0.1.15*
+
+404: Not Found
+
+*Geoip Filter - 7.3.1*
+
+* Avoid to crash pipelines when lookup a database with customised fields. https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+
+*Azure_event_hubs Input - 1.5.0*
+
+* Updated Azure Event Hub client library to version 3.3.0 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/96[#96]
+
+*Beats Input - 6.9.0*
+
+* Improvements on plugin's shutdown https://github.com/logstash-plugins/logstash-input-beats/pull/500[#500]
+* Fix: avoid plugin crash when connection terminated but processing the message
+* Graceful shutdown: close acceptor group (incoming socket handler) first, ask and wait for the executors which have pending tasks, better message handling when executors terminated
+
+*Http Input - 3.9.1*
+
+* Correctly log the state of `ssl_enabled` during `run` https://github.com/logstash-plugins/logstash-input-http/pull/180[#180]
+
+* Netty boss and worker groups are separated https://github.com/logstash-plugins/logstash-input-http/pull/178[#178]
+   As a result, when shutdown requested incoming connections are closed first and improved graceful shutdown
+
+*Tcp Input - 6.4.3*
+
+* update dependencies for tcp input https://github.com/logstash-plugins/logstash-input-tcp/pull/224[#224]
+
+*Jdbc Integration - 5.5.0*
+
+* Feat: add support for SQL `DATE` columns to jdbc static and streaming filters https://github.com/logstash-plugins/logstash-integration-jdbc/pull/171[#171]
+
+*Rabbitmq Integration - 7.4.0*
+
+* Removed obsolete `verify_ssl` and `debug` options https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/60[#60]
 
 
 [[logstash-8-15-3]]
