@@ -1,5 +1,4 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
-
 <% if image_flavor == 'ironbank' -%>
 <%# Start image_flavor 'ironbank' -%>
 ARG BASE_REGISTRY=registry1.dso.mil
@@ -139,7 +138,7 @@ RUN for iter in {1..10}; do \
   (exit $exit_code)
 
 # Provide a non-root user to run the process
-# Add Logstash itself
+# Add Logstash itself and set permissions
 <% if image_flavor == 'ubi8' -%>
 RUN groupadd --gid 1000 logstash && \
   adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash && \
