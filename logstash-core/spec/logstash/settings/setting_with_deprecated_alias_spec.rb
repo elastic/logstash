@@ -25,7 +25,16 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   let(:default_value) { "DeFaUlT" }
 
   let(:settings) { LogStash::Settings.new }
-  let(:canonical_setting) { LogStash::Setting::String.new(canonical_setting_name, default_value, true) }
+  let(:canonical_setting) { LogStash::Setting::StringSetting.new(canonical_setting_name, default_value, true) }
+
+  let(:log_ctx) { setup_logger_spy }
+  let(:log_spy) { retrieve_logger_spy(log_ctx) }
+
+  before(:each) do
+    # Initialization of appender and logger use to spy, need to be done before executing any code that logs,
+    # that's the reason wy to refer the spying logger context before any test.
+    log_ctx
+  end
 
   before(:each) do
     allow(LogStash::Settings).to receive(:logger).and_return(double("SettingsLogger").as_null_object)
@@ -57,6 +66,8 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
       it 'does not emit a deprecation warning' do
         expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        log_spy = retrieve_logger_spy(log_ctx)
+        expect(log_spy.messages).to be_empty
       end
     end
   end
@@ -66,6 +77,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
 
     before(:each) do
       settings.set(deprecated_setting_name, value)
+      settings.get_setting(deprecated_setting_name).observe_post_process
     end
 
     it 'resolves to the value provided for the deprecated alias' do
@@ -73,15 +85,15 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     it 'logs a deprecation warning' do
-      expect(LogStash::Settings.deprecation_logger).to have_received(:deprecated).with(a_string_including(deprecated_setting_name))
+      expect(log_spy.messages[0]).to include(deprecated_setting_name)
     end
 
     include_examples '#validate_value success'
 
     context "#observe_post_process" do
       it 're-emits the deprecation warning' do
-        expect(LogStash::Settings.deprecation_logger).to receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        expect(log_spy.messages[0]).to include(deprecated_setting_name)
       end
     end
 
@@ -149,15 +161,16 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     it 'does not produce a relevant deprecation warning' do
-      expect(LogStash::Settings.deprecation_logger).to_not have_received(:deprecated).with(a_string_including(deprecated_setting_name))
+      settings.get_setting(deprecated_setting_name).observe_post_process
+      expect(log_spy.messages).to be_empty
     end
 
     include_examples '#validate_value success'
 
     context "#observe_post_process" do
       it 'does not emit a deprecation warning' do
-        expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        expect(log_spy.messages).to be_empty
       end
     end
   end
@@ -171,15 +184,15 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     context '#validate_value' do
       it "raises helpful exception" do
         expect { settings.get_setting(canonical_setting_name).validate_value }
-          .to raise_exception(ArgumentError, a_string_including("Both `#{canonical_setting_name}` and its deprecated alias `#{deprecated_setting_name}` have been set. Please only set `#{canonical_setting_name}`"))
+          .to raise_exception(java.lang.IllegalStateException, a_string_including("Both `#{canonical_setting_name}` and its deprecated alias `#{deprecated_setting_name}` have been set. Please only set `#{canonical_setting_name}`"))
       end
     end
   end
 
   context 'Settings#get on deprecated alias' do
     it 'produces a WARN-level message to the logger' do
-      expect(LogStash::Settings.logger).to receive(:warn).with(a_string_including "setting `#{canonical_setting_name}` has been queried by its deprecated alias `#{deprecated_setting_name}`")
       settings.get(deprecated_setting_name)
+      expect(log_spy.messages[0]).to include("setting `#{canonical_setting_name}` has been queried by its deprecated alias `#{deprecated_setting_name}`")
     end
   end
 end
