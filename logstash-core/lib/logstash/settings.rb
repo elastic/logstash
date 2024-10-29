@@ -827,6 +827,8 @@ module LogStash
       end
     end
 
+    java_import org.logstash.settings.NullableSetting
+
     # @see Setting#nullable
     # @api internal
     class Nullable < SimpleDelegator
