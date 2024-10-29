@@ -1,0 +1,7 @@
+steps:
+  - label: "JDK Availability check"
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/vm-agent.sh
+      ci/check_jdk_version_availability.sh
