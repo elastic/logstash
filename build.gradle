@@ -799,7 +799,7 @@ class JDKDetails {
         if (arch == 'x64') {
             return metadataArch == 'x86_64'
         }
-        return metadata.architecture == arch
+        return metadataArch == arch
     }
 
     private String parseJdkArchitecture(String jdkArch) {
