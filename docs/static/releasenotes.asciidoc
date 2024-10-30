@@ -72,31 +72,10 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-4]]
 === Logstash 8.15.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.15.4
+[[notable-8.15.4]]
+==== Notable issues fixed
 
-* Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16482[#16482]
-* Backport PR #16482 to 8.15: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16579[#16579]
-
-=== Logstash Commits between 8.15 and 8.15.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.3..8.15"
-
-f1cb89343 - (HEAD -> 8.15, origin/8.15) Update patch plugin versions in gemfile lock (#16610) (23 minutes ago) <github-actions[bot]>
-cef98e45d - Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (#16579) (12 days ago) <github-actions[bot]>
-1c9e0bb3e - Bump 8.15.4 (#16573) (12 days ago) <Edmo Vamerlatti Costa>
-2866bf9e3 - Revert "Bump 8.15.4" (13 days ago) <edmocosta>
-2caa1c8f8 - Bump 8.15.4 (13 days ago) <edmocosta>
-2788841f5 - Release notes for 8.15.3 (#16527) (13 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.15.3..8.15 *.release"
-Changed plugin versions:
-logstash-codec-cef: 6.2.7 -> 6.2.8
-logstash-filter-elastic_integration: 0.1.14 -> 0.1.15
-logstash-filter-geoip: 7.3.0 -> 7.3.1
-logstash-input-tcp: 6.4.2 -> 6.4.3
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed an issue where Logstash could not consume lines correctly when the input buffer was full while utilizing a codec with a delimiter https://github.com/elastic/logstash/pull/16482[#16482]
 
 ==== Plugins
 
@@ -106,15 +85,15 @@ logstash-input-tcp: 6.4.2 -> 6.4.3
 
 *Elastic_integration Filter - 0.1.15*
 
-404: Not Found
+* Fixed the connection failure where SSL verification mode is disabled over SSL connection https://github.com/elastic/logstash-filter-elastic_integration/pull/165[#165]
 
 *Geoip Filter - 7.3.1*
 
-* Avoid to crash pipelines when lookup a database with customised fields. https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+* Avoided to crash pipelines when lookup a database with customised fields. https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
 
 *Tcp Input - 6.4.3*
 
-* update dependencies for tcp input https://github.com/logstash-plugins/logstash-input-tcp/pull/224[#224]
+* Updated dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/224[#224]
 
 
 [[logstash-8-15-3]]
