@@ -573,12 +573,6 @@ spec:
           env:
             PIPELINES_TO_TRIGGER: 'logstash-exhaustive-tests-pipeline'
             EXCLUDE_BRANCHES: 'main'
-        JDK availability check:
-          branch: main
-          cronline: 0 2 * * 1  # every Monday@2AM UTC
-          message: Weekly trigger of JDK update availability pipeline per branch
-          env:
-            PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
       skip_intermediate_builds: true
       provider_settings:
         trigger_mode: none
@@ -791,6 +785,19 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
+      schedules:
+        Weekly JDK availability check (main):
+          branch: main
+          cronline: 0 2 * * 1  # every Monday@2AM UTC
+          message: Weekly trigger of JDK update availability pipeline per branch
+          env:
+            PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
+        Weekly JDK availability check (8.x):
+          branch: 8.x
+          cronline: 0 2 * * 1  # every Monday@2AM UTC
+          message: Weekly trigger of JDK update availability pipeline per branch
+          env:
+            PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
 
 # *******************************
 # SECTION END: JDK check pipeline
