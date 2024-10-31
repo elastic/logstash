@@ -75,7 +75,7 @@ This section summarizes the changes in the following releases:
 [[notable-8.15.4]]
 ==== Notable issues fixed
 
-* Fixed an issue where Logstash could not consume lines correctly when the input buffer was full while utilizing a codec with a delimiter https://github.com/elastic/logstash/pull/16482[#16482]
+* Fixed an issue where Logstash could not consume lines correctly when a codec with a delimiter is in use and the input buffer becomes full https://github.com/elastic/logstash/pull/16482[#16482]
 
 ==== Plugins
 
