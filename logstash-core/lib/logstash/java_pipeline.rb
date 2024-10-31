@@ -39,7 +39,6 @@ module LogStash; class JavaPipeline < AbstractPipeline
     :started_at,
     :thread
 
-  MAX_INFLIGHT_WARN_THRESHOLD = 10_000
   SECOND = 1
   MEMORY = "memory".freeze
 
@@ -283,10 +282,6 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.max_inflight" => max_inflight,
         "pipeline.sources" => pipeline_source_details)
       @logger.info("Starting pipeline", pipeline_log_params)
-
-      if max_inflight > MAX_INFLIGHT_WARN_THRESHOLD
-        @logger.warn("CAUTION: Recommended inflight events max exceeded! Logstash will run with up to #{max_inflight} events in memory in your current configuration. If your message sizes are large this may cause instability with the default heap size. Please consider setting a non-standard heap size, changing the batch size (currently #{batch_size}), or changing the number of pipeline workers (currently #{pipeline_workers})", default_logging_keys)
-      end
 
       filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
 

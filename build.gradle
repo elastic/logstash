@@ -740,46 +740,66 @@ class JDKDetails {
         return createElasticCatalogDownloadUrl()
     }
 
-    private String createElasticCatalogDownloadUrl() {
-        // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
-
-        // arch x86_64 never used, only aarch64 if macos
+    // throws an error iff local version in versions.yml doesn't match the latest from JVM catalog.
+    void checkLocalVersionMatchingLatest() {
+        // retrieve the metadata from remote
         def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
-
-        // Append the cpu's arch only if Mac on aarch64, all the other OSes doesn't have CPU extension
-        if (arch == "aarch64") {
-            url += "_${arch}"
-        }
-        println "Retrieving JDK from catalog..."
         def catalogMetadataUrl = URI.create(url).toURL()
         def catalogConnection = catalogMetadataUrl.openConnection()
         catalogConnection.requestMethod = 'GET'
         assert catalogConnection.responseCode == 200
 
         def metadataRetrieved = catalogConnection.content.text
-        println "Retrieved!"
-
         def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-        return catalogMetadata.url
-    }
 
-    private String createAdoptDownloadUrl() {
-        String releaseName = major > 8 ?
-                "jdk-${revision}+${build}" :
-                "jdk${revision}u${build}"
-        String vendorOsName = vendorOsName(osName)
-        switch (vendor) {
-            case "adoptium":
-                return "https://api.adoptium.net/v3/binary/version/${releaseName}/${vendorOsName}/${arch}/jdk/hotspot/normal/adoptium"
-            default:
-                throw RuntimeException("Can't handle vendor: ${vendor}")
+        if (catalogMetadata.version != revision || catalogMetadata.revision != build) {
+            throw new GradleException("Found new jdk version. Please update version.yml to ${catalogMetadata.version} build ${catalogMetadata.revision}")
         }
     }
 
-    private String vendorOsName(String osName) {
-        if (osName == "darwin")
-            return "mac"
-        return osName
+    private String createElasticCatalogDownloadUrl() {
+        // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
+
+        // arch x86_64 is default, aarch64 if macos or linux
+        def url = "https://jvm-catalog.elastic.co/jdk/adoptiumjdk-${revision}+${build}-${osName}"
+
+        // Append the cpu's arch only if not x86_64, which is the default
+        if (arch == "aarch64") {
+            url += "-${arch}"
+        }
+        println "Retrieving JDK from catalog..."
+        def catalogMetadataUrl = URI.create(url).toURL()
+        def catalogConnection = catalogMetadataUrl.openConnection()
+        catalogConnection.requestMethod = 'GET'
+        if (catalogConnection.responseCode != 200) {
+            println "Can't find adoptiumjdk ${revision} for ${osName} on Elastic JVM catalog"
+            throw new GradleException("JVM not present on catalog")
+        }
+
+        def metadataRetrieved = catalogConnection.content.text
+        println "Retrieved!"
+
+        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
+        validateMetadata(catalogMetadata)
+
+        return catalogMetadata.url
+    }
+
+    //Verify that the artifact metadata correspond to the request, if not throws an error
+    private void validateMetadata(Map metadata) {
+        if (metadata.version != revision) {
+            throw new GradleException("Expected to retrieve a JDK for version ${revision} but received: ${metadata.version}")
+        }
+        if (!isSameArchitecture(metadata.architecture)) {
+            throw new GradleException("Expected to retrieve a JDK for architecture ${arch} but received: ${metadata.architecture}")
+        }
+    }
+
+    private boolean isSameArchitecture(String metadataArch) {
+        if (arch == 'x64') {
+            return metadataArch == 'x86_64'
+        }
+        return metadataArch == arch
     }
 
     private String parseJdkArchitecture(String jdkArch) {
@@ -791,7 +811,7 @@ class JDKDetails {
                 return "aarch64"
                 break
             default:
-                throw RuntimeException("Can't handle CPU architechture: ${jdkArch}")
+                throw new GradleException("Can't handle CPU architechture: ${jdkArch}")
         }
     }
 }
@@ -838,6 +858,15 @@ tasks.register("downloadJdk", Download) {
         mkdir project.ext.jdkBundlingDirectory
         println "Downloaded to ${project.ext.jdkDownloadLocation}"
     }
+}
+
+tasks.register("checkNewJdkVersion") {
+    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
+
+    // use Linux x86_64 as canary platform
+    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
+    // throws Gradle exception if local and remote doesn't match
+    jdkDetails.checkLocalVersionMatchingLatest()
 }
 
 tasks.register("deleteLocalJdk", Delete) {
