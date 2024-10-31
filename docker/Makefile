@@ -31,7 +31,7 @@ build-from-local-full-artifacts: dockerfile env2yaml
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	docker build --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-full:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-full data/logstash || \
 	  (docker kill $(HTTPD); false); \
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
@@ -41,7 +41,7 @@ build-from-local-oss-artifacts: dockerfile env2yaml
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	docker build --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-oss:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-oss data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -50,7 +50,7 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	docker build --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -59,7 +59,7 @@ build-from-local-wolfi-artifacts: dockerfile
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	docker build --network=host -t $(IMAGE_TAG)-wolfi:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-wolfi data/logstash || \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-wolfi:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-wolfi data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
