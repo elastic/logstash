@@ -58,7 +58,7 @@ RUN dnf -y upgrade && \
   rm /tmp/logstash.tar.gz
 <%# End image_flavor 'ironbank' -%>
 <% else -%>
-<%# Start image_flavor 'full', oss', 'ubi8', 'wolfi' -%>
+<%# Start image_flavor 'full', oss', 'wolfi' -%>
   <% if local_artifacts == 'false' -%>
     <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
   <% else -%>
@@ -71,18 +71,14 @@ RUN dnf -y upgrade && \
     <%   tarball = "logstash-#{elastic_version}-linux-#{arch}.tar.gz" -%>
     <%   license = 'Elastic License' -%>
   <% end -%>
-  <% if image_flavor == 'ubi8' -%>
+  <% if image_flavor == 'full' || image_flavor == 'oss' -%>
     <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
     <%   package_manager = 'microdnf' -%>
   <% else -%>
     <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
     <%   package_manager = 'apk' -%>
   <% end -%>
-  <% if image_flavor == 'ubi8' || image_flavor == 'wolfi' -%>
-    <%   locale = 'C.UTF-8' -%>
-  <% else -%>
-    <%   locale = 'en_US.UTF-8' -%>
-  <% end -%>
+  <%   locale = 'C.UTF-8' -%>
 
 # Build env2yaml
 FROM docker.elastic.co/wolfi/go:1-dev as builder-env2yaml
@@ -109,7 +105,7 @@ COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2ya
 COPY config/pipelines.yml config/log4j2.properties config/log4j2.file.properties config/
 <% if image_flavor == 'oss' -%>
 COPY config/logstash-oss.yml config/logstash.yml
-<% else -%><%# 'full', 'ubi8', 'wolfi' -%>
+<% else -%><%# 'full', 'wolfi' -%>
 COPY config/logstash-full.yml config/logstash.yml
 <% end -%>
 COPY pipeline/default.conf pipeline/logstash.conf
@@ -117,7 +113,7 @@ COPY bin/docker-entrypoint /usr/local/bin/
 
 # Install packages
 RUN for iter in {1..10}; do \
-<% if image_flavor == 'ubi8' -%>
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
   <%= package_manager %> update -y && \
   <%= package_manager %> upgrade -y && \
   <%= package_manager %> install -y procps findutils tar gzip && \
@@ -125,11 +121,8 @@ RUN for iter in {1..10}; do \
   <%= package_manager %> install -y which shadow-utils && \
   <%= package_manager %> install -y curl && \
   <%= package_manager %> clean all && \
-<% else -%><%# 'full', oss', 'wolfi' -%>
+<% else -%><%# 'wolfi' -%>
   <%= package_manager %> add --no-cache curl bash && \
-  <%if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%= package_manager %> add --no-cache glibc-locale-en && \
-  <% end -%>
 <% end -%>
   exit_code=0 && break || \
   exit_code=$? && echo "packaging error: retry $iter in 10s" && \
@@ -139,10 +132,13 @@ RUN for iter in {1..10}; do \
 
 # Provide a non-root user to run the process
 # Add Logstash itself and set permissions
-<% if image_flavor == 'ubi8' -%>
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
 RUN groupadd --gid 1000 logstash && \
-  adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash && \
-<% else -%><%# 'full', oss', 'wolfi' -%>
+  adduser --uid 1000 --gid 1000 \
+  --home "/usr/share/logstash" \
+  --no-create-home \
+  logstash && \
+<% else -%><%# 'wolfi' -%>
 RUN addgroup -g 1000 logstash && \
   adduser -u 1000 -G logstash \
   --disabled-password \
@@ -166,7 +162,7 @@ RUN addgroup -g 1000 logstash && \
   ln -s /usr/share/logstash /opt/logstash && \
   chmod 0755 /usr/local/bin/docker-entrypoint && \
   rmdir config
-<%# End image_flavor 'full', oss', 'ubi8', 'wolfi' -%>
+<%# End image_flavor 'full', oss', 'wolfi' -%>
 <% end -%>
 
 WORKDIR /usr/share/logstash
@@ -176,28 +172,26 @@ USER 1000
 EXPOSE 9600 5044
 
 <% if image_flavor != 'ironbank' -%>
-LABEL  org.label-schema.schema-version="1.0" \
-  org.label-schema.vendor="Elastic" \
-  org.opencontainers.image.vendor="Elastic" \
+LABEL org.label-schema.build-date=<%= created_date %> \
+  org.label-schema.license="<%= license %>" \
   org.label-schema.name="logstash" \
-  org.opencontainers.image.title="logstash" \
-  org.label-schema.version="<%= elastic_version %>" \
-  org.opencontainers.image.version="<%= elastic_version %>" \
+  org.label-schema.schema-version="1.0" \
   org.label-schema.url="https://www.elastic.co/products/logstash" \
   org.label-schema.vcs-url="https://github.com/elastic/logstash" \
-  org.label-schema.license="<%= license %>" \
-  org.opencontainers.image.licenses="<%= license %>" \
+  org.label-schema.vendor="Elastic" \
+  org.label-schema.version="<%= elastic_version %>" \
+  org.opencontainers.image.created=<%= created_date %> \
   org.opencontainers.image.description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  org.label-schema.build-date=<%= created_date %> \
-  <% if image_flavor == 'ubi8' -%>
-  license="<%= license %>" \
+  org.opencontainers.image.licenses="<%= license %>" \
+  org.opencontainers.image.title="logstash" \
+  org.opencontainers.image.vendor="Elastic" \
+  org.opencontainers.image.version="<%= elastic_version %>" \
   description="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  name="logstash" \
+  license="<%= license %>" \
   maintainer="info@elastic.co" \
+  name="logstash" \
   summary="Logstash is a free and open server-side data processing pipeline that ingests data from a multitude of sources, transforms it, and then sends it to your favorite 'stash.'" \
-  vendor="Elastic" \
-  <% end -%>
-  org.opencontainers.image.created=<%= created_date %>
+  vendor="Elastic"
 <% end -%>
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint"]
