@@ -595,7 +595,7 @@ describe LogStash::Runner do
       it "runs successfully with warning message" do
         LogStash::SETTINGS.set("allow_superuser", true)
         expect(logger).not_to receive(:fatal)
-        expect(deprecation_logger_stub).to receive(:deprecated).with(/NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'allow_superuser' to 'false' to avoid startup errors in future releases./)
+        expect(logger).to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
         expect { subject.run(args) }.not_to raise_error
       end
     end
@@ -607,7 +607,7 @@ describe LogStash::Runner do
       it "runs successfully without any messages" do
         LogStash::SETTINGS.set("allow_superuser", false)
         expect(logger).not_to receive(:fatal)
-        expect(deprecation_logger_stub).not_to receive(:deprecated).with(/NOTICE: Running Logstash as superuser is not recommended and won't be allowed in the future. Set 'allow_superuser' to 'false' to avoid startup errors in future releases./)
+        expect(logger).not_to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
         expect { subject.run(args) }.not_to raise_error
       end
     end
