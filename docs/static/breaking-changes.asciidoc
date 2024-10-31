@@ -1,30 +1,27 @@
 [[breaking-changes]]
 == Breaking changes
+coming[9.0.0]
 
 We strive to maintain backward compatibility between minor versions (8.x to 8.y,
 for example) so that you can upgrade without changing any configuration files.
-Breaking changes are usually introduced only between major versions (such as 7.x
-to 8.y). On occasion, we are forced to break compatibility within a given major release
+On occasion, we are forced to break compatibility within a given major release
 to ensure correctness of operation.
 
 This section covers the changes that you need to be aware of when migrating to
-Logstash 8.0.0 and later.
+Logstash 9.0.0 and later.
 
-NOTE: Migrating directly between non-consecutive major versions (6.x to
-8.x) is not recommended. 
-We suggest that you upgrade to {prev-major-last} before you upgrade to 8.0.
+NOTE: Migrating directly between non-consecutive major versions (7.x to
+9.x) is not recommended. 
+We suggest that you upgrade to the last release in the 8.x series before you upgrade to 9.0.
+// ToDo: Replace `last release in the 8.x series` in the previous statement with `{prev-major-last}`.
+// Hardcoding it for now to avoid confusion. 
 
-[discrete]
-[[breaking-8.15]]
-=== 8.15
+Check out our <<releasenotes>> for additional release information.
 
-*New {ls} SNMP integration plugin*
+// Include statement to pull in 9.0 breaking changes file
+// Add content for 9.0 breaking changes to `breaking-changes-90.asciidoc`, not here. 
 
-Prior to 8.15.0, {ls} bundled stand-alone versions of the `input-snmp` and `input-snmptrap` plugins by default. 
-When you upgrade to 8.15.0, the stand-alone plugins are replaced by the 4.0.0+ version contained in the new SNMP integration plugin.
-
-IMPORTANT: Before you upgrade to {ls} 8.15.0, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between stand-alone plugins and the new versions included in the {logstash-ref}/plugins-integrations-snmp.html[SNMP integration plugin].
-If you need to maintain current mappings for the `input-snmptrap` plugin, you have some options to {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-input-snmptrap-compat[preserve existing behavior].
+include::breaking-changes-90.asciidoc[]
 
 [discrete]
 === Breaking changes in earlier releases
@@ -41,4 +38,4 @@ include::breaking-changes-70.asciidoc[]
 include::breaking-changes-pre63.asciidoc[]
 include::breaking-changes-60.asciidoc[]
 
-Check out our <<releasenotes>> for additional release information.
+
