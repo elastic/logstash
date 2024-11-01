@@ -1,7 +1,7 @@
 ["appendix",role="exclude",id="redirects"]
 = Deleted pages
 
-The following pages have moved or been deleted.
+The pages in this section have been deleted or moved from another location.
 
 // MULTILINE FILTER
 

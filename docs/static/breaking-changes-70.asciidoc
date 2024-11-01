@@ -1,5 +1,5 @@
 [[breaking-7.0]]
-=== Breaking changes in 7.0
+=== Breaking changes in 7.0 series
 
 Here are the breaking changes for {ls} 7.0. 
 

@@ -1,6 +1,20 @@
 [[breaking-8.0]]
+=== Breaking changes in 8.0 series 
+
+[discrete]
+[[breaking-8.15]]
+=== Breaking changes in 8.15
+
+*New {ls} SNMP integration plugin*
+
+Prior to 8.15.0, {ls} bundled stand-alone versions of the `input-snmp` and `input-snmptrap` plugins by default. 
+When you upgrade to 8.15.0, the stand-alone plugins are replaced by the 4.0.0+ version contained in the new SNMP integration plugin.
+
+IMPORTANT: Before you upgrade to {ls} 8.15.0, be aware of {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-migration[behavioral and mapping differences] between stand-alone plugins and the new versions included in the {logstash-ref}/plugins-integrations-snmp.html[SNMP integration plugin].
+If you need to maintain current mappings for the `input-snmptrap` plugin, you have some options to {logstash-ref}/plugins-integrations-snmp.html#plugins-integrations-snmp-input-snmptrap-compat[preserve existing behavior].
+
+[discrete]
 === Breaking changes in 8.0
-Here are the breaking changes for 8.0.
 
 [discrete]
 [[security-on-8.0]]
