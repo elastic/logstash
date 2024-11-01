@@ -34,13 +34,13 @@ shared_examples "logstash generate" do |logstash|
     GENERATE_TYPES.each do |type|
       context "with type #{type}" do
         it "successfully generate the plugin skeleton" do
-          command = logstash.run_command_in_path("bin/logstash-plugin generate --type #{type} --name qatest-generated")
+          command = logstash.run_sudo_command_in_path("bin/logstash-plugin generate --type #{type} --name qatest-generated")
           expect(logstash).to File.directory?("logstash-#{type}-qatest-generated")
         end
         it "successfully install the plugin" do
-            command = logstash.run_command_in_path("bin/logstash-plugin install logstash-#{type}-qatest-generated")
-            expect(command).to install_successfully
-            expect(logstash).to have_installed?("logstash-#{type}-qatest-generated")
+          command = logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-#{type}-qatest-generated")
+          expect(command).to install_successfully
+          expect(logstash).to have_installed?("logstash-#{type}-qatest-generated")
         end
       end
     end

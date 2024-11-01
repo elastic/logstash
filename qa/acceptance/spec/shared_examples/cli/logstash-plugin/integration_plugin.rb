@@ -33,11 +33,11 @@ shared_examples "integration plugins compatible" do |logstash|
 
     context "when the integration is installed" do
       before(:each) do
-        logstash.run_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
+        logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
       end
       context "trying to install an inner plugin separately" do
         it "fails to install" do
-          result = logstash.run_command_in_path("bin/logstash-plugin install logstash-input-rabbitmq")
+          result = logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-input-rabbitmq")
           expect(result.stderr).to match(/is already provided by/)
         end
       end
@@ -46,11 +46,11 @@ shared_examples "integration plugins compatible" do |logstash|
       # Muting test. Tracked in https://github.com/elastic/logstash/issues/10459
       xcontext "if an inner plugin is installed" do
         before(:each) do
-          logstash.run_command_in_path("bin/logstash-plugin install logstash-input-rabbitmq")
+          logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-input-rabbitmq")
         end
         it "installing the integrations uninstalls the inner plugin" do
-          logstash.run_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
-          result = logstash.run_command_in_path("bin/logstash-plugin list logstash-input-rabbitmq")
+          logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
+          result = logstash.run_sudo_command_in_path("bin/logstash-plugin list logstash-input-rabbitmq")
           expect(result.stdout).to_not match(/^logstash-input-rabbitmq/)
         end
       end
@@ -70,11 +70,11 @@ shared_examples "integration plugins compatible" do |logstash|
 
     context "when the integration is installed" do
       before(:each) do
-        logstash.run_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
+        logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
       end
       context "trying to uninstall an inner plugin" do
         it "fails to uninstall it" do
-          result = logstash.run_command_in_path("bin/logstash-plugin uninstall logstash-input-rabbitmq")
+          result = logstash.run_sudo_command_in_path("bin/logstash-plugin uninstall logstash-input-rabbitmq")
           expect(result.stderr).to match(/is already provided by/)
         end
       end
@@ -94,16 +94,16 @@ shared_examples "integration plugins compatible" do |logstash|
 
     context "when the integration is installed" do
       before(:each) do
-        logstash.run_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
+        logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-integration-rabbitmq")
       end
       context "listing an integration" do
-        let(:result) { logstash.run_command_in_path("bin/logstash-plugin list logstash-integration-rabbitmq") }
+        let(:result) { logstash.run_sudo_command_in_path("bin/logstash-plugin list logstash-integration-rabbitmq") }
         it "shows its inner plugin" do
           expect(result.stdout).to match(/logstash-input-rabbitmq/m)
         end
       end
       context "listing an inner plugin" do
-        let(:result) { logstash.run_command_in_path("bin/logstash-plugin list logstash-input-rabbitmq") }
+        let(:result) { logstash.run_sudo_command_in_path("bin/logstash-plugin list logstash-input-rabbitmq") }
         it "matches the integration that contains it" do
           expect(result.stdout).to match(/logstash-integration-rabbitmq/m)
         end
