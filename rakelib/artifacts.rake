@@ -158,11 +158,11 @@ namespace "artifact" do
 
   desc "Build jdk bundled tar.gz of default logstash plugins with all dependencies for docker"
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
     create_archive_pack(license_details, "x86_64", "linux", "darwin")
     create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   def create_archive_pack(license_details, arch, *oses)
@@ -223,12 +223,12 @@ namespace "artifact" do
 
   desc "Build jdk bundled OSS tar.gz of default logstash plugins with all dependencies for docker"
   task "archives_docker_oss" => ["prepare-oss", "generate_build_metadata"] do
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "darwin")
     create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   desc "Build an RPM of logstash with all dependencies"
