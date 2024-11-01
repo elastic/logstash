@@ -81,7 +81,7 @@ This section summarizes the changes in the following releases:
 
 *Cef Codec - 6.2.8*
 
-* [Doc] Added `raw_data_field` to docs. https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
+* [DOC] Added `raw_data_field` to docs https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
 
 *Elastic_integration Filter - 0.1.15*
 
