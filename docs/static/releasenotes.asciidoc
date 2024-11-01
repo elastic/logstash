@@ -89,7 +89,7 @@ This section summarizes the changes in the following releases:
 
 *Geoip Filter - 7.3.1*
 
-* Avoided to crash pipelines when lookup a database with customised fields. https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+* Fixed issue causing pipelines to crash during lookup when a database has custom fields https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
 
 *Tcp Input - 6.4.3*
 
