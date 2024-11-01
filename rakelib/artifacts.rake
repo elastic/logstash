@@ -162,6 +162,7 @@ namespace "artifact" do
     @bundles_jdk = true
     create_archive_pack(license_details, "x86_64", "linux", "darwin")
     create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   def create_archive_pack(license_details, arch, *oses)
@@ -227,6 +228,7 @@ namespace "artifact" do
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux", "darwin")
     create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   desc "Build an RPM of logstash with all dependencies"
