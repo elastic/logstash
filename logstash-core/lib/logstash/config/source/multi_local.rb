@@ -23,6 +23,8 @@ module LogStash module Config module Source
     include LogStash::Util::SubstitutionVariables
     include LogStash::Util::Loggable
 
+    REMOVE_COMMENTS_CONFIG_KEYS = %w(config.string)
+
     def initialize(settings)
       @original_settings = settings
       super(settings)
@@ -30,7 +32,8 @@ module LogStash module Config module Source
     end
 
     def pipeline_configs
-      pipelines = deep_replace(retrieve_yaml_pipelines)
+      yaml_config_without_comments = wipeout_comments(retrieve_yaml_pipelines)
+      pipelines = deep_replace(yaml_config_without_comments)
       pipelines_settings = pipelines.map do |pipeline_settings|
         clone = @original_settings.clone
         clone.merge_pipeline_settings(pipeline_settings)
@@ -133,6 +136,29 @@ module LogStash module Config module Source
         @match_warning_done = true
       end
       !done
+    end
+
+    # @param [Object] `yaml_config` the input object
+    # @return [Object] Updated object where its key etries which match the `CONFIG_KEYS_TO_WIPE_OUT_COMMENTS` do not contain comments
+    def wipeout_comments(yaml_config)
+      case yaml_config
+      when Hash
+        yaml_config.each do |key, val|
+          yaml_config[key.to_s] = wipeout_comments(val) if REMOVE_COMMENTS_CONFIG_KEYS.include?(key)
+        end
+      when Array
+        yaml_config.map { |val| wipeout_comments(val) }
+      when String
+        yaml_config.lines.map do |line|
+          if line.strip.start_with?("#")
+            ""
+          else
+            line.match?(/(?<!['"]) #/) ? line.gsub(/ (?<!['"])#.*/, '') : line
+          end
+        end.join("\n")
+      else
+        yaml_config
+      end
     end
   end
 end end end

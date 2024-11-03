@@ -146,17 +146,16 @@ describe LogStash::Config::Source::MultiLocal do
 
   describe "#pipeline_configs" do
 
-#     let(:config_string) {
-#      "input {
-#         udp {
-#           port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
-#           host => \"127.0.0.1\"
-#         }
-#         # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
-#       }
-#       output {}"
-#     }
-    let(:config_string) { "input {} output {}" }
+    let(:config_string) {
+     "input {
+        udp {
+          port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
+          host => \"127.0.0.1\"
+        }
+        # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
+      }
+      output {}"
+    }
     let(:retrieved_pipelines) do
       [
         { "pipeline.id" => "main", "config.string" => config_string },
@@ -173,6 +172,14 @@ describe LogStash::Config::Source::MultiLocal do
       expect(configs).to be_a(Array)
       expect(configs.first).to be_a(::LogStash::Config::PipelineConfig)
       expect(configs.last).to be_a(::LogStash::Config::PipelineConfig)
+    end
+
+    it "wipes out the comments of `config.string`" do
+      expectation = "input {\n\n        udp {\n\n          port => 5555\n\n          host => \"127.0.0.1\"\n\n        }\n\n\n      }\n\n      output {}"
+      config_without_comments = subject.send(:wipeout_comments, retrieved_pipelines)
+      config_without_comments.each do |config_line|
+        expect(config_line['config.string']).to match expectation
+      end
     end
 
     context "using non pipeline related settings" do
