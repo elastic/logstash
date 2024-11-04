@@ -576,9 +576,6 @@ describe LogStash::Runner do
 
     if LogStash::Environment.windows?
       context "unintentionally running logstash as superuser" do
-        before do
-          expect(Process).to receive(:euid).and_return(0)
-        end
         it "runs successfully" do
           LogStash::SETTINGS.set("allow_superuser", false)
           expect(logger).not_to receive(:fatal)
