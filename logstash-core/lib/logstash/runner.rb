@@ -454,6 +454,8 @@ class LogStash::Runner < Clamp::StrictCommand
   end # def self.main
 
   def running_as_superuser
+    return if windows? # windows euid always returns 0
+
     if Process.euid() == 0
       if setting("allow_superuser")
         logger.warn("NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk. " +
@@ -462,6 +464,10 @@ class LogStash::Runner < Clamp::StrictCommand
         raise(RuntimeError, "Logstash cannot be run as superuser.")
       end
     end
+  end
+
+  def windows?
+    RUBY_PLATFORM =~ /mswin|mingw|cygwin/
   end
 
   def log_configuration_contains_javascript_usage?
