@@ -73,15 +73,17 @@ RUN dnf -y upgrade && \
   <% end -%>
   <% if image_flavor == 'full' || image_flavor == 'oss' -%>
     <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
+    <%   go_image = 'golang:1.23.1' -%>
     <%   package_manager = 'microdnf' -%>
   <% else -%>
     <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
+    <%   go_image = 'docker.elastic.co/wolfi/go:1.23' -%>
     <%   package_manager = 'apk' -%>
   <% end -%>
   <%   locale = 'C.UTF-8' -%>
 
 # Build env2yaml
-FROM docker.elastic.co/wolfi/go:1-dev as builder-env2yaml
+FROM <%= go_image %> as builder-env2yaml
 
 COPY env2yaml/env2yaml.go /tmp/go/src/env2yaml/env2yaml.go
 COPY env2yaml/go.mod      /tmp/go/src/env2yaml/go.mod
