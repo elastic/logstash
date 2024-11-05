@@ -72,23 +72,24 @@ This section summarizes the changes in the following releases:
 [[logstash-8-16-0]]
 === Logstash 8.16.0 Release Notes
 
+[[health-api-8-16-0]]
 ==== Announcing the new {ls} Health Report API
 
 The new Health Report API (`GET /_health_report`) is available starting with {ls} `8.16.0`.
-This API leverages indicators capable of detecting the degraded status of pipelines and
+This API uses indicators capable of detecting the degraded status of pipelines and
 providing actionable insights https://github.com/elastic/logstash/pull/16520[#16520], https://github.com/elastic/logstash/pull/16532[#16532].
 
 NOTE for users upgrading to {ls} 8.16.0: if your existing automation relies on liveliness scripts that expect Logstash's API status to either not be available or return a hardcoded `green` status, there is an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. Setting the `logstash.forceApiStatus` system property to `green` will force other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
 
-For a more detailed view please check <<logstash-health-report-api>>.
+Check out the <<logstash-health-report-api>> docs more for info.
 
-[[featured-8.16.0]]
+[[featured-8-16-0]]
 ==== New features and enhancements
 
 * {ls} now gracefully handles `if` conditionals in pipeline definitions that can't be evaluated (https://github.com/elastic/logstash/pull/16322[#16322]), either by dropping
 the event or by sending it to the pipeline's DLQ if enabled. https://github.com/elastic/logstash/pull/16423[#16423]
 
-[[core-8.16.0]]
+[[core-8-16-0]]
 ==== Other changes to Logstash core
 
 * Added deprecation logs for modules `netflow`, `fb_apache` and `azure`. https://github.com/elastic/logstash/pull/16548[#16548]
@@ -98,11 +99,12 @@ the event or by sending it to the pipeline's DLQ if enabled. https://github.com/
 * The flag `--event_api.tags.illegal` was deprecated and will be removed in version 9. This flag remains available throughout all version 8.x releases. Users who rely on this flag to allow non strings assignment to `tags` field should update their pipeline. https://github.com/elastic/logstash/pull/16507[#16507]
 
 
+[[plugins-8-16-0]]
 ==== Plugins
 
 *Cef Codec - 6.2.8*
 
-* Added missing documentation of the `raw_data_field` option https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
+* [DOC] Added missing documentation of the `raw_data_field` option https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
 
 *Json_lines Codec - 3.2.2*
 
