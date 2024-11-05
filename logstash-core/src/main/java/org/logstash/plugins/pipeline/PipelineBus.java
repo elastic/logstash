@@ -19,12 +19,15 @@
 
 package org.logstash.plugins.pipeline;
 
+import co.elastic.logstash.api.DeprecationLogger;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.log.DefaultDeprecationLogger;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,18 +40,31 @@ import java.util.Set;
 public interface PipelineBus {
 
     Logger LOGGER = LogManager.getLogger(PipelineBus.class);
+    DeprecationLogger DEPRECATION_LOGGER = new DefaultDeprecationLogger(LOGGER);
 
     /**
      * API-stable entry-point for creating a {@link PipelineBus}
      * @return a new pipeline bus
      */
     static PipelineBus create() {
-        final String pipelineBusImplementation = System.getProperty("logstash.pipelinebus.implementation", "v2");
+        final String pipelineBusImplementation = System.getProperty("logstash.pipelinebus.implementation");
+        if (Objects.isNull(pipelineBusImplementation)) {
+            return new PipelineBusV2();
+        }
+
+        final String deprecationLogBase = "The pipeline bus selector `logstash.pipelinebus.implementation` system property is deprecated and will be ignored in Logstash 9.0";
         switch (pipelineBusImplementation) {
-            case "v1": return new PipelineBusV1();
-            case "v2": return new PipelineBusV2();
+            case "v1":
+                LOGGER.debug("pipeline bus `v1` has been selected");
+                DEPRECATION_LOGGER.deprecated(deprecationLogBase + "; the selected `v1` will also be removed.");
+                return new PipelineBusV1();
+            case "v2":
+                LOGGER.debug("pipeline bus `v2` has been selected");
+                DEPRECATION_LOGGER.deprecated(deprecationLogBase + "; the selected `v2` is redundant because the default value is `v2`");
+                return new PipelineBusV2();
             default:
-                LOGGER.warn("unknown pipeline-bus implementation: {}", pipelineBusImplementation);
+                DEPRECATION_LOGGER.deprecated(deprecationLogBase);
+                LOGGER.warn("unknown pipeline-bus implementation: {} default `v2` will be used.", pipelineBusImplementation);
                 return new PipelineBusV2();
         }
     }

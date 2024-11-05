@@ -477,10 +477,16 @@ public class PipelineBusTest {
         @Rule
         public LoggingSpyResource pipelineBusLog = new LoggingSpyResource(LogManager.getLogger("org.logstash.plugins.pipeline.PipelineBus"));
 
+        @Rule
+        public LoggingSpyResource pipelineBusDeprecationLog = new LoggingSpyResource(LogManager.getLogger("org.logstash.deprecation.plugins.pipeline.PipelineBus"));
+
         @Test
         public void implementationExplicitV1() {
             withSystemProperty("logstash.pipelinebus.implementation", "v1", () -> {
                 assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV1.class);
+                assertThat(pipelineBusDeprecationLog.getLogEvents()).anySatisfy(logEvent -> {
+                    assertThat(logEvent.getMessage().getFormattedMessage()).contains("`logstash.pipelinebus.implementation` system property is deprecated", "selected `v1` will also be removed");
+                });
             });
         }
 
@@ -488,6 +494,10 @@ public class PipelineBusTest {
         public void implementationExplicitV2() {
             withSystemProperty("logstash.pipelinebus.implementation", "v2", () -> {
                 assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV2.class);
+
+                assertThat(pipelineBusDeprecationLog.getLogEvents()).anySatisfy(logEvent -> {
+                    assertThat(logEvent.getMessage().getFormattedMessage()).contains("`logstash.pipelinebus.implementation` system property is deprecated", "selected `v2` is redundant");
+                });
             });
         }
 
@@ -495,8 +505,12 @@ public class PipelineBusTest {
         public void implementationExplicitIllegal() {
             withSystemProperty("logstash.pipelinebus.implementation", "illegal", () -> {
                 assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV2.class);
+
                 assertThat(pipelineBusLog.getLogEvents()).anySatisfy(logEvent -> {
                     assertThat(logEvent.getMessage().getFormattedMessage()).contains("unknown pipeline-bus implementation", "illegal");
+                });
+                assertThat(pipelineBusDeprecationLog.getLogEvents()).anySatisfy(logEvent -> {
+                    assertThat(logEvent.getMessage().getFormattedMessage()).contains("`logstash.pipelinebus.implementation` system property is deprecated");
                 });
             });
         }
@@ -505,6 +519,10 @@ public class PipelineBusTest {
         public void implementationImplicit() {
             withSystemProperty("logstash.pipelinebus.implementation", null, () -> {
                 assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV2.class);
+
+                assertThat(pipelineBusDeprecationLog.getLogEvents()).noneSatisfy(logEvent -> {
+                    assertThat(logEvent.getMessage().getFormattedMessage()).contains("system property is deprecated");
+                });
             });
         }
 
