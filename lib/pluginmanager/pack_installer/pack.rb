@@ -39,7 +39,7 @@ module LogStash module PluginManager module PackInstaller
     class GemInformation
       EXTENSION = ".gem"
       SPLIT_CHAR = "-"
-      JAVA_PLATFORM_RE = /-java/
+      JAVA_PLATFORM_RE = /-java$/
       DEPENDENCIES_DIR_RE = /dependencies/
 
       attr_reader :file, :name, :version, :platform
