@@ -93,21 +93,6 @@ end
 
 
 def setup_logger_spy
-  java_import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
-  java_import org.apache.logging.log4j.Level
-  config_builder = ConfigurationBuilderFactory.newConfigurationBuilder
-  configure_log_spy = config_builder
-                        .add(
-                          config_builder
-                            .newAppender("LOG_SPY", "List")
-                            .add(config_builder.newLayout("PatternLayout").addAttribute("pattern", "%-5p [%t]: %m%n"))
-                        )
-                        .add(
-                          config_builder
-                            .newRootLogger(Level::INFO)
-                            .add(config_builder.newAppenderRef("LOG_SPY")))
-                        .build(false)
-
   java_import org.apache.logging.log4j.core.config.Configurator
   java_import org.apache.logging.log4j.core.config.Configuration
 
@@ -121,7 +106,25 @@ def setup_logger_spy
   expect(log_ctx).not_to be nil
   log_ctx.reconfigure(configure_log_spy) # force the programmatic configuration, without this it's not used
 
-  return log_ctx
+  log_ctx
+end
+
+def configure_log_spy
+  java_import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
+  java_import org.apache.logging.log4j.Level
+  config_builder = ConfigurationBuilderFactory.newConfigurationBuilder
+  configuration = config_builder
+                        .add(
+                          config_builder
+                            .newAppender("LOG_SPY", "List")
+                            .add(config_builder.newLayout("PatternLayout").addAttribute("pattern", "%-5p [%t]: %m%n"))
+                        )
+                        .add(
+                          config_builder
+                            .newRootLogger(Level::INFO)
+                            .add(config_builder.newAppenderRef("LOG_SPY")))
+                        .build(false)
+  configuration
 end
 
 def retrieve_logger_spy(log_ctx)

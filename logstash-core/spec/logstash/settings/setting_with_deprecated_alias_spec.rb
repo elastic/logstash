@@ -27,20 +27,32 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   let(:settings) { LogStash::Settings.new }
   let(:canonical_setting) { LogStash::Setting::StringSetting.new(canonical_setting_name, default_value, true) }
 
-  let(:log_ctx) { setup_logger_spy }
-  let(:log_spy) { retrieve_logger_spy(log_ctx) }
+  log_spy = nil
+  log_ctx = nil
 
-  before(:each) do
-    # Initialization of appender and logger use to spy, need to be done before executing any code that logs,
-    # that's the reason wy to refer the spying logger context before any test.
-    log_ctx
+  def log_ctx
+    @log_ctx
+  end
+
+  def log_spy
+    @log_spy
   end
 
   before(:each) do
+    # Initialization of appender and logger use to spy, need to be freshly recreated on each test is context shutdown is used.
+    @log_ctx = setup_logger_spy
+    @log_spy = retrieve_logger_spy(@log_ctx)
+
     allow(LogStash::Settings).to receive(:logger).and_return(double("SettingsLogger").as_null_object)
     allow(LogStash::Settings).to receive(:deprecation_logger).and_return(double("SettingsDeprecationLogger").as_null_object)
 
     settings.register(canonical_setting.with_deprecated_alias(deprecated_setting_name))
+  end
+
+  after(:each) do
+    @log_ctx.close
+    @log_spy = nil
+    @log_ctx = nil
   end
 
   shared_examples '#validate_value success' do
