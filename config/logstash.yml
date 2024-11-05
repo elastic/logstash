@@ -320,7 +320,7 @@
 #
 # ------------ Other Settings --------------
 #
-# Allow or block running Logstash as superuser (default: true)
+# Allow or block running Logstash as superuser (default: true). Windows are excluded from the checking
 # allow_superuser: false
 #
 # Where to find custom plugins

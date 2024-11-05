@@ -454,6 +454,8 @@ class LogStash::Runner < Clamp::StrictCommand
   end # def self.main
 
   def running_as_superuser
+    return if LogStash::Environment.windows? # windows euid always returns 0, skip checking
+
     if Process.euid() == 0
       if setting("allow_superuser")
         logger.warn("NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk. " +

@@ -574,41 +574,51 @@ describe LogStash::Runner do
     let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
     before(:each) { allow(runner).to receive(:deprecation_logger).and_return(deprecation_logger_stub) }
 
-    context "unintentionally running logstash as superuser" do
-      before do
-        expect(Process).to receive(:euid).and_return(0)
-      end
-      it "fails with bad exit" do
-        LogStash::SETTINGS.set("allow_superuser", false)
-        expect(logger).to receive(:fatal) do |msg, hash|
-          expect(msg).to eq("An unexpected error occurred!")
-          expect(hash[:error].to_s).to match("Logstash cannot be run as superuser.")
+    if LogStash::Environment.windows?
+      context "unintentionally running logstash as superuser" do
+        it "runs successfully" do
+          LogStash::SETTINGS.set("allow_superuser", false)
+          expect(logger).not_to receive(:fatal)
+          expect { subject.run(args) }.not_to raise_error
         end
-        expect(subject.run(args)).to eq(1)
       end
-    end
+    else
+      context "unintentionally running logstash as superuser" do
+        before do
+          expect(Process).to receive(:euid).and_return(0)
+        end
+        it "fails with bad exit" do
+          LogStash::SETTINGS.set("allow_superuser", false)
+          expect(logger).to receive(:fatal) do |msg, hash|
+            expect(msg).to eq("An unexpected error occurred!")
+            expect(hash[:error].to_s).to match("Logstash cannot be run as superuser.")
+          end
+          expect(subject.run(args)).to eq(1)
+        end
+      end
 
-    context "intentionally running logstash as superuser " do
-      before do
-        expect(Process).to receive(:euid).and_return(0)
+      context "intentionally running logstash as superuser " do
+        before do
+          expect(Process).to receive(:euid).and_return(0)
+        end
+        it "runs successfully with warning message" do
+          LogStash::SETTINGS.set("allow_superuser", true)
+          expect(logger).not_to receive(:fatal)
+          expect(logger).to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
+          expect { subject.run(args) }.not_to raise_error
+        end
       end
-      it "runs successfully with warning message" do
-        LogStash::SETTINGS.set("allow_superuser", true)
-        expect(logger).not_to receive(:fatal)
-        expect(logger).to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
-        expect { subject.run(args) }.not_to raise_error
-      end
-    end
 
-    context "running logstash as non-root " do
-      before do
-        expect(Process).to receive(:euid).and_return(100)
-      end
-      it "runs successfully without any messages" do
-        LogStash::SETTINGS.set("allow_superuser", false)
-        expect(logger).not_to receive(:fatal)
-        expect(logger).not_to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
-        expect { subject.run(args) }.not_to raise_error
+      context "running logstash as non-root " do
+        before do
+          expect(Process).to receive(:euid).and_return(100)
+        end
+        it "runs successfully without any messages" do
+          LogStash::SETTINGS.set("allow_superuser", false)
+          expect(logger).not_to receive(:fatal)
+          expect(logger).not_to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
+          expect { subject.run(args) }.not_to raise_error
+        end
       end
     end
   end
