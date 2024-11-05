@@ -19,7 +19,9 @@
 
 package org.logstash.plugins.pipeline;
 
+import org.apache.logging.log4j.LogManager;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.log.LoggingSpyResource;
 
 import java.time.Duration;
 import java.util.*;
@@ -410,10 +413,16 @@ public class PipelineBusTest {
     }
 
     public static class SelectionTest {
+        @Rule
+        public LoggingSpyResource loggingSpyResource = new LoggingSpyResource(LogManager.getLogger("org.logstash.deprecation.plugins.pipeline.PipelineBus"));
+
         @Test
         public void implementationExplicitV1() {
             withSystemProperty("logstash.pipelinebus.implementation", "v1", () -> {
                 assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV1.class);
+                assertThat(loggingSpyResource.getLogEvents()).anySatisfy(logEvent -> {
+                    assertThat(logEvent.getMessage().getFormattedMessage()).contains("legacy pipeline bus");
+                });
             });
         }
 

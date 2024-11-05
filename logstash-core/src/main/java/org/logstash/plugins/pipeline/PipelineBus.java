@@ -19,10 +19,12 @@
 
 package org.logstash.plugins.pipeline;
 
+import co.elastic.logstash.api.DeprecationLogger;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.log.DefaultDeprecationLogger;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -37,6 +39,7 @@ import java.util.Set;
 public interface PipelineBus {
 
     Logger LOGGER = LogManager.getLogger(PipelineBus.class);
+    DeprecationLogger DEPRECATION_LOGGER = new DefaultDeprecationLogger(LOGGER);
 
     /**
      * API-stable entry-point for creating a {@link PipelineBus}
@@ -45,7 +48,9 @@ public interface PipelineBus {
     static PipelineBus create() {
         final String pipelineBusImplementation = System.getProperty("logstash.pipelinebus.implementation", "v2");
         switch (pipelineBusImplementation) {
-            case "v1": return new PipelineBusV1();
+            case "v1":
+                DEPRECATION_LOGGER.deprecated("The legacy pipeline bus selected with `logstash.pipelinebus.implementation=v1` is deprecated, and will be removed in Logstash 9.0");
+                return new PipelineBusV1();
             case "v2": return new PipelineBusV2();
             default:
                 LOGGER.warn("unknown pipeline-bus implementation: {}", pipelineBusImplementation);
