@@ -113,4 +113,24 @@ describe LogStash::PluginManager::PackInstaller::Pack::GemInformation do
       expect(subject.plugin?).to be_falsey
     end
   end
+
+  context "when it is Java plugin example from an offline zip file" do
+    let(:gem) { "/tmp/randomValue/randomValue2/logstash/logstash-filter-java_filter_example-1.0.5.gem"}
+
+    it "#dependency? return false" do
+      expect(subject.dependency?).to be_falsey
+    end
+
+    it "#plugin? return true" do
+      expect(subject.plugin?).to be_truthy
+    end
+
+    it "returns the version" do
+      expect(subject.version).to eq("1.0.5")
+    end
+
+    it "returns the name" do
+      expect(subject.name).to eq("logstash-filter-java_filter_example")
+    end
+  end
 end
