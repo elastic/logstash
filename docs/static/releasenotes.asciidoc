@@ -79,7 +79,10 @@ The new Health Report API (`GET /_health_report`) is available starting with {ls
 This API uses indicators capable of detecting the degraded status of pipelines and
 providing actionable insights https://github.com/elastic/logstash/pull/16520[#16520], https://github.com/elastic/logstash/pull/16532[#16532].
 
-NOTE for users upgrading to {ls} 8.16.0: if your existing automation relies on liveliness scripts that expect Logstash's API status to either not be available or return a hardcoded `green` status, there is an escape hatch to prevent the new Health API's status from affecting the top-level `status` field of Logstash's existing API responses. Setting the `logstash.forceApiStatus` system property to `green` will force other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
+**Upgrading from earlier versions.** If your existing automation relies on liveliness scripts that expect the {ls} API status to be unavailable or to return a hardcoded `green` status, you can set a property to preserve pre-8.16.0. 
+To maintain existing behavior for API responses, add the `-Dlogstash.forceApiStatus=green` property to your `config/jvm.options` file.
+
+This setting prevents the new Health API status from affecting the top-level `status` field of existing {ls} API responses, forcing other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
 
 Check out the <<logstash-health-report-api>> docs more for info.
 
