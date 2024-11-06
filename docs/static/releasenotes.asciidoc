@@ -101,6 +101,11 @@ the event or by sending it to the pipeline's DLQ if enabled. https://github.com/
 
 * The flag `--event_api.tags.illegal` was deprecated and will be removed in version 9. This flag remains available throughout all version 8.x releases. Users who rely on this flag to allow non strings assignment to `tags` field should update their pipeline. https://github.com/elastic/logstash/pull/16507[#16507]
 
+[[dependencies-8.16.0]]
+==== Updates to dependencies
+
+* Updated JRuby to 9.4.9.0 https://github.com/elastic/logstash/pull/16638[#16638]
+
 
 [[plugins-8-16-0]]
 ==== Plugins
