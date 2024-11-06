@@ -68,7 +68,6 @@ module LogStash module Config
       end
 
       specified_and_available_names
-        .select { |mn| mn != "arcsight" }
         .each { |mn| deprecation_logger.deprecated("The #{mn} module has been deprecated and will be removed in version 9.") }
 
       specified_and_available_names.each do |module_name|
