@@ -38,21 +38,22 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
      * including the canonical setting and a deprecated alias.
      * @param canonicalSetting the setting to wrap
      * @param deprecatedAliasName the name for the deprecated alias
+     * @param obsoletedVersion the version of Logstash that deprecated alias will be removed
      *
      * @return List of [SettingWithDeprecatedAlias, DeprecatedAlias]
      * */
-    static <T> List<Setting<T>> wrap(BaseSetting<T> canonicalSetting, String deprecatedAliasName) {
-        final SettingWithDeprecatedAlias<T> settingProxy = new SettingWithDeprecatedAlias<>(canonicalSetting, deprecatedAliasName);
+    static <T> List<Setting<T>> wrap(BaseSetting<T> canonicalSetting, String deprecatedAliasName, String obsoletedVersion) {
+        final SettingWithDeprecatedAlias<T> settingProxy = new SettingWithDeprecatedAlias<>(canonicalSetting, deprecatedAliasName, obsoletedVersion);
         return Arrays.asList(settingProxy, settingProxy.deprecatedAlias);
     }
 
     private DeprecatedAlias<T> deprecatedAlias;
 
     @SuppressWarnings("this-escape")
-    protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName) {
+    protected SettingWithDeprecatedAlias(BaseSetting<T> canonicalSetting, String deprecatedAliasName, String obsoletedVersion) {
         super(canonicalSetting);
 
-        this.deprecatedAlias = new DeprecatedAlias<T>(this, deprecatedAliasName);
+        this.deprecatedAlias = new DeprecatedAlias<T>(this, deprecatedAliasName, obsoletedVersion);
     }
 
     BaseSetting<T> getCanonicalSetting() {

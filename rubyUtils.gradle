@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-core:9.4.8.0"
+        classpath "org.jruby:jruby-core:9.4.9.0"
     }
 }
 
@@ -343,7 +343,8 @@ void generateRubySupportFilesForPlugin(String projectDescription, String project
     gemspecFile.append("  s.authors         = ['" + String.join("', '", pluginInfo.authors) + "']\n")
     gemspecFile.append("  s.email           = ['" + String.join("', '", pluginInfo.email) + "']\n")
     gemspecFile.append("  s.homepage        = '" + pluginInfo.homepage + "'\n")
-    gemspecFile.append("  s.require_paths = ['lib', 'vendor/jar-dependencies']\n")
+    gemspecFile.append("  s.platform        = 'java'\n")
+    gemspecFile.append("  s.require_paths   = ['lib', 'vendor/jar-dependencies']\n")
     gemspecFile.append("\n")
     gemspecFile.append("  s.files = Dir[\"lib/**/*\",\"*.gemspec\",\"*.md\",\"CONTRIBUTORS\",\"Gemfile\",\"LICENSE\",\"NOTICE.TXT\", \"vendor/jar-dependencies/**/*.jar\", \"vendor/jar-dependencies/**/*.rb\", \"VERSION\", \"docs/**/*\"]\n")
     gemspecFile.append("\n")

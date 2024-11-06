@@ -73,10 +73,10 @@ module LogStash
            Setting::Boolean.new("enable-local-plugin-development", false),
             Setting::String.new("log.format", "plain", true, ["json", "plain"]),
            Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", false),
-           Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled"),
-            Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host"),
-         Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port"),
-            Setting::String.new("api.environment", "production").with_deprecated_alias("http.environment"),
+           Setting::Boolean.new("api.enabled", true).with_deprecated_alias("http.enabled", "9"),
+            Setting::String.new("api.http.host", "127.0.0.1").with_deprecated_alias("http.host", "9"),
+         Setting::PortRange.new("api.http.port", 9600..9700).with_deprecated_alias("http.port", "9"),
+            Setting::String.new("api.environment", "production").with_deprecated_alias("http.environment", "9"),
             Setting::String.new("api.auth.type", "none", true, %w(none basic)),
             Setting::String.new("api.auth.basic.username", nil, false).nullable,
           Setting::Password.new("api.auth.basic.password", nil, false).nullable,
@@ -111,7 +111,7 @@ module LogStash
             Setting::String.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::String.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableString.new("monitoring.cluster_uuid"),
-            Setting::String.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
+            Setting::String.new("pipeline.buffer.type", nil, false, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 

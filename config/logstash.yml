@@ -332,7 +332,7 @@
 #
 # Determine where to allocate memory buffers, for plugins that leverage them.
 # Default to direct, optionally can be switched to heap to select Java heap space.
-# pipeline.buffer.type: direct
+# pipeline.buffer.type: heap
 #
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #

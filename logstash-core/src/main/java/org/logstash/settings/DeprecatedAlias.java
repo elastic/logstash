@@ -33,19 +33,32 @@ public final class DeprecatedAlias<T> extends SettingDelegator<T> {
 
     private static final DeprecationLogger DEPRECATION_LOGGER = new DefaultDeprecationLogger(LOGGER);
 
-    private SettingWithDeprecatedAlias<T> canonicalProxy;
+    private final SettingWithDeprecatedAlias<T> canonicalProxy;
 
-    DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName) {
+    private final String obsoletedVersion;
+
+    DeprecatedAlias(SettingWithDeprecatedAlias<T> canonicalProxy, String aliasName, String obsoletedVersion) {
         super(canonicalProxy.getCanonicalSetting().deprecate(aliasName));
         this.canonicalProxy = canonicalProxy;
+        this.obsoletedVersion = obsoletedVersion;
     }
 
     // Because loggers are configure after the Settings declaration, this method is intended for lazy-logging
     // check https://github.com/elastic/logstash/pull/16339
     public void observePostProcess() {
         if (isSet()) {
-            DEPRECATION_LOGGER.deprecated("The setting `{}` is a deprecated alias for `{}` and will be removed in a " +
-                    "future release of Logstash. Please use `{}` instead", getName(), canonicalProxy.getName(), canonicalProxy.getName());
+            StringBuilder sb = new StringBuilder();
+            sb.append("The setting `").append(getName()).append("` is a deprecated alias for `").append(canonicalProxy.getName()).append("`");
+
+            if (this.obsoletedVersion != null && !this.obsoletedVersion.isEmpty()) {
+                sb.append(" and will be removed in version ").append(this.obsoletedVersion).append(".");
+            } else {
+                sb.append(" and will be removed in a future release of Logstash.");
+            }
+
+            sb.append(" Please use `").append(canonicalProxy.getName()).append("` instead");
+
+            DEPRECATION_LOGGER.deprecated(sb.toString());
         }
     }
 

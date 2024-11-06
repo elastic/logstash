@@ -157,6 +157,15 @@ namespace "artifact" do
     build_zip(*license_details, platform: '-no-jdk')
   end
 
+  desc "Build jdk bundled tar.gz of default logstash plugins with all dependencies for docker"
+  task "archives_docker" => ["prepare", "generate_build_metadata"] do
+    license_details = ['ELASTIC-LICENSE']
+    @bundles_jdk = true
+    create_archive_pack(license_details, "x86_64", "linux", "darwin")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+  end
+
   def create_archive_pack(license_details, arch, *oses)
     oses.each do |os_name|
       puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}, arch: #{arch}")
@@ -211,6 +220,16 @@ namespace "artifact" do
     safe_system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
+  end
+
+  desc "Build jdk bundled OSS tar.gz of default logstash plugins with all dependencies for docker"
+  task "archives_docker_oss" => ["prepare-oss", "generate_build_metadata"] do
+    #with bundled JDKs
+    @bundles_jdk = true
+    license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
+    create_archive_pack(license_details, "x86_64", "linux", "darwin")
+    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
   desc "Build an RPM of logstash with all dependencies"
@@ -300,25 +319,25 @@ namespace "artifact" do
   end
 
   desc "Build docker image"
-  task "docker" => ["prepare", "generate_build_metadata", "archives"] do
+  task "docker" => ["prepare", "generate_build_metadata", "archives_docker"] do
     puts("[docker] Building docker image")
     build_docker('full')
   end
 
   desc "Build OSS docker image"
-  task "docker_oss" => ["prepare-oss", "generate_build_metadata", "archives_oss"] do
+  task "docker_oss" => ["prepare-oss", "generate_build_metadata", "archives_docker_oss"] do
     puts("[docker_oss] Building OSS docker image")
     build_docker('oss')
   end
 
   desc "Build UBI8 docker image"
-  task "docker_ubi8" => %w(prepare generate_build_metadata archives) do
+  task "docker_ubi8" => %w(prepare generate_build_metadata archives_docker) do
     puts("[docker_ubi8] Building UBI docker image")
     build_docker('ubi8')
   end
 
   desc "Build wolfi docker image"
-  task "docker_wolfi" => %w(prepare generate_build_metadata archives) do
+  task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
     puts("[docker_wolfi] Building Wolfi docker image")
     build_docker('wolfi')
   end
