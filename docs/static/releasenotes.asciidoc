@@ -77,6 +77,12 @@ This section summarizes the changes in the following releases:
 
 * Fixed an issue where Logstash could not consume lines correctly when a codec with a delimiter is in use and the input buffer becomes full https://github.com/elastic/logstash/pull/16482[#16482]
 
+[[dependencies-8.15.4]]
+==== Updates to dependencies
+
+* Updated JRuby to 9.4.9.0 https://github.com/elastic/logstash/pull/16638[#16638]
+
+[[plugins-8.15.4]]
 ==== Plugins
 
 *Cef Codec - 6.2.8*
