@@ -704,7 +704,7 @@ describe LogStash::Runner do
       it "runs successfully with warning message" do
         LogStash::SETTINGS.set("allow_superuser", true)
         expect(logger).not_to receive(:fatal)
-        expect(logger).to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
+        expect(logger).to receive(:warn).with(/NOTICE: Running Logstash as a superuser is strongly discouraged as it poses a security risk/)
         expect { subject.run(args) }.not_to raise_error
       end
     end
@@ -716,7 +716,7 @@ describe LogStash::Runner do
       it "runs successfully without any messages" do
         LogStash::SETTINGS.set("allow_superuser", false)
         expect(logger).not_to receive(:fatal)
-        expect(logger).not_to receive(:warn).with(/NOTICE: Allowing Logstash to run as superuser is heavily discouraged as it poses a security risk./)
+        expect(logger).not_to receive(:warn).with(/NOTICE: Running Logstash as a superuser is strongly discouraged as it poses a security risk/)
         expect { subject.run(args) }.not_to raise_error
       end
     end
