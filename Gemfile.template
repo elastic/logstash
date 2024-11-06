@@ -42,3 +42,6 @@ gem "jar-dependencies", "= 0.4.1" # Gem::LoadError with jar-dependencies 0.4.2
 gem "murmurhash3", "= 0.1.6" # Pins until version 0.1.7-java is released
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
+
+# TODO revert once https://github.com/ruby/json/issues/694 is resolved
+gem "json", "2.7.5"
