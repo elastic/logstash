@@ -77,6 +77,11 @@ This section summarizes the changes in the following releases:
 
 * Fixed an issue where Logstash could not consume lines correctly when a codec with a delimiter is in use and the input buffer becomes full https://github.com/elastic/logstash/pull/16482[#16482]
 
+[[known-issues-8-15-4]]
+==== Known issues
+
+* {ls} can fail to shut down in some cases when using pipeline-to-pipeline. This can be avoided by setting `-Dlogstash.pipelinebus.implementation=v1` in `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
+
 [[dependencies-8.15.4]]
 ==== Updates to dependencies
 
@@ -112,6 +117,14 @@ This section summarizes the changes in the following releases:
 
 * Fixed Logstash core compatibility issues with `logstash-input-azure_event_hubs` versions `1.4.8` and earlier https://github.com/elastic/logstash/pull/16485[#16485]
 
+[[known-issues-8-15-3]]
+==== Known issues
+
+* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
+
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.14*
@@ -136,6 +149,14 @@ This section summarizes the changes in the following releases:
 ==== Notable issues fixed
 
 * Fixed a https://github.com/elastic/logstash/issues/16437[regression] from {ls} 8.15.1 in which {ls} removes all quotes from docker env variables, possibly causing {ls} not to start https://github.com/elastic/logstash/pull/16456[#16456]
+
+[[known-issues-8-15-2]]
+==== Known issues
+
+* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
 
 ==== Plugins
 
@@ -172,6 +193,12 @@ If this situation occurs, {ls} may fail to start or some plugins may use a malfo
 Check out issue https://github.com/elastic/logstash/issues/16437[#16437] for details.
 +
 Workaround: Downgrade to {ls} 8.15.0, or temporarily avoid using environment and keystore variable references.
+* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
+
+
 
 [[notable-8.15.1]]
 ==== Performance improvements and notable issues fixed
@@ -205,6 +232,14 @@ Workaround: Downgrade to {ls} 8.15.0, or temporarily avoid using environment and
 
 [[logstash-8-15-0]]
 === Logstash 8.15.0 Release Notes
+
+[[known-issues-8-15-0]]
+==== Known issues
+
+* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
 
 [[snmp-ga-8.15.0]]
 ==== Announcing the new {ls} SNMP integration plugin
