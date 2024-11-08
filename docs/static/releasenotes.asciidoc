@@ -72,15 +72,18 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-4]]
 === Logstash 8.15.4 Release Notes
 
+[[known-issues-8-15-4]]
+==== Known issues
+
+* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
+
 [[notable-8.15.4]]
 ==== Notable issues fixed
 
 * Fixed an issue where Logstash could not consume lines correctly when a codec with a delimiter is in use and the input buffer becomes full https://github.com/elastic/logstash/pull/16482[#16482]
-
-[[known-issues-8-15-4]]
-==== Known issues
-
-* {ls} can fail to shut down in some cases when using pipeline-to-pipeline. This can be avoided by setting `-Dlogstash.pipelinebus.implementation=v1` in `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
 
 [[dependencies-8.15.4]]
 ==== Updates to dependencies
