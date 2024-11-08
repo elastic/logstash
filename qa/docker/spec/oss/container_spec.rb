@@ -18,8 +18,8 @@ describe 'A container running the oss image' do
       cleanup_container(@container)
     end
 
-    it 'has an Ubuntu 20.04 base image' do
-      expect(exec_in_container(@container, 'cat /etc/os-release').chomp).to match /Ubuntu 20.04/
+    it 'should be based on Red Hat Enterprise Linux' do
+      expect(exec_in_container(@container, 'cat /etc/redhat-release')).to match /Red Hat Enterprise Linux/
     end
   end
 end

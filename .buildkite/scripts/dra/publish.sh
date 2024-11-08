@@ -46,13 +46,6 @@ if [ "$RELEASE_VER" != "7.17" ]; then
   :
 fi
 
-# Deleting ubi8 for aarch64 for the time being. This image itself is not being built, and it is not expected
-# by the release manager.
-# See https://github.com/elastic/infra/blob/master/cd/release/release-manager/project-configs/8.5/logstash.gradle
-# for more details.
-# TODO filter it out when uploading artifacts instead
-rm -f build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz
-
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done
 
