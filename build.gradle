@@ -817,10 +817,16 @@ class JDKDetails {
 }
 
 tasks.register("lint") {
-    // Calls rake's 'lint' task
+    description = "Lint Ruby source files. Use -PrubySource=file1.rb,file2.rb to specify files"
     dependsOn installDevelopmentGems
     doLast {
-        rake(projectDir, buildDir, 'lint:report')
+        if (project.hasProperty("rubySource")) {
+            // Split the comma-separated files and pass them as separate arguments
+            def files = project.property("rubySource").split(",")
+            rake(projectDir, buildDir, "lint:report", *files)
+        } else {
+            rake(projectDir, buildDir, "lint:report")
+        }
     }
 }
 
