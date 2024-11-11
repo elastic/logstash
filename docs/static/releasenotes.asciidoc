@@ -77,9 +77,9 @@ This section summarizes the changes in the following releases:
 
 **{ls} can fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
 Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
-+
 Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
 This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 [[notable-8.15.4]]
 ==== Notable issues fixed
 
@@ -125,9 +125,9 @@ This change reverts the `PipelineBus` to `v1`, a version that does not exhibit t
 
 **{ls} can fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
 Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
-+
 Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
 This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.14*
@@ -158,9 +158,9 @@ This change reverts the `PipelineBus` to `v1`, a version that does not exhibit t
 
 **{ls} can fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
 Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
-+
 Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
 This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 ==== Plugins
 
 *Beats Input - 6.8.4*
@@ -203,8 +203,6 @@ Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.proper
 This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
 
 
-
-
 [[notable-8.15.1]]
 ==== Performance improvements and notable issues fixed
 
@@ -243,7 +241,6 @@ This change reverts the `PipelineBus` to `v1`, a version that does not exhibit t
 
 **{ls} can fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
 Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
-+
 Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
 This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
 
