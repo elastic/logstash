@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-0,Logstash 8.16.0>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
 * <<logstash-8-15-2,Logstash 8.15.2>>
 * <<logstash-8-15-1,Logstash 8.15.1>>
@@ -66,6 +67,92 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-0]]
+=== Logstash 8.16.0 Release Notes
+
+[[health-api-8-16-0]]
+==== Announcing the new {ls} Health Report API
+
+The new Health Report API (`GET /_health_report`) is available starting with {ls} `8.16.0`.
+This API uses indicators capable of detecting the degraded status of pipelines and
+providing actionable insights https://github.com/elastic/logstash/pull/16520[#16520], https://github.com/elastic/logstash/pull/16532[#16532].
+
+**Upgrading from earlier versions.** If your existing automation relies on liveliness scripts that expect the {ls} API status to be unavailable or to return a hardcoded `green` status, you can set a property to preserve pre-8.16.0. 
+To maintain existing behavior for API responses, add the `-Dlogstash.forceApiStatus=green` property to your `config/jvm.options` file.
+
+This setting prevents the new Health API status from affecting the top-level `status` field of existing {ls} API responses, forcing other APIs to return the previous hard-coded `green` value. https://github.com/elastic/logstash/pull/16535[#16535]
+
+Check out the <<logstash-health-report-api>> docs more for info.
+
+[[featured-8-16-0]]
+==== New features and enhancements
+
+* {ls} now gracefully handles `if` conditionals in pipeline definitions that can't be evaluated (https://github.com/elastic/logstash/pull/16322[#16322]), either by dropping
+the event or by sending it to the pipeline's DLQ if enabled. https://github.com/elastic/logstash/pull/16423[#16423]
+
+[[core-8-16-0]]
+==== Other changes to Logstash core
+
+* Added deprecation logs for modules `netflow`, `fb_apache` and `azure`. https://github.com/elastic/logstash/pull/16548[#16548]
+
+* Added deprecation logs for users that doesn't explicitly select a value for `pipeline.buffer.type` forcing them to proactively make a choice before version `9.0` when this setting will default to heap. https://github.com/elastic/logstash/pull/16498[#16498]
+
+* The flag `--event_api.tags.illegal` was deprecated and will be removed in version 9. This flag remains available throughout all version 8.x releases. Users who rely on this flag to allow non strings assignment to `tags` field should update their pipeline. https://github.com/elastic/logstash/pull/16507[#16507]
+
+[[dependencies-8.16.0]]
+==== Updates to dependencies
+
+* Updated JRuby to 9.4.9.0 https://github.com/elastic/logstash/pull/16638[#16638]
+
+
+[[plugins-8-16-0]]
+==== Plugins
+
+*Cef Codec - 6.2.8*
+
+* [DOC] Added missing documentation of the `raw_data_field` option https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
+
+*Json_lines Codec - 3.2.2*
+
+* Raised the default value of the `decode_size_limit_bytes` option to 512 MB https://github.com/logstash-plugins/logstash-codec-json_lines/pull/46[#46]
+
+* Added the `decode_size_limit_bytes` option to limit the maximum size of JSON lines that can be parsed. https://github.com/logstash-plugins/logstash-codec-json_lines/pull/43[#43]
+
+*Elastic_integration Filter - 0.1.15*
+
+* Use Elasticsearch code from its `8.16` branch and adapt to changes in Elasticsearch GeoIP processor https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
+
+*Geoip Filter - 7.3.1*
+
+* Fixed a pipeline crash when looking up a database with customised fields https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+
+*Azure_event_hubs Input - 1.5.0*
+
+* Updated Azure Event Hub client library to version `3.3.0` https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/96[#96]
+
+*Beats Input - 6.9.0*
+
+* Improved plugin's shutdown process and fixed a crash when a connection is terminated while processing messages https://github.com/logstash-plugins/logstash-input-beats/pull/500[#500]
+
+*Http Input - 3.9.1*
+
+* Fixed an issue where the value of `ssl_enabled` during `run` wasn't correctly logged https://github.com/logstash-plugins/logstash-input-http/pull/180[#180]
+
+* Separated Netty boss and worker groups to improve the graceful shutdown https://github.com/logstash-plugins/logstash-input-http/pull/178[#178]
+
+*Tcp Input - 6.4.3*
+
+* Updated dependencies for TCP input https://github.com/logstash-plugins/logstash-input-tcp/pull/224[#224]
+
+*Jdbc Integration - 5.5.0*
+
+* Added support for SQL `DATE` columns to jdbc static and streaming filters https://github.com/logstash-plugins/logstash-integration-jdbc/pull/171[#171]
+
+*Rabbitmq Integration - 7.4.0*
+
+* Removed obsolete `verify_ssl` and `debug` options https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/60[#60]
 
 
 [[logstash-8-15-3]]
