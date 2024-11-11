@@ -237,12 +237,14 @@ Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.proper
 === Logstash 8.15.0 Release Notes
 
 [[known-issues-8-15-0]]
-==== Known issues
+==== Known issue
 
-* **{ls} can fail to shut down under some circumstances when using pipeline-to-pipeline.**
+**{ls} can fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
 Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
 +
-Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`, which reverts to using v1 of the `PipelineBus` that does not have this issue but may have performance impact in pipeline>pipeline scenarios.
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
 
 [[snmp-ga-8.15.0]]
 ==== Announcing the new {ls} SNMP integration plugin
