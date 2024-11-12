@@ -523,32 +523,10 @@ module LogStash
         @validator_class.validate(value)
       end
     end
-
-
+    
     java_import org.logstash.settings.StringSetting
 
-    # class String < Setting
-    #   def initialize(name, default = nil, strict = true, possible_strings = [])
-    #     @possible_strings = possible_strings
-    #     super(name, ::String, default, strict)
-    #   end
-    #
-    #   def validate(value)
-    #     super(value)
-    #     unless @possible_strings.empty? || @possible_strings.include?(value)
-    #       raise ArgumentError.new("Invalid value \"#{name}: #{value}\". Options are: #{@possible_strings.inspect}")
-    #     end
-    #   end
-    # end
-
     java_import org.logstash.settings.NullableString
-
-    # class NullableString < String
-    #   def validate(value)
-    #     return if value.nil?
-    #     super(value)
-    #   end
-    # end
 
     class Password < Coercible
       def initialize(name, default = nil, strict = true)
