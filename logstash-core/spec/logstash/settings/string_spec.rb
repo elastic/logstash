@@ -18,6 +18,7 @@
 require "spec_helper"
 require "logstash/settings"
 
+# Mirrored in java class org.logstash.settings.StringSettingTest
 describe LogStash::Setting::StringSetting do
   let(:possible_values) { ["a", "b", "c"] }
   subject { described_class.new("mytext", possible_values.first, true, possible_values) }
