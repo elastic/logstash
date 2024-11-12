@@ -4,6 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-8-16-0,Logstash 8.16.0>>
+* <<logstash-8-15-4,Logstash 8.15.4>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
 * <<logstash-8-15-2,Logstash 8.15.2>>
 * <<logstash-8-15-1,Logstash 8.15.1>>
@@ -71,6 +72,15 @@ This section summarizes the changes in the following releases:
 
 [[logstash-8-16-0]]
 === Logstash 8.16.0 Release Notes
+
+[[known-issues-8-16-0]]
+==== Known issue
+
+**{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
+
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
 
 [[health-api-8-16-0]]
 ==== Announcing the new {ls} Health Report API
@@ -155,8 +165,60 @@ the event or by sending it to the pipeline's DLQ if enabled. https://github.com/
 * Removed obsolete `verify_ssl` and `debug` options https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/60[#60]
 
 
+[[logstash-8-15-4]]
+=== Logstash 8.15.4 Release Notes
+
+[[known-issues-8-15-4]]
+==== Known issue
+
+**{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
+
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
+[[notable-8-15-4]]
+==== Notable issues fixed
+
+* Fixed an issue where Logstash could not consume lines correctly when a codec with a delimiter is in use and the input buffer becomes full https://github.com/elastic/logstash/pull/16482[#16482]
+
+[[dependencies-8-15-4]]
+==== Updates to dependencies
+
+* Updated JRuby to 9.4.9.0 https://github.com/elastic/logstash/pull/16638[#16638]
+
+[[plugins-8-15-4]]
+==== Plugins
+
+*Cef Codec - 6.2.8*
+
+* [DOC] Added `raw_data_field` to docs https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
+
+*Elastic_integration Filter - 0.1.15*
+
+* Fixed the connection failure where SSL verification mode is disabled over SSL connection https://github.com/elastic/logstash-filter-elastic_integration/pull/165[#165]
+
+*Geoip Filter - 7.3.1*
+
+* Fixed issue causing pipelines to crash during lookup when a database has custom fields https://github.com/logstash-plugins/logstash-filter-geoip/pull/225[#225]
+
+*Tcp Input - 6.4.3*
+
+* Updated dependencies https://github.com/logstash-plugins/logstash-input-tcp/pull/224[#224]
+
+
 [[logstash-8-15-3]]
 === Logstash 8.15.3 Release Notes
+
+[[known-issues-8-15-3]]
+==== Known issue
+
+**{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
+
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 
 [[notable-8.15.3]]
 ==== Notable issues fixed
@@ -184,6 +246,16 @@ the event or by sending it to the pipeline's DLQ if enabled. https://github.com/
 
 [[logstash-8-15-2]]
 === Logstash 8.15.2 Release Notes
+
+[[known-issues-8-15-2]]
+==== Known issue
+
+**{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
+
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 
 [[notable-8.15.2]]
 ==== Notable issues fixed
@@ -226,6 +298,12 @@ Check out issue https://github.com/elastic/logstash/issues/16437[#16437] for det
 +
 Workaround: Downgrade to {ls} 8.15.0, or temporarily avoid using environment and keystore variable references.
 
+* **{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
++
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
+
 [[notable-8.15.1]]
 ==== Performance improvements and notable issues fixed
 
@@ -258,6 +336,15 @@ Workaround: Downgrade to {ls} 8.15.0, or temporarily avoid using environment and
 
 [[logstash-8-15-0]]
 === Logstash 8.15.0 Release Notes
+
+[[known-issues-8-15-0]]
+==== Known issue
+
+**{ls} may fail to shut down under some circumstances when you are using <<pipeline-to-pipeline>>.**
+Check out issue https://github.com/elastic/logstash/issues/16657[#16657] for details.
+
+Workaround: Add `-Dlogstash.pipelinebus.implementation=v1` to `config/jvm.properties`.
+This change reverts the `PipelineBus` to `v1`, a version that does not exhibit this issue, but may impact performance in pipeline-to-pipeline scenarios.
 
 [[snmp-ga-8.15.0]]
 ==== Announcing the new {ls} SNMP integration plugin
