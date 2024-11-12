@@ -17,7 +17,6 @@
 
 require "spec_helper"
 require "logstash/settings"
-java_import org.apache.logging.log4j.core.appender.AbstractAppender
 
 describe LogStash::Setting::SettingWithDeprecatedAlias do
   let(:canonical_setting_name) { "canonical.setting" }
@@ -27,21 +26,6 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
 
   let(:settings) { LogStash::Settings.new }
   let(:canonical_setting) { LogStash::Setting::StringSetting.new(canonical_setting_name, default_value, true) }
-
-  class CustomAppender < AbstractAppender
-
-    attr_reader :events_collector
-
-    def initialize(events)
-      super("CustomCaptorAppender", nil, nil, true, org.apache.logging.log4j.core.config.Property::EMPTY_ARRAY)
-      @events_collector = events
-    end
-
-    # override the append to catch all the calls and collect the events
-    def append(log_event)
-      @events_collector << log_event.message.formatted_message
-    end
-  end
 
   let(:events) { [] }
 
@@ -227,7 +211,6 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   context 'Settings#get on deprecated alias' do
     it 'produces a WARN-level message to the logger' do
       settings.get(deprecated_setting_name)
-      sleep 0.1
       expect(events[0]).to include("setting `#{canonical_setting_name}` has been queried by its deprecated alias `#{deprecated_setting_name}`")
     end
   end

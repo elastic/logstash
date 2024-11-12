@@ -91,42 +91,19 @@ def installed_plugins
   Gem::Specification.find_all.select { |spec| spec.metadata["logstash_plugin"] }.map { |plugin| plugin.name }
 end
 
+java_import org.apache.logging.log4j.core.appender.AbstractAppender
 
-def setup_logger_spy
-  java_import org.apache.logging.log4j.core.config.Configurator
-  java_import org.apache.logging.log4j.core.config.Configuration
+class CustomAppender < AbstractAppender
 
-  java_import org.apache.logging.log4j.LogManager
-  java_import org.apache.logging.log4j.core.impl.Log4jContextFactory
-  # This is done because the LoggerExt calls setFactory LogstashLoggerContextFactory implements
-  # org.apache.logging.log4j.spi.LoggerContextFactory and doesn't extend org.apache.logging.log4j.core.impl.Log4jContextFactory
-  # which is the class expected by the following Configurator to use the programmatic configuration.
-  LogManager.setFactory(Log4jContextFactory.new)
-  log_ctx = Configurator.java_send(:initialize, [Configuration], configure_log_spy)
-  expect(log_ctx).not_to be nil
-  log_ctx.reconfigure(configure_log_spy) # force the programmatic configuration, without this it's not used
+  attr_reader :events_collector
 
-  log_ctx
-end
+  def initialize(events)
+    super("CustomCaptorAppender", nil, nil, true, org.apache.logging.log4j.core.config.Property::EMPTY_ARRAY)
+    @events_collector = events
+  end
 
-def configure_log_spy
-  java_import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory
-  java_import org.apache.logging.log4j.Level
-  config_builder = ConfigurationBuilderFactory.newConfigurationBuilder
-  configuration = config_builder
-                        .add(
-                          config_builder
-                            .newAppender("LOG_SPY", "List")
-                            .add(config_builder.newLayout("PatternLayout").addAttribute("pattern", "%-5p [%t]: %m%n"))
-                        )
-                        .add(
-                          config_builder
-                            .newRootLogger(Level::INFO)
-                            .add(config_builder.newAppenderRef("LOG_SPY")))
-                        .build(false)
-  configuration
-end
-
-def retrieve_logger_spy(log_ctx)
-  log_ctx.getConfiguration().getAppender("LOG_SPY")
+  # override the append to catch all the calls and collect the events
+  def append(log_event)
+    @events_collector << log_event.message.formatted_message
+  end
 end
