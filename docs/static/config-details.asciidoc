@@ -118,30 +118,17 @@ To summarize, we have 3 categories of memory usage, where 2 can be limited by th
 
 Keep these memory requirements in mind as you calculate your ideal memory allocation.
 
-[[reducing-off-heap-usage]]
-===== Upcoming changes to Buffer Allocation and Troubleshooting Out of Memory errors
+[[off-heap-buffers-allocation]]
+===== Buffer Allocation types
+Input plugins such as {agent}, {beats}, TCP, and HTTP allocate buffers in Java heap memory to read events from the network.
+Heap memory is the preferred allocation method, as it facilitates debugging memory usage problems (such as leaks and Out of Memory errors) through the analysis of heap dumps.
 
-Plugins such as {agent}, {beats}, TCP, and HTTP inputs, currently default to using direct memory as it tends
-to provide better performance, especially when interacting with the network stack. 
-Under heavy load, namely large number of connections and large messages, the direct memory space can be exhausted and lead to Out of Memory (OOM) errors in off-heap space.
+Before version 9.0.0, {ls} defaulted to direct memory instead of heap for this purpose. To re-enable the previous behavior {ls} provides
+a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate
+memory buffers for plugins that use them.
 
-An off-heap OOM is difficult to debug, so {ls} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate memory buffers for plugins that use them. 
-Currently it is set to `direct` by default, but you can change it to `heap` to use Java heap space instead, which will be become the default in the future.
-When set to `heap`, buffer allocations used by plugins are configured to **prefer** the
-Java Heap instead of direct memory, as direct memory allocations may still be necessary depending on the plugin.
-
-When set to "heap", in the event of an out-of-memory, Logstash will produce a heap dump to facilitate debugging.
-
-It is important to note that the Java heap sizing requirements will be impacted by this change since
-allocations that previously resided on the direct memory will use heap instead. 
-
-Performance-wise there shouldn't be a noticeable impact, since while direct memory IO is faster, Logstash Event objects produced by these plugins end up being allocated on the Java Heap, incurring the cost of copying from direct memory to heap memory regardless of the setting.
-
-[NOTE] 
---
-* When you set `pipeline.buffer.type` to `heap`, consider incrementing the Java heap by the 
-amount of memory that had been reserved for direct space. 
---
+Performance should not be noticeably affected if you switch between `direct` and `heap`. 
+While copying bytes from OS buffers to direct memory buffers is faster, {ls} Event objects produced by these plugins are allocated on the Java Heap, incurring the cost of copying from direct memory to heap memory, regardless of the setting.
 
 [[memory-size-calculation]]
 ===== Memory sizing

@@ -331,8 +331,8 @@
 # pipeline.separate_logs: false
 #
 # Determine where to allocate memory buffers, for plugins that leverage them.
-# Default to direct, optionally can be switched to heap to select Java heap space.
-# pipeline.buffer.type: direct
+# Defaults to heap,but can be switched to direct if you prefer using direct memory space instead.
+# pipeline.buffer.type: heap
 #
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #
