@@ -147,13 +147,14 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
         let(:old_value) { "iron man" }
         let(:canonical_name) { "iron.setting" }
         let(:deprecated_name) { "iron.oxide.setting" }
-        subject { LogStash::Setting::String.new(canonical_name, old_value, true) }
+        subject { LogStash::Setting::StringSetting.new(canonical_name, old_value, true) }
 
         it 'logs a deprecation warning with target remove version' do
           settings.set(deprecated_name, new_value)
-          expect(LogStash::Settings.deprecation_logger).to have_received(:deprecated)
-                                                             .with(a_string_including(deprecated_name))
-                                                             .with(a_string_including("version 9"))
+          settings.get_setting(deprecated_name).observe_post_process
+          expect(events.length).to be 2
+          expect(events[1]).to include(deprecated_name)
+          expect(events[1]).to include("version 9")
         end
       end
       describe "java boolean setting" do
