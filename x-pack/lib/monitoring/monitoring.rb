@@ -250,7 +250,7 @@ module LogStash
       # (Experimental) Direct shipping settings
       register_monitoring_settings(settings)
 
-      settings.register(LogStash::Setting::String.new("node.uuid", ""))
+      settings.register(LogStash::Setting::StringSetting.new("node.uuid", ""))
     rescue => e
       logger.error e.message
       logger.error e.backtrace.to_s
@@ -275,7 +275,7 @@ module LogStash
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.password"))
-      settings.register(LogStash::Setting::String.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "full", true, ["none", "certificate", "full"]))
+      settings.register(LogStash::Setting::StringSetting.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "full", true, ["none", "certificate", "full"]))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate"))
       settings.register(LogStash::Setting::NullableString.new("#{prefix}monitoring.elasticsearch.ssl.key"))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.ssl.cipher_suites", String, []))
