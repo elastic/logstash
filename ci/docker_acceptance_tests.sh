@@ -6,7 +6,7 @@ set -x
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
 export JRUBY_OPTS="-J-Xmx1g"
-export GRADLE_OPTS="-Xmx4g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
+export GRADLE_OPTS="-Xmx4g -Dorg.gradle.console=plain -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
@@ -15,7 +15,6 @@ fi
 # Can run either a specific flavor, or all flavors -
 # eg `ci/acceptance_tests.sh oss` will run tests for open source container
 #    `ci/acceptance_tests.sh full` will run tests for the default container
-#    `ci/acceptance_tests.sh ubi8` will run tests for the ubi8 based container
 #    `ci/acceptance_tests.sh wolfi` will run tests for the wolfi based container
 #    `ci/acceptance_tests.sh` will run tests for all containers
 SELECTED_TEST_SUITE=$1
@@ -56,16 +55,6 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
 
   echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/full/*_spec.rb
-elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
-  echo "--- Building $SELECTED_TEST_SUITE docker images"
-  cd $LS_HOME
-  rake artifact:docker_ubi8
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/ubi8/*_spec.rb
 elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
   echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME

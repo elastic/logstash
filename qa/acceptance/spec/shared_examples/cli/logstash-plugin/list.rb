@@ -35,17 +35,17 @@ shared_examples "logstash list" do |logstash|
 
     context "without a specific plugin" do
       it "display a list of plugins" do
-        result = logstash.run_command_in_path("bin/logstash-plugin list")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin list")
         expect(result.stdout.split("\n").size).to be > 1
       end
 
       it "display a list of installed plugins" do
-        result = logstash.run_command_in_path("bin/logstash-plugin list --installed")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin list --installed")
         expect(result.stdout.split("\n").size).to be > 1
       end
 
       it "list the plugins with their versions" do
-        result = logstash.run_command_in_path("bin/logstash-plugin list --verbose")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin list --verbose")
 
         stdout = StringIO.new(result.stdout)
         stdout.set_encoding(Encoding::UTF_8)
@@ -74,12 +74,12 @@ shared_examples "logstash list" do |logstash|
     context "with a specific plugin" do
       let(:plugin_name) { "logstash-input-stdin" }
       it "list the plugin and display the plugin name" do
-        result = logstash.run_command_in_path("bin/logstash-plugin list #{plugin_name}")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin list #{plugin_name}")
         expect(result).to run_successfully_and_output(/^#{plugin_name}$/)
       end
 
       it "list the plugin with his version" do
-        result = logstash.run_command_in_path("bin/logstash-plugin list --verbose #{plugin_name}")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin list --verbose #{plugin_name}")
         expect(result).to run_successfully_and_output(/^#{plugin_name} \(\d+\.\d+.\d+\)/)
       end
     end

@@ -25,7 +25,7 @@ buildscript {
     dependencies {
         classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-core:9.4.8.0"
+        classpath "org.jruby:jruby-core:9.4.9.0"
     }
 }
 
@@ -151,17 +151,18 @@ void buildGem(File projectDir, File buildDir, String gemspec) {
  * @param projectDir Gradle projectDir
  * @param buildDir Gradle buildDir
  * @param plugin Plugin to run specs for
- * @param args CLI arguments to pass to rspec
+ * @param args Optional arguments to pass to the rake task
  */
-void rake(File projectDir, File buildDir, String task) {
+void rake(File projectDir, File buildDir, String task, String... args) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require 'rake'; require 'time'")
+        def rakeArgs = args ? "'${args.join("','")}'" : ""
         jruby.runScriptlet("""
                 rake = Rake.application
                 rake.init
                 rake.load_rakefile
-                rake['${task}'].invoke
+                rake['${task}'].invoke(${rakeArgs})
                 """
         )
     }
@@ -343,7 +344,8 @@ void generateRubySupportFilesForPlugin(String projectDescription, String project
     gemspecFile.append("  s.authors         = ['" + String.join("', '", pluginInfo.authors) + "']\n")
     gemspecFile.append("  s.email           = ['" + String.join("', '", pluginInfo.email) + "']\n")
     gemspecFile.append("  s.homepage        = '" + pluginInfo.homepage + "'\n")
-    gemspecFile.append("  s.require_paths = ['lib', 'vendor/jar-dependencies']\n")
+    gemspecFile.append("  s.platform        = 'java'\n")
+    gemspecFile.append("  s.require_paths   = ['lib', 'vendor/jar-dependencies']\n")
     gemspecFile.append("\n")
     gemspecFile.append("  s.files = Dir[\"lib/**/*\",\"*.gemspec\",\"*.md\",\"CONTRIBUTORS\",\"Gemfile\",\"LICENSE\",\"NOTICE.TXT\", \"vendor/jar-dependencies/**/*.jar\", \"vendor/jar-dependencies/**/*.rb\", \"VERSION\", \"docs/**/*\"]\n")
     gemspecFile.append("\n")

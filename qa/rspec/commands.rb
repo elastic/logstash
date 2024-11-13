@@ -144,6 +144,14 @@ module ServiceTester
       client.uninstall(name)
     end
 
+    def run_sudo_command_in_path(cmd)
+      client.run_sudo_command_in_path(cmd)
+    end
+
+    def run_sudo_command(cmd)
+      client.run_sudo_command(cmd)
+    end
+
     def run_command_in_path(cmd)
       client.run_command_in_path(cmd)
     end

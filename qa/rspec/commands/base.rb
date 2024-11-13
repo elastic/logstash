@@ -24,8 +24,8 @@ LS_BUILD_PATH = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '
 class Command
   def initialize()
     @stdout, @stderr, @exit_status = nil
-    end
-  
+  end
+
   def stdout
     @stdout
   end
@@ -47,10 +47,14 @@ class Command
   end
 end
 
-def sudo_exec!(cmd)
+def exec!(cmd)
   command = Command.new()
-  command.execute("sudo #{cmd}")
+  command.execute("#{cmd}")
   return command
+end
+
+def sudo_exec!(cmd)
+  exec!("sudo #{cmd}")
 end
 
 module ServiceTester
@@ -68,16 +72,22 @@ module ServiceTester
       service_manager(service, "stop")
     end
 
+    def run_sudo_command(cmd)
+      sudo_exec!("JARS_SKIP='true' #{cmd}")
+    end
+
     def run_command(cmd)
-      response = nil
-      response = sudo_exec!("JARS_SKIP='true' #{cmd}")
-      response
+      exec!("JARS_SKIP='true' #{cmd}")
     end
 
     def replace_in_gemfile(pattern, replace)
       gemfile = File.join(LOGSTASH_PATH, "Gemfile")
       cmd = "sed -i.sedbak 's/#{pattern}/#{replace}/' #{gemfile}"
-      run_command(cmd)
+      run_sudo_command(cmd)
+    end
+
+    def run_sudo_command_in_path(cmd)
+      run_sudo_command("#{File.join(LOGSTASH_PATH, cmd)}")
     end
 
     def run_command_in_path(cmd)
@@ -86,10 +96,10 @@ module ServiceTester
 
     def plugin_installed?(plugin_name, version = nil)
       if version.nil?
-        cmd = run_command_in_path("bin/logstash-plugin list")
+        cmd = run_sudo_command_in_path("bin/logstash-plugin list")
         search_token = plugin_name
       else
-        cmd = run_command_in_path("bin/logstash-plugin list --verbose")
+        cmd = run_sudo_command_in_path("bin/logstash-plugin list --verbose")
         search_token = "#{plugin_name} (#{version})"
       end
 

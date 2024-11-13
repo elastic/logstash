@@ -32,17 +32,17 @@ shared_examples "logstash uninstall" do |logstash|
 
     context "when the plugin isn't installed" do
       it "fails to uninstall it" do
-        result = logstash.run_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
         expect(result.stderr).to match(/This plugin has not been previously installed/)
       end
     end
 
     context "when the plugin is installed" do
       it "successfully uninstall it" do
-        result = logstash.run_command_in_path("bin/logstash-plugin install logstash-filter-qatest")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin install logstash-filter-qatest")
         expect(logstash).to have_installed?("logstash-filter-qatest")
 
-        result = logstash.run_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
+        result = logstash.run_sudo_command_in_path("bin/logstash-plugin uninstall logstash-filter-qatest")
         expect(logstash).not_to have_installed?("logstash-filter-qatest")
         expect(logstash).not_to be_running
         with_running_logstash_service(logstash) do
