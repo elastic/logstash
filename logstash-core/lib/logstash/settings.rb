@@ -91,6 +91,10 @@ module LogStash
       # return a List, so the following type checking before going deep by one layer.
       return setting.map { |s| register(s) } if setting.kind_of?(Array) || setting.kind_of?(java.util.List)
 
+      # if setting.name == "xpack.monitoring.allow_legacy_collection"
+      #   puts ">>> call stack Compiler#compile_sources"; caller.each { |frame| puts "#{frame}"}
+      # end
+
       if @settings.key?(setting.name)
         raise ArgumentError.new("Setting \"#{setting.name}\" has already been registered as #{setting.inspect}")
       else

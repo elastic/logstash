@@ -334,14 +334,12 @@
 # Default to direct, optionally can be switched to heap to select Java heap space.
 # pipeline.buffer.type: direct
 #
-#
-# Flag to allow the legacy internal monitoring (default: false)
-# allow.legacy.monitoring: false
-#
 # ------------ X-Pack Settings (not applicable for OSS build)--------------
 #
 # X-Pack Monitoring
 # https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
+# Flag to allow the legacy internal monitoring (default: false)
+#xpack.monitoring.allow_legacy_collection: false
 #xpack.monitoring.enabled: false
 #xpack.monitoring.elasticsearch.username: logstash_system
 #xpack.monitoring.elasticsearch.password: password

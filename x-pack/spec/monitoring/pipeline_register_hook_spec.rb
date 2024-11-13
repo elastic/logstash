@@ -29,7 +29,7 @@ describe LogStash::MonitoringExtension::PipelineRegisterHook do
     end
 
     context 'when legacy monitoring is allowed and xpack monitoring is enabled' do
-      let(:settings) { super().merge({"allow.legacy.monitoring" => true}) }
+      let(:settings) { super().merge({"xpack.monitoring.allow_legacy_collection" => true}) }
 
       it "then internal monitoring should be effectively enabled" do
         expect(subject.monitoring_enabled?(settings)).to be_truthy
