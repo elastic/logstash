@@ -158,9 +158,6 @@ module LogStash
       # return true if xpack.monitoring.allow_legacy_collection=true and xpack.monitoring.enabled=true (explicitly) or xpack.monitoring.elasticsearch.hosts is configured
       def monitoring_enabled?(settings)
         log_warn_if_legacy_is_enabled_and_not_allowed(settings)
-        # LogStash::SETTINGS.registered?("xpack.monitoring.allow_legacy_collection") &&
-        #   +          LogStash::SETTINGS.get_value("xpack.monitoring.allow_legacy_collection")
-        # return false if LogStash::SETTINGS.registered?("xpack.monitoring.allow_legacy_collection") && !settings.get_value("xpack.monitoring.allow_legacy_collection")
         return false unless settings.get_value("xpack.monitoring.allow_legacy_collection")
         return settings.get_value("monitoring.enabled") if settings.set?("monitoring.enabled")
         return settings.get_value("xpack.monitoring.enabled") if settings.set?("xpack.monitoring.enabled")
@@ -209,7 +206,8 @@ module LogStash
           raise ArgumentError.new("\"xpack.monitoring.enabled\" is configured while also \"monitoring.enabled\"")
         end
 
-        if any_set?(settings, /^xpack.monitoring/) && any_set?(settings, /^monitoring./)
+        if any_set?(settings, /^xpack.monitoring/, "xpack.monitoring.allow_legacy_collection") &&
+          any_set?(settings, /^monitoring./)
           raise ArgumentError.new("\"xpack.monitoring.*\" settings can't be configured while using \"monitoring.*\"")
         end
 
@@ -239,8 +237,8 @@ module LogStash
         opt
       end
 
-      def any_set?(settings, regexp)
-        !settings.get_subset(regexp).to_hash.keys.select { |k| settings.set?(k)}.empty?
+      def any_set?(settings, regexp, to_avoid = [])
+        !settings.get_subset(regexp).to_hash.keys.select{ |k| !to_avoid.include?(k)}.select { |k| settings.set?(k)}.empty?
       end
     end
 
