@@ -70,11 +70,10 @@ This section summarizes the changes in the following releases:
 [[known-issues-8-14-3]]
 ==== Known issue
 
-**{ls} in serializing non UTF-8 JSON payloads suffer of performance regression.**
-Starting from version `8.14.1` was introduced a fix in handling JSON contained in non UTF-8 strings https://github.com/elastic/logstash/issues/15833[#15833].
-This fix introduced a performance regression that was solved with https://github.com/elastic/logstash/pull/16313[#16313] and
-released starting with version `8.15.0`.
-Workaround: update {ls} installation to `8.15.0` or later minor.
+**{ls} performance regression in JSON encoding**
+{ls} `8.14.1` fixed JSON encoding of strings contaning non-unicode data https://github.com/elastic/logstash/issues/15833[#15833].
+The fix introduced a performance regression that has since been solved with https://github.com/elastic/logstash/pull/16313[#16313] and included in {ls} `8.15.0`.
+There is no workaround for this issue, please upgrade to {ls} 8.15.0 or later.
 
 [[notable-8.14.3]]
 ==== Enhancements and notable issues fixed
