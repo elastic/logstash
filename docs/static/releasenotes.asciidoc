@@ -71,7 +71,7 @@ This section summarizes the changes in the following releases:
 ==== Known issue
 
 **{ls} performance regression in JSON encoding**
-{ls} `8.14.1` fixed JSON encoding of strings contaning non-unicode data https://github.com/elastic/logstash/issues/15833[#15833].
+{ls} `8.14.1` fixed a bug in the JSON encoding of strings containing non-unicode data https://github.com/elastic/logstash/issues/15833[#15833].
 The fix introduced a performance regression that has since been solved with https://github.com/elastic/logstash/pull/16313[#16313] and included in {ls} `8.15.0`.
 There is no workaround for this issue, please upgrade to {ls} 8.15.0 or later.
 
