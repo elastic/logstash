@@ -66,6 +66,8 @@ This section summarizes the changes in the following releases:
 
 [[logstash-8-14-3]]
 === Logstash 8.14.3 Release Notes
+IMPORTANT: Update to Logstash version 8.15 or later because with the JSON serialization fix for payloads that are not UTF-8 (https://github.com/elastic/logstash/pull/16168[#16168])
+a performance regression was introduced that was fixed with https://github.com/elastic/logstash/pull/16313[#16313].
 
 [[notable-8.14.3]]
 ==== Enhancements and notable issues fixed
