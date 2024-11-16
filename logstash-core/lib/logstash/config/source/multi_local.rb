@@ -24,6 +24,7 @@ module LogStash module Config module Source
     include LogStash::Util::Loggable
 
     REMOVE_COMMENTS_CONFIG_KEYS = %w(config.string)
+    CONFIG_LINE_COMMENT = " #"
 
     def initialize(settings)
       @original_settings = settings
@@ -32,7 +33,7 @@ module LogStash module Config module Source
     end
 
     def pipeline_configs
-      yaml_config_without_comments = wipeout_comments(retrieve_yaml_pipelines)
+      yaml_config_without_comments = remove_comments(retrieve_yaml_pipelines)
       pipelines = deep_replace(yaml_config_without_comments)
       pipelines_settings = pipelines.map do |pipeline_settings|
         clone = @original_settings.clone
@@ -138,24 +139,54 @@ module LogStash module Config module Source
       !done
     end
 
+    ESCAPE_CHAR = "\\"
+
+    def remove_comment(config_line = "")
+      refined_line = config_line
+      comment_indices = []
+      comment_idx = -1
+      while (comment_idx = config_line.index(CONFIG_LINE_COMMENT, comment_idx + 1)) != nil
+        comment_indices << comment_idx
+      end
+
+      double_quotes_count = 0
+      single_quotes_count = 0
+      config_line.chars.each_with_index do |char, i|
+        if char == '"' && (config_line[i - ESCAPE_CHAR.length] != ESCAPE_CHAR || (config_line[i - ESCAPE_CHAR.length] == ESCAPE_CHAR && config_line[i - 2 * ESCAPE_CHAR.length] == ESCAPE_CHAR)) && double_quotes_count == 0 && single_quotes_count == 0
+          double_quotes_count += 1 unless comment_indices.include?(i)
+        elsif char == '"' && (config_line[i - ESCAPE_CHAR.length] != ESCAPE_CHAR || (config_line[i - ESCAPE_CHAR.length] == ESCAPE_CHAR && config_line[i - 2 * ESCAPE_CHAR.length] == ESCAPE_CHAR)) && double_quotes_count == 1 && single_quotes_count == 0
+          double_quotes_count -= 1 unless comment_indices.include?(i)
+        end
+
+        if char == "'" && (config_line[i - ESCAPE_CHAR.length] != ESCAPE_CHAR || (config_line[i - ESCAPE_CHAR.length] == ESCAPE_CHAR && config_line[i - 2 * ESCAPE_CHAR.length] == ESCAPE_CHAR)) && double_quotes_count == 0 && single_quotes_count == 0
+          single_quotes_count += 1 unless comment_indices.include?(i)
+        elsif char == "'" && (config_line[i - ESCAPE_CHAR.length] != ESCAPE_CHAR || (config_line[i - ESCAPE_CHAR.length] == ESCAPE_CHAR && config_line[i - 2 * ESCAPE_CHAR.length] == ESCAPE_CHAR)) && double_quotes_count == 0 && single_quotes_count == 1
+          single_quotes_count -= 1 unless comment_indices.include?(i)
+        end
+
+        if comment_indices.include?(i) && double_quotes_count == 0 && single_quotes_count == 0
+          refined_line = config_line[0...i]
+          break
+        end
+      end
+      refined_line
+    end
+
     # @param [Object] `yaml_config` the input object
     # @return [Object] Updated object where its key etries which match the `CONFIG_KEYS_TO_WIPE_OUT_COMMENTS` do not contain comments
-    def wipeout_comments(yaml_config)
+    def remove_comments(yaml_config)
       case yaml_config
       when Hash
         yaml_config.each do |key, val|
-          yaml_config[key.to_s] = wipeout_comments(val) if REMOVE_COMMENTS_CONFIG_KEYS.include?(key)
+          yaml_config[key.to_s] = remove_comments(val) if REMOVE_COMMENTS_CONFIG_KEYS.include?(key)
         end
       when Array
-        yaml_config.map { |val| wipeout_comments(val) }
+        yaml_config.map { |val| remove_comments(val) }
       when String
-        yaml_config.lines.map do |line|
-          if line.strip.start_with?("#")
-            ""
-          else
-            line.match?(/(?<!['"]) #/) ? line.gsub(/ (?<!['"])#.*/, '') : line
-          end
-        end.join("\n")
+        yaml_config.lines.map do |yaml_config_line |
+          refined_config_line = yaml_config_line.strip.start_with?("#") ? "\n" : yaml_config_line
+          refined_config_line.include?(CONFIG_LINE_COMMENT) ? remove_comment(refined_config_line) : refined_config_line
+        end.join
       else
         yaml_config
       end

@@ -145,16 +145,38 @@ describe LogStash::Config::Source::MultiLocal do
   end
 
   describe "#pipeline_configs" do
-
+    ENV["ENV_TAG"] = "foo_tag"
+    ENV["ENV_TAG_ANOTHER"] = "bar_tag"
     let(:config_string) {
      "input {
-        udp {
-          port => 5555 # intentional comment contains \"${UDP_DEV_PORT}\" variable, shouldn't break functionalities
+        beats {
+          port => 5555 # intentional comment contains \"${BEATS_DEV_PORT}\" variable, shouldn't break functionalities
           host => \"127.0.0.1\"
         }
-        # another intentional comment contains \"${UDP_PROD_HOST}\" variable, shouldn't break functionalities
+        # another intentional comment contains \"${BEATS_PROD_HOST}\" variable, shouldn't break functionalities
       }
-      output {}"
+      filter {
+        mutate { add_field => { \"oopsy\" => \"This is real data # not a ' comment, oopsy\" } }
+        mutate {
+          add_field => {
+            'doopsy' => \"This is real data # not a ' comment, doopsy\" # pipeline.workers: \"${PIPELINE_WORKERS}\"
+          }
+          add_tag => [ \"doopsy_tag\", \"${ENV_TAG}\" ] # \"${ENV_TAG_ANOTHER}
+        }
+        mutate {
+          add_field => {
+            \"hoopsy\" =>
+              'This is real data # not a \" comment, hoopsy'
+          }
+        }
+        mutate { add_field => { \"loopsy\" => \"This is real data # not a ' escape comment, \\\" loopsy\" } }
+        mutate { add_field => { \"woopsy\" => 'This is real data # not a \" comment, ${ENV_TAG_ANOTHER} whoopsy' } } # \"${ENV_TAG_ANOTHER} } }
+      }
+      output {
+        stdout { } # output
+      } # pipeline.workers: \"${PIPELINE_WORKERS}\"
+      # pipeline.workers: \"${PIPELINE_WORKERS}\"
+      "
     }
     let(:retrieved_pipelines) do
       [
@@ -174,9 +196,9 @@ describe LogStash::Config::Source::MultiLocal do
       expect(configs.last).to be_a(::LogStash::Config::PipelineConfig)
     end
 
-    it "wipes out the comments of `config.string`" do
-      expectation = "input {\n\n        udp {\n\n          port => 5555\n\n          host => \"127.0.0.1\"\n\n        }\n\n\n      }\n\n      output {}"
-      config_without_comments = subject.send(:wipeout_comments, retrieved_pipelines)
+    it "removes comments from `config.string`" do
+      expectation = "input {\n        beats {\n          port => 5555          host => \"127.0.0.1\"\n        }\n\n      }\n      filter {\n        mutate { add_field => { \"oopsy\" => \"This is real data # not a ' comment, oopsy\" } }\n        mutate {\n          add_field => {\n            'doopsy' => \"This is real data # not a ' comment, doopsy\"          }\n          add_tag => [ \"doopsy_tag\", \"${ENV_TAG}\" ]        }\n        mutate {\n          add_field => {\n            \"hoopsy\" =>\n              'This is real data # not a \" comment, hoopsy'\n          }\n        }\n        mutate { add_field => { \"loopsy\" => \"This is real data # not a ' escape comment, \\\" loopsy\" } }\n        mutate { add_field => { \"woopsy\" => 'This is real data # not a \" comment, ${ENV_TAG_ANOTHER} whoopsy' } }      }\n      output {\n        stdout { }      }\n      "
+      config_without_comments = subject.send(:remove_comments, retrieved_pipelines)
       config_without_comments.each do |config_line|
         expect(config_line['config.string']).to match expectation
       end
