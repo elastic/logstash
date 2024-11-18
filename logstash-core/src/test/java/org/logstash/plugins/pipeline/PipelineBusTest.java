@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -30,8 +31,16 @@ import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Stream;
@@ -306,6 +315,56 @@ public class PipelineBusTest {
 
         assertThat(bus.getAddressState(address)).isNotPresent();
     }
+
+    @Test
+    public void blockingShutdownDeadlock() throws InterruptedException {
+        final ExecutorService executor = Executors.newFixedThreadPool(10);
+        try {
+            for (int i = 0; i < 100; i++) {
+                bus.registerSender(output, addresses);
+                bus.listen(input, address);
+                bus.setBlockOnUnlisten(true);
+
+                // we use a CountDownLatch to increase the likelihood
+                // of simultaneous execution
+                final CountDownLatch startLatch = new CountDownLatch(2);
+                final CompletableFuture<Void> unlistenFuture = CompletableFuture.runAsync(asRunnable(() -> {
+                    startLatch.countDown();
+                    startLatch.await();
+                    bus.unlisten(input, address);
+                }), executor);
+                final CompletableFuture<Void> unregisterFuture = CompletableFuture.runAsync(asRunnable(() -> {
+                    startLatch.countDown();
+                    startLatch.await();
+                    bus.unregisterSender(output, addresses);
+                }), executor);
+
+                // ensure that our tasks all exit successfully, quickly
+                assertThatCode(() -> CompletableFuture.allOf(unlistenFuture, unregisterFuture).get(1, TimeUnit.SECONDS))
+                        .withThreadDumpOnError()
+                        .withFailMessage("Expected unlisten and unregisterSender to not deadlock, but they did not return in a reasonable amount of time in the <%s>th iteration", i)
+                        .doesNotThrowAnyException();
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @FunctionalInterface
+    interface ExceptionalRunnable<E extends Throwable> {
+        void run() throws E;
+    }
+
+    private Runnable asRunnable(final ExceptionalRunnable<?> exceptionalRunnable) {
+        return () -> {
+            try {
+                exceptionalRunnable.run();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
 
     @Test
     public void whenInputFailsOutputRetryOnlyNotYetDelivered() throws InterruptedException {
