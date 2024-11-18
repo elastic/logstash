@@ -7,7 +7,10 @@
 
 deprecated[7.9.0]
 
-NOTE: Starting from version 9.0, legacy monitoring is deactivated and behind a feature flag. Set `xpack.monitoring.allow_legacy_collection` to `true` to allow access to the feature.
+NOTE: Starting from version 9.0, legacy internal collection is behind a feature flag and is turned off by default. 
+Set `xpack.monitoring.allow_legacy_collection` to `true` to allow access to the feature.
+
+Using <<monitoring-with-ea,{agent} for monitoring>> is a better alternative for most {ls} deployments. 
 
 ==== Components for legacy collection
 
