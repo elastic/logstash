@@ -141,16 +141,20 @@ class PipelineBusV2 extends AbstractPipelineBus implements PipelineBus {
 
                 consumer.accept(addressState);
 
-                // If this addressState has a listener, ensure that any waiting
+                return addressState.isEmpty() ? null : addressState;
+            });
+
+            if (result == null) {
+                return null;
+            } else {
+                // If the resulting addressState had a listener, ensure that any waiting
                 // threads get notified so that they can resume immediately
-                final PipelineInput currentInput = addressState.getInput();
+                final PipelineInput currentInput = result.getInput();
                 if (currentInput != null) {
                     synchronized (currentInput) { currentInput.notifyAll(); }
                 }
-
-                return addressState.isEmpty() ? null : addressState;
-            });
-            return result == null ? null : result.getReadOnlyView();
+                return result.getReadOnlyView();
+            }
         }
 
         private AddressState.ReadOnly get(final String address) {
