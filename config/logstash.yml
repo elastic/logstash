@@ -338,6 +338,8 @@
 #
 # X-Pack Monitoring
 # https://www.elastic.co/guide/en/logstash/current/monitoring-logstash.html
+# Flag to allow the legacy internal monitoring (default: false)
+#xpack.monitoring.allow_legacy_collection: false
 #xpack.monitoring.enabled: false
 #xpack.monitoring.elasticsearch.username: logstash_system
 #xpack.monitoring.elasticsearch.password: password

@@ -17,7 +17,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
@@ -82,6 +81,7 @@ var validSettings = []string{
 	"api.auth.basic.password_policy.include.symbol",
 	"allow_superuser",
 	"monitoring.cluster_uuid",
+	"xpack.monitoring.allow_legacy_collection",
 	"xpack.monitoring.enabled",
 	"xpack.monitoring.collection.interval",
 	"xpack.monitoring.elasticsearch.hosts",

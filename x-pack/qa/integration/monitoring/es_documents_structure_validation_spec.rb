@@ -85,6 +85,7 @@ def start_monitoring_logstash(config, prefix = "")
   end
   logstash_with_empty_default("bin/logstash -e '#{config}' -w 1", {
     :settings => {
+      "xpack.monitoring.allow_legacy_collection" => true,
       "#{mon_prefix}monitoring.enabled" => true,
       "#{mon_prefix}monitoring.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:9200"],
       "#{mon_prefix}monitoring.collection.interval" => "1s",

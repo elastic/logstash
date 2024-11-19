@@ -33,6 +33,7 @@ describe "Read configuration from elasticsearch" do
         "xpack.management.elasticsearch.hosts" => ["http://localhost:9200"],
         "xpack.management.elasticsearch.username" => "elastic",
         "xpack.management.elasticsearch.password" => elastic_password,
+        "xpack.monitoring.allow_legacy_collection" => true,
         "xpack.monitoring.elasticsearch.username" => "elastic",
         "xpack.monitoring.elasticsearch.password" => elastic_password
 

@@ -54,11 +54,20 @@ describe LogStash::Api::Commands::DefaultMetadata do
         )
     end
 
-    it "check monitoring exist when monitoring is enabled" do
+    it "check monitoring section exist when legacy monitoring is enabled and allowed" do
+      LogStash::SETTINGS.set_value("xpack.monitoring.allow_legacy_collection", true)
       LogStash::SETTINGS.set_value("xpack.monitoring.enabled", true)
       expect(report.keys).to include(
         :monitoring
         )
+    end
+
+    it "check monitoring section does not appear when legacy monitoring is not allowed but enabled" do
+      LogStash::SETTINGS.set_value("xpack.monitoring.allow_legacy_collection", false)
+      LogStash::SETTINGS.set_value("xpack.monitoring.enabled", true)
+      expect(report.keys).not_to include(
+                               :monitoring
+                             )
     end
 
     it "check monitoring does not appear when not enabled and nor cluster_uuid is defined" do

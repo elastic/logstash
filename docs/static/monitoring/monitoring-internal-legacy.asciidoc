@@ -7,6 +7,11 @@
 
 deprecated[7.9.0]
 
+NOTE: Starting from version 9.0, legacy internal collection is behind a feature flag and is turned off by default. 
+Set `xpack.monitoring.allow_legacy_collection` to `true` to allow access to the feature.
+
+Using <<monitoring-with-ea,{agent} for monitoring>> is a better alternative for most {ls} deployments. 
+
 ==== Components for legacy collection
 
 Monitoring {ls} with legacy collection uses these components:
@@ -57,7 +62,7 @@ monitoring cluster will show the Logstash metrics under the _monitoring_ cluster
 
 --
 
-. Verify that the `xpack.monitoring.collection.enabled` setting is `true` on the
+. Verify that the `xpack.monitoring.allow_legacy_collection` and `xpack.monitoring.collection.enabled` settings are `true` on the
 production cluster. If that setting is `false`, the collection of monitoring data
 is disabled in {es} and data is ignored from all other sources.
 
