@@ -111,4 +111,14 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
             assertEquals(expected[i], actual[i]);
         }
     }
+
+    @Test
+    public void testEncodingIsPreserved() {
+        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3});
+
+        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
+        sut.extract(context, rubyInput);
+
+        assertEqualsBytes(new byte[]{(byte) 0xA3}, ((RubyString) sut.flush(context)).getBytes());
+    }
 }
