@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-1,Logstash 8.16.1>>
 * <<logstash-8-16-0,Logstash 8.16.0>>
 * <<logstash-8-15-4,Logstash 8.15.4>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
@@ -68,6 +69,68 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-1]]
+=== Logstash 8.16.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.16.1
+
+* Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16482[#16482]
+* Backport PR #16482 to 8.16: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16580[#16580]
+* PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16671[#16671]
+* Backport PR #16671 to 8.16: PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16680[#16680]
+
+=== Logstash Commits between 8.16 and 8.16.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.0..8.16"
+
+a769327be - (HEAD -> 8.16, origin/8.16) Revert "Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (#16580)" (#16688) (14 hours ago) <Ry Biesemeyer>
+913d705e7 - PipelineBusV2 deadlock proofing (#16671) (#16680) (20 hours ago) <github-actions[bot]>
+e5e6f5fc1 - Update patch plugin versions in gemfile lock (#16679) (21 hours ago) <github-actions[bot]>
+2c982112a - Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (#16580) (7 days ago) <github-actions[bot]>
+15cdf5c63 - Doc: Realign release notes and add known issue (#16663) (7 days ago) <Karen Metts>
+ccab5448c - Bump version to 8.16.1 (#16666) (7 days ago) <Rob Bavey>
+8b897915c - Release notes for 8.16.0 (#16605) (8 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.16.0..8.16 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 0.1.15 -> 0.1.16
+logstash-filter-xml: 4.2.0 -> 4.2.1
+logstash-input-beats: 6.9.0 -> 6.9.1
+logstash-input-http: 3.9.1 -> 3.9.2
+logstash-input-tcp: 6.4.3 -> 6.4.4
+logstash-output-http: 5.7.0 -> 5.7.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.16*
+
+404: Not Found
+
+*Xml Filter - 4.2.1*
+
+* patch rexml to improve performance of multi-threaded xml parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/84[#84]
+#84
+
+*Beats Input - 6.9.1*
+
+* Upgrade netty to 4.1.115 https://github.com/logstash-plugins/logstash-input-beats/pull/507[#507]
+
+*Http Input - 3.9.2*
+
+* Upgrade netty to 4.1.115 https://github.com/logstash-plugins/logstash-input-http/pull/183[#183]
+
+*Tcp Input - 6.4.4*
+
+* update netty to 4.1.115 https://github.com/logstash-plugins/logstash-input-tcp/pull/227[#227]
+
+*Http Output - 5.7.1*
+
+* Added new development `rackup` dependency to fix tests 
 
 
 [[logstash-8-16-0]]
