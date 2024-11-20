@@ -100,6 +100,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jruby-stdin-channel:","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
 "jwt:",https://github.com/jwt/ruby-jwt,MIT
 "json:",http://json-jruby.rubyforge.org/,Ruby
+"logger:",https://github.com/ruby/logger,BSD-2-Clause
 "lru_redux:","https://github.com/SamSaffron/lru_redux/",MIT
 "mail:","https://github.com/mikel/mail/",MIT
 "manticore:","https://github.com/cheald/manticore/",MIT
