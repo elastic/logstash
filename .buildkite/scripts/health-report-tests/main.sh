@@ -10,7 +10,7 @@ eval "$(rbenv init -)"
 eval "$(pyenv init -)"
 
 echo "--- Installing dependencies"
-python3 -mpip install -r .buildkite/scripts/health-report-tests/requirements.txt
+python3 -m pip install -r .buildkite/scripts/health-report-tests/requirements.txt
 
 echo "--- Running tests"
 python3 .buildkite/scripts/health-report-tests/main.py
