@@ -721,7 +721,7 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/health_report_tests_pipeline.yml"
-      maximum_timeout_in_minutes: 60
+      maximum_timeout_in_minutes: 30 # usually tests last max ~17mins
       provider_settings:
         trigger_mode: none # don't trigger jobs from github activity
       env:
