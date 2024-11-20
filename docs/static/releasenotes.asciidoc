@@ -73,43 +73,21 @@ This section summarizes the changes in the following releases:
 [[logstash-8-15-5]]
 === Logstash 8.15.5 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.15.5
+[[notable-8-15-5]]
+==== Notable issues fixed
 
-* PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16671[#16671]
-* Backport PR #16671 to 8.15: PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16681[#16681]
-
-=== Logstash Commits between 8.15 and 8.15.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.15.4..8.15"
-
-f25d952f7 - (HEAD -> 8.15, origin/8.15) Update patch plugin versions in gemfile lock for 8.15.5 (#16692) (27 minutes ago) <github-actions[bot]>
-2200f160e - Revert "Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (#16579)" (#16687) (17 hours ago) <Ry Biesemeyer>
-5b314afda - PipelineBusV2 deadlock proofing (#16671) (#16681) (23 hours ago) <github-actions[bot]>
-a4bbb0e7b - Version Bump to 8.15.5 (#16667) (7 days ago) <Rob Bavey>
-effb81430 - Fix 8.15 release notes workaround ref to set system property (#16665) (7 days ago) <Ry Biesemeyer>
-e17ad0c83 - Add known issue for PipelineBusv2 to 8.15.x release notes (#16661) (8 days ago) <Ry Biesemeyer>
-9214f2c9a - Release notes for 8.15.4 (#16611) (13 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.15.4..8.15 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 0.1.15 -> 0.1.16
-logstash-filter-xml: 4.2.0 -> 4.2.1
-logstash-input-tcp: 6.4.3 -> 6.4.4
-logstash-output-http: 5.7.0 -> 5.7.1
----------- GENERATED CONTENT ENDS HERE ------------
+* PipelineBusV2 deadlock proofing: We fixed an issue that could cause a deadlock when the pipeline-to-pipeline feature was in use, causing pipelines (and consequently) {ls} to never terminate https://github.com/elastic/logstash/pull/16681[#16681]
+* We reverted a change in BufferedTokenizer (https://github.com/elastic/logstash/pull/16482[#16482]) that improved handling of large messages but introduced a double encoding bug https://github.com/elastic/logstash/pull/16687[#16687].
 
 ==== Plugins
 
 *Elastic_integration Filter - 0.1.16*
 
-404: Not Found
+* Reflect the Elasticsearch GeoIP changes into the plugin and sync with Elasticsearch 8.16 branch https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
 
 *Xml Filter - 4.2.1*
 
 * patch rexml to improve performance of multi-threaded xml parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/84[#84]
-#84
 
 *Tcp Input - 6.4.4*
 
