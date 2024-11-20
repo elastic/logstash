@@ -77,7 +77,7 @@ This section summarizes the changes in the following releases:
 [[notable-8-16-1]]
 ==== Notable issues fixed
 
-* PipelineBusV2 deadlock proofing: when using pipeline-to-pipeline a deadlock could cause pipelines (and consequently) Logstash to never terminate https://github.com/elastic/logstash/pull/16680[#16680]
+* PipelineBusV2 deadlock proofing: We fixed an issue that could cause a deadlock when the pipeline-to-pipeline feature was in use, causing pipelines (and consequently) {ls} to never terminate https://github.com/elastic/logstash/pull/16680[#16680]
 
 ==== Plugins
 
@@ -88,7 +88,6 @@ This section summarizes the changes in the following releases:
 *Xml Filter - 4.2.1*
 
 * patch rexml to improve performance of multi-threaded xml parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/84[#84]
-#84
 
 *Beats Input - 6.9.1*
 
