@@ -13,11 +13,13 @@ Include:
 * user impact/decription/value prop
 * link to relevant docs for more information
 
+[discrete]
 [[Removal-of-Deprecated-SSL-Settings]]
 ===== Removal of Deprecated SSL Settings
 
 The following plugins have removed previously deprecated SSL settings:
 
+[discrete]
 [[logstash-output-http]]
 ====== logstash-output-http
 
