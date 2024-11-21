@@ -14,14 +14,20 @@ Include:
 * link to relevant docs for more information
 
 [discrete]
-[[Removal-of-Deprecated-SSL-Settings]]
-===== Removal of Deprecated SSL Settings
+[[ssl-settings-9.0]]
+===== Changes to SSL settings in {ls} plugins
 
-The following plugins have removed previously deprecated SSL settings:
+We've removed deprecated SSL settings in some {ls} plugins, and have replaced them with updated settings.
+If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
+
+**Plugins with changes to SSL settings** 
 
 [discrete]
-[[logstash-output-http]]
-====== logstash-output-http
+[[output-http-ssl-9.0]]
+.<<plugins-outputs-http,logstash-output-http>>
+
+[%collapsible]
+====
 
 [cols="<,<",options="header",]
 |=======================================================================
@@ -36,3 +42,5 @@ The following plugins have removed previously deprecated SSL settings:
 | truststore_password |<<plugins-outputs-http-ssl_truststore_password>>
 | truststore_type |<<plugins-outputs-http-ssl_truststore_type>>
 |=======================================================================
+
+====
