@@ -1,7 +1,20 @@
 [[breaking-6.0]]
-=== Breaking changes in 6.0
+=== Breaking changes in 6.0 series
 
 Here are the breaking changes for 6.0. 
+
+[discrete]
+[[breaking-pq]]
+=== Breaking change across PQ versions prior to Logstash 6.3.0
+
+If you are upgrading from Logstash 6.2.x or any earlier version (including 5.x)
+and have the persistent queue enabled, we strongly recommend that you drain or
+delete the persistent queue before you upgrade. See <<draining-pqs>>
+for information and instructions.
+
+[discrete]
+[[breaking-6.0-rel]]
+=== Breaking changes in 6.0
 
 [discrete]
 ==== Changes in Logstash Core

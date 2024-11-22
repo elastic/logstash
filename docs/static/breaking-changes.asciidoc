@@ -30,12 +30,10 @@ See these topics for breaking changes in earlier releases:
 
 * <<breaking-8.0>>
 * <<breaking-7.0>>
-* <<breaking-pq>>
 * <<breaking-6.0>>
 
 include::breaking-changes-80.asciidoc[]
 include::breaking-changes-70.asciidoc[]
-include::breaking-changes-pre63.asciidoc[]
 include::breaking-changes-60.asciidoc[]
 
 
