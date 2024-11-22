@@ -321,8 +321,8 @@ class LogStash::Runner < Clamp::StrictCommand
     # Add local modules to the registry before everything else
     LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
 
-    # Set up the Jackson defaults
-    LogStash::Util::Jackson.set_jackson_defaults(logger)
+    # Verify the Jackson defaults
+    LogStash::Util::Jackson.verify_jackson_overrides
 
     @dispatcher = LogStash::EventDispatcher.new(self)
     LogStash::PLUGIN_REGISTRY.hooks.register_emitter(self.class, @dispatcher)
