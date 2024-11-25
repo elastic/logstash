@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-15-5,Logstash 8.15.5>>
 * <<logstash-8-15-4,Logstash 8.15.4>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
 * <<logstash-8-15-2,Logstash 8.15.2>>
@@ -67,6 +68,34 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-15-5]]
+=== Logstash 8.15.5 Release Notes
+
+[[notable-8-15-5]]
+==== Notable issues fixed
+
+* PipelineBusV2 deadlock proofing: We fixed an issue that could cause a deadlock when the pipeline-to-pipeline feature was in use, causing pipelines (and consequently) {ls} to never terminate https://github.com/elastic/logstash/pull/16681[#16681]
+* We reverted a change in BufferedTokenizer (https://github.com/elastic/logstash/pull/16482[#16482]) that improved handling of large messages but introduced a double encoding bug https://github.com/elastic/logstash/pull/16687[#16687].
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.16*
+
+* Reflect the Elasticsearch GeoIP changes into the plugin and sync with Elasticsearch 8.16 branch https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
+
+*Xml Filter - 4.2.1*
+
+* patch rexml to improve performance of multi-threaded xml parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/84[#84]
+
+*Tcp Input - 6.4.4*
+
+* update netty to 4.1.115 https://github.com/logstash-plugins/logstash-input-tcp/pull/227[#227]
+
+*Http Output - 5.7.1*
+
+* Added new development `rackup` dependency to fix tests 
 
 
 [[logstash-8-15-4]]
