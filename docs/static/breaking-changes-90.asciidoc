@@ -20,11 +20,14 @@ Include:
 We've removed deprecated SSL settings in some {ls} plugins, and have replaced them with updated settings.
 If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
 
+Click the arrow beside a plugin name to see the list of settings that have been
+removed and their replacements. 
+
 **Plugins with changes to SSL settings** 
 
 [discrete]
 [[output-http-ssl-9.0]]
-.<<plugins-outputs-http,logstash-output-http>>
+.`logstash-output-http`
 
 [%collapsible]
 ====
