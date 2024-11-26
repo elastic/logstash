@@ -407,7 +407,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.8.4-java)
+    logstash-input-beats (6.9.1-java)
       concurrent-ruby (~> 1.0)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-multiline (>= 2.0.5)
@@ -482,7 +482,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.8.1-java)
+    logstash-input-http (3.9.2-java)
       jar-dependencies (~> 0.3, >= 0.3.4)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -769,8 +769,9 @@ GEM
     raabro (1.4.0)
     racc (1.8.1-java)
     rack (3.1.8)
-    rack-protection (4.0.0)
+    rack-protection (4.1.1)
       base64 (>= 0.1.0)
+      logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
     rack-session (2.0.0)
       rack (>= 3.0.0)
@@ -832,10 +833,11 @@ GEM
       json
       simplecov
     simplecov_json_formatter (0.1.4)
-    sinatra (4.0.0)
+    sinatra (4.1.1)
+      logger (>= 1.6.0)
       mustermann (~> 3.0)
       rack (>= 3.0.0, < 4)
-      rack-protection (= 4.0.0)
+      rack-protection (= 4.1.1)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     spoon (0.0.6)
