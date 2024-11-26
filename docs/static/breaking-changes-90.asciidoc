@@ -13,3 +13,37 @@ Include:
 * user impact/decription/value prop
 * link to relevant docs for more information
 
+[discrete]
+[[ssl-settings-9.0]]
+===== Changes to SSL settings in {ls} plugins
+
+We've removed deprecated SSL settings in some {ls} plugins, and have replaced them with updated settings.
+If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
+
+Click the arrow beside a plugin name to see the list of settings that have been
+removed and their replacements. 
+
+**Plugins with changes to SSL settings** 
+
+[discrete]
+[[output-http-ssl-9.0]]
+.`logstash-output-http`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cacert |<<plugins-outputs-http-ssl_certificate_authorities>>
+| client_cert |<<plugins-outputs-http-ssl_certificate>>
+| client_key |<<plugins-outputs-http-ssl_key>>
+| keystore |<<plugins-outputs-http-ssl_keystore_path>>
+| keystore_password |<<plugins-outputs-http-ssl_keystore_password>>
+| keystore_type |<<plugins-outputs-http-ssl_keystore_password>>
+| truststore |<<plugins-outputs-http-ssl_truststore_path>>
+| truststore_password |<<plugins-outputs-http-ssl_truststore_password>>
+| truststore_type |<<plugins-outputs-http-ssl_truststore_type>>
+|=======================================================================
+
+====
