@@ -204,6 +204,7 @@ GEM
     kramdown (2.4.0)
       rexml
     language_server-protocol (3.17.0.3)
+    logger (1.6.1)
     logstash-codec-avro (3.4.1-java)
       avro (~> 1.10.2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -769,8 +770,9 @@ GEM
     raabro (1.4.0)
     racc (1.8.1-java)
     rack (3.1.8)
-    rack-protection (4.0.0)
+    rack-protection (4.1.1)
       base64 (>= 0.1.0)
+      logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
     rack-session (2.0.0)
       rack (>= 3.0.0)
@@ -831,10 +833,11 @@ GEM
       json
       simplecov
     simplecov_json_formatter (0.1.4)
-    sinatra (4.0.0)
+    sinatra (4.1.1)
+      logger (>= 1.6.0)
       mustermann (~> 3.0)
       rack (>= 3.0.0, < 4)
-      rack-protection (= 4.0.0)
+      rack-protection (= 4.1.1)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     spoon (0.0.6)
