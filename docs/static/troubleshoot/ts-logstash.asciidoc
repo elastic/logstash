@@ -106,6 +106,76 @@ This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azu
 -Djdk.io.File.enableADS=true
 -----
 
+[[ts-container-cgroup]]
+===== Container exits with 'An unexpected error occurred!' message
+
+{ls} running in a container may not start due to a https://bugs.openjdk.org/browse/JDK-8343191[bug in the JDK]. 
+
+*Sample error*
+
+[source,sh]
+-----
+[FATAL] 2024-11-11 11:11:11.465 [LogStash::Runner] runner - An unexpected error occurred! {:error=>#<Java::JavaLang::NullPointerException: >, :backtrace=>[
+        "java.util.Objects.requireNonNull(java/util/Objects.java:233)",
+        "sun.nio.fs.UnixFileSystem.getPath(sun/nio/fs/UnixFileSystem.java:296)",
+        "java.nio.file.Path.of(java/nio/file/Path.java:148)",
+        "java.nio.file.Paths.get(java/nio/file/Paths.java:69)",
+        "jdk.internal.platform.CgroupUtil.lambda$readStringValue$1(jdk/internal/platform/CgroupUtil.java:67)",
+        "java.security.AccessController.doPrivileged(java/security/AccessController.java:571)",
+        "jdk.internal.platform.CgroupUtil.readStringValue(jdk/internal/platform/CgroupUtil.java:69)",
+        "jdk.internal.platform.CgroupSubsystemController.getStringValue(jdk/internal/platform/CgroupSubsystemController.java:65)",
+        "jdk.internal.platform.cgroupv1.CgroupV1Subsystem.getCpuSetCpus(jdk/internal/platform/cgroupv1/CgroupV1Subsystem.java:275)",
+        "jdk.internal.platform.CgroupMetrics.getCpuSetCpus(jdk/internal/platform/CgroupMetrics.java:100)",
+        "com.sun.management.internal.OperatingSystemImpl.isCpuSetSameAsHostCpuSet(com/sun/management/internal/OperatingSystemImpl.java:277)",
+        "com.sun.management.internal.OperatingSystemImpl$ContainerCpuTicks.getContainerCpuLoad(com/sun/management/internal/OperatingSystemImpl.java:96)",
+        "com.sun.management.internal.OperatingSystemImpl.getProcessCpuLoad(com/sun/management/internal/OperatingSystemImpl.java:271)",
+        "org.logstash.instrument.monitors.ProcessMonitor$Report.<init>(org/logstash/instrument/monitors/ProcessMonitor.java:63)",
+        "org.logstash.instrument.monitors.ProcessMonitor.detect(org/logstash/instrument/monitors/ProcessMonitor.java:136)",
+        "org.logstash.instrument.reports.ProcessReport.generate(org/logstash/instrument/reports/ProcessReport.java:35)",
+        "jdk.internal.reflect.DirectMethodHandleAccessor.invoke(jdk/internal/reflect/DirectMethodHandleAccessor.java:103)",
+        "java.lang.reflect.Method.invoke(java/lang/reflect/Method.java:580)",
+        "org.jruby.javasupport.JavaMethod.invokeDirectWithExceptionHandling(org/jruby/javasupport/JavaMethod.java:300)",
+        "org.jruby.javasupport.JavaMethod.invokeStaticDirect(org/jruby/javasupport/JavaMethod.java:222)",
+        "RUBY.collect_process_metrics(/usr/share/logstash/logstash-core/lib/logstash/instrument/periodic_poller/jvm.rb:102)",
+        "RUBY.collect(/usr/share/logstash/logstash-core/lib/logstash/instrument/periodic_poller/jvm.rb:73)",
+        "RUBY.start(/usr/share/logstash/logstash-core/lib/logstash/instrument/periodic_poller/base.rb:72)",
+        "org.jruby.RubySymbol$SymbolProcBody.yieldSpecific(org/jruby/RubySymbol.java:1541)",
+        "org.jruby.RubySymbol$SymbolProcBody.doYield(org/jruby/RubySymbol.java:1534)",
+        "org.jruby.RubyArray.collectArray(org/jruby/RubyArray.java:2770)",
+        "org.jruby.RubyArray.map(org/jruby/RubyArray.java:2803)",
+        "org.jruby.RubyArray$INVOKER$i$0$0$map.call(org/jruby/RubyArray$INVOKER$i$0$0$map.gen)",
+        "RUBY.start(/usr/share/logstash/logstash-core/lib/logstash/instrument/periodic_pollers.rb:41)",
+        "RUBY.configure_metrics_collectors(/usr/share/logstash/logstash-core/lib/logstash/agent.rb:477)",
+        "RUBY.initialize(/usr/share/logstash/logstash-core/lib/logstash/agent.rb:88)",
+        "org.jruby.RubyClass.new(org/jruby/RubyClass.java:949)",
+        "org.jruby.RubyClass$INVOKER$i$newInstance.call(org/jruby/RubyClass$INVOKER$i$newInstance.gen)",
+        "RUBY.create_agent(/usr/share/logstash/logstash-core/lib/logstash/runner.rb:552)",
+        "RUBY.execute(/usr/share/logstash/logstash-core/lib/logstash/runner.rb:434)",
+        "RUBY.run(/usr/share/logstash/vendor/bundle/jruby/3.1.0/gems/clamp-1.0.1/lib/clamp/command.rb:68)",
+        "RUBY.run(/usr/share/logstash/logstash-core/lib/logstash/runner.rb:293)",
+        "RUBY.run(/usr/share/logstash/vendor/bundle/jruby/3.1.0/gems/clamp-1.0.1/lib/clamp/command.rb:133)",
+        "usr.share.logstash.lib.bootstrap.environment.<main>(/usr/share/logstash/lib/bootstrap/environment.rb:89)",
+        "usr.share.logstash.lib.bootstrap.environment.run(usr/share/logstash/lib/bootstrap//usr/share/logstash/lib/bootstrap/environment.rb)",
+        "java.lang.invoke.MethodHandle.invokeWithArguments(java/lang/invoke/MethodHandle.java:733)",
+        "org.jruby.Ruby.runScript(org/jruby/Ruby.java:1245)",
+        "org.jruby.Ruby.runNormally(org/jruby/Ruby.java:1157)",
+        "org.jruby.Ruby.runFromMain(org/jruby/Ruby.java:983)",
+        "org.logstash.Logstash.run(org/logstash/Logstash.java:163)",
+        "org.logstash.Logstash.main(org/logstash/Logstash.java:73)"
+    ]
+}
+[FATAL] 2024-11-11 11:11:11.516 [LogStash::Runner] Logstash - Logstash stopped processing because of an error: (SystemExit) exit
+    org.jruby.exceptions.SystemExit: (SystemExit) exit
+    at org.jruby.RubyKernel.exit(org/jruby/RubyKernel.java: 921) ~[jruby.jar:?]
+    at org.jruby.RubyKernel.exit(org/jruby/RubyKernel.java: 880) ~[jruby.jar:?]
+    at usr.share.logstash.lib.bootstrap.environment.<main>(/usr/share/logstash/lib/bootstrap/environment.rb: 90) ~[?:?]
+-----
+
+This error can happen when cgroups v2 is not enabled, such as when running on a Red Had version 8 operating system.
+
+*Work around*
+
+Follow your operating system's instructions for enabling cgroups v2.
 
 [[ts-pqs]]
 ==== Troubleshooting persistent queues
