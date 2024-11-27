@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-26,Logstash 7.17.26>>
 * <<logstash-7-17-25,Logstash 7.17.25>>
 * <<logstash-7-17-24,Logstash 7.17.24>>
 * <<logstash-7-17-23,Logstash 7.17.23>>
@@ -84,6 +85,36 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-26]]
+=== Logstash 7.17.26 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.26
+
+* Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16482[#16482]
+* Adds a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16564[#16564]
+* Backport PR #16564 to 7.17: Adds a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16575[#16575]
+* Backport #16482 to 7.17: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit  https://github.com/elastic/logstash/pull/16577[#16577]
+* Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16626[#16626]
+* For custom java plugins, set the platform = 'java' https://github.com/elastic/logstash/pull/16628[#16628]
+
+=== Logstash Commits between 7.17 and 7.17.25
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.25..7.17"
+
+bd1fa4eb0 - (HEAD -> 7.17, origin/7.17) Revert "Backport #16482 to 7.17: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit  (#16577)" (#16713) (6 days ago) <Cas Donoghue>
+06fe3ed3c - Update the golang references for the Ironbank distro (#16593) (5 weeks ago) <Rob Bavey>
+b4ca550dc - Backport #16482 to 7.17: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit  (#16577) (5 weeks ago) <Andrea Selva>
+e742b760c - Bump version to 7.17.26 (#16588) (5 weeks ago) <Edmo Vamerlatti Costa>
+d24e7f2b5 - Release notes for 7.17.25 (#16587) (5 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.25..7.17 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-7-17-25]]
 === Logstash 7.17.25 Release Notes
