@@ -107,7 +107,7 @@ This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azu
 -----
 
 [[ts-container-cgroup]]
-===== Container exits with 'An unexpected error occurred!'
+===== Container exits with 'An unexpected error occurred!' message
 
 {ls} running in a container may not start due to a https://bugs.openjdk.org/browse/JDK-8343191[bug in the JDK]. 
 
