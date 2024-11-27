@@ -109,7 +109,7 @@ This issue affects some OpenJDK-derived JVM versions (Adoptium, OpenJDK, and Azu
 [[ts-container-cgroup]]
 ===== Container exits with 'An unexpected error occurred!'
 
-Logstash may not start when running on a container due to a bug in the JDK https://bugs.openjdk.org/browse/JDK-8343191. A Pull Request was created to fix the issue: https://github.com/openjdk/jdk/pull/21808.
+{ls} running in a container may not start due to a https://bugs.openjdk.org/browse/JDK-8343191[bug in the JDK]. 
 
 *Sample error*
 
