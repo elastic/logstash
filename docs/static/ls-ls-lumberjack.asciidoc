@@ -73,7 +73,7 @@ Start the downstream instance of Logstash:
 
 [source,shell]
 ----
-bin/logstash -e 'input { beats { codec => json port => 5000 ssl => true ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
+bin/logstash -e 'input { beats { codec => json port => 5000 ssl_enabled => true ssl_certificate => "lumberjack.cert" ssl_key => "lumberjack.key"} }'
 ----
 
 This sample command sets port 5000 to listen for incoming Beats input.
