@@ -23,7 +23,47 @@ If your plugin configuration contains any of these obsolete options, the plugin 
 Click the arrow beside a plugin name to see the list of settings that have been
 removed and their replacements. 
 
-**Plugins with changes to SSL settings** 
+**Plugins with changes to SSL settings**
+
+[discrete]
+[[input-beats-ssl-9.0]]
+.`logstash-input-beats`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cipher_suites |<<plugins-inputs-beats-ssl_cipher_suites>>
+| ssl |<<plugins-inputs-beats-ssl_enabled>>
+| ssl_peer_metadata |`ssl_peer_metadata` option of <<plugins-inputs-beats-enrich>>
+| ssl_verify_mode |<<plugins-inputs-beats-ssl_client_authentication>>
+| tls_min_version |<<plugins-inputs-beats-ssl_supported_protocols>>
+| tls_max_version |<<plugins-inputs-beats-ssl_supported_protocols>>
+|=======================================================================
+
+====
+
+[discrete]
+[[input-elastic_agent-ssl-9.0]]
+.`logstash-input-elastic_agent`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cipher_suites |<<plugins-inputs-elastic_agent-ssl_cipher_suites>>
+| ssl |<<plugins-inputs-elastic_agent-ssl_enabled>>
+| ssl_peer_metadata | `ssl_peer_metadata` option of <<plugins-inputs-elastic_agent-enrich>>
+| ssl_verify_mode |<<plugins-inputs-elastic_agent-ssl_client_authentication>>
+| tls_min_version |<<plugins-inputs-elastic_agent-ssl_supported_protocols>>
+| tls_max_version |<<plugins-inputs-elastic_agent-ssl_supported_protocols>>
+|=======================================================================
+
+====
 
 [discrete]
 [[output-http-ssl-9.0]]
