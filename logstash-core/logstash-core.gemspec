@@ -59,7 +59,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'puma', '~> 5', '>= 5.6.8'
   gem.add_runtime_dependency "jruby-openssl", "~> 0.11"
   gem.add_runtime_dependency "chronic_duration", "~> 0.10"
-
+  gem.add_runtime_dependency "jar-dependencies",'= 0.4.1' # Pin to `0.4.1` until https://github.com/jruby/jruby/issues/7262 is resolved
+  
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 
   gem.add_runtime_dependency "i18n", "~> 1" #(MIT license)
