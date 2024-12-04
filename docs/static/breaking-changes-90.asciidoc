@@ -25,6 +25,24 @@ removed and their replacements.
 
 **Plugins with changes to SSL settings** 
 
+
+[discrete]
+[[input-elasticsearch-ssl-9.0]]
+.`logstash-input-elasticsearch`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ca_file |<<plugins-inputs-elasticsearch-ssl_certificate_authorities>>
+| ssl |<<plugins-inputs-elasticsearch-ssl_enabled>>
+| ssl_certificate_verification |<<plugins-inputs-elasticsearch-ssl_verification_mode>>
+|=======================================================================
+
+====
+
 [discrete]
 [[output-http-ssl-9.0]]
 .`logstash-output-http`
