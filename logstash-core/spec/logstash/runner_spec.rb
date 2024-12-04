@@ -462,8 +462,8 @@ describe LogStash::Runner do
     subject { LogStash::Runner.new("") }
     let(:args) { ["-e", "input {} output {}"] }
 
-    it 'should be set' do
-      expect(LogStash::Util::Jackson).to receive(:set_jackson_defaults)
+    it 'should be verified' do
+      expect(LogStash::Util::Jackson).to receive(:verify_jackson_overrides)
       subject.run(args)
     end
   end
