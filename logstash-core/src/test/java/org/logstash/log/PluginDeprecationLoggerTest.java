@@ -48,6 +48,7 @@ public class PluginDeprecationLoggerTest {
     public static void afterClass() {
         snapshotHelper.restoreSnapshot("log4j.configurationFile", "ls.log.format", "ls.logs",
                 LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
+        LogTestUtils.reloadLogConfiguration();
     }
 
     @Before
