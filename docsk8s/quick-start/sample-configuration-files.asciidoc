@@ -41,11 +41,11 @@ data:
     input {
       beats {
         port => "5044"
-        ssl => true
+        ssl_enabled => true
         ssl_certificate_authorities => ["/usr/share/logstash/config/ca.crt"]
         ssl_certificate => "/usr/share/logstash/config/server.crt"
         ssl_key => "/usr/share/logstash/config/server.pkcs8.key"
-        ssl_verify_mode => "force_peer"
+        ssl_client_authentication => "required"
       }
     }
     output {
