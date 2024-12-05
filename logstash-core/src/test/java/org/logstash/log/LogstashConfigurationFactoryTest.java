@@ -59,6 +59,7 @@ public class LogstashConfigurationFactoryTest {
         ThreadContext.putAll(dumpedLog4jThreadContext);
         snapshotHelper.restoreSnapshot("log4j.configurationFile", "ls.log.format", "ls.logs",
                 LogstashConfigurationFactory.PIPELINE_SEPARATE_LOGS);
+        forceLog4JContextRefresh();
     }
 
     @Before
@@ -123,7 +124,7 @@ public class LogstashConfigurationFactoryTest {
         assertNull("No routing appender should be present", routingApp);
     }
 
-    private void forceLog4JContextRefresh() {
+    private static void forceLog4JContextRefresh() {
         LoggerContext context = LoggerContext.getContext(false);
         context.reconfigure();
     }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ALL" name="LoggerTest">
+
+    <Appenders>
+        <List name="EventListAppender" /><!-- No pattern layout enables whole event capture-->
+    </Appenders>
+
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="EventListAppender"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
