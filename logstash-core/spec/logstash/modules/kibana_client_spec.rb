@@ -101,5 +101,33 @@ module LogStash module Modules
         end
       end
     end
+
+    context "when making requests to Kibana" do
+      let(:test_client) { double("client") }
+      let(:mock_response) { double("response",
+        code: 200,
+        body: {"version" => {"number" => "1.2.3"}}.to_json,
+        headers: {}
+      )}
+      let(:mock_http) { double("http") }
+      let(:settings) { {"var.kibana.host" => "localhost:5601"} }
+
+      it "includes product origin header" do
+        # The status API is checked on initialization, the `safely` method is used
+        # for any REST calls, so just checkiing this :get covers the header addition.
+        expect(test_client).to receive(:http)
+          .with(:get, "https://localhost:5601/api/status",
+            hash_including(
+              headers: hash_including(
+                "x-elastic-product-origin" => "logstash"
+              )
+            )
+          )
+          .and_return(mock_http)
+        expect(mock_http).to receive(:call).and_return(mock_response)
+
+        described_class.new(settings, test_client)
+      end
+    end
   end
 end end
