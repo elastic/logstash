@@ -91,7 +91,12 @@ module LogStash module Modules class KibanaClient
     @endpoint = "#{@scheme}://#{@host}"
 
     @client = client || Manticore::Client.new(client_options)
-    @http_options = {:headers => {'Content-Type' => 'application/json'}}
+    @http_options = {
+      :headers => {
+        'Content-Type' => 'application/json',
+        "x-elastic-product-origin" => "logstash"
+      }
+    }
     username = @settings["var.kibana.username"]
     if username
       password = @settings["var.kibana.password"]
