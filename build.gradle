@@ -101,6 +101,7 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
+    maxHeapSize = "2g"
     //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
     testLogging {
       // set options for log level LIFECYCLE
