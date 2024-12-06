@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+
 import org.apache.logging.log4j.core.jackson.Log4jJsonObjectMapper;
 import org.jruby.RubyBignum;
 import org.jruby.RubyBoolean;
@@ -52,11 +53,26 @@ import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.jackson.StreamReadConstraintsUtil;
 import org.logstash.log.RubyBasicObjectSerializer;
 
 public final class ObjectMappers {
 
     static final String RUBY_SERIALIZERS_MODULE_ID = "RubySerializers";
+
+    static final StreamReadConstraintsUtil CONFIGURED_STREAM_READ_CONSTRAINTS;
+
+    static {
+        // The StreamReadConstraintsUtil needs to load the configured constraints from system
+        // properties and apply them _statically_, before any object mappers are initialized.
+        CONFIGURED_STREAM_READ_CONSTRAINTS = StreamReadConstraintsUtil.fromSystemProperties();
+        CONFIGURED_STREAM_READ_CONSTRAINTS.applyAsGlobalDefault();
+    }
+
+    public static StreamReadConstraintsUtil getConfiguredStreamReadConstraints() {
+        return CONFIGURED_STREAM_READ_CONSTRAINTS;
+    }
+
 
     private static final SimpleModule RUBY_SERIALIZERS =
         new SimpleModule(RUBY_SERIALIZERS_MODULE_ID)
