@@ -78,35 +78,20 @@ This section summarizes the changes in the following releases:
 ---------- GENERATED CONTENT STARTS HERE ------------
 === Logstash Pull Requests with label v8.17.0
 
-* Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16482[#16482]
-* Adds a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16564[#16564]
 * Backport PR #16482 to 8.x: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit https://github.com/elastic/logstash/pull/16569[#16569]
 * Backport PR #16564 to 8.x: Adds a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16570[#16570]
-* make max inflight warning global to all pipelines https://github.com/elastic/logstash/pull/16597[#16597]
 * Backport PR #16597 to 8.x: make max inflight warning global to all pipelines https://github.com/elastic/logstash/pull/16601[#16601]
-* Use jvm catalog for reproducible builds and expose new pipeline to check JDK availability https://github.com/elastic/logstash/pull/16602[#16602]
-* Release notes for 8.16.0 https://github.com/elastic/logstash/pull/16605[#16605]
 * Backport PR #16602 to 8.x: Use jvm catalog for reproducible builds and expose new pipeline to check JDK availability https://github.com/elastic/logstash/pull/16609[#16609]
-* [CI] Change agent for JDK availability check and add schedule also for 8.x https://github.com/elastic/logstash/pull/16614[#16614]
-* Fix bad reference to a variable https://github.com/elastic/logstash/pull/16615[#16615]
 * Backport PR #16615 to 8.x: Fix bad reference to a variable https://github.com/elastic/logstash/pull/16616[#16616]
 * Backport PR #16614 to 8.x: [CI] Change agent for JDK availability check and add schedule also for 8.x https://github.com/elastic/logstash/pull/16617[#16617]
-* make docker build and gradle tasks more friendly towards ci output https://github.com/elastic/logstash/pull/16618[#16618]
-* reduce effort during build of docker images https://github.com/elastic/logstash/pull/16619[#16619]
 * Backport PR #16619 to 8.x: reduce effort during build of docker images https://github.com/elastic/logstash/pull/16620[#16620]
 * Backport PR #16618 to 8.x: make docker build and gradle tasks more friendly towards ci output https://github.com/elastic/logstash/pull/16621[#16621]
-* add boostrap to docker build to fix missing jars https://github.com/elastic/logstash/pull/16622[#16622]
 * Backport PR #16622 to 8.x: add boostrap to docker build to fix missing jars https://github.com/elastic/logstash/pull/16623[#16623]
-* Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16626[#16626]
-* Update JDK to latest in versions.yml https://github.com/elastic/logstash/pull/16627[#16627]
 * For custom java plugins, set the platform = 'java' https://github.com/elastic/logstash/pull/16628[#16628]
 * Backport PR #16627 to 8.x: Update JDK to latest in versions.yml https://github.com/elastic/logstash/pull/16631[#16631]
-* fix Windows java not found log https://github.com/elastic/logstash/pull/16633[#16633]
-* bump jruby to 9.4.9.0 https://github.com/elastic/logstash/pull/16634[#16634]
 * Backport PR #16633 to 8.x: fix Windows java not found log https://github.com/elastic/logstash/pull/16636[#16636]
 * Backport PR #16626 to 8.x: Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16637[#16637]
 * Backport PR #16634 to 8.x: bump jruby to 9.4.9.0 https://github.com/elastic/logstash/pull/16639[#16639]
-* Update .ruby-version to jruby-9.4.9.0 https://github.com/elastic/logstash/pull/16642[#16642]
 * Backport PR #16642 to 8.x: Update .ruby-version to jruby-9.4.9.0 https://github.com/elastic/logstash/pull/16645[#16645]
 
 === Logstash Commits between 8.17 and 8.16.1
@@ -148,11 +133,6 @@ d6c96b407 - make max inflight warning global to all pipelines (#16597) (#16601) 
 6a573f40f - ensure minitar 1.x is used instead of 0.x (#16565) (#16566) (8 weeks ago) <github-actions[bot]>
 396b3fef4 - Deprecate for removal ArcSight module (#16551) (8 weeks ago) <Andrea Selva>
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.16.1..8.17 *.release"
-Changed plugin versions:
-logstash-mixin-http_client: 7.4.0 -> 7.5.0
----------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
 
