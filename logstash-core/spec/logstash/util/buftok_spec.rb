@@ -43,6 +43,35 @@ describe  FileWatch::BufferedTokenizer  do
     expect(subject.extract("\n\n\n")).to eq(["", "", ""])
   end
 
+  describe 'flush' do
+    let(:data) { "content without a delimiter" }
+    before(:each) do
+      subject.extract(data)
+    end
+
+    it "emits the contents of the buffer" do
+      expect(subject.flush).to eq(data)
+    end
+
+    it "resets the state of the buffer" do
+      subject.flush
+      expect(subject).to be_empty
+    end
+
+    context 'with decode_size_limit_bytes' do
+      subject { FileWatch::BufferedTokenizer.new("\n", 100) }
+
+      it "emits the contents of the buffer" do
+        expect(subject.flush).to eq(data)
+      end
+
+      it "resets the state of the buffer" do
+        subject.flush
+        expect(subject).to be_empty
+      end
+    end
+  end
+
   context 'with delimiter' do
     subject { FileWatch::BufferedTokenizer.new(delimiter) }
 

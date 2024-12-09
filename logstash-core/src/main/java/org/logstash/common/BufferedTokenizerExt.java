@@ -106,12 +106,13 @@ public class BufferedTokenizerExt extends RubyObject {
     public IRubyObject flush(final ThreadContext context) {
         final IRubyObject buffer = input.join(context);
         input.clear();
+        inputSize = 0;
         return buffer;
     }
 
     @JRubyMethod(name = "empty?")
     public IRubyObject isEmpty(final ThreadContext context) {
-        return input.empty_p();
+        return RubyUtil.RUBY.newBoolean(input.isEmpty() && (inputSize == 0));
     }
 
 }
