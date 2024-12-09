@@ -25,6 +25,7 @@ remove the `_version` field, and then sending the data to {ess} or self-managed 
 You need:
 
 * A working {es} cluster
+* A {ls} instance
 * {fleet-server}
 * An {fleet-guide}/elastic-agent-installation.html[{agent} installed] on the hosts you want to collect data from, and configured to {fleet-guide}/logstash-output.html[send output to {ls}]
 * An active Elastic Enterprise https://www.elastic.co/subscriptions[subscription]
