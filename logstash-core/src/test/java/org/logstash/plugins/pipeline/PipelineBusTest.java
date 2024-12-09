@@ -53,7 +53,7 @@ public class PipelineBusTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Class<? extends PipelineBus.Testable>> data() {
-        return Set.of(PipelineBusV1.Testable.class, PipelineBusV2.Testable.class);
+        return Set.of(PipelineBusV2.Testable.class);
     }
 
     @Parameterized.Parameter
