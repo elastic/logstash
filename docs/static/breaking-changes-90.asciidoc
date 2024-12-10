@@ -53,9 +53,9 @@ removed and their replacements.
 [cols="<,<",options="header",]
 |=======================================================================
 |Setting|Replaced by
-| ssl_cert |<<plugins-{type}s-{plugin}-ssl_certificate>>
-| ssl_enable |<<plugins-{type}s-{plugin}-ssl_enabled>>
-| ssl_verify |<<plugins-{type}s-{plugin}-ssl_client_authentication>> in `server` mode and <<plugins-{type}s-{plugin}-ssl_verification_mode>> in `client` mode
+| ssl_cert |<<plugins-inputs-tcp-ssl_certificate>>
+| ssl_enable |<<plugins-inputs-tcp-ssl_enabled>>
+| ssl_verify |<<plugins-inputs-tcp-ssl_client_authentication>> in `server` mode and <<plugins-inputs-tcp-ssl_verification_mode>> in `client` mode
 |=======================================================================
 
 ====
