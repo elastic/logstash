@@ -93,44 +93,29 @@ This section summarizes the changes in the following releases:
 * Backport PR #16626 to 8.x: Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16637[#16637]
 * Backport PR #16634 to 8.x: bump jruby to 9.4.9.0 https://github.com/elastic/logstash/pull/16639[#16639]
 * Backport PR #16642 to 8.x: Update .ruby-version to jruby-9.4.9.0 https://github.com/elastic/logstash/pull/16645[#16645]
+* Backport PR #16719 to 8.17: ensure jackson overrides are available to static initializers https://github.com/elastic/logstash/pull/16757[#16757]
+* PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16671[#16671]
+
+
 
 === Logstash Commits between 8.17 and 8.16.1
 
 Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.1..8.17"
 
-6f8fd5a4e - (HEAD -> 8.17, origin/8.17) ensure jackson overrides are available to static initializers (#16719) (#16757) (5 days ago) <github-actions[bot]>
 5ab462e8b - Pin `jar-dependencies` to `0.4.1` (#16747) (#16750) (5 days ago) <github-actions[bot]>
 c68a631a4 - Docs: Troubleshooting update for JDK bug handling cgroups v1 (#16721) (#16731) (12 days ago) <github-actions[bot]>
-ab22999a7 - Release notes for 8.16.1 (#16691) (#16707) (3 weeks ago) <github-actions[bot]>
-accc201d1 - Revert "Backport PR #16482 to 8.x: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16569)" (#16705) (3 weeks ago) <Cas Donoghue>
-adfa02b53 - Update minor plugin versions in gemfile lock for 8.17.0 (#16696) (3 weeks ago) <github-actions[bot]>
-10512266a - Update license checker with new logger dependency (#16695) (#16700) (3 weeks ago) <github-actions[bot]>
-7914ac04c - add lockfile from 8.16.1 and bump version to 8.17.0 (3 weeks ago) <João Duarte>
-8af6343a2 - PipelineBusV2 deadlock proofing (#16671) (3 weeks ago) <Ry Biesemeyer>
-18e1545e4 - Updates release notes for 8.14.x to call for an update. (#16675) (#16676) (3 weeks ago) <github-actions[bot]>
-01dcd621d - Doc: Realign release notes and add known issue (#16663) (#16668) (4 weeks ago) <github-actions[bot]>
-a402be0b8 - Release notes for 8.16.0 (#16605) (#16662) (4 weeks ago) <github-actions[bot]>
 9ad33e21b - add deprecation warning for `allow_superuser: true` (#16555) (5 weeks ago) <kaisecheng>
-54caef7a2 - Update .ruby-version to jruby-9.4.9.0 (#16642) (#16645) (5 weeks ago) <github-actions[bot]>
 4201628f9 - Update depreacation warning to provide the version the ArcSight module is removed. (#16648) (5 weeks ago) <Andrea Selva>
 00898bd56 - For custom java plugins, set the platform = 'java'. (#16628) (#16649) (5 weeks ago) <github-actions[bot]>
-0657729cb - bump jruby to 9.4.9.0 (#16634) (#16639) (5 weeks ago) <github-actions[bot]>
 aea58a36a - Anchor the `-java` match pattern at the end of the string. (#16626) (#16637) (5 weeks ago) <github-actions[bot]>
 a7384c0d6 - fix Windows java not found log (#16633) (#16636) (5 weeks ago) <github-actions[bot]>
 37b1e9006 - Update JDK to latest in versions.yml (#16627) (#16631) (5 weeks ago) <github-actions[bot]>
 2bcb5adcb - add boostrap to docker build to fix missing jars (#16622) (#16623) (5 weeks ago) <github-actions[bot]>
 6c8e086d5 - reduce effort during build of docker images (#16619) (#16620) (6 weeks ago) <github-actions[bot]>
-1cbd092b6 - make docker build and gradle tasks more friendly towards ci output (#16618) (#16621) (6 weeks ago) <github-actions[bot]>
-b242715f7 - [CI] Change agent for JDK availability check and add schedule also for 8.x (#16614) (#16617) (6 weeks ago) <github-actions[bot]>
 1335ec80f - Fix bad reference to a variable (#16615) (#16616) (6 weeks ago) <github-actions[bot]>
 51851a99d - Use jvm catalog for reproducible builds and expose new pipeline to check JDK availability (#16602) (#16609) (6 weeks ago) <github-actions[bot]>
-d6c96b407 - make max inflight warning global to all pipelines (#16597) (#16601) (6 weeks ago) <github-actions[bot]>
-79e439e27 - bump version to 8.17.0 (#16592) (7 weeks ago) <Edmo Vamerlatti Costa>
-8fb129293 - Release notes for 8.15.3 (#16527) (#16571) (7 weeks ago) <github-actions[bot]>
+* Backport PR #16597 to 8.x: make max inflight warning global to all pipelines https://github.com/elastic/logstash/pull/16601[#16601]
 7e1877ca1 - add http.* deprecation log (#16538) (#16582) (8 weeks ago) <github-actions[bot]>
-27bd2a039 - Backport PR #16482 to 8.x: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16569) (8 weeks ago) <github-actions[bot]>
-216c68f28 - Backport PR #16564 to 8.x: Adds a JMH benchmark to test BufferedTokenizerExt class(#16570) (8 weeks ago) <github-actions[bot]>
-6a573f40f - ensure minitar 1.x is used instead of 0.x (#16565) (#16566) (8 weeks ago) <github-actions[bot]>
 396b3fef4 - Deprecate for removal ArcSight module (#16551) (8 weeks ago) <Andrea Selva>
 
 
@@ -139,7 +124,6 @@ d6c96b407 - make max inflight warning global to all pipelines (#16597) (#16601) 
 *Http_client Mixin - 7.5.0*
 
 * Adds new mixin configuration option `with_obsolete` to mark `ssl` options as obsolete
-
 
 [[logstash-8-16-1]]
 === Logstash 8.16.1 Release Notes
