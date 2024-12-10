@@ -44,6 +44,23 @@ removed and their replacements.
 ====
 
 [discrete]
+[[input-tcp-ssl-9.0]]
+.`logstash-input-tcp`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl_cert |<<plugins-{type}s-{plugin}-ssl_certificate>>
+| ssl_enable |<<plugins-{type}s-{plugin}-ssl_enabled>>
+| ssl_verify |<<plugins-{type}s-{plugin}-ssl_client_authentication>> in `server` mode and <<plugins-{type}s-{plugin}-ssl_verification_mode>> in `client` mode
+|=======================================================================
+
+====
+
+[discrete]
 [[filter-elasticsearch-ssl-9.0]]
 .`logstash-filter-elasticsearch`
 
