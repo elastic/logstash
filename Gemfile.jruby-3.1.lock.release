@@ -100,7 +100,7 @@ GEM
       bigdecimal
       rexml
     dalli (3.2.8)
-    date (3.3.4-java)
+    date (3.3.3-java)
     diff-lcs (1.5.1)
     docile (1.4.1)
     domain_name (0.6.20240107)
