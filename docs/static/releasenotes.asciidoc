@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-0,Logstash 8.17.0>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
 * <<logstash-8-16-0,Logstash 8.16.0>>
 * <<logstash-8-15-4,Logstash 8.15.4>>
@@ -70,6 +71,50 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-17-0]]
+=== Logstash 8.17.0 Release Notes
+
+[[known-issues-8-17-0]]
+==== Known issue
+
+When upgrading Logstash to 8.12.0 or earlier, if the `jvm.options` was previously modified and not overwritten with the newest version,
+users may see a "deserialize invocation error" message causing the pipeline to crash. Users are affected if the Persistent Queue
+is enabled and the pipeline is processing messages larger than 20MB.
+The solution is to apply the default change contained in the newer 'jvm.options' file, as seen https://github.com/elastic/logstash/blob/main/config/jvm.options#L66-L82[here].
+
+[[notable-8-17-0]]
+==== Notable fixes and improvements
+
+* Add warning that `allow_superuser` will default to `false` in 9.0.0 https://github.com/elastic/logstash/pull/16555[#16555]
+* Update deprecation warning to mention ArcSight module will be removed in 9.0.0 https://github.com/elastic/logstash/pull/16648[#16648]
+* Update deprecation warning for http.* settings to mention removal in 9.0.0 https://github.com/elastic/logstash/pull/16538[#16538]
+
+[[core-8-17-0]]
+==== Changes to Logstash core
+
+* Make max inflight warning global to all pipelines https://github.com/elastic/logstash/pull/16601[#16601]
+* Correctly guide user to use LS_JAVA_HOME instead of JAVA_HOME to configure Java on Windows https://github.com/elastic/logstash/pull/16636[#16636]
+* Ensure jackson configurations are applied if found in "jvm.options" https://github.com/elastic/logstash/pull/16757[#16757]
+* Set `platform = 'java'` in custom java plugins' gemspecs https://github.com/elastic/logstash/pull/16628[#16628]
+* Fix offline installation of java plugins containing "-java" in their name https://github.com/elastic/logstash/pull/16637[#16637]
+
+[[dependencies-8.17.0]]
+==== Updates to dependencies
+
+* Pin jar-dependencies gem to 0.4.1 to avoid clashing with version bundled with JRuby https://github.com/elastic/logstash/pull/16750[#16750]
+* Update JDK to 21.0.5+11 https://github.com/elastic/logstash/pull/16631[#16631]
+
+[[docs-8.17.0]]
+==== Documentation enhancements
+
+* Troubleshooting update for JDK bug handling cgroups v1 https://github.com/elastic/logstash/pull/16731[#16731]
+
+==== Plugins
+
+*Http_client Mixin - 7.5.0*
+
+* Adds new mixin configuration option `with_obsolete` to mark `ssl` options as obsolete https://github.com/logstash-plugins/logstash-mixin-http_client/pull/46[#46]
 
 [[logstash-8-16-1]]
 === Logstash 8.16.1 Release Notes
