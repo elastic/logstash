@@ -9,10 +9,11 @@ module LogStash
 
       def ecs_compatibility
         @_ecs_compatibility || LogStash::Util.synchronize(self) do
-          @_ecs_compatibility ||= begin
-            # use config_init-set value if present
-            break @ecs_compatibility unless @ecs_compatibility.nil?
+          # use config_init-set value if present
+          @_ecs_compatibility ||= @ecs_compatibility
 
+          # load default from settings
+          @_ecs_compatibility ||= begin
             pipeline = execution_context.pipeline
             pipeline_settings = pipeline && pipeline.settings
             pipeline_settings ||= LogStash::SETTINGS
