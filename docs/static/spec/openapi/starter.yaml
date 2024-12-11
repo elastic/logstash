@@ -1,0 +1,58 @@
+
+openapi: 3.1.0
+info:
+  title: Logstash APIs
+  description: |
+    When you run Logstash, it automatically captures runtime metrics that you can use to monitor the health and performance of your Logstash deployment.
+    The metrics collected by Logstash include:
+    
+    - Logstash node info, like pipeline settings, OS info, and JVM info.
+    - Plugin info, including a list of installed plugins.
+    - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    - Hot threads.
+
+    The APIs that retrieve these metrics are available by default without requiring any extra configuration.
+
+    ## Documentation source and versions
+
+    This documentation is derived from the `main` branch of the [logstash](https://github.com/elastic/logstash) repository.
+    It is provided under license [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+  version: '1.0'
+  x-doc-license:
+    name: Attribution-NonCommercial-NoDerivatives 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-nd/4.0/
+  x-feedbackLink:
+    label: Feedback
+    url: https://github.com/elastic/docs-content/issues/new?assignees=&labels=feedback%2Ccommunity&projects=&template=api-feedback.yaml&title=%5BFeedback%5D%3A+
+servers:
+  - url: /
+security:
+  - apiKeyAuth: []
+paths: 
+  /_node/plugins:
+    get:
+      summary: Get plugin info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API basically returns the output of running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  total: 1
+                  plugins:
+                    - name: logstash-codec-cef
+                      version: 4.1.2
+                 
+
