@@ -102,7 +102,7 @@ The solution is to apply the default change contained in the newer 'jvm.options'
 [[dependencies-8.17.0]]
 ==== Updates to dependencies
 
-* Pin jar-dependencies gem to 0.4.1 to avoid clashing with version bundled with JRuby https://github.com/elastic/logstash/pull/16750[#16747]
+* Pin jar-dependencies gem to 0.4.1 to avoid clashing with version bundled with JRuby https://github.com/elastic/logstash/pull/16750[#16750]
 * Update JDK to 21.0.5+11 https://github.com/elastic/logstash/pull/16631[#16631]
 
 [[docs-8.17.0]]
