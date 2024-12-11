@@ -105,7 +105,7 @@ The solution is to apply the default change contained in the newer 'jvm.options'
 * Pin jar-dependencies gem to 0.4.1 to avoid clashing with version bundled with JRuby https://github.com/elastic/logstash/pull/16750[#16747]
 * Update JDK to 21.0.5+11 https://github.com/elastic/logstash/pull/16631[#16631]
 
-[[docs-8.15.0]]
+[[docs-8.17.0]]
 ==== Documentation enhancements
 
 * Troubleshooting update for JDK bug handling cgroups v1 https://github.com/elastic/logstash/pull/16731[#16731]
