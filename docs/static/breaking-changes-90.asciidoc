@@ -44,6 +44,27 @@ removed and their replacements.
 ====
 
 [discrete]
+[[output-elasticsearch-ssl-9.0]]
+.`logstash-output-elasticsearch`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cacert |<<plugins-outputs-elasticsearch-ssl_certificate_authorities>>
+| keystore |<<plugins-outputs-elasticsearch-ssl_keystore_path>>
+| keystore_password |<<plugins-outputs-elasticsearch-ssl_keystore_password>>
+| ssl |<<plugins-outputs-elasticsearch-ssl_enabled>>
+| ssl_certificate_verification |<<plugins-outputs-elasticsearch-ssl_verification_mode>>
+| truststore |<<plugins-outputs-elasticsearch-ssl_truststore_path>>
+| truststore_password |<<plugins-outputs-elasticsearch-ssl_truststore_password>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-http-ssl-9.0]]
 .`logstash-output-http`
 
