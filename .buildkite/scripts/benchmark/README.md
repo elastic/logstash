@@ -19,3 +19,4 @@
 - Benchmarks should only be compared using the same hardware setup.
 - Please do not send the test metrics to the benchmark cluster. You can set `VAULT_PATH` to send data and metrics to your own server.
 - Run `all.sh` as calibration which gives you a baseline of performance in different versions.
+- [#16586](https://github.com/elastic/logstash/pull/16586) allows legacy monitoring using the configuration `xpack.monitoring.allow_legacy_collection: true`, which is not recognized in version 8. To run benchmarks in version 8, use the script of the corresponding branch (e.g. `8.16`) instead of `main` in buildkite.
