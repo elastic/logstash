@@ -79,6 +79,29 @@ removed and their replacements.
 ====
 
 [discrete]
+[[filter-http-ssl-9.0]]
+.`logstash-filter-http`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cacert |<<plugins-filters-http-ssl_certificate_authorities>>
+| client_cert |<<plugins-filters-http-ssl_certificate>>
+| client_key |<<plugins-filters-http-ssl_key>>
+| keystore |<<plugins-filters-http-ssl_keystore_path>>
+| keystore_password |<<plugins-filters-http-ssl_keystore_password>>
+| keystore_type |<<plugins-filters-http-ssl_keystore_type>>
+| truststore |<<plugins-filters-http-ssl_truststore_path>>
+| truststore_password |<<plugins-filters-http-ssl_truststore_password>>
+| truststore_type |<<plugins-filters-http-ssl_truststore_type>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-elasticsearch-ssl-9.0]]
 .`logstash-output-elasticsearch`
 
