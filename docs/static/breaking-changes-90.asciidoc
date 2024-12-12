@@ -44,6 +44,29 @@ removed and their replacements.
 ====
 
 [discrete]
+[[input-http-ssl-9.0]]
+.`logstash-input-http`
+
+[%collapsible]
+====
+
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cipher_suites |<<plugins-inputs-http-ssl_cipher_suites>>
+| keystore |<<plugins-inputs-http-ssl_keystore_path>>
+| keystore_password |<<plugins-inputs-http-ssl_keystore_password>>
+| ssl |<<plugins-inputs-http-ssl_enabled>>
+| ssl_verify_mode |<<plugins-inputs-http-ssl_client_authentication>>
+| tls_max_version |<<plugins-inputs-http-ssl_supported_protocols>>
+| tls_min_version |<<plugins-inputs-http-ssl_supported_protocols>>
+| verify_mode |<<plugins-inputs-http-ssl_client_authentication>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-elasticsearch-ssl-9.0]]
 .`logstash-output-elasticsearch`
 
