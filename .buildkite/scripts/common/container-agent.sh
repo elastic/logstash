@@ -15,3 +15,15 @@ else
     export PATH="/usr/local/rbenv/bin:$PATH"
     eval "$(rbenv init -)"
 fi
+if ! command -v git >/dev/null 2>&1; then
+   echo "GIT_CHECK_ERROR: git command not found in PATH" >&2
+   exit 1
+fi
+
+git_version=$(git --version)
+if [ $? -ne 0 ]; then
+   echo "GIT_CHECK_ERROR: git installation appears broken" >&2 
+   exit 1
+fi
+
+echo "GIT_CHECK_SUCCESS: Found $git_version"
