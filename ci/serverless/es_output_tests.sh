@@ -9,7 +9,7 @@ check_named_index() {
 }
 
 get_data_stream_count() {
-  curl -s -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/logs-$INDEX_NAME.001-default/_count" | jq '.count // 0'
+  curl -s -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" -H 'x-elastic-product-origin: logstash' "$ES_ENDPOINT/logs-$INDEX_NAME.001-default/_count" | jq '.count // 0'
 }
 
 compare_data_stream_count() {
