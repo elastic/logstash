@@ -216,7 +216,7 @@ module LogStash
         else
           opt = retrieve_collection_settings(settings, "xpack.")
         end
-        es_settings = es_options_from_settings_or_modules('monitoring', settings)
+        es_settings = es_options_from_settings('monitoring', settings)
         data = TemplateData.new(LogStash::SETTINGS.get("node.uuid"), API_VERSION,
                                 es_settings,
                                 opt[:collection_interval], opt[:collection_timeout_interval],

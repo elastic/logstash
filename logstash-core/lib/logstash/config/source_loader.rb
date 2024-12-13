@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/config/source/local"
-require "logstash/config/source/modules"
 require "logstash/config/source/multi_local"
 require "thread"
 require "set"

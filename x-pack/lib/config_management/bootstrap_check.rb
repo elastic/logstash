@@ -29,10 +29,6 @@ module LogStash
           raise LogStash::BootstrapCheckError, "You cannot use -t since Elasticsearch is configured as the config store"
         end
 
-        if !settings.get("modules.cli").empty? || !settings.get("modules").empty?
-          raise LogStash::BootstrapCheckError, "You cannot use --modules since Elasticsearch is configured as the config store"
-        end
-
         interval = settings.get("xpack.management.logstash.poll_interval")
 
         # override core settings, so the agent will trigger the auto reload

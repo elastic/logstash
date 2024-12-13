@@ -18,7 +18,7 @@ module LogStash module Monitoring
       @pipeline_config = pipeline_config
       @settings = settings
       @agent = agent
-      @es_options = es_options_from_settings_or_modules(FEATURE, @settings)
+      @es_options = es_options_from_settings(FEATURE, @settings)
       setup_license_checker(FEATURE)
     end
 

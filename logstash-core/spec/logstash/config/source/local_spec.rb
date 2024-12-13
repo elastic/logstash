@@ -305,9 +305,7 @@ describe LogStash::Config::Source::Local do
     let(:settings) do
       mock_settings(
         "config.string" => "#{filter_block} #{output_block}",
-        "path.config" => config_file,
-        "modules.cli" => [],
-        "modules" => []
+        "path.config" => config_file
       )
     end
 
