@@ -6,7 +6,7 @@ set -ex
 source ./$(dirname "$0")/common.sh
 
 get_monitor_count() {
-  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" "$ES_ENDPOINT/.monitoring-logstash-7-*/_count" | jq '.count'
+  curl -s -H "Authorization: ApiKey $LS_ROLE_API_KEY_ENCODED" -H 'x-elastic-product-origin: logstash' "$ES_ENDPOINT/.monitoring-logstash-7-*/_count" | jq '.count'
 }
 
 compare_monitor_count() {

@@ -28,7 +28,9 @@ build_logstash() {
 }
 
 index_test_data() {
-  curl -X POST -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_bulk" -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
+  curl -X POST -H "Authorization: ApiKey $TESTER_API_KEY_ENCODED" "$ES_ENDPOINT/$INDEX_NAME/_bulk" \
+    -H 'x-elastic-product-origin: logstash' \
+    -H 'Content-Type: application/json' --data-binary @"$CURRENT_DIR/test_data/book.json"
 }
 
 # $1: check function
