@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-2,Logstash 8.16.2>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
 * <<logstash-8-16-0,Logstash 8.16.0>>
 * <<logstash-8-15-4,Logstash 8.15.4>>
@@ -69,6 +70,77 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-2]]
+=== Logstash 8.16.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.16.2
+
+* ensure jackson overrides are available to static initializers https://github.com/elastic/logstash/pull/16719[#16719]
+* Pin `jar-dependencies` to `0.4.1` https://github.com/elastic/logstash/pull/16747[#16747]
+* Backport PR #16747 to 8.16: Pin `jar-dependencies` to `0.4.1` https://github.com/elastic/logstash/pull/16749[#16749]
+* Pin `date` dependency to `3.3.3` https://github.com/elastic/logstash/pull/16755[#16755]
+* Backport PR #16719 to 8.16: ensure jackson overrides are available to static initializers https://github.com/elastic/logstash/pull/16758[#16758]
+* ensure inputSize state value is reset during buftok.flush https://github.com/elastic/logstash/pull/16760[#16760]
+* Backport PR #16760 to 8.16: ensure inputSize state value is reset during buftok.flush https://github.com/elastic/logstash/pull/16771[#16771]
+* Backport PR #16755 to 8.16: Pin `date` dependency to `3.3.3` https://github.com/elastic/logstash/pull/16779[#16779]
+
+=== Logstash Commits between 8.16 and 8.16.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.1..8.16"
+
+2e7b1fe6f - (HEAD -> 8.16, origin/8.16) bump lock file for 8.16 (#16776) (5 days ago) <github-actions[bot]>
+c0ae02e44 - Pin `date` dependency to `3.3.3` (#16755) (#16779) (5 days ago) <github-actions[bot]>
+1f93dc5b6 - ensure inputSize state value is reset during buftok.flush (#16760) (#16771) (7 days ago) <github-actions[bot]>
+36feb2959 - ensure jackson overrides are available to static initializers (#16719) (#16758) (11 days ago) <github-actions[bot]>
+12645e975 - Pin `jar-dependencies` to `0.4.1` (#16747) (#16749) (12 days ago) <github-actions[bot]>
+eeec9e062 - bump lock file for 8.16 (#16726) (3 weeks ago) <github-actions[bot]>
+0beea5ad5 - bump version to 8.16.2 (#16710) (4 weeks ago) <João Duarte>
+8b97c052e - Release notes for 8.16.1 (#16691) (4 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.16.1..8.16 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 0.1.16 -> 0.1.17
+logstash-filter-elasticsearch: 3.16.1 -> 3.16.2
+logstash-input-elasticsearch: 4.20.4 -> 4.20.5
+logstash-integration-jdbc: 5.5.0 -> 5.5.1
+logstash-integration-kafka: 11.5.2 -> 11.5.3
+logstash-integration-logstash: 1.0.3 -> 1.0.4
+logstash-output-elasticsearch: 11.22.9 -> 11.22.10
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.17*
+
+404: Not Found
+
+*Elasticsearch Filter - 3.16.2*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/185[#185]
+
+*Elasticsearch Input - 4.20.5*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/211[#211]
+
+*Jdbc Integration - 5.5.1*
+
+* Document `statement_retry_attempts` and `statement_retry_attempts_wait_time` options
+
+*Kafka Integration - 11.5.3*
+
+* Update kafka client to 3.7.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/186[#186]
+
+*Logstash Integration - 1.0.4*
+
+* Fix: output plugin now correctly outputs event-oriented ndjson-compatible payloads, bypassing an issue where downstream inputs encountered buffering limits
+
+*Elasticsearch Output - 11.22.10*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1194[#1194]
 
 
 [[logstash-8-16-1]]
