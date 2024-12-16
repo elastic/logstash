@@ -87,7 +87,7 @@ Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-out
 output {
   elasticsearch {
     hosts => ["https://...] <1>
-    ssl_certificate_authorities => '/etc/logstash/config/certs/ca.crt' <2>
+    ssl_certificate_authorities => ['/etc/logstash/config/certs/ca.crt'] <2>
   }
 }
 -------
