@@ -78,7 +78,7 @@ As always, there's a definite argument for consistency across deployments.
 [[es-sec-plugin]]
 ==== Configure the elasticsearch output
 
-Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-outputs-elasticsearch-cacert,`cacert` option>> to point to the certificate's location. 
+Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-outputs-elasticsearch-ssl_certificate_authorities,`ssl_certificate_authorities` option>> to point to the certificate's location. 
 
 **Example**
 
@@ -87,7 +87,7 @@ Use the <<plugins-outputs-elasticsearch,`elasticsearch output`'s>> <<plugins-out
 output {
   elasticsearch {
     hosts => ["https://...] <1>
-    cacert => '/etc/logstash/config/certs/ca.crt' <2>
+    ssl_certificate_authorities => ['/etc/logstash/config/certs/ca.crt'] <2>
   }
 }
 -------
