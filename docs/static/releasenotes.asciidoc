@@ -114,7 +114,7 @@ This section summarizes the changes in the following releases:
 
 *Elasticsearch Output - 11.22.10*
 
-* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1194[#1194]
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1195[#1195]
 
 
 [[logstash-8-16-1]]
