@@ -3,8 +3,10 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-2,Logstash 8.16.2>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
 * <<logstash-8-16-0,Logstash 8.16.0>>
+* <<logstash-8-15-4,Logstash 8.15.5>>
 * <<logstash-8-15-4,Logstash 8.15.4>>
 * <<logstash-8-15-3,Logstash 8.15.3>>
 * <<logstash-8-15-2,Logstash 8.15.2>>
@@ -69,6 +71,51 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-2]]
+=== Logstash 8.16.2 Release Notes
+
+[[notable-8-16-2]]
+==== Notable issues fixed
+
+* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771]
+* Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758]
+
+[[dependencies-8.16.1]]
+==== Updates to dependencies
+
+* Pin `jar-dependencies` to `0.4.1` and `date` to `3.3.3` to avoid clashes between what's bundled with JRuby and newer versions in Rubygems https://github.com/elastic/logstash/pull/16749[#16749] https://github.com/elastic/logstash/pull/16779[#16779]
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.17*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/elastic/logstash-filter-elastic_integration/pull/197[#197]
+
+*Elasticsearch Filter - 3.16.2*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/185[#185]
+
+*Elasticsearch Input - 4.20.5*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/211[#211]
+
+*Jdbc Integration - 5.5.1*
+
+* Document `statement_retry_attempts` and `statement_retry_attempts_wait_time` options https://github.com/logstash-plugins/logstash-integration-jdbc/pull/177[#177]
+
+*Kafka Integration - 11.5.3*
+
+* Update kafka client to 3.7.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/186[#186]
+
+*Logstash Integration - 1.0.4*
+
+* Align output plugin with documentation by producing event-oriented ndjson-compatible payloads instead of JSON array of events https://github.com/logstash-plugins/logstash-integration-logstash/pull/25[#25]
+
+*Elasticsearch Output - 11.22.10*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1195[#1195]
 
 
 [[logstash-8-16-1]]
@@ -200,6 +247,32 @@ the event or by sending it to the pipeline's DLQ if enabled. https://github.com/
 
 * Removed obsolete `verify_ssl` and `debug` options https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/60[#60]
 
+[[logstash-8-15-5]]
+=== Logstash 8.15.5 Release Notes
+
+[[notable-8-15-5]]
+==== Notable issues fixed
+
+* PipelineBusV2 deadlock proofing: We fixed an issue that could cause a deadlock when the pipeline-to-pipeline feature was in use, causing pipelines (and consequently) {ls} to never terminate https://github.com/elastic/logstash/pull/16681[#16681]
+* We reverted a change in BufferedTokenizer (https://github.com/elastic/logstash/pull/16482[#16482]) that improved handling of large messages but introduced a double encoding bug https://github.com/elastic/logstash/pull/16687[#16687].
+
+==== Plugins
+
+*Elastic_integration Filter - 0.1.16*
+
+* Reflect the Elasticsearch GeoIP changes into the plugin and sync with Elasticsearch 8.16 branch https://github.com/elastic/logstash-filter-elastic_integration/pull/170[#170]
+
+*Xml Filter - 4.2.1*
+
+* patch rexml to improve performance of multi-threaded xml parsing https://github.com/logstash-plugins/logstash-filter-xml/pull/84[#84]
+
+*Tcp Input - 6.4.4*
+
+* update netty to 4.1.115 https://github.com/logstash-plugins/logstash-input-tcp/pull/227[#227]
+
+*Http Output - 5.7.1*
+
+* Added new development `rackup` dependency to fix tests 
 
 [[logstash-8-15-4]]
 === Logstash 8.15.4 Release Notes
