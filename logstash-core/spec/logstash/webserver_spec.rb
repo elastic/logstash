@@ -21,6 +21,8 @@ require "socket"
 require "spec_helper"
 require "open-uri"
 require "webmock/rspec"
+require "faraday"
+require "ostruct"
 
 def block_ports(range)
   servers = []
