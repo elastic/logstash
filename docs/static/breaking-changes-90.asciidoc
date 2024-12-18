@@ -50,7 +50,7 @@ removed and their replacements.
 [%collapsible]
 ====
 
-[cols="<,<,<",options="header",]
+[cols="<,<",options="header",]
 |=======================================================================
 |Setting|Replaced by
 | ca_file |<<plugins-filters-elasticsearch-ssl_certificate_authorities>>
