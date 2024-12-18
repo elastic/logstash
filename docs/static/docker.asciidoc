@@ -33,8 +33,8 @@ ifeval::["{release-state}"!="unreleased"]
 docker pull {docker-image}
 --------------------------------------------
 
-A hardnened image based on the [Wolfi](https://wolfi.dev/) image is available
-as well. Using Wolfi-based images requires Docker version 20.10.10 or higher.
+A hardened image based on the https://wolfi.dev/[Wolfi] image is available as well. 
+Using Wolfi-based images requires Docker version 20.10.10 or later.
 
 ["source","sh",subs="attributes"]
 --------------------------------------------
