@@ -82,7 +82,7 @@ This section summarizes the changes in the following releases:
 * Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771]
 * Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758]
 
-[[dependencies-8.16.1]]
+[[dependencies-8-16-2]]
 ==== Updates to dependencies
 
 * Pin `jar-dependencies` to `0.4.1` and `date` to `3.3.3` to avoid clashes between what's bundled with JRuby and newer versions in Rubygems https://github.com/elastic/logstash/pull/16749[#16749] https://github.com/elastic/logstash/pull/16779[#16779]
