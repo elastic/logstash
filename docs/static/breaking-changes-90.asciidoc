@@ -86,3 +86,21 @@ removed and their replacements.
 |=======================================================================
 
 ====
+
+[discrete]
+[[output-tcp-ssl-9.0]]
+.`logstash-output-tcp`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl_cacert |<<plugins-outputs-tcp-ssl_certificate_authorities>>
+| ssl_cert |<<plugins-outputs-tcp-ssl_certificate>>
+| ssl_enable |<<plugins-outputs-tcp-ssl_enabled>>
+| ssl_verify |<<plugins-outputs-tcp-ssl_client_authentication>> in `server` mode and <<plugins-outputs-tcp-ssl_verification_mode>> in `client` mode
+|=======================================================================
+
+====
