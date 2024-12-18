@@ -44,6 +44,24 @@ removed and their replacements.
 ====
 
 [discrete]
+[[filter-elasticsearch-ssl-9.0]]
+.`logstash-filter-elasticsearch`
+
+[%collapsible]
+====
+
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ca_file |<<plugins-filters-elasticsearch-ssl_certificate_authorities>>
+| keystore |<<plugins-filters-elasticsearch-ssl_keystore_path>>
+| keystore_password |<<plugins-filters-elasticsearch-ssl_keystore_password>>
+| ssl |<<plugins-filters-elasticsearch-ssl_enabled>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-elasticsearch-ssl-9.0]]
 .`logstash-output-elasticsearch`
 
