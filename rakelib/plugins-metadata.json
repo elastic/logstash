@@ -410,8 +410,8 @@
     "skip-list": false
   },
   "logstash-integration-elastic_enterprise_search": {
-    "default-plugins": true,
-    "skip-list": false
+    "default-plugins": false,
+    "skip-list": true
   },
   "logstash-input-elastic_serverless_forwarder": {
     "default-plugins": true,
