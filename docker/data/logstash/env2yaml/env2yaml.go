@@ -17,11 +17,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 var validSettings = []string{
@@ -67,7 +68,6 @@ var validSettings = []string{
 	"log.level",
 	"log.format",
 	"log.format.json.fix_duplicate_message_fields",
-	"modules",
 	"metric.collect",
 	"path.logs",
 	"path.plugins",
@@ -126,8 +126,6 @@ var validSettings = []string{
 	"xpack.management.elasticsearch.ssl.cipher_suites",
 	"xpack.geoip.download.endpoint",
 	"xpack.geoip.downloader.enabled",
-	"cloud.id",
-	"cloud.auth",
 }
 
 // Given a setting name, return a downcased version with delimiters removed.

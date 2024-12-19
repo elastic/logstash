@@ -179,7 +179,7 @@ module LogStash module Config module Source
 
     def match?
       # see basic settings predicates and getters defined in the base class
-      (config_string? || config_path?) && !(modules_cli? || modules?) && !automatic_reload_with_config_string?
+      (config_string? || config_path?) && !automatic_reload_with_config_string?
     end
 
     def config_conflict?

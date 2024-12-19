@@ -7,7 +7,6 @@ require "config_management/elasticsearch_source"
 require "logstash/config/source_loader"
 require "logstash/config/source/local"
 require "logstash/config/source/multi_local"
-require "logstash/config/source/modules"
 
 module LogStash
   module ConfigManagement
@@ -36,7 +35,6 @@ module LogStash
           logger.debug("Removing the `Logstash::Config::Source::Local` and replacing it with `ElasticsearchSource`")
           runner.source_loader.remove_source(LogStash::Config::Source::Local)
           runner.source_loader.remove_source(LogStash::Config::Source::MultiLocal)
-          runner.source_loader.remove_source(LogStash::Config::Source::Modules)
           source = LogStash::ConfigManagement::ElasticsearchSource.new(runner.settings)
           runner.source_loader.add_source(source)
         end

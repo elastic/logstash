@@ -34,7 +34,6 @@ end
 require "clamp"
 require "logstash-core/logstash-core"
 require "logstash/environment"
-require "logstash/modules/cli_parser"
 require "logstash/util/settings_helper"
 require "logstash/util/jackson"
 
@@ -46,7 +45,6 @@ require "logstash/patches/clamp"
 require "logstash/settings"
 require "logstash/version"
 require 'logstash/plugins'
-require "logstash/modules/util"
 require "logstash/bootstrap_check/default_config"
 require 'logstash/deprecation_message'
 
@@ -91,31 +89,6 @@ class LogStash::Runner < Clamp::StrictCommand
          I18n.t("logstash.runner.flag.field-reference-escape-style"),
          :default => LogStash::SETTINGS.get_default("config.field_reference.escape_style"),
          :attribute_name => "config.field_reference.escape_style"
-
-
-  # Module settings
-  option ["--modules"], "MODULES",
-    I18n.t("logstash.runner.flag.modules"),
-    :multivalued => true,
-    :attribute_name => "modules_list"
-
-  option ["-M", "--modules.variable"], "MODULES_VARIABLE",
-    I18n.t("logstash.runner.flag.modules_variable"),
-    :multivalued => true,
-    :attribute_name => "modules_variable_list"
-
-  option ["--setup"], :flag,
-    I18n.t("logstash.runner.flag.modules_setup"),
-    :default => LogStash::SETTINGS.get_default("modules_setup"),
-    :attribute_name => "modules_setup"
-
-  option ["--cloud.id"], "CLOUD_ID",
-    I18n.t("logstash.runner.flag.cloud_id"),
-    :attribute_name => "cloud.id"
-
-  option ["--cloud.auth"], "CLOUD_AUTH",
-    I18n.t("logstash.runner.flag.cloud_auth"),
-    :attribute_name => "cloud.auth"
 
   # Pipeline settings
   option ["--pipeline.id"], "ID",
@@ -266,7 +239,6 @@ class LogStash::Runner < Clamp::StrictCommand
     # Default we check local sources: `-e`, `-f` and the logstash.yml options.
     @source_loader = LogStash::Config::SourceLoader.new(@settings)
     @source_loader.add_source(LogStash::Config::Source::Local.new(@settings))
-    @source_loader.add_source(LogStash::Config::Source::Modules.new(@settings))
     @source_loader.add_source(LogStash::Config::Source::MultiLocal.new(@settings))
 
     super(*args)
@@ -318,8 +290,6 @@ class LogStash::Runner < Clamp::StrictCommand
     jvmArgs = ManagementFactory.getRuntimeMXBean().getInputArguments()
     logger.info "JVM bootstrap flags: #{jvmArgs}"
 
-    # Add local modules to the registry before everything else
-    LogStash::Modules::Util.register_local_modules(LogStash::Environment::LOGSTASH_HOME)
 
     # Verify the Jackson defaults
     LogStash::Util::Jackson.verify_jackson_overrides
@@ -339,10 +309,6 @@ class LogStash::Runner < Clamp::StrictCommand
     org.logstash.FieldReference::set_escape_style(field_reference_escape_style)
 
     return start_shell(setting("interactive"), binding) if setting("interactive")
-
-    module_parser = LogStash::Modules::CLIParser.new(setting("modules_list"), setting("modules_variable_list"))
-    # Now populate Setting for modules.list with our parsed array.
-    @settings.set("modules.cli", module_parser.output)
 
     begin
       @bootstrap_checks.each { |bootstrap| bootstrap.check(@settings) }

@@ -126,7 +126,6 @@ describe LogStash::Plugins::Registry do
       registry.add(:filter, "simple_plugin", simple_plugin)
 
       expect(registry.plugins_with_type(:filter)).to include(simple_plugin)
-      expect(registry.plugins_with_type(:modules)).to match([])
     end
   end
 end

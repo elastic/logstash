@@ -17,7 +17,6 @@
 
 require "rubygems/package"
 require "logstash/plugin"
-require "logstash/modules/scaffold"
 require "logstash/codecs/base"
 require "logstash/filters/base"
 require "logstash/outputs/base"
