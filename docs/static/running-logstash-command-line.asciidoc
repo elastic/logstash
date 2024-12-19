@@ -104,22 +104,6 @@ With this command, Logstash concatenates three config files, `/tmp/one`, `/tmp/t
 *`--plugin-classloaders`*::
   (Beta) Load Java plugins in independent classloaders to isolate their dependencies.
 
-*`--modules`*::
-  Launch the named module.  Works in conjunction with the `-M` option to assign values to
-  default variables for the specified module.  If `--modules` is used on the command line,
-  any modules in `logstash.yml` will be ignored, as will any settings there.  This flag is
-  mutually exclusive to the `-f` and `-e` flags.  Only one of `-f`, `-e`, or `--modules` may
-  be specified.  Multiple modules can be specified by separating them with a comma, or by
-  invoking the `--modules` flag multiple times.
-
-*`-M, --modules.variable`*::
-  Assign a value to a configurable option for a module.  The format for assigning variables is
-  `-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.KEY_NAME=value"` for Logstash variables. For other
-  settings, it will be `-M "MODULE_NAME.KEY_NAME.SUB_KEYNAME=value"`.  The `-M` flag can be used
-  as many times as is necessary. If no `-M` options are specified, then the default value for
-  that setting will be used.  The `-M` flag is only used in conjunction with the `--modules`
-  flag.  It will be ignored if the `--modules` flag is absent.
-
 *`--pipeline.id ID`*::
   Sets the ID of pipeline. The default is `main`.
 
