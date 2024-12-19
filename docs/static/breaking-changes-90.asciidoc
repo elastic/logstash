@@ -44,6 +44,21 @@ removed and their replacements.
 ====
 
 [discrete]
+[[input-elastic_serverless_forwarder-ssl-9.0]]
+.`logstash-input-elastic_serverless_forwarder`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl |<<plugins-inputs-elastic_serverless_forwarder-ssl_enabled>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-elasticsearch-ssl-9.0]]
 .`logstash-output-elasticsearch`
 
