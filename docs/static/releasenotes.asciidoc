@@ -89,7 +89,7 @@ Users are affected if the Persistent Queue (PQ) is enabled, and the pipeline is 
 [[known-issue-8-17-0-json_lines]]
 ===== "Input buffer full" error with {ls} 8.16.0, 8.16.1, or 8.17.0
 
-If you are using `json_lines` codec 3.2.0 (or earlier) with {ls} 8.16.0, 8.16.1, or 8.17.0, you may see an error similar to this one, crashing the pipelines:
+If you are using `json_lines` codec 3.2.0 (or later) with {ls} 8.16.0, 8.16.1, or 8.17.0, you may see an error similar to this one, crashing the pipelines:
 ```
 unable to process event. {:message=>"input buffer full", :class=>"Java::JavaLang::IllegalStateException", :backtrace=>["org.logstash.common.BufferedTokenizerExt.extract(BufferedTokenizerExt.java:83)", "usr.share.logstash.vendor.bundle.jruby.$3_dot_1_dot_0.gems.logstash_minus_codec_minus_json_lines_minus_3_dot_2_dot_2.lib.logstash.codecs.json_lines.RUBY$method$decode$0(/usr/share/logstash/vendor/bundle/jruby/3.1.0/gems/logstash-codec-json_lines-3.2.2/lib/logstash/codecs/json_lines.rb:69)", "org.jruby.internal.runtime.methods.CompiledIRMethod.call(CompiledIRMethod.java:165)", "org.jruby.internal.runtime.methods.MixedModeIRMethod.call(MixedModeIRMethod.java:185)",
 ```
