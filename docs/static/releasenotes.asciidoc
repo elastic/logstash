@@ -76,12 +76,43 @@ This section summarizes the changes in the following releases:
 === Logstash 8.17.0 Release Notes
 
 [[known-issues-8-17-0]]
-==== Known issue
+==== Known issues
 
-When upgrading Logstash to 8.12.0 or earlier, if the `jvm.options` was previously modified and not overwritten with the newest version,
-users may see a "deserialize invocation error" message causing the pipeline to crash. Users are affected if the Persistent Queue
-is enabled and the pipeline is processing messages larger than 20MB.
-The solution is to apply the default change contained in the newer 'jvm.options' file, as seen https://github.com/elastic/logstash/blob/main/config/jvm.options#L66-L82[here].
+[[known-issue-8-17-0-jvm]]
+===== JVM version changes needed when upgrading Logstash from 8.12.0 (or earlier)
+
+If the `jvm.options` file was modified and not overwritten with the newest version, you may see a "deserialize invocation error" message, causing the pipeline to crash. 
+Users are affected if the Persistent Queue (PQ) is enabled, and the pipeline is processing messages larger than 20MB.
+
+**Solution:** Apply the default change contained in the newer 'jvm.options' file, as seen in this https://github.com/elastic/logstash/blob/main/config/jvm.options#L66-L82[example].
+
+[[known-issue-8-17-0-json_lines]]
+===== Error with `json_lines` codec 3.2.0 (or earlier) and {ls} 8.17.1 (or earlier)
+
+This problem is most likely to be seen when you are using the Logstash integration plugin to ship data between two {ls} instances, but may appear in other situations, too. 
+An error similar to this one may be emitted, crashing the pipelines:
+
+```
+unable to process event. {:message=>"input buffer full", :class=>"Java::JavaLang::IllegalStateException", :backtrace=>["org.logstash.common.BufferedTokenizerExt.extract(BufferedTokenizerExt.java:83)", "usr.share.logstash.vendor.bundle.jruby.$3_dot_1_dot_0.gems.logstash_minus_codec_minus_json_lines_minus_3_dot_2_dot_2.lib.logstash.codecs.json_lines.RUBY$method$decode$0(/usr/share/logstash/vendor/bundle/jruby/3.1.0/gems/logstash-codec-json_lines-3.2.2/lib/logstash/codecs/json_lines.rb:69)", "org.jruby.internal.runtime.methods.CompiledIRMethod.call(CompiledIRMethod.java:165)", "org.jruby.internal.runtime.methods.MixedModeIRMethod.call(MixedModeIRMethod.java:185)",
+```
+
+The issue was fixed in https://github.com/elastic/logstash/pull/16760, but is likely present in {ls} versions `8.16.0`, `8.16.1`, and `8.17.0`.
+
+**Workaround for {ls}-to-{ls} communication** 
+
+This issue can be mitigated by:
+
+* Downgrading the _receiving_ Logstash to `8.16.2`, or any Logstash in the `8.15` series,  **_AND/OR_**
+* Upgrading the logstash integration filter of the _sending_ Logstash to version `1.0.4`.
+
+**Workaround for other `json_lines` codec situations**
+
+This issue can be mitigated by:
+
+* Downgrading Logstash to `8.16.2`, or any Logstash in the `8.15` series.
+
+
+
 
 [[notable-8-17-0]]
 ==== Notable fixes and improvements
