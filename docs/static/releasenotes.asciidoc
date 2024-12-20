@@ -110,9 +110,6 @@ Other `json_lines` codec issues can be mitigated by:
 
 * Downgrading Logstash to `8.16.2`, or any Logstash in the `8.15` series.
 
-
-
-
 [[notable-8-17-0]]
 ==== Notable fixes and improvements
 
