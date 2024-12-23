@@ -102,7 +102,7 @@ This problem is most likely to be seen when you are using the <<plugins-integrat
 The {ls}-to-{ls} issue can be mitigated by:
 
 * Downgrading the _receiving_ {ls} to `8.16.2`, or any {ls} in the `8.15` series,  **_AND/OR_**
-* Upgrading the {ls} integration filter of the _sending_ {ls} to version `1.0.4`.
+* Upgrading the <<plugins-integrations-logstash,{ls} integration>> plugin of the _sending_ {ls} to version `1.0.4`.
 
 **Workaround for other `json_lines` codec situations**
 
