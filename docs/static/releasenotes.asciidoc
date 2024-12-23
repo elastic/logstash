@@ -84,7 +84,7 @@ This section summarizes the changes in the following releases:
 If the `jvm.options` file was modified and not overwritten with the newest version, you may see a "deserialize invocation error" message, causing the pipeline to crash. 
 Users are affected if the Persistent Queue (PQ) is enabled, and the pipeline is processing messages larger than 20MB.
 
-**Solution:** Apply the default change contained in the newer 'jvm.options' file, as seen in this https://github.com/elastic/logstash/blob/main/config/jvm.options#L66-L82[example].
+**Solution:** Apply the default change contained in the newer 'jvm.options' file, as seen in this https://github.com/elastic/logstash/blob/v8.17.0/config/jvm.options#L74-L90[example].
 
 [[known-issue-8-17-0-json_lines]]
 ===== "Input buffer full" error with {ls} 8.16.0, 8.16.1, or 8.17.0
