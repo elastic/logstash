@@ -19,28 +19,12 @@
 
 package org.logstash.launchers;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -283,7 +267,7 @@ public class JvmOptionsParser {
     }
 
     private static final Pattern OPTION_DEFINITION = Pattern.compile("((?<start>\\d+)(?<range>-)?(?<end>\\d+)?:)?(?<option>-.*)$");
-
+    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([A-Z_][A-Z0-9_]*)\\}");
     /**
      *
      * If the version syntax specified on a line matches the specified JVM options, the JVM option callback will be invoked with the JVM
@@ -372,13 +356,16 @@ public class JvmOptionsParser {
             // Skip comments and blank lines
             return Optional.empty();
         }
-        final Matcher matcher = OPTION_DEFINITION.matcher(line);
+
+        String subbedLine = replaceEnvVariables(line, System.getenv());
+
+        final Matcher matcher = OPTION_DEFINITION.matcher(subbedLine);
         if (matcher.matches()) {
             final String start = matcher.group("start");
             final String end = matcher.group("end");
             if (start == null) {
                 // no range present, unconditionally apply the JVM option
-                return Optional.of(line);
+                return Optional.of(subbedLine);
             } else {
                 final int lower = Integer.parseInt(start);
                 final int upper;
@@ -402,6 +389,20 @@ public class JvmOptionsParser {
             throw new IllegalArgumentException("Illegal JVM Option");
         }
         return Optional.empty();
+    }
+
+    static String replaceEnvVariables(String line, Map<String,String> env) {
+        Matcher matcher = ENV_VAR_PATTERN.matcher(line);
+        StringBuilder sb = new StringBuilder();
+
+        while (matcher.find()) {
+            String varName = matcher.group(1);
+            String replacement = env.getOrDefault(varName, "");
+            matcher.appendReplacement(sb, replacement);
+        }
+        matcher.appendTail(sb);
+
+        return sb.toString();
     }
 
     private static final Pattern JAVA_VERSION = Pattern.compile("^(?:1\\.)?(?<javaMajorVersion>\\d+)(?:\\.\\d+)?$");

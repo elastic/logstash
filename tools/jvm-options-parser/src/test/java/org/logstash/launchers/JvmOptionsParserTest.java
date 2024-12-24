@@ -198,4 +198,50 @@ public class JvmOptionsParserTest {
         return new BufferedReader(new StringReader(s));
     }
 
+
+    @Test
+    public void testSingleEnvSubstitution() throws IOException {
+        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof",
+                Map.of("LOGSTASH_HOME", "/path/to/ls_home"));
+        assertEquals("-XX:HeapDumpPath=/path/to/ls_home/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testMultipleEnvSubstitution() throws IOException {
+        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME}/${ABC}/heapdump.hprof",
+                Map.of("LOGSTASH_HOME", "/path/to/ls_home", "ABC", "abc"));
+        assertEquals("-XX:HeapDumpPath=/path/to/ls_home/abc/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEmptyEnvSubstitution() throws IOException {
+        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${NOT_VALID}/heapdump.hprof", Map.of());
+        assertEquals("-XX:HeapDumpPath=/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testNoSubstitution() throws IOException {
+        String result = JvmOptionsParser.replaceEnvVariables("   ", Map.of());
+        assertEquals("   ", result);
+    }
+
+    @Test
+    public void testEnvSubstitutionInFile() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(
+                writer -> writer.println("-Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        final String output = outputStreamCaptor.toString();
+        assertTrue("env variable should be substituted ", output.contains("-Xlog:gc*,gc+age=trace,safepoint:file=:"));
+    }
+
+    @Test
+    public void testCommentedEnvSubstitution() throws IOException {
+        final BufferedReader options = asReader("# -Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:");
+        final JvmOptionsParser.ParseResult res = JvmOptionsParser.parse(11, options);
+
+        assertTrue("no invalid lines can be present", res.getInvalidLines().isEmpty());
+        assertFalse(String.join(System.lineSeparator(), res.getJvmOptions()).contains("-Xlog:gc*,gc+age=trace,safepoint"));
+    }
 }
