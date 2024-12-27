@@ -10,6 +10,7 @@ info:
     - Plugin info, including a list of installed plugins.
     - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
     - Hot threads.
+    - Health report. 
 
     The APIs that retrieve these metrics are available by default without requiring any extra configuration.
 
@@ -28,8 +29,6 @@ servers:
   - url: /
 security:
   - apiKeyAuth: []
-
-
 paths: 
   /_node/<types>:
     get:
@@ -38,11 +37,10 @@ paths:
         Get information about Logstash nodes, where `<types>` (optional) specifies the types of node info you want returned.
         You can limit the info that is returned by combining any of these types in a comma-separated list:
 
-        - `pipelines`
-        - `os`
-        - `jvm`
-
-      operationId: nodePlugins
+        - `pipelines`. 
+        - `os`. 
+        - `jvm`. 
+      operationId: nodeInfo
       parameters:
         - name: pretty
           in: query
@@ -56,11 +54,21 @@ paths:
           content:
             application/json:
               examples:
-                nodePluginsExample1:
-                  total: 1
-                  plugins:
-                    - name: logstash-codec-cef
-                      version: 4.1.2
+                nodeInfoExample1:
+                  pipelines:
+                    - test: 
+                      workers: 1
+                      batch_size: 1
+                      batch_delay: 5
+                      config_reload_automatic: false
+                      config_reload_interval: 3
+                    - test2: 
+                      workers: 8
+                      batch_size: 125
+                      batch_delay: 5
+                      config_reload_automatic: false
+                      config_reload_interval: 3                      
+
   /_node/plugins:
     get:
       summary: Get plugin info
@@ -85,7 +93,63 @@ paths:
                   total: 1
                   plugins:
                     - name: logstash-codec-cef
-                      version: 4.1.2
+                      version: 6.2.8
+                    - name: logstash-codec-collectd
+                      version: 3.0.3
+                    - name: logstash-codec-dots
+                      version: 3.0.2
+                    - name: logstash-coded-edn
+                      version: 3.0.2 
+
+  /_node/stats:
+    get:
+      summary: Get node stats
+      description: >
+        Get runtime stats for Logstash, where `<types>` (optional) specifies the types of stats you want to return.
+        You can limit the info that is returned by combining any of these types in a comma-separated list:
+
+        - `jvm` gets JVM stats, including stats about threads, memory usage, garbage collectors, and uptime.
+        - `process` gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
+        - `events` gets event-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
+        - `flow` gets flow-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
+        - `pipelines` gets runtime stats about each Logstash pipeline.
+        - `reloads` gets runtime stats about config reload successes and failures.
+        - `os` gets runtime stats about cgroups when Logstash is running in a container.
+        - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
+        
+      operationId: nodeStats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodeStatsExample1:
+                  jvm:
+                    threads: 
+                      count: 49
+                      peak_count: 50
+                    mem: 
+                      heap_used_percent: 14
+                      heap_committed_in_bytes: 309866496
+                      heap_max_in_bytes: 1037959168
+                      heap_used_in_bytes: 151686096
+                      non_heap_used_in_bytes: 122486176
+                      non_heap_committed_in_bytes: 133222400
+                      pools: 
+                        survivor:
+                          peak_used_in_bytes: 8912896
+                          used_in_bytes: 288776
+                          peak_max_in_bytes: 35782656
+                          max_in_bytes: 35782656
+                          committed_in_bytes: 8912896
 
   /_node/hot_threads:
     get:
@@ -141,4 +205,48 @@ paths:
                         state: timed_waiting
                         path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
                         traces: java.lang.Object.wait(Native Method)", "org.jruby.RubyThread.sleep(RubyThread.java:1002)", "org.jruby.RubyKernel.sleep(RubyKernel.java:803)
+
+  /_health_report:
+    get:
+      summary: Get health status
+      description: >
+        The health API returns a report with the health status of Logstash and the pipelines that are running inside of it. 
+        The report contains a list of indicators that compose Logstash functionality.
+
+        Each indicator has a health status of: green, unknown, yellow, or red. 
+        The indicator provides an explanation and metadata describing the reason for its current health status.
+
+        The top-level status is controlled by the worst indicator status.
+
+        In the event that an indicator status is non-green, a list of impacts may be present in the indicator result which detail the functionalities that are negatively affected by the health issue. 
+        Each impact carries with it a severity level, an area of the system that is affected, and a simple description of the impact on the system.
+
+        Some health indicators can determine the root cause of a health problem and prescribe a set of steps that can be performed in order to improve the health of the system. 
+        The root cause and remediation steps are encapsulated in a diagnosis. 
+        A diagnosis contains a cause detailing a root cause analysis, an action containing a brief description of the steps to take to fix the problem, and the URL for detailed troubleshooting help.
+        
+        NOTE: The health indicators perform root cause analysis of non-green health statuses. 
+        This can be computationally expensive when called frequently.
+        
+      operationId: healthStatus
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                healthStatusExample1:
+                  status: 
+                    - green: Logstash is healthy.
+                      unknown: Logstash health could not be determined.
+                      yellow: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
+                      red: Logstash is experiencing an outage or certain features are unavailable for use. 
+                  indicators: Information about the health of Logstash indicators. 
 
