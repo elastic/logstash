@@ -282,7 +282,6 @@ public class JvmOptionsParser {
     }
 
     private static final Pattern OPTION_DEFINITION = Pattern.compile("((?<start>\\d+)(?<range>-)?(?<end>\\d+)?:)?(?<option>-.*)$");
-    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([A-Z_][A-Z0-9_]*)\\}");
     /**
      *
      * If the version syntax specified on a line matches the specified JVM options, the JVM option callback will be invoked with the JVM
@@ -406,13 +405,16 @@ public class JvmOptionsParser {
         return Optional.empty();
     }
 
+    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([A-Z_][A-Z0-9_]*)(?::(.*?))?}");
+
     static String replaceEnvVariables(String line, Map<String,String> env) {
         Matcher matcher = ENV_VAR_PATTERN.matcher(line);
         StringBuilder sb = new StringBuilder();
 
         while (matcher.find()) {
             String varName = matcher.group(1);
-            String replacement = env.getOrDefault(varName, "");
+            String defaultValue = Optional.ofNullable(matcher.group(2)).orElse("");
+            String replacement = env.getOrDefault(varName, defaultValue);
             matcher.appendReplacement(sb, replacement);
         }
         matcher.appendTail(sb);
