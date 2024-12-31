@@ -371,7 +371,7 @@ public class JvmOptionsParser {
             return Optional.empty();
         }
 
-        String subbedLine = replaceEnvVariables(line, System.getenv());
+        String subbedLine = resolveEnvVar(line, System.getenv());
 
         final Matcher matcher = OPTION_DEFINITION.matcher(subbedLine);
         if (matcher.matches()) {
@@ -405,9 +405,9 @@ public class JvmOptionsParser {
         return Optional.empty();
     }
 
-    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([A-Z_][A-Z0-9_]*)(?::(.*?))?}");
+    private static final Pattern ENV_VAR_PATTERN = Pattern.compile("\\$\\{([a-zA-Z_.][a-zA-Z0-9_.]*)(?::([^}]*))?\\}");
 
-    static String replaceEnvVariables(String line, Map<String,String> env) {
+    static String resolveEnvVar(String line, Map<String,String> env) {
         Matcher matcher = ENV_VAR_PATTERN.matcher(line);
         StringBuilder sb = new StringBuilder();
 
@@ -415,7 +415,7 @@ public class JvmOptionsParser {
             String varName = matcher.group(1);
             String defaultValue = Optional.ofNullable(matcher.group(2)).orElse("");
             String replacement = env.getOrDefault(varName, defaultValue);
-            matcher.appendReplacement(sb, replacement);
+            matcher.appendReplacement(sb,  Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(sb);
 

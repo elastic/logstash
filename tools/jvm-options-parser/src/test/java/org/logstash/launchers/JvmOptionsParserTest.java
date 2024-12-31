@@ -200,48 +200,55 @@ public class JvmOptionsParserTest {
 
 
     @Test
-    public void testSingleEnvSubstitution() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof",
+    public void testSingleEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof",
                 Map.of("LOGSTASH_HOME", "/path/to/ls_home"));
         assertEquals("-XX:HeapDumpPath=/path/to/ls_home/heapdump.hprof", result);
     }
 
     @Test
-    public void testMultipleEnvSubstitution() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME}/${DATA}/heapdump.hprof",
+    public void testMultipleEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME}/${DATA}/heapdump.hprof",
                 Map.of("LOGSTASH_HOME", "/path/to/ls_home", "DATA", "data"));
         assertEquals("-XX:HeapDumpPath=/path/to/ls_home/data/heapdump.hprof", result);
     }
 
 
     @Test
-    public void testEmptyEnvSubstitution() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${NOT_VALID}/heapdump.hprof", Map.of());
+    public void testEmptyEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${NOT_VALID}/heapdump.hprof", Map.of());
         assertEquals("-XX:HeapDumpPath=/heapdump.hprof", result);
     }
 
     @Test
-    public void testNoSubstitution() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("   ", Map.of());
+    public void testNoSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("   ", Map.of());
         assertEquals("   ", result);
     }
 
     @Test
-    public void testEnvSubstitutionWithDefault() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
+    public void testEnvSubWithDefault() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
                 Map.of());
         assertEquals("-XX:HeapDumpPath=/usr/share/logstash/data/heapdump.hprof", result);
     }
 
     @Test
-    public void testEnvSubstitutionWithDefaultOverwritten() throws IOException {
-        String result = JvmOptionsParser.replaceEnvVariables("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
+    public void testEnvSubWithDefaultSpecialChar() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:{$crazy!enough?'bless'@[you]}/heapdump.hprof",
+                Map.of());
+        assertEquals("-XX:HeapDumpPath=/usr/share/logstash/{$crazy!enough?'bless'@[you]/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEnvSubWithDefaultOverwritten() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
                 Map.of("DATA", "data2"));
         assertEquals("-XX:HeapDumpPath=/usr/share/logstash/data2/heapdump.hprof", result);
     }
 
     @Test
-    public void testEnvSubstitutionInFile() throws IOException {
+    public void testEnvSubInFile() throws IOException {
         File optionsFile = writeIntoTempOptionsFile(
                 writer -> writer.println("-Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:"));
 
@@ -252,7 +259,7 @@ public class JvmOptionsParserTest {
     }
 
     @Test
-    public void testCommentedEnvSubstitution() throws IOException {
+    public void testCommentedEnvSub() throws IOException {
         final BufferedReader options = asReader("# -Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:");
         final JvmOptionsParser.ParseResult res = JvmOptionsParser.parse(11, options);
 
