@@ -18,6 +18,14 @@ public class StreamReadConstraintsUtil {
 
     private StreamReadConstraints configuredStreamReadConstraints;
 
+    // Provide default values for Jackson constraints in the case they are
+    // not specified in configuration file.
+    private static final Map<Override, Integer> JACKSON_DEFAULTS = Map.of(
+        Override.MAX_STRING_LENGTH, 200_000_000,
+        Override.MAX_NUMBER_LENGTH, 10_000,
+        Override.MAX_NESTING_DEPTH, 1_000
+    );
+
     enum Override {
         MAX_STRING_LENGTH(StreamReadConstraints.Builder::maxStringLength, StreamReadConstraints::getMaxStringLength),
         MAX_NUMBER_LENGTH(StreamReadConstraints.Builder::maxNumberLength, StreamReadConstraints::getMaxNumberLength),
@@ -78,6 +86,8 @@ public class StreamReadConstraintsUtil {
         if (configuredStreamReadConstraints == null) {
             final StreamReadConstraints.Builder builder = StreamReadConstraints.defaults().rebuild();
 
+            // Apply the Jackson defaults first, then the overrides from config
+            JACKSON_DEFAULTS.forEach((override, value) -> override.applicator.apply(builder, value));
             eachOverride((override, value) -> override.applicator.apply(builder, value));
 
             this.configuredStreamReadConstraints = builder.build();
