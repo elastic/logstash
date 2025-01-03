@@ -285,6 +285,13 @@ paths:
           description: Indicates a successful call
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  indicators:
+                    type: object
+                  status:
+                    $ref: '#/components/schemas/Statuses'
               examples:
                 healthStatusExample1:
                   status: 
@@ -292,5 +299,13 @@ paths:
                       unknown: Logstash health could not be determined.
                       yellow: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
                       red: Logstash is experiencing an outage or certain features are unavailable for use. 
-                  indicators: Information about the health of Logstash indicators. 
-
+                  indicators: Information about the health of Logstash indicators.
+components:
+  schemas:
+    Statuses:
+      type: string
+      enum:
+        - green
+        - red
+        - unknown
+        - yellow
