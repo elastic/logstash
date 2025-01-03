@@ -49,4 +49,9 @@ public class ObjectMappersTest {
         assertNotNull(found);
         assertTrue("RubyBasicObjectSerializer must be registered before others non-default serializers", found instanceof RubyBasicObjectSerializer);
     }
+
+    @Test
+    public void testStreamReadConstraintsApplication() {
+        ObjectMappers.CONFIGURED_STREAM_READ_CONSTRAINTS.validateIsGlobalDefault();
+    }
 }

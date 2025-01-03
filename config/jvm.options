@@ -71,11 +71,11 @@
 # text values with sizes less than or equal to this limit will be treated as invalid.
 # This value should be higher than `logstash.jackson.stream-read-constraints.max-number-length`.
 # The jackson library defaults to 20000000 or 20MB, whereas Logstash defaults to 200MB or 200000000 characters.
--Dlogstash.jackson.stream-read-constraints.max-string-length=200000000
+#-Dlogstash.jackson.stream-read-constraints.max-string-length=200000000
 #
 # Sets the maximum number length (in chars or bytes, depending on input context).
 # The jackson library defaults to 1000, whereas Logstash defaults to 10000.
--Dlogstash.jackson.stream-read-constraints.max-number-length=10000
+#-Dlogstash.jackson.stream-read-constraints.max-number-length=10000
 #
 # Sets the maximum nesting depth. The depth is a count of objects and arrays that have not
 # been closed, `{` and `[` respectively.
