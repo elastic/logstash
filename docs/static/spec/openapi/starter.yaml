@@ -67,13 +67,13 @@ paths:
   /_node/<types>:
     get:
       summary: Get node info
-      description: >
+      description: |
         Get information about Logstash nodes, where `<types>` (optional) specifies the types of node info you want returned.
         You can limit the info that is returned by combining any of these types in a comma-separated list:
 
-        - `pipelines`. 
-        - `os`. 
-        - `jvm`. 
+        - `pipelines`
+        - `os`
+        - `jvm`
       operationId: nodeInfo
       tags:
         - node info
@@ -142,7 +142,7 @@ paths:
   /_node/stats:
     get:
       summary: Get node stats
-      description: >
+      description: |
         Get runtime stats for Logstash, where `<types>` (optional) specifies the types of stats you want to return.
         You can limit the info that is returned by combining any of these types in a comma-separated list:
 
