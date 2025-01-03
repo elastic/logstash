@@ -198,4 +198,78 @@ public class JvmOptionsParserTest {
         return new BufferedReader(new StringReader(s));
     }
 
+
+    @Test
+    public void testSingleEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME}/heapdump.hprof",
+                Map.of("LOGSTASH_HOME", "/path/to/ls_home"));
+        assertEquals("-XX:HeapDumpPath=/path/to/ls_home/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testMultipleEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME}/${DATA}/heapdump.hprof",
+                Map.of("LOGSTASH_HOME", "/path/to/ls_home", "DATA", "data"));
+        assertEquals("-XX:HeapDumpPath=/path/to/ls_home/data/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testPeriodEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${.HOME}/heapdump.hprof",
+                Map.of(".HOME", "/path/to/.home"));
+        assertEquals("-XX:HeapDumpPath=/path/to/.home/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEmptyEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${NOT_VALID}/heapdump.hprof", Map.of());
+        assertEquals("-XX:HeapDumpPath=/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testNoSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("   ", Map.of());
+        assertEquals("   ", result);
+    }
+
+    @Test
+    public void testEnvSubWithDefault() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
+                Map.of());
+        assertEquals("-XX:HeapDumpPath=/usr/share/logstash/data/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEnvSubWithDefaultSpecialChar() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:{$crazy!enough?'bless'@[you]}/heapdump.hprof",
+                Map.of());
+        assertEquals("-XX:HeapDumpPath=/usr/share/logstash/{$crazy!enough?'bless'@[you]/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEnvSubWithDefaultOverwritten() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${LOGSTASH_HOME:/usr/share/logstash}/${DATA:data}/heapdump.hprof",
+                Map.of("DATA", "data2"));
+        assertEquals("-XX:HeapDumpPath=/usr/share/logstash/data2/heapdump.hprof", result);
+    }
+
+    @Test
+    public void testEnvSubInFile() throws IOException {
+        File optionsFile = writeIntoTempOptionsFile(
+                writer -> writer.println("-Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:"));
+
+        JvmOptionsParser.handleJvmOptions(new String[] {"/path/to/ls_home", optionsFile.toString()}, "-Dcli.opts=something");
+
+        final String output = outputStreamCaptor.toString();
+        assertTrue("env variable should be substituted ", output.contains("-Xlog:gc*,gc+age=trace,safepoint:file=:"));
+    }
+
+    @Test
+    public void testCommentedEnvSub() throws IOException {
+        final BufferedReader options = asReader("# -Xlog:gc*,gc+age=trace,safepoint:file=${UNKNOWN}:");
+        final JvmOptionsParser.ParseResult res = JvmOptionsParser.parse(11, options);
+
+        assertTrue("no invalid lines can be present", res.getInvalidLines().isEmpty());
+        assertFalse(String.join(System.lineSeparator(), res.getJvmOptions()).contains("-Xlog:gc*,gc+age=trace,safepoint"));
+    }
 }
