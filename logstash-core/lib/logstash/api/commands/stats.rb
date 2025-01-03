@@ -156,8 +156,7 @@ module LogStash
         private
         def plugins_stats_report(pipeline_id, extended_pipeline, opts = {})
           stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
-          pipeline_config = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym, :config)
-          PluginsStats.report(stats, pipeline_config, extended_pipeline, opts)
+          PluginsStats.report(stats, extended_pipeline, opts)
         end
 
         module PluginsStats
@@ -173,7 +172,7 @@ module LogStash
             end
           end
 
-          def report(stats, pipeline_config, extended_stats = nil, opts = {})
+          def report(stats, extended_stats = nil, opts = {})
             ret = {
               :events => stats[:events],
               :flow => stats[:flow],
@@ -186,9 +185,9 @@ module LogStash
               :reloads => stats[:reloads],
               :queue => stats[:queue],
               :pipeline => {
-                :workers => pipeline_config[:workers],
-                :batch_size => pipeline_config[:batch_size],
-                :batch_delay => pipeline_config[:batch_delay],
+                :workers => stats[:config][:workers],
+                :batch_size => stats[:config][:batch_size],
+                :batch_delay => stats[:config][:batch_delay],
               }
             }
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
