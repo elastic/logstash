@@ -137,10 +137,6 @@ include::static/management/configuring-centralized-pipelines.asciidoc[]
 // (Planting near module content for now. Will likely move it up in info architecture.)
 include::static/ea-integrations.asciidoc[]
 
-// Working with Logstash Modules
-include::static/modules.asciidoc[]
-
-include::static/arcsight-module.asciidoc[]
 
 // Working with Filebeat Modules
 include::static/filebeat-modules.asciidoc[]
