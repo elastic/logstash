@@ -91,6 +91,6 @@ removed and their replacements.
 [[enterprise_search-deprecated-9.0]]
 ===== Deprecation Notice: App Search and Workplace Search Plugins
 
-The Enterprise Search product is deprecated and will not be included in the Elastic Stack 9.x release.
+The Enterprise Search product is deprecated and not supported from Elastic Stack 9.x release.
 As a result, the App Search and Workplace Search plugins are also deprecated. These plugins will only receive security updates and critical bug fixes moving forward.
-For more details, visit: https://www.elastic.co/guide/en/enterprise-search/current/app-search-workplace-search.html
+For more details, please visit https://www.elastic.co/guide/en/search-ui/current/tutorials-elasticsearch.html
