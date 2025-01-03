@@ -162,6 +162,7 @@ describe LogStash::Api::Commands::Stats do
           :plugins,
           :reloads,
           :queue,
+          :pipeline
         )
       end
       it "returns event information" do

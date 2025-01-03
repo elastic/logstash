@@ -726,6 +726,11 @@ Example response:
       },
       "queue" : {
         "type" : "memory"
+      },
+      "pipeline": {
+        "workers": 4,
+        "batch_size": 125,
+        "batch_delay": 50
       }
     },
     "test2" : {
@@ -807,6 +812,11 @@ Example response:
       },
       "queue" : {
         "type" : "memory"
+      },
+      "pipeline": {
+        "workers": 4,
+        "batch_size": 125,
+        "batch_delay": 50
       }
     }
   }
@@ -969,6 +979,11 @@ Example response:
         "events_count": 0,
         "queue_size_in_bytes": 3885,
         "max_queue_size_in_bytes": 1073741824
+      },
+      "pipeline": {
+        "workers": 4,
+        "batch_size": 125,
+        "batch_delay": 50
       }
     }
   }
