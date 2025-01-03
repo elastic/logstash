@@ -79,8 +79,9 @@ This section summarizes the changes in the following releases:
 [[notable-8-16-2]]
 ==== Notable issues fixed
 
-* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771]
-* Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758]
+* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771].
+  Fixes "input buffer full" error that could appear with versions 8.16.0 and 8.16.1.
+* Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758].
 
 [[dependencies-8-16-2]]
 ==== Updates to dependencies
