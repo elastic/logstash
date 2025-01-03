@@ -21,29 +21,28 @@ require "logstash/config/mixin"
 describe LogStash::Config::Mixin do
   context "when encountering a deprecated option" do
     let(:password) { "sekret" }
-    let(:double_logger) { double("logger").as_null_object }
-
-    subject do
+    let(:deprecation_logger) { double("DeprecationLogger").as_null_object }
+    let(:plugin_class) do
       Class.new(LogStash::Filters::Base) do
         include LogStash::Config::Mixin
         config_name "test_deprecated"
         milestone 1
         config :old_opt, :validate => :string, :deprecated => "this is old school"
         config :password, :validate => :password
-      end.new({
-        "old_opt" => "whut",
-        "password" => password
-      })
+      end
     end
 
     it "should not log the password" do
-      expect(LogStash::Logging::Logger).to receive(:new).with(anything).and_return(double_logger)
-      expect(double_logger).to receive(:warn) do |arg1, arg2|
-          message = 'You are using a deprecated config setting "old_opt" set in test_deprecated. Deprecated settings will continue to work, but are scheduled for removal from logstash in the future. this is old school If you have any questions about this, please visit the #logstash channel on freenode irc.'
-          expect(arg1).to eq(message)
-          expect(arg2[:plugin].to_s).to include('"password"=><password>')
-        end.once
-      subject
+      instance = plugin_class.new("old_opt" => "whut", "password" => password)
+      allow(instance).to receive(:deprecation_logger).and_return(deprecation_logger)
+
+      expect(deprecation_logger).to receive(:deprecated) do |message, _|
+        expect(message).to include("old_opt")
+        expect(message).to include("this is old school")
+        expect(message).not_to include(password)
+      end
+
+      instance.send(:config_init, instance.params)
     end
   end
 
