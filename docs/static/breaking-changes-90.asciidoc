@@ -44,6 +44,125 @@ removed and their replacements.
 ====
 
 [discrete]
+[[input-elastic_serverless_forwarder-ssl-9.0]]
+.`logstash-input-elastic_serverless_forwarder`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl |<<plugins-inputs-elastic_serverless_forwarder-ssl_enabled>>
+|=======================================================================
+
+====
+
+[discrete]
+[[input-http-ssl-9.0]]
+.`logstash-input-http`
+
+[%collapsible]
+====
+
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cipher_suites |<<plugins-inputs-http-ssl_cipher_suites>>
+| keystore |<<plugins-inputs-http-ssl_keystore_path>>
+| keystore_password |<<plugins-inputs-http-ssl_keystore_password>>
+| ssl |<<plugins-inputs-http-ssl_enabled>>
+| ssl_verify_mode |<<plugins-inputs-http-ssl_client_authentication>>
+| tls_max_version |<<plugins-inputs-http-ssl_supported_protocols>>
+| tls_min_version |<<plugins-inputs-http-ssl_supported_protocols>>
+| verify_mode |<<plugins-inputs-http-ssl_client_authentication>>
+|=======================================================================
+
+====
+
+[discrete]
+[[input-http_poller-ssl-9.0]]
+.`logstash-input-http_poller`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cacert |<<plugins-inputs-http_poller-ssl_certificate_authorities>>
+| client_cert |<<plugins-inputs-http_poller-ssl_certificate>>
+| client_key |<<plugins-inputs-http_poller-ssl_key>>
+| keystore |<<plugins-inputs-http_poller-ssl_keystore_path>>
+| keystore_password |<<plugins-inputs-http_poller-ssl_keystore_password>>
+| keystore_type |<<plugins-inputs-http_poller-ssl_keystore_password>>
+| truststore |<<plugins-inputs-http_poller-ssl_truststore_path>>
+| truststore_password |<<plugins-inputs-http_poller-ssl_truststore_password>>
+| truststore_type |<<plugins-inputs-http_poller-ssl_truststore_type>>
+|=======================================================================
+
+====
+
+[discrete]
+[[input-tcp-ssl-9.0]]
+.`logstash-input-tcp`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl_cert |<<plugins-inputs-tcp-ssl_certificate>>
+| ssl_enable |<<plugins-inputs-tcp-ssl_enabled>>
+| ssl_verify |<<plugins-inputs-tcp-ssl_client_authentication>> in `server` mode and <<plugins-inputs-tcp-ssl_verification_mode>> in `client` mode
+|=======================================================================
+
+====
+
+[discrete]
+[[filter-elasticsearch-ssl-9.0]]
+.`logstash-filter-elasticsearch`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ca_file |<<plugins-filters-elasticsearch-ssl_certificate_authorities>>
+| keystore |<<plugins-filters-elasticsearch-ssl_keystore_path>>
+| keystore_password |<<plugins-filters-elasticsearch-ssl_keystore_password>>
+| ssl |<<plugins-filters-elasticsearch-ssl_enabled>>
+|=======================================================================
+
+====
+
+[discrete]
+[[filter-http-ssl-9.0]]
+.`logstash-filter-http`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| cacert |<<plugins-filters-http-ssl_certificate_authorities>>
+| client_cert |<<plugins-filters-http-ssl_certificate>>
+| client_key |<<plugins-filters-http-ssl_key>>
+| keystore |<<plugins-filters-http-ssl_keystore_path>>
+| keystore_password |<<plugins-filters-http-ssl_keystore_password>>
+| keystore_type |<<plugins-filters-http-ssl_keystore_type>>
+| truststore |<<plugins-filters-http-ssl_truststore_path>>
+| truststore_password |<<plugins-filters-http-ssl_truststore_password>>
+| truststore_type |<<plugins-filters-http-ssl_truststore_type>>
+|=======================================================================
+
+====
+
+[discrete]
 [[output-elasticsearch-ssl-9.0]]
 .`logstash-output-elasticsearch`
 
@@ -83,6 +202,24 @@ removed and their replacements.
 | truststore |<<plugins-outputs-http-ssl_truststore_path>>
 | truststore_password |<<plugins-outputs-http-ssl_truststore_password>>
 | truststore_type |<<plugins-outputs-http-ssl_truststore_type>>
+|=======================================================================
+
+====
+
+[discrete]
+[[output-tcp-ssl-9.0]]
+.`logstash-output-tcp`
+
+[%collapsible]
+====
+
+[cols="<,<",options="header",]
+|=======================================================================
+|Setting|Replaced by
+| ssl_cacert |<<plugins-outputs-tcp-ssl_certificate_authorities>>
+| ssl_cert |<<plugins-outputs-tcp-ssl_certificate>>
+| ssl_enable |<<plugins-outputs-tcp-ssl_enabled>>
+| ssl_verify |<<plugins-outputs-tcp-ssl_client_authentication>> in `server` mode and <<plugins-outputs-tcp-ssl_verification_mode>> in `client` mode
 |=======================================================================
 
 ====
