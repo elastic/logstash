@@ -213,6 +213,12 @@ public class JvmOptionsParserTest {
         assertEquals("-XX:HeapDumpPath=/path/to/ls_home/data/heapdump.hprof", result);
     }
 
+    @Test
+    public void testPeriodEnvSub() throws IOException {
+        String result = JvmOptionsParser.resolveEnvVar("-XX:HeapDumpPath=${.HOME}/heapdump.hprof",
+                Map.of(".HOME", "/path/to/.home"));
+        assertEquals("-XX:HeapDumpPath=/path/to/.home/heapdump.hprof", result);
+    }
 
     @Test
     public void testEmptyEnvSub() throws IOException {
