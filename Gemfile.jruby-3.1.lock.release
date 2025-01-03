@@ -404,7 +404,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.13.8)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.0)
+    logstash-input-azure_event_hubs (1.5.1)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
