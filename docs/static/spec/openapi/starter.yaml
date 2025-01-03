@@ -29,6 +29,40 @@ servers:
   - url: /
 security:
   - apiKeyAuth: []
+tags:
+  - name: health
+    x-displayName: Health report
+    # description: 
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: hot threads
+    x-displayName: Hot threads
+    # description: 
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: node info
+    x-displayName: Node info
+    description: |
+      Logstash node info, like pipeline settings, OS info, and JVM info.
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: node stats
+    x-displayName: Node stats
+    description: |
+      Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: plugin info
+    x-displayName: Plugins info
+    description: |
+      Plugin info, including a list of installed plugins.
+    # externalDocs:
+    #   description: 
+    #   url: 
 paths: 
   /_node/<types>:
     get:
@@ -41,6 +75,8 @@ paths:
         - `os`. 
         - `jvm`. 
       operationId: nodeInfo
+      tags:
+        - node info
       parameters:
         - name: pretty
           in: query
@@ -76,6 +112,8 @@ paths:
         Get information about all Logstash plugins that are currently installed.
         This API returns the same output you get by running the `bin/logstash-plugin list --verbose` command.
       operationId: nodePlugins
+      tags:
+        - plugin info
       parameters:
         - name: pretty
           in: query
@@ -118,6 +156,8 @@ paths:
         - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
         
       operationId: nodeStats
+      tags:
+        - node stats
       parameters:
         - name: pretty
           in: query
@@ -158,6 +198,8 @@ paths:
         Get information about current hot threads for Logstash.
         A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute. 
       operationId: nodeHot_threads
+      tags:
+        - hot threads
       parameters:
         - name: threads
           in: query
@@ -229,6 +271,8 @@ paths:
         This can be computationally expensive when called frequently.
         
       operationId: healthStatus
+      tags:
+        - health
       parameters:
         - name: pretty
           in: query
