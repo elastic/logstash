@@ -7,7 +7,7 @@ experimental[]
 <titleabbrev>Azure Module (deprecated)</titleabbrev>
 ++++
 
-deprecated[7.8.0, "We recommend using the Azure modules in {filebeat-ref}/filebeat-module-azure.html[{Filebeat}] and {metricbeat-ref}/metricbeat-module-azure.html[{metricbeat}], which are compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]"]
+deprecated[7.8.0, "Replaced by the https://www.elastic.co/guide/en/integrations/current/azure-events.html[Azure Logs integration]."]
 
 The https://azure.microsoft.com/en-us/overview/what-is-azure/[Microsoft Azure]
 module in Logstash helps you easily integrate your Azure activity logs and SQL
