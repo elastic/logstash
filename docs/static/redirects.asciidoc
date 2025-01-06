@@ -3,6 +3,50 @@
 
 The pages in this section have been deleted or moved from another location.
 
+
+// Logstash Modules
+
+[role="exclude",id="logstash-modules"]
+=== {ls} modules (deprecated)
+
+deprecated[8.16.0, The last {ls} module was deprecated at 8.16.0.]
+
+Logstash modules provide a quick, end-to-end solution for ingesting data and
+visualizing it with purpose-built dashboards.
+
+[discrete]
+[role="exclude",id="arcsight-module"]
+==== Logstash ArcSight module (deprecated)
+
+deprecated[8.16.0, Replaced by https://docs.elastic.co/integrations/cef[Common Event Format (CEF)] from Elastic {integrations}]
+
+The Logstash ArcSight module enables you to integrate your ArcSight data with the Elastic Stack.
+With a single command, the module taps directly into the ArcSight Smart Connector or the Event Broker,
+parses and indexes the security events into Elasticsearch, and installs a suite of Kibana dashboards
+to get you exploring your data immediately.
+
+[discrete]
+[role="exclude",id="netflow-module"]
+==== Logstash Netflow module (deprecated)
+
+deprecated[7.4.0, Replaced by the {filebeat-ref}/filebeat-module-netflow.html[{Filebeat} Netflow Module] which is compliant with the {ecs-ref}/index.html[Elastic Common Schema (ECS)]]
+
+The Logstash Netflow module simplifies the collection, normalization, and
+visualization of network flow data. With a single command, the module parses
+network flow data, indexes the events into Elasticsearch, and installs a suite
+of Kibana dashboards to get you exploring your data immediately.
+
+[discrete]
+[role="exclude",id="azure-module"]
+==== Azure module (deprecated)
+
+deprecated[7.8.0, "Replaced by the https://www.elastic.co/guide/en/integrations/current/azure-events.html[Azure Logs integration]."]
+
+The https://azure.microsoft.com/en-us/overview/what-is-azure/[Microsoft Azure]
+module in Logstash helps you easily integrate your Azure activity logs and SQL
+diagnostic logs with the Elastic Stack. 
+
+
 // MULTILINE FILTER
 
 [role="exclude",id="plugins-filters-multiline"]
