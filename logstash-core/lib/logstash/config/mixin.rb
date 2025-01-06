@@ -123,13 +123,13 @@ module LogStash::Config::Mixin
       if opts && opts[:deprecated]
         extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
         extra.gsub!("%PLUGIN%", self.class.config_name)
-        self.logger.warn("You are using a deprecated config setting " +
-                     "#{name.inspect} set in #{self.class.config_name}. " +
-                     "Deprecated settings will continue to work, " +
-                     "but are scheduled for removal from logstash " +
-                     "in the future. #{extra} If you have any questions " +
-                     "about this, please visit the #logstash channel " +
-                     "on freenode irc.", :name => name, :plugin => self)
+        self.deprecation_logger.deprecated("You are using a deprecated config setting " +
+                                           "#{name.inspect} set in #{self.class.config_name}. " +
+                                           "Deprecated settings will continue to work, " +
+                                           "but are scheduled for removal from logstash " +
+                                           "in the future. #{extra} If you have any questions " +
+                                           "about this, please visit the #logstash channel " +
+                                           "on freenode irc.", {})
 
       end
 
