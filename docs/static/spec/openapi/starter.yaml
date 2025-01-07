@@ -251,7 +251,7 @@ paths:
   /_health_report:
     get:
       summary: Get health status
-      description: >
+      description: |
         The health API returns a report with the health status of Logstash and the pipelines that are running inside of it. 
         The report contains a list of indicators that compose Logstash functionality.
 
