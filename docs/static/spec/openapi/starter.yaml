@@ -93,17 +93,17 @@ paths:
                 nodeInfoExample1:
                   pipelines:
                     - test: 
-                      workers: 1
-                      batch_size: 1
-                      batch_delay: 5
-                      config_reload_automatic: false
-                      config_reload_interval: 3
+                        workers: 1
+                        batch_size: 1
+                        batch_delay: 5
+                        config_reload_automatic: false
+                        config_reload_interval: 3
                     - test2: 
-                      workers: 8
-                      batch_size: 125
-                      batch_delay: 5
-                      config_reload_automatic: false
-                      config_reload_interval: 3                      
+                        workers: 8
+                        batch_size: 125
+                        batch_delay: 5
+                        config_reload_automatic: false
+                        config_reload_interval: 3                      
 
   /_node/plugins:
     get:
