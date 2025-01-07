@@ -179,10 +179,7 @@ with the <<plugins-codecs-netflow,Netflow codec>>.
 * Nmap - Logstash accepts and parses Nmap XML data with the
 <<plugins-codecs-nmap,Nmap codec>>.
 * SNMP trap - Logstash has a native <<plugins-inputs-snmptrap,SNMP trap input>>.
-* CEF - Logstash accepts and parses CEF data from systems like Arcsight
-SmartConnectors with the <<plugins-codecs-cef,CEF codec>>. See this
-https://www.elastic.co/blog/integrating-elastic-stack-with-arcsight-siem-part-1[blog series]
-for more details.
+* CEF - Logstash accepts and parses CEF data from systems like Arcsight SmartConnectors with the <<plugins-codecs-cef,CEF codec>>.
 
 [float]
 ==== Centralized Syslog Servers

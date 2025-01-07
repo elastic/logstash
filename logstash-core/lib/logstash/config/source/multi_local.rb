@@ -48,7 +48,7 @@ module LogStash module Config module Source
     end
 
     def match?
-      if modules_cli? || modules? || config_string? || config_path?
+      if config_string? || config_path?
         return false
       end
       detect_pipelines if !@detect_pipelines_called
@@ -62,7 +62,7 @@ module LogStash module Config module Source
     def config_conflict?
       @conflict_messages.clear
       # are there any auto-reload conflicts?
-      if !(modules_cli? || modules? || config_string? || config_path?)
+      if !(config_string? || config_path?)
         detect_pipelines if !@detect_pipelines_called
         if @detected_marker.nil?
           @conflict_messages << I18n.t("logstash.runner.config-pipelines-failed-read", :path => pipelines_yaml_location)
@@ -74,7 +74,7 @@ module LogStash module Config module Source
           @conflict_messages << @detected_marker.message
         end
       else
-        do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because modules or command line options are specified")
+        do_warning? && logger.warn("Ignoring the 'pipelines.yml' file because command line options are specified")
       end
       @conflict_messages.any?
     end

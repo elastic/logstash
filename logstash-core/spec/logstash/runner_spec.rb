@@ -22,9 +22,6 @@ require "stud/trap"
 require "stud/temporary"
 require "logstash/util/java_version"
 require "logstash/config/source_loader"
-require "logstash/config/modules_common"
-require "logstash/modules/util"
-require "logstash/elasticsearch_client"
 require "json"
 require "webmock/rspec"
 require_relative "../support/helpers"
@@ -58,10 +55,6 @@ describe LogStash::Runner do
     allow(LogStash::Agent).to receive(:new).with(any_args).and_return(agent)
     allow(agent).to receive(:execute)
     allow(agent).to receive(:shutdown)
-  end
-
-  after(:each) do
-    LogStash::SETTINGS.get_value("modules_list").clear
   end
 
   describe "argument precedence" do
@@ -344,116 +337,6 @@ describe LogStash::Runner do
         end
         args = ["--log.level", "debug", "--config.debug",  "-e", pipeline_string]
         subject.run("bin/logstash", args)
-      end
-    end
-  end
-
-  describe "logstash modules" do
-    before(:each) do
-      test_modules_dir = File.expand_path(File.join(File.dirname(__FILE__), "..", "modules_test_files"))
-      LogStash::Modules::Util.register_local_modules(test_modules_dir)
-    end
-
-    describe "--config.test_and_exit" do
-      subject { LogStash::Runner.new("") }
-      let(:args) { ["-t", "--modules", module_string] }
-
-      context "with a good configuration" do
-        let(:module_string) { "tester" }
-        it "should exit successfully" do
-          expect(logger).not_to receive(:fatal)
-          expect(subject.run(args)).to eq(0)
-        end
-      end
-
-      context "with a bad configuration" do
-        let(:module_string) { "rlwekjhrewlqrkjh" }
-        it "should fail by returning a bad exit code" do
-          expect(logger).to receive(:fatal)
-          expect(subject.run(args)).to eq(1)
-        end
-      end
-    end
-
-    describe "--modules" do
-      let(:args) { ["--modules", module_string, "--setup"] }
-
-      context "with an available module specified but no connection to elasticsearch" do
-        let(:module_string) { "tester" }
-        before do
-          expect(logger).to receive(:fatal) do |msg, hash|
-            expect(msg).to eq("An unexpected error occurred!")
-            expect(hash).to be_a_config_loading_error_hash(
-              /Failed to import module configurations to Elasticsearch and\/or Kibana. Module: tester has/)
-          end
-          expect(LogStash::Agent).to receive(:new) do |settings, source_loader|
-            pipelines = LogStash::Config::ModulesCommon.pipeline_configs(settings)
-            expect(pipelines).to eq([])
-            agent
-          end
-        end
-        it "should log fatally and return a bad exit code" do
-          expect(subject.run("bin/logstash", args)).to eq(1)
-        end
-      end
-
-      context "with an available module specified and a mocked connection to elasticsearch" do
-        let(:module_string) { "tester" }
-        let(:kbn_version) { "6.0.0" }
-        let(:esclient) { double(:esclient) }
-        let(:kbnclient) { double(:kbnclient) }
-        let(:response) { double(:response) }
-        before do
-          allow(response).to receive(:status).and_return(404)
-          allow(esclient).to receive(:head).and_return(response)
-          allow(esclient).to receive(:can_connect?).and_return(true)
-          allow(kbnclient).to receive(:version).and_return(kbn_version)
-          allow(kbnclient).to receive(:version_parts).and_return(kbn_version.split('.'))
-          allow(kbnclient).to receive(:can_connect?).and_return(true)
-          allow(LogStash::ElasticsearchClient).to receive(:build).and_return(esclient)
-          allow(LogStash::Modules::KibanaClient).to receive(:new).and_return(kbnclient)
-
-          expect(esclient).to receive(:put).once do |path, content|
-            LogStash::ElasticsearchClient::Response.new(201, "", {})
-          end
-          expect(kbnclient).to receive(:post).twice do |path, content|
-            LogStash::Modules::KibanaClient::Response.new(201, "", {})
-          end
-
-          expect(LogStash::Agent).to receive(:new) do |settings, source_loader|
-            pipelines = LogStash::Config::ModulesCommon.pipeline_configs(settings)
-            expect(pipelines).not_to be_empty
-            module_pipeline = pipelines.first
-            expect(module_pipeline).to include("pipeline_id", "config_string")
-            expect(module_pipeline["pipeline_id"]).to include('tester')
-            expect(module_pipeline["config_string"]).to include('index => "tester-')
-            agent
-          end
-          expect(logger).not_to receive(:fatal)
-          expect(logger).not_to receive(:error)
-        end
-        it "should not terminate logstash" do
-          expect(subject.run("bin/logstash", args)).to be_nil
-        end
-      end
-
-      context "with an unavailable module specified" do
-        let(:module_string) { "fancypants" }
-        before do
-          expect(logger).to receive(:fatal) do |msg, hash|
-            expect(msg).to eq("An unexpected error occurred!")
-            expect(hash).to be_a_config_loading_error_hash(
-              /The modules specified are not available yet. Specified modules: \["fancypants"\] Available modules:/)
-          end
-          expect(LogStash::Agent).to receive(:new) do |settings, source_loader|
-            pipelines = LogStash::Config::ModulesCommon.pipeline_configs(settings)
-            expect(pipelines).to eq([])
-            agent
-          end
-        end
-        it "should log fatally and return a bad exit code" do
-          expect(subject.run("bin/logstash", args)).to eq(1)
-        end
       end
     end
   end

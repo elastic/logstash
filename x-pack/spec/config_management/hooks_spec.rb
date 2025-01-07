@@ -60,9 +60,5 @@ describe LogStash::ConfigManagement::Hooks do
     it "remove the Multilocal source" do
       expect(runner.source_loader.sources.select { |source| source.is_a?(LogStash::Config::Source::MultiLocal) }.any?).to be_falsey
     end
-
-    it "remove the Modules source" do
-      expect(runner.source_loader.sources.select { |source| source.is_a?(LogStash::Config::Source::Modules) }.any?).to be_falsey
-    end
   end
 end

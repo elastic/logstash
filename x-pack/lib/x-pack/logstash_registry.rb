@@ -3,18 +3,12 @@
 # you may not use this file except in compliance with the Elastic License.
 
 require "logstash/runner" # needed for LogStash::XPACK_PATH
-xpack_modules = ["arcsight"]
-xpack_modules.each do |name|
-  $LOAD_PATH << File.join(LogStash::XPACK_PATH, "modules", name, "lib")
-end
 require "logstash/plugins/registry"
-require "logstash/modules/util"
 require "monitoring/monitoring"
 require "monitoring/inputs/metrics"
 require "monitoring/outputs/elasticsearch_monitoring"
 require "config_management/extension"
 require "geoip_database_management/extension"
-require "modules/xpack_scaffold"
 
 LogStash::PLUGIN_REGISTRY.add(:input, "metrics", LogStash::Inputs::Metrics)
 LogStash::PLUGIN_REGISTRY.add(:output, "elasticsearch_monitoring", LogStash::Outputs::ElasticSearchMonitoring)
@@ -24,9 +18,3 @@ LogStash::PLUGIN_REGISTRY.add(:universal, "geoip_database_management", LogStash:
 
 license_levels = Hash.new
 license_levels.default = LogStash::LicenseChecker::LICENSE_TYPES
-
-xpack_modules.each do |name|
-  path = File.join(File.dirname(__FILE__), "..", "..", "modules", name, "configuration")
-  LogStash::PLUGIN_REGISTRY.add(:modules, name,
-    LogStash::Modules::XpackScaffold.new(name, path, license_levels[name]))
-end
