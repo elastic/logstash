@@ -91,19 +91,21 @@ paths:
             application/json:
               examples:
                 nodeInfoExample1:
-                  pipelines:
-                    - test: 
-                        workers: 1
-                        batch_size: 1
-                        batch_delay: 5
-                        config_reload_automatic: false
-                        config_reload_interval: 3
-                    - test2: 
-                        workers: 8
-                        batch_size: 125
-                        batch_delay: 5
-                        config_reload_automatic: false
-                        config_reload_interval: 3                      
+                  # summary:
+                  value:
+                    pipelines:
+                      - test: 
+                          workers: 1
+                          batch_size: 1
+                          batch_delay: 5
+                          config_reload_automatic: false
+                          config_reload_interval: 3
+                      - test2: 
+                          workers: 8
+                          batch_size: 125
+                          batch_delay: 5
+                          config_reload_automatic: false
+                          config_reload_interval: 3                      
 
   /_node/plugins:
     get:
@@ -128,16 +130,18 @@ paths:
             application/json:
               examples:
                 nodePluginsExample1:
-                  total: 1
-                  plugins:
-                    - name: logstash-codec-cef
-                      version: 6.2.8
-                    - name: logstash-codec-collectd
-                      version: 3.0.3
-                    - name: logstash-codec-dots
-                      version: 3.0.2
-                    - name: logstash-coded-edn
-                      version: 3.0.2 
+                  # summary:
+                  value:
+                    total: 1
+                    plugins:
+                      - name: logstash-codec-cef
+                        version: 6.2.8
+                      - name: logstash-codec-collectd
+                        version: 3.0.3
+                      - name: logstash-codec-dots
+                        version: 3.0.2
+                      - name: logstash-coded-edn
+                        version: 3.0.2 
 
   /_node/stats:
     get:
@@ -172,45 +176,47 @@ paths:
             application/json:
               examples:
                 nodeStatsExample1:
-                  jvm:
-                    threads:
-                      count: 49
-                      peak_count: 50
-                    mem:
-                      heap_used_percent: 14
-                      heap_committed_in_bytes: 309866496
-                      heap_max_in_bytes: 1037959168
-                      heap_used_in_bytes: 151686096
-                      non_heap_used_in_bytes: 122486176
-                      non_heap_committed_in_bytes: 133222400
-                      pools:
-                        survivor:
-                          peak_used_in_bytes: 8912896
-                          used_in_bytes: 288776
-                          peak_max_in_bytes: 35782656
-                          max_in_bytes: 35782656
-                          committed_in_bytes: 8912896
-                        old:
-                          peak_used_in_bytes: 148656848
-                          used_in_bytes: 148656848
-                          peak_max_in_bytes: 715849728
-                          max_in_bytes: 715849728
-                          committed_in_bytes: 229322752
-                        young:
-                          peak_used_in_bytes: 71630848
-                          used_in_bytes: 2740472
-                          peak_max_in_bytes: 286326784
-                          max_in_bytes: 286326784
-                          committed_in_bytes: 71630848
-                    gc:
-                      collectors:
-                        old:
-                          collection_time_in_millis: 607
-                          collection_count: 12
-                        young:
-                          collection_time_in_millis: 4904
-                          collection_count: 1033
-                    uptime_in_millis: 1809643
+                  # summary:
+                  value:
+                    jvm:
+                      threads:
+                        count: 49
+                        peak_count: 50
+                      mem:
+                        heap_used_percent: 14
+                        heap_committed_in_bytes: 309866496
+                        heap_max_in_bytes: 1037959168
+                        heap_used_in_bytes: 151686096
+                        non_heap_used_in_bytes: 122486176
+                        non_heap_committed_in_bytes: 133222400
+                        pools:
+                          survivor:
+                            peak_used_in_bytes: 8912896
+                            used_in_bytes: 288776
+                            peak_max_in_bytes: 35782656
+                            max_in_bytes: 35782656
+                            committed_in_bytes: 8912896
+                          old:
+                            peak_used_in_bytes: 148656848
+                            used_in_bytes: 148656848
+                            peak_max_in_bytes: 715849728
+                            max_in_bytes: 715849728
+                            committed_in_bytes: 229322752
+                          young:
+                            peak_used_in_bytes: 71630848
+                            used_in_bytes: 2740472
+                            peak_max_in_bytes: 286326784
+                            max_in_bytes: 286326784
+                            committed_in_bytes: 71630848
+                      gc:
+                        collectors:
+                          old:
+                            collection_time_in_millis: 607
+                            collection_count: 12
+                          young:
+                            collection_time_in_millis: 4904
+                            collection_count: 1033
+                      uptime_in_millis: 1809643
 
   /_node/hot_threads:
     get:
@@ -257,17 +263,47 @@ paths:
           description: Indicates a successful call
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  hot_threads:
+                    type: object
+                    properties:
+                      busiest_threads:
+                        type: integer
+                      threads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Thread'
+                      time:
+                        type: string
               examples:
                 nodeHotThreadsExample1:
-                  hot_threads:
-                    - time: 2025-01-06T18:25:28-07:00
-                      busiest_threads: 3
-                      threads: 
-                        name: Ruby-0-Thread-7
-                        percent_of_cpu_time: 0.0
-                        state: timed_waiting
-                        path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
-                        traces: java.lang.Object.wait(Native Method)", "org.jruby.RubyThread.sleep(RubyThread.java:1002)", "org.jruby.RubyKernel.sleep(RubyKernel.java:803)
+                  # summary:
+                  value:
+                    hot_threads:
+                      - time: 2025-01-06T18:25:28-07:00
+                        busiest_threads: 3
+                        threads: 
+                          - name: Ruby-0-Thread-7
+                            percent_of_cpu_time: 0.0
+                            state: timed_waiting
+                            path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
+                            traces: java.lang.Object.wait(Native Method)", "org.jruby.RubyThread.sleep(RubyThread.java:1002)", "org.jruby.RubyKernel.sleep(RubyKernel.java:803)
+                          - name: "[test2]>worker3"
+                            percent_of_cpu_time: 0.85
+                            state: waiting
+                            traces:
+                              - "sun.misc.Unsafe.park(Native Method)"
+                              - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
+                              - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
+                          - name: "[test2]>worker2"
+                            percent_of_cpu_time: 0.85
+                            state: runnable
+                            traces:
+                              - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
+                              - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
+                              - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
 
   /_health_report:
     get:
@@ -315,12 +351,14 @@ paths:
                     $ref: '#/components/schemas/Statuses'
               examples:
                 healthStatusExample1:
-                  status: 
-                    - green: Logstash is healthy.
-                      unknown: Logstash health could not be determined.
-                      yellow: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
-                      red: Logstash is experiencing an outage or certain features are unavailable for use. 
-                  indicators: Information about the health of Logstash indicators.
+                  # summary:
+                  value:
+                    status: 
+                      - green: Logstash is healthy.
+                        unknown: Logstash health could not be determined.
+                        yellow: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
+                        red: Logstash is experiencing an outage or certain features are unavailable for use. 
+                    indicators: Information about the health of Logstash indicators.
 components:
   schemas:
     Statuses:
@@ -330,3 +368,19 @@ components:
         - red
         - unknown
         - yellow
+    Thread:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        percent_of_cpu_time:
+          type: number
+          format: double
+        state:
+          type: string
+        traces:
+          type: array
+          items:
+            type: string
