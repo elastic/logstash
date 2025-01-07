@@ -573,7 +573,7 @@ GEM
       rexml
       rufus-scheduler (>= 3.0.9)
       stud (~> 0.0.22)
-    logstash-integration-elastic_enterprise_search (3.0.0)
+    logstash-integration-elastic_enterprise_search (3.0.1)
       elastic-enterprise-search (>= 7.16, < 9)
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
@@ -614,7 +614,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       march_hare (~> 4.0)
       stud (~> 0.0.22)
-    logstash-integration-snmp (4.0.4-java)
+    logstash-integration-snmp (4.0.5-java)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
