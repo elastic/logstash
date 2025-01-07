@@ -173,23 +173,44 @@ paths:
               examples:
                 nodeStatsExample1:
                   jvm:
-                    threads: 
+                    threads:
                       count: 49
                       peak_count: 50
-                    mem: 
+                    mem:
                       heap_used_percent: 14
                       heap_committed_in_bytes: 309866496
                       heap_max_in_bytes: 1037959168
                       heap_used_in_bytes: 151686096
                       non_heap_used_in_bytes: 122486176
                       non_heap_committed_in_bytes: 133222400
-                      pools: 
+                      pools:
                         survivor:
                           peak_used_in_bytes: 8912896
                           used_in_bytes: 288776
                           peak_max_in_bytes: 35782656
                           max_in_bytes: 35782656
                           committed_in_bytes: 8912896
+                        old:
+                          peak_used_in_bytes: 148656848
+                          used_in_bytes: 148656848
+                          peak_max_in_bytes: 715849728
+                          max_in_bytes: 715849728
+                          committed_in_bytes: 229322752
+                        young:
+                          peak_used_in_bytes: 71630848
+                          used_in_bytes: 2740472
+                          peak_max_in_bytes: 286326784
+                          max_in_bytes: 286326784
+                          committed_in_bytes: 71630848
+                    gc:
+                      collectors:
+                        old:
+                          collection_time_in_millis: 607
+                          collection_count: 12
+                        young:
+                          collection_time_in_millis: 4904
+                          collection_count: 1033
+                    uptime_in_millis: 1809643
 
   /_node/hot_threads:
     get:
