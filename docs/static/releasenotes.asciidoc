@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-27,Logstash 7.17.27>>
 * <<logstash-7-17-26,Logstash 7.17.26>>
 * <<logstash-7-17-25,Logstash 7.17.25>>
 * <<logstash-7-17-24,Logstash 7.17.24>>
@@ -84,6 +85,41 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-27]]
+=== Logstash 7.17.27 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v7.17.27
+
+* Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16856[#16856]
+* Backport PR #16856 to 7.17: Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16862[#16862]
+
+=== Logstash Commits between 7.17 and 7.17.26
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.26..7.17"
+
+f5004a7e5 - (HEAD -> 7.17, origin/7.17) bump lock file for 7.17 (#16868) (19 hours ago) <github-actions[bot]>
+f0821954a - Doc: Add appropriate alternate for deprecated module in 8.x (#16856) (#16862) (2 days ago) <github-actions[bot]>
+00c9a4a4e - Backport PR #16747 to 7.17: Pin jar-dependencies to 0.4.1 (#16752) (5 weeks ago) <Rob Bavey>
+b39223fbb - bump version to 7.17.27 (#16745) (5 weeks ago) <João Duarte>
+32d18afde - Release notes for 7.17.26 (#16733) (5 weeks ago) <github-actions[bot]>
+bd1fa4eb0 - Revert "Backport #16482 to 7.17: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit  (#16577)" (#16713) (7 weeks ago) <Cas Donoghue>
+06fe3ed3c - Update the golang references for the Ironbank distro (#16593) (3 months ago) <Rob Bavey>
+b4ca550dc - Backport #16482 to 7.17: Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit  (#16577) (3 months ago) <Andrea Selva>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v7.17.26..7.17 *.release"
+Changed plugin versions:
+logstash-codec-cef: 6.2.7 -> 6.2.8
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Cef Codec - 6.2.8*
+
+* [Doc] Added `raw_data_field` to docs. https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
 
 
 [[logstash-7-17-26]]
