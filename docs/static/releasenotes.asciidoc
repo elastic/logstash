@@ -81,7 +81,7 @@ This section summarizes the changes in the following releases:
 ==== Notable issues fixed
 
 * Avoid lock contention when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
-* Ensure that the Jackson read constraints defaults are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
+* Ensure that the Jackson read constraints defaults (Maximum Number value length, Maximum String value length, and Maximum Nesting depth) are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
 
 [[dependencies-8.16.3]]
 ==== Updates to dependencies
