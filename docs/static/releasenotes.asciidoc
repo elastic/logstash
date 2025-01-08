@@ -77,53 +77,24 @@ This section summarizes the changes in the following releases:
 [[logstash-8-16-3]]
 === Logstash 8.16.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.16.3
+[[notable-8.16.3]]
+==== Notable issues fixed
 
-* Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
-* update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16825[#16825]
-* Backport PR #16825 to 8.16: update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16827[#16827]
-* Backport PR #16786 to 8.16: Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16830[#16830]
-* Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16832[#16832]
-* Backport PR #16832 to 8.16: Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16847[#16847]
-* Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16856[#16856]
-* Backport PR #16856 to 8.16: Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16861[#16861]
+* Avoid lock contention when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
+* Ensure that the Jackson read constraints defaults are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
 
-=== Logstash Commits between 8.16 and 8.16.2
+[[dependencies-8.16.3]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.2..8.16"
-
-afeef994d - (HEAD -> 8.16, origin/8.16) elastic_integration plugin version updated. (#16874) (9 hours ago) <Mashhur>
-ad16facaa - bump lock file for 8.16 (#16869) (18 hours ago) <github-actions[bot]>
-8716e7731 - Doc: Add appropriate alternate for deprecated module in 8.x (#16856) (#16861) (2 days ago) <github-actions[bot]>
-ed4b2e2f6 - Doc: Add json_lines known issue to 8.16 release notes (#16837) (2 days ago) <Karen Metts>
-1b1a76b03 - Update logstash-input-azure_event_hubs to 1.5.1 (#16849) (5 days ago) <João Duarte>
-ff27fae42 - Apply Jackson stream read constraints defaults at runtime (#16832) (#16847) (6 days ago) <github-actions[bot]>
-911f553db - Update patch plugin versions in gemfile lock (#16843) (6 days ago) <github-actions[bot]>
-bd8a67c14 - Avoid lock when ecs_compatibility is explicitly specified (#16786) (#16830) (2 weeks ago) <github-actions[bot]>
-886a0c7ed - update ironbank image to ubi9/9.5 (#16825) (#16827) (3 weeks ago) <github-actions[bot]>
-2264a557e - Fix docs dependencies link in 8.16.2 release notes (#16811) (3 weeks ago) <João Duarte>
-11f433f7e - bump to 8.16.3 (#16806) (3 weeks ago) <João Duarte>
-8497db1cd - Release notes for 8.16.2 (#16799) (3 weeks ago) <github-actions[bot]>
-552102324 - Doc: Update security docs to replace obsolete cacert setting (#16798) (#16804) (3 weeks ago) <github-actions[bot]>
-0770fff96 - give more memory to tests. 1gb instead of 512mb (#16764) (#16801) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.16.2..8.16 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 0.1.17 -> 8.16.0
-logstash-input-azure_event_hubs: 1.5.0 -> 1.5.1
-logstash-integration-elastic_enterprise_search: 3.0.0 -> 3.0.1
-logstash-integration-jdbc: 5.5.1 -> 5.5.2
-logstash-integration-kafka: 11.5.3 -> 11.5.4
-logstash-integration-snmp: 4.0.4 -> 4.0.5
----------- GENERATED CONTENT ENDS HERE ------------
+* Update Iron Bank base image to ubi9/9.5 https://github.com/elastic/logstash/pull/16825[#16825]
 
 ==== Plugins
 
 *Elastic_integration Filter - 8.16.0*
 
-404: Not Found
+* Aligns with stack major and minor versions https://github.com/elastic/logstash-filter-elastic_integration/pull/210[#210]
+  * Embeds Ingest Node components from Elasticsearch 8.16
+  * Compatible with Logstash 8.15+
 
 *Azure_event_hubs Input - 1.5.1*
 
@@ -135,17 +106,16 @@ logstash-integration-snmp: 4.0.4 -> 4.0.5
 
 *Jdbc Integration - 5.5.2*
 
-* FIX: the input plugin's prior behaviour of opening a new database connection for each scheduled run (removed in `v5.4.1`) is restored, ensuring that infrequently-run schedules do not hold open connections to their databases indefinitely, _without_ reintroducing the leak https://github.com/logstash-plugins/logstash-integration-jdbc/pull/130[#130]
+* The input plugin's prior behaviour of opening a new database connection for each scheduled run (removed in `v5.4.1`) is restored, ensuring that infrequently-run schedules do not hold open connections to their databases indefinitely, _without_ reintroducing the leak https://github.com/logstash-plugins/logstash-integration-jdbc/pull/130[#130]
 
 *Kafka Integration - 11.5.4*
 
 * Update kafka client to 3.8.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/188[#188]
-* Removed Jar Dependencies dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/187[#187]
+* Removed `jar-dependencies` dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/187[#187]
 
 *Snmp Integration - 4.0.5*
 
 * Fix typo resulting in "uninitialized constant" exception for invalid column name https://github.com/logstash-plugins/logstash-integration-snmp/pull/73[#73]
-
 
 [[logstash-8-16-2]]
 === Logstash 8.16.2 Release Notes
