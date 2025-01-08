@@ -85,7 +85,7 @@ This section summarizes the changes in the following releases:
 * Avoid lock contention when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
 * Ensure that the Jackson read constraints defaults (Maximum Number value length, Maximum String value length, and Maximum Nesting depth) are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
 * Fix environment variables `${VAR}` were not interpreted in jvm.options https://github.com/elastic/logstash/pull/16834[#16834]
-* Added pipeline metrics (workers, batch_size, batch_delay) to the Node Stats API https://github.com/elastic/logstash/pull/16839[#16839]
+* Show pipeline metrics (workers, batch_size, batch_delay) in the Node Stats API https://github.com/elastic/logstash/pull/16839[#16839]
 
 [[dependencies-8.17.1]]
 ==== Updates to dependencies
