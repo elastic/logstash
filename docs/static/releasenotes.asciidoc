@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-1,Logstash 8.17.1>>
 * <<logstash-8-17-0,Logstash 8.17.0>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
@@ -72,6 +73,117 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-17-1]]
+=== Logstash 8.17.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.17.1
+
+* ensure inputSize state value is reset during buftok.flush https://github.com/elastic/logstash/pull/16760[#16760]
+* give more memory to tests - 2gb instead of 512mb https://github.com/elastic/logstash/pull/16764[#16764]
+* Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
+* Doc: Update security docs to replace obsolete cacert setting https://github.com/elastic/logstash/pull/16798[#16798]
+* Backport PR #16764 to 8.17: give more memory to tests - 2gb instead of 512mb https://github.com/elastic/logstash/pull/16800[#16800]
+* Backport PR #16798 to 8.17: Doc: Update security docs to replace obsolete cacert setting https://github.com/elastic/logstash/pull/16803[#16803]
+* update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16825[#16825]
+* Backport PR #16825 to 8.17: update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16826[#16826]
+* Backport PR #16786 to 8.17: Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16829[#16829]
+* Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16832[#16832]
+* Respect environment variables in jvm.options https://github.com/elastic/logstash/pull/16834[#16834]
+* Add pipeline metrics to Node Stats API https://github.com/elastic/logstash/pull/16839[#16839]
+* Backport PR #16832 to 8.17: Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16846[#16846]
+* Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16856[#16856]
+* Backport PR #16856 to 8.17: Doc: Add appropriate alternate for deprecated module in 8.x https://github.com/elastic/logstash/pull/16860[#16860]
+* Backport PR #16839 to 8.17: Add pipeline metrics to Node Stats API https://github.com/elastic/logstash/pull/16865[#16865]
+* Backport PR #16834 to 8.17: Respect environment variables in jvm.options https://github.com/elastic/logstash/pull/16867[#16867]
+
+=== Logstash Commits between 8.17 and 8.17.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.0..8.17"
+
+92d58d192 - (HEAD -> 8.17, origin/8.17) Forward port 8.15.5 and 8.16.2 release notes to 8.17 (#16810) (2 minutes ago) <João Duarte>
+268b61da9 - elastic_integration plugin version updated. (#16875) (9 hours ago) <Mashhur>
+e9c3abb04 - bump lock file for 8.17 (#16870) (18 hours ago) <github-actions[bot]>
+af3004c8c - Respect environment variables in jvm.options (#16834) (#16867) (21 hours ago) <github-actions[bot]>
+1494f184e - Add pipeline metrics to Node Stats API (#16839) (#16865) (21 hours ago) <github-actions[bot]>
+7609102d2 - Doc: Add appropriate alternate for deprecated module in 8.x (#16856) (#16860) (2 days ago) <github-actions[bot]>
+9e729ccb7 - Update logstash-input-azure_event_hubs 1.5.1 (#16848) (5 days ago) <João Duarte>
+515175f9f - Apply Jackson stream read constraints defaults at runtime (#16832) (#16846) (6 days ago) <github-actions[bot]>
+657d95aa0 - Update patch plugin versions in gemfile lock (#16842) (6 days ago) <github-actions[bot]>
+c77396c2d - Doc: Add json_lines known issue to release notes (#16831) (13 days ago) <Karen Metts>
+6115544b7 - Avoid lock when ecs_compatibility is explicitly specified (#16786) (#16829) (2 weeks ago) <github-actions[bot]>
+4f4c21072 - update ironbank image to ubi9/9.5 (#16825) (#16826) (3 weeks ago) <github-actions[bot]>
+d592e3a46 - Doc: Update security docs to replace obsolete cacert setting (#16798) (#16803) (3 weeks ago) <github-actions[bot]>
+df557cf22 - give more memory to tests. 1gb instead of 512mb (#16764) (#16800) (3 weeks ago) <github-actions[bot]>
+b361ec35e - Update minor plugin versions in gemfile lock (#16781) (3 weeks ago) <github-actions[bot]>
+b6a74f941 - bump to 8.17.1 (#16784) (4 weeks ago) <João Duarte>
+f663392a9 - Release notes for 8.17.0 (#16768) (4 weeks ago) <github-actions[bot]>
+2db4edcee - Pin `date` dependency to `3.3.3` (#16755) (#16782) (4 weeks ago) <github-actions[bot]>
+33ac2790b - ensure inputSize state value is reset during buftok.flush (#16760) (#16770) (4 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.17.0..8.17 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 0.1.16 -> 8.17.0
+logstash-filter-elasticsearch: 3.16.1 -> 3.16.2
+logstash-input-azure_event_hubs: 1.5.0 -> 1.5.1
+logstash-input-elasticsearch: 4.20.4 -> 4.20.5
+logstash-integration-elastic_enterprise_search: 3.0.0 -> 3.0.1
+logstash-integration-jdbc: 5.5.0 -> 5.5.2
+logstash-integration-kafka: 11.5.2 -> 11.5.4
+logstash-integration-logstash: 1.0.3 -> 1.0.4
+logstash-integration-snmp: 4.0.4 -> 4.0.5
+logstash-output-elasticsearch: 11.22.9 -> 11.22.10
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.17.0*
+
+404: Not Found
+
+*Elasticsearch Filter - 3.16.2*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/185[#185]
+
+*Azure_event_hubs Input - 1.5.1*
+
+* Updated multiple Java dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/99[#99]
+
+*Elasticsearch Input - 4.20.5*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/211[#211]
+
+*Elastic_enterprise_search Integration - 3.0.1*
+
+* Add deprecation log for App Search and Workplace Search. Both products are removed from Elastic Stack in version 9 https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/22[#22]
+
+*Jdbc Integration - 5.5.2*
+
+* FIX: the input plugin's prior behaviour of opening a new database connection for each scheduled run (removed in `v5.4.1`) is restored, ensuring that infrequently-run schedules do not hold open connections to their databases indefinitely, _without_ reintroducing the leak https://github.com/logstash-plugins/logstash-integration-jdbc/pull/130[#130]
+
+* Document `statement_retry_attempts` and `statement_retry_attempts_wait_time` options
+
+*Kafka Integration - 11.5.4*
+
+* Update kafka client to 3.8.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/188[#188]
+* Removed Jar Dependencies dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/187[#187]
+
+* Update kafka client to 3.7.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/186[#186]
+
+*Logstash Integration - 1.0.4*
+
+* Fix: output plugin now correctly outputs event-oriented ndjson-compatible payloads, bypassing an issue where downstream inputs encountered buffering limits
+
+*Snmp Integration - 4.0.5*
+
+* Fix typo resulting in "uninitialized constant" exception for invalid column name https://github.com/logstash-plugins/logstash-integration-snmp/pull/73[#73]
+
+*Elasticsearch Output - 11.22.10*
+
+* Add `x-elastic-product-origin` header to Elasticsearch requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1194[#1194]
 
 
 [[logstash-8-17-0]]
