@@ -5,10 +5,16 @@ import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class StreamReadConstraintsUtil {
@@ -18,38 +24,51 @@ public class StreamReadConstraintsUtil {
 
     private StreamReadConstraints configuredStreamReadConstraints;
 
-    // Provide default values for Jackson constraints in the case they are
-    // not specified in configuration file.
-    private static final Map<Override, Integer> JACKSON_DEFAULTS = Map.of(
-        Override.MAX_STRING_LENGTH, 200_000_000,
-        Override.MAX_NUMBER_LENGTH, 10_000,
-        Override.MAX_NESTING_DEPTH, 1_000
-    );
-
     enum Override {
-        MAX_STRING_LENGTH(StreamReadConstraints.Builder::maxStringLength, StreamReadConstraints::getMaxStringLength),
-        MAX_NUMBER_LENGTH(StreamReadConstraints.Builder::maxNumberLength, StreamReadConstraints::getMaxNumberLength),
-        MAX_NESTING_DEPTH(StreamReadConstraints.Builder::maxNestingDepth, StreamReadConstraints::getMaxNestingDepth),
+        MAX_STRING_LENGTH(200_000_000, StreamReadConstraints.Builder::maxStringLength, StreamReadConstraints::getMaxStringLength),
+        MAX_NUMBER_LENGTH(10_000, StreamReadConstraints.Builder::maxNumberLength, StreamReadConstraints::getMaxNumberLength),
+        MAX_NESTING_DEPTH(1_000, StreamReadConstraints.Builder::maxNestingDepth, StreamReadConstraints::getMaxNestingDepth),
         ;
 
         static final String PROP_PREFIX = "logstash.jackson.stream-read-constraints.";
 
         final String propertyName;
+        final int defaultValue;
         private final IntValueApplicator applicator;
         private final IntValueObserver observer;
 
-        Override(final IntValueApplicator applicator,
+        Override(final int defaultValue,
+                 final IntValueApplicator applicator,
                  final IntValueObserver observer) {
             this.propertyName = PROP_PREFIX + this.name().toLowerCase().replace('_', '-');
+            this.defaultValue = defaultValue;
             this.applicator = applicator;
             this.observer = observer;
         }
 
-        @FunctionalInterface
-        interface IntValueObserver extends Function<StreamReadConstraints, Integer> {}
+        int resolve(final Integer specifiedValue) {
+            return Objects.requireNonNullElse(specifiedValue, defaultValue);
+        }
+
+        void apply(final StreamReadConstraints.Builder constraintsBuilder,
+                   @Nullable final Integer specifiedValue) {
+            this.applicator.applyIntValue(constraintsBuilder, resolve(specifiedValue));
+        }
+
+        int observe(final StreamReadConstraints constraints) {
+            return this.observer.observeIntValue(constraints);
+        }
 
         @FunctionalInterface
-        interface IntValueApplicator extends BiFunction<StreamReadConstraints.Builder, Integer, StreamReadConstraints.Builder> {}
+        interface IntValueObserver {
+            int observeIntValue(final StreamReadConstraints constraints);
+        }
+
+        @FunctionalInterface
+        interface IntValueApplicator {
+            @SuppressWarnings("UnusedReturnValue")
+            StreamReadConstraints.Builder applyIntValue(final StreamReadConstraints.Builder constraintsBuilder, final int value);
+        }
     }
 
     /**
@@ -86,9 +105,7 @@ public class StreamReadConstraintsUtil {
         if (configuredStreamReadConstraints == null) {
             final StreamReadConstraints.Builder builder = StreamReadConstraints.defaults().rebuild();
 
-            // Apply the Jackson defaults first, then the overrides from config
-            JACKSON_DEFAULTS.forEach((override, value) -> override.applicator.apply(builder, value));
-            eachOverride((override, value) -> override.applicator.apply(builder, value));
+            eachOverride((override, specifiedValue) -> override.apply(builder, specifiedValue));
 
             this.configuredStreamReadConstraints = builder.build();
         }
@@ -106,11 +123,14 @@ public class StreamReadConstraintsUtil {
     private void validate(final StreamReadConstraints streamReadConstraints) {
         final List<String> fatalIssues = new ArrayList<>();
         eachOverride((override, specifiedValue) -> {
-            final Integer effectiveValue = override.observer.apply(streamReadConstraints);
-            if (Objects.equals(specifiedValue, effectiveValue)) {
-                logger.info("Jackson default value override `{}` configured to `{}`", override.propertyName, specifiedValue);
+            final int effectiveValue = override.observe(streamReadConstraints);
+            final int expectedValue = override.resolve(specifiedValue);
+
+            if (!Objects.equals(effectiveValue, expectedValue)) {
+                fatalIssues.add(String.format("`%s` (expected: `%s`, actual: `%s`)", override.propertyName, expectedValue, effectiveValue));
             } else {
-                fatalIssues.add(String.format("`%s` (expected: `%s`, actual: `%s`)", override.propertyName, specifiedValue, effectiveValue));
+                final String reason = Objects.nonNull(specifiedValue) ? "system properties" : "logstash default";
+                logger.info("Jackson default value override `{}` configured to `{}` ({})", override.propertyName, effectiveValue, reason);
             }
         });
         for (String unsupportedProperty : getUnsupportedProperties()) {
@@ -124,13 +144,14 @@ public class StreamReadConstraintsUtil {
     void eachOverride(BiConsumer<Override,Integer> overrideIntegerBiConsumer) {
         for (Override override : Override.values()) {
             final String propValue = this.propertyOverrides.get(override.propertyName);
-            if (propValue != null) {
-                try {
-                    int intValue = Integer.parseInt(propValue);
-                    overrideIntegerBiConsumer.accept(override, intValue);
-                } catch (IllegalArgumentException e) {
-                    throw new IllegalArgumentException(String.format("System property `%s` must be positive integer value. Received: `%s`", override.propertyName, propValue), e);
-                }
+
+            try {
+                final Integer explicitValue = Optional.ofNullable(propValue)
+                        .map(Integer::parseInt)
+                        .orElse(null);
+                overrideIntegerBiConsumer.accept(override, explicitValue);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(String.format("System property `%s` must be positive integer value. Received: `%s`", override.propertyName, propValue), e);
             }
         }
     }
