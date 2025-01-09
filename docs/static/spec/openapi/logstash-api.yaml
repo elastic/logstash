@@ -1,0 +1,394 @@
+
+openapi: 3.1.0
+info:
+  title: Logstash APIs
+  description: |
+    When you run Logstash, it automatically captures runtime metrics that you can use to monitor the health and performance of your Logstash deployment.
+    The metrics collected by Logstash include:
+    
+    - Logstash node info, like pipeline settings, OS info, and JVM info.
+    - Plugin info, including a list of installed plugins.
+    - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    - Hot threads.
+    - Health report. 
+
+    The APIs that retrieve these metrics are available by default without requiring any extra configuration.
+
+    ## Documentation source and versions
+
+    This documentation is derived from the `main` branch of the [logstash](https://github.com/elastic/logstash) repository.
+    It is provided under license [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+  version: '1.0'
+  x-doc-license:
+    name: Attribution-NonCommercial-NoDerivatives 4.0 International
+    url: https://creativecommons.org/licenses/by-nc-nd/4.0/
+  x-feedbackLink:
+    label: Feedback
+    url: https://github.com/elastic/docs-content/issues/new?assignees=&labels=feedback%2Ccommunity&projects=&template=api-feedback.yaml&title=%5BFeedback%5D%3A+
+servers:
+  - url: /
+security:
+  - apiKeyAuth: []
+tags:
+  - name: health
+    x-displayName: Health report
+    # description: 
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: hot threads
+    x-displayName: Hot threads
+    # description: 
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: node info
+    x-displayName: Node info
+    description: |
+      Logstash node info, like pipeline settings, OS info, and JVM info.
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: node stats
+    x-displayName: Node stats
+    description: |
+      Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    # externalDocs:
+    #   description: 
+    #   url: 
+  - name: plugin info
+    x-displayName: Plugins info
+    description: |
+      Plugin info, including a list of installed plugins.
+    # externalDocs:
+    #   description: 
+    #   url: 
+paths: 
+  /_node/<types>:
+    get:
+      summary: Get node info
+      description: |
+        Get information about Logstash nodes, where `<types>` (optional) specifies the types of node info you want returned.
+        You can limit the info that is returned by combining any of these types in a comma-separated list:
+
+        - `pipelines`
+        - `os`
+        - `jvm`
+      operationId: nodeInfo
+      tags:
+        - node info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodeInfoExample1:
+                  # summary:
+                  value:
+                    pipelines:
+                      - test: 
+                          workers: 1
+                          batch_size: 1
+                          batch_delay: 5
+                          config_reload_automatic: false
+                          config_reload_interval: 3
+                      - test2: 
+                          workers: 8
+                          batch_size: 125
+                          batch_delay: 5
+                          config_reload_automatic: false
+                          config_reload_interval: 3                      
+
+  /_node/plugins:
+    get:
+      summary: Get plugin info
+      description: >
+        Get information about all Logstash plugins that are currently installed.
+        This API returns the same output you get by running the `bin/logstash-plugin list --verbose` command.
+      operationId: nodePlugins
+      tags:
+        - plugin info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodePluginsExample1:
+                  # summary:
+                  value:
+                    total: 1
+                    plugins:
+                      - name: logstash-codec-cef
+                        version: 6.2.8
+                      - name: logstash-codec-collectd
+                        version: 3.0.3
+                      - name: logstash-codec-dots
+                        version: 3.0.2
+                      - name: logstash-coded-edn
+                        version: 3.0.2 
+
+  /_node/stats:
+    get:
+      summary: Get node stats
+      description: |
+        Get runtime stats for Logstash, where `<types>` (optional) specifies the types of stats you want to return.
+        You can limit the info that is returned by combining any of these types in a comma-separated list:
+
+        - `jvm` gets JVM stats, including stats about threads, memory usage, garbage collectors, and uptime.
+        - `process` gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
+        - `events` gets event-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
+        - `flow` gets flow-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
+        - `pipelines` gets runtime stats about each Logstash pipeline.
+        - `reloads` gets runtime stats about config reload successes and failures.
+        - `os` gets runtime stats about cgroups when Logstash is running in a container.
+        - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
+        
+      operationId: nodeStats
+      tags:
+        - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              examples:
+                nodeStatsExample1:
+                  # summary:
+                  value:
+                    jvm:
+                      threads:
+                        count: 49
+                        peak_count: 50
+                      mem:
+                        heap_used_percent: 14
+                        heap_committed_in_bytes: 309866496
+                        heap_max_in_bytes: 1037959168
+                        heap_used_in_bytes: 151686096
+                        non_heap_used_in_bytes: 122486176
+                        non_heap_committed_in_bytes: 133222400
+                        pools:
+                          survivor:
+                            peak_used_in_bytes: 8912896
+                            used_in_bytes: 288776
+                            peak_max_in_bytes: 35782656
+                            max_in_bytes: 35782656
+                            committed_in_bytes: 8912896
+                          old:
+                            peak_used_in_bytes: 148656848
+                            used_in_bytes: 148656848
+                            peak_max_in_bytes: 715849728
+                            max_in_bytes: 715849728
+                            committed_in_bytes: 229322752
+                          young:
+                            peak_used_in_bytes: 71630848
+                            used_in_bytes: 2740472
+                            peak_max_in_bytes: 286326784
+                            max_in_bytes: 286326784
+                            committed_in_bytes: 71630848
+                      gc:
+                        collectors:
+                          old:
+                            collection_time_in_millis: 607
+                            collection_count: 12
+                          young:
+                            collection_time_in_millis: 4904
+                            collection_count: 1033
+                      uptime_in_millis: 1809643
+
+  /_node/hot_threads:
+    get:
+      summary: Get hot threads
+      description: >
+        Get information about current hot threads for Logstash.
+        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute. 
+      operationId: nodeHot_threads
+      tags:
+        - hot threads
+      parameters:
+        - name: threads
+          in: query
+          schema:
+            type: integer
+          description: >
+            The number of hot threads to return. The default is 10. 
+        - name: stacktrace_size
+          in: query
+          schema:
+            type: integer
+          description: >
+            The depth of the stack trace to report for each thread. The default is 50. 
+        - name: ignore_idle_threads
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If true, does not return idle threads. The default is `true`. 
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - name: human
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hot_threads:
+                    type: object
+                    properties:
+                      busiest_threads:
+                        type: integer
+                      threads:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Thread'
+                      time:
+                        type: string
+              examples:
+                nodeHotThreadsExample1:
+                  # summary:
+                  value:
+                    hot_threads:
+                      time: 2025-01-06T18:25:28-07:00
+                      busiest_threads: 3
+                      threads: 
+                        - name: Ruby-0-Thread-7
+                          percent_of_cpu_time: 0.0
+                          state: timed_waiting
+                          path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
+                          traces:
+                            - "java.lang.Object.wait(Native Method)"
+                            - "org.jruby.RubyThread.sleep(RubyThread.java:1002)"
+                            - "org.jruby.RubyKernel.sleep(RubyKernel.java:803)"
+                        - name: "[test2]>worker3"
+                          percent_of_cpu_time: 0.85
+                          state: waiting
+                          traces:
+                            - "sun.misc.Unsafe.park(Native Method)"
+                            - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
+                            - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
+                        - name: "[test2]>worker2"
+                          percent_of_cpu_time: 0.85
+                          state: runnable
+                          traces:
+                            - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
+                            - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
+                            - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
+
+  /_health_report:
+    get:
+      summary: Get health status
+      description: |
+        The health API returns a report with the health status of Logstash and the pipelines that are running inside of it. 
+        The report contains a list of indicators that compose Logstash functionality.
+
+        Each indicator has a health status of: green, unknown, yellow, or red. 
+        The indicator provides an explanation and metadata describing the reason for its current health status.
+
+        The top-level status is controlled by the worst indicator status.
+
+        In the event that an indicator status is non-green, a list of impacts may be present in the indicator result which detail the functionalities that are negatively affected by the health issue. 
+        Each impact carries with it a severity level, an area of the system that is affected, and a simple description of the impact on the system.
+
+        Some health indicators can determine the root cause of a health problem and prescribe a set of steps that can be performed in order to improve the health of the system. 
+        The root cause and remediation steps are encapsulated in a diagnosis. 
+        A diagnosis contains a cause detailing a root cause analysis, an action containing a brief description of the steps to take to fix the problem, and the URL for detailed troubleshooting help.
+        
+        NOTE: The health indicators perform root cause analysis of non-green health statuses. 
+        This can be computationally expensive when called frequently.
+        
+      operationId: healthStatus
+      tags:
+        - health
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  indicators:
+                    description: Information about the health of Logstash indicators.
+                    type: object
+                  status:
+                    $ref: '#/components/schemas/Statuses'
+components:
+  securitySchemes:
+    apiKeyAuth:
+      # description:
+      in: header
+      name: Authorization
+      type: apiKey
+  schemas:
+    Statuses:
+      type: string
+      description: |
+        Health status of Logstash, based on the aggregated status of all indicators.
+        Statuses are:
+        
+        - `green`: Logstash is healthy.
+        - `unknown`: Logstash health could not be determined.
+        - `yellow`: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
+        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.  
+      enum:
+        - green
+        - red
+        - unknown
+        - yellow
+    Thread:
+      type: object
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        percent_of_cpu_time:
+          type: number
+          format: double
+        state:
+          type: string
+        traces:
+          type: array
+          items:
+            type: string
