@@ -282,28 +282,31 @@ paths:
                   # summary:
                   value:
                     hot_threads:
-                      - time: 2025-01-06T18:25:28-07:00
-                        busiest_threads: 3
-                        threads: 
-                          - name: Ruby-0-Thread-7
-                            percent_of_cpu_time: 0.0
-                            state: timed_waiting
-                            path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
-                            traces: java.lang.Object.wait(Native Method)", "org.jruby.RubyThread.sleep(RubyThread.java:1002)", "org.jruby.RubyKernel.sleep(RubyKernel.java:803)
-                          - name: "[test2]>worker3"
-                            percent_of_cpu_time: 0.85
-                            state: waiting
-                            traces:
-                              - "sun.misc.Unsafe.park(Native Method)"
-                              - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
-                              - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
-                          - name: "[test2]>worker2"
-                            percent_of_cpu_time: 0.85
-                            state: runnable
-                            traces:
-                              - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
-                              - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
-                              - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
+                      time: 2025-01-06T18:25:28-07:00
+                      busiest_threads: 3
+                      threads: 
+                        - name: Ruby-0-Thread-7
+                          percent_of_cpu_time: 0.0
+                          state: timed_waiting
+                          path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
+                          traces:
+                            - "java.lang.Object.wait(Native Method)"
+                            - "org.jruby.RubyThread.sleep(RubyThread.java:1002)"
+                            - "org.jruby.RubyKernel.sleep(RubyKernel.java:803)"
+                        - name: "[test2]>worker3"
+                          percent_of_cpu_time: 0.85
+                          state: waiting
+                          traces:
+                            - "sun.misc.Unsafe.park(Native Method)"
+                            - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
+                            - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
+                        - name: "[test2]>worker2"
+                          percent_of_cpu_time: 0.85
+                          state: runnable
+                          traces:
+                            - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
+                            - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
+                            - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
 
   /_health_report:
     get:
@@ -346,23 +349,28 @@ paths:
                 type: object
                 properties:
                   indicators:
+                    description: Information about the health of Logstash indicators.
                     type: object
                   status:
                     $ref: '#/components/schemas/Statuses'
-              examples:
-                healthStatusExample1:
-                  # summary:
-                  value:
-                    status: 
-                      - green: Logstash is healthy.
-                        unknown: Logstash health could not be determined.
-                        yellow: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
-                        red: Logstash is experiencing an outage or certain features are unavailable for use. 
-                    indicators: Information about the health of Logstash indicators.
 components:
+  securitySchemes:
+    apiKeyAuth:
+      # description:
+      in: header
+      name: Authorization
+      type: apiKey
   schemas:
     Statuses:
       type: string
+      description: |
+        Health status of Logstash, based on the aggregated status of all indicators.
+        Statuses are:
+        
+        - `green`: Logstash is healthy.
+        - `unknown`: Logstash health could not be determined.
+        - `yellow`: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
+        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.  
       enum:
         - green
         - red
