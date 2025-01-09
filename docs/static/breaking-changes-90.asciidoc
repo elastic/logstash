@@ -223,3 +223,14 @@ removed and their replacements.
 |=======================================================================
 
 ====
+
+[discrete]
+[[enterprise_search-deprecated-9.0]]
+===== App Search and Workplace Search plugins are deprecated
+
+Enterprise Search is deprecated and no longer supported from {stack} 9.0. 
+We've also deprecated the {ls} App Search and Workplace Search plugins. 
+These plugins will receive only security updates and critical fixes moving forward. 
+
+We recommend using our native {es} tools for your Search use cases.
+For more details, please visit https://www.elastic.co/guide/en/search-ui/current/tutorials-elasticsearch.html[Search UI with Elasticsearch].
