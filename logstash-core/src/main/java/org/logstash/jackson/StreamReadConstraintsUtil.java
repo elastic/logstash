@@ -120,7 +120,7 @@ public class StreamReadConstraintsUtil {
         validate(StreamReadConstraints.defaults());
     }
 
-    private void validate(final StreamReadConstraints streamReadConstraints) {
+    public void validate(final StreamReadConstraints streamReadConstraints) {
         final List<String> fatalIssues = new ArrayList<>();
         eachOverride((override, specifiedValue) -> {
             final int effectiveValue = override.observe(streamReadConstraints);
