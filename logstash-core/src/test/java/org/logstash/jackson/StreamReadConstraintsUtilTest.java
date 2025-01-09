@@ -35,7 +35,6 @@ public class StreamReadConstraintsUtilTest {
 
     @Before
     public void setUpLoggingListAppender() {
-        int i = 1+16;
         this.observedLogger = LOGGER_CONTEXT_RULE.getLogger(StreamReadConstraintsUtil.class);
         this.listAppender = LOGGER_CONTEXT_RULE.getListAppender("EventListAppender").clear();
     }
