@@ -310,7 +310,7 @@ input { # comments can appear at the end of a line, too
   # ...
 }
 ----------------------------------
-NOTE: Comments containing environment variable `${var}` references in `config.string` will still be evaluated.
+NOTE: Comments containing environment variable `${var}` references in `config.string` are still evaluated.
 Remove the `$` sign to avoid pipeline loading failures.
 
 include::event-data.asciidoc[]
