@@ -55,7 +55,11 @@ public class BufferedTokenizerExt extends RubyObject {
             this.delimiter = args[0].convertToString();
         }
         if (args.length == 2) {
-            this.sizeLimit = args[1].convertToInteger().getIntValue();
+            final int sizeLimit = args[1].convertToInteger().getIntValue();
+            if (sizeLimit <= 0) {
+                throw new IllegalArgumentException("Size limit must be positive");
+            }
+            this.sizeLimit = sizeLimit;
             this.hasSizeLimit = true;
         }
         this.inputSize = 0;

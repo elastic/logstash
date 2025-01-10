@@ -61,6 +61,11 @@ describe  FileWatch::BufferedTokenizer  do
     context 'with decode_size_limit_bytes' do
       subject { FileWatch::BufferedTokenizer.new("\n", 100) }
 
+      it "validates size limit" do
+        expect { FileWatch::BufferedTokenizer.new("\n", -101) }.to raise_error(java.lang.IllegalArgumentException, "Size limit must be positive")
+        expect { FileWatch::BufferedTokenizer.new("\n", 0) }.to raise_error(java.lang.IllegalArgumentException, "Size limit must be positive")
+      end
+
       it "emits the contents of the buffer" do
         expect(subject.flush).to eq(data)
       end
