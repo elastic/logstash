@@ -38,7 +38,7 @@ describe LogStash::Config::Mixin do
       expect(main_logger).to receive(:warn).at_least(:once)  do |arg1, arg2|
         message = 'You are using a deprecated config setting "old_opt" set in test_deprecated. ' \
         'Deprecated settings will continue to work, but are scheduled for removal from logstash in the future. ' \
-        'this is old school If you have any questions about this, please visit the #logstash channel on freenode irc.'
+        'this is old school If you have any questions about this, please ask it on the https://discuss.elastic.co/c/logstash discussion forum'
         expect(arg1).to eq(message)
         expect(arg2[:plugin].to_s).to include('"password"=><password>')
       end
