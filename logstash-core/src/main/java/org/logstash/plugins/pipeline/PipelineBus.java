@@ -49,7 +49,7 @@ public interface PipelineBus {
             case "v2": return new PipelineBusV2();
             default:
                 LOGGER.warn("unknown pipeline-bus implementation: {}", pipelineBusImplementation);
-                return new PipelineBusV1();
+                return new PipelineBusV2();
         }
     }
 

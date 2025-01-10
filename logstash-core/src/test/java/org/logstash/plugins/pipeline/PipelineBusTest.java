@@ -494,7 +494,7 @@ public class PipelineBusTest {
         @Test
         public void implementationExplicitIllegal() {
             withSystemProperty("logstash.pipelinebus.implementation", "illegal", () -> {
-                assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV1.class);
+                assertThat(PipelineBus.create()).isInstanceOf(PipelineBusV2.class);
                 assertThat(pipelineBusLog.getLogEvents()).anySatisfy(logEvent -> {
                     assertThat(logEvent.getMessage().getFormattedMessage()).contains("unknown pipeline-bus implementation", "illegal");
                 });
