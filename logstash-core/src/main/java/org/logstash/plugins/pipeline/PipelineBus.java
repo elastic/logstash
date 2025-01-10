@@ -43,14 +43,7 @@ public interface PipelineBus {
      * @return a new pipeline bus
      */
     static PipelineBus create() {
-        final String pipelineBusImplementation = System.getProperty("logstash.pipelinebus.implementation", "v2");
-        switch (pipelineBusImplementation) {
-            case "v1": return new PipelineBusV1();
-            case "v2": return new PipelineBusV2();
-            default:
-                LOGGER.warn("unknown pipeline-bus implementation: {}", pipelineBusImplementation);
-                return new PipelineBusV1();
-        }
+        return new PipelineBusV2();
     }
 
     /**
