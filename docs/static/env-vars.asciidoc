@@ -12,6 +12,8 @@ environment variable is undefined.
 * You can add environment variable references in any plugin option type: string, number, boolean, array, or hash.
 * Environment variables for list-type URI parameters can support lists of space-delimited values. Currently, other non-URI based options do not support lists of values. See <<plugin-concepts>>
 * Environment variables are immutable. If you update the environment variable, you'll have to restart Logstash to pick up the updated value.
+* References to environment variables in `config.string` comments are evaluated during configuration parsing, and are therefore discouraged.
+Remove the `$` sign to avoid pipeline loading failures.
 
 ==== Examples
 
