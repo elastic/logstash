@@ -92,6 +92,7 @@ This section summarizes the changes in the following releases:
 
 No user-facing changes in Logstash core.
 
+[[logstash-plugins-7-17-27]]
 ==== Plugins
 
 *Cef Codec - 6.2.8*
