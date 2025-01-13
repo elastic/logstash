@@ -93,6 +93,7 @@ This section summarizes the changes in the following releases:
 
 * Update Iron Bank base image to ubi9/9.5 https://github.com/elastic/logstash/pull/16825[#16825]
 
+[[plugins-8.17.1]]
 ==== Plugins
 
 *Elastic_integration Filter - 8.17.0*
