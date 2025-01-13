@@ -102,7 +102,7 @@ This section summarizes the changes in the following releases:
 
 *Elastic_enterprise_search Integration - 3.0.1*
 
-* Add deprecation log for App Search and Workplace Search. Both products are removed from Elastic Stack in version 9 https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/22[#22]
+* Add deprecation log for App Search and Workplace Search. https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/22[#22]
 
 *Jdbc Integration - 5.5.2*
 
