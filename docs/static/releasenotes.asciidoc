@@ -81,7 +81,8 @@ This section summarizes the changes in the following releases:
 [[notable-8.17.1]]
 ==== Notable issues fixed
 
-* Fix "Input buffer full" error when using `json_lines` codec https://github.com/elastic/logstash/pull/16760[#16760]
+* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16760[#16760].
+  Fixes <<known-issue-8-16-1-json_lines,"input buffer full" error>> that could appear with versions 8.16.0, 8.16.1, and 8.17.0.
 * Avoid lock contention when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
 * Ensure that the Jackson read constraints defaults (Maximum Number value length, Maximum String value length, and Maximum Nesting depth) are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
 * Fix environment variables `${VAR}` were not interpreted in jvm.options https://github.com/elastic/logstash/pull/16834[#16834]
