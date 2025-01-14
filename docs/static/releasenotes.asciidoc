@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-27,Logstash 7.17.27>>
 * <<logstash-7-17-26,Logstash 7.17.26>>
 * <<logstash-7-17-25,Logstash 7.17.25>>
 * <<logstash-7-17-24,Logstash 7.17.24>>
@@ -84,6 +85,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-beta1,Logstash 7.0.0-beta1>>
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
+
+
+[[logstash-7-17-27]]
+=== Logstash 7.17.27 Release Notes
+
+No user-facing changes in Logstash core.
+
+[[logstash-plugins-7-17-27]]
+==== Plugins
+
+*Cef Codec - 6.2.8*
+
+* [Doc] Added `raw_data_field` to docs. https://github.com/logstash-plugins/logstash-codec-cef/pull/105[#105]
 
 
 [[logstash-7-17-26]]
