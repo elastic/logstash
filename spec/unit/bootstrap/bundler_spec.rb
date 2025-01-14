@@ -140,6 +140,33 @@ describe LogStash::Bundler do
         end
       end
 
+      context "level: major" do
+        let(:options) { super().merge(:level => "major") }
+        it "invokes bundler with --minor" do
+          expect(bundler_arguments).to include("--major")
+        end
+      end
+
+      context "level: minor" do
+        let(:options) { super().merge(:level => "minor") }
+        it "invokes bundler with --minor" do
+          expect(bundler_arguments).to include("--minor")
+        end
+      end
+
+      context "level: patch" do
+        let(:options) { super().merge(:level => "patch") }
+        it "invokes bundler with --minor" do
+          expect(bundler_arguments).to include("--patch")
+        end
+      end
+
+      context "level: unspecified" do
+        it "invokes bundler with --minor" do
+          expect(bundler_arguments).to include("--minor")
+        end
+      end
+
       context 'with ecs_compatibility' do
         let(:plugin_name) { 'logstash-output-elasticsearch' }
         let(:options) { { :update => plugin_name } }
@@ -147,7 +174,7 @@ describe LogStash::Bundler do
         it "also update dependencies" do
           expect(bundler_arguments).to include('logstash-mixin-ecs_compatibility_support', plugin_name)
 
-          mixin_libs = bundler_arguments - ["update", plugin_name]
+          mixin_libs = bundler_arguments - ["update", "--minor", plugin_name]
           mixin_libs.each do |gem_name|
             dep = ::Gem::Dependency.new(gem_name)
             expect(dep.type).to eq(:runtime)
