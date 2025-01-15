@@ -115,7 +115,7 @@ bin/logstash-plugin update logstash-input-github <2>
 [NOTE]
 .Major-version plugin updates
 ==============================
-By default, the plugin manager will consume _minor_ updates containing non-breaking features and fixes.
+By default, the plugin manager will only update plugins for which newer _minor_ or _patch_ versions exist, to avoid the introduction of breaking changes.
 If you wish to also include breaking changes, specify `--level=major`.
 
 [source,shell]
