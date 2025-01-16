@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 
 public class StringInterpolationTest extends RubyTestBase {
@@ -147,6 +149,24 @@ public class StringInterpolationTest extends RubyTestBase {
 
         String path = "%{j}";
         assertEquals("{\"k1\":\"v\"}", StringInterpolation.evaluate(event, path));
+    }
+
+    @Test
+    public void TestTimeNow() throws IOException {
+        Event event = getTestEvent();
+        String pattern = "%{{TIME_NOW}}";
+        Timestamp before = new Timestamp();
+        Timestamp result = new Timestamp(StringInterpolation.evaluate(event, pattern));
+        Timestamp after = new Timestamp();
+        assertTrue(before.compareTo(result) < 0);
+        assertTrue(after.compareTo(result) > 0);
+    }
+
+    @Test
+    public void TestBadTimeNow() throws IOException {
+        Event event = getTestEvent();
+        String pattern = "%{{BAD_TIME_NOW}}";
+        assertThrows(IllegalArgumentException.class, () -> StringInterpolation.evaluate(event, pattern));
     }
 
     public Event getTestEvent() {
