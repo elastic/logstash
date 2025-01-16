@@ -32,6 +32,7 @@ import java.util.Map;
 
 public final class StringInterpolation {
 
+    private static final String TIME_NOW = "TIME_NOW";
     private static final ThreadLocal<StringBuilder> STRING_BUILDER =
         new ThreadLocal<StringBuilder>() {
             @Override
@@ -87,7 +88,7 @@ public final class StringInterpolation {
                 // - `%{{TIME_NOW}}` -> `2025-01-16T16:57:12.488955Z`
                 close = close + 1; // consume extra closing squiggle
                 final String pattern = template.substring(open+3, close-1);
-                if (pattern.equals("TIME_NOW")) {
+                if (pattern.equals(TIME_NOW)) {
                     final Timestamp now = new Timestamp();
                     builder.append(now);
                 } else {
