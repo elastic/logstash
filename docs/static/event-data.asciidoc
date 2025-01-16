@@ -94,6 +94,23 @@ These formats are not directly interchangeable, and we advise you to begin using
 
 NOTE: A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 
+You can generate a fresh timestamp by using `%{{TIME_NOW}}` syntax instead of relying on the value in `@timestamp`.
+This is particularly useful when you need to estimate the time span of each plugin.
+
+[source,js]
+----------------------------------
+input {
+  heartbeat {
+    add_field => { "heartbeat_time" => "%{{TIME_NOW}}" }
+  }
+}
+filter {
+  mutate {
+    add_field => { "mutate_time" => "%{{TIME_NOW}}" }
+  }
+}
+----------------------------------
+
 [discrete]
 [[conditionals]]
 ==== Conditionals
