@@ -266,10 +266,9 @@ removed and their replacements.
 
 [discrete]
 [[enterprise_search-deprecated-9.0]]
-===== App Search and Workplace Search plugins are deprecated
+===== Enterprise_search integration plugin is deprecated
 
-Enterprise Search is deprecated and no longer supported from {stack} 9.0. 
-We've also deprecated the {ls} App Search and Workplace Search plugins. 
+We've deprecated the {ls} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins. 
 These plugins will receive only security updates and critical fixes moving forward. 
 
 We recommend using our native {es} tools for your Search use cases.
