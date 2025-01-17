@@ -34,7 +34,7 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
-info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH} for version: ${STACK_VERSION}"
+info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH} for version: ${STACK_VERSION} with version_qualifier: ${VERSION_QUALIFIER}"
 
 if [ "$RELEASE_VER" != "7.17" ]; then
   # Version 7.17.x doesn't generates ARM artifacts for Darwin
