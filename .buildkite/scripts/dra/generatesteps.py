@@ -77,7 +77,6 @@ def publish_dra_step(branch, workflow_type, depends_on):
     step = f'''
 - label: ":elastic-stack: Publish  / {branch}-{workflow_type.upper()} DRA artifacts"
   key: "logstash_publish_dra"
-  depends_on: "{depends_on}"
   agents:
     provider: gcp
     imageProject: elastic-images-prod
@@ -86,8 +85,8 @@ def publish_dra_step(branch, workflow_type, depends_on):
     diskSizeGb: 200
   command: |
     echo "+++ Restoring Artifacts"
-    buildkite-agent artifact download "build/logstash*" .
-    buildkite-agent artifact download "build/distributions/**/*" .
+    buildkite-agent artifact download --build "0194748b-a460-4af3-8fc0-2d71b9329755" "build/logstash*" .
+    buildkite-agent artifact download --build "0194748b-a460-4af3-8fc0-2d71b9329755" "build/distributions/**/*" .
     echo "+++ Changing permissions for the release manager"
     sudo chown -R :1000 build
     echo "+++ Running DRA publish step"
@@ -127,11 +126,11 @@ if __name__ == "__main__":
         # Group defining parallel steps that build and save artifacts
         group_key = to_bk_key_friendly_string(f"logstash_dra_{workflow_type}")
 
-        structure["steps"].append({
-            "group": f":Build Artifacts - {workflow_type.upper()}",
-            "key": group_key,
-            "steps": build_steps_to_yaml(branch, workflow_type),
-        })
+        # structure["steps"].append({
+        #     "group": f":Build Artifacts - {workflow_type.upper()}",
+        #     "key": group_key,
+        #     "steps": build_steps_to_yaml(branch, workflow_type),
+        # })
 
         # Final step: pull artifacts built above and publish them via the release-manager
         structure["steps"].extend(
