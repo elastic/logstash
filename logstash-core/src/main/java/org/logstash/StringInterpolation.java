@@ -29,9 +29,11 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class StringInterpolation {
 
+    private static final String TIME_NOW = "TIME_NOW";
     private static final ThreadLocal<StringBuilder> STRING_BUILDER =
         new ThreadLocal<StringBuilder>() {
             @Override
@@ -83,13 +85,19 @@ public final class StringInterpolation {
                 // JAVA-style @timestamp formatter:
                 // - `%{{yyyy-MM-dd}}` -> `2021-08-11`
                 // - `%{{YYYY-'W'ww}}` -> `2021-W32`
+                // A special pattern to generate a fresh current time
+                // - `%{{TIME_NOW}}` -> `2025-01-16T16:57:12.488955Z`
                 close = close + 1; // consume extra closing squiggle
-                final Timestamp t =  event.getTimestamp();
-                if (t != null) {
-                    final String javaTimeFormatPattern = template.substring(open+3, close-1);
-                    final java.time.format.DateTimeFormatter javaDateTimeFormatter = DateTimeFormatter.ofPattern(javaTimeFormatPattern).withZone(ZoneOffset.UTC);
-                    final String formattedTimestamp = javaDateTimeFormatter.format(t.toInstant());
-                    builder.append(formattedTimestamp);
+                final String pattern = template.substring(open+3, close-1);
+                if (pattern.equals(TIME_NOW)) {
+                    builder.append(new Timestamp());
+                } else {
+                    Optional.ofNullable(event.getTimestamp())
+                            .map(Timestamp::toInstant)
+                            .map(instant -> DateTimeFormatter.ofPattern(pattern)
+                                    .withZone(ZoneOffset.UTC)
+                                    .format(instant))
+                            .ifPresent(builder::append);
                 }
             } else if (template.charAt(open + 2) == '+') {
                 // JODA-style @timestamp formatter:
