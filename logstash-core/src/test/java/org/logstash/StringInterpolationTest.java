@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -73,14 +74,14 @@ public class StringInterpolationTest extends RubyTestBase {
     }
 
     @Test
-    public void TestMixDateAndFields() throws IOException {
+    public void testMixDateAndFields() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{+YYYY}/weeee/%{bar}";
         assertEquals("/full/2015/weeee/foo", StringInterpolation.evaluate(event, path));
     }
 
     @Test
-    public void TestMixDateAndFieldsJavaSyntax() throws IOException {
+    public void testMixDateAndFieldsJavaSyntax() throws IOException {
         Event event = getTestEvent();
         String path = "/full/%{{YYYY-DDD}}/weeee/%{bar}";
         assertEquals("/full/2015-274/weeee/foo", StringInterpolation.evaluate(event, path));
@@ -94,28 +95,28 @@ public class StringInterpolationTest extends RubyTestBase {
     }
 
     @Test
-    public void TestStringIsOneDateTag() throws IOException {
+    public void testStringIsOneDateTag() throws IOException {
         Event event = getTestEvent();
         String path = "%{+YYYY}";
         assertEquals("2015", StringInterpolation.evaluate(event, path));
     }
 
     @Test
-    public void TestStringIsJavaDateTag() throws IOException {
+    public void testStringIsJavaDateTag() throws IOException {
         Event event = getTestEvent();
         String path = "%{{YYYY-'W'ww}}";
         assertEquals("2015-W40", StringInterpolation.evaluate(event, path));
     }
 
     @Test
-    public void TestFieldRef() throws IOException {
+    public void testFieldRef() throws IOException {
         Event event = getTestEvent();
         String path = "%{[j][k1]}";
         assertEquals("v", StringInterpolation.evaluate(event, path));
     }
 
     @Test
-    public void TestEpochSeconds() throws IOException {
+    public void testEpochSeconds() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%ss}";
         // `+%ss` bypasses the EPOCH syntax and instead matches the JODA syntax.
@@ -124,14 +125,14 @@ public class StringInterpolationTest extends RubyTestBase {
     }
 
     @Test
-    public void TestEpoch() throws IOException {
+    public void testEpoch() throws IOException {
         Event event = getTestEvent();
         String path = "%{+%s}";
         assertEquals("1443657600", StringInterpolation.evaluate(event, path));
     }
 
     @Test
-    public void TestValueIsArray() throws IOException {
+    public void testValueIsArray() throws IOException {
         ArrayList<String> l = new ArrayList<>();
         l.add("Hello");
         l.add("world");
@@ -144,7 +145,7 @@ public class StringInterpolationTest extends RubyTestBase {
     }
 
     @Test
-    public void TestValueIsHash() throws IOException {
+    public void testValueIsHash() throws IOException {
         Event event = getTestEvent();
 
         String path = "%{j}";
@@ -152,21 +153,20 @@ public class StringInterpolationTest extends RubyTestBase {
     }
 
     @Test
-    public void TestTimeNow() throws IOException {
+    public void testPatternTimeNowGenerateFreshTimestamp() throws IOException, InterruptedException {
         Event event = getTestEvent();
-        String pattern = "%{{TIME_NOW}}";
         Timestamp before = new Timestamp();
-        Timestamp result = new Timestamp(StringInterpolation.evaluate(event, pattern));
+        TimeUnit.NANOSECONDS.sleep(1);
+        Timestamp result = new Timestamp(StringInterpolation.evaluate(event, "%{{TIME_NOW}}"));
         Timestamp after = new Timestamp();
         assertTrue(before.compareTo(result) < 0);
-        assertTrue(after.compareTo(result) > 0);
+        assertTrue(after.compareTo(result) >= 0);
     }
 
     @Test
-    public void TestBadTimeNow() throws IOException {
+    public void testBadPatternTimeNowShouldThrowException() throws IOException {
         Event event = getTestEvent();
-        String pattern = "%{{BAD_TIME_NOW}}";
-        assertThrows(IllegalArgumentException.class, () -> StringInterpolation.evaluate(event, pattern));
+        assertThrows(IllegalArgumentException.class, () -> StringInterpolation.evaluate(event, "%{{BAD_TIME_NOW}}"));
     }
 
     public Event getTestEvent() {

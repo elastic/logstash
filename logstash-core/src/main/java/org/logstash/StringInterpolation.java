@@ -29,6 +29,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public final class StringInterpolation {
 
@@ -89,15 +90,14 @@ public final class StringInterpolation {
                 close = close + 1; // consume extra closing squiggle
                 final String pattern = template.substring(open+3, close-1);
                 if (pattern.equals(TIME_NOW)) {
-                    final Timestamp now = new Timestamp();
-                    builder.append(now);
+                    builder.append(new Timestamp());
                 } else {
-                    final Timestamp t = event.getTimestamp();
-                    if (t != null) {
-                        final DateTimeFormatter javaDateTimeFormatter = DateTimeFormatter.ofPattern(pattern).withZone(ZoneOffset.UTC);
-                        final String formattedTimestamp = javaDateTimeFormatter.format(t.toInstant());
-                        builder.append(formattedTimestamp);
-                    }
+                    Optional.ofNullable(event.getTimestamp())
+                            .map(Timestamp::toInstant)
+                            .map(instant -> DateTimeFormatter.ofPattern(pattern)
+                                    .withZone(ZoneOffset.UTC)
+                                    .format(instant))
+                            .ifPresent(builder::append);
                 }
             } else if (template.charAt(open + 2) == '+') {
                 // JODA-style @timestamp formatter:
