@@ -21,15 +21,17 @@
 package org.logstash;
 
 
+import org.awaitility.Awaitility;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -156,11 +158,11 @@ public class StringInterpolationTest extends RubyTestBase {
     public void testPatternTimeNowGenerateFreshTimestamp() throws IOException, InterruptedException {
         Event event = getTestEvent();
         Timestamp before = new Timestamp();
-        TimeUnit.NANOSECONDS.sleep(1);
+        Awaitility.await("Make sure we sleep enough get another current timestamp")
+                .atMost(Duration.ofSeconds(1))
+                .until(() -> Instant.now().isAfter(before.toInstant()));
         Timestamp result = new Timestamp(StringInterpolation.evaluate(event, "%{{TIME_NOW}}"));
-        Timestamp after = new Timestamp();
         assertTrue(before.compareTo(result) < 0);
-        assertTrue(after.compareTo(result) >= 0);
     }
 
     @Test
