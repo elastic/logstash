@@ -17,6 +17,7 @@ if File.exist?(project_versions_yaml_path)
   # we ignore the copy in git and we overwrite an existing file
   # each time we build the logstash-core gem
   original_lines = IO.readlines(project_versions_yaml_path)
+  # introduce the version qualifier (e.g. beta1, rc1) into the copied yml so it's displayed by Logstash
   if ENV['VERSION_QUALIFIER']
     logstash_version_line = original_lines.find {|line| line.match(/^logstash:/) }
     logstash_version_line.chomp!
