@@ -16,9 +16,12 @@ if File.exist?(project_versions_yaml_path)
   #
   # we ignore the copy in git and we overwrite an existing file
   # each time we build the logstash-core gem
-  original_lines = IO.read(project_versions_yaml_path)
-  original_lines.gsub!(/^logstash: (.+?)\n/, "logstash: \\1-#{ENV['VERSION_QUALIFIER']}\n") if ENV['VERSION_QUALIFIER']
-
+  original_lines = IO.readlines(project_versions_yaml_path)
+  if ENV['VERSION_QUALIFIER']
+    logstash_version_line = original_lines.find {|line| line.match(/^logstash:/) }
+    logstash_version_line.chomp!
+    logstash_version_line << "-#{ENV['VERSION_QUALIFIER']}\n"
+  end
   original_lines << "\n"
   original_lines << "# This is a copy the project level versions.yml into this gem's root and it is created when the gemspec is evaluated."
   gem_versions_yaml_path = File.expand_path("./versions-gem-copy.yml", File.dirname(__FILE__))
