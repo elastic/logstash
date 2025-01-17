@@ -7,8 +7,6 @@ echo "####################################################################"
 
 source ./$(dirname "$0")/common.sh
 
-$STACK_VERSION
-
 # DRA_BRANCH can be used for manually testing packaging with PRs
 # e.g. define `DRA_BRANCH="main"` and `RUN_SNAPSHOT="true"` under Options/Environment Variables in the Buildkite UI after clicking new Build
 BRANCH="${DRA_BRANCH:="${BUILDKITE_BRANCH:=""}"}"
