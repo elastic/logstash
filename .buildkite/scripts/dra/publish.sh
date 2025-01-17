@@ -45,7 +45,13 @@ fi
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done
 
-mv build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv build/distributions/dependencies-${STACK_VERSION}.csv
+
+FINAL_VERSION=$STACK_VERSION
+if [[ -n "$VERSION_QUALIFIER" ]]; then
+  FINAL_VERSION="$FINAL_VERSION-${VERSION_QUALIFIER}"
+fi
+
+mv build/distributions/dependencies-reports/logstash-${FINAL_VERSION}.csv build/distributions/dependencies-${FINAL_VERSION}.csv
 
 # set required permissions on artifacts and directory
 chmod -R a+r build/*
