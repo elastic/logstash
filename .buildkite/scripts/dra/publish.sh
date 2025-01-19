@@ -25,7 +25,7 @@ VERSION_QUALIFIER="${VERSION_QUALIFIER:=""}"
 
 case "$WORKFLOW_TYPE" in
     snapshot)
-        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
+        :
         ;;
     staging)
         ;;
