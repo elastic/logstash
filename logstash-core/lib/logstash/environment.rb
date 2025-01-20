@@ -102,7 +102,7 @@ module LogStash
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableString.new("monitoring.cluster_uuid"),
-            Setting::String.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
+            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
