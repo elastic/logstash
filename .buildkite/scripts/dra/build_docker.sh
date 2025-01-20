@@ -7,6 +7,8 @@ echo "####################################################################"
 source ./$(dirname "$0")/common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
+info "Building artifacts for the $WORKFLOW_TYPE workflow ..."
+
 case "$WORKFLOW_TYPE" in
     snapshot)
         :  # no-op
