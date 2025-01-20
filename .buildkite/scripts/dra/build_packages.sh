@@ -7,38 +7,34 @@ echo "####################################################################"
 source ./$(dirname "$0")/common.sh
 
 # WORKFLOW_TYPE is a CI externally configured environment variable that could assume "snapshot" or "staging" values
+info "Building artifacts for the $WORKFLOW_TYPE workflow ..."
+
 case "$WORKFLOW_TYPE" in
     snapshot)
-        info "Building artifacts for the $WORKFLOW_TYPE workflow..."
-        if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
-        else
-            # Qualifier is passed from CI as optional field and specify the version postfix
-            # in case of alpha or beta releases:
-            # e.g: 8.0.0-alpha1
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
-            STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
-        fi
-        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
-        info "Build complete, setting STACK_VERSION to $STACK_VERSION."
+        :  # no-op
         ;;
     staging)
-        info "Building artifacts for the $WORKFLOW_TYPE workflow..."
-        if [ -z "$VERSION_QUALIFIER_OPT" ]; then
-            RELEASE=1 SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
-        else
-            # Qualifier is passed from CI as optional field and specify the version postfix
-            # in case of alpha or beta releases:
-            # e.g: 8.0.0-alpha1
-            VERSION_QUALIFIER="$VERSION_QUALIFIER_OPT" RELEASE=1 SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
-            STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
-        fi
-        info "Build complete, setting STACK_VERSION to $STACK_VERSION."
+        export RELEASE=1
         ;;
     *)
         error "Workflow (WORKFLOW_TYPE variable) is not set, exiting..."
         ;;
 esac
+
+SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
+
+if [[ "$WORKFLOW_TYPE" == "staging" ]] && [[ -n "$VERSION_QUALIFIER" ]]; then
+    # Qualifier is passed from CI as optional field and specify the version postfix
+    # in case of alpha or beta releases for staging builds only:
+    # e.g: 8.0.0-alpha1
+    STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER}"
+fi
+
+if [[ "$WORKFLOW_TYPE" == "snapshot" ]]; then
+    STACK_VERSION="${STACK_VERSION}-SNAPSHOT"
+fi
+
+info "Build complete, setting STACK_VERSION to $STACK_VERSION."
 
 info "Generated Artifacts"
 for file in build/logstash-*; do shasum $file;done

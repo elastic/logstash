@@ -4,8 +4,12 @@ steps:
   - label: ":pipeline: Generate steps"
     command: |
       set -euo pipefail
-
-      echo "--- Building [${WORKFLOW_TYPE}] artifacts"
+      
+      echo "--- Building [$${WORKFLOW_TYPE}] artifacts"
       python3 -m pip install pyyaml
       echo "--- Building dynamic pipeline steps"
-      python3 .buildkite/scripts/dra/generatesteps.py | buildkite-agent pipeline upload
+      python3 .buildkite/scripts/dra/generatesteps.py > steps.yml
+      echo "--- Printing dynamic pipeline steps"
+      cat steps.yml
+      echo "--- Uploading dynamic pipeline steps"
+      cat steps.yml | buildkite-agent pipeline upload
