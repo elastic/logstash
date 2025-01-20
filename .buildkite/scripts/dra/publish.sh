@@ -7,7 +7,9 @@ echo "####################################################################"
 
 source ./$(dirname "$0")/common.sh
 
-PLAIN_STACK_VERSION=$STACK_VERSION
+# DRA_BRANCH can be used for manually testing packaging with PRs
+# e.g. define `DRA_BRANCH="main"` and `RUN_SNAPSHOT="true"` under Options/Environment Variables in the Buildkite UI after clicking new Build
+BRANCH="${DRA_BRANCH:="${BUILDKITE_BRANCH:=""}"}"
 
 # This is the branch selector that needs to be passed to the release-manager
 # It has to be the name of the branch which originates the artifacts.
@@ -15,30 +17,24 @@ RELEASE_VER=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.
 if [ -n "$(git ls-remote --heads origin $RELEASE_VER)" ] ; then
     RELEASE_BRANCH=$RELEASE_VER
 else
-    RELEASE_BRANCH="${BUILDKITE_BRANCH:="main"}"
+    RELEASE_BRANCH="${BRANCH:="main"}"
 fi
 echo "RELEASE BRANCH: $RELEASE_BRANCH"
 
-if [ -n "$VERSION_QUALIFIER_OPT" ]; then
-  # Qualifier is passed from CI as optional field and specify the version postfix
-  # in case of alpha or beta releases:
-  # e.g: 8.0.0-alpha1
-  STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
-  PLAIN_STACK_VERSION="${PLAIN_STACK_VERSION}-${VERSION_QUALIFIER_OPT}"
-fi
+VERSION_QUALIFIER="${VERSION_QUALIFIER:=""}"
 
 case "$WORKFLOW_TYPE" in
     snapshot)
-        STACK_VERSION=${STACK_VERSION}-SNAPSHOT
+        :
         ;;
     staging)
         ;;
     *)
-        error "Worklflow (WORKFLOW_TYPE variable) is not set, exiting..."
+        error "Workflow (WORKFLOW_TYPE variable) is not set, exiting..."
         ;;
 esac
 
-info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH}"
+info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH} for version: ${STACK_VERSION} with version_qualifier: ${VERSION_QUALIFIER}"
 
 if [ "$RELEASE_VER" != "7.17" ]; then
   # Version 7.17.x doesn't generates ARM artifacts for Darwin
@@ -49,7 +45,16 @@ fi
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done
 
-mv build/distributions/dependencies-reports/logstash-${STACK_VERSION}.csv build/distributions/dependencies-${STACK_VERSION}.csv
+FINAL_VERSION=$STACK_VERSION
+if [[ -n "$VERSION_QUALIFIER" ]]; then
+  FINAL_VERSION="$FINAL_VERSION-${VERSION_QUALIFIER}"
+fi
+
+if [[ "$WORKFLOW_TYPE" == "snapshot" ]]; then
+    FINAL_VERSION="${STACK_VERSION}-SNAPSHOT"
+fi
+
+mv build/distributions/dependencies-reports/logstash-${FINAL_VERSION}.csv build/distributions/dependencies-${FINAL_VERSION}.csv
 
 # set required permissions on artifacts and directory
 chmod -R a+r build/*
@@ -67,6 +72,22 @@ release_manager_login
 # ensure the latest image has been pulled
 docker pull docker.elastic.co/infra/release-manager:latest
 
+echo "+++ :clipboard: Listing DRA artifacts for version [$STACK_VERSION], branch [$RELEASE_BRANCH], workflow [$WORKFLOW_TYPE], QUALIFIER [$VERSION_QUALIFIER]"
+docker run --rm \
+        --name release-manager \
+        -e VAULT_ROLE_ID \
+        -e VAULT_SECRET_ID \
+        --mount type=bind,readonly=false,src="$PWD",target=/artifacts \
+        docker.elastic.co/infra/release-manager:latest \
+          cli list \
+          --project logstash \
+          --branch "${RELEASE_BRANCH}" \
+          --commit "$(git rev-parse HEAD)" \
+          --workflow "${WORKFLOW_TYPE}" \
+          --version "${STACK_VERSION}" \
+          --artifact-set main \
+          --qualifier "${VERSION_QUALIFIER}"
+
 info "Running the release manager ..."
 
 # collect the artifacts for use with the unified build
@@ -82,8 +103,9 @@ docker run --rm \
       --branch ${RELEASE_BRANCH} \
       --commit "$(git rev-parse HEAD)" \
       --workflow "${WORKFLOW_TYPE}" \
-      --version "${PLAIN_STACK_VERSION}" \
+      --version "${STACK_VERSION}" \
       --artifact-set main \
+      --qualifier "${VERSION_QUALIFIER}" \
       ${DRA_DRY_RUN} | tee rm-output.txt
 
 # extract the summary URL from a release manager output line like:
