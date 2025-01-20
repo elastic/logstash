@@ -20,7 +20,6 @@ require "logstash/config/cpu_core_strategy"
 require "logstash/settings"
 require "logstash/util/cloud_setting_id"
 require "logstash/util/cloud_setting_auth"
-require "logstash/util/modules_setting_array"
 require "socket"
 require "stud/temporary"
 
@@ -39,13 +38,6 @@ module LogStash
     Setting::NullableString.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableString.new("config.string", nil, false),
-           Setting::Modules.new("modules.cli", LogStash::Util::ModulesSettingArray, []),
-           Setting::Modules.new("modules", LogStash::Util::ModulesSettingArray, []),
-                    Setting.new("modules_list", Array, []),
-                    Setting.new("modules_variable_list", Array, []),
-           Setting::Modules.new("cloud.id", LogStash::Util::CloudSettingId),
-           Setting::Modules.new("cloud.auth", LogStash::Util::CloudSettingAuth),
-           Setting::Boolean.new("modules_setup", false),
            Setting::Boolean.new("config.test_and_exit", false),
            Setting::Boolean.new("config.reload.automatic", false),
          Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
@@ -110,7 +102,7 @@ module LogStash
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableString.new("monitoring.cluster_uuid"),
-            Setting::StringSetting.new("pipeline.buffer.type", "direct", true, ["direct", "heap"])
+            Setting::String.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 

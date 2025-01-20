@@ -151,17 +151,18 @@ void buildGem(File projectDir, File buildDir, String gemspec) {
  * @param projectDir Gradle projectDir
  * @param buildDir Gradle buildDir
  * @param plugin Plugin to run specs for
- * @param args CLI arguments to pass to rspec
+ * @param args Optional arguments to pass to the rake task
  */
-void rake(File projectDir, File buildDir, String task) {
+void rake(File projectDir, File buildDir, String task, String... args) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require 'rake'; require 'time'")
+        def rakeArgs = args ? "'${args.join("','")}'" : ""
         jruby.runScriptlet("""
                 rake = Rake.application
                 rake.init
                 rake.load_rakefile
-                rake['${task}'].invoke
+                rake['${task}'].invoke(${rakeArgs})
                 """
         )
     }

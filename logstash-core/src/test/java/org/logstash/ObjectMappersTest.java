@@ -12,6 +12,8 @@ import org.logstash.log.RubyBasicObjectSerializer;
 
 import java.util.LinkedList;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.logstash.ObjectMappers.RUBY_BASIC_OBJECT_SERIALIZERS_MODULE_ID;
@@ -48,5 +50,24 @@ public class ObjectMappersTest {
 
         assertNotNull(found);
         assertTrue("RubyBasicObjectSerializer must be registered before others non-default serializers", found instanceof RubyBasicObjectSerializer);
+    }
+
+    @Test
+    public void testStreamReadConstraintsGlobalDefaults() {
+        // if the statically-initialized stream read constraints are NOT the global default, then the
+        // subsequently-initialized mappers themselves will not necessarily have the configured constraints.
+        assertThatCode(ObjectMappers.CONFIGURED_STREAM_READ_CONSTRAINTS::validateIsGlobalDefault).doesNotThrowAnyException();
+    }
+
+    @Test
+    public void testStreamReadConstraintsAppliedToCBORMapper() {
+        assertThat(ObjectMappers.CBOR_MAPPER.getFactory().streamReadConstraints())
+                .satisfies(ObjectMappers.CONFIGURED_STREAM_READ_CONSTRAINTS::validate);
+    }
+
+    @Test
+    public void testStreamReadConstraintsAppliedToJSONMapper() {
+        assertThat(ObjectMappers.JSON_MAPPER.getFactory().streamReadConstraints())
+                .satisfies(ObjectMappers.CONFIGURED_STREAM_READ_CONSTRAINTS::validate);
     }
 }

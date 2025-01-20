@@ -783,30 +783,6 @@ module LogStash
       end
     end
 
-    class Modules < Coercible
-      def initialize(name, klass, default = nil)
-        super(name, klass, default, false)
-      end
-
-      def set(value)
-        coerced_value = coerce(value)
-        @wrapped_setting.set(coerced_value)
-        coerced_value
-      end
-
-      def coerce(value)
-        if value.is_a?(@klass)
-          return value
-        end
-        @klass.new(value)
-      end
-
-      protected
-      def validate(value)
-        coerce(value)
-      end
-    end
-
     java_import org.logstash.settings.NullableSetting
 
     # @see Setting#nullable

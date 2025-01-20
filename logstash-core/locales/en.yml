@@ -67,33 +67,11 @@ en:
       logging:
         unrecognized_option: |-
           unrecognized option [%{option}]
-    modules:
-      configuration:
-        parse-failed: |-
-          Failed to parse the module configuration: [%{error}]
-        modules-must-be-unique: >-
-          Only a single instance of any module can be run at a time. Duplicate
-          modules: %{duplicate_modules}
-        modules-invalid-name: >-
-          Invalid module name: %{module_name}
-        modules-variables-malformed: >-
-          Failed to parse module variable %{rawvar}.  Must be in -M
-          "MODULE_NAME.KEY.SUBKEY=VALUE" format
-        modules-unavailable: >-
-          The modules specified are not available yet.
-          Specified modules: %{specified_modules}
-          Available modules: %{available_modules}
-        elasticsearch_connection_failed: >-
-          Failed to import module configurations to Elasticsearch and/or Kibana.
-          Module: %{module_name} has Elasticsearch hosts: %{elasticsearch_hosts} and Kibana hosts: %{kibana_hosts}
-        modules-too-many-specified: >-
-          Too many modules specified. Maximum allowed: %{max}, specified: %{specified_modules}
 
     runner:
       short-help: |-
         usage:
           bin/logstash -f CONFIG_PATH [-t] [-r] [] [-w COUNT] [-l LOG]
-          bin/logstash --modules MODULE_NAME [-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"] [-t] [-w COUNT] [-l LOG]
           bin/logstash -e CONFIG_STR [-t] [--log.level fatal|error|warn|info|debug|trace] [-w COUNT] [-l LOG]
           bin/logstash -i SHELL [--log.level fatal|error|warn|info|debug|trace]
           bin/logstash -V [--log.level fatal|error|warn|info|debug|trace]
@@ -108,14 +86,6 @@ en:
         the '-f yourlogstash.conf' flag?
       config-string-path-exclusive:
         Settings 'path.config' (-f) and 'config.string' (-e) can't be used simultaneously.
-      config-module-exclusive: >-
-        Settings 'path.config' (-f) or 'config.string' (-e) can't be used in conjunction with
-        (--modules) or the "modules:" block in the logstash.yml file.
-      reload-with-modules: >-
-        Configuration reloading can't be used with command-line or logstash.yml specified modules.
-      cli-module-override: >-
-        Both command-line and logstash.yml modules configurations detected.
-        Using command-line module configuration to override logstash.yml module configuration.
       config-pipelines-failed-read: >-
         Failed to read pipelines yaml file. Location: %{path}
       config-pipelines-failed-read-with-exception: >-
@@ -244,40 +214,6 @@ en:
              HTML-style ampersand-hash encoding notation
              representing decimal unicode codepoints
              (`[` is `&#91;`; `]` is `&#93;`).
-        modules: |+
-          Load Logstash modules.
-          Modules can be defined using multiple instances
-          '--modules module1 --modules module2',
-             or comma-separated syntax
-          '--modules=module1,module2'
-          Cannot be used in conjunction with '-e' or '-f'
-          Use of '--modules' will override modules declared
-          in the 'logstash.yml' file.
-        modules_variable: |+
-          Load variables for module template.
-          Multiple instances of '-M' or
-          '--modules.variable' are supported.
-          Ignored if '--modules' flag is not used.
-          Should be in the format of
-          '-M "MODULE_NAME.var.PLUGIN_TYPE.PLUGIN_NAME.VARIABLE_NAME=VALUE"'
-          as in
-          '-M "example.var.filter.mutate.fieldname=fieldvalue"'
-        modules_setup: |+
-          Load index template into Elasticsearch, and saved searches, 
-          index-pattern, visualizations, and dashboards into Kibana when
-          running modules.
-        cloud_id: |+
-          Sets the elasticsearch and kibana host settings for
-          module connections in Elastic Cloud.
-          Your Elastic Cloud User interface or the Cloud support
-          team should provide this.
-          Add an optional label prefix '<label>:' to help you
-          identify multiple cloud.ids.
-          e.g. 'staging:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRub3RhcmVhbCRpZGVudGlmaWVy'
-        cloud_auth: |+
-          Sets the elasticsearch and kibana username and password
-          for module connections in Elastic Cloud
-          e.g. 'username:<password>'
         configtest: |+
           Check configuration for valid syntax and then exit.
         api_enabled: |+

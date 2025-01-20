@@ -20,9 +20,9 @@ jobs:
           # when running with on: pull_request_target we get the PR base ref by default
           ref: ${{ github.event.pull_request.head.sha }}
           statusName: "buildkite/docs-build-pr"
-          # https://elasticsearch-ci.elastic.co/job/elastic+logstash+pull-request+build-docs
+          # https://buildkite.com/elastic/docs-build-pr/builds?meta_data[repo_pr]=${REPO}_${PR}
           # usually finishes in ~ 20 minutes
-          timeoutSeconds: 900
+          timeoutSeconds: 1800
           intervalSeconds: 30
       - name: Add Docs Preview link in PR Comment
         if: steps.wait-for-status.outputs.state == 'success'

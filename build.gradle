@@ -101,6 +101,7 @@ allprojects {
       "--add-opens=java.base/java.lang=ALL-UNNAMED",
       "--add-opens=java.base/java.util=ALL-UNNAMED"
     ]
+    maxHeapSize = "2g"
     //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
     testLogging {
       // set options for log level LIFECYCLE
@@ -333,7 +334,6 @@ tasks.register("assembleTarDistribution") {
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
   inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
@@ -350,7 +350,6 @@ tasks.register("assembleOssTarDistribution") {
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
   inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
@@ -365,7 +364,6 @@ tasks.register("assembleZipDistribution") {
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
   inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
@@ -382,7 +380,6 @@ tasks.register("assembleOssZipDistribution") {
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
   inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/modules")
   inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
@@ -817,10 +814,16 @@ class JDKDetails {
 }
 
 tasks.register("lint") {
-    // Calls rake's 'lint' task
+    description = "Lint Ruby source files. Use -PrubySource=file1.rb,file2.rb to specify files"
     dependsOn installDevelopmentGems
     doLast {
-        rake(projectDir, buildDir, 'lint:report')
+        if (project.hasProperty("rubySource")) {
+            // Split the comma-separated files and pass them as separate arguments
+            def files = project.property("rubySource").split(",")
+            rake(projectDir, buildDir, "lint:report", *files)
+        } else {
+            rake(projectDir, buildDir, "lint:report")
+        }
     }
 }
 

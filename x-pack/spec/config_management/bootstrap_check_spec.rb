@@ -75,38 +75,6 @@ describe LogStash::ConfigManagement::BootstrapCheck do
       end
     end
 
-    context "when `modules.cli` is given" do
-      let(:settings) do
-        apply_settings(
-          {
-            "xpack.management.enabled" => true,
-            "modules.cli" => [{ "name" => "hello" }]
-          },
-          system_settings
-        )
-      end
-
-      it "raises a `LogStash::BootstrapCheckError` error" do
-        expect { subject.check(settings) }.to raise_error LogStash::BootstrapCheckError
-      end
-    end
-
-    context "when `modules` is given" do
-      let(:settings) do
-        apply_settings(
-          {
-            "xpack.management.enabled" => true,
-            "modules" => [{ "name" => "hello" }]
-          },
-          system_settings
-        )
-      end
-
-      it "raises a `LogStash::BootstrapCheckError` error" do
-        expect { subject.check(settings) }.to raise_error LogStash::BootstrapCheckError
-      end
-    end
-
     context "when `path.config` is given" do
       let(:settings) do
         apply_settings(

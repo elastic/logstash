@@ -60,7 +60,7 @@ module LogStash
         end
 
         def version
-          LOGSTASH_CORE_VERSION
+          LOGSTASH_VERSION
         end
 
         def http_address
@@ -71,6 +71,8 @@ module LogStash
 
         private
         def enabled_xpack_monitoring?
+          LogStash::SETTINGS.registered?("xpack.monitoring.allow_legacy_collection") &&
+          LogStash::SETTINGS.get_value("xpack.monitoring.allow_legacy_collection") &&
           LogStash::SETTINGS.registered?("xpack.monitoring.enabled") &&
           LogStash::SETTINGS.get("xpack.monitoring.enabled")
         end

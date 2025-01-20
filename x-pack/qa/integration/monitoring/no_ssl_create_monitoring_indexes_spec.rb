@@ -16,6 +16,7 @@ describe "Without SSL monitoring index" do
 
     @logstash_service = logstash("bin/logstash -e '#{config}' -w 1", {
       :settings => {
+        "xpack.monitoring.allow_legacy_collection" => true,
         "xpack.monitoring.collection.interval" => "1s",
         "xpack.monitoring.elasticsearch.username" => "elastic",
         "xpack.monitoring.elasticsearch.password" => elastic_password

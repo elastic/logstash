@@ -14,6 +14,7 @@ describe "Multiple hosts defined" do
 
     @logstash_service = logstash("bin/logstash -e '#{config}' -w 1", {
       :settings => {
+        "xpack.monitoring.allow_legacy_collection" => true,
         "xpack.monitoring.elasticsearch.hosts" => ["http://localhost:9200", "http://localhost:9200"],
         "xpack.monitoring.collection.interval" => "1s",
         "xpack.monitoring.elasticsearch.username" => "elastic",

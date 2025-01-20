@@ -71,37 +71,5 @@ module LogStash module Config module Source
     def config_path?
       !(config_path.nil? || config_path.empty?)
     end
-
-    def modules_cli_setting
-      @settings.get_setting("modules.cli")
-    end
-
-    def modules_cli
-      modules_cli_setting.value
-    end
-
-    def modules_cli?
-      !(modules_cli.nil? || modules_cli.empty?)
-    end
-
-    def modules_setting
-      @settings.get_setting("modules")
-    end
-
-    def modules
-      modules_setting.value
-    end
-
-    def modules?
-      !(modules.nil? || modules.empty?)
-    end
-
-    def both_module_configs?
-      modules_cli? && modules?
-    end
-
-    def modules_defined?
-      modules_cli? || modules?
-    end
   end
 end end end
