@@ -436,7 +436,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-normalize_config_support (~> 1.0)
       logstash-mixin-plugin_factory_support
-    logstash-input-elasticsearch (4.20.5)
+    logstash-input-elasticsearch (4.21.1)
       elasticsearch (>= 7.17.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
