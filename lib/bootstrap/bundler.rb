@@ -134,6 +134,28 @@ module LogStash
       ::Bundler.settings.set_local(:without, options[:without])
       ::Bundler.settings.set_local(:force, options[:force])
 
+      require 'jars/installer'
+      ::Jars::Installer.singleton_class.class_eval do
+        alias_method :original_load_from_maven, :load_from_maven
+
+        define_method(:load_from_maven) do |file|
+          $stderr.puts "DEBUG: load_from_maven called with arguments: #{file.inspect}"
+          result = []
+          ::File.read(file).each_line do |line|
+            if line.match?(/ --/)
+              fixed_line = line.strip.gsub(/ --.+?$/, "")[0...-5]
+              $stderr.puts "changed from \"#{line.inspect}\" to \"#{fixed_line.inspect}\""
+              dep = ::Jars::Installer::Dependency.new(fixed_line)
+            else
+              dep = ::Jars::Installer::Dependency.new(line)
+            end
+            puts dep.inspect
+            result << dep if dep && dep.scope == :runtime
+          end
+          $stderr.puts "DEBUG: load_from_maven returned: #{result.inspect}"
+          result
+        end
+      end
       # This env setting avoids the warning given when bundler is run as root, as is required
       # to update plugins when logstash is run as a service
       # Note: Using `ENV`s here because ::Bundler.settings.set_local or `bundle config`
