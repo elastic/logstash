@@ -116,7 +116,7 @@ bin/logstash-plugin update logstash-input-github <2>
 [[updating-plugins-major-versions]]
 ==== Major-version plugin updates
 
-By default, the plugin manager will only update plugins for which newer _minor_ or _patch_ versions exist, to avoid the introduction of breaking changes.
+To avoid introducing breaking changes, the plugin manager updates plugins for which newer minor or patch versions exist by default. 
 If you wish to also include breaking changes, specify `--level=major`.
 
 [source,shell]
