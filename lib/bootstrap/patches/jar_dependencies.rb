@@ -30,6 +30,10 @@ def require_jar(*args)
   result
 end
 
+# work around https://github.com/jruby/jruby/issues/8579
+# the ruby maven 3.9.3 + maven-libs 3.9.9 gems will output unnecessary text we need to trim down during `load_from_maven`
+# remove everything from "--" until the end of the line
+# the `[...-5]` is just to remove the color changing characters from the end of the string that exist before "--"
 require 'jars/installer'
 
 class ::Jars::Installer
