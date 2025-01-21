@@ -5,6 +5,7 @@ This section summarizes the changes in the following releases:
 
 * <<logstash-8-17-1,Logstash 8.17.1>>
 * <<logstash-8-17-0,Logstash 8.17.0>>
+* <<logstash-8-16-3,Logstash 8.16.3>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
 * <<logstash-8-16-0,Logstash 8.16.0>>
@@ -211,14 +212,59 @@ Other `json_lines` codec issues can be mitigated by:
 
 * Adds new mixin configuration option `with_obsolete` to mark `ssl` options as obsolete https://github.com/logstash-plugins/logstash-mixin-http_client/pull/46[#46]
 
+[[logstash-8-16-3]]
+=== Logstash 8.16.3 Release Notes
+
+[[notable-8.16.3]]
+==== Notable issues fixed
+
+* Avoid lock contention when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
+* Ensure that the Jackson read constraints defaults (Maximum Number value length, Maximum String value length, and Maximum Nesting depth) are applied at runtime if they are absent from jvm.options https://github.com/elastic/logstash/pull/16832[#16832]
+
+[[dependencies-8.16.3]]
+==== Updates to dependencies
+
+* Update Iron Bank base image to ubi9/9.5 https://github.com/elastic/logstash/pull/16825[#16825]
+
+[[plugins-8.16.3]]
+==== Plugins
+
+*Elastic_integration Filter - 8.16.0*
+
+* Aligns with stack major and minor versions https://github.com/elastic/logstash-filter-elastic_integration/pull/210[#210]
+  * Embeds Ingest Node components from Elasticsearch 8.16
+  * Compatible with Logstash 8.15+
+
+*Azure_event_hubs Input - 1.5.1*
+
+* Updated multiple Java dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/99[#99]
+
+*Elastic_enterprise_search Integration - 3.0.1*
+
+* Add deprecation log for App Search and Workplace Search. https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/pull/22[#22]
+
+*Jdbc Integration - 5.5.2*
+
+* The input plugin's prior behaviour of opening a new database connection for each scheduled run (removed in `v5.4.1`) is restored, ensuring that infrequently-run schedules do not hold open connections to their databases indefinitely, _without_ reintroducing the leak https://github.com/logstash-plugins/logstash-integration-jdbc/pull/130[#130]
+
+*Kafka Integration - 11.5.4*
+
+* Update kafka client to 3.8.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/188[#188]
+* Removed `jar-dependencies` dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/187[#187]
+
+*Snmp Integration - 4.0.5*
+
+* Fix typo resulting in "uninitialized constant" exception for invalid column name https://github.com/logstash-plugins/logstash-integration-snmp/pull/73[#73]
+
 [[logstash-8-16-2]]
 === Logstash 8.16.2 Release Notes
 
 [[notable-8-16-2]]
 ==== Notable issues fixed
 
-* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771]
-* Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758]
+* Reset internal size counter in BufferedTokenizer during flush https://github.com/elastic/logstash/pull/16771[#16771].
+  Fixes <<known-issue-8-16-1-json_lines,"input buffer full" error>> that could appear with versions 8.16.0 and 8.16.1.
+* Ensure overrides to jackson settings are applied during startup https://github.com/elastic/logstash/pull/16758[#16758].
 
 [[dependencies-8-16-2]]
 ==== Updates to dependencies
