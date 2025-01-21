@@ -112,9 +112,10 @@ bin/logstash-plugin update logstash-input-github <2>
 <1> updates all installed plugins
 <2> updates only the plugin you specify
 
-[NOTE]
-.Major-version plugin updates
-==============================
+[discrete]
+[[updating-plugins-major-versions]]
+==== Major-version plugin updates
+
 By default, the plugin manager will only update plugins for which newer _minor_ or _patch_ versions exist, to avoid the introduction of breaking changes.
 If you wish to also include breaking changes, specify `--level=major`.
 
@@ -125,7 +126,7 @@ bin/logstash-plugin update --level=major logstash-input-github <2>
 ----------------------------------
 <1> updates all installed plugins to latest, including major-version breaking changes
 <2> updates only the plugin you specify to latest, including major-version breaking changes
-==============================
+
 
 [discrete]
 [[removing-plugins]]
