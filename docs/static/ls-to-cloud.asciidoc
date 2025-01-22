@@ -7,7 +7,7 @@ When you configure the Elasticsearch output plugin to use <<plugins-outputs-elas
 Examples:
 
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
-* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }``
+* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
 {ess-leadin-short}
 
