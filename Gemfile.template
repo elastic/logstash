@@ -43,3 +43,4 @@ gem "murmurhash3", "= 0.1.6" # Pins until version 0.1.7-java is released
 gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
+gem "psych", "5.2.2"
