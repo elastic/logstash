@@ -15,6 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# work around https://github.com/jruby/jruby/issues/8579
+require_relative './patches/jar_dependencies'
+
 module LogStash
   module Bundler
     extend self
