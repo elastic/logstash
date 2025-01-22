@@ -140,3 +140,5 @@ gem "logstash-output-stdout", "~> 3.1", :require => false
 gem "logstash-output-tcp", "~> 6.2", :require => false
 gem "logstash-output-udp", "~> 3.2", :require => false
 gem "logstash-output-webhdfs", "~> 3.1", :require => false
+
+gem "psych", "5.2.2"
