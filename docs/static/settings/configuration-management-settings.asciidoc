@@ -54,9 +54,10 @@ section in your Logstash configuration, or a different one. Defaults to
 If your {es} cluster is protected with basic authentication, these settings
 provide the username and password that the Logstash instance uses to
 authenticate for accessing the configuration data. The username you specify here
-should have the built-in `logstash_admin` role and the customized `logstash_writer` role, which provides access to system
-indices for managing configurations. Starting with Elasticsearch version 7.10.0, the
-`logstash_admin` role inherits the `manage_logstash_pipelines` cluster privilege for centralized pipeline management.
+should have the built-in `logstash_admin` and `logstash_system` roles.
+These roles provide access to system indices for managing configurations.
+
+NOTE: Starting with Elasticsearch version 7.10.0, the `logstash_admin` role inherits the `manage_logstash_pipelines` cluster privilege for centralized pipeline management.
 If a user has created their own roles and granted them access to the .logstash index, those roles will continue to work in 7.x but will need to be updated for 8.0.
 
 `xpack.management.elasticsearch.proxy`::
@@ -143,8 +144,8 @@ If you're using {es} in {ecloud}, you can set your auth credentials here.
 This setting is an alternative to both `xpack.management.elasticsearch.username`
 and `xpack.management.elasticsearch.password`. If `cloud_auth` is configured,
 those settings should not be used.
-The credentials you specify here should be for a user with the `logstash_admin` role, which
-provides access to system indices for managing configurations.
+The credentials you specify here should be for a user with the `logstash_admin` and `logstash_system` roles, which
+provide access to system indices for managing configurations.
 
 `xpack.management.elasticsearch.api_key`::
 
