@@ -249,8 +249,7 @@ POST /_security/api_key
   "name": "logstash_host001", <1>
   "role_descriptors": {
     "logstash_monitoring": { <2>
-      "cluster": ["monitor"],
-      "index": ["read"]
+      "cluster": ["monitor", "manage_logstash_pipelines"]
     }
   }
 }
