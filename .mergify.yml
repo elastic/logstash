@@ -39,6 +39,7 @@ pull_request_rules:
       label:
         add:
           - backport-8.x
+
   - name: remove backport-skip label
     conditions:
       - label~=^backport-\d
@@ -46,6 +47,7 @@ pull_request_rules:
       label:
         remove:
           - backport-skip
+
   - name: remove backport-8.x label if backport-skip is present
     conditions:
       - label~=^backport-skip
@@ -53,6 +55,7 @@ pull_request_rules:
       label:
         remove:
           - backport-8.x
+
   - name: notify the backport has not been merged yet
     conditions:
       - -merged
@@ -64,6 +67,7 @@ pull_request_rules:
       comment:
         message: |
           This pull request has not been merged yet. Could you please review and merge it @{{ assignee | join(', @') }}? 🙏
+
   - name: backport patches to 8.x branch
     conditions:
       - merged
@@ -78,6 +82,7 @@ pull_request_rules:
         labels:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
   - name: backport patches to 8.16 branch
     conditions:
       - merged
@@ -92,6 +97,7 @@ pull_request_rules:
         labels:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
   - name: backport patches to 8.17 branch
     conditions:
       - merged
