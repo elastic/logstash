@@ -14,7 +14,9 @@
         "skip_ci_labels": [ ],
         "skip_target_branches": [ ],
         "skip_ci_on_only_changed": [
-          "^docs/"
+          "^docs/",
+          "^.github/",
+          "\\.md$"
         ],
         "always_require_ci_on_changed": [ ]
       }
