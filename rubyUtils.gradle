@@ -228,6 +228,7 @@ def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.ge
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
 
 tasks.register("downloadJRuby", Download) {
+    onlyIf { !project.hasProperty('skipJRubySetup') }
     description "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true

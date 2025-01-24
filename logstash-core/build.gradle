@@ -27,27 +27,12 @@ buildscript {
     }
 }
 
-plugins {
-    id "jacoco"
-    id "org.sonarqube" version "4.3.0.3225"
-}
 
-apply plugin: 'jacoco'
-apply plugin: "org.sonarqube"
 
 repositories {
     mavenCentral()
 }
 
-sonarqube {
-    properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-    }
-}
-
-jacoco {
-    toolVersion = "0.8.9"
-}
 
 
 import org.yaml.snakeyaml.Yaml
@@ -110,26 +95,7 @@ configurations.archives {
     extendsFrom configurations.javadoc
 }
 
-def setupBCProvider() {
-    println "Setting up BC provider"
-    System.setProperty("javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks")
-    System.setProperty("javax.net.ssl.trustStoreType", "BCFKS")
-    System.setProperty("javax.net.ssl.trustStoreProvider", "BCFIPS") 
-    System.setProperty("javax.net.ssl.trustStorePassword", "changeit")
-
-    def provider = Class.forName('org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider').getDeclaredConstructor().newInstance()
-    java.security.Security.insertProviderAt(provider, 1)
-}
-
 tasks.register("javaTests", Test) {
-    doFirst { 
-         configurations.testRuntimeClasspath.resolvedConfiguration.files.each { file ->
-            if (file.name.startsWith("bc-")) {
-                println "Found BC jar: ${file}"
-            }
-        }
-        setupBCProvider()
-    }
     dependsOn ':bootstrap'
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
@@ -143,31 +109,10 @@ tasks.register("javaTests", Test) {
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
 
-    jacoco {
-        enabled = true
-        destinationFile = layout.buildDirectory.file('jacoco/test.exec').get().asFile
-        classDumpDir = layout.buildDirectory.dir('jacoco/classpathdumps').get().asFile
-    }
 }
 
-jacocoTestReport {
-    reports {
-        xml.required = true
-        html.required = true
-    }
-}
-
-javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
-    doFirst { 
-         configurations.testRuntimeClasspath.resolvedConfiguration.files.each { file ->
-            if (file.name.startsWith("bc-")) {
-                println "Found BC jar: ${file}"
-            }
-        }
-        setupBCProvider()
-    }
     dependsOn compileTestJava
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
@@ -222,6 +167,50 @@ task generateVersionInfoResources(type: DefaultTask) {
         def resourceFile = outDir.file('version-info.properties').asFile
         resourceFile.text = "logstash-core: ${logstashCoreVersion}"
     }
+}
+// Test execution tasks without dependencies
+tasks.register("javaTestsOnly", Test) {
+    setDependsOn([])
+    exclude '/org/logstash/RSpecTests.class'
+    exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
+    exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
+    exclude '/org/logstash/config/ir/EventConditionTest.class'
+    exclude '/org/logstash/config/ir/PipelineConfigTest.class'
+    exclude '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    exclude '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    exclude '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    exclude '/org/logstash/plugins/CounterMetricImplTest.class'
+    exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
+    exclude '/org/logstash/execution/ObservedExecutionTest.class'
+}
+
+tasks.register("rubyTestsOnly", Test) {
+    setDependsOn([])
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/spec")
+    systemProperty 'logstash.root.dir', projectDir.parent
+    
+    include '/org/logstash/RSpecTests.class'
+    include '/org/logstash/config/ir/ConfigCompilerTest.class'
+    include '/org/logstash/config/ir/CompiledPipelineTest.class'
+    include '/org/logstash/config/ir/EventConditionTest.class'
+    include '/org/logstash/config/ir/PipelineConfigTest.class'
+    include '/org/logstash/config/ir/compiler/OutputDelegatorTest.class'
+    include '/org/logstash/config/ir/compiler/JavaCodecDelegatorTest.class'
+    include '/org/logstash/plugins/NamespacedMetricImplTest.class'
+    include '/org/logstash/plugins/CounterMetricImplTest.class'
+    include '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
+    include '/org/logstash/execution/ObservedExecutionTest.class'
+}
+
+// Setup task combining all prerequisites
+tasks.register("testSetup") {
+    dependsOn ':bootstrap'
+    dependsOn 'classes'
+    dependsOn 'testClasses'
+    dependsOn 'compileTestJava'
+    dependsOn 'copyRuntimeLibs'
+    dependsOn 'generateVersionInfoResources'
 }
 sourceSets {
     main { output.dir(generateVersionInfoResources.outputs.files) }

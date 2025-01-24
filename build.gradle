@@ -295,15 +295,18 @@ clean {
   delete "${projectDir}/logstash-core/src/main/resources/org/logstash/plugins/plugin_aliases.yml"
 }
 
-def assemblyDeps = [downloadAndInstallJRuby, assemble] + subprojects.collect {
-  it.tasks.findByName("assemble")
+def getAssemblyDeps() {
+    return project.hasProperty('skipJRubySetup') ? [] : [downloadAndInstallJRuby, assemble] + subprojects.collect {
+        it.tasks.findByName("assemble") 
+    }
 }
 
 tasks.register("bootstrap") {
-    dependsOn assemblyDeps
+    onlyIf { !project.hasProperty('skipJRubySetup') }
+    dependsOn getAssemblyDeps()
     doLast {
-      setupJruby(projectDir, buildDir)
-  }
+        setupJruby(projectDir, buildDir)
+    }
 }
 
 
