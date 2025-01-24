@@ -1,3 +1,4 @@
+// test-init.gradle
 initscript {
     repositories {
         mavenCentral()
@@ -5,7 +6,7 @@ initscript {
     dependencies {
         classpath files(
             '/root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bc-fips/2.0.0/ee9ac432cf08f9a9ebee35d7cf8a45f94959a7ab/bc-fips-2.0.0.jar',
-            '/root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bcpkix-fips/2.0.7/1eea0f325315ca6295b0a6926ff862d8001cdf9/bcpkix-fips-2.0.7.jar',
+            '/root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bcpkix-fips/2.0.7/1eea0f325315ca6295b0a6926ff862d8001cdf9/bcpkix-fips-2.0.7.jar', 
             '/root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bctls-fips/2.0.19/9cc33650ede63bc1a8281ed5c8e1da314d50bc76/bctls-fips-2.0.19.jar',
             '/root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bcutil-fips/2.0.3/a1857cd639295b10cc90e6d31ecbc523cdafcc19/bcutil-fips-2.0.3.jar'
         )
@@ -18,13 +19,14 @@ gradle.taskGraph.whenReady { graph ->
         graph.hasTask(":logstash-core:integrationTests")) {
 
         println "Registering BC FIPS provider for test execution..."
+        def provider = Class.forName('org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider').getDeclaredConstructor().newInstance()
+        java.security.Security.insertProviderAt(provider, 1)
+
         System.setProperty("javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks")
         System.setProperty("javax.net.ssl.trustStoreType", "BCFKS")
         System.setProperty("javax.net.ssl.trustStoreProvider", "BCFIPS")
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit")
 
-        def provider = Class.forName('org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider').getDeclaredConstructor().newInstance()
-        java.security.Security.insertProviderAt(provider, 1)
         def configureTask = { task ->
             task.systemProperty "java.security.properties", "/etc/java/security/java.security"
             task.systemProperty "javax.net.ssl.keyStore", "/etc/java/security/keystore.bcfks"

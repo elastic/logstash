@@ -110,7 +110,26 @@ configurations.archives {
     extendsFrom configurations.javadoc
 }
 
+def setupBCProvider() {
+    println "Setting up BC provider"
+    System.setProperty("javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks")
+    System.setProperty("javax.net.ssl.trustStoreType", "BCFKS")
+    System.setProperty("javax.net.ssl.trustStoreProvider", "BCFIPS") 
+    System.setProperty("javax.net.ssl.trustStorePassword", "changeit")
+
+    def provider = Class.forName('org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider').getDeclaredConstructor().newInstance()
+    java.security.Security.insertProviderAt(provider, 1)
+}
+
 tasks.register("javaTests", Test) {
+    doFirst { 
+         configurations.testRuntimeClasspath.resolvedConfiguration.files.each { file ->
+            if (file.name.startsWith("bc-")) {
+                println "Found BC jar: ${file}"
+            }
+        }
+        setupBCProvider()
+    }
     dependsOn ':bootstrap'
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
@@ -141,6 +160,14 @@ jacocoTestReport {
 javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
+    doFirst { 
+         configurations.testRuntimeClasspath.resolvedConfiguration.files.each { file ->
+            if (file.name.startsWith("bc-")) {
+                println "Found BC jar: ${file}"
+            }
+        }
+        setupBCProvider()
+    }
     dependsOn compileTestJava
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")

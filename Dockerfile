@@ -29,7 +29,6 @@ COPY . .
 # ENV JAVA_OPTS="-Djavax.net.ssl.trustStore=$JAVA_HOME/lib/security/cacerts -Djavax.net.ssl.trustStoreType=JKS -Djavax.net.ssl.trustStorePassword=changeit"
 RUN ./gradlew clean bootstrap assemble installDefaultGems --no-daemon
 
-# Convert to BCFKS trust store
 RUN keytool -importkeystore \
     -srckeystore $JAVA_HOME/lib/security/cacerts \
     -destkeystore /etc/java/security/cacerts.bcfks \
@@ -39,9 +38,22 @@ RUN keytool -importkeystore \
     -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
     -deststorepass changeit \
     -srcstorepass changeit \
-    -noprompt && \
-    cp /etc/java/security/cacerts.bcfks /etc/java/security/keystore.bcfks
+    -noprompt
 
+RUN keytool -importkeystore \
+    -srckeystore $JAVA_HOME/lib/security/cacerts \
+    -destkeystore /etc/java/security/keystore.bcfks \
+    -srcstoretype jks \
+    -deststoretype bcfks \
+    -providerpath /root/.gradle/caches/modules-2/files-2.1/org.bouncycastle/bc-fips/2.0.0/ee9ac432cf08f9a9ebee35d7cf8a45f94959a7ab/bc-fips-2.0.0.jar \
+    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
+    -deststorepass changeit \
+    -srcstorepass changeit \
+    -noprompt
+
+# Uncomment this out and build for interactive terminal sessions in a container
+# Currently this dockerfile is just for running tests, but I have been also using it to
+# do manual validation. Need to think more about how to separate concerns. 
 # ENV JAVA_SECURITY_PROPERTIES=/etc/java/security/java.security
 # ENV JAVA_OPTS="\
 #     -Djava.security.debug=ssl,provider \
@@ -59,4 +71,5 @@ RUN keytool -importkeystore \
 #     -Dorg.bouncycastle.fips.approved_only=true"
 
 # Run tests with BCFKS truststore
-CMD ["./gradlew", "--init-script", "/tmp/test-init.gradle", "--info", "--stacktrace", "test"]
+CMD ["./gradlew", "--info", "--stacktrace", "test"]
+
