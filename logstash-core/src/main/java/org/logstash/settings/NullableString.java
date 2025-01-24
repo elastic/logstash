@@ -20,7 +20,7 @@ package org.logstash.settings;
 
 import java.util.List;
 
-public class NullableString extends StringSetting {
+public class NullableString extends SettingString {
 
     public NullableString(String name, String defaultValue, boolean strict, List<String> possibleStrings) {
         super(name, defaultValue, strict, possibleStrings);

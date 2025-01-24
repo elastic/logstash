@@ -25,7 +25,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   let(:default_value) { "DeFaUlT" }
 
   let(:settings) { LogStash::Settings.new }
-  let(:canonical_setting) { LogStash::Setting::StringSetting.new(canonical_setting_name, default_value, true) }
+  let(:canonical_setting) { LogStash::Setting::SettingString.new(canonical_setting_name, default_value, true) }
 
   let(:events) { [] }
 
@@ -147,7 +147,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
         let(:old_value) { "iron man" }
         let(:canonical_name) { "iron.setting" }
         let(:deprecated_name) { "iron.oxide.setting" }
-        subject { LogStash::Setting::StringSetting.new(canonical_name, old_value, true) }
+        subject { LogStash::Setting::SettingString.new(canonical_name, old_value, true) }
 
         it 'logs a deprecation warning with target remove version' do
           settings.set(deprecated_name, new_value)

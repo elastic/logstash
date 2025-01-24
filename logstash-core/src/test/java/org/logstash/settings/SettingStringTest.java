@@ -26,14 +26,14 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 // Mirrored from logstash-core/spec/logstash/settings/string_spec.rb
-public class StringSettingTest {
+public class SettingStringTest {
 
     private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
-    private StringSetting sut;
+    private SettingString sut;
 
     @Before
     public void setUp() throws Exception {
-        sut = new StringSetting("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
+        sut = new SettingString("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
     }
 
     @Test(expected = IllegalArgumentException.class)

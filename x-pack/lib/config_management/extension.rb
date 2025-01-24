@@ -40,7 +40,7 @@ module LogStash
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.certificate"))
         settings.register(LogStash::Setting::NullableString.new("xpack.management.elasticsearch.ssl.key"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.ssl.cipher_suites", String, []))
-        settings.register(LogStash::Setting::StringSetting.new("xpack.management.elasticsearch.ssl.verification_mode", "full", true, %w[none certificate full]))
+        settings.register(LogStash::Setting::SettingString.new("xpack.management.elasticsearch.ssl.verification_mode", "full", true, %w[none certificate full]))
         settings.register(LogStash::Setting::Boolean.new("xpack.management.elasticsearch.sniffing", false))
       rescue => e
         logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
