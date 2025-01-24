@@ -3,6 +3,8 @@ import sys
 
 import yaml
 
+YAML_HEADER = '# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json\n'
+
 def to_bk_key_friendly_string(key):
     """
     Convert and return key to an acceptable format for Buildkite's key: field
@@ -106,6 +108,7 @@ def build_steps_to_yaml(branch, workflow_type):
 if __name__ == "__main__":
     try:
         workflow_type = os.environ["WORKFLOW_TYPE"]
+        version_qualifier = os.environ.get("VERSION_QUALIFIER", "")
     except ImportError:
         print(f"Missing env variable WORKFLOW_TYPE. Use export WORKFLOW_TYPE=<staging|snapshot>\n.Exiting.")
         exit(1)
@@ -114,18 +117,25 @@ if __name__ == "__main__":
 
     structure = {"steps": []}
 
-    # Group defining parallel steps that build and save artifacts
-    group_key = to_bk_key_friendly_string(f"logstash_dra_{workflow_type}")
+    if workflow_type.upper() == "SNAPSHOT" and len(version_qualifier)>0:
+        structure["steps"].append({
+            "label": f"no-op pipeline because prerelease builds (VERSION_QUALIFIER is set to [{version_qualifier}]) don't support the [{workflow_type}] workflow",
+            "command": ":",
+            "skip": "VERSION_QUALIFIER (prerelease builds) not supported with SNAPSHOT DRA",
+        })
+    else:
+        # Group defining parallel steps that build and save artifacts
+        group_key = to_bk_key_friendly_string(f"logstash_dra_{workflow_type}")
 
-    structure["steps"].append({
-        "group": f":Build Artifacts - {workflow_type.upper()}",
-        "key": group_key,
-        "steps": build_steps_to_yaml(branch, workflow_type),
-    })
+        structure["steps"].append({
+            "group": f":Build Artifacts - {workflow_type.upper()}",
+            "key": group_key,
+            "steps": build_steps_to_yaml(branch, workflow_type),
+        })
 
-    # Final step: pull artifacts built above and publish them via the release-manager
-    structure["steps"].extend(
-        yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
-    )
+        # Final step: pull artifacts built above and publish them via the release-manager
+        structure["steps"].extend(
+            yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
+        )
 
-    print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json\n' + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
+    print(YAML_HEADER + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))
