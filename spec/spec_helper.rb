@@ -90,3 +90,20 @@ end
 def installed_plugins
   Gem::Specification.find_all.select { |spec| spec.metadata["logstash_plugin"] }.map { |plugin| plugin.name }
 end
+
+java_import org.apache.logging.log4j.core.appender.AbstractAppender
+
+class CustomAppender < AbstractAppender
+
+  attr_reader :events_collector
+
+  def initialize(events)
+    super("CustomCaptorAppender", nil, nil, true, org.apache.logging.log4j.core.config.Property::EMPTY_ARRAY)
+    @events_collector = events
+  end
+
+  # override the append to catch all the calls and collect the events
+  def append(log_event)
+    @events_collector << log_event.message.formatted_message
+  end
+end
