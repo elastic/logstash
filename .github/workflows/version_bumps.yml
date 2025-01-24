@@ -58,3 +58,11 @@ jobs:
       - name: Create Pull Request
         run: |
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ github.event.inputs.branch }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ github.event.inputs.branch }}\"}" https://api.github.com/repos/elastic/logstash/pulls
+      - name: Create GitHub backport label (Mergify) (minor only)
+        if: ${{ inputs.bump == 'minor' }}
+        continue-on-error: true
+        run: |
+          gh label create $LABEL_NAME --description "Automated backport with mergify" --color 0052cc --force
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABEL_NAME: "backport-${{ inputs.branch }}"
