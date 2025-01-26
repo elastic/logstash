@@ -38,3 +38,10 @@ mergify:
 		git commit -m "mergify: add $(BACKPORT_LABEL) rule"; \
 		git push origin $(PUSH_BRANCH) ; \
 	fi
+
+# Create GitHub backport label
+.PHONY: backport-label
+backport-label: BACKPORT_LABEL=$${BACKPORT_LABEL}
+backport-label:
+	@echo ">> backport-label"
+	gh label create $(BACKPORT_LABEL) --description "Automated backport with mergify" --color 0052cc --force
