@@ -28,6 +28,7 @@ jobs:
     env:
       INPUTS_BRANCH: "${{ inputs.branch }}"
       INPUTS_BUMP: "${{ inputs.bump }}"
+      LABEL_NAME: "backport-${{ inputs.branch }}"
     steps:
       - name: Fetch logstash-core team member list
         uses: tspascoal/get-user-teams-membership@57e9f42acd78f4d0f496b3be4368fc5f62696662 #v3.0.0
@@ -58,6 +59,12 @@ jobs:
           if [[ -z $(git status --porcelain) ]]; then echo "No changes. We're done."; exit 0; fi
           git commit -m "Update ${{ env.INPUTS_BUMP }} plugin versions in gemfile lock" -a
           git push origin $BRANCH
+
+      - name: Update mergify (minor only)
+        if: ${{ inputs.bump == 'minor' }}
+        continue-on-error: true
+        run: make -C .ci mergify BACKPORT_LABEL=$LABEL_NAME BRANCH=$INPUTS_BRANCH PUSH_BRANCH=$BRANCH
+
       - name: Create Pull Request
         run: |
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -X POST -d "{\"title\": \"bump lock file for ${{ env.INPUTS_BRANCH }}\",\"head\": \"${BRANCH}\",\"base\": \"${{ env.INPUTS_BRANCH }}\"}" https://api.github.com/repos/elastic/logstash/pulls
@@ -68,4 +75,3 @@ jobs:
           gh label create $LABEL_NAME --description "Automated backport with mergify" --color 0052cc --force
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LABEL_NAME: "backport-${{ inputs.branch }}"
