@@ -65,7 +65,7 @@ RUN for iter in {1..10}; do \
   <%= package_manager %> install -y curl && \
   <%= package_manager %> clean all && \
 <% else -%><%# 'wolfi' -%>
-  <%= package_manager %> add --no-cache curl bash && \
+  <%= package_manager %> add --no-cache curl bash openssl && \
 <% end -%>
   exit_code=0 && break || \
   exit_code=$? && echo "packaging error: retry $iter in 10s" && \
