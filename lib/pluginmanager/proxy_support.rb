@@ -55,8 +55,8 @@ def apply_env_proxy_settings(settings)
   scheme = settings[:protocol].downcase
   java.lang.System.setProperty("#{scheme}.proxyHost", settings[:host])
   java.lang.System.setProperty("#{scheme}.proxyPort", settings[:port].to_s)
-  java.lang.System.setProperty("#{scheme}.proxyUsername", settings[:username].to_s)
-  java.lang.System.setProperty("#{scheme}.proxyPassword", settings[:password].to_s)
+  java.lang.System.setProperty("#{scheme}.proxyUser", settings[:username].to_s)
+  java.lang.System.setProperty("#{scheme}.proxyPass", settings[:password].to_s)
 end
 
 def extract_proxy_values_from_uri(proxy_uri)
