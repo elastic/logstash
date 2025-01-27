@@ -20,13 +20,13 @@ require "logstash/settings"
 
 describe LogStash::Setting::Nullable do
   let(:setting_name) { "this.that" }
-  let(:normal_setting) { LogStash::Setting::String.new(setting_name, nil, false, possible_strings) }
+  let(:normal_setting) { LogStash::Setting::SettingString.new(setting_name, nil, false, possible_strings) }
   let(:possible_strings) { [] } # empty means any string passes
 
   subject(:nullable_setting) { normal_setting.nullable }
 
   it 'is a kind of Nullable' do
-    expect(nullable_setting).to be_a_kind_of(described_class)
+    expect(nullable_setting).to be_a_kind_of(LogStash::Setting::NullableSetting)
   end
 
   it "retains the wrapped setting's name" do
@@ -56,14 +56,14 @@ describe LogStash::Setting::Nullable do
     context 'to an invalid wrong-type value' do
       let(:candidate_value) { 127 } # wrong type, expects String
       it 'is an invalid setting' do
-        expect { nullable_setting.validate_value }.to raise_error(ArgumentError, a_string_including("Setting \"#{setting_name}\" must be a "))
+        expect { nullable_setting.validate_value }.to raise_error(java.lang.ClassCastException, a_string_including("class java.lang.Long cannot be cast to class java.lang.String"))
       end
     end
     context 'to an invalid value not in the allow-list' do
       let(:possible_strings) { %w(this that)}
       let(:candidate_value) { "another" } # wrong type, expects String
       it 'is an invalid setting' do
-        expect { nullable_setting.validate_value }.to raise_error(ArgumentError, a_string_including("Invalid value"))
+        expect { nullable_setting.validate_value }.to raise_error(java.lang.IllegalArgumentException, a_string_including("Invalid value"))
       end
     end
     context 'to a valid value' do
