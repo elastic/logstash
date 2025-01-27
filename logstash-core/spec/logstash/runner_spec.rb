@@ -265,8 +265,38 @@ describe LogStash::Runner do
 
         context "when deprecated :http.host is defined by the user" do
           let(:args) { ["--http.host", "localhost", "-e", pipeline_string]}
+          let(:events) { [] }
+
+          before(:each) do
+            java_import org.apache.logging.log4j.LogManager
+            logger = LogManager.getLogger("org.logstash.settings.DeprecatedAlias")
+            deprecated_logger = LogManager.getLogger("org.logstash.deprecation.settings.DeprecatedAlias")
+
+            @custom_appender = CustomAppender.new(events).tap {|appender| appender.start }
+
+            java_import org.apache.logging.log4j.Level
+            logger.addAppender(@custom_appender)
+            deprecated_logger.addAppender(@custom_appender)
+            # had to set level after appending as it was "error" for some reason
+            logger.setLevel(Level::INFO)
+            deprecated_logger.setLevel(Level::INFO)
+
+            expect(@custom_appender.started?).to be_truthy
+          end
+
+          after(:each) do
+            events.clear
+            java_import org.apache.logging.log4j.LogManager
+            logger = LogManager.getLogger("org.logstash.settings.DeprecatedAlias")
+            deprecated_logger = LogManager.getLogger("org.logstash.deprecation.settings.DeprecatedAlias")
+            # The Logger's AbstractConfiguration contains a cache of Appender, by class name. The cache is updated
+            # iff is absent, so to make subsequent add_appender effective we have cleanup on teardown, else the new
+            # appender instance is simply not used by the logger
+            logger.remove_appender(@custom_appender)
+            deprecated_logger.remove_appender(@custom_appender)
+          end
+
           it "creates an Agent whose `api.http.host` uses the provided value and provides helpful deprecation message" do
-            expect(deprecation_logger_stub).to receive(:deprecated).with(a_string_including "`http.host` is a deprecated alias for `api.http.host`")
             expect(runner_deprecation_logger_stub).to receive(:deprecated).with(a_string_including 'The flag ["--http.host"] has been deprecated')
             expect(LogStash::Agent).to receive(:new) do |settings|
               expect(settings.set?("api.http.host")).to be(true)
@@ -274,6 +304,9 @@ describe LogStash::Runner do
             end
 
             subject.run("bin/logstash", args)
+
+            expect(events).not_to be_empty
+            expect(events[0]).to match(/`http.host` is a deprecated alias for `api.http.host`/)
           end
         end
 

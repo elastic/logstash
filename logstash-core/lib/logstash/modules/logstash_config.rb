@@ -69,13 +69,13 @@ module LogStash module Modules class LogStashConfig
     # validate the values and replace them in the template.
     case default
       when String
-        get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
+        get_setting(LogStash::Setting::SettingNullableString.new(name, default.to_s))
       when Numeric
         get_setting(LogStash::Setting::Numeric.new(name, default))
       when true, false
         get_setting(LogStash::Setting::Boolean.new(name, default))
       else
-        get_setting(LogStash::Setting::NullableString.new(name, default.to_s))
+        get_setting(LogStash::Setting::SettingNullableString.new(name, default.to_s))
       end
   end
 

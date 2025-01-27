@@ -154,8 +154,8 @@ describe LogStash::Settings do
       settings.on_post_process do
         settings.set("baz", "bot")
       end
-      settings.register(LogStash::Setting::String.new("foo", "bar"))
-      settings.register(LogStash::Setting::String.new("baz", "somedefault"))
+      settings.register(LogStash::Setting::SettingString.new("foo", "bar"))
+      settings.register(LogStash::Setting::SettingString.new("baz", "somedefault"))
       settings.post_process
     end
 
@@ -183,7 +183,7 @@ describe LogStash::Settings do
   context "transient settings" do
     subject do
       settings = described_class.new
-      settings.register(LogStash::Setting::String.new("exist", "bonsoir"))
+      settings.register(LogStash::Setting::SettingString.new("exist", "bonsoir"))
       settings
     end
 
@@ -237,9 +237,9 @@ describe LogStash::Settings do
 
       subject do
         settings = described_class.new
-        settings.register(LogStash::Setting::String.new("interpolated_env", "missing"))
-        settings.register(LogStash::Setting::String.new("with_dot_env", "missing"))
-        settings.register(LogStash::Setting::String.new("interpolated_store", "missing"))
+        settings.register(LogStash::Setting::SettingString.new("interpolated_env", "missing"))
+        settings.register(LogStash::Setting::SettingString.new("with_dot_env", "missing"))
+        settings.register(LogStash::Setting::SettingString.new("interpolated_store", "missing"))
         settings
       end
 
