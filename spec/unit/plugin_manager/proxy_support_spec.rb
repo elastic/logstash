@@ -71,8 +71,22 @@ describe "Proxy support" do
       schemes.each do |scheme|
         expect(java.lang.System.getProperty("#{scheme}.proxyHost")).to eq(send("#{scheme}_proxy_uri").host)
         expect(java.lang.System.getProperty("#{scheme}.proxyPort")).to eq(send("#{scheme}_proxy_uri").port.to_s)
-        expect(java.lang.System.getProperty("#{scheme}.proxyUsername")).to eq(send("#{scheme}_proxy_uri").user)
-        expect(java.lang.System.getProperty("#{scheme}.proxyPassword")).to eq(send("#{scheme}_proxy_uri").password)
+        expect(java.lang.System.getProperty("#{scheme}.proxyUser")).to eq(send("#{scheme}_proxy_uri").user)
+        expect(java.lang.System.getProperty("#{scheme}.proxyPass")).to eq(send("#{scheme}_proxy_uri").password)
+      end
+    end
+
+    context "URI's use of proxy" do
+      it "applies the settings from environment" do
+        schemes.each do |scheme|
+          configure_proxy
+          uri = URI.parse("#{scheme}://rubygems.org")
+          proxy = uri.find_proxy
+          expect(proxy.host).to eq(send("#{scheme}_proxy_uri").host)
+          expect(proxy.port).to eq(send("#{scheme}_proxy_uri").port)
+          expect(proxy.user).to eq(send("#{scheme}_proxy_uri").user)
+          expect(proxy.password).to eq(send("#{scheme}_proxy_uri").password)
+        end
       end
     end
 
