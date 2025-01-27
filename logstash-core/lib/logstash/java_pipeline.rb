@@ -634,7 +634,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     case settings.get("pipeline.ordered")
     when "auto"
       if settings.set?("pipeline.workers") && settings.get("pipeline.workers") == 1
-        @logger.warn("'pipeline.ordered' is enabled and is likely less efficient, consider disabling if preserving event order is not necessary") unless pipeline_id == LogStash::MonitoringExtension::PipelineRegisterHook::PIPELINE_ID
+        @logger.warn("'pipeline.ordered' is enabled and is likely less efficient, consider disabling if preserving event order is not necessary") unless settings.get("pipeline.system")
         return true
       end
     when "true"
