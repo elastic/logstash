@@ -99,7 +99,7 @@ public class SettingWithDeprecatedAlias<T> extends SettingDelegator<T> {
     @Override
     public void validateValue() {
         if (deprecatedAlias.isSet() && getCanonicalSetting().isSet()) {
-            throw new IllegalStateException(String.format("Both `%s` and its deprecated alias `%s` have been set.\n" +
+            throw new IllegalStateException(String.format("Both `%s` and its deprecated alias `%s` have been set. " +
                     "Please only set `%s`", getCanonicalSetting().getName(), deprecatedAlias.getName(), getCanonicalSetting().getName()));
         }
         super.validateValue();
