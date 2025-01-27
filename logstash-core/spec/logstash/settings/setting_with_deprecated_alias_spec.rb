@@ -25,13 +25,42 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
   let(:default_value) { "DeFaUlT" }
 
   let(:settings) { LogStash::Settings.new }
-  let(:canonical_setting) { LogStash::Setting::String.new(canonical_setting_name, default_value, true) }
+  let(:canonical_setting) { LogStash::Setting::SettingString.new(canonical_setting_name, default_value, true) }
+
+  let(:events) { [] }
 
   before(:each) do
+    java_import org.apache.logging.log4j.LogManager
+    logger = LogManager.getLogger("org.logstash.settings.DeprecatedAlias")
+    deprecated_logger = LogManager.getLogger("org.logstash.deprecation.settings.DeprecatedAlias")
+
+    @custom_appender = CustomAppender.new(events).tap {|appender| appender.start }
+
+    java_import org.apache.logging.log4j.Level
+    logger.addAppender(@custom_appender)
+    deprecated_logger.addAppender(@custom_appender)
+    # had to set level after appending as it was "error" for some reason
+    logger.setLevel(Level::INFO)
+    deprecated_logger.setLevel(Level::INFO)
+
+    expect(@custom_appender.started?).to be_truthy
+
     allow(LogStash::Settings).to receive(:logger).and_return(double("SettingsLogger").as_null_object)
     allow(LogStash::Settings).to receive(:deprecation_logger).and_return(double("SettingsDeprecationLogger").as_null_object)
 
     settings.register(canonical_setting.with_deprecated_alias(deprecated_setting_name))
+  end
+
+  after(:each) do
+    events.clear
+    java_import org.apache.logging.log4j.LogManager
+    logger = LogManager.getLogger("org.logstash.settings.DeprecatedAlias")
+    deprecated_logger = LogManager.getLogger("org.logstash.deprecation.settings.DeprecatedAlias")
+    # The Logger's AbstractConfiguration contains a cache of Appender, by class name. The cache is updated
+    # iff is absent, so to make subsequent add_appender effective we have cleanup on teardown, else the new
+    # appender instance is simply not used by the logger
+    logger.remove_appender(@custom_appender)
+    deprecated_logger.remove_appender(@custom_appender)
   end
 
   shared_examples '#validate_value success' do
@@ -57,6 +86,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
       it 'does not emit a deprecation warning' do
         expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        expect(events).to be_empty
       end
     end
   end
@@ -66,6 +96,7 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
 
     before(:each) do
       settings.set(deprecated_setting_name, value)
+      settings.get_setting(deprecated_setting_name).observe_post_process
     end
 
     it 'resolves to the value provided for the deprecated alias' do
@@ -73,15 +104,15 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     it 'logs a deprecation warning' do
-      expect(LogStash::Settings.deprecation_logger).to have_received(:deprecated).with(a_string_including(deprecated_setting_name))
+      expect(events[0]).to include(deprecated_setting_name)
     end
 
     include_examples '#validate_value success'
 
     context "#observe_post_process" do
       it 're-emits the deprecation warning' do
-        expect(LogStash::Settings.deprecation_logger).to receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        expect(events[0]).to include(deprecated_setting_name)
       end
     end
 
@@ -116,13 +147,14 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
         let(:old_value) { "iron man" }
         let(:canonical_name) { "iron.setting" }
         let(:deprecated_name) { "iron.oxide.setting" }
-        subject { LogStash::Setting::String.new(canonical_name, old_value, true) }
+        subject { LogStash::Setting::SettingString.new(canonical_name, old_value, true) }
 
         it 'logs a deprecation warning with target remove version' do
           settings.set(deprecated_name, new_value)
-          expect(LogStash::Settings.deprecation_logger).to have_received(:deprecated)
-                                                             .with(a_string_including(deprecated_name))
-                                                             .with(a_string_including("version 9"))
+          settings.get_setting(deprecated_name).observe_post_process
+          expect(events.length).to be 2
+          expect(events[1]).to include(deprecated_name)
+          expect(events[1]).to include("version 9")
         end
       end
       describe "java boolean setting" do
@@ -149,15 +181,16 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     end
 
     it 'does not produce a relevant deprecation warning' do
-      expect(LogStash::Settings.deprecation_logger).to_not have_received(:deprecated).with(a_string_including(deprecated_setting_name))
+      settings.get_setting(deprecated_setting_name).observe_post_process
+      expect(events).to be_empty
     end
 
     include_examples '#validate_value success'
 
     context "#observe_post_process" do
       it 'does not emit a deprecation warning' do
-        expect(LogStash::Settings.deprecation_logger).to_not receive(:deprecated).with(a_string_including(deprecated_setting_name))
         settings.get_setting(deprecated_setting_name).observe_post_process
+        expect(events).to be_empty
       end
     end
   end
@@ -171,15 +204,15 @@ describe LogStash::Setting::SettingWithDeprecatedAlias do
     context '#validate_value' do
       it "raises helpful exception" do
         expect { settings.get_setting(canonical_setting_name).validate_value }
-          .to raise_exception(ArgumentError, a_string_including("Both `#{canonical_setting_name}` and its deprecated alias `#{deprecated_setting_name}` have been set. Please only set `#{canonical_setting_name}`"))
+          .to raise_exception(java.lang.IllegalStateException, a_string_including("Both `#{canonical_setting_name}` and its deprecated alias `#{deprecated_setting_name}` have been set. Please only set `#{canonical_setting_name}`"))
       end
     end
   end
 
   context 'Settings#get on deprecated alias' do
     it 'produces a WARN-level message to the logger' do
-      expect(LogStash::Settings.logger).to receive(:warn).with(a_string_including "setting `#{canonical_setting_name}` has been queried by its deprecated alias `#{deprecated_setting_name}`")
       settings.get(deprecated_setting_name)
+      expect(events[0]).to include("setting `#{canonical_setting_name}` has been queried by its deprecated alias `#{deprecated_setting_name}`")
     end
   end
 end
