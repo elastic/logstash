@@ -20,6 +20,7 @@
 package org.logstash.common;
 
 import org.jruby.RubyArray;
+import org.jruby.RubyEncoding;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -91,16 +92,16 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
 
     @Test
     public void shouldNotChangeEncodingOfTokensAfterPartitioning() {
-//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3}); // £ character
         RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
         IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
         RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
+
+        // read the first token, the £ string
         IRubyObject firstToken = tokens.shift(context);
-
-//        IRubyObject token = sut.flush(context);
-
-//        assertEquals((byte) 0xA3, token.asJavaString().getBytes()[0]);
-//        assertEquals("£", token.asJavaString());
         assertEquals("£", firstToken.toString());
+
+        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
+        RubyEncoding encoding = (RubyEncoding) firstToken.callMethod(context, "encoding");
+        assertEquals("ISO8859-1", encoding.toString());
     }
 }
