@@ -91,12 +91,16 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
 
     @Test
     public void shouldNotChangeEncodingOfTokensAfterPartitioning() {
-        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3}); // £ character
+//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3}); // £ character
+        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
         IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-        sut.extract(context, rubyInput);
+        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
+        IRubyObject firstToken = tokens.shift(context);
 
-        IRubyObject token = sut.flush(context);
+//        IRubyObject token = sut.flush(context);
 
-        assertEquals((byte) 0xA3, token.asJavaString().getBytes()[0]);
+//        assertEquals((byte) 0xA3, token.asJavaString().getBytes()[0]);
+//        assertEquals("£", token.asJavaString());
+        assertEquals("£", firstToken.toString());
     }
 }
