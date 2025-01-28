@@ -302,7 +302,7 @@ def getAssemblyDeps() {
 }
 
 tasks.register("bootstrap") {
-    onlyIf { !project.hasProperty('skipJRubySetup') }
+    // onlyIf { !project.hasProperty('skipJRubySetup') }
     dependsOn getAssemblyDeps()
     doLast {
         setupJruby(projectDir, buildDir)

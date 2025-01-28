@@ -182,6 +182,20 @@ tasks.register("javaTestsOnly", Test) {
     exclude '/org/logstash/plugins/CounterMetricImplTest.class'
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
+
+    // SSL and security settings
+    systemProperty "java.security.properties", System.getenv("JAVA_SECURITY_PROPERTIES")
+    systemProperty "javax.net.ssl.keyStore", "/etc/java/security/keystore.bcfks"
+    systemProperty "javax.net.ssl.keyStoreType", "BCFKS"
+    systemProperty "javax.net.ssl.keyStoreProvider", "BCFIPS"
+    systemProperty "javax.net.ssl.keyStorePassword", "changeit"
+    systemProperty "javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks"
+    systemProperty "javax.net.ssl.trustStoreType", "BCFKS"
+    systemProperty "javax.net.ssl.trustStoreProvider", "BCFIPS"
+    systemProperty "javax.net.ssl.trustStorePassword", "changeit"
+    systemProperty "ssl.KeyManagerFactory.algorithm", "PKIX"
+    systemProperty "ssl.TrustManagerFactory.algorithm", "PKIX"
+    systemProperty "org.bouncycastle.fips.approved_only", "true"
 }
 
 tasks.register("rubyTestsOnly", Test) {
@@ -201,8 +215,21 @@ tasks.register("rubyTestsOnly", Test) {
     include '/org/logstash/plugins/CounterMetricImplTest.class'
     include '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     include '/org/logstash/execution/ObservedExecutionTest.class'
-}
 
+    // SSL and security settings
+    systemProperty "java.security.properties", System.getenv("JAVA_SECURITY_PROPERTIES")
+    systemProperty "javax.net.ssl.keyStore", "/etc/java/security/keystore.bcfks"
+    systemProperty "javax.net.ssl.keyStoreType", "BCFKS"
+    systemProperty "javax.net.ssl.keyStoreProvider", "BCFIPS"
+    systemProperty "javax.net.ssl.keyStorePassword", "changeit"
+    systemProperty "javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks"
+    systemProperty "javax.net.ssl.trustStoreType", "BCFKS"
+    systemProperty "javax.net.ssl.trustStoreProvider", "BCFIPS"
+    systemProperty "javax.net.ssl.trustStorePassword", "changeit"
+    systemProperty "ssl.KeyManagerFactory.algorithm", "PKIX"
+    systemProperty "ssl.TrustManagerFactory.algorithm", "PKIX"
+    systemProperty "org.bouncycastle.fips.approved_only", "true"
+}
 // Setup task combining all prerequisites
 tasks.register("testSetup") {
     dependsOn ':bootstrap'
@@ -211,6 +238,8 @@ tasks.register("testSetup") {
     dependsOn 'compileTestJava'
     dependsOn 'copyRuntimeLibs'
     dependsOn 'generateVersionInfoResources'
+    dependsOn ':copyPluginTestAlias'
+    dependsOn ':installDevelopmentGems'
 }
 sourceSets {
     main { output.dir(generateVersionInfoResources.outputs.files) }
