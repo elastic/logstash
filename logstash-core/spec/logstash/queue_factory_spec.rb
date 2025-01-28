@@ -23,7 +23,7 @@ describe LogStash::QueueFactory do
   let(:settings_array) do
     [
       LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
-      LogStash::Setting::String.new("queue.type", "memory", true, ["persisted", "memory"]),
+      LogStash::Setting::SettingString.new("queue.type", "memory", true, ["persisted", "memory"]),
       LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
       LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),
       LogStash::Setting::Numeric.new("queue.max_events", 0),
@@ -31,7 +31,7 @@ describe LogStash::QueueFactory do
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
       LogStash::Setting::Boolean.new("queue.checkpoint.retry", false),
-      LogStash::Setting::String.new("pipeline.id", pipeline_id),
+      LogStash::Setting::SettingString.new("pipeline.id", pipeline_id),
       LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
       LogStash::Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
     ]

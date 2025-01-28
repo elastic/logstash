@@ -17,7 +17,8 @@
           "^.github/",
           "^docs/",
           "^.mergify.yml$",
-          "^.pre-commit-config.yaml"
+          "^.pre-commit-config.yaml",
+          "\\.md$"
         ],
         "always_require_ci_on_changed": [ ]
       }

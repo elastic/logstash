@@ -166,7 +166,7 @@ public class BaseSetting<T> implements Setting<T> {
     }
 
     public void validateValue() {
-        validate(this.value);
+        validate(this.value());
     }
 
     public T getDefault() {

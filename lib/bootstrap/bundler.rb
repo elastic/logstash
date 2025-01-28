@@ -267,6 +267,7 @@ module LogStash
       elsif options[:update]
         arguments << "update"
         arguments << expand_logstash_mixin_dependencies(options[:update])
+        arguments << "--#{options[:level] || 'minor'}"
         arguments << "--local" if options[:local]
         arguments << "--conservative" if options[:conservative]
       elsif options[:clean]
