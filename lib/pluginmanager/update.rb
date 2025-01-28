@@ -24,7 +24,13 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
   # These are local gems used by LS and needs to be filtered out of other plugin gems
   NON_PLUGIN_LOCAL_GEMS = ["logstash-core", "logstash-core-plugin-api"]
 
+  SUPPORTED_LEVELS = %w(major minor patch)
+
   parameter "[PLUGIN] ...", "Plugin name(s) to upgrade to latest version", :attribute_name => :plugins_arg
+  option "--level", "LEVEL", "restrict updates to given semantic version level (one of #{SUPPORTED_LEVELS})", :default => "minor" do |given_level|
+    fail("unsupported level `#{given_level}`; expected one of #{SUPPORTED_LEVELS}") unless SUPPORTED_LEVELS.include?(given_level)
+    given_level
+  end
   option "--[no-]verify", :flag, "verify plugin validity before installation", :default => true
   option "--local", :flag, "force local-only plugin update. see bin/logstash-plugin package|unpack", :default => false
   option "--[no-]conservative", :flag, "do a conservative update of plugin's dependencies", :default => true
@@ -82,6 +88,7 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
     # Bundler cannot update and clean gems in one operation so we have to call the CLI twice.
     Bundler.settings.temporary(:frozen => false) do # Unfreeze the bundle when updating gems
       output = LogStash::Bundler.invoke! update: plugins,
+                                         level: level,
                                          rubygems_source: gemfile.gemset.sources,
                                          local: local?,
                                          conservative: conservative?
