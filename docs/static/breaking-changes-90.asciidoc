@@ -4,16 +4,6 @@
 coming[9.0.0]
 
 [discrete]
-[[sample-change-9.0]]
-===== Breaking change number one (sample) 
-
-Include:
-
-* change
-* user impact/decription/value prop
-* link to relevant docs for more information
-
-[discrete]
 [[ssl-settings-9.0]]
 ===== Changes to SSL settings in {ls} plugins
 
