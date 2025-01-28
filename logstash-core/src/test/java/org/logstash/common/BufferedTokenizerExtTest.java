@@ -102,6 +102,6 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
 
         // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
         RubyEncoding encoding = (RubyEncoding) firstToken.callMethod(context, "encoding");
-        assertEquals("ISO8859-1", encoding.toString());
+        assertEquals("ISO-8859-1", encoding.toString());
     }
 }

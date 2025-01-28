@@ -85,7 +85,7 @@ public class BufferedTokenizerExt extends RubyObject {
         final RubyArray entities = data.convertToString().split(delimiter, -1);
         if (!bufferFullErrorNotified) {
             input.clear();
-            input.addAll(entities);
+            input.concat(entities);
         } else {
             // after a full buffer signal
             if (input.isEmpty()) {
@@ -93,14 +93,14 @@ public class BufferedTokenizerExt extends RubyObject {
                 // has to be consumed, unless the input buffer doesn't still contain fragments of
                 // subsequent tokens.
                 entities.shift(context);
-                input.addAll(entities);
+                input.concat(entities);
             } else {
                 // merge last of the input with first of incoming data segment
                 if (!entities.isEmpty()) {
                     RubyString last = ((RubyString) input.pop(context));
                     RubyString nextFirst = ((RubyString) entities.shift(context));
                     entities.unshift(last.concat(nextFirst));
-                    input.addAll(entities);
+                    input.concat(entities);
                 }
             }
         }
