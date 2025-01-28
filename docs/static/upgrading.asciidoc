@@ -24,14 +24,14 @@ See the following topics for information about upgrading Logstash:
 * <<upgrading-using-package-managers>>
 * <<upgrading-using-direct-download>>
 * <<upgrading-minor-versions>>
-* <<upgrading-logstash-8.0>>
+* <<upgrading-logstash-9.0>>
 
 [discrete]
 ==== When to upgrade
 
 Fresh installations can and should start with the same version across the Elastic Stack.
 
-Elasticsearch 8.0 does not require Logstash 8.0. An Elasticsearch 8.0 cluster
+Elasticsearch 9.0 does not require Logstash 9.0. An Elasticsearch 9.0 cluster
 will happily receive data from earlier versions of Logstash via the default
 HTTP communication layer. This provides some flexibility to decide when to
 upgrade Logstash relative to an Elasticsearch upgrade. It may or may not be
@@ -39,23 +39,23 @@ convenient for you to upgrade them together, and it is not required to be done
 at the same time as long as Elasticsearch is upgraded first.
 
 You should upgrade in a timely manner to get the performance improvements that
-come with Logstash 8.0, but do so in the way that makes the most sense for your
+come with Logstash 9.0, but do so in the way that makes the most sense for your
 environment.
 
 [discrete]
 ==== When not to upgrade
 
-If any Logstash plugin that you require is not compatible with Logstash 8.0, then you should wait until it is ready
+If any Logstash plugin that you require is not compatible with Logstash 9.0, then you should wait until it is ready
 before upgrading.
 
-Although we make great efforts to ensure compatibility, Logstash 8.0 is not completely backwards compatible. 
-As noted in the Elastic Stack upgrade guide, you should not upgrade Logstash 8.0 before you upgrade Elasticsearch 8.0. 
+Although we make great efforts to ensure compatibility, Logstash 9.0 is not completely backwards compatible. 
+As noted in the Elastic Stack upgrade guide, you should not upgrade Logstash 9.0 before you upgrade Elasticsearch 9.0. 
 This is both
-practical and because some Logstash 8.0 plugins may attempt to use features of Elasticsearch 8.0 that did not exist
+practical and because some Logstash 9.0 plugins may attempt to use features of Elasticsearch 9.0 that did not exist
 in earlier versions. 
 
 For example, if you attempt to send the 8.x template to a cluster before
-Elasticsearch 8.0, then  all indexing likely fail. 
+Elasticsearch 9.0, then  all indexing likely fail. 
 If you use your own custom template with Logstash, then this issue can be ignored.
 
 
@@ -66,10 +66,10 @@ This procedure uses <<package-repositories,package managers>> to upgrade Logstas
 
 . Shut down your Logstash pipeline, including any inputs that send events to Logstash.
 . Using the directions in the <<package-repositories>> section, update your repository
-links to point to the 8.x repositories.
+links to point to the 9.x repositories.
 . Run the `apt-get upgrade logstash` or `yum update logstash` command as appropriate for your operating system.
 . Test your configuration file with the `logstash --config.test_and_exit -f <configuration-file>` command. Configuration options for
-some Logstash plugins have changed in the 8.x release.
+some Logstash plugins have changed in the 9.x release.
 . Restart your Logstash pipeline after you have updated your configuration file.
 
 [[upgrading-using-direct-download]]
@@ -91,18 +91,18 @@ some Logstash plugins have changed.
 [[upgrading-minor-versions]]
 === Upgrading between minor versions
 
-As a general rule, you can upgrade between minor versions (for example, 8.x to
-8.y, where x < y) by simply installing the new release and restarting {ls}. 
+As a general rule, you can upgrade between minor versions (for example, 9.x to
+9.y, where x < y) by simply installing the new release and restarting {ls}.
 {ls} typically maintains backwards compatibility for configuration
 settings and exported fields. Please review the
 <<releasenotes,release notes>> for potential exceptions.
 
-Upgrading between non-consecutive major versions (6.x to 8.x, for example) is
+Upgrading between non-consecutive major versions (7.x to 9.x, for example) is
 not supported.
 
 
-[[upgrading-logstash-8.0]]
-=== Upgrading Logstash to 8.0
+[[upgrading-logstash-9.0]]
+=== Upgrading Logstash to 9.0
 
 Before upgrading Logstash:
 
@@ -111,26 +111,23 @@ Before upgrading Logstash:
 +
 There you can find info on these topics and more:
 
-** <<bc-ecs-compatibility,Elastic Common Schema (ECS) compatibility on by default>>
-** <<security-on-8.0,Secure communication with Elasticsearch>>
-** <<bc-field-ref-parser,Field parser is more strict>>
-
+** <<ssl-settings-9.0,Changes to SSL settings in {ls} plugins>>
  
 If you are installing Logstash with other components in the Elastic Stack, also see the
 {stack-ref}/index.html[Elastic Stack installation and upgrade documentation].
 
-NOTE: Upgrading between non-consecutive major versions (6.x to 8.x, for example) is not supported. 
-We recommend that you upgrade to {prev-major-last}, and then upgrade to 8.0.
+NOTE: Upgrading between non-consecutive major versions (7.x to 9.x, for example) is not supported.
+We recommend that you upgrade to {prev-major-last}, and then upgrade to 9.0.
 
 [discrete]
 [[upgrade-to-previous]]
-==== Upgrade to {ls} {prev-major-last} before upgrading to 8.0
+==== Upgrade to {ls} {prev-major-last} before upgrading to 9.0
 
-If you haven't already, upgrade to version {prev-major-last} before you upgrade to 8.0. If
+If you haven't already, upgrade to version {prev-major-last} before you upgrade to 9.0. If
 you're using other products in the {stack}, upgrade {ls} as part of the
 {stack-ref}/upgrading-elastic-stack.html[{stack} upgrade process].
 
-TIP: Upgrading to {ls} {prev-major-last} gives you a head-start on new 8.0 features.
+TIP: Upgrading to {ls} {prev-major-last} gives you a head-start on new 9.0 features.
 This step helps reduce risk and makes roll backs easier if you hit
 a snag.
 
