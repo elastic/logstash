@@ -20,16 +20,16 @@
 
 package org.logstash.common;
 
-import org.jruby.Ruby;
-import org.jruby.RubyArray;
-import org.jruby.RubyClass;
-import org.jruby.RubyObject;
-import org.jruby.RubyString;
+import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.util.ByteList;
 import org.logstash.RubyUtil;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @JRubyClass(name = "BufferedTokenizer")
 public class BufferedTokenizerExt extends RubyObject {
@@ -46,6 +46,7 @@ public class BufferedTokenizerExt extends RubyObject {
     private boolean hasSizeLimit;
     private int inputSize;
     private boolean bufferFullErrorNotified = false;
+    private String encodingName;
 
     public BufferedTokenizerExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -82,6 +83,8 @@ public class BufferedTokenizerExt extends RubyObject {
     @JRubyMethod
     @SuppressWarnings("rawtypes")
     public RubyArray extract(final ThreadContext context, IRubyObject data) {
+        RubyEncoding encoding = (RubyEncoding) data.convertToString().encoding(context);
+        encodingName = encoding.getEncoding().getCharsetName();
         final RubyArray entities = data.convertToString().split(delimiter, -1);
         if (!bufferFullErrorNotified) {
             input.clear();
@@ -134,7 +137,10 @@ public class BufferedTokenizerExt extends RubyObject {
             // if there is a pending token part, merge it with the first token segment present
             // in the accumulator, and clean the pending token part.
             headToken.append(input.shift(context)); // append buffer to first element and
-            input.unshift(RubyUtil.toRubyObject(headToken.toString())); // reinsert it into the array
+            // create new RubyString with the data specified encoding
+            RubyString encodedHeadToken = RubyUtil.RUBY.newString(new ByteList(headToken.toString().getBytes(Charset.forName(encodingName))));
+            encodedHeadToken.force_encoding(context, RubyUtil.RUBY.newString(encodingName));
+            input.unshift(encodedHeadToken); // reinsert it into the array
             headToken = new StringBuilder();
         }
         headToken.append(input.pop(context)); // put the leftovers in headToken for later
@@ -154,7 +160,12 @@ public class BufferedTokenizerExt extends RubyObject {
         final IRubyObject buffer = RubyUtil.toRubyObject(headToken.toString());
         headToken = new StringBuilder();
         inputSize = 0;
-        return buffer;
+
+        // create new RubyString with the last data specified encoding
+        RubyString encodedHeadToken = RubyUtil.RUBY.newString(new ByteList(buffer.toString().getBytes(Charset.forName(encodingName))));
+        encodedHeadToken.force_encoding(context, RubyUtil.RUBY.newString(encodingName));
+
+        return encodedHeadToken;
     }
 
     @JRubyMethod(name = "empty?")
