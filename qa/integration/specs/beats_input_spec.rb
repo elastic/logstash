@@ -84,7 +84,7 @@ describe "Beat Input" do
     let(:filebeat_config) do
       {
         "filebeat" => {
-          "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
+          "inputs" => [{ "paths" => [log_path], "type" => "filestream" }],
           "registry.path" => registry_file,
           "scan_frequency" => "1s"
         },
@@ -109,7 +109,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "type" => "filestream" }],
             "registry.path" => registry_file,
             "scan_frequency" => "1s"
           },
@@ -136,7 +136,7 @@ describe "Beat Input" do
       let(:filebeat_config) do
         {
           "filebeat" => {
-            "inputs" => [{ "paths" => [log_path], "input_type" => "log" }],
+            "inputs" => [{ "paths" => [log_path], "type" => "filestream" }],
             "registry.path" => registry_file,
             "scan_frequency" => "1s"
           },
