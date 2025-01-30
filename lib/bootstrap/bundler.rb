@@ -113,6 +113,7 @@ module LogStash
 
       require "bundler"
       require "bundler/cli"
+      require_relative './patches/gems'
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
@@ -165,7 +166,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::VersionConflict => e
+          rescue ::Gem::DependencyResolutionError => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
