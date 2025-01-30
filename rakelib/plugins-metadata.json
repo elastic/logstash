@@ -213,7 +213,7 @@
     "skip-list": false
   },
   "logstash-filter-translate": {
-    "default-plugins": false,
+    "default-plugins": true,
     "skip-list": false
   },
   "logstash-filter-truncate": {
