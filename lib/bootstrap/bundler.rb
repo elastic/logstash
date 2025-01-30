@@ -166,7 +166,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Gem::DependencyResolutionError => e
+          rescue ::Bundler::SolveFailure => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
