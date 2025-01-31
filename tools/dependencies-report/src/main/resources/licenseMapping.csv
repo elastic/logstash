@@ -6,7 +6,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "atomic:",http://github.com/ruby-concurrency/atomic,Apache-2.0
 "avl_tree:",https://github.com/nahi/avl_tree,BSD-2-Clause-FreeBSD
 "avro:",https://github.com/apache/avro/tree/master/lang/ruby,Apache-2.0
-"awesome_print:",https://github.com/awesome-print/awesome_print,MIT
 "aws-eventstream:1.2.0",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-eventstream,Apache-2.0
 "aws-partitions:1.610.0",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-partitions,Apache-2.0
 "aws-sdk-cloudfront:1.65.0",https://github.com/aws/aws-sdk-ruby/tree/version-3/gems/aws-sdk-cloudfront,Apache-2.0
@@ -24,7 +23,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "bigdecimal:",https://github.com/ruby/bigdecimal,BSD-2-Clause
 "bindata:",http://github.com/dmendel/bindata,BSD-2-Clause
 "buftok:",https://github.com/sferik/buftok,MIT
-"builder:",http://onestepback.org,MIT
 "bundler:",https://bundler.io/,MIT
 "cabin:",https://github.com/jordansissel/ruby-cabin,Apache-2.0
 "cgi:",https://github.com/ruby/cgi,BSD-2-Clause
@@ -34,10 +32,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.core:jackson-core:",https://github.com/FasterXML/jackson-core,Apache-2.0
 "com.fasterxml.jackson.core:jackson-databind:",https://github.com/FasterXML/jackson-databind,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
-"com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
-"com.google.code.findbugs:jsr305:",http://findbugs.sourceforge.net,Apache-2.0
-"com.google.errorprone:error_prone_annotations:",https://github.com/google/error-prone,Apache-2.0
 "com.google.googlejavaformat:google-java-format:",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:",https://github.com/google/guava,Apache-2.0
 "com.google.j2objc:j2objc-annotations:",https://github.com/google/j2objc/,Apache-2.0
@@ -58,10 +53,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "drb:",https://github.com/ruby/drb,BSD-2-Clause
 "e2mmap:",https://github.com/ruby/thwait,BSD-2-Clause
 "edn:",https://github.com/relevance/edn-ruby,MIT
-"elastic-app-search:",https://github.com/elastic/app-search-ruby,Apache-2.0
-"elastic-enterprise-search:",https://github.com/elastic/enterprise-search-ruby,Apache-2.0
-"elastic-transport:",https://github.com/elastic/elastic-transport-ruby,Apache-2.0
-"elastic-workplace-search:",https://github.com/elastic/workplace-search-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
@@ -94,7 +85,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "gems:",https://github.com/rubygems/gems,MIT
 "gene_pool:",https://github.com/bpardee/gene_pool,MIT
 "getoptlong:",https://github.com/ruby/getoptlong,BSD-2-Clause
-"gradle.plugin.com.github.jk1:gradle-license-report:",https://github.com/jk1/Gradle-License-Report,Apache-2.0
 "hitimes:",https://github.com/copiousfreetime/hitimes,ISC
 "http-cookie:",https://github.com/sparklemotion/http-cookie,MIT
 "http-form_data:",https://github.com/httprb/form_data,MIT
@@ -118,7 +108,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "jruby-stdin-channel:","https://github.com/colinsurprenant/jruby-stdin-channel",Apache-2.0
 "jruby:",https://jruby.org,EPL-2.0
 "json:",http://json-jruby.rubyforge.org/,Ruby
-"jwt:",https://github.com/jwt/ruby-jwt,MIT
 "logger:",https://github.com/ruby/logger,BSD-2-Clause
 "lru_redux:","https://github.com/SamSaffron/lru_redux/",MIT
 "mail:","https://github.com/mikel/mail/",MIT
@@ -127,7 +116,6 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "memoizable:","https://github.com/dkubb/memoizable/",MIT
 "method_source:","https://github.com/banister/method_source/",MIT
 "metriks:","https://github.com/eric/metriks/",MIT
-"mime-types:",https://github.com/mime-types/ruby-mime-types/,MIT
 "mini_mime:",https://github.com/discourse/mini_mime,MIT
 "minitar:",https://github.com/halostatue/minitar/,RUBY|BSD-2-Clause
 "msgpack:","https://github.com/msgpack/msgpack-ruby",Apache-2.0
