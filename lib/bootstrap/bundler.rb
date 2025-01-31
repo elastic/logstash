@@ -43,6 +43,7 @@ module LogStash
         end
       end
 
+=begin
       # This patch makes rubygems fetch directly from the remote servers
       # the dependencies he need and might not have downloaded in a local
       # repository. This basically enabled the offline feature to work as
@@ -52,6 +53,7 @@ module LogStash
           cached_built_in_gem(spec)
         end
       end
+=end
     end
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
@@ -113,6 +115,7 @@ module LogStash
 
       require "bundler"
       require "bundler/cli"
+      require_relative './patches/gems'
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
@@ -165,7 +168,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::VersionConflict => e
+          rescue ::Bundler::SolveFailure => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
