@@ -53,8 +53,8 @@ module LogStash
           cached_built_in_gem(spec)
         end
       end
-    end
 =end
+    end
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
