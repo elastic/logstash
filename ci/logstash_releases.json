@@ -10,6 +10,7 @@
     "8.current": "8.17.2-SNAPSHOT",
     "8.next": null,
     "8.future": "8.18.0-SNAPSHOT",
-    "main": "9.0.0-SNAPSHOT"
+    "9.next": "9.0.0-SNAPSHOT",
+    "main": "9.1.0-SNAPSHOT"
   }
 }
