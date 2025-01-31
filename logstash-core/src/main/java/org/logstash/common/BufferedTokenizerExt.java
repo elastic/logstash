@@ -29,7 +29,6 @@ import org.jruby.util.ByteList;
 import org.logstash.RubyUtil;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 @JRubyClass(name = "BufferedTokenizer")
 public class BufferedTokenizerExt extends RubyObject {
