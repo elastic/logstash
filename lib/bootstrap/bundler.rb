@@ -43,6 +43,7 @@ module LogStash
         end
       end
 
+=begin
       # This patch makes rubygems fetch directly from the remote servers
       # the dependencies he need and might not have downloaded in a local
       # repository. This basically enabled the offline feature to work as
@@ -53,6 +54,7 @@ module LogStash
         end
       end
     end
+=end
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
