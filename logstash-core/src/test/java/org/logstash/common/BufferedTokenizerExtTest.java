@@ -144,4 +144,18 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
         RubyEncoding encoding = (RubyEncoding) lastToken.callMethod(context, "encoding");
         assertEquals("ISO-8859-1", encoding.toString());
     }
+
+    @Test
+    public void givenDirectFlushInvocationUTF8EncodingIsApplied() {
+        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x41}); // £ character, A
+        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
+
+        // flush and check that the remaining A is still encoded in ISO8859-1
+        IRubyObject lastToken = sut.flush(context);
+        assertEquals("", lastToken.toString());
+
+        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
+        RubyEncoding encoding = (RubyEncoding) lastToken.callMethod(context, "encoding");
+        assertEquals("UTF-8", encoding.toString());
+    }
 }
