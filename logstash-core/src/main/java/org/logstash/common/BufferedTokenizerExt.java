@@ -20,7 +20,12 @@
 
 package org.logstash.common;
 
-import org.jruby.*;
+import org.jruby.Ruby;
+import org.jruby.RubyArray;
+import org.jruby.RubyClass;
+import org.jruby.RubyEncoding;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -118,9 +123,10 @@ public class BufferedTokenizerExt extends RubyObject {
             if (inputSize + entitiesSize > sizeLimit) {
                 bufferFullErrorNotified = true;
                 headToken = new StringBuilder();
+                String errorMessage = String.format("input buffer full, consumed token which exceeded the sizeLimit %d; inputSize: %d, entitiesSize %d", sizeLimit, inputSize, entitiesSize);
                 inputSize = 0;
                 input.shift(context); // consume the token fragment that generates the buffer full
-                throw new IllegalStateException("input buffer full");
+                throw new IllegalStateException(errorMessage);
             }
             this.inputSize = inputSize + entitiesSize;
         }
@@ -137,14 +143,20 @@ public class BufferedTokenizerExt extends RubyObject {
             // in the accumulator, and clean the pending token part.
             headToken.append(input.shift(context)); // append buffer to first element and
             // create new RubyString with the data specified encoding
-            RubyString encodedHeadToken = RubyUtil.RUBY.newString(new ByteList(headToken.toString().getBytes(Charset.forName(encodingName))));
-            encodedHeadToken.force_encoding(context, RubyUtil.RUBY.newString(encodingName));
+            RubyString encodedHeadToken = toEncodedRubyString(context, headToken.toString());
             input.unshift(encodedHeadToken); // reinsert it into the array
             headToken = new StringBuilder();
         }
         headToken.append(input.pop(context)); // put the leftovers in headToken for later
         inputSize = headToken.length();
         return input;
+    }
+
+    private RubyString toEncodedRubyString(ThreadContext context, String input) {
+        // Depends on the encodingName being set by the extract method, could potentially raise if not set.
+        RubyString result = RubyUtil.RUBY.newString(new ByteList(input.getBytes(Charset.forName(encodingName))));
+        result.force_encoding(context, RubyUtil.RUBY.newString(encodingName));
+        return result;
     }
 
     /**
@@ -163,8 +175,7 @@ public class BufferedTokenizerExt extends RubyObject {
         // create new RubyString with the last data specified encoding, if exists
         RubyString encodedHeadToken;
         if (encodingName != null) {
-            encodedHeadToken = RubyUtil.RUBY.newString(new ByteList(buffer.toString().getBytes(Charset.forName(encodingName))));
-            encodedHeadToken.force_encoding(context, RubyUtil.RUBY.newString(encodingName));
+            encodedHeadToken = toEncodedRubyString(context, buffer.toString());
         } else {
             // When used with TCP input it could be that on socket connection the flush method
             // is invoked while no invocation of extract, leaving the encoding name unassigned.
