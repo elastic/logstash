@@ -483,8 +483,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.9.2-java)
-      jar-dependencies (~> 0.3, >= 0.3.4)
+    logstash-input-http (3.10.1-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
