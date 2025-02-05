@@ -325,7 +325,7 @@ GEM
     logstash-filter-elastic_integration (8.17.1-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elasticsearch (3.16.2)
+    logstash-filter-elasticsearch (3.17.0)
       elasticsearch (>= 7.14.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
