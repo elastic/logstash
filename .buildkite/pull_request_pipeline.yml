@@ -37,6 +37,25 @@ steps:
     artifact_paths:
       - "coverage/coverage.json"
 
+  - label: ":rspec: Ruby unit tests - FIPS mode"
+    key: "ruby-unit-tests-fips"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f qa/fips/docker/Dockerfile .
+      docker run test-runner-image ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true rubyTests
+    artifact_paths:
+      - "coverage/coverage.json"
+
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
     agents:

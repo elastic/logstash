@@ -51,6 +51,16 @@ import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 import org.logstash.gradle.tooling.SnapshotArtifactURLs
 
+ext {
+    runTestsInFIPSMode = project.hasProperty('runTestsInFIPSMode') ? project.property('runTestsInFIPSMode').toBoolean() : false
+}
+
+subprojects {
+    ext {
+        runTestsInFIPSMode = rootProject.runTestsInFIPSMode
+    }
+}
+
 allprojects {
   group = 'org.logstash'
 

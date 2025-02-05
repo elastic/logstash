@@ -156,6 +156,21 @@ tasks.register("rubyTests", Test) {
     include '/org/logstash/plugins/CounterMetricImplTest.class'
     include '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     include '/org/logstash/execution/ObservedExecutionTest.class'
+
+    if (runTestsInFIPSMode) {
+        systemProperty "java.security.properties", System.getenv("JAVA_SECURITY_PROPERTIES")
+        systemProperty "javax.net.ssl.keyStore", "/etc/java/security/keystore.bcfks"
+        systemProperty "javax.net.ssl.keyStoreType", "BCFKS"
+        systemProperty "javax.net.ssl.keyStoreProvider", "BCFIPS"
+        systemProperty "javax.net.ssl.keyStorePassword", "changeit"
+        systemProperty "javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks"
+        systemProperty "javax.net.ssl.trustStoreType", "BCFKS"
+        systemProperty "javax.net.ssl.trustStoreProvider", "BCFIPS"
+        systemProperty "javax.net.ssl.trustStorePassword", "changeit"
+        systemProperty "ssl.KeyManagerFactory.algorithm", "PKIX"
+        systemProperty "ssl.TrustManagerFactory.algorithm", "PKIX"
+        systemProperty "org.bouncycastle.fips.approved_only", "true"
+    }
 }
 
 test {
@@ -235,6 +250,11 @@ dependencies {
     runtimeOnly 'commons-logging:commons-logging:1.3.1'
     // also handle libraries relying on log4j 1.x to redirect their logs
     runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
+    // FIPS deps. TODO: figure out how to actually manage these
+    runtimeOnly("org.bouncycastle:bc-fips:2.0.0")
+    runtimeOnly("org.bouncycastle:bcpkix-fips:2.0.7")
+    runtimeOnly("org.bouncycastle:bctls-fips:2.0.19")
+    runtimeOnly("org.bouncycastle:bcutil-fips:2.0.3")
     implementation('org.reflections:reflections:0.10.2') {
         exclude group: 'com.google.guava', module: 'guava'
     }
