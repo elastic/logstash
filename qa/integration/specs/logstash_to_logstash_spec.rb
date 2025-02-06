@@ -36,13 +36,6 @@ describe "Logstash to Logstash communication Integration test" do
     @fixture.teardown
   }
 
-  def change_logstash_setting(logstash_service, name, value)
-    settings = {}.tap do |settings|
-      settings[name] = value
-    end
-    IO.write(logstash_service.application_settings_file, settings.to_yaml)
-  end
-
   def get_temp_path_dir
     tmp_path = Stud::Temporary.pathname
     tmp_data_path = File.join(tmp_path, "data")
@@ -51,10 +44,17 @@ describe "Logstash to Logstash communication Integration test" do
   end
 
   def run_logstash_instance(config_name, options = {})
-    api_port = 9600 + rand(1000)
-    logstash_service = LogstashService.new(@fixture.settings, api_port)
-    change_logstash_setting(logstash_service, "api.http.port", api_port)
-    logstash_service.spawn_logstash("-f", config_to_temp_file(@fixture.config(config_name, options)), "--path.data", get_temp_path_dir)
+    @next_api_port_offset = (@next_api_port_offset||0).next.modulo(1000) # cycle through 1000 possibles
+    api_port = 9600 + @next_api_port_offset
+
+    # to avoid LogstashService's clean-from-tarball default behaviour, we need
+    # to tell it where our LOGSTASH_HOME is in the existing service
+    existing_fixture_logstash_home = @fixture.get_service("logstash").logstash_home
+    logstash_service = LogstashService.new(@fixture.settings.override("ls_home_abs_path" => existing_fixture_logstash_home), api_port)
+
+    logstash_service.spawn_logstash("--path.config", config_to_temp_file(@fixture.config(config_name, options)),
+                                    "--path.data", get_temp_path_dir,
+                                    "--api.http.port", api_port.to_s)
     wait_for_logstash(logstash_service)
     logstash_service
   end

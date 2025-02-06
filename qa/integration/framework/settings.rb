@@ -16,6 +16,7 @@
 # under the License.
 
 require 'yaml'
+require 'delegate'
 
 # All settings for a test, global and per test
 class TestSettings
@@ -75,5 +76,24 @@ class TestSettings
   def feature_config_dir
     feature = feature_flag
     feature.empty? ? nil : File.join(FIXTURES_DIR, feature)
+  end
+
+  def override(kv_map)
+    Override.new(self, kv_map)
+  end
+
+  class Override < SimpleDelegator# quacks like TestSettings
+    def initialize(test_settings, overrides)
+      super(test_settings)
+      @overrides = overrides
+    end
+
+    def is_set?(key)
+      @overrides.include?(key) || super
+    end
+
+    def get(key)
+      @overrides.fetch(key) { super }
+    end
   end
 end
