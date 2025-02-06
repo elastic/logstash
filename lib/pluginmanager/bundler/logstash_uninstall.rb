@@ -45,43 +45,47 @@ module Bundler
         .collect(&:name).sort.uniq
     end
 
-    def uninstall!(gem_name)
-      unfreeze_gemfile do
-        dependencies_from = dependants_gems(gem_name)
+    def uninstall!(gem_names)
+      gem_names = [gem_names] if gem_names.kind_of?(String)
 
-        if dependencies_from.size > 0
-          display_cant_remove_message(gem_name, dependencies_from)
-          false
-        else
-          remove_gem(gem_name)
-          true
+      mutate_gemfile do |gemfile|
+        builder = Dsl.new
+        # create a copy of our gemfile and optimistically remove all the gems
+        gem_names.each { |gem_name| gemfile.remove(gem_name) }
+        builder.eval_gemfile(::File.join(::File.dirname(gemfile_path), "gemfile to changes"), gemfile.generate)
+
+        # build a definition, providing an intentionally-empty "unlock" mapping
+        # to ensure that all gem versions remain locked
+        definition = builder.to_definition(lockfile_path, {})
+
+        # seek for conflicts, specifically still-existing gems that
+        # have runtime dependencies on the ones we have optimistically removed
+        conflicts = gem_names.each_with_object({}) do |gem_to_remove, memo|
+          gems_depending_on_removed = definition.specs.select { |spec| spec.runtime_dependencies.collect(&:name).include?(gem_to_remove) }.collect(&:name).sort.uniq
+          memo[gem_to_remove] = gems_depending_on_removed unless gems_depending_on_removed.empty?
         end
+        if conflicts.any?
+          conflicts.each { |gem_to_remove, gems_depending_on_removed| display_cant_remove_message(gem_to_remove, gems_depending_on_removed) }
+          return false
+        end
+
+        # lock the definition and save our modified gemfile
+        definition.lock(lockfile_path)
+        gemfile.save
+
+        gem_names.each do |gem_name|
+          LogStash::PluginManager.ui.info("Successfully removed #{gem_name}")
+        end
+
+        return true
       end
     end
 
-    def remove_gem(gem_name)
-      builder = Dsl.new
-      file = File.new(gemfile_path, "r+")
-
-      gemfile = LogStash::Gemfile.new(file).load
-      gemfile.remove(gem_name)
-      builder.eval_gemfile(::File.join(::File.dirname(gemfile_path), "gemfile to changes"), gemfile.generate)
-
-      definition = builder.to_definition(lockfile_path, {})
-      definition.lock(lockfile_path)
-      gemfile.save
-
-      LogStash::PluginManager.ui.info("Successfully removed #{gem_name}")
-    ensure
-      file.close if file
-    end
-
     def display_cant_remove_message(gem_name, dependencies_from)
-        message = <<-eos
-Failed to remove \"#{gem_name}\" because the following plugins or libraries depend on it:
-
-* #{dependencies_from.join("\n* ")}
-        eos
+        message = <<~EOS
+          Failed to remove \"#{gem_name}\" because the following plugins or libraries depend on it:
+          * #{dependencies_from.join("\n* ")}
+        EOS
         LogStash::PluginManager.ui.info(message)
     end
 
@@ -93,10 +97,19 @@ Failed to remove \"#{gem_name}\" because the following plugins or libraries depe
       end
     end
 
-    def self.uninstall!(gem_name, options = { :gemfile => LogStash::Environment::GEMFILE, :lockfile => LogStash::Environment::LOCKFILE })
-      gemfile_path = options[:gemfile]
-      lockfile_path = options[:lockfile]
-      LogstashUninstall.new(gemfile_path, lockfile_path).uninstall!(gem_name)
+    def mutate_gemfile
+      unfreeze_gemfile do
+        File.open(gemfile_path, 'r+') do |file|
+          yield LogStash::Gemfile.new(file).load
+        end
+      end
+    end
+
+    def self.uninstall!(gem_names, options={})
+      gem_names = [gem_names] if gem_names.kind_of?(String)
+      gemfile_path = options[:gemfile] || LogStash::Environment::GEMFILE
+      lockfile_path = options[:lockfile] || LogStash::Environment::LOCKFILE
+      LogstashUninstall.new(gemfile_path, lockfile_path).uninstall!(gem_names)
     end
   end
 end
