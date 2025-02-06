@@ -51,7 +51,7 @@ steps:
     command: |
       set -euo pipefail
 
-      docker build -t test-runner-image -f qa/fips/docker/Dockerfile .
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
       docker run test-runner-image ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true rubyTests
     artifact_paths:
       - "coverage/coverage.json"

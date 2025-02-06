@@ -11,8 +11,8 @@ RUN mkdir -p /etc/java/security
 RUN mkdir -p /root/.gradle
 
 # Copy configuration files
-COPY qa/fips/config/security/java.security /etc/java/security/
-COPY qa/fips/config/security/java.policy /etc/java/security/
+COPY x-pack/distributions/internal/observabilitySRE/config/security/java.security /etc/java/security/
+COPY x-pack/distributions/internal/observabilitySRE/config/security/java.policy /etc/java/security/
 
 # Set environment variables
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
