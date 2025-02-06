@@ -1,8 +1,19 @@
 [[releasenotes]]
 == Release Notes
-coming[9.0.0]
-[[logstash-9-0-0]]
-=== Logstash 9.0.0 Release Notes
+
+* <<logstash-9-0-0-beta1,Logstash 9.0.0-beta1>>
+
+[[logstash-9-0-0-beta1]]
+=== Logstash 9.0.0-beta1 Release Notes
+
+==== Breaking changes
+* Default buffer type to 'heap' for 9.0 https://github.com/elastic/logstash/pull/16500[#16500]
+
+==== New features and enhancements
+* Health report api https://github.com/elastic/logstash/pull/16520[#16520]
+* Plugin manager: add `--level=[major|minor|patch]` (default: `minor`) (#16899) (8 days ago) <Ry Biesemeyer>
+
+==== Plugin releases
 
 ---------- GENERATED CONTENT STARTS HERE ------------
 === Logstash Pull Requests with label v9.0.0
@@ -10,62 +21,31 @@ coming[9.0.0]
 * Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16471[#16471]
 * Backport PR #16471 to main: Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16486[#16486]
 * Fix jdk21 warnings https://github.com/elastic/logstash/pull/16496[#16496]
-* Default buffer type to 'heap' for 9.0 https://github.com/elastic/logstash/pull/16500[#16500]
-* Feature: health report api https://github.com/elastic/logstash/pull/16520[#16520]
-* Fix QA failure introduced by Health API changes and update rspec dependency of the QA package. https://github.com/elastic/logstash/pull/16521[#16521]
-* Forward-port PR #16521 to main: Fix QA failure introduced by Health API changes and update rspec dependency of the QA package. https://github.com/elastic/logstash/pull/16522[#16522]
-* Forward-port PR #16520 to main: Feature: health report api https://github.com/elastic/logstash/pull/16523[#16523]
-* Release notes for 8.15.3 https://github.com/elastic/logstash/pull/16527[#16527]
 * Keeps global settings aligned across entities used in the test for StatsEventFactory https://github.com/elastic/logstash/pull/16540[#16540]
-* Backport PR #16527 to main: Release notes for 8.15.3 https://github.com/elastic/logstash/pull/16572[#16572]
 * Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16626[#16626]
 * For custom java plugins, set the platform = 'java' https://github.com/elastic/logstash/pull/16628[#16628]
 * PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16671[#16671]
-* Forwardport PR #16671 to main: PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16682[#16682]
-* Use --qualifier in release manager https://github.com/elastic/logstash/pull/16907[#16907]
 * Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
-* Backport PR #16968 to 9.0: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/17018[#17018]
 
 === Logstash Commits between 9.0 and 8.17.1
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.1..9.0"
-
-20e192cc0 - (HEAD -> 9.0, origin/9.0) Update elastic_integration version with 9.0 pre-release. (#17016) (3 hours ago) <Mashhur>
 97cadfa45 - Backport PR #16968 to 9.0: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string (#16968) (#17018) (9 hours ago) <github-actions[bot]>
-f8f53d111 - Revert "Use centralized version qualifier (#16995)" (#17006) (5 days ago) <Dimitrios Liappis>
-ac56d9955 - Use centralized version qualifier (#16995) (5 days ago) <Dimitrios Liappis>
 3d66b67ba - Update major plugin versions in gemfile lock (#16996) (6 days ago) <github-actions[bot]>
-3d83ac5bd - Copy Gemfile from 8.17 to 9.0 (#16993) (6 days ago) <Mashhur>
-51ab5d85d - upgrade jdk to 21.0.6+7 (#16932) (6 days ago) <João Duarte>
+51ab5d85d - Upgrade jdk to 21.0.6+7 (#16932) (6 days ago) <João Duarte>
 7378b85f4 - Adding elastic_integration upgrade guidelines. (#16979) (7 days ago) <Mashhur>
-70a6c9aea - [wip] Changing upgrade docs to refer to `9.0` instead of `8.0` (#16977) (7 days ago) <Rob Bavey>
-8a41a4e0e - Remove sample breaking change from breaking changes doc (#16978) (7 days ago) <Rob Bavey>
-6660395f4 - Update branches.json for 8.18 (#16981) (7 days ago) <Andrea Selva>
-d3093e4b4 - integration tests: switch log input to filestream in filebeat (#16983) (7 days ago) <João Duarte>
-6943df557 - plugin manager: add `--level=[major|minor|patch]` (default: `minor`) (#16899) (8 days ago) <Ry Biesemeyer>
-1fda320ed - ci(buildkite): exclude files/folders that are not tested in Buildkite (#16929) (8 days ago) <Victor Martinez>
 2be481211 - add openssl command to wolfi image (#16966) (9 days ago) <kaisecheng>
-3f41828eb - remove irrelevant warning for internal pipeline (#16938) (9 days ago) <kaisecheng>
 c8a656687 - fix user and password detection from environment's uri (#16955) (9 days ago) <João Duarte>
 03b11e982 - Reimplement LogStash::String setting in Java (#16576) (12 days ago) <Andrea Selva>
 dc740b46c - [doc] fix the necessary privileges of central pipeline management (#16902) (13 days ago) <kaisecheng>
-f66e00ac1 - Doc: Remove extra symbol to fix formatting error (#16926) (2 weeks ago) <Karen Metts>
 52b7fb0ae - fix jars installer for new maven and pin psych to 5.2.2 (#16919) (2 weeks ago) <João Duarte>
-d4ba08c35 - Update logstash_releases.json (#16917) (2 weeks ago) <kaisecheng>
-9385cfac5 - Use --qualifier in release manager (#16907) (2 weeks ago) <Dimitrios Liappis>
-58e6dac94 - Increase Xmx used by JRuby during Rake execution to 4Gb (#16911) (2 weeks ago) <Andrea Selva>
 92d721014 - Doc: WPS integration (#16910) (3 weeks ago) <Karen Metts>
 cd729b768 - Add %{{TIME_NOW}} pattern for sprintf (#16906) (3 weeks ago) <kaisecheng>
-9a2cd015d - inject VERSION_QUALIFIER into artifacts (#16904) (3 weeks ago) <João Duarte>
-ff44b7cc2 - Update logstash_releases.json (#16901) (3 weeks ago) <kaisecheng>
 348f1627a - remove pipeline bus v1 (#16895) (4 weeks ago) <Ry Biesemeyer>
-356ecb370 - Replace/remove references to defunct freenode instance (#16873) (4 weeks ago) <Cas Donoghue>
 ae8ad28aa - Add beats and elastic-agent SSL changes to 9.0 breaking change doc. (#16742) (4 weeks ago) <Mashhur>
 db34116c4 - Doc: Environment variables cannot be in config.string comments. (#16689) (4 weeks ago) <Mashhur>
 a21510103 - Validate the size limit in BufferedTokenizer. (#16882) (4 weeks ago) <Mashhur>
 d978e07f2 - Logstash API spec - first pass (#16546) (4 weeks ago) <Karen Metts>
 47d04d06b - Initialize flow metrics if pipeline metric.collect params is enabled. (#16881) (4 weeks ago) <Mashhur>
-4554749da - Test touchups (#16884) (4 weeks ago) <Ry Biesemeyer>
 16392908e - jackson stream read constraints: code-based defaults (#16854) (4 weeks ago) <Ry Biesemeyer>
 dae7fd93d - remove enterprise search from default distribution (#16818) (4 weeks ago) <kaisecheng>
 274c212d9 - Ensure plugin config marked :deprecated logs to deprecation logger (#16833) (4 weeks ago) <Cas Donoghue>
@@ -78,110 +58,53 @@ cc608eb88 - Apply Jackson stream read constraints defaults at runtime (#16832) (
 ae75636e1 - update ironbank image to ubi9/9.5 (#16819) (7 weeks ago) <kaisecheng>
 05789744d - Remove the Arcsight module and the modules framework (#16794) (7 weeks ago) <kaisecheng>
 03ddf1289 - [doc] use UBI8 as base image (#16812) (7 weeks ago) <kaisecheng>
-6e0d235c9 - update releases file with 8.16.2 GA (#16807) (7 weeks ago) <João Duarte>
 e1f4e772d - Doc: Update security docs to replace obsolete cacert setting (#16798) (7 weeks ago) <Karen Metts>
-e6e0f9f6e - give more memory to tests. 1gb instead of 512mb (#16764) (7 weeks ago) <João Duarte>
-2d51cc0ba - Document obsolete settings for elasticsearch output plugin (#16787) (8 weeks ago) <Cas Donoghue>
-188d9e7ed - Update serverless tests to include product origin header (#16766) (8 weeks ago) <Cas Donoghue>
-65495263d - [CI] remove 8.15 DRA (#16795) (8 weeks ago) <kaisecheng>
-264283889 - update logstash_releases to account for 8.17.0 GA (#16785) (8 weeks ago) <João Duarte>
-5bff2ad43 - [CI] benchmark readme  (#16783) (8 weeks ago) <kaisecheng>
-095fbbb99 - Add breaking changes docs for input-elasticsearch (#16744) (8 weeks ago) <Cas Donoghue>
 e36cacedc - ensure inputSize state value is reset during buftok.flush (#16760) (8 weeks ago) <João Duarte>
 202d07cbb - ensure jackson overrides are available to static initializers (#16719) (9 weeks ago) <Ry Biesemeyer>
 ab1976952 - Pin `date` dependency to `3.3.3` (#16755) (9 weeks ago) <Rob Bavey>
-4d9942d68 - Update usage of beats-input obsoleted SSL params in the core. (#16753) (9 weeks ago) <Mashhur>
 e3265d93e - Pin `jar-dependencies` to `0.4.1` (#16747) (9 weeks ago) <Rob Bavey>
-af76c45e6 - Update logstash_releases.json to account for 7.17.26 GA (#16746) (9 weeks ago) <João Duarte>
-1851fe6b2 - Update logstash_releases.json to account for GA of 8.15.5 (#16734) (2 months ago) <João Duarte>
 d913e2ae3 - Docs: Troubleshooting update for JDK bug handling cgroups v1 (#16721) (2 months ago) <mmahacek>
-ccde1eb8f - Add SSL Breaking changes for logstash-output-http to breaking changes… (#16701) (2 months ago) <Rob Bavey>
-0e58e417e - Increase timeout for docs PR link action (#16718) (3 months ago) <Rob Bavey>
 615545027 - Doc: Roll 6.3 breaking changes under 6.0 series (#16706) (3 months ago) <Karen Metts>
 eb7e1253e - Revert "Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482)" (#16715) (3 months ago) <Cas Donoghue>
-aff8d1cce - update logstash_release with 8.16.1 and 8.16.2-SNAPSHOT (#16711) (3 months ago) <João Duarte>
-2f0e10468 - Update logstash_releases.json to account for 8.17 Feature Freeze (#16709) (3 months ago) <João Duarte>
 0dd64a9d6 - PipelineBusV2 deadlock proofing (#16671) (#16682) (3 months ago) <github-actions[bot]>
-15b203448 - [Health API E2E] Align on agent python version and avoid pip install. (#16704) (3 months ago) <Mashhur>
-7b3d23b9d - Replace removed yaml module (#16703) (3 months ago) <Cas Donoghue>
-977efbddd - Update branches.json to include 8.15, 8.16 and 8.17 (#16698) (3 months ago) <João Duarte>
-e0ed994ab - Update license checker with new logger dependency (#16695) (3 months ago) <Cas Donoghue>
 d4fb06e49 - Introduce a new flag to explicitly permit legacy monitoring (#16586) (3 months ago) <Andrea Selva>
-a94659cf8 - Default buffer type to 'heap' for 9.0 (#16500) (3 months ago) <Andrea Selva>
-2a23680cf - Update logstash_releases.json for new branching strategy (#16585) (3 months ago) <João Duarte>
-ff8c154c4 - Extend ruby linting tasks to handle file inputs (#16660) (3 months ago) <Cas Donoghue>
-74d87c9ea - Update catalog-info file with correct system property (#16669) (3 months ago) <Yehor Shvedov>
 5826c6f90 - Use UBI as base image (#16599) (3 months ago) <kaisecheng>
-d9ead9a8d - Remove link to deleted cluster (#16658) (3 months ago) <Ellie>
 046ea1f5a - For custom java plugins, set the platform = 'java'. (#16628) (3 months ago) <Nicole Albee>
-efbee3146 - Update .ruby-version to jruby-9.4.9.0 (#16642) (3 months ago) <João Duarte>
 5847d7733 - skip `allow_superuser` in Windows OS (#16629) (3 months ago) <kaisecheng>
 113585d4a - Anchor the `-java` match pattern at the end of the string. (#16626) (3 months ago) <Nicole Albee>
 6703aec47 - bump jruby to 9.4.9.0 (#16634) (3 months ago) <João Duarte>
 849f43103 - fix Windows java not found log (#16633) (3 months ago) <kaisecheng>
 852149be2 - Update JDK to latest in versions.yml (#16627) (3 months ago) <Andrea Selva>
-8ce58b835 - run acceptance tests as non-root (#16624) (3 months ago) <kaisecheng>
 00da72378 - add boostrap to docker build to fix missing jars (#16622) (3 months ago) <kaisecheng>
-0006937e4 - Doc: Reset breaking changes and release notes for 9.0 (#16603) (3 months ago) <Karen Metts>
-9eced9a10 - reduce effort during build of docker images (#16619) (3 months ago) <João Duarte>
-472e27a01 - make docker build and gradle tasks more friendly towards ci output (#16618) (3 months ago) <João Duarte>
 db59cd0fb - set `allow_superuser` to false as default (#16558) (3 months ago) <kaisecheng>
-c602b851b - [CI] Change agent for JDK availability check and add schedule also for 8.x (#16614) (3 months ago) <Andrea Selva>
 5d523aa5c - Fix bad reference to a variable (#16615) (3 months ago) <Andrea Selva>
-ed5874bc2 - Use jvm catalog for reproducible builds and expose new pipeline to check JDK availability (#16602) (3 months ago) <Andrea Selva>
 ca19f0029 - make max inflight warning global to all pipelines (#16597) (3 months ago) <João Duarte>
-93b0913fd - Updated CI releases inventory after 7.17.25 (#16589) (4 months ago) <Edmo Vamerlatti Costa>
 566bdf66f - remove http.* settings (#16552) (4 months ago) <kaisecheng>
 467ab3f44 - Enable log.format.json.fix_duplicate_message_fields by default (#16578) (4 months ago) <kaisecheng>
-dcafa0835 - Updated CI releases inventory after 8.15.3 (#16581) (4 months ago) <Edmo Vamerlatti Costa>
-daf979c18 - default to jdk 21 on all ci/build tasks (#16464) (4 months ago) <João Duarte>
 3f0ad12d0 - add http.* deprecation log (#16538) (4 months ago) <kaisecheng>
 b6f16c8b8 - Adds a JMH benchmark to test BufferedTokenizerExt class (#16564) (4 months ago) <Andrea Selva>
 85493ce86 - Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (4 months ago) <Andrea Selva>
 ab77d36da - ensure minitar 1.x is used instead of 0.x (#16565) (4 months ago) <João Duarte>
 63706c1a3 - Marked ArcSight Module as deprecated in documentation. (#16553) (4 months ago) <Andrea Selva>
 cb3b7c01d - Remove event_api.tags.illegal for v9 (#16461) (4 months ago) <kaisecheng>
-3f2a65928 - Update branches.json to point to 8.16 branch (#16560) (4 months ago) <Rob Bavey>
-dfd256e30 - [Health API] Add 1-min, 5-min backpressure and multipipeline test cases. (#16550) (4 months ago) <Mashhur>
 b571e8f3e - remove deprecated modules netflow, fb_apache and azure (#16514) (4 months ago) <kaisecheng>
-fc119df24 - Doc: Update 8.15.0 release notes to future proof link (#16554) (4 months ago) <Karen Metts>
-937a9ea49 - docs: add health details for flow/worker_utilization (#16544) (4 months ago) <Ry Biesemeyer>
 8cd0fa876 - refactor log for event_api.tags.illegal (#16545) (4 months ago) <kaisecheng>
 6064587bc - Keeps global settings aligned across entities used in the test for StatsEventFactory (4 months ago) <Andrea Selva>
 a931b2cde - Flow worker utilization probe (#16532) (4 months ago) <Ry Biesemeyer>
 065769636 - health: add `logstash.forceApiStatus: green` escape hatch (#16535) (4 months ago) <Ry Biesemeyer>
-4037adfc4 - Health api minor followups (#16533) (4 months ago) <Mashhur>
-7f7af057f - Feature: health report api (#16520) (#16523) (4 months ago) <github-actions[bot]>
-648472106 - [test] Fix xpack test to check for http_address stats only if the webserver is enabled (#16525) (4 months ago) <Andrea Selva>
-dc24f0297 - Fix QA failure introduced by Health API changes and update rspec dependency of the QA package. (#16521) (#16522) (4 months ago) <github-actions[bot]>
 a4eddb8a2 - add deprecation log for `--event_api.tags.illegal` (#16507) (4 months ago) <kaisecheng>
 3480c32b6 - install jdk 11 in agent for snyk 7.17 scanning (#16510) (4 months ago) <João Duarte>
 5d4825f00 - Avoid to access Java DeprecatedAlias value other than Ruby's one (#16506) (4 months ago) <Andrea Selva>
-5aabeda5f - fix snapshot branch detection for snyk (#16484) (4 months ago) <João Duarte>
 e84fb458c - Improve pipeline bootstrap error logs (#16495) (4 months ago) <Edmo Vamerlatti Costa>
-60670087c - [ci] Skip slack for retries JDK matrix jobs (#16316) (4 months ago) <Dimitrios Liappis>
 07c01f823 - Don't use an older JRuby with oraclelinux-7 (#16499) (4 months ago) <Dimitrios Liappis>
 4e49adc6f - Fix jdk21 warnings (#16496) (4 months ago) <Andrea Selva>
 b69d993d7 - DLQ-ing events that trigger an conditional evaluation error. (#16423) (4 months ago) <Andrea Selva>
-fd1de3900 - Use jruby-9.4.8.0 in exhaustive CIs. (#16489) (4 months ago) <Mashhur>
 61de60fe2 - [Spacetime] Reimplement config Setting classe in java (#15679) (4 months ago) <Andrea Selva>
 8368c0036 - Change LogStash::Util::SubstitutionVariables#replace_placeholders refine argument to optional (#16485) (4 months ago) <Edmo Vamerlatti Costa>
-2fe91226e - Release notes for 8.15.2 (#16471) (#16486) (4 months ago) <github-actions[bot]>
-f35e10d79 - Updated CI releases inventory after 8.15.2 (#16474) (4 months ago) <Andrea Selva>
-5c57adebb - simplify snyk scanning (#16475) (4 months ago) <João Duarte>
 51cca7320 - bump .ruby_version to jruby-9.4.8.0 (#16477) (4 months ago) <João Duarte>
 0ef4c7da3 - [ci] fix wrong queue type in benchmark marathon (#16465) (5 months ago) <kaisecheng>
-b54caf3fd - Known issue for 8.15.1 related to env vars references (#16455) (5 months ago) <Luca Belluccini>
-3e98cb162 - [CI] fix benchmark marathon (#16447) (5 months ago) <kaisecheng>
-7c64c7394 - Fixes the issue where LS wipes out all quotes from docker env variables. (#16456) (5 months ago) <Mashhur>
 4e82655cd - remove ingest-converter (#16453) (5 months ago) <kaisecheng>
 1ec37b7c4 - Drop JDK 11 support (#16443) (5 months ago) <Andrea Selva>
-2ebf2658f - Make health report test runner script executable. (#16446) (5 months ago) <Mashhur>
-5452cccf7 - [CI] benchmark dashboard and pipeline for testing against multiple versions (#16421) (5 months ago) <kaisecheng>
-5195332bc - Logstash Health Report Tests Buildkite pipeline setup. (#16416) (5 months ago) <Mashhur>
-701108f88 - update ci release 7.17.24 (#16439) (5 months ago) <kaisecheng>
-17dba9f82 - account for the 8.x in DRA publishing task (#16436) (5 months ago) <João Duarte>
-f60e98717 - bump to 9.0.0 and adapt CI accordingly (#16428) (5 months ago) <João Duarte>
 69f0fa54c - use gnu tar compatible minitar to generate tar artifact (#16432) (5 months ago) <João Duarte>
 bb7ecc203 - Fix ConditionalEvaluationError to do not include the event that errored in its serialiaxed form, because it's not expected that this class is ever serialized. (#16429) (5 months ago) <Andrea Selva>
 
@@ -207,9 +130,9 @@ logstash-output-tcp: 6.2.1 -> 7.0.0
 
 ==== Plugins
 
-*Elastic_integration Filter - 9.0.0*
+*elastic_integration Filter - 9.0.0*
 
-404: Not Found
+* 9.0.0 prerelease https://github.com/elastic/logstash-filter-elastic_integration/pull/265[#265]
 
 *Elasticsearch Filter - 4.1.0*
 
@@ -366,7 +289,3 @@ logstash-output-tcp: 6.2.1 -> 7.0.0
 * `ssl_enable`, which should be replaced by `ssl_enabled`
 * `ssl_verify`, which should be replaced by `ssl_client_authentication` when `mode` is `server` or `ssl_verification_mode`when mode is `client`
 * [58](https://github.com/logstash-plugins/logstash-output-tcp/pull/58)
-
-
-
-* <<logstash-9-0-0,Logstash 9.0.0>>
