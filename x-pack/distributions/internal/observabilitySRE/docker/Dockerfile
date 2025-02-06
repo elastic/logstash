@@ -4,7 +4,8 @@ FROM docker.elastic.co/wolfi/chainguard-base-fips:latest
 # Install OpenJDK 21
 RUN apk add --no-cache \
     openjdk-21 \
-    bash
+    bash \
+    git
 
 # Create directory for security configuration
 RUN mkdir -p /etc/java/security
