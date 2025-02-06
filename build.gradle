@@ -39,6 +39,8 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+apply from: "${projectDir}/x-pack/distributions/internal/observabilitySRE/build-ext.gradle"
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
@@ -50,16 +52,6 @@ import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 import org.logstash.gradle.tooling.SnapshotArtifactURLs
-
-ext {
-    runTestsInFIPSMode = project.hasProperty('runTestsInFIPSMode') ? project.property('runTestsInFIPSMode').toBoolean() : false
-}
-
-subprojects {
-    ext {
-        runTestsInFIPSMode = rootProject.runTestsInFIPSMode
-    }
-}
 
 allprojects {
   group = 'org.logstash'
