@@ -34,17 +34,6 @@ module Bundler
       @lockfile_path = lockfile_path
     end
 
-    # To be uninstalled the candidate gems need to be standalone.
-    def dependants_gems(gem_name)
-      builder = Dsl.new
-      builder.eval_gemfile(::File.join(::File.dirname(gemfile_path), "original gemfile"), File.read(gemfile_path))
-      definition = builder.to_definition(lockfile_path, {})
-
-      definition.specs
-        .select { |spec| spec.dependencies.collect(&:name).include?(gem_name) }
-        .collect(&:name).sort.uniq
-    end
-
     def uninstall!(gems_to_remove)
       gems_to_remove = Array(gems_to_remove)
 
