@@ -81,7 +81,7 @@ public class Terminal {
         if (useConsole) {
             return System.console().readPassword();
         } else {
-            return scanner.next().toCharArray();
+            return scanner.nextLine().toCharArray();
         }
     }
 
