@@ -39,6 +39,8 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+apply from: "${projectDir}/x-pack/distributions/internal/observabilitySRE/build-ext.gradle"
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
