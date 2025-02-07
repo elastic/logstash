@@ -87,6 +87,20 @@ describe "Test that Logstash" do
     expect(logstash.stderr_and_stdout).to match(/\\"\$\{tag1\}\\"/)
   end
 
+  it "add value that contains a space" do
+    # add two key value pairs to keystore
+    # hello => hello world
+    # bye => bye
+    key = "hello"
+    value = "hello world"
+    @logstash.run_cmd(["bash", "-c", "echo -e '#{value}\\nbye' | LOGSTASH_KEYSTORE_PASS=#{logstash_keystore_passowrd} #{@logstash.logstash_home}/bin/logstash-keystore --path.settings #{settings_dir} add #{key} bye"])
+
+    test_env["LOGSTASH_KEYSTORE_PASS"] = logstash_keystore_passowrd
+    logstash = @logstash.run_cmd(["bin/logstash", "-e", "input{ generator{ count => 1 tags => ['${#{key}}', '${bye}'] }}", "--path.settings", settings_dir], true, test_env)
+    expect(logstash.stderr_and_stdout).to match(/#{value}/)
+    expect(logstash.stderr_and_stdout).to match(/bye/)
+  end
+
   context "won't start" do
     it "with the wrong password when variables are in settings" do
       test_env["LOGSTASH_KEYSTORE_PASS"] = "WRONG_PASSWRD"
