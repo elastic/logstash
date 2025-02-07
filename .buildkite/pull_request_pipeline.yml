@@ -143,7 +143,7 @@ steps:
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
       docker run test-runner-image /bin/bash -c '
         source ci/get-test-half.sh
-        specs=$(get_test_half 0)
+        specs=\$(get_test_half 0)
         ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
       '
 
@@ -165,7 +165,7 @@ steps:
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
       docker run test-runner-image /bin/bash -c '
         source ci/get-test-half.sh
-        specs=$(get_test_half 1)
+        specs=\$(get_test_half 1)
         ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
       '
 
