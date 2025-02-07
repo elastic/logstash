@@ -140,12 +140,7 @@ steps:
     command: |
       set -euo pipefail
 
-      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run test-runner-image /bin/bash -c '
-        source ci/get-test-half.sh
-        specs=\$(get_test_half 0)
-        ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
-      '
+      ci/run-integration-tests-fips.sh 0
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 2"
     key: "integration-tests-fips-part-2"
@@ -162,12 +157,7 @@ steps:
     command: |
       set -euo pipefail
 
-      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run test-runner-image /bin/bash -c '
-        source ci/get-test-half.sh
-        specs=\$(get_test_half 1)
-        ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
-      '
+      ci/run-integration-tests-fips.sh 1
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
