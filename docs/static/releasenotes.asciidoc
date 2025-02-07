@@ -108,24 +108,6 @@ b69d993d7 - DLQ-ing events that trigger an conditional evaluation error. (#16423
 69f0fa54c - use gnu tar compatible minitar to generate tar artifact (#16432) (5 months ago) <João Duarte>
 bb7ecc203 - Fix ConditionalEvaluationError to do not include the event that errored in its serialiaxed form, because it's not expected that this class is ever serialized. (#16429) (5 months ago) <Andrea Selva>
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.1..9.0 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 8.17.0 -> 9.0.0
-logstash-filter-elasticsearch: 3.16.2 -> 4.1.0
-logstash-filter-http: 1.6.0 -> 2.0.0
-logstash-input-beats: 6.9.1 -> 7.0.1
-logstash-input-elastic_serverless_forwarder: 0.1.5 -> 2.0.0
-logstash-input-elasticsearch: 4.20.5 -> 5.0.0
-logstash-input-http: 3.9.2 -> 4.1.0
-logstash-input-http_poller: 5.6.0 -> 6.0.0
-logstash-input-tcp: 6.4.4 -> 7.0.0
-logstash-integration-elastic_enterprise_search: 3.0.1 -> 3.0.1
-logstash-integration-kafka: 11.5.4 -> 11.6.0
-logstash-integration-snmp: 4.0.5 -> 4.0.6
-logstash-output-elasticsearch: 11.22.10 -> 12.0.2
-logstash-output-http: 5.7.1 -> 6.0.0
-logstash-output-tcp: 6.2.1 -> 7.0.0
 ---------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
