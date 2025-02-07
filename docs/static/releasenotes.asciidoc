@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-2,Logstash 8.17.2>>
 * <<logstash-8-17-1,Logstash 8.17.1>>
 * <<logstash-8-17-0,Logstash 8.17.0>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
@@ -74,6 +75,118 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-17-2]]
+=== Logstash 8.17.2 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.17.2
+
+* Reimplement LogStash::String setting in Java https://github.com/elastic/logstash/pull/16576[#16576]
+* plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16899[#16899]
+* [doc] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16902[#16902]
+* Increase Xmx used by JRuby during Rake execution to 4Gb https://github.com/elastic/logstash/pull/16911[#16911]
+* fix jars installer for new maven and pin psych to 5.2.2 https://github.com/elastic/logstash/pull/16919[#16919]
+* Backport PR #16919 to 8.17: fix jars installer for new maven and pin psych to 5.2.2 https://github.com/elastic/logstash/pull/16924[#16924]
+* Doc: Remove extra symbol to fix formatting error https://github.com/elastic/logstash/pull/16926[#16926]
+* Backport PR #16902 to 8.17: [doc] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16930[#16930]
+* Backport PR #16926 to 8.17: Doc: Remove extra symbol to fix formatting error https://github.com/elastic/logstash/pull/16935[#16935]
+* remove irrelevant warning for internal pipeline https://github.com/elastic/logstash/pull/16938[#16938]
+* Backport PR #16911 to 8.17: Increase Xmx used by JRuby during Rake execution to 4Gb https://github.com/elastic/logstash/pull/16943[#16943]
+* fix user and password detection from environment's uri https://github.com/elastic/logstash/pull/16955[#16955]
+* Backport PR #16955 to 8.17: fix user and password detection from environment's uri https://github.com/elastic/logstash/pull/16958[#16958]
+* [Backport 8.x] Reimplement LogStash::String setting in Java (#16576) https://github.com/elastic/logstash/pull/16959[#16959]
+* Backport PR #16959 to 8.17: [Backport 8.x] Reimplement LogStash::String setting in Java (#16576) https://github.com/elastic/logstash/pull/16960[#16960]
+* Backport PR #16938 to 8.17: remove irrelevant warning for internal pipeline https://github.com/elastic/logstash/pull/16963[#16963]
+* Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
+* Backport PR #16899 to 8.17: plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16974[#16974]
+* Backport PR #16932 to 8.x: upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16987[#16987]
+* Backport PR #16987 to 8.17: Backport PR #16932 to 8.x: upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16989[#16989]
+* Use centralized version qualifier https://github.com/elastic/logstash/pull/16995[#16995]
+* Backport PR #16995 to 8.17: Use centralized version qualifier https://github.com/elastic/logstash/pull/17002[#17002]
+* Backport PR #16968 to 8.17: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/17022[#17022]
+* Fix logstash-keystore to accept spaces in values when added via stdin https://github.com/elastic/logstash/pull/17039[#17039]
+* Backport PR #17039 to 8.17: Fix logstash-keystore to accept spaces in values when added via stdin https://github.com/elastic/logstash/pull/17041[#17041]
+
+=== Logstash Commits between 8.17 and 8.17.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.1..8.17"
+
+a19a60790 - (HEAD -> 8.17, origin/8.17) fix logstash-keystore to accept spaces in values when added via stdin (#17039) (#17041) (2 hours ago) <github-actions[bot]>
+40866b9e9 - bump lock file for 8.17 (#17024) (2 days ago) <github-actions[bot]>
+d1f470ae5 - Backport PR #16968 to 8.17: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string (#16968) (#17022) (3 days ago) <github-actions[bot]>
+23383e71c - upgrade jdk to 21.0.6+7 (#16932) (#16987) (#16989) (9 days ago) <github-actions[bot]>
+77e355ed9 - plugin manager: add `--level=[major|minor|patch]` (default: `minor`) (#16899) (#16974) (10 days ago) <github-actions[bot]>
+dfdbaf2f6 - add openssl command to wolfi image (#16971) (10 days ago) <kaisecheng>
+56e5ebcf3 - remove irrelevant warning for internal pipeline (#16938) (#16963) (11 days ago) <github-actions[bot]>
+3897b718f - [Backport 8.x] Reimplement LogStash::String setting in Java (#16576) (#16959) (#16960) (11 days ago) <github-actions[bot]>
+f3fd1c584 - fix user and password detection from environment's uri (#16955) (#16958) (11 days ago) <github-actions[bot]>
+b9b5b9553 - Increase Xmx used by JRuby during Rake execution to 4Gb (#16911) (#16943) (2 weeks ago) <github-actions[bot]>
+2002e936f - Backport 16907 to 8.17: Use --qualifier in release manager (#16907) #16941 (2 weeks ago) <Dimitrios Liappis>
+fa6894ae9 - Doc: Remove extra symbol to fix formatting error (#16926) (#16935) (2 weeks ago) <github-actions[bot]>
+0966786fe - [doc] fix the necessary privileges of central pipeline management (#16902) (#16930) (2 weeks ago) <github-actions[bot]>
+d2aa69614 - fix jars installer for new maven and pin psych to 5.2.2 (#16919) (#16924) (2 weeks ago) <github-actions[bot]>
+648c5abd0 - Update Gemfile.jruby-3.1.lock.release (#16922) (2 weeks ago) <kaisecheng>
+93e792c3d - Release notes for 8.16.3 (#16879) (#16918) (2 weeks ago) <kaisecheng>
+862bbacb6 - bump core 8.17.2 (#16916) (3 weeks ago) <kaisecheng>
+927a04359 - Release notes for 8.17.1 (#16880) (3 weeks ago) <github-actions[bot]>
+5bd02d98b - Validate the size limit in BufferedTokenizer. (#16882) (#16891) (4 weeks ago) <github-actions[bot]>
+43f6fc0f4 - Initialize flow metrics if pipeline metric.collect params is enabled. (#16881) (#16888) (4 weeks ago) <github-actions[bot]>
+92d58d192 - Forward port 8.15.5 and 8.16.2 release notes to 8.17 (#16810) (4 weeks ago) <João Duarte>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.17.1..8.17 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.17.0 -> 8.17.1
+logstash-filter-elasticsearch: 3.16.2 -> 3.17.0
+logstash-input-beats: 6.9.1 -> 6.9.2
+logstash-input-elasticsearch: 4.20.5 -> 4.21.1
+logstash-input-http: 3.9.2 -> 3.10.1
+logstash-input-tcp: 6.4.4 -> 6.4.5
+logstash-integration-snmp: 4.0.5 -> 4.0.6
+logstash-output-elasticsearch: 11.22.10 -> 11.22.12
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.17.1*
+
+404: Not Found
+
+*Elasticsearch Filter - 3.17.0*
+
+* Added support for custom headers https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/190[#190]
+
+*Beats Input - 6.9.2*
+
+* Name netty threads according to their purpose and the plugin id https://github.com/logstash-plugins/logstash-input-beats/pull/511[#511]
+
+*Elasticsearch Input - 4.21.1*
+
+* Fix: prevent plugin crash when hits contain illegal structure https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/183[#183]
+* When a hit cannot be converted to an event, the input now emits an event tagged with `_elasticsearch_input_failure` with an `[event][original]` containing a JSON-encoded string representation of the entire hit.
+
+* Add support for custom headers https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/217[#217]
+
+*Http Input - 3.10.1*
+
+* Properly naming netty threads https://github.com/logstash-plugins/logstash-input-http/pull/191[#191]
+
+* add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/179[#179]
+
+*Tcp Input - 6.4.5*
+
+* Name netty threads with plugin id and their purpose [229](https://github.com/logstash-plugins/logstash-input-tcp/pull/229)
+
+*Snmp Integration - 4.0.6*
+
+* [DOC] Fix typo in snmptrap migration section https://github.com/logstash-plugins/logstash-integration-snmp/pull/74[#74]
+
+*Elasticsearch Output - 11.22.12*
+
+* Properly handle http code 413 (Payload Too Large) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1199[#1199]
+* Remove irrelevant log warning about elastic stack version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1202[#1202]
 
 
 [[logstash-8-17-1]]
