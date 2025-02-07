@@ -84,6 +84,13 @@ allprojects {
 
   //https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
   tasks.withType(Test) {
+    // Add Exports to enable tests to run in JDK17
+    jvmArgs = [
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.nio.channels=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"
+    ]
+
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
