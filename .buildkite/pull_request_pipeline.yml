@@ -140,7 +140,8 @@ steps:
     command: |
       set -euo pipefail
 
-      ci/run-integration-tests-fips.sh 0
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run test-runner-image ci/run-fips-integration-tests.sh 0
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 2"
     key: "integration-tests-fips-part-2"
@@ -157,7 +158,8 @@ steps:
     command: |
       set -euo pipefail
 
-      ci/run-integration-tests-fips.sh 1
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run test-runner-image ci/run-fips-integration-tests.sh 1
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
