@@ -125,8 +125,8 @@ steps:
       manual:
         allowed: true
 
-  - label: ":lab_coat: Integration Tests - FIPS mode"
-    key: "integration-tests-fips"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 1"
+    key: "integration-tests-fips-part-1"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
@@ -141,7 +141,33 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run test-runner-image ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests
+      docker run test-runner-image /bin/bash -c '
+        source ci/test_split_utils.sh
+        specs=$(get_test_half 0)
+        ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
+      '
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 2"
+    key: "integration-tests-fips-part-2"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+      # dont retry on failure while they are expected
+        - limit: 0
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run test-runner-image /bin/bash -c '
+        source ci/test_split_utils.sh
+        specs=$(get_test_half 1)
+        ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
+      '
 
   - label: ":lab_coat: Integration Tests / part 1"
     key: "integration-tests-part-1"
