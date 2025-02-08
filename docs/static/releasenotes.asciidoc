@@ -78,65 +78,26 @@ This section summarizes the changes in the following releases:
 [[logstash-8-16-4]]
 === Logstash 8.16.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.16.4
+[[notable-8.16.4]]
+==== Notable issues fixed
 
-* Reimplement LogStash::String setting in Java https://github.com/elastic/logstash/pull/16576[#16576]
-* plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16899[#16899]
-* [doc] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16902[#16902]
-* Increase Xmx used by JRuby during Rake execution to 4Gb https://github.com/elastic/logstash/pull/16911[#16911]
-* remove irrelevant warning for internal pipeline https://github.com/elastic/logstash/pull/16938[#16938]
-* fix user and password detection from environment's uri https://github.com/elastic/logstash/pull/16955[#16955]
-* Backport PR #16955 to 8.16: fix user and password detection from environment's uri https://github.com/elastic/logstash/pull/16957[#16957]
-* [Backport 8.16] Reimplement LogStash::String setting in Java (#16559)  https://github.com/elastic/logstash/pull/16961[#16961]
-* Backport PR #16938 to 8.16: remove irrelevant warning for internal pipeline https://github.com/elastic/logstash/pull/16964[#16964]
-* Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
-* Backport PR #16899 to 8.16: plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16975[#16975]
-* Backport PR #16902 to 8.16: [doc] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16976[#16976]
-* Use centralized version qualifier https://github.com/elastic/logstash/pull/16995[#16995]
-* Backport PR #16995 to 8.16: Use centralized version qualifier https://github.com/elastic/logstash/pull/17004[#17004]
-* Backport PR #16968 to 8.16: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/17021[#17021]
+* The plugin manager's `update` command now correctly only updates _minor_ versions of plugins by default to avoid breaking changes; if you wish to also include breaking changes, you must now specify `--level=major` https://github.com/elastic/logstash/pull/16975[#16975]
+* The plugin manager no longer has issues installing plugins with embedded jars or depending on snakeyaml https://github.com/elastic/logstash/pull/16925[#16925]
+* The plugin manager now correctly supports authenticated proxies by transmitting username and password from proxy environment URI https://github.com/elastic/logstash/pull/16957[#16957]
+* The buffered-tokenizer, which is used by many plugins to split streams of bytes by a delimiter, now properly resumes at the next delimiter after encountering a buffer-full condition https://github.com/elastic/logstash/pull/17021[#17021]
 
-=== Logstash Commits between 8.16 and 8.16.3
+[[dependencies-8.16.4]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.3..8.16"
-
-3a35abc24 - (HEAD -> 8.16, origin/8.16) bump lock file for 8.16 (#17023) (2 days ago) <github-actions[bot]>
-002d4897c - Backport PR #16968 to 8.16: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string (#16968) (#17021) (3 days ago) <github-actions[bot]>
-32e6def9f - Upgrade JDK to 21.0.6+7 (#16990) (8 days ago) <João Duarte>
-4e87a30c1 - Validate the size limit in BufferedTokenizer. (#16882) (#16892) (9 days ago) <Mashhur>
-589f1b652 - plugin manager: add `--level=[major|minor|patch]` (default: `minor`) (#16899) (#16975) (10 days ago) <github-actions[bot]>
-430424aac - [doc] fix the necessary privileges of central pipeline management (#16902) (#16976) (10 days ago) <github-actions[bot]>
-5ead3a988 - add openssl command to wolfi image (#16972) (10 days ago) <kaisecheng>
-baa181ae3 - remove irrelevant warning for internal pipeline (#16938) (#16964) (11 days ago) <github-actions[bot]>
-ed38254f4 - [Backport 8.x] Reimplement LogStash::String setting in Java (#16576) (#16959) (#16961) (11 days ago) <Andrea Selva>
-1adecfe3b - fix user and password detection from environment's uri (#16955) (#16957) (11 days ago) <github-actions[bot]>
-f2a7b3022 - Increase Xmx used by JRuby during Rake execution to 4Gb (#16911) (#16944) (2 weeks ago) <github-actions[bot]>
-15e4e2504 - Backport 16907 to 8.16: Use --qualifier in release manager (#16907) #16942 (2 weeks ago) <Dimitrios Liappis>
-2a4eb2da0 - Doc: Remove extra symbol to fix formatting error (#16926) (#16936) (2 weeks ago) <github-actions[bot]>
-7f19931c7 - fix jars installer for new maven and pin psych to 5.2.2 (#16919) (#16925) (2 weeks ago) <github-actions[bot]>
-3ac74007f - bump core 8.16.4 (#16915) (3 weeks ago) <kaisecheng>
-a3f7aece2 - Release notes for 8.16.3 (#16879) (3 weeks ago) <github-actions[bot]>
-946c78c94 - Initialize flow metrics if pipeline metric.collect params is enabled. (#16881) (#16889) (4 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.16.3..8.16 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 8.16.0 -> 8.16.1
-logstash-filter-elasticsearch: 3.16.2 -> 3.17.0
-logstash-input-beats: 6.9.1 -> 6.9.2
-logstash-input-elasticsearch: 4.20.5 -> 4.21.1
-logstash-input-http: 3.9.2 -> 3.10.1
-logstash-input-tcp: 6.4.4 -> 6.4.5
-logstash-integration-snmp: 4.0.5 -> 4.0.6
-logstash-output-elasticsearch: 11.22.10 -> 11.22.12
----------- GENERATED CONTENT ENDS HERE ------------
+* Update JDK to 21.0.6+7 https://github.com/elastic/logstash/pull/16990[#16990]
 
 ==== Plugins
 
 *Elastic_integration Filter - 8.16.1*
 
-404: Not Found
+* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version https://github.com/elastic/logstash-filter-elastic_integration/pull/253[#253]
+* Embeds Ingest Node components from Elasticsearch 8.16
+* Compatible with Logstash 8.15+
 
 *Elasticsearch Filter - 3.17.0*
 
