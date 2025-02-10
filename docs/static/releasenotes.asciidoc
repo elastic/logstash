@@ -8,109 +8,67 @@
 
 ==== Breaking changes
 * Default buffer type to 'heap' for 9.0 https://github.com/elastic/logstash/pull/16500[#16500]
+* Remove `http.*` settings https://github.com/elastic/logstash/pull/16552[#16552]
+* Remove the Arcsight module and the modules framework https://github.com/elastic/logstash/pull/16794[#16794]
+* Remove `event_api.tags.illegal` for 9.0 https://github.com/elastic/logstash/pull/16461[#16461]
+* Remove deprecated modules netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
+* Remove ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
+* Drop JDK 11 support https://github.com/elastic/logstash/pull/16443[#16443]
+* Remove enterprise search from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
+* Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
 
 ==== New features and enhancements
 * Health report api https://github.com/elastic/logstash/pull/16520[#16520]
-* Plugin manager: add `--level=[major|minor|patch]` (default: `minor`) (#16899) (8 days ago) <Ry Biesemeyer>
+* Plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16899[#16899]
+* Upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
+* `elastic_integration` upgrade guidelines https://github.com/elastic/logstash/pull/16979[#16979]
+* Reimplement LogStash::String setting in Java https://github.com/elastic/logstash/pull/16576[#16576]
+* Add `%{{TIME_NOW}}` pattern for sprintf https://github.com/elastic/logstash/pull/16906[#16906]
+* Remove pipeline bus v1 https://github.com/elastic/logstash/pull/16895[#16895]
+* Doc: Environment variables cannot be in `config.string` comments https://github.com/elastic/logstash/pull/16689[#16689]
+* Validate the size limit in BufferedTokenizer https://github.com/elastic/logstash/pull/16882[#16882]
+* Logstash API spec - first pass https://github.com/elastic/logstash/pull/16546[#16546]
+* Doc: Message Logstash module deprecations and removal https://github.com/elastic/logstash/pull/16840[#16840]
+* Respect environment variables in jvm.options https://github.com/elastic/logstash/pull/16834[#16834]
+* Add pipeline metrics to Node Stats API https://github.com/elastic/logstash/pull/16839[#16839]
+* Doc: SSl standardization breaking changes https://github.com/elastic/logstash/pull/16844[#16844]
+* Update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16819[#16819]
+* Pin `date` dependency to `3.3.3` https://github.com/elastic/logstash/pull/16755[#16755]
+* Pin `jar-dependencies` to `0.4.1` https://github.com/elastic/logstash/pull/16747[#16747]
+* Doc: Troubleshooting update for JDK bug handling cgroups v1 https://github.com/elastic/logstash/pull/16721[#16721]
+* Introduce a new flag to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
+* Use UBI as base image https://github.com/elastic/logstash/pull/16599[#16599]
+* Set `allow_superuser` to false as default https://github.com/elastic/logstash/pull/16558[#16558]
+* Skip `allow_superuser` in Windows OS https://github.com/elastic/logstash/pull/16629[#16629]
+* Upgrade jruby to 9.4.9.0 https://github.com/elastic/logstash/pull/16634[#16634]
+* Update JDK to version 21.0.5+11 https://github.com/elastic/logstash/pull/16627[#16627]
+* Add http.* deprecation log https://github.com/elastic/logstash/pull/16538[#16538]
+* Add a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16564[#16564]
+* Ensure minitar 1.x is used instead of 0.x https://github.com/elastic/logstash/pull/16565[#16565]
+* Doc: Marked ArcSight Module as deprecated https://github.com/elastic/logstash/pull/16553[#16553]
 
-==== Plugin releases
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.0.0
-
-* Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16471[#16471]
-* Backport PR #16471 to main: Release notes for 8.15.2 https://github.com/elastic/logstash/pull/16486[#16486]
-* Fix jdk21 warnings https://github.com/elastic/logstash/pull/16496[#16496]
-* Keeps global settings aligned across entities used in the test for StatsEventFactory https://github.com/elastic/logstash/pull/16540[#16540]
+==== Notable Fixes
 * Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16626[#16626]
 * For custom java plugins, set the platform = 'java' https://github.com/elastic/logstash/pull/16628[#16628]
-* PipelineBusV2 deadlock proofing https://github.com/elastic/logstash/pull/16671[#16671]
+* Fix the PipelineBusV2 deadlock https://github.com/elastic/logstash/pull/16671[#16671]
 * Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
+* Add openssl command to wolfi image https://github.com/elastic/logstash/pull/16966[#16966]
+* Fixes user and password detection from environment's uri in plugin manager https://github.com/elastic/logstash/pull/16955[#16955]
+* Doc: fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16902[#16902]
+* Fixes the jars installer for new maven and pin psych to 5.2.2 https://github.com/elastic/logstash/pull/16919[#16919]
+* Doc: Enterprise search plugin integration deprecation https://github.com/elastic/logstash/pull/16910[#16910]
+* Initialize flow metrics only if pipeline `metric.collect` params is enabled https://github.com/elastic/logstash/pull/16881[#16881]
+* Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16832[#16832]
+* jackson stream read constraints: code-based defaults https://github.com/elastic/logstash/pull/16854[#16854]
+* Ensure plugin config marked :deprecated logs to deprecation logger https://github.com/elastic/logstash/pull/16833[#16833]
+* Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
+* Ensure inputSize state value is reset during `buftok.flush` https://github.com/elastic/logstash/pull/16760[#16760]
+* Ensure jackson overrides are available to static initializers https://github.com/elastic/logstash/pull/16719[#16719]
+* Fix Windows java not found log https://github.com/elastic/logstash/pull/16633[#16633]
+* Add boostrap to docker build to fix missing jars https://github.com/elastic/logstash/pull/16622[#16622]
+* Fix JDK 21 warnings https://github.com/elastic/logstash/pull/16496[#16496]
 
-=== Logstash Commits between 9.0 and 8.17.1
-
-97cadfa45 - Backport PR #16968 to 9.0: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string (#16968) (#17018) (9 hours ago) <github-actions[bot]>
-3d66b67ba - Update major plugin versions in gemfile lock (#16996) (6 days ago) <github-actions[bot]>
-51ab5d85d - Upgrade jdk to 21.0.6+7 (#16932) (6 days ago) <João Duarte>
-7378b85f4 - Adding elastic_integration upgrade guidelines. (#16979) (7 days ago) <Mashhur>
-2be481211 - add openssl command to wolfi image (#16966) (9 days ago) <kaisecheng>
-c8a656687 - fix user and password detection from environment's uri (#16955) (9 days ago) <João Duarte>
-03b11e982 - Reimplement LogStash::String setting in Java (#16576) (12 days ago) <Andrea Selva>
-dc740b46c - [doc] fix the necessary privileges of central pipeline management (#16902) (13 days ago) <kaisecheng>
-52b7fb0ae - fix jars installer for new maven and pin psych to 5.2.2 (#16919) (2 weeks ago) <João Duarte>
-92d721014 - Doc: WPS integration (#16910) (3 weeks ago) <Karen Metts>
-cd729b768 - Add %{{TIME_NOW}} pattern for sprintf (#16906) (3 weeks ago) <kaisecheng>
-348f1627a - remove pipeline bus v1 (#16895) (4 weeks ago) <Ry Biesemeyer>
-ae8ad28aa - Add beats and elastic-agent SSL changes to 9.0 breaking change doc. (#16742) (4 weeks ago) <Mashhur>
-db34116c4 - Doc: Environment variables cannot be in config.string comments. (#16689) (4 weeks ago) <Mashhur>
-a21510103 - Validate the size limit in BufferedTokenizer. (#16882) (4 weeks ago) <Mashhur>
-d978e07f2 - Logstash API spec - first pass (#16546) (4 weeks ago) <Karen Metts>
-47d04d06b - Initialize flow metrics if pipeline metric.collect params is enabled. (#16881) (4 weeks ago) <Mashhur>
-16392908e - jackson stream read constraints: code-based defaults (#16854) (4 weeks ago) <Ry Biesemeyer>
-dae7fd93d - remove enterprise search from default distribution (#16818) (4 weeks ago) <kaisecheng>
-274c212d9 - Ensure plugin config marked :deprecated logs to deprecation logger (#16833) (4 weeks ago) <Cas Donoghue>
-e2b322e8c - Doc: Message Logstash module deprecations and removal (#16840) (4 weeks ago) <Karen Metts>
-ef36df6b8 - Respect environment variables in jvm.options (#16834) (5 weeks ago) <kaisecheng>
-de6a6c5b0 - Add pipeline metrics to Node Stats API (#16839) (5 weeks ago) <kaisecheng>
-531f79503 - Ssl standardization breaking changes docs (#16844) (5 weeks ago) <Cas Donoghue>
-cc608eb88 - Apply Jackson stream read constraints defaults at runtime (#16832) (5 weeks ago) <Cas Donoghue>
-01c8e8bb5 - Avoid lock when ecs_compatibility is explicitly specified (#16786) (7 weeks ago) <Ry Biesemeyer>
-ae75636e1 - update ironbank image to ubi9/9.5 (#16819) (7 weeks ago) <kaisecheng>
-05789744d - Remove the Arcsight module and the modules framework (#16794) (7 weeks ago) <kaisecheng>
-03ddf1289 - [doc] use UBI8 as base image (#16812) (7 weeks ago) <kaisecheng>
-e1f4e772d - Doc: Update security docs to replace obsolete cacert setting (#16798) (7 weeks ago) <Karen Metts>
-e36cacedc - ensure inputSize state value is reset during buftok.flush (#16760) (8 weeks ago) <João Duarte>
-202d07cbb - ensure jackson overrides are available to static initializers (#16719) (9 weeks ago) <Ry Biesemeyer>
-ab1976952 - Pin `date` dependency to `3.3.3` (#16755) (9 weeks ago) <Rob Bavey>
-e3265d93e - Pin `jar-dependencies` to `0.4.1` (#16747) (9 weeks ago) <Rob Bavey>
-d913e2ae3 - Docs: Troubleshooting update for JDK bug handling cgroups v1 (#16721) (2 months ago) <mmahacek>
-615545027 - Doc: Roll 6.3 breaking changes under 6.0 series (#16706) (3 months ago) <Karen Metts>
-eb7e1253e - Revert "Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482)" (#16715) (3 months ago) <Cas Donoghue>
-0dd64a9d6 - PipelineBusV2 deadlock proofing (#16671) (#16682) (3 months ago) <github-actions[bot]>
-d4fb06e49 - Introduce a new flag to explicitly permit legacy monitoring (#16586) (3 months ago) <Andrea Selva>
-5826c6f90 - Use UBI as base image (#16599) (3 months ago) <kaisecheng>
-046ea1f5a - For custom java plugins, set the platform = 'java'. (#16628) (3 months ago) <Nicole Albee>
-5847d7733 - skip `allow_superuser` in Windows OS (#16629) (3 months ago) <kaisecheng>
-113585d4a - Anchor the `-java` match pattern at the end of the string. (#16626) (3 months ago) <Nicole Albee>
-6703aec47 - bump jruby to 9.4.9.0 (#16634) (3 months ago) <João Duarte>
-849f43103 - fix Windows java not found log (#16633) (3 months ago) <kaisecheng>
-852149be2 - Update JDK to latest in versions.yml (#16627) (3 months ago) <Andrea Selva>
-00da72378 - add boostrap to docker build to fix missing jars (#16622) (3 months ago) <kaisecheng>
-db59cd0fb - set `allow_superuser` to false as default (#16558) (3 months ago) <kaisecheng>
-5d523aa5c - Fix bad reference to a variable (#16615) (3 months ago) <Andrea Selva>
-ca19f0029 - make max inflight warning global to all pipelines (#16597) (3 months ago) <João Duarte>
-566bdf66f - remove http.* settings (#16552) (4 months ago) <kaisecheng>
-467ab3f44 - Enable log.format.json.fix_duplicate_message_fields by default (#16578) (4 months ago) <kaisecheng>
-3f0ad12d0 - add http.* deprecation log (#16538) (4 months ago) <kaisecheng>
-b6f16c8b8 - Adds a JMH benchmark to test BufferedTokenizerExt class (#16564) (4 months ago) <Andrea Selva>
-85493ce86 - Bugfix for BufferedTokenizer to completely consume lines in case of lines bigger then sizeLimit (#16482) (4 months ago) <Andrea Selva>
-ab77d36da - ensure minitar 1.x is used instead of 0.x (#16565) (4 months ago) <João Duarte>
-63706c1a3 - Marked ArcSight Module as deprecated in documentation. (#16553) (4 months ago) <Andrea Selva>
-cb3b7c01d - Remove event_api.tags.illegal for v9 (#16461) (4 months ago) <kaisecheng>
-b571e8f3e - remove deprecated modules netflow, fb_apache and azure (#16514) (4 months ago) <kaisecheng>
-8cd0fa876 - refactor log for event_api.tags.illegal (#16545) (4 months ago) <kaisecheng>
-6064587bc - Keeps global settings aligned across entities used in the test for StatsEventFactory (4 months ago) <Andrea Selva>
-a931b2cde - Flow worker utilization probe (#16532) (4 months ago) <Ry Biesemeyer>
-065769636 - health: add `logstash.forceApiStatus: green` escape hatch (#16535) (4 months ago) <Ry Biesemeyer>
-a4eddb8a2 - add deprecation log for `--event_api.tags.illegal` (#16507) (4 months ago) <kaisecheng>
-3480c32b6 - install jdk 11 in agent for snyk 7.17 scanning (#16510) (4 months ago) <João Duarte>
-5d4825f00 - Avoid to access Java DeprecatedAlias value other than Ruby's one (#16506) (4 months ago) <Andrea Selva>
-e84fb458c - Improve pipeline bootstrap error logs (#16495) (4 months ago) <Edmo Vamerlatti Costa>
-07c01f823 - Don't use an older JRuby with oraclelinux-7 (#16499) (4 months ago) <Dimitrios Liappis>
-4e49adc6f - Fix jdk21 warnings (#16496) (4 months ago) <Andrea Selva>
-b69d993d7 - DLQ-ing events that trigger an conditional evaluation error. (#16423) (4 months ago) <Andrea Selva>
-61de60fe2 - [Spacetime] Reimplement config Setting classe in java (#15679) (4 months ago) <Andrea Selva>
-8368c0036 - Change LogStash::Util::SubstitutionVariables#replace_placeholders refine argument to optional (#16485) (4 months ago) <Edmo Vamerlatti Costa>
-51cca7320 - bump .ruby_version to jruby-9.4.8.0 (#16477) (4 months ago) <João Duarte>
-0ef4c7da3 - [ci] fix wrong queue type in benchmark marathon (#16465) (5 months ago) <kaisecheng>
-4e82655cd - remove ingest-converter (#16453) (5 months ago) <kaisecheng>
-1ec37b7c4 - Drop JDK 11 support (#16443) (5 months ago) <Andrea Selva>
-69f0fa54c - use gnu tar compatible minitar to generate tar artifact (#16432) (5 months ago) <João Duarte>
-bb7ecc203 - Fix ConditionalEvaluationError to do not include the event that errored in its serialiaxed form, because it's not expected that this class is ever serialized. (#16429) (5 months ago) <Andrea Selva>
-
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+==== Plugin releases
 
 *elastic_integration Filter - 9.0.0*
 
