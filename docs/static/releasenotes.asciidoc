@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
 * <<logstash-8-16-1,Logstash 8.16.1>>
@@ -72,6 +73,67 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-4]]
+=== Logstash 8.16.4 Release Notes
+
+[[notable-8-16-4]]
+==== Notable issues fixed
+
+* The plugin manager's `update` command now correctly updates only _minor_ versions of plugins by default to avoid breaking changes.
+If you wish to also include breaking changes, you must specify `--level=major` https://github.com/elastic/logstash/pull/16975[#16975]
+* The plugin manager no longer has issues installing plugins with embedded jars or depending on snakeyaml https://github.com/elastic/logstash/pull/16925[#16925]
+* The plugin manager now correctly supports authenticated proxies by transmitting username and password from proxy environment URI https://github.com/elastic/logstash/pull/16957[#16957]
+* The buffered-tokenizer, which is used by many plugins to split streams of bytes by a delimiter, now properly resumes at the next delimiter after encountering a buffer-full condition https://github.com/elastic/logstash/pull/17021[#17021]
+
+[[dependencies-8-16-4]]
+==== Updates to dependencies
+
+* Update JDK to 21.0.6+7 https://github.com/elastic/logstash/pull/16990[#16990]
+
+[[plugins-8-16-4]]
+==== Plugins
+
+*Elastic_integration Filter - 8.16.1*
+
+* Provides a guidance in logs when plugin version mismatches with connected Elasticsearch `major.minor` version https://github.com/elastic/logstash-filter-elastic_integration/pull/253[#253]
+* Embeds Ingest Node components from Elasticsearch 8.16
+* Compatible with Logstash 8.15+
+
+*Elasticsearch Filter - 3.17.0*
+
+* Added support for custom headers https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/190[#190]
+
+*Beats Input - 6.9.2*
+
+* Name netty threads according to their purpose and the plugin id https://github.com/logstash-plugins/logstash-input-beats/pull/511[#511]
+
+*Elasticsearch Input - 4.21.1*
+
+* Fix: prevent plugin crash when hits contain illegal structure https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/183[#183]
+* When a hit cannot be converted to an event, the input now emits an event tagged with `_elasticsearch_input_failure` with an `[event][original]` containing a JSON-encoded string representation of the entire hit.
+
+* Add support for custom headers https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/217[#217]
+
+*Http Input - 3.10.1*
+
+* Properly naming netty threads https://github.com/logstash-plugins/logstash-input-http/pull/191[#191]
+
+* Add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/179[#179]
+
+*Tcp Input - 6.4.5*
+
+* Name netty threads with plugin id and their purpose https://github.com/logstash-plugins/logstash-input-tcp/pull/229[#229]
+
+*Snmp Integration - 4.0.6*
+
+* [DOC] Fix typo in snmptrap migration section https://github.com/logstash-plugins/logstash-integration-snmp/pull/74[#74]
+
+*Elasticsearch Output - 11.22.12*
+
+* Properly handle http code 413 (Payload Too Large) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1199[#1199]
+* Remove irrelevant log warning about elastic stack version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1202[#1202]
 
 
 [[logstash-8-16-3]]
