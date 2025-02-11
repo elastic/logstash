@@ -75,6 +75,9 @@ module LogStash
         @cached_pipelines = fetcher.get_pipeline_ids.collect do |pid|
           get_pipeline(pid, fetcher)
         end.compact
+      rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
+        return [] if e.response_code == 404
+        raise e
       end
 
       def get_es_version
