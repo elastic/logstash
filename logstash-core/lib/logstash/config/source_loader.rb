@@ -96,7 +96,7 @@ module LogStash module Config
           # es-output 12.0.2 throws 404 as error
           if e.is_a?(LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError) && e.response_code == 404
             logger.error("No configuration found in the configured sources.")
-            return SuccessfulFetch.new({})
+            return SuccessfulFetch.new([])
           end
 
           logger.error("Could not fetch all the sources", :exception => e.class, :message => e.message, :backtrace => e.backtrace)
