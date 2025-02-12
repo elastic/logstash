@@ -541,7 +541,7 @@
     "skip-list": false
   },
   "logstash-output-webhdfs": {
-    "default-plugins": true,
+    "default-plugins": false,
     "skip-list": false
   }
 }
