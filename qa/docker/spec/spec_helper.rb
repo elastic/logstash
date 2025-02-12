@@ -13,7 +13,7 @@ def version
 end
 
 def qualified_version
-  qualifier = ENV['VERSION_QUALIFIER']
+  qualifier = ENV['VERSION_QUALIFIER'].to_s.strip.empty? ? nil : ENV['VERSION_QUALIFIER']
   qualified_version = qualifier ? [version, qualifier].join("-") : version
   ENV["RELEASE"] == "1" ? qualified_version : [qualified_version, "SNAPSHOT"].join("-")
 end
