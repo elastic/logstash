@@ -60,7 +60,7 @@ module LogStash
         end
 
         def version
-          LOGSTASH_CORE_VERSION
+          LOGSTASH_VERSION
         end
 
         def http_address
