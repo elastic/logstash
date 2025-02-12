@@ -780,7 +780,6 @@ GEM
 PLATFORMS
   java
   universal-java-11
-  universal-java-17
 
 DEPENDENCIES
   atomic (~> 1)
