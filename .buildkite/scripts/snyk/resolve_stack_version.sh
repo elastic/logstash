@@ -6,9 +6,9 @@
 
 set -e
 
-VERSION_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/branches.json"
+VERSION_URL="https://storage.googleapis.com/artifacts-api/snapshots/branches.json"
 
 echo "Fetching versions from $VERSION_URL"
-VERSIONS=$(curl --silent $VERSION_URL)
-TARGET_BRANCHES=$(echo "$VERSIONS" | jq -r '.branches | map(.branch) | join(" ")')
-TARGET_BRANCHES=($TARGET_BRANCHES)
+readarray -t TARGET_BRANCHES < <(curl --retry-all-errors --retry 5 --retry-delay 5 -fsSL $VERSION_URL | jq -r '.branches[]')
+echo "${TARGET_BRANCHES[@]}"
+
