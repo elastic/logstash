@@ -12,7 +12,7 @@ set -eo pipefail
 # https://github.com/elastic/ingest-dev/issues/2664
 # *******************************************************
 
-ACTIVE_BRANCHES_URL="https://raw.githubusercontent.com/elastic/logstash/main/ci/branches.json"
+ACTIVE_BRANCHES_URL="https://storage.googleapis.com/artifacts-api/snapshots/branches.json"
 EXCLUDE_BRANCHES_ARRAY=()
 BRANCHES=()
 
@@ -63,7 +63,7 @@ exclude_branches_to_array
 set -u
 set +e
 # pull releaseable branches from $ACTIVE_BRANCHES_URL
-readarray -t ELIGIBLE_BRANCHES < <(curl --retry-all-errors --retry 5 --retry-delay 5 -fsSL $ACTIVE_BRANCHES_URL | jq -r '.branches[].branch')
+readarray -t ELIGIBLE_BRANCHES < <(curl --retry-all-errors --retry 5 --retry-delay 5 -fsSL $ACTIVE_BRANCHES_URL | jq -r '.branches[]')
 if [[ $? -ne 0 ]]; then
   echo "There was an error downloading or parsing the json output from [$ACTIVE_BRANCHES_URL]. Exiting."
   exit 1
