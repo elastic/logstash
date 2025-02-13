@@ -53,21 +53,57 @@ class LogstashService < Service
     if @settings.is_set?("ls_home_abs_path")
       @logstash_home = @settings.get("ls_home_abs_path")
     else
-      # use the LS which was just built in source repo
-      ls_version_file = YAML.load_file(LS_VERSION_FILE)
-      ls_file = "logstash-" + ls_version_file["logstash"]
-      # First try without the snapshot if it's there
-      @logstash_home = File.expand_path(File.join(LS_BUILD_DIR, ls_file), __FILE__)
-      @logstash_home += "-SNAPSHOT" unless Dir.exist?(@logstash_home)
-
-      puts "Using #{@logstash_home} as LS_HOME"
-      @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
-      raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
+      @logstash_home = clean_expand_built_tarball
     end
+
+    puts "Using #{@logstash_home} as LS_HOME"
+    @logstash_bin = File.join("#{@logstash_home}", LS_BIN)
+    raise "Logstash binary not found in path #{@logstash_home}" unless File.file? @logstash_bin
 
     @default_settings_file = File.join(@logstash_home, LS_CONFIG_FILE)
     @monitoring_api = MonitoringAPI.new(api_port)
   end
+
+  ##
+  # @return [String] the path to a CLEAN expansion of the locally-built tarball
+  def clean_expand_built_tarball
+    build_dir = File.expand_path(LS_BUILD_DIR, __FILE__) # source of tarball
+    target_dir = File.join(build_dir, "qa-fixture")
+
+    # find the built tarball matching the current version, preferring non-SNAPSHOT
+    ls_version = YAML.load_file(LS_VERSION_FILE).fetch("logstash")
+    candidates = %W(
+          logstash-#{ls_version}.tar.gz
+          logstash-#{ls_version}-SNAPSHOT.tar.gz
+    )
+
+    candidates.each do |tarball_candidate|
+      tarball_candidate_path = File.join(build_dir, tarball_candidate)
+      if File.exist?(tarball_candidate_path)
+        expected_untar_directory = File.basename(tarball_candidate, ".tar.gz")
+        result_logstash_home = File.join(target_dir, expected_untar_directory)
+
+        if Dir.exist?(result_logstash_home)
+          puts "expunging(#{result_logstash_home})"
+          # FileUtils#rm_rf cannot be used here because it silently fails to remove the bundled jdk on MacOS
+          expunge_result = `rm -rf #{Shellwords.escape(result_logstash_home)} 2>&1`
+          fail("ERROR EXPUNGING: #{expunge_result}") unless $?.success?
+        end
+
+        puts "expanding(#{tarball_candidate_path})"
+        FileUtils.mkdir_p(target_dir) unless Dir.exist?(target_dir)
+        FileUtils.chdir(target_dir) do
+          expand_result = `tar -xzf #{Shellwords.escape(tarball_candidate_path)} 2>&1`
+          fail("ERROR EXPANDING: #{expand_result}") unless $?.success?
+        end
+
+        return result_logstash_home
+      end
+    end
+
+    fail("failed to find any matching build tarballs (looked for `#{candidates}` in `#{build_dir}`)")
+  end
+  private :clean_expand_built_tarball
 
   def alive?
     if @process.nil? || @process.exited?
