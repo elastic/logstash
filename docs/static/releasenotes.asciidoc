@@ -4,24 +4,54 @@
 * <<logstash-9-0-0-beta1,Logstash 9.0.0-beta1>>
 
 [[logstash-9-0-0-beta1]]
-=== Logstash 9.0.0-beta1 Release Notes
+=== {ls} 9.0.0-beta1 Release Notes
 
 ==== Breaking changes
-* Default buffer type to 'heap' for 9.0 https://github.com/elastic/logstash/pull/16500[#16500]
-* Remove `http.*` settings https://github.com/elastic/logstash/pull/16552[#16552]
-* Remove the Arcsight module and the modules framework https://github.com/elastic/logstash/pull/16794[#16794]
-* Remove `event_api.tags.illegal` for 9.0 https://github.com/elastic/logstash/pull/16461[#16461]
-* Remove deprecated modules netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
-* Remove ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
-* Drop JDK 11 support https://github.com/elastic/logstash/pull/16443[#16443]
-* Remove enterprise search from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
-* Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
+
+[[pipeline-buffer-type]]
+===== Pipeline buffer type changed to 'heap'
+
+The pipeline buffer type was 'direct' where plugins such as {agent}, {beats}, TCP, and HTTP inputs used direct memory.
+This memory buffer type changed to 'heap' for 9.0 and can be changed to 'direct' you still prefer using direct memory https://github.com/elastic/logstash/pull/16500[#16500]
+
+[[removed-params]]
+===== Removed deprecated params
+
+`http.*` params replaced by `api.*` are removed https://github.com/elastic/logstash/pull/16552[#16552]
+
+`event_api.tags.illegal` is no longer exist. Instead, {ls} generates `_tagsparsefailure` in the event `tags` and  illegal value will be written to the `_tags` field https://github.com/elastic/logstash/pull/16461[#16461]
+
+[[removed-modules]]
+===== Removed deprecated modules
+
+Removed netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
+
+Removed Arcsight module and the modules framework https://github.com/elastic/logstash/pull/16794[#16794]
+
+Removed ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
+
+Removed enterprise search from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
+
+[[jdk-11-support-drop]]
+===== JDK 11 support drop
+
+Starting with {ls} 9.0, we will drop support for Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
+
+[[allow-superuser]]
+===== {ls} does not run with superuser by default
+
+{ls} was able to start running with superuser.
+Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as a superuser https://github.com/elastic/logstash/pull/16558[#16558]
+
+[[allow-legacy-monitoring]]
+===== {ls} introduces new setting to allow legacy internal monitoring
+
+Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
 
 ==== New features and enhancements
 * Add `%{{TIME_NOW}}` pattern for sprintf https://github.com/elastic/logstash/pull/16906[#16906]
-* Introduce a new `xpack.monitoring.allow_legacy_collection` flag to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
+* Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
 * Use UBI as base image https://github.com/elastic/logstash/pull/16599[#16599]
-* Set `allow_superuser` to false as default https://github.com/elastic/logstash/pull/16558[#16558]
 
 ==== Plugin releases
 
