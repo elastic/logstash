@@ -51,9 +51,10 @@ Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as
 
 Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
 
-==== New features and enhancements
-* Add `%{{TIME_NOW}}` pattern for sprintf https://github.com/elastic/logstash/pull/16906[#16906]
-* Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
+[[avoid-collision-on-json-fileds]]]
+===== {ls} avoids JSON log lines collision
+
+`log.format.json.fix_duplicate_message_fields` config is enabled by default to avoid collision on `message` field in log lines when `log.format` is JSON https://github.com/elastic/logstash/pull/16578[#16578]
 
 ==== Plugin releases
 
