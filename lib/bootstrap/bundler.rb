@@ -54,7 +54,7 @@ module LogStash
             cached_path = fetch_gem(remote_spec)
             spec.remote = remote_spec.remote
           else
-            Bundler.ui.warn "#{spec.full_name} is built in to Ruby, and can't be cached because your Gemfile doesn't have any sources that contain it."
+            ::Bundler.ui.warn "#{spec.full_name} is built in to Ruby, and can't be cached because your Gemfile doesn't have any sources that contain it."
           end
           cached_path
         end
