@@ -37,6 +37,11 @@ Removed enterprise search from default distribution https://github.com/elastic/l
 
 Starting with {ls} 9.0, we will drop support for Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
 
+[[docker-base-image-change]]
+===== Docker base image change
+
+{ls} on Docker, Ubuntu base image changed to UBI https://github.com/elastic/logstash/pull/16599[#16599]
+
 [[allow-superuser]]
 ===== {ls} does not run with superuser by default
 
@@ -51,17 +56,14 @@ Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to e
 ==== New features and enhancements
 * Add `%{{TIME_NOW}}` pattern for sprintf https://github.com/elastic/logstash/pull/16906[#16906]
 * Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
-* Use UBI as base image https://github.com/elastic/logstash/pull/16599[#16599]
 
 ==== Plugin releases
 
 *elastic_integration Filter - 9.0.0*
 
-* 9.0.0 prerelease https://github.com/elastic/logstash-filter-elastic_integration/pull/265[#265]
+* 9.0 prerelease compatible plugin version https://github.com/elastic/logstash-filter-elastic_integration/pull/265[#265]
 
 *Elasticsearch Filter - 4.1.0*
-
-* Added support for custom headers https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/188[#188]
 
 * Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/183[#183]
 
@@ -85,8 +87,6 @@ Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to e
 
 *Http Input - 4.1.0*
 
-* Add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/186[#186]
-
 * Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-http/pull/182[#182]
 
 *Http_poller Input - 6.0.0*
@@ -108,10 +108,6 @@ Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to e
 * [DOC] Fix typo in snmptrap migration section https://github.com/logstash-plugins/logstash-integration-snmp/pull/74[#74]
 
 *Elasticsearch Output - 12.0.2*
-
-* Properly handle http code 413 (Payload Too Large) https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1199[#1199]
-
-* Remove irrelevant log warning about elastic stack version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1200[#1200]
 
 * Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1197[#1197]
 
