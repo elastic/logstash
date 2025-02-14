@@ -59,20 +59,19 @@ module LogStash
       def pipeline_configs
         logger.trace("Fetch remote config pipeline", :pipeline_ids => pipeline_ids)
 
-        begin
-          license_check(true)
-        rescue LogStash::LicenseChecker::LicenseError => e
-          if @cached_pipelines.nil?
-            raise e
-          else
-            return @cached_pipelines
-          end
-        end
+        license_check(true)
         es_version = get_es_version
         fetcher = get_pipeline_fetcher(es_version)
-        fetcher.fetch_config(es_version, pipeline_ids, client)
 
-        @cached_pipelines = fetcher.get_pipeline_ids.collect do |pid|
+        begin
+          fetcher.fetch_config(es_version, pipeline_ids, client)
+        rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
+          # es-output 12.0.2 throws 404 as error, but we want to handle it as empty config
+          return [] if e.response_code == 404
+          raise e
+        end
+
+        fetcher.get_pipeline_ids.collect do |pid|
           get_pipeline(pid, fetcher)
         end.compact
       end

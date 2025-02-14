@@ -103,23 +103,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
      "status" => 400}
   }
 
-  let(:elasticsearch_8_err_response) {
-    {"error" =>
-         {"root_cause" =>
-              [{"type" => "index_not_found_exception",
-                "reason" => "no such index [.logstash]",
-                "resource.type" => "index_expression",
-                "resource.id" => ".logstash",
-                "index_uuid" => "_na_",
-                "index" => ".logstash"}],
-          "type" => "index_not_found_exception",
-          "reason" => "no such index [.logstash]",
-          "resource.type" => "index_expression",
-          "resource.id" => ".logstash",
-          "index_uuid" => "_na_",
-          "index" => ".logstash"},
-     "status" => 404}
-  }
+  let(:elasticsearch_8_err_response) { {"error" => "Incorrect HTTP method for uri", "status" => 405} }
 
   before do
     extension.additionals_settings(system_settings)
@@ -466,13 +450,13 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
                }]
       }.to_json
     end
-    let(:es_path) { ".logstash/_mget" }
+    let(:legacy_api) { ".logstash/_mget" }
     let(:request_body_string) { LogStash::Json.dump({ "docs" => [{ "_id" => pipeline_id }] }) }
 
     before do
       allow(mock_client).to receive(:get).with(system_indices_url_regex).and_return(LogStash::Json.load(elasticsearch_response))
       allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
-      allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
+      allow(mock_client).to receive(:post).with(legacy_api, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
       allow(mock_license_client).to receive(:get).with('_xpack').and_return(valid_xpack_response)
       allow(mock_license_client).to receive(:get).with('/').and_return(cluster_info(LOGSTASH_VERSION))
 
@@ -493,7 +477,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
             before :each do
               expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
               allow_any_instance_of(described_class).to receive(:logger).and_return(logger_stub)
-              allow(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
+              allow(mock_client).to receive(:post).with(legacy_api, {}, request_body_string).and_return(LogStash::Json.load(elasticsearch_7_9_response))
             end
 
             let(:config) { "input { generator {} } filter { mutate {} } output { }" }
@@ -734,6 +718,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
     describe "when exception occur" do
       let(:elasticsearch_response) { "" }
+      let(:bad_response_404) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError.new(404, "url", "request_body", "response_body") }
 
       before do
         expect_any_instance_of(described_class).to receive(:build_client).and_return(mock_client)
@@ -747,8 +732,20 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       it "raises the exception upstream in [7.9]" do
         allow(mock_client).to receive(:get).with("/").and_return(es_version_7_9_response)
-        expect(mock_client).to receive(:post).with(es_path, {}, request_body_string).and_raise("Something bad")
+        expect(mock_client).to receive(:post).with(legacy_api, {}, request_body_string).and_raise("Something bad")
         expect { subject.pipeline_configs }.to raise_error /Something bad/
+      end
+
+      it "returns empty pipeline when ES client raise BadResponseCodeError in [8]" do
+        allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
+        expect(mock_client).to receive(:get).with(system_indices_url_regex).and_raise(bad_response_404)
+        expect(subject.pipeline_configs).to be_empty
+      end
+
+      it "returns empty pipeline when ES client raise BadResponseCodeError in [7.9]" do
+        allow(mock_client).to receive(:get).with("/").and_return(es_version_7_9_response)
+        expect(mock_client).to receive(:post).with(legacy_api, {}, request_body_string).and_raise(bad_response_404)
+        expect(subject.pipeline_configs).to be_empty
       end
     end
   end
