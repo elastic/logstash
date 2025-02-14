@@ -11,8 +11,7 @@
 [[pipeline-buffer-type]]
 ===== Pipeline buffer type changed to 'heap'
 
-The pipeline buffer type was 'direct' where plugins such as {agent}, {beats}, TCP, and HTTP inputs used direct memory.
-This memory buffer type changed to 'heap' for 9.0 and can be changed to 'direct' you still prefer using direct memory https://github.com/elastic/logstash/pull/16500[#16500]
+Set `pipeline.buffer.type` to `direct` if you still prefer using direct memory with {agent}, {beats}, TCP, and HTTP input plugins https://github.com/elastic/logstash/pull/16500[#16500]
 
 [[removed-params]]
 ===== Removed deprecated params
@@ -45,7 +44,6 @@ Starting with {ls} 9.0, we will drop support for Java 11 https://github.com/elas
 [[allow-superuser]]
 ===== {ls} does not run with superuser by default
 
-{ls} was able to start running with superuser.
 Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as a superuser https://github.com/elastic/logstash/pull/16558[#16558]
 
 [[allow-legacy-monitoring]]
