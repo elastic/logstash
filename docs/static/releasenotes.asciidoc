@@ -29,7 +29,7 @@ Removed Arcsight module and the modules framework https://github.com/elastic/log
 
 Removed ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
 
-Removed enterprise search from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
+Removed `logstash-integration-elastic_enterprise_search` from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
 
 [[jdk-11-support-drop]]
 ===== JDK 11 support drop
