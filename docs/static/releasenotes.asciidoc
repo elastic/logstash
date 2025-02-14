@@ -97,8 +97,6 @@ Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to e
 
 * Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-tcp/pull/228[#228]
 
-*Elastic_enterprise_search Integration - 3.0.1*
-
 *Kafka Integration - 11.6.0*
 
 * Support additional `oauth` and `sasl` configuration options for configuring kafka client https://github.com/logstash-plugins/logstash-integration-kafka/pull/189[#189]
