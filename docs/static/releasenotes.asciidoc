@@ -18,55 +18,10 @@
 * Enable `log.format.json.fix_duplicate_message_fields` by default https://github.com/elastic/logstash/pull/16578[#16578]
 
 ==== New features and enhancements
-* Health report api https://github.com/elastic/logstash/pull/16520[#16520]
-* Plugin manager: add `--level=[major|minor|patch]` (default: `minor`) https://github.com/elastic/logstash/pull/16899[#16899]
-* Upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
-* `elastic_integration` upgrade guidelines https://github.com/elastic/logstash/pull/16979[#16979]
-* Reimplement LogStash::String setting in Java https://github.com/elastic/logstash/pull/16576[#16576]
 * Add `%{{TIME_NOW}}` pattern for sprintf https://github.com/elastic/logstash/pull/16906[#16906]
-* Remove pipeline bus v1 https://github.com/elastic/logstash/pull/16895[#16895]
-* Doc: Environment variables cannot be in `config.string` comments https://github.com/elastic/logstash/pull/16689[#16689]
-* Validate the size limit in BufferedTokenizer https://github.com/elastic/logstash/pull/16882[#16882]
-* Logstash API spec - first pass https://github.com/elastic/logstash/pull/16546[#16546]
-* Doc: Message Logstash module deprecations and removal https://github.com/elastic/logstash/pull/16840[#16840]
-* Respect environment variables in jvm.options https://github.com/elastic/logstash/pull/16834[#16834]
-* Add pipeline metrics to Node Stats API https://github.com/elastic/logstash/pull/16839[#16839]
-* Doc: SSl standardization breaking changes https://github.com/elastic/logstash/pull/16844[#16844]
-* Update ironbank image to ubi9/9.5 https://github.com/elastic/logstash/pull/16819[#16819]
-* Pin `date` dependency to `3.3.3` https://github.com/elastic/logstash/pull/16755[#16755]
-* Pin `jar-dependencies` to `0.4.1` https://github.com/elastic/logstash/pull/16747[#16747]
-* Doc: Troubleshooting update for JDK bug handling cgroups v1 https://github.com/elastic/logstash/pull/16721[#16721]
-* Introduce a new flag to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
+* Introduce a new `xpack.monitoring.allow_legacy_collection` flag to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
 * Use UBI as base image https://github.com/elastic/logstash/pull/16599[#16599]
 * Set `allow_superuser` to false as default https://github.com/elastic/logstash/pull/16558[#16558]
-* Skip `allow_superuser` in Windows OS https://github.com/elastic/logstash/pull/16629[#16629]
-* Upgrade jruby to 9.4.9.0 https://github.com/elastic/logstash/pull/16634[#16634]
-* Update JDK to version 21.0.5+11 https://github.com/elastic/logstash/pull/16627[#16627]
-* Add http.* deprecation log https://github.com/elastic/logstash/pull/16538[#16538]
-* Add a JMH benchmark to test BufferedTokenizerExt class https://github.com/elastic/logstash/pull/16564[#16564]
-* Ensure minitar 1.x is used instead of 0.x https://github.com/elastic/logstash/pull/16565[#16565]
-* Doc: Marked ArcSight Module as deprecated https://github.com/elastic/logstash/pull/16553[#16553]
-
-==== Notable Fixes
-* Anchor the `-java` match pattern at the end of the string https://github.com/elastic/logstash/pull/16626[#16626]
-* For custom java plugins, set the platform = 'java' https://github.com/elastic/logstash/pull/16628[#16628]
-* Fix the PipelineBusV2 deadlock https://github.com/elastic/logstash/pull/16671[#16671]
-* Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
-* Add openssl command to wolfi image https://github.com/elastic/logstash/pull/16966[#16966]
-* Fixes user and password detection from environment's uri in plugin manager https://github.com/elastic/logstash/pull/16955[#16955]
-* Doc: fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16902[#16902]
-* Fixes the jars installer for new maven and pin psych to 5.2.2 https://github.com/elastic/logstash/pull/16919[#16919]
-* Doc: Enterprise search plugin integration deprecation https://github.com/elastic/logstash/pull/16910[#16910]
-* Initialize flow metrics only if pipeline `metric.collect` params is enabled https://github.com/elastic/logstash/pull/16881[#16881]
-* Apply Jackson stream read constraints defaults at runtime https://github.com/elastic/logstash/pull/16832[#16832]
-* jackson stream read constraints: code-based defaults https://github.com/elastic/logstash/pull/16854[#16854]
-* Ensure plugin config marked :deprecated logs to deprecation logger https://github.com/elastic/logstash/pull/16833[#16833]
-* Avoid lock when ecs_compatibility is explicitly specified https://github.com/elastic/logstash/pull/16786[#16786]
-* Ensure inputSize state value is reset during `buftok.flush` https://github.com/elastic/logstash/pull/16760[#16760]
-* Ensure jackson overrides are available to static initializers https://github.com/elastic/logstash/pull/16719[#16719]
-* Fix Windows java not found log https://github.com/elastic/logstash/pull/16633[#16633]
-* Add boostrap to docker build to fix missing jars https://github.com/elastic/logstash/pull/16622[#16622]
-* Fix JDK 21 warnings https://github.com/elastic/logstash/pull/16496[#16496]
 
 ==== Plugin releases
 
@@ -78,105 +33,39 @@
 
 * Added support for custom headers https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/188[#188]
 
-* SSL settings that were marked deprecated in version `3.15.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `ca_file`, which should be replaced by `ssl_certificate_authorities`
-* `keystore`, which should be replaced by `ssl_keystore_path`
-* `keystore_password`, which should be replaced by `ssl_keystore_password`
-* `keystore_type`, which should be replaced by `ssl_keystore_password`
-*  `ssl`, which should be replaced by `ssl_enabled`
-* https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/183[#183]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/183[#183]
 
 *Http Filter - 2.0.0*
 
-* SSL settings that were marked deprecated in version `1.6.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `cacert`, which should be replaced by `ssl_certificate_authorities`
-* `client_cert`, which should be replaced by `ssl_certificate`
-* `client_key`, which should be replaced by `ssl_key`
-* `keystore`, which should be replaced by `ssl_keystore_path`
-* `keystore_password`, which should be replaced by `ssl_keystore_password`
-* `keystore_type`, which should be replaced by `ssl_keystore_type`
-* `truststore`, which should be replaced by `ssl_truststore_path>`
-* `truststore_password`, which should be replaced by `ssl_truststore_password`
-* `truststore_type`, which should be replaced by `ssl_truststore_type`
-* https://github.com/logstash-plugins/logstash-filter-http/pull/54[#54]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-filter-http/pull/54[#54]
 
 *Beats Input - 7.0.1*
 
-* Name netty threads according to their purpose and the plugin id https://github.com/logstash-plugins/logstash-input-beats/pull/511[#511]
-
-* Remove deprecated SSL settings
-* SSL settings that were marked deprecated in version `6.6.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `cipher_suites`, replaced by `ssl_cipher_suites`
-* `ssl`, replaced by `ssl_enabled`
-* `ssl_peer_metadata`, replaced by `enrich`
-* `ssl_verify_mode`, replaced by `ssl_client_authentication`
-* `tls_max_version`, replaced by `ssl_supported_protocols`
-* `tls_min_version`, replaced by `ssl_supported_protocols`
-* https://github.com/logstash-plugins/logstash-input-beats/pull/508[#508]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-beats/pull/508[#508]
 
 *Elastic_serverless_forwarder Input - 2.0.0*
 
-* SSL settings that were marked deprecated in version `0.1.3` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `ssl`, which should be replaced by `ssl_enabled`
-* https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/11[#11]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/11[#11]
 
 * Promote from technical preview to GA https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/10[#10]
 
 *Elasticsearch Input - 5.0.0*
 
-* SSL settings that were marked deprecated in version `4.17.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `ssl`, which should bre replaced by `ssl_enabled`
-* `ca_file`, which should bre replaced by `ssl_certificate_authorities`
-* `ssl_certificate_verification`, which should bre replaced by `ssl_verification_mode`
-* https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/213[#213]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/213[#213]
 
 *Http Input - 4.1.0*
 
-* add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/186[#186]
-* This is a forward-port of functionality also introduced to the 3.x series in v3.10.0 
+* Add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/186[#186]
 
-* SSL settings that were marked deprecated in version `3.7.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `tls_min_version`, which should be replaced by `ssl_supported_protocols`
-* `tls_max_version`, which should be replaced by `ssl_supported_protocols`
-* `cipher_suites`, which should bre replaced by `ssl_cipher_suites`
-* `ssl`, which should bre replaced by `ssl_enabled`
-* `keystore`, which should bre replaced by `ssl_keystore_path`
-* `keystore_password`, which should bre replaced by `ssl_keystore_password`
-* `ssl_verify_mode`, which should bre replaced by `ssl_client_authentication`
-* `verify_mode`, which should bre replaced by `ssl_client_authentication`
-* https://github.com/logstash-plugins/logstash-input-http/pull/182[#182]
-
-* add improved proactive rate-limiting, rejecting new requests when queue has been actively blocking for more than 10 seconds https://github.com/logstash-plugins/logstash-input-http/pull/179[#179]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-http/pull/182[#182]
 
 *Http_poller Input - 6.0.0*
 
-* SSL settings that were marked deprecated in version `5.6.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `cacert`, which should be replaced by `ssl_certificate_authorities`
-* `client_cert`, which should be replaced by `ssl_certificate`
-* `client_key`, which should be replaced by `ssl_key`
-* `keystore`, which should be replaced by `ssl_keystore_path`
-* `keystore_password`, which should be replaced by `ssl_keystore_password`
-* `keystore_type`, which should be replaced by `ssl_keystore_password`
-* `truststore`, which should be replaced by `ssl_truststore_path>`
-* `truststore_password`, which should be replaced by `ssl_truststore_password`
-* `truststore_type`, which should be replaced by `ssl_truststore_type`
-* https://github.com/logstash-plugins/logstash-input-http_poller/pull/149[#149]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-http_poller/pull/149[#149]
 
 *Tcp Input - 7.0.0*
 
-* SSL settings that were marked deprecated in version `6.4.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `ssl_cert`, which should be replaced by `ssl_certificate`
-* `ssl_enable`, which should be replaced by `ssl_enabled`
-* `ssl_verify`, which should be replaced by `ssl_client_authentication` when `mode` is `server` or `ssl_verification_mode`when mode is `client`
-* [228](https://github.com/logstash-plugins/logstash-input-tcp/pull/228)
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-input-tcp/pull/228[#228]
 
 *Elastic_enterprise_search Integration - 3.0.1*
 
@@ -194,38 +83,12 @@
 
 * Remove irrelevant log warning about elastic stack version https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1200[#1200]
 
-* SSL settings that were marked deprecated in version `11.14.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `cacert`, which should be replaced by `ssl_certificate_authorities`
-* `keystore`, which should be replaced by `ssl_keystore_path`
-* `keystore_password`, which should be replaced by `ssl_keystore_password`
-* `ssl`, which should be replaced by `ssl_enabled`
-* `ssl_certificate_verification`, which should be replaced by `ssl_verification_mode`
-* `truststore`, which should be replaced by `ssl_truststore_path`
-* `truststore_password`, which should be replaced by `ssl_truststore_password`
-* https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1197[#1197]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1197[#1197]
 
 *Http Output - 6.0.0*
 
-* SSL settings that were marked deprecated in version `5.6.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:   
-* `cacert`, which should be replaced by `ssl_certificate_authorities`
-* `client_cert`, which should be replaced by `ssl_certificate`
-* `client_key`, which should be replaced by `ssl_key`
-* `keystore`, which should be replaced by `ssl_keystore_path`
-* `keystore_password`, which should be replaced by `ssl_keystore_password`
-* `keystore_type`, which should be replaced by `ssl_keystore_password`
-* `truststore`, which should be replaced by `ssl_truststore_path>`
-* `truststore_password`, which should be replaced by `ssl_truststore_password`
-* `truststore_type`, which should be replaced by `ssl_truststore_type`
-* https://github.com/logstash-plugins/logstash-output-http/pull/147[#147]
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-output-http/pull/147[#147]
 
 *Tcp Output - 7.0.0*
 
-* SSL settings that were marked deprecated in version `6.2.0` are now marked obsolete, and will prevent the plugin from starting.
-* These settings are:
-* `ssl_cert`, which should be replaced by `ssl_certificate`
-* `ssl_cacert`, which should be replaced by `ssl_certificate_authorities`
-* `ssl_enable`, which should be replaced by `ssl_enabled`
-* `ssl_verify`, which should be replaced by `ssl_client_authentication` when `mode` is `server` or `ssl_verification_mode`when mode is `client`
-* [58](https://github.com/logstash-plugins/logstash-output-tcp/pull/58)
+* Remove deprecated SSL settings https://github.com/logstash-plugins/logstash-output-tcp/pull/58[#58]
