@@ -590,13 +590,18 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
+        DeserializedBatch deserializedBatch;
         lock.lock();
         try {
             Page p = nextReadPage();
-            return (isHeadPage(p) && p.isFullyRead()) ? null : readPageBatch(p, limit, 0L);
+            if (isHeadPage(p) && p.isFullyRead()) {
+                return null;
+            }
+            deserializedBatch = readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
+        return deserializedBatch.deserialize();
     }
 
     /**
@@ -607,7 +612,11 @@ public final class Queue implements Closeable {
      * @throws QueueRuntimeException if queue is closed
      * @throws IOException if an IO error occurs
      */
-    public synchronized Batch readBatch(int limit, long timeout) throws IOException {
+    public Batch readBatch(int limit, long timeout) throws IOException {
+        return readDeserializedBatch(limit, timeout).deserialize();
+    }
+
+    public synchronized DeserializedBatch readDeserializedBatch(int limit, long timeout) throws IOException {
         lock.lock();
 
         try {
@@ -626,7 +635,7 @@ public final class Queue implements Closeable {
      * @return {@link Batch} with read elements or null if nothing was read
      * @throws IOException if an IO error occurs
      */
-    private Batch readPageBatch(Page p, int limit, long timeout) throws IOException {
+    private DeserializedBatch readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
         final List<byte[]> elements = new ArrayList<>(limit);
 
@@ -678,7 +687,7 @@ public final class Queue implements Closeable {
             removeUnreadPage(p);
         }
 
-        return new Batch(elements, firstSeqNum, this);
+        return new DeserializedBatch(elements, firstSeqNum, this);
     }
 
     /**
