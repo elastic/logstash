@@ -11,17 +11,18 @@
 [[pipeline-buffer-type]]
 ===== Pipeline buffer type changed to 'heap'
 
-Set `pipeline.buffer.type` to `direct` if you still prefer using direct memory with {agent}, {beats}, TCP, and HTTP input plugins https://github.com/elastic/logstash/pull/16500[#16500]
+Set `pipeline.buffer.type` to `direct` to continue using direct memory with {agent}, {beats}, TCP, and HTTP input plugins https://github.com/elastic/logstash/pull/16500[#16500]
 
 [[removed-params]]
 ===== Removed deprecated params
 
 `http.*` params replaced by `api.*` are removed https://github.com/elastic/logstash/pull/16552[#16552]
 
-`event_api.tags.illegal` is no longer exist. Instead, {ls} generates `_tagsparsefailure` in the event `tags` and  illegal value will be written to the `_tags` field https://github.com/elastic/logstash/pull/16461[#16461]
+`event_api.tags.illegal` no longer exists. 
+Instead, {ls} generates `_tagsparsefailure` in the event `tags` and the illegal value is written to the `_tags` field https://github.com/elastic/logstash/pull/16461[#16461]
 
 [[removed-modules]]
-===== Removed deprecated modules
+===== Removed {ls} modules
 
 Removed netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
 
@@ -29,12 +30,11 @@ Removed Arcsight module and the modules framework https://github.com/elastic/log
 
 Removed ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
 
-Removed `logstash-integration-elastic_enterprise_search` from default distribution https://github.com/elastic/logstash/pull/16818[#16818]
 
 [[jdk-11-support-drop]]
 ===== JDK 11 support drop
 
-Starting with {ls} 9.0, we will drop support for Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
+Starting with {ls} 9.0, we no longer support Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
 
 [[docker-base-image-change]]
 ===== Docker base image change
@@ -51,7 +51,7 @@ Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as
 
 Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
 
-[[avoid-collision-on-json-fileds]]]
+[[avoid-collision-on-json-fileds]]
 ===== {ls} avoids JSON log lines collision
 
 `log.format.json.fix_duplicate_message_fields` config is enabled by default to avoid collision on `message` field in log lines when `log.format` is JSON https://github.com/elastic/logstash/pull/16578[#16578]
