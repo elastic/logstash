@@ -590,13 +590,18 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     public synchronized Batch nonBlockReadBatch(int limit) throws IOException {
+        final SerializedBatchHolder serializedBatchHolder;
         lock.lock();
         try {
             Page p = nextReadPage();
-            return (isHeadPage(p) && p.isFullyRead()) ? null : readPageBatch(p, limit, 0L);
+            if (isHeadPage(p) && p.isFullyRead()) {
+                return null;
+            }
+            serializedBatchHolder = readPageBatch(p, limit, 0L);
         } finally {
             lock.unlock();
         }
+        return serializedBatchHolder.deserialize();
     }
 
     /**
@@ -607,7 +612,11 @@ public final class Queue implements Closeable {
      * @throws QueueRuntimeException if queue is closed
      * @throws IOException if an IO error occurs
      */
-    public synchronized Batch readBatch(int limit, long timeout) throws IOException {
+    public Batch readBatch(int limit, long timeout) throws IOException {
+        return readSerializedBatch(limit, timeout).deserialize();
+    }
+
+    private synchronized SerializedBatchHolder readSerializedBatch(int limit, long timeout) throws IOException {
         lock.lock();
 
         try {
@@ -618,7 +627,7 @@ public final class Queue implements Closeable {
     }
 
     /**
-     * read a {@link Batch} from the given {@link Page}. If the page is a head page, try to maximize the
+     * read a {@link SerializedBatchHolder} from the given {@link Page}. If the page is a head page, try to maximize the
      * batch size by waiting for writes.
      * @param p the {@link Page} to read from.
      * @param limit size limit of the batch to read.
@@ -626,7 +635,7 @@ public final class Queue implements Closeable {
      * @return {@link Batch} with read elements or null if nothing was read
      * @throws IOException if an IO error occurs
      */
-    private Batch readPageBatch(Page p, int limit, long timeout) throws IOException {
+    private SerializedBatchHolder readPageBatch(Page p, int limit, long timeout) throws IOException {
         int left = limit;
         final List<byte[]> elements = new ArrayList<>(limit);
 
@@ -678,7 +687,7 @@ public final class Queue implements Closeable {
             removeUnreadPage(p);
         }
 
-        return new Batch(elements, firstSeqNum, this);
+        return new SerializedBatchHolder(elements, firstSeqNum);
     }
 
     /**
@@ -893,5 +902,19 @@ public final class Queue implements Closeable {
         final long pMinSeq = page.getMinSeqNum();
         final long pMaxSeq = pMinSeq + (long) page.getElementCount();
         return seqNum >= pMinSeq && seqNum < pMaxSeq;
+    }
+
+    class SerializedBatchHolder {
+        private final List<byte[]> elements;
+        private final long firstSeqNum;
+
+        private SerializedBatchHolder(List<byte[]> elements, long firstSeqNum) {
+            this.elements = elements;
+            this.firstSeqNum = firstSeqNum;
+        }
+
+        private Batch deserialize() {
+            return new Batch(elements, firstSeqNum, Queue.this);
+        }
     }
 }
