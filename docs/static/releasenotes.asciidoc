@@ -91,10 +91,21 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-28]]
 === Logstash 7.17.28 Release Notes
 
-* Updated JDK to 11.0.26+4 https://github.com/elastic/logstash/pull/17011[#17011]
-7310e39aa - breaking: remove webhdfs output (#17061) (7 days ago) <João Duarte>
-80b9e7980 - multiple dependency upgrades (#17037) (7 days ago) <João Duarte>
-8bcc13e37 - [doc] fix the necessary privileges of central pipeline management (4 weeks ago) <kaisecheng>
+* BREAKING: removed webhdfs output due to deprecated dependencies and lack of support https://github.com/elastic/logstash/pull/17061[#17061]
+* [DOC] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16931[#16931]
+
+[[dependencies-7-17-28]]
+==== Updates to dependencies
+
+* JDK: 11.0.26+4 https://github.com/elastic/logstash/pull/17011[#17011]
+* Multiple library dependency upgrades https://github.com/elastic/logstash/pull/17037[#17037]
+  * jackson: 2.14.1
+  * jackson-databind: 2.14.1
+  * jrjackson: 0.4.17
+  * guava: 32.1.3
+  * org.yaml:snakeyaml: 2.2 (on ingest converter)
+  * march_hare: 4.6.0-java
+
 
 ==== Plugins
 
