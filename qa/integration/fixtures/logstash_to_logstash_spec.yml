@@ -14,7 +14,7 @@ config:
       file {
         path => '<%=options[:output_file_path]%>'
         flush_interval => 0
-        codec => line { format => "%{message}" }
+        codec => line { format => "%{[event][sequence]}:%{message}" }
       }
     }
   basic_ls_output: |-
