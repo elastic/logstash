@@ -43,8 +43,8 @@ describe "Logstash to Logstash communication Integration test" do
     tmp_data_path
   end
 
-  def run_logstash_instance(config_name, options = {})
-    @next_api_port_offset = (@next_api_port_offset||0).next.modulo(1000) # cycle through 1000 possibles
+  def run_logstash_instance(config_name, options = {}, &block)
+    @next_api_port_offset = (@next_api_port_offset||100).next.modulo(1000) # cycle through 1000 possibles
     api_port = 9600 + @next_api_port_offset
 
     # to avoid LogstashService's clean-from-tarball default behaviour, we need
@@ -52,11 +52,17 @@ describe "Logstash to Logstash communication Integration test" do
     existing_fixture_logstash_home = @fixture.get_service("logstash").logstash_home
     logstash_service = LogstashService.new(@fixture.settings.override("ls_home_abs_path" => existing_fixture_logstash_home), api_port)
 
-    logstash_service.spawn_logstash("--path.config", config_to_temp_file(@fixture.config(config_name, options)),
+    logstash_service.spawn_logstash("--node.name", config_name,
+                                    "--pipeline.id", config_name,
+                                    "--path.config", config_to_temp_file(@fixture.config(config_name, options)),
                                     "--path.data", get_temp_path_dir,
                                     "--api.http.port", api_port.to_s)
     wait_for_logstash(logstash_service)
-    logstash_service
+
+    yield logstash_service
+
+  ensure
+    logstash_service&.teardown
   end
 
   def wait_for_logstash(service)
@@ -86,26 +92,25 @@ describe "Logstash to Logstash communication Integration test" do
     }
 
     it "successfully send events" do
-      upstream_logstash_service = run_logstash_instance(input_config_name, all_config_options)
-      downstream_logstash_service = run_logstash_instance(output_config_name, all_config_options)
+      run_logstash_instance(input_config_name, all_config_options) do |downstream_logstash_service|
+        run_logstash_instance(output_config_name, all_config_options) do |upstream_logstash_service|
 
-      try(num_retries) do
-        event_stats = upstream_logstash_service.monitoring_api.event_stats
-        if event_stats
-          expect(event_stats["in"]).to eq(num_events)
+          try(num_retries) do
+            downstream_event_stats = downstream_logstash_service.monitoring_api.event_stats
+
+            expect(downstream_event_stats).to include({"in" => num_events}), lambda { "expected #{num_events} events to have been received by downstream"}
+          end
+
+          # make sure received events are in the file
+          file_output_path = File.join(downstream_logstash_service.logstash_home, output_file_path_with_datetime)
+          expect(File).to exist(file_output_path), "Logstash to Logstash output file: #{file_output_path} does not exist"
+          actual_lines = File.read(file_output_path).lines.to_a
+          expected_lines = (0...num_events).map { |sequence| "#{sequence}:Hello world!\n" }
+          expect(actual_lines).to match_array(expected_lines)
+
+          File.delete(file_output_path)
         end
       end
-
-      upstream_logstash_service.teardown
-      downstream_logstash_service.teardown
-
-      # make sure received events are in the file
-      file_output_path = File.join(upstream_logstash_service.logstash_home, output_file_path_with_datetime)
-      expect(File).to exist(file_output_path), "Logstash to Logstash output file: #{file_output_path} does not exist"
-      count = File.foreach(file_output_path).inject(0) { |c, _| c + 1 }
-      expect(count).to eq(num_events)
-
-      File.delete(file_output_path)
     end
   end
 
