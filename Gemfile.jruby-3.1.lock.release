@@ -983,7 +983,7 @@ DEPENDENCIES
   logstash-integration-rabbitmq
   logstash-integration-snmp
   logstash-output-csv
-  logstash-output-elasticsearch
+  logstash-output-elasticsearch (>= 11.14.0)
   logstash-output-email
   logstash-output-file
   logstash-output-graphite
