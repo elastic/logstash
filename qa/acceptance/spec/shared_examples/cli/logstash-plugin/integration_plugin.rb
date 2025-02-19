@@ -75,7 +75,7 @@ shared_examples "integration plugins compatible" do |logstash|
       context "trying to uninstall an inner plugin" do
         it "fails to uninstall it" do
           result = logstash.run_sudo_command_in_path("bin/logstash-plugin uninstall logstash-input-rabbitmq")
-          expect(result.stderr).to match(/is already provided by/)
+          expect(result.stderr).to include("The plugin `logstash-input-rabbitmq` is provided by 'logstash-integration-rabbitmq' so it can't be removed individually")
         end
       end
     end
