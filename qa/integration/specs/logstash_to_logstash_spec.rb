@@ -44,7 +44,7 @@ describe "Logstash to Logstash communication Integration test" do
   end
 
   def run_logstash_instance(config_name, options = {}, &block)
-    @next_api_port_offset = (@next_api_port_offset||0).next.modulo(1000) # cycle through 1000 possibles
+    @next_api_port_offset = (@next_api_port_offset||100).next.modulo(1000) # cycle through 1000 possibles
     api_port = 9600 + @next_api_port_offset
 
     # to avoid LogstashService's clean-from-tarball default behaviour, we need
