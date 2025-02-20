@@ -62,8 +62,8 @@ describe "CLI > logstash-plugin remove" do
       plugins = list_command.stderr_and_stdout.split(/\n(?! )/)
 
       integration_plugin = plugins.find { |plugin_output| plugin_output.match(/^logstash-integration-jdbc\b/) }
-      expect(integration_plugin).to match(/^#{sub_heading_pattern} logstash-input-jdbc$/)
-      expect(integration_plugin).to match(/^#{sub_heading_pattern} logstash-filter-jdbc_static$/)
+      expect(integration_plugin).to match(/^#{sub_heading_pattern} #{Regexp.escape("logstash-input-jdbc")}$/)
+      expect(integration_plugin).to match(/^#{sub_heading_pattern} #{Regexp.escape("logstash-filter-jdbc_static")}$/)
     end
 
     it "expands plugin aliases" do
@@ -72,7 +72,7 @@ describe "CLI > logstash-plugin remove" do
       plugins = list_command.stderr_and_stdout.split(/\n(?! )/)
 
       alias_plugin = plugins.find { |plugin_output| plugin_output.match(/^logstash-input-beats\b/) }
-      expect(alias_plugin).to match(/^#{sub_heading_pattern} logstash-input-elastic_agent (alias)$/)
+      expect(alias_plugin).to match(/^#{sub_heading_pattern} #{Regexp.escape("logstash-input-elastic_agent (alias)")}$/)
     end
 
     context "--no-expand" do
