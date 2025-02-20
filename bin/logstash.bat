@@ -6,7 +6,7 @@ set params='%*'
 if "%1" == "-V" goto version
 if "%1" == "--version" goto version
 
-call "%~dp0setup.bat" || exit /b 1
+1>&2 (call "%~dp0setup.bat") || exit /b 1
 if errorlevel 1 (
 	if not defined nopauseonerror (
 		pause
