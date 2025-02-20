@@ -108,6 +108,9 @@ This section summarizes the changes in the following releases:
 
 [[plugins-8-17-3]]
 ==== Plugins
+*Xml Filter - 4.3.0*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/87[#87]
 
 *Beats Input - 6.9.3*
 
