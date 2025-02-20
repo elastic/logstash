@@ -413,7 +413,7 @@ module LogStash
     ### Specific settings #####
 
     java_import org.logstash.settings.Boolean
-    java_import org.logstash.settings.Numeric
+    java_import org.logstash.settings.SettingNumeric
 
     class Integer < Coercible
       def initialize(name, default = nil, strict = true)

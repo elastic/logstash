@@ -24,13 +24,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 // Mirrored from spec/logstash/settings/numeric_spec.rb
-public class NumericTest {
+public class SettingNumericTest {
 
-    private Numeric sut;
+    private SettingNumeric sut;
 
     @Before
     public void setUp() {
-        sut = new Numeric("a number", null, false);
+        sut = new SettingNumeric("a number", null, false);
     }
 
     @Test(expected = IllegalArgumentException.class)

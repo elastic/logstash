@@ -18,8 +18,8 @@
 require "spec_helper"
 require "logstash/settings"
 
-# Mirrored in java class org.logstash.settings.Numeric
-describe LogStash::Setting::Numeric do
+# Mirrored in java class org.logstash.settings.SettingNumeric
+describe LogStash::Setting::SettingNumeric do
   subject { described_class.new("a number", nil, false) }
   describe "#set" do
     context "when giving a string which doesn't represent a string" do
