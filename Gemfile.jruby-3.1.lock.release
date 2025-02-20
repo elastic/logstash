@@ -390,10 +390,10 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
     logstash-filter-uuid (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-xml (4.2.1)
-      logstash-core (>= 8.4.0)
+    logstash-filter-xml (4.3.0)
+      logstash-core (>= 8.15.3)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      nokogiri (>= 1.13.8)
+      nokogiri (>= 1.18.3)
       xml-simple
     logstash-input-azure_event_hubs (1.5.1)
       logstash-codec-json
@@ -720,7 +720,7 @@ GEM
     net-smtp (0.5.1)
       net-protocol
     nio4r (2.7.4-java)
-    nokogiri (1.18.2-java)
+    nokogiri (1.18.3-java)
       racc (~> 1.4)
     octokit (4.25.1)
       faraday (>= 1, < 3)
