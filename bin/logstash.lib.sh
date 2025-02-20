@@ -186,8 +186,8 @@ setup_vendored_jruby() {
 }
 
 setup() {
-  setup_java
-  setup_vendored_jruby
+  >&2 setup_java
+  >&2 setup_vendored_jruby
 }
 
 ruby_exec() {
