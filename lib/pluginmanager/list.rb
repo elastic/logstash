@@ -23,6 +23,7 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
   parameter "[PLUGIN]", "Part of plugin name to search for, leave empty for all plugins"
 
   option "--installed", :flag, "List only explicitly installed plugins using bin/logstash-plugin install ...", :default => false
+  option "--[no-]expand", :flag, "Expand integration plugins and aliases", :default => true
   option "--verbose", :flag, "Also show plugin version number", :default => false
   option "--group", "NAME", "Filter plugins per group: input, output, filter, codec or integration" do |arg|
     raise(ArgumentError, "should be one of: input, output, filter, codec, integration") unless ['input', 'output', 'filter', 'codec', 'pack', 'integration'].include?(arg)
@@ -40,20 +41,26 @@ class LogStash::PluginManager::List < LogStash::PluginManager::Command
       line = "#{spec.name}"
       line += " (#{spec.version})" if verbose?
       puts(line)
-      if LogStash::PluginManager::ALIASES.has_value?(spec.name)
-        alias_plugin = LogStash::PluginManager::ALIASES.key(spec.name)
-        puts("└── #{alias_plugin} (alias)") unless installed_plugin_names.include?(alias_plugin)
-      end
-      if spec.metadata.fetch("logstash_group", "") == "integration"
-        integration_plugins = spec.metadata.fetch("integration_plugins", "").split(",")
-        integration_plugins.each_with_index do |integration_plugin, i|
-          if i == integration_plugins.size - 1
-            puts(" └── #{integration_plugin}")
-          else
-            puts(" ├── #{integration_plugin}")
-          end
+      if expand?
+        active_aliases = LogStash::PluginManager.find_aliases(spec.name)
+                                                .reject {|alias_name| installed_plugin_names.include?(alias_name)}
+        display_children(active_aliases.map {|alias_name| "#{alias_name} (alias)"})
+
+        if spec.metadata.fetch("logstash_group", "") == "integration"
+          integration_plugins = spec.metadata.fetch("integration_plugins", "").split(",")
+          display_children(integration_plugins)
         end
       end
+    end
+  end
+
+  def display_children(children)
+    if children.any?
+      most, last = children[0...-1], children[-1]
+      most.each do |entry|
+        puts(" ├── #{entry}")
+      end
+      puts(" └── #{last}")
     end
   end
 
