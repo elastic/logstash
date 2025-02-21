@@ -15,16 +15,13 @@ shared_examples_for 'the container is configured correctly' do |flavor|
 
     it 'should run with the correct version' do
       console_out = exec_in_container(@container, 'logstash --version')
-      console_filtered = console_out.split("\n")
-            .delete_if do |line|
-              line =~ /Using LS_JAVA_HOME defined java|Using system java: /
-            end.join
-      expect(console_filtered).to match /#{version}/
+      expect(console_out).to match /#{version}/
     end
 
     it 'should run with the bundled JDK' do
-      first_console_line = exec_in_container(@container, 'logstash --version').split("\n")[0]
-      expect(first_console_line).to match /Using bundled JDK: \/usr\/share\/logstash\/jdk/
+      full_command = exec_in_container_full(@container, 'logstash --version')
+      std_err = full_command[:stderr].join.chomp.strip
+      expect(std_err).to match /Using bundled JDK: \/usr\/share\/logstash\/jdk/
     end
 
     it 'should be running an API server on port 9600' do
