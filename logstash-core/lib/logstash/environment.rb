@@ -48,7 +48,7 @@ module LogStash
            Setting::Boolean.new("pipeline.system", false),
    Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveInteger.new("pipeline.batch.size", 125),
-           Setting::Numeric.new("pipeline.batch.delay", 50), # in milliseconds
+           Setting::SettingNumeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.reloadable", true),
            Setting::Boolean.new("pipeline.plugin_classloaders", false),
@@ -72,7 +72,7 @@ module LogStash
             Setting::SettingString.new("api.auth.basic.username", nil, false).nullable,
           Setting::Password.new("api.auth.basic.password", nil, false).nullable,
             Setting::SettingString.new("api.auth.basic.password_policy.mode", "WARN", true, %w[WARN ERROR]),
-           Setting::Numeric.new("api.auth.basic.password_policy.length.minimum", 8),
+           Setting::SettingNumeric.new("api.auth.basic.password_policy.length.minimum", 8),
             Setting::SettingString.new("api.auth.basic.password_policy.include.upper", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::SettingString.new("api.auth.basic.password_policy.include.lower", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::SettingString.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
@@ -85,14 +85,14 @@ module LogStash
            Setting::Boolean.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
              Setting::Bytes.new("queue.max_bytes", "1024mb"),
-           Setting::Numeric.new("queue.max_events", 0), # 0 is unlimited
-           Setting::Numeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
-           Setting::Numeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
-           Setting::Numeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
+           Setting::SettingNumeric.new("queue.max_events", 0), # 0 is unlimited
+           Setting::SettingNumeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
+           Setting::SettingNumeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
+           Setting::SettingNumeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
            Setting::Boolean.new("queue.checkpoint.retry", true),
            Setting::Boolean.new("dead_letter_queue.enable", false),
              Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
-           Setting::Numeric.new("dead_letter_queue.flush_interval", 5000),
+           Setting::SettingNumeric.new("dead_letter_queue.flush_interval", 5000),
             Setting::SettingString.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
     Setting::SettingNullableString.new("dead_letter_queue.retain.age"), # example 5d
          Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
