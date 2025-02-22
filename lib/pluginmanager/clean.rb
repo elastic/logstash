@@ -16,19 +16,47 @@
 # under the License.
 
 require "pluginmanager/command"
+require 'set'
 
 class LogStash::PluginManager::Clean < LogStash::PluginManager::Command
 
+  option "--dry-run", :flag, "If set, only report what would be deleted", :default => false
+
   def execute
-    output = Bundler.settings.temporary(:frozen => false) { LogStash::Bundler.invoke! clean: true }
+    locked_gem_names = ::Bundler::LockfileParser.new(File.read(LogStash::Environment::LOCKFILE)).specs.map(&:full_name).to_set
+    orphan_gem_specs = ::Gem::Specification.each
+                                           .reject(&:default_gem?) # don't touch jruby-included default gems
+                                           .reject{ |spec| locked_gem_names.include?(spec.full_name) }
+                                           .sort
 
-    removed_gems = output.scan(/(?<=^Removing ).+$/)
+    file_list = orphan_gem_specs.map { |spec| get_gem_files(spec) }.flatten
 
-    plugins, deps = removed_gems.partition { |gem| gem[/^logstash-(?:input|output|filter|codec|integration)-/] }
+    if dry_run?
+      verb = "would clean"
+      $stderr.puts("would remove files[")
+      $stderr.puts(file_list)
+      $stderr.puts("]")
+    else
+      verb = "cleaned"
+      FileUtils.rm_rf(file_list)
+    end
 
-    plugins.each { |plugin| puts("cleaned inactive plugin #{plugin}") }
-    deps.each { |dep| puts("cleaned inactive dependency #{dep}") }
-  ensure
-    display_bundler_output(output)
+    inactive_plugins, orphaned_dependencies = orphan_gem_specs.partition { |spec| LogStash::PluginManager.logstash_plugin_gem_spec?(spec) }
+    inactive_plugins.each { |spec| puts("#{verb} inactive plugin #{spec.name} (#{spec.version})") }
+    orphaned_dependencies.each { |spec| puts("#{verb} orphaned dependency #{spec.name} (#{spec.version})") }
+  end
+
+  def get_gem_files(spec)
+    %w(
+      full_gem_path
+      loaded_from
+      spec_file
+      cache_file
+      build_info_file
+      doc_dir
+    ).map { |attr| spec.public_send(attr) }
+     .compact
+     .uniq
+     .select { |path| File.exist?(path) }
   end
 end
