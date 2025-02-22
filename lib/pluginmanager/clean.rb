@@ -25,6 +25,7 @@ class LogStash::PluginManager::Clean < LogStash::PluginManager::Command
   def execute
     locked_gem_names = ::Bundler::LockfileParser.new(File.read(LogStash::Environment::LOCKFILE)).specs.map(&:full_name).to_set
     orphan_gem_specs = ::Gem::Specification.each
+                                           .reject(&:stubbed?) # skipped stubbed (uninstalled) gems
                                            .reject(&:default_gem?) # don't touch jruby-included default gems
                                            .reject{ |spec| locked_gem_names.include?(spec.full_name) }
                                            .sort
