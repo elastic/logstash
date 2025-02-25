@@ -18,13 +18,14 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::String do
+# Mirrored in java class org.logstash.settings.SettingStringTest
+describe LogStash::Setting::SettingString do
   let(:possible_values) { ["a", "b", "c"] }
   subject { described_class.new("mytext", possible_values.first, true, possible_values) }
   describe "#set" do
     context "when a value is given outside of possible_values" do
       it "should raise an ArgumentError" do
-        expect { subject.set("d") }.to raise_error(ArgumentError)
+        expect { subject.set("d") }.to raise_error(java.lang.IllegalArgumentException)
       end
     end
     context "when a value is given within possible_values" do
