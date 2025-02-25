@@ -17,6 +17,9 @@
 
 require_relative "default_plugins"
 require 'rubygems'
+require 'shellwords'
+
+require 'bootstrap/environment'
 
 namespace "plugin" do
   def install_plugins(*args)
@@ -27,6 +30,32 @@ namespace "plugin" do
   def remove_plugin(plugin, *more_plugins)
     require_relative "../lib/pluginmanager/main"
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin] + more_plugins)
+  end
+
+  def list_plugins(search=nil, expand: true, verbose: false)
+    require_relative "../lib/pluginmanager/main"
+    args = []
+    args << "--verbose" if verbose
+    # args << (expand ? "--expand" : "--no-expand")
+    args << search unless search.nil?
+
+    stdout = invoke_plugin_manager!("list", *args)
+
+    stdout.lines.map(&:chomp).select { |p| p.start_with?('logstash-') }
+  end
+
+  def clean_plugins
+    invoke_plugin_manager!("clean")
+  end
+
+  # the plugin manager's list command (and possibly others)
+  def invoke_plugin_manager!(command, *args)
+    plugin_manager_bin = Pathname.new(LogStash::Environment::LOGSTASH_HOME) / "bin" / "logstash-plugin"
+    stdout_and_stderr = %x(#{Shellwords.escape(plugin_manager_bin)} #{Shellwords.join([command]+args)} 2>&1)
+    unless $?.success?
+      fail "ERROR LISTING: #{stdout_and_stderr}"
+    end
+    stdout_and_stderr
   end
 
   task "install-base" => "bootstrap" do
@@ -75,6 +104,19 @@ namespace "plugin" do
       FileUtils.rm_r(Dir.glob("#{LogStash::Environment::BUNDLE_DIR}/**/gems/#{plugin}*"))
       FileUtils.rm_r(Dir.glob("#{LogStash::Environment::BUNDLE_DIR}/**/specifications/#{plugin}*.gemspec"))
     end
+    task.reenable # Allow this task to be run again
+  end
+
+  task "trim-for-observabilitySRE" do |task, _|
+    puts("[plugin:trim-for-observabilitySRE] Removing plugins not necessary for observabilitySRE")
+
+    allow_list = (Pathname.new(__dir__).parent / "x-pack" / "distributions" / "internal" / "observabilitySRE" / "plugin-allow-list.txt").readlines.map(&:chomp)
+    installed_plugins = list_plugins(expand: false)
+
+    excess_plugins = installed_plugins - allow_list
+
+    remove_plugin(*excess_plugins) unless excess_plugins.empty?
+
     task.reenable # Allow this task to be run again
   end
 
