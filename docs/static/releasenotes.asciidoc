@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-7-17-28,Logstash 7.17.28>>
 * <<logstash-7-17-27,Logstash 7.17.27>>
 * <<logstash-7-17-26,Logstash 7.17.26>>
 * <<logstash-7-17-25,Logstash 7.17.25>>
@@ -86,6 +87,46 @@ This section summarizes the changes in the following releases:
 * <<logstash-7-0-0-alpha2,Logstash 7.0.0-alpha2>>
 * <<logstash-7-0-0-alpha1,Logstash 7.0.0-alpha1>>
 
+
+[[logstash-7-17-28]]
+=== Logstash 7.17.28 Release Notes
+
+* BREAKING: removed webhdfs output due to deprecated dependencies and lack of support https://github.com/elastic/logstash/pull/17061[#17061]
+* [DOC] fix the necessary privileges of central pipeline management https://github.com/elastic/logstash/pull/16931[#16931]
+
+[[dependencies-7-17-28]]
+==== Updates to dependencies
+
+* JDK: 11.0.26+4 https://github.com/elastic/logstash/pull/17011[#17011]
+* Multiple library dependency upgrades https://github.com/elastic/logstash/pull/17037[#17037]
+  * jackson: 2.14.1
+  * jackson-databind: 2.14.1
+  * jrjackson: 0.4.17
+  * guava: 32.1.3
+  * org.yaml:snakeyaml: 2.2 (on ingest converter)
+  * march_hare: 4.6.0-java
+
+
+==== Plugins
+
+*Azure_event_hubs Input - 1.5.1*
+
+* Updated multiple Java dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/99[#99]
+* Updated Azure Event Hub client library to version 3.3.0 https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/96[#96]
+
+*Beats Input - 6.4.4*
+
+* Updated Netty dependency to 4.1.87 https://github.com/logstash-plugins/logstash-input-beats/pull/466[#466]
+* Feat: review and deprecate ssl protocol/cipher settings https://github.com/logstash-plugins/logstash-input-beats/pull/450[#450]
+* Fix: Removed use of deprecated `import` of java classes in ruby https://github.com/logstash-plugins/logstash-input-beats/pull/449[#449]
+* Added support for TLSv1.3. https://github.com/logstash-plugins/logstash-input-beats/pull/447[#447]
+* Build: do not package jackson dependencies https://github.com/logstash-plugins/logstash-input-beats/pull/455[#455]
+* [DOC] Add direct memory example https://github.com/logstash-plugins/logstash-input-beats/pull/454[#454]
+* [DOC] `executor_threads` default value explanation updated. https://github.com/logstash-plugins/logstash-input-beats/pull/461[#461]
+
+*Kafka Integration - 10.12.2*
+
+* Upgrade avro to 1.11.4 and snappy-java to 1.1.10.4 and removed javax.ws.rs-api and jersey-common https://github.com/logstash-plugins/logstash-integration-kafka/pull/190[#190]
 
 [[logstash-7-17-27]]
 === Logstash 7.17.27 Release Notes
