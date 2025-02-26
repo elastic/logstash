@@ -1,4 +1,0 @@
-[[releasenotes]]
-== Release Notes
-coming[9.0.0]
-
