@@ -1,0 +1,18 @@
+toc:
+  - file: index.md
+  - file: input-new-plugin.md
+  - file: codec-new-plugin.md
+  - file: filter-new-plugin.md
+  - file: output-new-plugin.md
+  - file: community-maintainer.md
+  - file: plugin-doc.md
+  - file: publish-plugin.md
+  - file: plugin-listing.md
+  - file: contributing-patch-plugin.md
+  - file: contribute-to-core.md
+  - file: create-logstash-plugins.md
+    children:
+      - file: java-input-plugin.md
+      - file: java-codec-plugin.md
+      - file: java-filter-plugin.md
+      - file: java-output-plugin.md

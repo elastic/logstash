@@ -1,0 +1,330 @@
+project: 'Logstash reference'
+toc:
+  - file: index.md
+  - file: getting-started-with-logstash.md
+    children:
+      - file: installing-logstash.md
+      - file: first-event.md
+      - file: advanced-pipeline.md
+      - file: multiple-input-output-plugins.md
+  - file: how-logstash-works.md
+    children:
+      - file: execution-model.md
+      - file: ecs-ls.md
+      - file: processing.md
+  - file: setting-up-running-logstash.md
+    children:
+      - file: dir-layout.md
+      - file: config-setting-files.md
+      - file: logstash-settings-file.md
+      - file: keystore.md
+      - file: running-logstash-command-line.md
+      - file: running-logstash.md
+      - file: docker.md
+      - file: docker-config.md
+      - file: running-logstash-kubernetes.md
+      - file: running-logstash-windows.md
+      - file: logging.md
+      - file: shutdown.md
+  - file: upgrading-logstash.md
+  - file: upgrading-using-package-managers.md
+  - file: upgrading-using-direct-download.md
+  - file: upgrading-minor-versions.md
+  - file: upgrading-logstash-9-0.md
+  - file: creating-logstash-pipeline.md
+    children:
+      - file: configuration-file-structure.md
+      - file: event-dependent-configuration.md
+      - file: environment-variables.md
+      - file: connecting-to-cloud.md
+      - file: config-examples.md
+  - file: secure-connection.md
+  - file: advanced-logstash-configurations.md
+    children:
+      - file: multiple-pipelines.md
+      - file: pipeline-to-pipeline.md
+      - file: reloading-config.md
+      - file: multiline.md
+      - file: glob-support.md
+      # TO DO: Doesn't exist on master
+      # - file: ingest-converter.md
+  - file: logstash-to-logstash-communications.md
+    children:
+      - file: ls-to-ls-lumberjack.md
+      - file: ls-to-ls-http.md
+      - file: ls-to-ls-native.md
+  - file: managing-logstash.md
+    children:
+      - file: logstash-centralized-pipeline-management.md
+      - file: configuring-centralized-pipelines.md
+  - file: using-logstash-with-elastic-integrations.md
+  # TO DO: Not migrated
+  # - file: working-with-logstash-modules.md
+  #   children:
+      # TO DO: Doesn't exist on master
+      # - file: arcsight-module.md
+      # TO DO: Doesn't exist on master
+      # - file: netflow-module.md
+      # TO DO: Doesn't exist on master
+      # - file: azure-module.md
+  - file: working-with-filebeat-modules.md
+    children:
+      - file: use-ingest-pipelines.md
+      - file: use-filebeat-modules-kafka.md
+  - file: working-with-winlogbeat-modules.md
+  - file: queues-data-resiliency.md
+    children:
+      - file: memory-queue.md
+      - file: persistent-queues.md
+      - file: dead-letter-queues.md
+  - file: transforming-data.md
+    children:
+      - file: core-operations.md
+      - file: data-deserialization.md
+      - file: field-extraction.md
+      - file: lookup-enrichment.md
+  - file: deploying-scaling-logstash.md
+  - file: managing-geoip-databases.md
+    children:
+      - file: logstash-geoip-database-management.md
+      - file: configuring-geoip-database-management.md
+  - file: performance-tuning.md
+    children:
+      - file: performance-troubleshooting.md
+      - file: tuning-logstash.md
+  - file: monitoring-logstash-with-elastic-agent.md
+    children:
+      - file: dashboard-monitoring-with-elastic-agent.md
+      - file: serverless-monitoring-with-elastic-agent.md
+      - file: monitoring-with-elastic-agent.md
+  - file: monitoring-logstash-legacy.md
+    children:
+      - file: monitoring-with-metricbeat.md
+      - file: monitoring-internal-collection-legacy.md
+      - file: logstash-monitoring-ui.md
+      - file: logstash-pipeline-viewer.md
+      - file: monitoring-troubleshooting.md
+  - file: monitoring-logstash.md
+  - file: working-with-plugins.md
+    children:
+      - file: plugin-concepts.md
+      - file: plugin-generator.md
+      - file: offline-plugins.md
+      - file: private-rubygem.md
+      - file: event-api.md
+  - file: integration-plugins.md
+    children:
+      - file: plugins-integrations-aws.md
+      - file: plugins-integrations-elastic_enterprise_search.md
+      - file: plugins-integrations-jdbc.md
+      - file: plugins-integrations-kafka.md
+      - file: plugins-integrations-logstash.md
+      - file: plugins-integrations-rabbitmq.md
+      - file: plugins-integrations-snmp.md
+  - file: input-plugins.md
+    children:
+      - file: plugins-inputs-azure_event_hubs.md
+      - file: plugins-inputs-beats.md
+      - file: plugins-inputs-cloudwatch.md
+      - file: plugins-inputs-couchdb_changes.md
+      - file: plugins-inputs-dead_letter_queue.md
+      - file: plugins-inputs-elastic_agent.md
+      - file: plugins-inputs-elastic_serverless_forwarder.md
+      - file: plugins-inputs-elasticsearch.md
+      - file: plugins-inputs-exec.md
+      - file: plugins-inputs-file.md
+      - file: plugins-inputs-ganglia.md
+      - file: plugins-inputs-gelf.md
+      - file: plugins-inputs-generator.md
+      - file: plugins-inputs-github.md
+      - file: plugins-inputs-google_cloud_storage.md
+      - file: plugins-inputs-google_pubsub.md
+      - file: plugins-inputs-graphite.md
+      - file: plugins-inputs-heartbeat.md
+      - file: plugins-inputs-http.md
+      - file: plugins-inputs-http_poller.md
+      - file: plugins-inputs-imap.md
+      - file: plugins-inputs-irc.md
+      - file: plugins-inputs-java_generator.md
+      - file: plugins-inputs-java_stdin.md
+      - file: plugins-inputs-jdbc.md
+      - file: plugins-inputs-jms.md
+      - file: plugins-inputs-jmx.md
+      - file: plugins-inputs-kafka.md
+      - file: plugins-inputs-kinesis.md
+      - file: plugins-inputs-logstash.md
+      - file: plugins-inputs-log4j.md
+      - file: plugins-inputs-lumberjack.md
+      - file: plugins-inputs-meetup.md
+      - file: plugins-inputs-pipe.md
+      - file: plugins-inputs-puppet_facter.md
+      - file: plugins-inputs-rabbitmq.md
+      - file: plugins-inputs-redis.md
+      - file: plugins-inputs-relp.md
+      - file: plugins-inputs-rss.md
+      - file: plugins-inputs-s3.md
+      - file: plugins-inputs-s3-sns-sqs.md
+      - file: plugins-inputs-salesforce.md
+      - file: plugins-inputs-snmp.md
+      - file: plugins-inputs-snmptrap.md
+      - file: plugins-inputs-sqlite.md
+      - file: plugins-inputs-sqs.md
+      - file: plugins-inputs-stdin.md
+      - file: plugins-inputs-stomp.md
+      - file: plugins-inputs-syslog.md
+      - file: plugins-inputs-tcp.md
+      - file: plugins-inputs-twitter.md
+      - file: plugins-inputs-udp.md
+      - file: plugins-inputs-unix.md
+      - file: plugins-inputs-varnishlog.md
+      - file: plugins-inputs-websocket.md
+      - file: plugins-inputs-wmi.md
+      - file: plugins-inputs-xmpp.md
+  - file: output-plugins.md
+    children:
+      - file: plugins-outputs-boundary.md
+      - file: plugins-outputs-circonus.md
+      - file: plugins-outputs-cloudwatch.md
+      - file: plugins-outputs-csv.md
+      - file: plugins-outputs-datadog.md
+      - file: plugins-outputs-datadog_metrics.md
+      - file: plugins-outputs-dynatrace.md
+      - file: plugins-outputs-elastic_app_search.md
+      - file: plugins-outputs-elastic_workplace_search.md
+      - file: plugins-outputs-elasticsearch.md
+      - file: plugins-outputs-email.md
+      - file: plugins-outputs-exec.md
+      - file: plugins-outputs-file.md
+      - file: plugins-outputs-ganglia.md
+      - file: plugins-outputs-gelf.md
+      - file: plugins-outputs-google_bigquery.md
+      - file: plugins-outputs-google_cloud_storage.md
+      - file: plugins-outputs-google_pubsub.md
+      - file: plugins-outputs-graphite.md
+      - file: plugins-outputs-graphtastic.md
+      - file: plugins-outputs-http.md
+      - file: plugins-outputs-influxdb.md
+      - file: plugins-outputs-irc.md
+      - file: plugins-outputs-java_stdout.md
+      - file: plugins-outputs-juggernaut.md
+      - file: plugins-outputs-kafka.md
+      - file: plugins-outputs-librato.md
+      - file: plugins-outputs-logstash.md
+      - file: plugins-outputs-loggly.md
+      - file: plugins-outputs-lumberjack.md
+      - file: plugins-outputs-metriccatcher.md
+      - file: plugins-outputs-mongodb.md
+      - file: plugins-outputs-nagios.md
+      - file: plugins-outputs-nagios_nsca.md
+      - file: plugins-outputs-opentsdb.md
+      - file: plugins-outputs-pagerduty.md
+      - file: plugins-outputs-pipe.md
+      - file: plugins-outputs-rabbitmq.md
+      - file: plugins-outputs-redis.md
+      - file: plugins-outputs-redmine.md
+      - file: plugins-outputs-riak.md
+      - file: plugins-outputs-riemann.md
+      - file: plugins-outputs-s3.md
+      - file: plugins-outputs-sink.md
+      - file: plugins-outputs-sns.md
+      - file: plugins-outputs-solr_http.md
+      - file: plugins-outputs-sqs.md
+      - file: plugins-outputs-statsd.md
+      - file: plugins-outputs-stdout.md
+      - file: plugins-outputs-stomp.md
+      - file: plugins-outputs-syslog.md
+      - file: plugins-outputs-tcp.md
+      - file: plugins-outputs-timber.md
+      - file: plugins-outputs-udp.md
+      - file: plugins-outputs-webhdfs.md
+      - file: plugins-outputs-websocket.md
+      - file: plugins-outputs-xmpp.md
+      - file: plugins-outputs-zabbix.md
+  - file: filter-plugins.md
+    children:
+      - file: plugins-filters-age.md
+      - file: plugins-filters-aggregate.md
+      - file: plugins-filters-alter.md
+      - file: plugins-filters-bytes.md
+      - file: plugins-filters-cidr.md
+      - file: plugins-filters-cipher.md
+      - file: plugins-filters-clone.md
+      - file: plugins-filters-csv.md
+      - file: plugins-filters-date.md
+      - file: plugins-filters-de_dot.md
+      - file: plugins-filters-dissect.md
+      - file: plugins-filters-dns.md
+      - file: plugins-filters-drop.md
+      - file: plugins-filters-elapsed.md
+      - file: plugins-filters-elastic_integration.md
+      - file: plugins-filters-elasticsearch.md
+      - file: plugins-filters-environment.md
+      - file: plugins-filters-extractnumbers.md
+      - file: plugins-filters-fingerprint.md
+      - file: plugins-filters-geoip.md
+      - file: plugins-filters-grok.md
+      - file: plugins-filters-http.md
+      - file: plugins-filters-i18n.md
+      - file: plugins-filters-java_uuid.md
+      - file: plugins-filters-jdbc_static.md
+      - file: plugins-filters-jdbc_streaming.md
+      - file: plugins-filters-json.md
+      - file: plugins-filters-json_encode.md
+      - file: plugins-filters-kv.md
+      - file: plugins-filters-memcached.md
+      - file: plugins-filters-metricize.md
+      - file: plugins-filters-metrics.md
+      - file: plugins-filters-mutate.md
+      - file: plugins-filters-prune.md
+      - file: plugins-filters-range.md
+      - file: plugins-filters-ruby.md
+      - file: plugins-filters-sleep.md
+      - file: plugins-filters-split.md
+      - file: plugins-filters-syslog_pri.md
+      - file: plugins-filters-threats_classifier.md
+      - file: plugins-filters-throttle.md
+      - file: plugins-filters-tld.md
+      - file: plugins-filters-translate.md
+      - file: plugins-filters-truncate.md
+      - file: plugins-filters-urldecode.md
+      - file: plugins-filters-useragent.md
+      - file: plugins-filters-uuid.md
+      - file: plugins-filters-wurfl_device_detection.md
+      - file: plugins-filters-xml.md
+  - file: codec-plugins.md
+    children:
+      - file: plugins-codecs-avro.md
+      - file: plugins-codecs-cef.md
+      - file: plugins-codecs-cloudfront.md
+      - file: plugins-codecs-cloudtrail.md
+      - file: plugins-codecs-collectd.md
+      - file: plugins-codecs-csv.md
+      - file: plugins-codecs-dots.md
+      - file: plugins-codecs-edn.md
+      - file: plugins-codecs-edn_lines.md
+      - file: plugins-codecs-es_bulk.md
+      - file: plugins-codecs-fluent.md
+      - file: plugins-codecs-graphite.md
+      - file: plugins-codecs-gzip_lines.md
+      - file: plugins-codecs-jdots.md
+      - file: plugins-codecs-java_line.md
+      - file: plugins-codecs-java_plain.md
+      - file: plugins-codecs-json.md
+      - file: plugins-codecs-json_lines.md
+      - file: plugins-codecs-line.md
+      - file: plugins-codecs-msgpack.md
+      - file: plugins-codecs-multiline.md
+      - file: plugins-codecs-netflow.md
+      - file: plugins-codecs-nmap.md
+      - file: plugins-codecs-plain.md
+      - file: plugins-codecs-protobuf.md
+      - file: plugins-codecs-rubydebug.md
+  - file: tips-best-practices.md
+    children:
+      - file: jvm-settings.md
+  # TO DO: Was not migrated
+  # - file: upgrading-with-persistent-queue-enabled.md
+  # TO DO: Was not migrated
+  # - file: multiline-filter-plugin.md
+  # TO DO: Was not migrated
+  # - file: field-references-deep-dive.md
