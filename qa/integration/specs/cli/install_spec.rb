@@ -78,20 +78,19 @@ describe "CLI > logstash-plugin install" do
           expect(gem_in_lock_file?(/gemoji/, @logstash.lock_file)).to be_truthy
         end
       end
-    else
+    end
 
-      context "with internet connection" do
-        it "successfully install the pack" do
-          execute = @logstash_plugin.run_raw("#{install_command} #{pack}", change_dir)
+    context "with internet connection" do
+      it "successfully install the pack" do
+        execute = @logstash_plugin.run_raw("#{install_command} #{pack}", change_dir)
 
-          expect(execute.stderr_and_stdout).to match(INSTALL_SUCCESS_RE)
-          expect(execute.exit_code).to eq(0)
+        expect(execute.stderr_and_stdout).to match(INSTALL_SUCCESS_RE)
+        expect(execute.exit_code).to eq(0)
 
-          installed = @logstash_plugin.list("logstash-output-secret")
-          expect(installed.stderr_and_stdout).to match(/logstash-output-secret/)
+        installed = @logstash_plugin.list("logstash-output-secret")
+        expect(installed.stderr_and_stdout).to match(/logstash-output-secret/)
 
-          expect(gem_in_lock_file?(/gemoji/, @logstash.lock_file)).to be_truthy
-        end
+        expect(gem_in_lock_file?(/gemoji/, @logstash.lock_file)).to be_truthy
       end
     end
   end
