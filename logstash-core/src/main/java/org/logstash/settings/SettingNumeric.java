@@ -31,6 +31,9 @@ public class SettingNumeric extends Coercible<Number> {
 
     @Override
     public Number coerce(Object obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Failed to coerce value to SettingNumeric. Received null");
+        }
         if (obj instanceof Number) {
             return (Number) obj;
         }

@@ -53,4 +53,10 @@ public class SettingNumericTest {
         int value = (Integer) sut.value();
         assertEquals(1, value);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void givenNullValueThenCoerceThrowSpecificError() {
+        sut.set(null);
+    }
+
 }
