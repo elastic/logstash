@@ -17,6 +17,7 @@
 
 require "pluginmanager/command"
 require 'set'
+require 'rubygems/uninstaller'
 
 class LogStash::PluginManager::Clean < LogStash::PluginManager::Command
 
@@ -30,34 +31,29 @@ class LogStash::PluginManager::Clean < LogStash::PluginManager::Command
                                            .reject{ |spec| locked_gem_names.include?(spec.full_name) }
                                            .sort
 
-    file_list = orphan_gem_specs.map { |spec| get_gem_files(spec) }.flatten
-
-    if dry_run?
-      verb = "would clean"
-      $stderr.puts("would remove files[")
-      $stderr.puts(file_list)
-      $stderr.puts("]")
-    else
-      verb = "cleaned"
-      FileUtils.rm_rf(file_list)
-    end
-
     inactive_plugins, orphaned_dependencies = orphan_gem_specs.partition { |spec| LogStash::PluginManager.logstash_plugin_gem_spec?(spec) }
-    inactive_plugins.each { |spec| puts("#{verb} inactive plugin #{spec.name} (#{spec.version})") }
-    orphaned_dependencies.each { |spec| puts("#{verb} orphaned dependency #{spec.name} (#{spec.version})") }
+
+    # uninstall plugins first, to limit damage should one fail to uninstall
+    inactive_plugins.each { |plugin| uninstall("inactive plugin", plugin) }
+    orphaned_dependencies.each { |dep| uninstall("orphaned dependency", dep) }
   end
 
-  def get_gem_files(spec)
-    %w(
-      full_gem_path
-      loaded_from
-      spec_file
-      cache_file
-      build_info_file
-      doc_dir
-    ).map { |attr| spec.public_send(attr) }
-     .compact
-     .uniq
-     .select { |path| File.exist?(path) }
+  def uninstall(desc, spec)
+    full_desc = "#{desc} #{spec.name} (#{spec.version})"
+    if dry_run?
+      puts "would clean #{full_desc}"
+    else
+      uninstall_gem!(spec)
+      puts "cleaned #{full_desc}"
+    end
+  end
+
+  def uninstall_gem!(gem_spec)
+    removal_options = { force: true, executables: true }
+    Gem::DefaultUserInteraction.use_ui(debug? ? Gem::DefaultUserInteraction.ui : Gem::SilentUI.new) do
+      Gem::Uninstaller.new(gem_spec.name, removal_options.merge(version: gem_spec.version)).uninstall
+    end
+  rescue Gem::InstallError => e
+    fail "Failed to uninstall `#{gem_spec.full_name}`"
   end
 end
