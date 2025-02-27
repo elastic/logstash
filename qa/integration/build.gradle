@@ -60,11 +60,24 @@ clean {
   delete "${projectDir}/fixtures/logs_rollover/log4j2.properties"
 }
 
+tasks.register("preparePluginTestFixtures", Exec) {
+
+  def fixtureDir = layout.projectDirectory.dir("fixtures/plugins")
+  def scriptPath = fixtureDir.file("generate-gems.sh")
+
+  inputs.file scriptPath
+  inputs.files fileTree(fixtureDir) { include("*.gemspec") }
+  outputs.files fileTree(fixtureDir) { include("*.gem") }
+
+  commandLine = scriptPath.toString()
+}
+
 tasks.register("integrationTests", Test) {
   if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
     jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
   }
   dependsOn copyProductionLog4jConfiguration
+  dependsOn preparePluginTestFixtures
 
   inputs.files fileTree("${projectDir}/services")
   inputs.files fileTree("${projectDir}/framework")
