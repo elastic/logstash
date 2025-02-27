@@ -47,6 +47,16 @@ module LogStash::PluginManager
   # Defines the plugin alias, must be kept in synch with Java class org.logstash.plugins.AliasRegistry
   ALIASES = load_aliases_definitions()
 
+  def self.resolve_alias(alias_name)
+    ALIASES[alias_name]
+  end
+
+  def self.find_aliases(plugin_name)
+    ALIASES.each_with_object([]) do |(alias_name, candidate_plugin_name), aliases|
+      aliases << alias_name if candidate_plugin_name == plugin_name
+    end.compact.uniq
+  end
+
   class ValidationError < StandardError; end
 
   # check for valid logstash plugin gem name & version or .gem file, logs errors to $stdout
