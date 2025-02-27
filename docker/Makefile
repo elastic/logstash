@@ -129,6 +129,13 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
 	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
+build-from-dockerfiles_full: public-dockerfiles_full
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build && cd dockerfile_build && \
+	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-full:$(VERSION_TAG) .
+
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
