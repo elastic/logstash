@@ -22,7 +22,7 @@ require 'logstash/webserver'
 require "stud/try"
 require "manticore"
 
-describe 'api webserver' do
+describe 'api webserver', :skip_fips do
   let!(:logger) { double("Logger").as_null_object }
   let!(:agent) { double("Agent").as_null_object }
   subject(:webserver) { LogStash::WebServer.new(logger, agent, webserver_options) }
