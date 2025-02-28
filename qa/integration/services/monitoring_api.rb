@@ -31,6 +31,12 @@ class MonitoringAPI
     stats_response.fetch("pipelines").fetch(pipeline_id)
   end
 
+  def pipelines_stats
+    resp = Manticore.get("http://localhost:#{@port}/_node/stats/pipelines").body
+    stats_response = JSON.parse(resp)
+    stats_response.fetch("pipelines")
+  end
+
   def event_stats
     resp = Manticore.get("http://localhost:#{@port}/_node/stats").body
     stats_response = JSON.parse(resp)
