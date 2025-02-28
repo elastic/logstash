@@ -191,7 +191,7 @@ COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2ya
 <% else -%>
 COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
 # Copy over the appropriate env2yaml artifact
-RUN env2yamlarch="$(<%= arch_command %>)"; \
+RUN set -eux; env2yamlarch="$(<%= arch_command %>)"; \
   case "${env2yamlarch}" in \
     'x86_64'|'amd64') \
       env2yamlarch=amd64; \
