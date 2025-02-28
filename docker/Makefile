@@ -65,6 +65,7 @@ build-from-local-wolfi-artifacts: dockerfile
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go $(ARTIFACTS_DIR)/docker/env2yaml/go.mod $(ARTIFACTS_DIR)/docker/env2yaml/go.sum
 COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
 COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64 
 COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64
@@ -76,8 +77,14 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+<<<<<<< HEAD
 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64: data/logstash/env2yaml/env2yaml-arm64
 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64: data/logstash/env2yaml/env2yaml-amd64
+=======
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go: data/logstash/env2yaml/env2yaml.go
+$(ARTIFACTS_DIR)/docker/env2yaml/go.mod: data/logstash/env2yaml/go.mod
+$(ARTIFACTS_DIR)/docker/env2yaml/go.sum: data/logstash/env2yaml/go.sum
+>>>>>>> fecfc7c6 (add env2yaml source files to build context tarball (#17151))
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -133,6 +140,16 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
 	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+<<<<<<< HEAD
+=======
+
+build-from-dockerfiles_full: public-dockerfiles_full
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build && cd dockerfile_build && \
+	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-full:$(VERSION_TAG) .
+>>>>>>> fecfc7c6 (add env2yaml source files to build context tarball (#17151))
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -147,6 +164,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+<<<<<<< HEAD
 
 public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -161,6 +179,8 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+=======
+>>>>>>> fecfc7c6 (add env2yaml source files to build context tarball (#17151))
 
 public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
