@@ -306,7 +306,7 @@ class LogstashService < Service
     if ENV.key?("BUILD_JAVA_HOME") && !process.environment.key?("LS_JAVA_HOME")
       process.environment["LS_JAVA_HOME"] = ENV["BUILD_JAVA_HOME"]
     end
-    process.io.stdout = process.io.stderr = out
+    process.io.stdout = process.io.stderr = SynchronizedDelegate.new(out)
 
     Bundler.with_unbundled_env do
       if change_dir
@@ -325,6 +325,31 @@ class LogstashService < Service
 
   def run(*args)
     run_cmd [@logstash_bin, *args]
+  end
+
+  ##
+  # A `SynchronizedDelegate` wraps any object and ensures that exactly one
+  # calling thread is invoking methods on it at a time. This is useful for our
+  # clumsy setting of process io STDOUT and STDERR to the same IO object, which
+  # can cause interleaved writes.
+  class SynchronizedDelegate
+    def initialize(obj)
+      require "monitor"
+      @mon = Monitor.new
+      @obj = obj
+    end
+
+    def respond_to_missing?(method_name, include_private = false)
+      @obj.respond_to?(method_name, include_private) || super
+    end
+
+    def method_missing(method_name, *args, &block)
+      return super unless @obj.respond_to?(method_name)
+
+      @mon.synchronize do
+        @obj.public_send(method_name, *args, &block)
+      end
+    end
   end
 
   class PluginCli
@@ -360,9 +385,26 @@ class LogstashService < Service
       run(command)
     end
 
-    def install(plugin_name, *additional_plugins)
-      plugin_list = ([plugin_name]+additional_plugins).flatten
-      run("install #{Shellwords.shelljoin(plugin_list)}")
+    def install(plugin_name, *additional_plugins, version: nil, verify: true, preserve: false, local: false)
+      args = []
+      args << "--no-verify" unless verify
+      args << "--preserve" if preserve
+      args << "--local" if local
+      args << "--version" << version unless version.nil?
+      args.concat(([plugin_name]+additional_plugins).flatten)
+
+      run("install #{Shellwords.shelljoin(args)}")
+    end
+
+    def update(*plugin_list, level: nil, local: nil, verify: nil, conservative: nil)
+      args = []
+      args << (verify ? "--verify" : "--no-verify") unless verify.nil?
+      args << "--level" << "#{level}" unless level.nil?
+      args << "--local" if local
+      args << (conservative ? "--conservative" : "--no-conservative") unless conservative.nil?
+      args.concat(plugin_list)
+
+      run("update #{Shellwords.shelljoin(args)}")
     end
 
     def run(command)

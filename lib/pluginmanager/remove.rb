@@ -67,6 +67,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
     exit(1) unless ::Bundler::LogstashUninstall.uninstall!(plugin_list)
     LogStash::Bundler.genericize_platform
     remove_unused_locally_installed_gems!
+    remove_orphan_dependencies!
   rescue => exception
     report_exception("Operation aborted, cannot remove plugin", exception)
   end

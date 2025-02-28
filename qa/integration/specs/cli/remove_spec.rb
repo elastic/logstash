@@ -19,12 +19,17 @@ require_relative '../../framework/fixture'
 require_relative '../../framework/settings'
 require_relative '../../services/logstash_service'
 require_relative '../../framework/helpers'
+require_relative "pluginmanager_spec_helper"
 require "logstash/devutils/rspec/spec_helper"
 
 describe "CLI > logstash-plugin remove" do
+
+  include_context "pluginmanager validation helpers"
+
   before(:each) do
     @fixture = Fixture.new(__FILE__)
-    @logstash_plugin = @fixture.get_service("logstash").plugin_cli
+    @logstash = @fixture.get_service("logstash")
+    @logstash_plugin = @logstash.plugin_cli
   end
 
   if RbConfig::CONFIG["host_os"] == "linux"
@@ -55,6 +60,8 @@ describe "CLI > logstash-plugin remove" do
           presence_check = @logstash_plugin.list(test_plugin)
           expect(presence_check.exit_code).to eq(1)
           expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
+
+          expect("logstash-filter-qatest").to_not be_installed_gem
         end
       end
 
@@ -92,6 +99,38 @@ describe "CLI > logstash-plugin remove" do
       presence_check = @logstash_plugin.list(test_plugin)
       expect(presence_check.exit_code).to eq(1)
       expect(presence_check.stderr_and_stdout).to match(/ERROR: No plugins found/)
+
+      expect("logstash-filter-qatest").to_not be_installed_gem
+    end
+  end
+
+  context "plugins with unshared dependencies" do
+    let(:plugin_to_remove) {  }
+
+    it "successfully removes the plugin and its unshared dependencies" do
+      execute = @logstash_plugin.remove("logstash-integration-aws")
+
+      expect(execute.exit_code).to eq(0)
+      expect(execute.stderr_and_stdout).to match(/Successfully removed logstash-integration-aws/)
+
+      expect("logstash-integration-aws").to_not be_installed_gem
+
+      # known unshared dependencies, including transitive dependencies
+      aggregate_failures("known unshared dependencies") do
+        expect("aws-sdk-core").to_not be_installed_gem
+        expect("aws-sdk-s3").to_not be_installed_gem
+        expect("aws-sdk-kms").to_not be_installed_gem
+        expect("aws-sdk-cloudfront").to_not be_installed_gem
+        expect("aws-sdk-cloudwatch").to_not be_installed_gem
+        expect("aws-eventstream").to_not be_installed_gem
+        expect("aws-partitions").to_not be_installed_gem
+      end
+
+      # known shared dependencies
+      aggregate_failures("known shared dependencies") do
+        expect("concurrent-ruby").to be_installed_gem
+        expect("logstash-codec-json").to be_installed_gem
+      end
     end
   end
 
@@ -108,6 +147,8 @@ describe "CLI > logstash-plugin remove" do
 
       expect(presence_check.exit_code).to eq(0)
       expect(presence_check.stderr_and_stdout).to match(/logstash-codec-json/)
+
+      expect("logstash-codec-json").to be_installed_gem
     end
   end
 
