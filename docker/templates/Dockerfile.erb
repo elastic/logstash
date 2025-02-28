@@ -13,7 +13,7 @@
   <%   license = 'Elastic License' -%>
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
+  <%   base_image = 'docker.elastic.co/ubi9/ubi-minimal' -%>
   <%   go_image = 'golang:1.23' -%>
   <%   package_manager = 'microdnf' -%>
 <% else -%>
@@ -62,7 +62,6 @@ RUN for iter in {1..10}; do \
   <%= package_manager %> install -y procps findutils tar gzip && \
   <%= package_manager %> install -y openssl && \
   <%= package_manager %> install -y which shadow-utils && \
-  <%= package_manager %> install -y curl && \
   <%= package_manager %> clean all && \
 <% else -%><%# 'wolfi' -%>
   <%= package_manager %> add --no-cache curl bash openssl && \

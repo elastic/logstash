@@ -1,6 +1,6 @@
 
 ==========
-Notice for: Red Hat Universal Base Image minimal-8
+Notice for: Red Hat Universal Base Image minimal-9
 ----------
 
 TEST
