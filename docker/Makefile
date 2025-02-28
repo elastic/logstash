@@ -131,7 +131,7 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 
 build-from-dockerfiles_full: public-dockerfiles_full
 	cd $(ARTIFACTS_DIR)/docker && \
-	mkdir -p dockerfile_build && cd dockerfile_build && \
+	mkdir -p dockerfile_build_full && cd dockerfile_build_full && \
 	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
 	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-full:$(VERSION_TAG) .
@@ -150,6 +150,13 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
+build-from-dockerfiles_oss: public-dockerfiles_oss
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build_oss && cd dockerfile_build_oss && \
+	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-oss:$(VERSION_TAG) .
+
 public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
@@ -163,6 +170,13 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
 	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+build-from-dockerfiles_wolfi: public-dockerfiles_wolfi
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build_wolfi && cd dockerfile_build_wolfi && \
+	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-wolfi:$(VERSION_TAG) .
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
