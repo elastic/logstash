@@ -185,9 +185,9 @@ module LogStash
               :reloads => stats[:reloads],
               :queue => stats[:queue],
               :pipeline => {
-                :workers => stats[:config][:workers],
-                :batch_size => stats[:config][:batch_size],
-                :batch_delay => stats[:config][:batch_delay],
+                :workers => stats.dig(:config, :workers),
+                :batch_size => stats.dig(:config, :batch_size),
+                :batch_delay => stats.dig(:config, :batch_delay),
               }
             }
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
