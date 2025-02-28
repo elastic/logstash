@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-5,Logstash 8.16.5>>
 * <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
@@ -74,6 +75,36 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-16-5]]
+=== Logstash 8.16.5 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.16.5
+
+* Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17032[#17032]
+* inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17049[#17049]
+* move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17050[#17050]
+* CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17052[#17052]
+* Backport PR #17049 to 8.16: inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17066[#17066]
+* Backport PR #17032 to 8.16: Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17071[#17071]
+* Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17081[#17081]
+* Backport PR #17081 to 8.16: Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17088[#17088]
+* Backport PR #17052 to 8.16: CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17100[#17100]
+* Backport PR #17050 to 8.16: move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17108[#17108]
+* Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17133[#17133]
+* Backport PR #17133 to 8.16: Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17145[#17145]
+
+=== Logstash Commits between 8.16 and 8.16.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.5..8.16"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.16.5..8.16 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-16-4]]
 === Logstash 8.16.4 Release Notes
