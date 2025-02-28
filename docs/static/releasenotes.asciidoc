@@ -82,47 +82,18 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-3]]
 === Logstash 8.17.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.3
+[[notable-8-17-3]]
+==== Notable issues fixed
 
-* Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17032[#17032]
-* inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17049[#17049]
-* move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17050[#17050]
-* CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17052[#17052]
-* Backport PR #17049 to 8.17: inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17065[#17065]
-* Backport PR #17032 to 8.17: Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17070[#17070]
-* Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17081[#17081]
-* Backport PR #17081 to 8.17: Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17086[#17086]
-* Backport PR #17052 to 8.17: CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17099[#17099]
-* Backport PR #17050 to 8.17: move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17107[#17107]
-* Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17133[#17133]
-* Backport PR #17133 to 8.17: Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17144[#17144]
+* Improves performance of the Persistent Queue, especially in the case of large events, by moving deserialization out of the exclusive access lock. https://github.com/elastic/logstash/pull/17050[#17050]
+* Improve error logging when Centralized Pipeline Management cannot find a configured pipeline. https://github.com/elastic/logstash/pull/17052[#17052]
+* Update logstash-keystore to allow spaces in values when `stdin` is used to set values https://github.com/elastic/logstash/pull/17052[#17052]
 
-=== Logstash Commits between 8.17 and 8.17.2
+[[dependencies-8-17-3]]
+==== Updates to dependencies
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.2..8.17"
 
-08b22ef49 - (HEAD -> 8.17, origin/8.17) bump lock file for 8.17 (#17152) (2 days ago) <github-actions[bot]>
-7cb800bb0 - Add Windows 2025 to CI (#17133) (#17144) (4 days ago) <github-actions[bot]>
-bbacc0bfd - allow concurrent Batch deserialization (#17050) (#17107) (11 days ago) <github-actions[bot]>
-c1858ac81 - CPM handle 404 response gracefully with user-friendly log (#17052) (#17099) (11 days ago) <github-actions[bot]>
-88cd16b2c - Allow capturing heap dumps in DRA BK jobs (#17081) (#17086) (2 weeks ago) <github-actions[bot]>
-6398d9612 - Fix conflicts (#17075) (2 weeks ago) <Dimitrios Liappis>
-3e041cd8e - Don't honor VERSION_QUALIFIER if set but empty (#17032) (#17070) (2 weeks ago) <github-actions[bot]>
-82f86922d - inject VERSION_QUALIFIER into artifacts (#16904) (#17049) (#17065) (2 weeks ago) <github-actions[bot]>
-0e487fd7e - docs: forward-port 8.16.4 release notes to 8.17 (#17056) (2 weeks ago) <Ry Biesemeyer>
-03aeacf66 - version bump 8.17.3 (#17054) (2 weeks ago) <Ry Biesemeyer>
-8491a4ba2 - Release notes for 8.17.2 (#17044) (2 weeks ago) <github-actions[bot]>
-a19a60790 - fix logstash-keystore to accept spaces in values when added via stdin (#17039) (#17041) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.2..8.17 *.release"
-Changed plugin versions:
-logstash-input-beats: 6.9.2 -> 6.9.3
-logstash-input-http: 3.10.1 -> 3.10.2
-logstash-input-tcp: 6.4.5 -> 6.4.6
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-17-3]]
 ==== Plugins
 
 *Beats Input - 6.9.3*
