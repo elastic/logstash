@@ -31,6 +31,12 @@ describe "Direct shipping" do
 
   include_examples "record monitoring data to es"
 
+  it "gives pipelines stats" do
+    api = MonitoringAPI.new
+    stats = api.pipelines_stats
+    expect(stats.keys).not_to be_nil
+  end
+
   after :all do
     @logstash_service.stop unless @logstash_service.nil?
     @elasticsearch_service.stop unless @elasticsearch_service.nil?
