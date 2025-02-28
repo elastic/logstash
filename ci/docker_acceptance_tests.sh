@@ -48,7 +48,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
-  rake artifact:docker
+  rake artifact:build_docker_full
   echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install

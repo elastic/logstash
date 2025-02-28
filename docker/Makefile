@@ -60,6 +60,7 @@ build-from-local-wolfi-artifacts: dockerfile
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go $(ARTIFACTS_DIR)/docker/env2yaml/go.mod $(ARTIFACTS_DIR)/docker/env2yaml/go.sum
 COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
@@ -69,6 +70,9 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go: data/logstash/env2yaml/env2yaml.go
+$(ARTIFACTS_DIR)/docker/env2yaml/go.mod: data/logstash/env2yaml/go.mod
+$(ARTIFACTS_DIR)/docker/env2yaml/go.sum: data/logstash/env2yaml/go.sum
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -77,6 +81,7 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/
 	mkdir -p $(ARTIFACTS_DIR)/docker/bin
 	mkdir -p $(ARTIFACTS_DIR)/docker/config
+	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
@@ -122,7 +127,14 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-full" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
-	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config pipeline
+	tar -zcf ../logstash-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+build-from-dockerfiles_full: public-dockerfiles_full
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build && cd dockerfile_build && \
+	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-full:$(VERSION_TAG) .
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -136,7 +148,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-oss" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
-	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config pipeline
+	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -150,7 +162,7 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
-	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config pipeline
+	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
