@@ -343,6 +343,10 @@ class LogstashService < Service
       run("remove #{plugin_list}")
     end
 
+    def clean
+      run("clean")
+    end
+
     def prepare_offline_pack(plugins, output_zip = nil)
       plugins = Array(plugins)
 
