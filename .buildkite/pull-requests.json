@@ -14,7 +14,15 @@
         "skip_ci_labels": [ ],
         "skip_target_branches": [ ],
         "skip_ci_on_only_changed": [
+<<<<<<< HEAD
           "^docs/"
+=======
+          "^.github/",
+          "^docs/",
+          "^.mergify.yml$",
+          "^.pre-commit-config.yaml",
+          "\\.md$"
+>>>>>>> d40386a3 (mergify: support backports automation with labels (#16937))
         ],
         "always_require_ci_on_changed": [ ]
       }
