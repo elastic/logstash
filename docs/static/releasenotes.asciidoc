@@ -79,45 +79,13 @@ This section summarizes the changes in the following releases:
 [[logstash-8-16-5]]
 === Logstash 8.16.5 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.16.5
+[[notable-8-16-5]]
+==== Notable issues fixed
 
-* Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17032[#17032]
-* inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17049[#17049]
-* move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17050[#17050]
-* CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17052[#17052]
-* Backport PR #17049 to 8.16: inject VERSION_QUALIFIER into artifacts (#16904) https://github.com/elastic/logstash/pull/17066[#17066]
-* Backport PR #17032 to 8.16: Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17071[#17071]
-* Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17081[#17081]
-* Backport PR #17081 to 8.16: Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17088[#17088]
-* Backport PR #17052 to 8.16: CPM handle 404 response gracefully with user-friendly log https://github.com/elastic/logstash/pull/17100[#17100]
-* Backport PR #17050 to 8.16: move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17108[#17108]
-* Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17133[#17133]
-* Backport PR #17133 to 8.16: Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17145[#17145]
+* Improves performance of the Persistent Queue, especially in the case of large events, by moving deserialization out of the exclusive access lock. https://github.com/elastic/logstash/pull/17050[#17050]
+* Improve error logging when Centralized Pipeline Management cannot find a configured pipeline. https://github.com/elastic/logstash/pull/17052[#17052]
 
-=== Logstash Commits between 8.16 and 8.16.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.4..8.16"
-
-8fc4b75e6 - (HEAD -> 8.16, origin/8.16) bump lock file for 8.16 (#17153) (2 days ago) <github-actions[bot]>
-bbc80ec0f - Add Windows 2025 to CI (#17133) (#17145) (4 days ago) <github-actions[bot]>
-4205eb7a7 - allow concurrent Batch deserialization (#17050) (#17108) (11 days ago) <github-actions[bot]>
-4d04d6c7a - CPM handle 404 response gracefully with user-friendly log (#17052) (#17100) (11 days ago) <github-actions[bot]>
-a7ca91af8 - Allow capturing heap dumps in DRA BK jobs (#17081) (#17088) (2 weeks ago) <github-actions[bot]>
-f9606502e - Fix conflicts (#17076) (2 weeks ago) <Dimitrios Liappis>
-ce8d43f39 - Don't honor VERSION_QUALIFIER if set but empty (#17032) (#17071) (2 weeks ago) <github-actions[bot]>
-69e554b79 - inject VERSION_QUALIFIER into artifacts (#16904) (#17049) (#17066) (2 weeks ago) <github-actions[bot]>
-6dceb2453 - version bump 8.16.5 (#17053) (2 weeks ago) <Ry Biesemeyer>
-168f96901 - Release notes for 8.16.4 (#17043) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.16.4..8.16 *.release"
-Changed plugin versions:
-logstash-input-beats: 6.9.2 -> 6.9.3
-logstash-input-http: 3.10.1 -> 3.10.2
-logstash-input-tcp: 6.4.5 -> 6.4.6
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-16-5]]
 ==== Plugins
 
 *Beats Input - 6.9.3*
