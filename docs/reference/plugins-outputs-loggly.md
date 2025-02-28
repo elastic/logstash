@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-07-03
 * [Changelog](https://github.com/logstash-plugins/logstash-output-loggly/blob/v6.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-loggly-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-loggly-index.md).
 
 ## Installation [_installation_37]
 

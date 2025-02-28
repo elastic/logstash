@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-12-19
 * [Changelog](https://github.com/logstash-plugins/logstash-output-csv/blob/v3.0.10/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-csv-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-csv-index.md).
 
 ## Getting help [_getting_help_68]
 

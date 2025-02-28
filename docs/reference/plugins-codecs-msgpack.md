@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-09
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-msgpack/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-msgpack-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-msgpack-index.md).
 
 ## Getting help [_getting_help_191]
 

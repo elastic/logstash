@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-08-22
 * [Changelog](https://github.com/logstash-plugins/logstash-input-gelf/blob/v3.3.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-gelf-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-gelf-index.md).
 
 ## Getting help [_getting_help_19]
 

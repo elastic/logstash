@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-01-26
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-dns/blob/v3.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-dns-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-dns-index.md).
 
 ## Getting help [_getting_help_134]
 

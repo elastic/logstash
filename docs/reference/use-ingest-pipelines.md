@@ -59,7 +59,7 @@ output {
 3. Configures {{ls}} to select the correct ingest pipeline based on metadata passed in the event.
 
 
-See the {{filebeat}} [Modules](beats://docs/reference/filebeat/filebeat-modules-overview.md) documentation for more information about setting up and running modules.
+See the {{filebeat}} [Modules](beats://reference/filebeat/filebeat-modules-overview.md) documentation for more information about setting up and running modules.
 
 For a full example, see [Example: Set up {{filebeat}} modules to work with Kafka and {{ls}}](/reference/use-filebeat-modules-kafka.md).
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-07-27
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-plain/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-plain-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-plain-index.md).
 
 ## Getting help [_getting_help_195]
 
@@ -61,7 +61,7 @@ This only affects "plain" format logs since json is `UTF-8` already.
     * Otherwise, the default value is `disabled`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `format` [plugins-codecs-plain-format]

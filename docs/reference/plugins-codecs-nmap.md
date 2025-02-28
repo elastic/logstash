@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-11-16
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-nmap/blob/v0.0.22/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-nmap-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-nmap-index.md).
 
 ## Installation [_installation_70]
 

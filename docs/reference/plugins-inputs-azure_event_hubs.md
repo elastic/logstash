@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-03
 * [Changelog](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/blob/v1.5.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-azure_event_hubs-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-azure_event_hubs-index.md).
 
 ## Getting help [_getting_help_8]
 

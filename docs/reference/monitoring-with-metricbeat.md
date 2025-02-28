@@ -44,7 +44,7 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
 
 ## Install and configure {{metricbeat}} [configure-metricbeat]
 
-1. [Install {{metricbeat}}](beats://docs/reference/metricbeat/metricbeat-installation-configuration.md) on the same server as {{ls}}.
+1. [Install {{metricbeat}}](beats://reference/metricbeat/metricbeat-installation-configuration.md) on the same server as {{ls}}.
 2. Enable the `logstash-xpack` module in {{metricbeat}}.<br>
 
     To enable the default configuration in the {{metricbeat}} `modules.d` directory, run:
@@ -67,7 +67,7 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
     PS > .\metricbeat.exe modules enable logstash-xpack
     ```
 
-    For more information, see [Specify which modules to run](beats://docs/reference/metricbeat/configuration-metricbeat.md) and [beat module](beats://docs/reference/metricbeat/metricbeat-module-beat.md).
+    For more information, see [Specify which modules to run](beats://reference/metricbeat/configuration-metricbeat.md) and [beat module](beats://reference/metricbeat/metricbeat-module-beat.md).
 
 3. Configure the `logstash-xpack` module in {{metricbeat}}.<br>
 
@@ -97,12 +97,12 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
 
     **Elastic security.** The Elastic {{security-features}} are enabled by default. You must provide a user ID and password so that {{metricbeat}} can collect metrics successfully:
 
-    1. Create a user on the production cluster that has the `remote_monitoring_collector` [built-in role](elasticsearch://docs/reference/elasticsearch/roles.md).
+    1. Create a user on the production cluster that has the `remote_monitoring_collector` [built-in role](elasticsearch://reference/elasticsearch/roles.md).
     2. Add the `username` and `password` settings to the module configuration file (`logstash-xpack.yml`).
 
 4. Optional: Disable the system module in the {{metricbeat}}.
 
-    By default, the [system module](beats://docs/reference/metricbeat/metricbeat-module-system.md) is enabled. The information it collects, however, is not shown on the **Stack Monitoring** page in {{kib}}. Unless you want to use that information for other purposes, run the following command:
+    By default, the [system module](beats://reference/metricbeat/metricbeat-module-system.md) is enabled. The information it collects, however, is not shown on the **Stack Monitoring** page in {{kib}}. Unless you want to use that information for other purposes, run the following command:
 
     ```sh
     metricbeat modules disable system
@@ -140,7 +140,7 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
 
     **Elastic security.** The Elastic {{security-features}} are enabled by default. You must provide a user ID and password so that {{metricbeat}} can send metrics successfully:
 
-    1. Create a user on the monitoring cluster that has the `remote_monitoring_agent` [built-in role](elasticsearch://docs/reference/elasticsearch/roles.md). Alternatively, use the `remote_monitoring_user` [built-in user](docs-content://deploy-manage/users-roles/cluster-or-deployment-auth/built-in-users.md).
+    1. Create a user on the monitoring cluster that has the `remote_monitoring_agent` [built-in role](elasticsearch://reference/elasticsearch/roles.md). Alternatively, use the `remote_monitoring_user` [built-in user](docs-content://deploy-manage/users-roles/cluster-or-deployment-auth/built-in-users.md).
 
         ::::{tip}
         If you’re using index lifecycle management, the remote monitoring user requires additional privileges to create and read indices. For more information, see `<<feature-roles>>`.
@@ -148,9 +148,9 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
 
     2. Add the `username` and `password` settings to the {{es}} output information in the {{metricbeat}} configuration file.
 
-    For more information about these configuration options, see [Configure the {{es}} output](beats://docs/reference/metricbeat/elasticsearch-output.md).
+    For more information about these configuration options, see [Configure the {{es}} output](beats://reference/metricbeat/elasticsearch-output.md).
 
-6. [Start {{metricbeat}}](beats://docs/reference/metricbeat/metricbeat-starting.md) to begin collecting monitoring data.
+6. [Start {{metricbeat}}](beats://reference/metricbeat/metricbeat-starting.md) to begin collecting monitoring data.
 7. [View the monitoring data in {{kib}}](docs-content://deploy-manage/monitor/stack-monitoring/kibana-monitoring-data.md).
 
 Your monitoring setup is complete.

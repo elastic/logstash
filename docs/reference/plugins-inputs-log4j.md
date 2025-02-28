@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-input-log4j/blob/v3.1.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-log4j-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-log4j-index.md).
 
 ## Installation [_installation_7]
 
@@ -58,7 +58,7 @@ Configuring log4j.properties in more detail is outside the scope of this migrati
 
 ### Configuring filebeat [_configuring_filebeat]
 
-Next, [install Filebeat](beats://docs/reference/filebeat/filebeat-installation-configuration.md). Based on the above log4j.properties, we can use this filebeat configuration:
+Next, [install Filebeat](beats://reference/filebeat/filebeat-installation-configuration.md). Based on the above log4j.properties, we can use this filebeat configuration:
 
 ```
 # filebeat.yml
@@ -72,7 +72,7 @@ output:
   logstash:
     hosts: ["your-logstash-host:5000"]
 ```
-For more details on configuring filebeat, see [Configure Filebeat](beats://docs/reference/filebeat/configuring-howto-filebeat.md).
+For more details on configuring filebeat, see [Configure Filebeat](beats://reference/filebeat/configuring-howto-filebeat.md).
 
 
 ### Configuring Logstash to receive from filebeat [_configuring_logstash_to_receive_from_filebeat]

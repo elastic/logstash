@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-05-30
 * [Changelog](https://github.com/logstash-plugins/logstash-output-circonus/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-circonus-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-circonus-index.md).
 
 ## Installation [_installation_22]
 

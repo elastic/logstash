@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-10
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-elasticsearch/blob/v4.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-elasticsearch-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-elasticsearch-index.md).
 
 ## Getting help [_getting_help_138]
 
@@ -290,7 +290,7 @@ Set the address of a forward HTTP proxy. An empty string is treated as if proxy 
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-Elasticsearch query string. More information is available in the [Elasticsearch query string documentation](elasticsearch://docs/reference/query-languages/query-dsl-query-string-query.md#query-string-syntax). Use either `query` or `query_template`.
+Elasticsearch query string. More information is available in the [Elasticsearch query string documentation](elasticsearch://reference/query-languages/query-dsl-query-string-query.md#query-string-syntax). Use either `query` or `query_template`.
 
 
 ### `query_template` [plugins-filters-elasticsearch-query_template]
@@ -298,7 +298,7 @@ Elasticsearch query string. More information is available in the [Elasticsearch 
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-File path to elasticsearch query in DSL format. More information is available in the [Elasticsearch query documentation](elasticsearch://docs/reference/query-languages/querydsl.md). Use either `query` or `query_template`.
+File path to elasticsearch query in DSL format. More information is available in the [Elasticsearch query documentation](elasticsearch://reference/query-languages/querydsl.md). Use either `query` or `query_template`.
 
 
 ### `result_size` [plugins-filters-elasticsearch-result_size]

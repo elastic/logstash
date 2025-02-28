@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-04
 * [Changelog](https://github.com/logstash-plugins/logstash-input-udp/blob/v3.5.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-udp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-udp-index.md).
 
 ## Getting help [_getting_help_59]
 
@@ -24,7 +24,7 @@ Read messages as events over the network via udp. The only required configuratio
 
 ### Event Metadata and the Elastic Common Schema (ECS) [plugins-inputs-udp-ecs_metadata]
 
-This plugin adds a field containing the source IP address of the UDP packet. By default, the IP address is stored in the host field. When [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)) is enabled (in [`ecs_compatibility`](#plugins-inputs-udp-ecs_compatibility)), the source IP address is stored in the [host][ip] field.
+This plugin adds a field containing the source IP address of the UDP packet. By default, the IP address is stored in the host field. When [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)) is enabled (in [`ecs_compatibility`](#plugins-inputs-udp-ecs_compatibility)), the source IP address is stored in the [host][ip] field.
 
 You can customize the field name using the [`source_ip_fieldname`](#plugins-inputs-udp-source_ip_fieldname). See [`ecs_compatibility`](#plugins-inputs-udp-ecs_compatibility) for more information.
 
@@ -71,7 +71,7 @@ The maximum packet size to read from the network
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 The value of this setting affects the placement of a TCP connection’s metadata on events.
 

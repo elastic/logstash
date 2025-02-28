@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-11-22
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-mutate/blob/v3.5.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-mutate-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-mutate-index.md).
 
 ## Getting help [_getting_help_155]
 

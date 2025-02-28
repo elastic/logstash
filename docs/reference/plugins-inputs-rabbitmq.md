@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2024-09-16
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-rabbitmq/blob/v7.4.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-rabbitmq-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-rabbitmq-index.md).
 
 ## Getting help [_getting_help_43]
 

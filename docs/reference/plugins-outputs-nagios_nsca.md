@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-09-20
 * [Changelog](https://github.com/logstash-plugins/logstash-output-nagios_nsca/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-nagios_nsca-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-nagios_nsca-index.md).
 
 ## Installation [_installation_40]
 

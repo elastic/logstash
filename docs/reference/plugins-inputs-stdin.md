@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-04
 * [Changelog](https://github.com/logstash-plugins/logstash-input-stdin/blob/v3.4.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-stdin-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-stdin-index.md).
 
 ## Getting help [_getting_help_54]
 
@@ -51,7 +51,7 @@ Also see [Common options](#plugins-inputs-stdin-common-options) for a list of op
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 

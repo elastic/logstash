@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-06-15
 * [Changelog](https://github.com/logstash-plugins/logstash-input-exec/blob/v3.6.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-exec-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-exec-index.md).
 
 ## Getting help [_getting_help_16]
 
@@ -50,7 +50,7 @@ This will execute `echo` command every 30 seconds.
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-inputs-exec-ecs]
 
-This plugin adds metadata about the event’s source, and can be configured to do so in an [ECS-compatible](ecs://docs/reference/index.md) way with [`ecs_compatibility`](#plugins-inputs-exec-ecs_compatibility). This metadata is added after the event has been decoded by the appropriate codec, and will not overwrite existing values.
+This plugin adds metadata about the event’s source, and can be configured to do so in an [ECS-compatible](ecs://reference/index.md) way with [`ecs_compatibility`](#plugins-inputs-exec-ecs_compatibility). This metadata is added after the event has been decoded by the appropriate codec, and will not overwrite existing values.
 
 | ECS Disabled | ECS v1 , v8 | Description |
 | --- | --- | --- |
@@ -94,7 +94,7 @@ Command to run. For example, `uptime`
     * `v1`, `v8`: uses fields that are compatible with ECS, such as `[host][name]`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-exec-ecs) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-exec-ecs) for detailed information.
 
 **Sample output: ECS enabled**
 

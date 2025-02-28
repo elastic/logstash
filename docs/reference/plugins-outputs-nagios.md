@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-output-nagios/blob/v3.0.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-nagios-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-nagios-index.md).
 
 ## Getting help [_getting_help_97]
 

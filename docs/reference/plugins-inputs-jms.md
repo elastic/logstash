@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-06-13
 * [Changelog](https://github.com/logstash-plugins/logstash-input-jms/blob/v3.2.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-jms-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-jms-index.md).
 
 ## Getting help [_getting_help_33]
 
@@ -443,7 +443,7 @@ This represents the value of the subscriber name for a durable subscribtion, and
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`headers_target`](#plugins-inputs-jms-headers_target) and [`properties_target`](#plugins-inputs-jms-properties_target).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`headers_target`](#plugins-inputs-jms-headers_target) and [`properties_target`](#plugins-inputs-jms-properties_target).
 
 
 ### `factory` [plugins-inputs-jms-factory]
