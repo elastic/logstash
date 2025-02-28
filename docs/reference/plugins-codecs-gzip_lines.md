@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-07-23
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-gzip_lines/blob/v3.0.4/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-gzip_lines-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-gzip_lines-index.md).
 
 ## Installation [_installation_69]
 

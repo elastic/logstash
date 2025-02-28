@@ -5,7 +5,7 @@ mapped_pages:
 
 # Working with Winlogbeat modules [winlogbeat-modules]
 
-{{winlogbeat}} comes packaged with pre-built [modules](beats://docs/reference/winlogbeat/winlogbeat-modules.md) that contain the configurations needed to collect, parse, enrich, and visualize data from various Windows logging providers. Each {{winlogbeat}} module consists of one or more filesets that contain ingest node pipelines, {{es}} templates, {{winlogbeat}} input configurations, and {{kib}} dashboards.
+{{winlogbeat}} comes packaged with pre-built [modules](beats://reference/winlogbeat/winlogbeat-modules.md) that contain the configurations needed to collect, parse, enrich, and visualize data from various Windows logging providers. Each {{winlogbeat}} module consists of one or more filesets that contain ingest node pipelines, {{es}} templates, {{winlogbeat}} input configurations, and {{kib}} dashboards.
 
 You can use {{winlogbeat}} modules with {{ls}}, but you need to do some extra setup. The simplest approach is to [set up and use the ingest pipelines](#use-winlogbeat-ingest-pipelines) provided by {{winlogbeat}}.
 
@@ -66,5 +66,5 @@ output {
 3. Configures {{ls}} to select the correct ingest pipeline based on metadata passed in the event.
 
 
-See the {{winlogbeat}} [Modules](beats://docs/reference/winlogbeat/winlogbeat-modules.md) documentation for more information about setting up and running modules.
+See the {{winlogbeat}} [Modules](beats://reference/winlogbeat/winlogbeat-modules.md) documentation for more information about setting up and running modules.
 

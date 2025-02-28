@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-input-irc/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-irc-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-irc-index.md).
 
 ## Installation [_installation_4]
 

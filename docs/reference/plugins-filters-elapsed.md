@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-07-31
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-elapsed/blob/v4.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-elapsed-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-elapsed-index.md).
 
 ## Installation [_installation_58]
 

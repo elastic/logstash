@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-09-19
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-useragent/blob/v3.3.5/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-useragent-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-useragent-index.md).
 
 ## Getting help [_getting_help_168]
 
@@ -127,7 +127,7 @@ Also see [Common options](#plugins-filters-useragent-common-options) for a list 
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-useragent-target).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-useragent-target).
 
 
 ### `lru_cache_size` [plugins-filters-useragent-lru_cache_size]

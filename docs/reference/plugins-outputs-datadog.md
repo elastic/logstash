@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-05-31
 * [Changelog](https://github.com/logstash-plugins/logstash-output-datadog/blob/v3.0.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-datadog-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-datadog-index.md).
 
 ## Installation [_installation_23]
 

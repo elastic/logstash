@@ -5,9 +5,9 @@ mapped_pages:
 
 # Example: Set up Filebeat modules to work with Kafka and Logstash [use-filebeat-modules-kafka]
 
-This section shows how to set up {{filebeat}} [modules](beats://docs/reference/filebeat/filebeat-modules-overview.md) to work with {{ls}} when you are using Kafka in between {{filebeat}} and {{ls}} in your publishing pipeline. The main goal of this example is to show how to load ingest pipelines from {{filebeat}} and use them with {{ls}}.
+This section shows how to set up {{filebeat}} [modules](beats://reference/filebeat/filebeat-modules-overview.md) to work with {{ls}} when you are using Kafka in between {{filebeat}} and {{ls}} in your publishing pipeline. The main goal of this example is to show how to load ingest pipelines from {{filebeat}} and use them with {{ls}}.
 
-The examples in this section show simple configurations with topic names hard coded. For a full list of configuration options, see documentation about configuring the [Kafka input plugin](/reference/plugins-inputs-kafka.md). Also see [Configure the Kafka output](beats://docs/reference/filebeat/kafka-output.md) in the *{{filebeat}} Reference*.
+The examples in this section show simple configurations with topic names hard coded. For a full list of configuration options, see documentation about configuring the [Kafka input plugin](/reference/plugins-inputs-kafka.md). Also see [Configure the Kafka output](beats://reference/filebeat/kafka-output.md) in the *{{filebeat}} Reference*.
 
 ## Set up and run {{filebeat}} [_set_up_and_run_filebeat]
 
@@ -19,7 +19,7 @@ The examples in this section show simple configurations with topic names hard co
 
     The `-e` flag is optional and sends output to standard error instead of syslog.
 
-    A connection to {{es}} and {{kib}} is required for this one-time setup step because {{filebeat}} needs to create the index template in {{es}} and load the sample dashboards into {{kib}}. For more information about configuring the connection to {{es}}, see the Filebeat [quick start](beats://docs/reference/filebeat/filebeat-installation-configuration.md).
+    A connection to {{es}} and {{kib}} is required for this one-time setup step because {{filebeat}} needs to create the index template in {{es}} and load the sample dashboards into {{kib}}. For more information about configuring the connection to {{es}}, see the Filebeat [quick start](beats://reference/filebeat/filebeat-installation-configuration.md).
 
     After the template and dashboards are loaded, you’ll see the message `INFO {{kib}} dashboards successfully loaded. Loaded dashboards`.
 
@@ -62,7 +62,7 @@ The examples in this section show simple configurations with topic names hard co
     {{filebeat}} will attempt to send messages to {{ls}} and continue until {{ls}} is available to receive them.
 
     ::::{note}
-    Depending on how you’ve installed {{filebeat}}, you might see errors related to file ownership or permissions when you try to run {{filebeat}} modules. See [Config File Ownership and Permissions](beats://docs/reference/libbeat/config-file-permissions.md) in the *Beats Platform Reference* if you encounter errors related to file ownership or permissions.
+    Depending on how you’ve installed {{filebeat}}, you might see errors related to file ownership or permissions when you try to run {{filebeat}} modules. See [Config File Ownership and Permissions](beats://reference/libbeat/config-file-permissions.md) in the *Beats Platform Reference* if you encounter errors related to file ownership or permissions.
     ::::
 
 

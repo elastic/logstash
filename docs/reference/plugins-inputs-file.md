@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-12-13
 * [Changelog](https://github.com/logstash-plugins/logstash-input-file/blob/v4.4.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-file-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-file-index.md).
 
 ## Getting help [_getting_help_17]
 
@@ -49,7 +49,7 @@ In the past attempts to simulate a Read mode while still assuming infinite strea
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-inputs-file-ecs]
 
-This plugin adds metadata about event’s source, and can be configured to do so in an [ECS-compatible](ecs://docs/reference/index.md) way with [`ecs_compatibility`](#plugins-inputs-file-ecs_compatibility). This metadata is added after the event has been decoded by the appropriate codec, and will never overwrite existing values.
+This plugin adds metadata about event’s source, and can be configured to do so in an [ECS-compatible](ecs://reference/index.md) way with [`ecs_compatibility`](#plugins-inputs-file-ecs_compatibility). This metadata is added after the event has been decoded by the appropriate codec, and will never overwrite existing values.
 
 | ECS Disabled | ECS `v1`, `v8` | Description |
 | --- | --- | --- |
@@ -177,7 +177,7 @@ How often we expand the filename patterns in the `path` option to discover new f
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `exclude` [plugins-inputs-file-exclude]
@@ -306,7 +306,7 @@ You may also configure multiple paths. See an example on the [Logstash configura
 * The default value for this setting is "2 weeks".
 * If a number is specified then it is interpreted as **days** and can be decimal e.g. 0.5 is 12 hours.
 
-The sincedb record now has a last active timestamp associated with it. If no changes are detected in a tracked file in the last N days its sincedb tracking record expires and will not be persisted. This option helps protect against the inode recycling problem. Filebeat has an [FAQ about inode recycling](beats://docs/reference/filebeat/inode-reuse-issue.md).
+The sincedb record now has a last active timestamp associated with it. If no changes are detected in a tracked file in the last N days its sincedb tracking record expires and will not be persisted. This option helps protect against the inode recycling problem. Filebeat has an [FAQ about inode recycling](beats://reference/filebeat/inode-reuse-issue.md).
 
 
 ### `sincedb_path` [plugins-inputs-file-sincedb_path]

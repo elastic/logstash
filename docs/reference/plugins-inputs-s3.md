@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2024-07-26
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-aws/blob/v7.1.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-s3-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-s3-index.md).
 
 ## Getting help [_getting_help_47]
 
@@ -180,7 +180,7 @@ Whether to delete processed files from the original bucket.
     * `v1`,`v8`: uses metadata fields that are compatible with Elastic Common Schema
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-s3-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-s3-ecs_metadata) for detailed information.
 
 
 ### `endpoint` [plugins-inputs-s3-endpoint]

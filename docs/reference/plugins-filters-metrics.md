@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-01-20
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-metrics/blob/v4.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-metrics-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-metrics-index.md).
 
 ## Getting help [_getting_help_154]
 

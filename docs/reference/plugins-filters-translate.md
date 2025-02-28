@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-06-14
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-translate/blob/v3.4.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-translate-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-translate-index.md).
 
 ## Getting help [_getting_help_165]
 
@@ -168,7 +168,7 @@ The currently supported formats are YAML, JSON, and CSV. Format selection is bas
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-translate-target).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-translate-target).
 
 
 ### `exact` [plugins-filters-translate-exact]

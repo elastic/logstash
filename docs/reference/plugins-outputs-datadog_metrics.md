@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-10-25
 * [Changelog](https://github.com/logstash-plugins/logstash-output-datadog_metrics/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-datadog_metrics-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-datadog_metrics-index.md).
 
 ## Installation [_installation_24]
 

@@ -10,7 +10,7 @@ mapped_pages:
 * Released on: 2023-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-elastic_enterprise_search/blob/v3.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/integration-elastic_enterprise_search-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/integration-elastic_enterprise_search-index.md).
 
 ## Getting help [_getting_help_2]
 

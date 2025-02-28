@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-10-22
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-cef/blob/v6.2.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-cef-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-cef-index.md).
 
 ## Getting help [_getting_help_173]
 
@@ -425,7 +425,7 @@ If the codec handles data from a variety of sources, the ECS recommendation is t
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `fields` [plugins-codecs-cef-fields]

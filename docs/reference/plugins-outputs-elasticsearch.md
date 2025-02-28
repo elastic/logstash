@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-14
 * [Changelog](https://github.com/logstash-plugins/logstash-output-elasticsearch/blob/v12.0.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-elasticsearch-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-elasticsearch-index.md).
 
 ## Getting help [_getting_help_74]
 
@@ -559,7 +559,7 @@ This sets the document type to write events to. Generally you should try to writ
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)), including the installation of ECS-compatible index templates. The value of this setting affects the *default* values of:
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)), including the installation of ECS-compatible index templates. The value of this setting affects the *default* values of:
 
 * [`index`](#plugins-outputs-elasticsearch-index)
 * [`template_name`](#plugins-outputs-elasticsearch-template_name)
@@ -598,7 +598,7 @@ HTTP Path where a HEAD request is sent when a backend is marked down the request
 * Value type is [uri](/reference/configuration-file-structure.md#uri)
 * Default value is `[//127.0.0.1]`
 
-Sets the host(s) of the remote instance. If given an array it will load balance requests across the hosts specified in the `hosts` parameter. Remember the `http` protocol uses the [http](elasticsearch://docs/reference/elasticsearch/configuration-reference/networking-settings.md) address (eg. 9200, not 9300).
+Sets the host(s) of the remote instance. If given an array it will load balance requests across the hosts specified in the `hosts` parameter. Remember the `http` protocol uses the [http](elasticsearch://reference/elasticsearch/configuration-reference/networking-settings.md) address (eg. 9200, not 9300).
 
 Examples:
 
@@ -609,7 +609,7 @@ Examples:
 `["https://127.0.0.1:9200"]`
 `["https://127.0.0.1:9200/mypath"]` (If using a proxy on a subpath)
 ```
-Exclude [dedicated master nodes](elasticsearch://docs/reference/elasticsearch/configuration-reference/node-settings.md) from the `hosts` list to prevent Logstash from sending bulk requests to the master nodes. This parameter should reference only data or client nodes in Elasticsearch.
+Exclude [dedicated master nodes](elasticsearch://reference/elasticsearch/configuration-reference/node-settings.md) from the `hosts` list to prevent Logstash from sending bulk requests to the master nodes. This parameter should reference only data or client nodes in Elasticsearch.
 
 Any special characters present in the URLs here MUST be URL escaped! This means `#` should be put in as `%23` for instance.
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-06-07
 * [Changelog](https://github.com/logstash-plugins/logstash-output-influxdb/blob/v5.0.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-influxdb-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-influxdb-index.md).
 
 ## Installation [_installation_33]
 

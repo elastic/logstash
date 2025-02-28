@@ -22,7 +22,7 @@ In a typical use case, Filebeat runs on a separate machine from the machine runn
 
 The default Logstash installation includes the [`Beats input`](/reference/plugins-inputs-beats.md) plugin. The Beats input plugin enables Logstash to receive events from the Elastic Beats framework, which means that any Beat written to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
 
-To install Filebeat on your data source machine, download the appropriate package from the Filebeat [product page](https://www.elastic.co/downloads/beats/filebeat). You can also refer to [Filebeat quick start](beats://docs/reference/filebeat/filebeat-installation-configuration.md) for additional installation instructions.
+To install Filebeat on your data source machine, download the appropriate package from the Filebeat [product page](https://www.elastic.co/downloads/beats/filebeat). You can also refer to [Filebeat quick start](beats://reference/filebeat/filebeat-installation-configuration.md) for additional installation instructions.
 
 After installing Filebeat, you need to configure it. Open the `filebeat.yml` file located in your Filebeat installation directory, and replace the contents with the following lines. Make sure `paths` points to the example Apache log file, `logstash-tutorial.log`, that you downloaded earlier:
 
@@ -49,7 +49,7 @@ sudo ./filebeat -e -c filebeat.yml -d "publish"
 ```
 
 ::::{note}
-If you run Filebeat as root, you need to change ownership of the configuration file (see [Config File Ownership and Permissions](beats://docs/reference/libbeat/config-file-permissions.md) in the *Beats Platform Reference*).
+If you run Filebeat as root, you need to change ownership of the configuration file (see [Config File Ownership and Permissions](beats://reference/libbeat/config-file-permissions.md) in the *Beats Platform Reference*).
 ::::
 
 
@@ -605,7 +605,7 @@ If you are using Kibana to visualize your data, you can also explore the Filebea
 :alt: Discovering Filebeat data in Kibana
 :::
 
-See the [Filebeat quick start docs](beats://docs/reference/filebeat/filebeat-installation-configuration.md) for info about loading the Kibana index pattern for Filebeat.
+See the [Filebeat quick start docs](beats://reference/filebeat/filebeat-installation-configuration.md) for info about loading the Kibana index pattern for Filebeat.
 
 You’ve successfully created a pipeline that uses Filebeat to take Apache web logs as input, parses those logs to create specific, named fields from the logs, and writes the parsed data to an Elasticsearch cluster. Next, you learn how to create a pipeline that uses multiple input and output plugins.
 

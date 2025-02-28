@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-19
 * [Changelog](https://github.com/logstash-plugins/logstash-input-http/blob/v4.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-http-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-http-index.md).
 
 ## Getting help [_getting_help_26]
 
@@ -125,7 +125,7 @@ Apply specific codecs for specific content types. The default codec will be appl
     * `v1`,`v8`: headers added under `[@metadata][http][header]`. Some are copied to structured ECS fields `http`, `url`, `user_agent` and `host`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-http-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-http-ecs_metadata) for detailed information.
 
 **Sample output: ECS disabled**
 

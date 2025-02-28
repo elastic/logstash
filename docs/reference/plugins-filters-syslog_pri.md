@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-01-17
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-syslog_pri/blob/v3.2.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-syslog_pri-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-syslog_pri-index.md).
 
 ## Getting help [_getting_help_161]
 
@@ -55,7 +55,7 @@ Also see [Common options](#plugins-filters-syslog_pri-common-options) for a list
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`syslog_pri_field_name`](#plugins-filters-syslog_pri-syslog_pri_field_name).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`syslog_pri_field_name`](#plugins-filters-syslog_pri-syslog_pri_field_name).
 
 
 ### `facility_labels` [plugins-filters-syslog_pri-facility_labels]

@@ -5,7 +5,7 @@ mapped_pages:
 
 # ECS in Logstash [ecs-ls]
 
-The [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)) is an open source specification, developed with support from the Elastic user community. ECS defines a common set of fields to be used for storing event data, such as logs and metrics, in {{es}}. With ECS, users can normalize event data to better analyze, visualize, and correlate the data represented in their events.
+The [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)) is an open source specification, developed with support from the Elastic user community. ECS defines a common set of fields to be used for storing event data, such as logs and metrics, in {{es}}. With ECS, users can normalize event data to better analyze, visualize, and correlate the data represented in their events.
 
 ## ECS compatibility [ecs-compatibility]
 

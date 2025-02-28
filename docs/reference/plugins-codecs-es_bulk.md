@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-19
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-es_bulk/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-es_bulk-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-es_bulk-index.md).
 
 ## Getting help [_getting_help_181]
 
@@ -53,7 +53,7 @@ When ECS compatibility is disabled, the metadata is stored in the `[@metadata]` 
     * `v1`: uses `[@metadata][codec][es_bulk]` fields
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `target` [plugins-codecs-es_bulk-target]

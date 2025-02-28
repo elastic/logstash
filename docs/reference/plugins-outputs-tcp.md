@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-10
 * [Changelog](https://github.com/logstash-plugins/logstash-output-tcp/blob/v7.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-tcp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-tcp-index.md).
 
 ## Getting help [_getting_help_116]
 

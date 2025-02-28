@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-07-15
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-line/blob/v3.1.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-line-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-line-index.md).
 
 ## Getting help [_getting_help_190]
 
@@ -31,7 +31,7 @@ Encoding behavior
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-codecs-line-ecs]
 
-This plugin is compatible with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). No additional configuration is required.
+This plugin is compatible with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). No additional configuration is required.
 
 
 ## Line codec configuration options [plugins-codecs-line-options]

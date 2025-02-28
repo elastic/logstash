@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-04-25
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-multiline/blob/v3.1.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-multiline-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-multiline-index.md).
 
 ## Getting help [_getting_help_192]
 
@@ -149,7 +149,7 @@ This only affects "plain" format logs since JSON is `UTF-8` already.
     * Otherwise, the default value is `disabled`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `max_bytes` [plugins-codecs-multiline-max_bytes]

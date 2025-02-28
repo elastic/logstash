@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-10-09
 * [Changelog](https://github.com/logstash-plugins/logstash-output-riak/blob/v3.0.5/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-riak-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-riak-index.md).
 
 ## Installation [_installation_44]
 

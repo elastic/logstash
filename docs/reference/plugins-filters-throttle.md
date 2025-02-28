@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-throttle/blob/v4.0.4/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-throttle-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-throttle-index.md).
 
 ## Getting help [_getting_help_163]
 

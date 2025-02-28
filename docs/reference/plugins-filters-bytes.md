@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2020-08-18
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-bytes/blob/v1.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-bytes-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-bytes-index.md).
 
 ## Installation [_installation_56]
 

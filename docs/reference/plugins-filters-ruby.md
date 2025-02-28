@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-01-24
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-ruby/blob/v3.1.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-ruby-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-ruby-index.md).
 
 ## Getting help [_getting_help_158]
 

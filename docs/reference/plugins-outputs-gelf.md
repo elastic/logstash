@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-output-gelf/blob/v3.1.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-gelf-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-gelf-index.md).
 
 ## Installation [_installation_28]
 

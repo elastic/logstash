@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-10-29
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-xml/blob/v4.2.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-xml-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-xml-index.md).
 
 ## Getting help [_getting_help_171]
 

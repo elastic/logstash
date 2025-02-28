@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-11-18
 * [Changelog](https://github.com/logstash-plugins/logstash-input-pipe/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-pipe-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-pipe-index.md).
 
 ## Getting help [_getting_help_41]
 
@@ -27,7 +27,7 @@ By default, each event is assumed to be one line. If you want to join lines, you
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-inputs-pipe-ecs]
 
-This plugin adds extra fields about the event’s source. Configure the [`ecs_compatibility`](#plugins-inputs-pipe-ecs_compatibility) option if you want to ensure that these fields are compatible with [ECS](ecs://docs/reference/index.md).
+This plugin adds extra fields about the event’s source. Configure the [`ecs_compatibility`](#plugins-inputs-pipe-ecs_compatibility) option if you want to ensure that these fields are compatible with [ECS](ecs://reference/index.md).
 
 These fields are added after the event has been decoded by the appropriate codec, and will not overwrite existing values.
 
@@ -78,7 +78,7 @@ input {
     * `v1`, `v8`: uses fields that are compatible with ECS, such as `[host][name]`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-pipe-ecs) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-pipe-ecs) for detailed information.
 
 **Sample output: ECS enabled**
 

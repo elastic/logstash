@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-output-solr_http/blob/v3.0.5/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-solr_http-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-solr_http-index.md).
 
 ## Installation [_installation_46]
 

@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2024-12-23
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-jdbc/blob/v5.5.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-jdbc-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-jdbc-index.md).
 
 ## Getting help [_getting_help_32]
 

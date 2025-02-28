@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-11-10
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-clone/blob/v4.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-clone-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-clone-index.md).
 
 ## Getting help [_getting_help_129]
 
@@ -72,7 +72,7 @@ Note: setting an empty array will not create any clones. A warning message is lo
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the behavior of the [`clones`](#plugins-filters-clone-clones)
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the behavior of the [`clones`](#plugins-filters-clone-clones)
 
 Example:
 

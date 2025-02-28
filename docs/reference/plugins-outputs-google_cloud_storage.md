@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-09-16
 * [Changelog](https://github.com/logstash-plugins/logstash-output-google_cloud_storage/blob/v4.5.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-google_cloud_storage-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-google_cloud_storage-index.md).
 
 ## Installation [_installation_30]
 

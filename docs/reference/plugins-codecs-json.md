@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-10-03
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-json/blob/v3.1.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-json-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-json-index.md).
 
 ## Getting help [_getting_help_188]
 
@@ -65,7 +65,7 @@ For nxlog users, you may to set this to "CP1252".
     * Otherwise, the default value is `disabled`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `target` [plugins-codecs-json-target]

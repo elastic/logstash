@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-08-01
 * [Changelog](https://github.com/logstash-plugins/logstash-input-redis/blob/v3.7.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-redis-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-redis-index.md).
 
 ## Getting help [_getting_help_44]
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2020-09-04
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-sleep/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-sleep-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-sleep-index.md).
 
 ## Getting help [_getting_help_159]
 

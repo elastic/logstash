@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2024-07-26
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-aws/blob/v7.1.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-cloudtrail-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-cloudtrail-index.md).
 
 ## Getting help [_getting_help_175]
 

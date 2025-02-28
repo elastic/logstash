@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-11-16
 * [Changelog](https://github.com/logstash-plugins/logstash-input-twitter/blob/v4.1.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-twitter-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-twitter-index.md).
 
 ## Getting help [_getting_help_58]
 
@@ -59,7 +59,7 @@ Sample event fields generated:
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-inputs-twitter-ecs]
 
-Twitter streams are very specific and do not map easily to the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). We recommend setting a [`target`](#plugins-inputs-twitter-target) when [ECS compatibility mode](#plugins-inputs-twitter-ecs_compatibility) is enabled. The plugin issues a warning in the log when a `target` isn’t set.
+Twitter streams are very specific and do not map easily to the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). We recommend setting a [`target`](#plugins-inputs-twitter-target) when [ECS compatibility mode](#plugins-inputs-twitter-ecs_compatibility) is enabled. The plugin issues a warning in the log when a `target` isn’t set.
 
 
 ## Twitter Input Configuration Options [plugins-inputs-twitter-options]
@@ -126,7 +126,7 @@ If you don’t have one of these, you can create one by registering a new applic
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `follows` [plugins-inputs-twitter-follows]

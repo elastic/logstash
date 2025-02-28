@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-04-06
 * [Changelog](https://github.com/logstash-plugins/logstash-input-xmpp/blob/v3.1.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-xmpp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-xmpp-index.md).
 
 ## Installation [_installation_20]
 

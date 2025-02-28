@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-01-18
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-memcached/blob/v1.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-memcached-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-memcached-index.md).
 
 ## Getting help [_getting_help_152]
 

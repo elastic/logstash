@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2025-01-07
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-kafka/blob/v11.6.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-kafka-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-kafka-index.md).
 
 ## Getting help [_getting_help_90]
 

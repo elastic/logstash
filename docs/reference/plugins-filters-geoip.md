@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-10-11
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-geoip/blob/v7.3.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-geoip-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-geoip-index.md).
 
 ## Getting help [_getting_help_142]
 
@@ -210,7 +210,7 @@ When this plugin is run with [`ecs_compatibility`](#plugins-filters-geoip-ecs_co
 
 When using a City database, the enrichment is aborted if no latitude/longitude pair is available.
 
-The `location` field combines the latitude and longitude into a structure called [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946). When you are using a default [`target`](#plugins-filters-geoip-target), the templates provided by the [elasticsearch output](/reference/plugins-outputs-elasticsearch.md) map the field to an [Elasticsearch Geo_point datatype](elasticsearch://docs/reference/elasticsearch/mapping-reference/geo-point.md).
+The `location` field combines the latitude and longitude into a structure called [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946). When you are using a default [`target`](#plugins-filters-geoip-target), the templates provided by the [elasticsearch output](/reference/plugins-outputs-elasticsearch.md) map the field to an [Elasticsearch Geo_point datatype](elasticsearch://reference/elasticsearch/mapping-reference/geo-point.md).
 
 As this field is a `geo_point` *and* it is still valid GeoJSON, you get the awesomeness of Elasticsearch’s geospatial query, facet and filter functions and the flexibility of having GeoJSON for all other applications (like Kibana’s map visualization).
 
@@ -299,7 +299,7 @@ For a complete list of available fields and how they map to an event’s structu
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-geoip-target).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`target`](#plugins-filters-geoip-target).
 
 
 ### `source` [plugins-filters-geoip-source]

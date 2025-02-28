@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-09-16
 * [Changelog](https://github.com/logstash-plugins/logstash-output-google_bigquery/blob/v4.6.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-google_bigquery-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-google_bigquery-index.md).
 
 ## Installation [_installation_29]
 

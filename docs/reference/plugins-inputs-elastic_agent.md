@@ -16,7 +16,7 @@ The `input-elastic_agent` plugin is the next generation of the `input-beats` plu
 * Released on: 2024-12-02
 * [Changelog](https://github.com/logstash-plugins/logstash-input-beats/blob/v7.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-elastic_agent-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-elastic_agent-index.md).
 
 ## Getting help [_getting_help_13]
 

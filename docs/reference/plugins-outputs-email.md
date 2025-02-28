@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-10-03
 * [Changelog](https://github.com/logstash-plugins/logstash-output-email/blob/v4.1.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-email-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-email-index.md).
 
 ## Getting help [_getting_help_75]
 

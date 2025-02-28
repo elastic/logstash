@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-05-10
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-truncate/blob/v1.0.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-truncate-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-truncate-index.md).
 
 ## Getting help [_getting_help_166]
 
