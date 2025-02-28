@@ -87,11 +87,7 @@ This section summarizes the changes in the following releases:
 
 * Improves performance of the Persistent Queue, especially in the case of large events, by moving deserialization out of the exclusive access lock. https://github.com/elastic/logstash/pull/17050[#17050]
 * Improve error logging when Centralized Pipeline Management cannot find a configured pipeline. https://github.com/elastic/logstash/pull/17052[#17052]
-* Update logstash-keystore to allow spaces in values when `stdin` is used to set values https://github.com/elastic/logstash/pull/17052[#17052]
-
-[[dependencies-8-17-3]]
-==== Updates to dependencies
-
+* Update logstash-keystore to allow spaces in values when `stdin` is used to set values https://github.com/elastic/logstash/pull/17039[#17039]
 
 [[plugins-8-17-3]]
 ==== Plugins
