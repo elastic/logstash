@@ -156,8 +156,8 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-    create_archive_pack(license_details, "x86_64", "linux", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    create_archive_pack(license_details, "x86_64", "linux")
+    create_archive_pack(license_details, "arm64", "linux")
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -222,8 +222,8 @@ namespace "artifact" do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-    create_archive_pack(license_details, "x86_64", "linux", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    create_archive_pack(license_details, "x86_64", "linux")
+    create_archive_pack(license_details, "arm64", "linux")
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -346,16 +346,37 @@ namespace "artifact" do
     build_dockerfile('oss')
   end
 
+  namespace "dockerfile_oss" do
+    desc "Build Oss Docker image from Dockerfile context files"
+    task "docker" => ["archives_docker", "dockerfile_oss"]  do
+      build_docker_from_dockerfiles('oss')
+    end
+  end
+
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building full Dockerfiles")
     build_dockerfile('full')
   end
 
+  namespace "dockerfile_full" do
+    desc "Build Full Docker image from Dockerfile context files"
+    task "docker" => ["archives_docker", "dockerfile_full"]  do
+      build_docker_from_dockerfiles('full')
+    end
+  end
+
   desc "Generate Dockerfile for wolfi images"
   task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building wolfi Dockerfiles")
     build_dockerfile('wolfi')
+  end
+
+  namespace "dockerfile_wolfi" do
+    desc "Build Wolfi Docker image from Dockerfile context files"
+    task "docker" => ["archives_docker", "dockerfile_wolfi"]  do
+      build_docker_from_dockerfiles('wolfi')
+    end
   end
 
   desc "Generate build context for ironbank"
@@ -386,16 +407,19 @@ namespace "artifact" do
   task "build_docker_full" => [:generate_build_metadata] do
     Rake::Task["artifact:docker"].invoke
     Rake::Task["artifact:dockerfile_full"].invoke
+    Rake::Task["artifact:dockerfile_full:docker"].invoke
   end
 
   task "build_docker_oss" => [:generate_build_metadata] do
     Rake::Task["artifact:docker_oss"].invoke
     Rake::Task["artifact:dockerfile_oss"].invoke
+    Rake::Task["artifact:dockerfile_oss:docker"].invoke
   end
 
   task "build_docker_wolfi" => [:generate_build_metadata] do
     Rake::Task["artifact:docker_wolfi"].invoke
     Rake::Task["artifact:dockerfile_wolfi"].invoke
+    Rake::Task["artifact:dockerfile_wolfi:docker"].invoke
   end
 
   task "generate_build_metadata" do
@@ -780,6 +804,19 @@ namespace "artifact" do
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
+    end
+  end
+
+  def build_docker_from_dockerfiles(flavor)
+    env = {
+      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
+      "RELEASE" => ENV["RELEASE"],
+      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
+      "BUILD_DATE" => BUILD_DATE,
+      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
+    }
+    Dir.chdir("docker") do |dir|
+      safe_system(env, "make build-from-dockerfiles_#{flavor}")
     end
   end
 
