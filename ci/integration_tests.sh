@@ -19,24 +19,33 @@ if [[ $1 = "setup" ]]; then
  exit 0
 
 elif [[ $1 == "split" ]]; then
-    cd qa/integration
-    glob1=(specs/*spec.rb)
-    glob2=(specs/**/*spec.rb)
-    all_specs=("${glob1[@]}" "${glob2[@]}")
 
-    specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
-    specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
-    cd ../..
-    if [[ $2 == 0 ]]; then
-       echo "Running the first half of integration specs: $specs0"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0" --console=plain
-    elif [[ $2 == 1 ]]; then
-       echo "Running the second half of integration specs: $specs1"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1" --console=plain
-    else
-       echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
-       exit 1
+    # usage: $0 split SELECTED_PARTITION [PARTITION_COUNT=2]
+    selected_partition="${2:?split parameter missing}"
+    partition_count="${3:-2}" # assume 2 if no PARTITION_COUNT given
+
+    # list all specs in consistent sort order
+    all_specs=($(cd qa/integration && find specs -name '*_spec.rb' | sort | uniq))
+
+    if (( $partition_count <= 0 )) ; then
+      echo "Error, partition_count(${partition_count}) must be greater than 0"; exit 1
+    elif (( $partition_count > ${#all_specs[@]})); then
+      echo "Error, partition_count(${partition_count}) must be less than matching specs(${#all_specs[@]})"; exit 1
+    elif (( $selected_partition < 0 )) || (( $selected_partition >= $partition_count )) ; then
+      echo "Error, selected_partition(${selected_partition}) must be greater 0 and less than partition_count(${partition_count})"; exit 1
     fi
+
+    # round-robbin select those in our selected partition
+    partition_specs=()
+    for index in "${!all_specs[@]}"; do
+      partition="$(( $index % $partition_count ))"
+      if (( $partition == $selected_partition )); then
+        partition_specs+=("${all_specs[$index]}")
+      fi
+    done
+
+    echo "Running integration specs split[${selected_partition}] of ${partition_count}: ${partition_specs[*]}"
+    ./gradlew runIntegrationTests -PrubyIntegrationSpecs="${partition_specs[*]}" --console=plain
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
