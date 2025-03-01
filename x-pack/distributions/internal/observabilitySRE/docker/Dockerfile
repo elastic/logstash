@@ -15,7 +15,8 @@ RUN apk add --no-cache \
     make \
     # CODEREVIEW: I think make, gcc and glibc-dev are all in build-base package if we want that
     gcc \
-    glibc-dev
+    glibc-dev \
+    openssl
 
 # Create directories with correct ownership
 RUN mkdir -p /etc/java/security && \
