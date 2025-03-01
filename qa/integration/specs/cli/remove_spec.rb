@@ -21,7 +21,7 @@ require_relative '../../services/logstash_service'
 require_relative '../../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
-describe "CLI > logstash-plugin remove" do
+describe "CLI > logstash-plugin remove", :skip_fips do
   before(:each) do
     @fixture = Fixture.new(__FILE__)
     @logstash_plugin = @fixture.get_service("logstash").plugin_cli

@@ -63,7 +63,10 @@ describe LogStash::PersistedQueueConfigValidator do
       before do
         # create a 2MB file
         ::File.open(page_file, 'wb') do |f|
-          f.write(SecureRandom.random_bytes(2**21))
+          # Work around FIPS mode limitations in requesting large amounts of random data
+          # We need 64 chunks of 32KB to create a 2MB file
+          # See https://github.com/elastic/ingest-dev/issues/5072
+          64.times { f.write(SecureRandom.random_bytes(2**15)) }
         end
       end
 
