@@ -3,16 +3,18 @@ package org.logstash.common;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class CustomTokenizer {
+public class BufferedTokenizer {
 
     private final DataSplitter dataSplitter;
+    private Integer sizeLimit;
 
     static class ValueLimitIteratorDecorator implements Iterator<String> {
         private final Iterator<String> iterator;
-        private final int limit = 10;
+        private final int limit;
 
-        ValueLimitIteratorDecorator(Iterator<String> iterator) {
+        ValueLimitIteratorDecorator(Iterator<String> iterator, int sizeLimit) {
             this.iterator = iterator;
+            this.limit = sizeLimit;
         }
 
         @Override
@@ -24,7 +26,7 @@ public class CustomTokenizer {
         public String next() {
             String value = iterator.next();
             if (value.length() > limit) {
-                throw new IllegalArgumentException("Too long");
+                throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + limit);
             }
             return value;
         }
@@ -85,8 +87,21 @@ public class CustomTokenizer {
         }
     }
 
-    public CustomTokenizer(String separator) {
+    public BufferedTokenizer() {
+        this("\n");
+    }
+
+    public BufferedTokenizer(String separator) {
         this.dataSplitter = new DataSplitter(separator);
+    }
+
+    public BufferedTokenizer(String separator, int sizeLimit) {
+        if (sizeLimit <= 0) {
+            throw new IllegalArgumentException("Size limit must be positive");
+        }
+
+        this.dataSplitter = new DataSplitter(separator);
+        this.sizeLimit = sizeLimit;
     }
 
     public Iterable<String> extract(String data) {
@@ -95,7 +110,11 @@ public class CustomTokenizer {
         return new Iterable<String>() {
             @Override
             public Iterator<String> iterator() {
-                return new ValueLimitIteratorDecorator(dataSplitter);
+                Iterator<String> returnedIterator = dataSplitter;
+                if (sizeLimit != null) {
+                    returnedIterator =  new ValueLimitIteratorDecorator(returnedIterator, sizeLimit);
+                }
+                return returnedIterator;
             }
         };
     }
@@ -107,5 +126,9 @@ public class CustomTokenizer {
     @Override
     public String toString() {
         return dataSplitter.toString();
+    }
+
+    public boolean isEmpty() {
+        return !dataSplitter.hasNext();
     }
 }
