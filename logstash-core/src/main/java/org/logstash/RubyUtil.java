@@ -33,7 +33,7 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.AbstractDeadLetterQueueWriterExt;
-import org.logstash.common.BufferedTokenizerExt;
+//import org.logstash.common.BufferedTokenizerExt;
 import org.logstash.config.ir.compiler.AbstractFilterDelegatorExt;
 import org.logstash.config.ir.compiler.AbstractOutputDelegatorExt;
 import org.logstash.config.ir.compiler.FilterDelegatorExt;
@@ -152,7 +152,7 @@ public final class RubyUtil {
 
     public static final RubyClass OUTPUT_STRATEGY_SHARED;
 
-    public static final RubyClass BUFFERED_TOKENIZER;
+//    public static final RubyClass BUFFERED_TOKENIZER;
 
     public static final RubyClass ABSTRACT_METRIC_CLASS;
 
@@ -356,10 +356,10 @@ public final class RubyUtil {
             OutputStrategyExt.OutputStrategyRegistryExt::new,
             OutputStrategyExt.OutputStrategyRegistryExt.class
         );
-        BUFFERED_TOKENIZER = RUBY.getOrCreateModule("FileWatch").defineClassUnder(
-            "BufferedTokenizer", RUBY.getObject(), BufferedTokenizerExt::new
-        );
-        BUFFERED_TOKENIZER.defineAnnotatedMethods(BufferedTokenizerExt.class);
+//        BUFFERED_TOKENIZER = RUBY.getOrCreateModule("FileWatch").defineClassUnder(
+//            "BufferedTokenizer", RUBY.getObject(), BufferedTokenizerExt::new
+//        );
+//        BUFFERED_TOKENIZER.defineAnnotatedMethods(BufferedTokenizerExt.class);
         OUTPUT_DELEGATOR_STRATEGIES =
             RUBY.defineModuleUnder("OutputDelegatorStrategies", LOGSTASH_MODULE);
         OUTPUT_STRATEGY_ABSTRACT = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
