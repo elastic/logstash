@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-04-15
 * [Changelog](https://github.com/logstash-plugins/logstash-input-couchdb_changes/blob/v3.1.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-couchdb_changes-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-couchdb_changes-index.md).
 
 ## Getting help [_getting_help_11]
 

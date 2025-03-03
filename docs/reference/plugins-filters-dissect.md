@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-02-14
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-dissect/blob/v1.2.5/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-dissect-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-dissect-index.md).
 
 ## Getting help [_getting_help_133]
 

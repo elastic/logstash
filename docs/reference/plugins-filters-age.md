@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-10-29
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-age/blob/v1.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-age-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-age-index.md).
 
 ## Installation [_installation_54]
 

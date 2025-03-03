@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-07-11
 * [Changelog](https://github.com/logstash-plugins/logstash-output-graphite/blob/v3.1.6/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-graphite-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-graphite-index.md).
 
 ## Getting help [_getting_help_83]
 

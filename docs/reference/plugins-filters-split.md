@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2020-01-21
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-split/blob/v3.1.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-split-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-split-index.md).
 
 ## Getting help [_getting_help_160]
 

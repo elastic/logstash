@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-30
 * [Changelog](https://github.com/logstash-plugins/logstash-output-lumberjack/blob/v3.1.9/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-lumberjack-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-lumberjack-index.md).
 
 ## Getting help [_getting_help_94]
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-08-13
 * [Changelog](https://github.com/logstash-plugins/logstash-input-jmx/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-jmx-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-jmx-index.md).
 
 ## Installation [_installation_5]
 

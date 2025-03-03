@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-18
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-http/blob/v2.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-http-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-http-index.md).
 
 ## Getting help [_getting_help_144]
 
@@ -126,7 +126,7 @@ If set to `"json"` and the [`body`](#plugins-filters-http-body) is a type of [ar
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`target_body`](#plugins-filters-http-target_body) and [`target_headers`](#plugins-filters-http-target_headers).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`target_body`](#plugins-filters-http-target_body) and [`target_headers`](#plugins-filters-http-target_headers).
 
 
 ### `headers` [plugins-filters-http-headers]

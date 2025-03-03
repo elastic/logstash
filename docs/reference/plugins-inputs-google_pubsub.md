@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-10-15
 * [Changelog](https://github.com/logstash-plugins/logstash-input-google_pubsub/blob/v1.4.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-google_pubsub-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-google_pubsub-index.md).
 
 ## Installation [_installation_3]
 

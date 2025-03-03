@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-09-12
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-prune/blob/v3.0.4/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-prune-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-prune-index.md).
 
 ## Getting help [_getting_help_156]
 

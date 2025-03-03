@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-23
 * [Changelog](https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/blob/v2.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-elastic_serverless_forwarder-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-elastic_serverless_forwarder-index.md).
 
 ## Getting help [_getting_help_14]
 

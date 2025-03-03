@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-09-18
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-cidr/blob/v3.1.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-cidr-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-cidr-index.md).
 
 ## Getting help [_getting_help_127]
 

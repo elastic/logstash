@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-12-18
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-json/blob/v3.2.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-json-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-json-index.md).
 
 ## Getting help [_getting_help_149]
 
@@ -64,7 +64,7 @@ Also see [Common options](#plugins-filters-json-common-options) for a list of op
     * `v1`: Elastic Common Schema compliant behavior (warns when `target` isn’t set)
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-json-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-json-ecs_metadata) for detailed information.
 
 
 ### `skip_on_invalid_json` [plugins-filters-json-skip_on_invalid_json]

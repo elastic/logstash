@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-10
 * [Changelog](https://github.com/logstash-plugins/logstash-input-tcp/blob/v7.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-tcp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-tcp-index.md).
 
 ## Getting help [_getting_help_57]
 
@@ -84,7 +84,7 @@ Historically, this metadata was added to a variety of non-standard top-level fie
 | [@metadata][input][tcp][proxy][port] | [proxy_port] |
 | SSL Subject Metadata from a secured TCPconnection. Available when `ssl_enabled => true`AND `ssl_client_authentication => 'optional' or 'required'` | [@metadata][input][tcp][ssl][subject] | [sslsubject] |
 
-For example, the Elastic Common Schema reserves the [top-level `host` field](ecs://docs/reference/ecs-host.md) for information about the host on which the event happened. If an event is missing this metadata, it can be copied into place from the source TCP connection metadata that has been added to the event:
+For example, the Elastic Common Schema reserves the [top-level `host` field](ecs://reference/ecs-host.md) for information about the host on which the event happened. If an event is missing this metadata, it can be copied into place from the source TCP connection metadata that has been added to the event:
 
 ```txt
 filter {
@@ -155,7 +155,7 @@ It is possible to avoid DNS reverse-lookups by disabling this setting. If disabl
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the [placement of a TCP connection’s metadata](#plugins-inputs-tcp-ecs_metadata) on events.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the [placement of a TCP connection’s metadata](#plugins-inputs-tcp-ecs_metadata) on events.
 
 
 ### `host` [plugins-inputs-tcp-host]

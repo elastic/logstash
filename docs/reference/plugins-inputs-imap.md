@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-10-03
 * [Changelog](https://github.com/logstash-plugins/logstash-input-imap/blob/v3.2.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-imap-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-imap-index.md).
 
 ## Getting help [_getting_help_28]
 
@@ -107,7 +107,7 @@ For multipart messages, use the first part that has this content-type as the eve
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). The value of this setting affects the *default* value of [`headers_target`](#plugins-inputs-imap-headers_target) and [`attachments_target`](#plugins-inputs-imap-attachments_target).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). The value of this setting affects the *default* value of [`headers_target`](#plugins-inputs-imap-headers_target) and [`attachments_target`](#plugins-inputs-imap-attachments_target).
 
 
 ### `expunge` [plugins-inputs-imap-expunge]

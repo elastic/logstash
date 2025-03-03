@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-i18n/blob/v3.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-i18n-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-i18n-index.md).
 
 ## Installation [_installation_61]
 

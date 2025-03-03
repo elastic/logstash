@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-18
 * [Changelog](https://github.com/logstash-plugins/logstash-input-http_poller/blob/v6.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-http_poller-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-http_poller-index.md).
 
 ## Getting help [_getting_help_27]
 
@@ -188,7 +188,7 @@ Enable cookie support. With this enabled the client will persist cookies across 
     * `v1`: uses `error`, `url` and `http` fields that are compatible with Elastic Common Schema
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-http_poller-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-inputs-http_poller-ecs_metadata) for detailed information.
 
 Example output:
 

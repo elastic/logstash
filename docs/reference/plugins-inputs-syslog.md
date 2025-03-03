@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-10-17
 * [Changelog](https://github.com/logstash-plugins/logstash-input-syslog/blob/v3.7.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-syslog-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-syslog-index.md).
 
 ## Getting help [_getting_help_56]
 
@@ -67,7 +67,7 @@ Also see [Common options](#plugins-inputs-syslog-common-options) for a list of o
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `facility_labels` [plugins-inputs-syslog-facility_labels]

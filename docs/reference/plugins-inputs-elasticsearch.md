@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-18
 * [Changelog](https://github.com/logstash-plugins/logstash-input-elasticsearch/blob/v5.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-elasticsearch-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-elasticsearch-index.md).
 
 ## Getting help [_getting_help_15]
 
@@ -253,7 +253,7 @@ Example
 * Value type is [array](/reference/configuration-file-structure.md#array)
 * Default value is `["_index", "_type", "_id"]`
 
-If document metadata storage is requested by enabling the `docinfo` option, this option lists the metadata fields to save in the current event. See [Meta-Fields](elasticsearch://docs/reference/elasticsearch/mapping-reference/document-metadata-fields.md) in the Elasticsearch documentation for more information.
+If document metadata storage is requested by enabling the `docinfo` option, this option lists the metadata fields to save in the current event. See [Meta-Fields](elasticsearch://reference/elasticsearch/mapping-reference/document-metadata-fields.md) in the Elasticsearch documentation for more information.
 
 
 ### `docinfo_target` [plugins-inputs-elasticsearch-docinfo_target]
@@ -282,7 +282,7 @@ If document metadata storage is requested by enabling the `docinfo` option, this
     * Otherwise, the default value is `disabled`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `hosts` [plugins-inputs-elasticsearch-hosts]
@@ -298,7 +298,7 @@ List of one or more Elasticsearch hosts to use for querying. Each host can be ei
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * Default value is `"logstash-*"`
 
-The index or alias to search. Check out [Multi Indices documentation](elasticsearch://docs/reference/elasticsearch/rest-apis/api-conventions.md#api-multi-index) in the Elasticsearch documentation for info on referencing multiple indices.
+The index or alias to search. Check out [Multi Indices documentation](elasticsearch://reference/elasticsearch/rest-apis/api-conventions.md#api-multi-index) in the Elasticsearch documentation for info on referencing multiple indices.
 
 
 ### `password` [plugins-inputs-elasticsearch-password]
@@ -322,9 +322,9 @@ Set the address of a forward HTTP proxy. An empty string is treated as if proxy 
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * Default value is `'{ "sort": [ "_doc" ] }'`
 
-The query to be executed. Read the [Elasticsearch query DSL documentation](elasticsearch://docs/reference/query-languages/querydsl.md) for more information.
+The query to be executed. Read the [Elasticsearch query DSL documentation](elasticsearch://reference/query-languages/querydsl.md) for more information.
 
-When [`search_api`](#plugins-inputs-elasticsearch-search_api) resolves to `search_after` and the query does not specify `sort`, the default sort `'{ "sort": { "_shard_doc": "asc" } }'` will be added to the query. Please refer to the [Elasticsearch search_after](elasticsearch://docs/reference/elasticsearch/rest-apis/paginate-search-results.md#search-after) parameter to know more.
+When [`search_api`](#plugins-inputs-elasticsearch-search_api) resolves to `search_after` and the query does not specify `sort`, the default sort `'{ "sort": { "_shard_doc": "asc" } }'` will be added to the query. Please refer to the [Elasticsearch search_after](elasticsearch://reference/elasticsearch/rest-apis/paginate-search-results.md#search-after) parameter to know more.
 
 
 ### `response_type` [plugins-inputs-elasticsearch-response_type]
@@ -383,7 +383,7 @@ With `auto` the plugin uses the `search_after` parameter for Elasticsearch versi
 
 `search_after` uses [point in time](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-open-point-in-time) and sort value to search. The query requires at least one `sort` field, as described in the [`query`](#plugins-inputs-elasticsearch-query) parameter.
 
-`scroll` uses [scroll](elasticsearch://docs/reference/elasticsearch/rest-apis/paginate-search-results.md#scroll-search-results) API to search, which is no longer recommended.
+`scroll` uses [scroll](elasticsearch://reference/elasticsearch/rest-apis/paginate-search-results.md#scroll-search-results) API to search, which is no longer recommended.
 
 
 ### `size` [plugins-inputs-elasticsearch-size]
@@ -400,7 +400,7 @@ This allows you to set the maximum number of hits returned per scroll.
 * There is no default value.
 * Sensible values range from 2 to about 8.
 
-In some cases, it is possible to improve overall throughput by consuming multiple distinct slices of a query simultaneously using [sliced scrolls](elasticsearch://docs/reference/elasticsearch/rest-apis/paginate-search-results.md#slice-scroll), especially if the pipeline is spending significant time waiting on Elasticsearch to provide results.
+In some cases, it is possible to improve overall throughput by consuming multiple distinct slices of a query simultaneously using [sliced scrolls](elasticsearch://reference/elasticsearch/rest-apis/paginate-search-results.md#slice-scroll), especially if the pipeline is spending significant time waiting on Elasticsearch to provide results.
 
 If set, the `slices` parameter tells the plugin how many slices to divide the work into, and will produce events from the slices in parallel until all of them are done scrolling.
 

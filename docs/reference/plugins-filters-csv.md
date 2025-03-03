@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-06-08
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-csv/blob/v3.1.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-csv-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-csv-index.md).
 
 ## Getting help [_getting_help_130]
 
@@ -112,7 +112,7 @@ Example:
     * `v1`: uses the value in `target` as field name
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-csv-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-csv-ecs_metadata) for detailed information.
 
 
 ### `quote_char` [plugins-filters-csv-quote_char]

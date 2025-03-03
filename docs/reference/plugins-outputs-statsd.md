@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2018-06-05
 * [Changelog](https://github.com/logstash-plugins/logstash-output-statsd/blob/v3.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-statsd-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-statsd-index.md).
 
 ## Installation [_installation_47]
 

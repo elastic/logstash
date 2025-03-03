@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-02
 * [Changelog](https://github.com/logstash-plugins/logstash-output-mongodb/blob/v3.1.8/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-mongodb-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-mongodb-index.md).
 
 ## Installation [_installation_39]
 

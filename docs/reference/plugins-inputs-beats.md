@@ -16,7 +16,7 @@ The `input-elastic_agent` plugin is the next generation of the `input-beats` plu
 * Released on: 2024-12-02
 * [Changelog](https://github.com/logstash-plugins/logstash-input-beats/blob/v7.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-beats-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-beats-index.md).
 
 ## Getting help [_getting_help_9]
 
@@ -66,7 +66,7 @@ Be sure that heap and direct memory combined does not exceed the total memory av
 
 ### Multi-line events [plugins-inputs-beats-multiline]
 
-If you are shipping events that span multiple lines, you need to use the [configuration options available in Filebeat](beats://docs/reference/filebeat/multiline-examples.md) to handle multiline events before sending the event data to Logstash. You cannot use the [Multiline codec plugin](/reference/plugins-codecs-multiline.md) to handle multiline events. Doing so will result in the failure to start Logstash.
+If you are shipping events that span multiple lines, you need to use the [configuration options available in Filebeat](beats://reference/filebeat/multiline-examples.md) to handle multiline events before sending the event data to Logstash. You cannot use the [Multiline codec plugin](/reference/plugins-codecs-multiline.md) to handle multiline events. Doing so will result in the failure to start Logstash.
 
 
 

@@ -10,14 +10,14 @@ You can take advantage of the extensive, built-in capabilities of Elastic {{inte
 
 ## Elastic {{integrations}}: ingesting to visualizing [integrations-value]
 
-[Elastic {{integrations}}](integration-docs://docs/reference/index.md) provide quick, end-to-end solutions for:
+[Elastic {{integrations}}](integration-docs://reference/index.md) provide quick, end-to-end solutions for:
 
 * ingesting data from a variety of data sources,
-* ensuring compliance with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)),
+* ensuring compliance with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)),
 * getting the data into the {{stack}}, and
 * visualizing it with purpose-built dashboards.
 
-{{integrations}} are available for [popular services and platforms](integration-docs://docs/reference/all_integrations.md), such as Nginx, AWS, and MongoDB, as well as many generic input types like log files. Each integration includes pre-packaged assets to help reduce the time between ingest and insights.
+{{integrations}} are available for [popular services and platforms](integration-docs://reference/all_integrations.md), such as Nginx, AWS, and MongoDB, as well as many generic input types like log files. Each integration includes pre-packaged assets to help reduce the time between ingest and insights.
 
 To see available integrations, go to the {{kib}} home page, and click **Add {{integrations}}**. You can use the query bar to search for integrations you may want to use. When you find an integration for your data source, the UI walks you through adding and configuring it.
 

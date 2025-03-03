@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-12-10
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-logstash/blob/v1.0.4/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/integration-logstash-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/integration-logstash-index.md).
 
 ## Getting help [_getting_help_5]
 
