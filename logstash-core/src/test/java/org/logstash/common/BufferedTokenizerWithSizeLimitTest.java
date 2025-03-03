@@ -19,39 +19,29 @@
 
 package org.logstash.common;
 
-import org.jruby.RubyArray;
-import org.jruby.RubyString;
-import org.jruby.runtime.ThreadContext;
-import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.logstash.RubyTestBase;
-import org.logstash.RubyUtil;
 
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
-import static org.logstash.RubyUtil.RUBY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.logstash.common.BufferedTokenizerTest.toList;
 
-@SuppressWarnings("unchecked")
-public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
+public final class BufferedTokenizerWithSizeLimitTest {
 
-    private BufferedTokenizerExt sut;
-    private ThreadContext context;
+    private BufferedTokenizer sut;
 
     @Before
     public void setUp() {
-        sut = new BufferedTokenizerExt(RubyUtil.RUBY, RubyUtil.BUFFERED_TOKENIZER);
-        context = RUBY.getCurrentContext();
-        IRubyObject[] args = {RubyUtil.RUBY.newString("\n"), RubyUtil.RUBY.newFixnum(10)};
-        sut.init(context, args);
+        sut = new BufferedTokenizer("\n", 10);
     }
 
     @Test
     public void givenTokenWithinSizeLimitWhenExtractedThenReturnTokens() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar\n"));
+        List<String> tokens = toList(sut.extract("foo\nbar\n"));
 
         assertEquals(List.of("foo", "bar"), tokens);
     }
@@ -59,7 +49,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     @Test
     public void givenTokenExceedingSizeLimitWhenExtractedThenThrowsAnError() {
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString("this_is_longer_than_10\nkaboom"));
+            sut.extract("this_is_longer_than_10\nkaboom").forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
     }
@@ -67,45 +57,45 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     @Test
     public void givenExtractedThrownLimitErrorWhenFeedFreshDataThenReturnTokenStartingFromEndOfOffendingToken() {
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString("this_is_longer_than_10\nkaboom"));
+            sut.extract("this_is_longer_than_10\nkaboom").forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\nanother"));
+        List<String> tokens = toList(sut.extract("\nanother"));
         assertEquals("After buffer full error should resume from the end of line", List.of("kaboom"), tokens);
     }
 
     @Test
     public void givenExtractInvokedWithDifferentFramingAfterBufferFullErrorTWhenFeedFreshDataThenReturnTokenStartingFromEndOfOffendingToken() {
-        sut.extract(context, RubyUtil.RUBY.newString("aaaa"));
+        sut.extract("aaaa");
 
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString("aaaaaaa"));
+            sut.extract("aaaaaaa").forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbb\nccc"));
+        List<String> tokens = toList(sut.extract("aa\nbbbb\nccc"));
         assertEquals(List.of("bbbb"), tokens);
     }
 
     @Test
     public void giveMultipleSegmentsThatGeneratesMultipleBufferFullErrorsThenIsAbleToRecoverTokenization() {
-        sut.extract(context, RubyUtil.RUBY.newString("aaaa"));
+        sut.extract("aaaa");
 
         //first buffer full on 13 "a" letters
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString("aaaaaaa"));
+            sut.extract("aaaaaaa").forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         // second buffer full on 11 "b" letters
         Exception secondThrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString("aa\nbbbbbbbbbbb\ncc"));
+            sut.extract("aa\nbbbbbbbbbbb\ncc");
         });
         assertThat(secondThrownException.getMessage(), containsString("input buffer full"));
 
         // now should resemble processing on c and d
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("ccc\nddd\n"));
+        List<String> tokens = toList(sut.extract("ccc\nddd\n"));
         assertEquals(List.of("ccccc", "ddd"), tokens);
     }
 }
