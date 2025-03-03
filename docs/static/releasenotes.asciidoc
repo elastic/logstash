@@ -91,6 +91,7 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.18.0]]
 ==== Performance improvements and notable issues fixed
+* Fixed an issue where the `/_node/stats` API displayed empty pipeline metrics when X-Pack monitoring was enabled https://github.com/elastic/logstash/pull/17185[#17185].
 * Persistence queue moved deserialization of read events outside a critical section, this could give a boost up to 5 times to events per second read speed https://github.com/elastic/logstash/pull/17050[#17050].
 * Starting from es-output 12.0.2, a 404 response is treated as an error. Previously, central pipeline management considered 404 as an empty pipeline, not an error https://github.com/elastic/logstash/pull/17052[#17052].
 * Exposes the qualifier, like GA or RC, in cli and in the http api https://github.com/elastic/logstash/pull/16904[#16904].
