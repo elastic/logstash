@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/environment"
+require "logstash/file_watch"
 
 module LogStash::Util
   UNAME = case RbConfig::CONFIG["host_os"]
