@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2020-01-27
 * [Changelog](https://github.com/logstash-plugins/logstash-output-pagerduty/blob/v3.0.9/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-pagerduty-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-pagerduty-index.md).
 
 ## Installation [_installation_42]
 

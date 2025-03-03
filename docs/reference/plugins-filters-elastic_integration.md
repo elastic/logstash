@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2025-01-08
 * [Changelog](https://github.com/elastic/logstash-filter-elastic_integration/blob/v8.17.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-elastic_integration-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-elastic_integration-index.md).
 
 ## Getting help [_getting_help_137]
 
@@ -29,7 +29,7 @@ Use of this plugin requires an active Elastic Enterprise [subscription](https://
 Use this filter to process Elastic integrations powered by {{es}} Ingest Node in {{ls}}.
 
 ::::{admonition} Extending Elastic integrations with {ls}
-This plugin can help you take advantage of the extensive, built-in capabilities of [Elastic {{integrations}}](integration-docs://docs/reference/index.md)—​such as managing data collection, transformation, and visualization—​and then use {{ls}} for additional data processing and output options. For more info about extending Elastic integrations with {{ls}}, check out [Using {{ls}} with Elastic Integrations](/reference/using-logstash-with-elastic-integrations.md).
+This plugin can help you take advantage of the extensive, built-in capabilities of [Elastic {{integrations}}](integration-docs://reference/index.md)—​such as managing data collection, transformation, and visualization—​and then use {{ls}} for additional data processing and output options. For more info about extending Elastic integrations with {{ls}}, check out [Using {{ls}} with Elastic Integrations](/reference/using-logstash-with-elastic-integrations.md).
 
 ::::
 
@@ -185,7 +185,7 @@ This filter can run {{es}} Ingest Node pipelines that are *wholly* comprised of 
 | `uppercase` | *none* |
 | `uri_parts` | *none* |
 | `urldecode` | *none* |
-| `user_agent` | side-loading a custom regex file is not supported; the processor will use the default user agent definitions as specified in [Elasticsearch processor definition](elasticsearch://docs/reference/ingestion-tools/enrich-processor/user-agent-processor.md) |
+| `user_agent` | side-loading a custom regex file is not supported; the processor will use the default user agent definitions as specified in [Elasticsearch processor definition](elasticsearch://reference/ingestion-tools/enrich-processor/user-agent-processor.md) |
 | Redact | `redact` | *none* |
 | GeoIp | `geoip` | requires MaxMind GeoIP2 databases, which may be provided by Logstash’s Geoip Database Management *OR* configured using [`geoip_database_directory`](#plugins-filters-elastic_integration-geoip_database_directory) |
 

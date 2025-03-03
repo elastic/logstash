@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-08-22
 * [Changelog](https://github.com/logstash-plugins/logstash-output-google_pubsub/blob/v1.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-google_pubsub-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-google_pubsub-index.md).
 
 ## Installation [_installation_31]
 

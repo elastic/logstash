@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2024-12-23
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-jdbc/blob/v5.5.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-jdbc_static-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-jdbc_static-index.md).
 
 ## Getting help [_getting_help_147]
 
@@ -240,7 +240,7 @@ For loader performance reasons, the loading mechanism uses a CSV style file with
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-filters-jdbc_static-ecs]
 
-This plugin is compatible with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). It behaves the same regardless of ECS compatibility, except giving a warning when ECS is enabled and `target` isn’t set.
+This plugin is compatible with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). It behaves the same regardless of ECS compatibility, except giving a warning when ECS is enabled and `target` isn’t set.
 
 ::::{tip}
 Set the `target` option to avoid potential schema conflicts.

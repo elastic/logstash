@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-07-14
 * [Changelog](https://github.com/logstash-plugins/logstash-output-udp/blob/v3.2.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-udp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-udp-index.md).
 
 ## Getting help [_getting_help_118]
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-06-29
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-date/blob/v3.1.15/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-date-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-date-index.md).
 
 ## Getting help [_getting_help_131]
 

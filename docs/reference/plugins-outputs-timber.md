@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-09-02
 * [Changelog](https://github.com/logstash-plugins/logstash-output-timber/blob/v1.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-timber-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-timber-index.md).
 
 ## Installation [_installation_50]
 

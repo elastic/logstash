@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-04
 * [Changelog](https://github.com/logstash-plugins/logstash-input-heartbeat/blob/v3.1.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-heartbeat-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-heartbeat-index.md).
 
 ## Getting help [_getting_help_25]
 
@@ -78,7 +78,7 @@ How many times to iterate. This is typically used only for testing purposes.
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). Refer to [Elastic Common Schema (ECS)](#plugins-inputs-heartbeat-ecs) in this topic for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). Refer to [Elastic Common Schema (ECS)](#plugins-inputs-heartbeat-ecs) in this topic for detailed information.
 
 
 ### `interval` [plugins-inputs-heartbeat-interval]

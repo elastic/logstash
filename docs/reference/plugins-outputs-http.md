@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-11-21
 * [Changelog](https://github.com/logstash-plugins/logstash-output-http/blob/v6.0.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-http-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-http-index.md).
 
 ## Getting help [_getting_help_85]
 

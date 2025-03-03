@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-05-27
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-de_dot/blob/v1.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-de_dot-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-de_dot-index.md).
 
 ## Getting help [_getting_help_132]
 

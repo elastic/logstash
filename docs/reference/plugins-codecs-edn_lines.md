@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-08-04
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-edn_lines/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-edn_lines-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-edn_lines-index.md).
 
 ## Getting help [_getting_help_180]
 

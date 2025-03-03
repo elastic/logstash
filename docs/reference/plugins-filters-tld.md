@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-10-19
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-tld/blob/v3.1.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-tld-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-tld-index.md).
 
 ## Installation [_installation_66]
 

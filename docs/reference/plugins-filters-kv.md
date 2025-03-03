@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2022-03-04
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-kv/blob/v4.7.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-kv-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-kv-index.md).
 
 ## Getting help [_getting_help_151]
 
@@ -143,7 +143,7 @@ A hash specifying the default keys and their values which should be added to the
     * `v1`: Elastic Common Schema compliant behavior (warns when `target` isn’t set)
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-kv-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-kv-ecs_metadata) for detailed information.
 
 
 ### `exclude_keys` [plugins-filters-kv-exclude_keys]

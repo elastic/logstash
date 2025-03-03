@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-alter/blob/v3.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-alter-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-alter-index.md).
 
 ## Installation [_installation_55]
 

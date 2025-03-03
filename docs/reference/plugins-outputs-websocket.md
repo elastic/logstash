@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-01-11
 * [Changelog](https://github.com/logstash-plugins/logstash-output-websocket/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-websocket-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-websocket-index.md).
 
 ## Installation [_installation_51]
 

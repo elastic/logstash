@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2020-04-27
 * [Changelog](https://github.com/logstash-plugins/logstash-output-file/blob/v4.3.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-file-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-file-index.md).
 
 ## Getting help [_getting_help_77]
 

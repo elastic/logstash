@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-08-22
 * [Changelog](https://github.com/logstash-plugins/logstash-input-google_cloud_storage/blob/v0.15.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-google_cloud_storage-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-google_cloud_storage-index.md).
 
 ## Installation [_installation_2]
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-11-04
 * [Changelog](https://github.com/logstash-plugins/logstash-input-generator/blob/v3.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-generator-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-generator-index.md).
 
 ## Getting help [_getting_help_20]
 
@@ -29,7 +29,7 @@ An event is generated first
 
 ## Compatibility with the Elastic Common Schema (ECS) [plugins-inputs-generator-ecs]
 
-This plugin uses different field names depending on whether [ECS-compatibility](ecs://docs/reference/index.md) in enabled (see also [`ecs_compatibility`](#plugins-inputs-generator-ecs_compatibility)).
+This plugin uses different field names depending on whether [ECS-compatibility](ecs://reference/index.md) in enabled (see also [`ecs_compatibility`](#plugins-inputs-generator-ecs_compatibility)).
 
 | ECS Disabled | ECS v1, v8 | Description |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ The default, `0`, means generate an unlimited number of events.
     * `v1`, `v8`: uses fields that are compatible with ECS, such as `[host][name]`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-generator-ecs) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Compatibility with the Elastic Common Schema (ECS)](#plugins-inputs-generator-ecs) for detailed information.
 
 **Sample output: ECS enabled**
 

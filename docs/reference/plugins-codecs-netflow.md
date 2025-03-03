@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-12-22
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-netflow/blob/v4.3.2/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-netflow-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-netflow-index.md).
 
 ## Getting help [_getting_help_193]
 

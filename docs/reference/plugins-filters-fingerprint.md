@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-03-19
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-fingerprint/blob/v3.4.4/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-fingerprint-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-fingerprint-index.md).
 
 ## Getting help [_getting_help_141]
 
@@ -135,7 +135,7 @@ When set to `true` and `method` isn’t `UUID` or `PUNCTUATION`, the plugin conc
     * `v1`: uses `[event][hash]` fields that are compatible with Elastic Common Schema
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-fingerprint-ecs_metadata) for detailed information.
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)). See [Event Metadata and the Elastic Common Schema (ECS)](#plugins-filters-fingerprint-ecs_metadata) for detailed information.
 
 
 ### `key` [plugins-filters-fingerprint-key]

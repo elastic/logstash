@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2024-09-04
 * [Changelog](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/blob/v2.0.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-dead_letter_queue-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-dead_letter_queue-index.md).
 
 ## Getting help [_getting_help_12]
 

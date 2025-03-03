@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-07-28
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-csv/blob/v1.1.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-csv-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-csv-index.md).
 
 ## Installation [_installation_68]
 
@@ -122,7 +122,7 @@ Define a set of datatype conversions to be applied to columns. Possible conversi
     * Otherwise, the default value is `disabled`
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `include_headers` [plugins-codecs-csv-include_headers]

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-range/blob/v3.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-range-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-range-index.md).
 
 ## Installation [_installation_64]
 

@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2019-10-09
 * [Changelog](https://github.com/logstash-plugins/logstash-output-librato/blob/v3.0.7/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/output-librato-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/output-librato-index.md).
 
 ## Installation [_installation_36]
 

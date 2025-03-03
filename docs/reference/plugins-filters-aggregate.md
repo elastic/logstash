@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2021-10-11
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-aggregate/blob/v2.10.0/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-aggregate-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-aggregate-index.md).
 
 ## Getting help [_getting_help_124]
 

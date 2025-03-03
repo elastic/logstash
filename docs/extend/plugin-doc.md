@@ -7,7 +7,7 @@ mapped_pages:
 
 Documentation is a required component of your plugin. Quality documentation with good examples contributes to the adoption of your plugin.
 
-The documentation that you write for your plugin will be generated and published in the [Logstash Reference](/reference/index.md) and the [Logstash Versioned Plugin Reference](logstash-docs://docs/reference/integration-plugins.md).
+The documentation that you write for your plugin will be generated and published in the [Logstash Reference](/reference/index.md) and the [Logstash Versioned Plugin Reference](logstash-docs://reference/integration-plugins.md).
 
 ::::{admonition} Plugin listing in {{ls}} Reference
 :class: note
@@ -26,7 +26,7 @@ Documentation belongs in a single file called *docs/index.asciidoc*. It belongs 
 
 ## Heading IDs [heading-ids]
 
-Format heading anchors with variables that can support generated IDs. This approach creates unique IDs when the [Logstash Versioned Plugin Reference](logstash-docs://docs/reference/integration-plugins.md) is built. Unique heading IDs are required to avoid duplication over multiple versions of a plugin.
+Format heading anchors with variables that can support generated IDs. This approach creates unique IDs when the [Logstash Versioned Plugin Reference](logstash-docs://reference/integration-plugins.md) is built. Unique heading IDs are required to avoid duplication over multiple versions of a plugin.
 
 **Example**
 
@@ -39,7 +39,7 @@ Instead, use variables to define it:
 ==== Configuration models
 ```
 
-If you hardcode an ID, the [Logstash Versioned Plugin Reference](logstash-docs://docs/reference/integration-plugins.md) builds correctly the first time. The second time the doc build runs, the ID is flagged as a duplicate, and the build fails.
+If you hardcode an ID, the [Logstash Versioned Plugin Reference](logstash-docs://reference/integration-plugins.md) builds correctly the first time. The second time the doc build runs, the ID is flagged as a duplicate, and the build fails.
 
 
 ## Link formats [link-format]
@@ -136,7 +136,7 @@ match => {
 
 ## Where’s my doc? [_wheres_my_doc]
 
-Plugin documentation goes through several steps before it gets published in the [Logstash Versioned Plugin Reference](logstash-docs://docs/reference/integration-plugins.md) and the [Logstash Reference](/reference/index.md).
+Plugin documentation goes through several steps before it gets published in the [Logstash Versioned Plugin Reference](logstash-docs://reference/integration-plugins.md) and the [Logstash Reference](/reference/index.md).
 
 Here’s an overview of the workflow:
 
@@ -145,7 +145,7 @@ Here’s an overview of the workflow:
 * Wait for the continuous integration build to complete successfully.
 * Publish the plugin to [https://rubygems.org](https://rubygems.org).
 * A script detects the new or changed version, and picks up the `index.asciidoc` file for inclusion in the doc build.
-* The documentation for your new plugin is published in the [Logstash Versioned Plugin Reference](logstash-docs://docs/reference/integration-plugins.md).
+* The documentation for your new plugin is published in the [Logstash Versioned Plugin Reference](logstash-docs://reference/integration-plugins.md).
 
 We’re not done yet.
 

@@ -12,7 +12,7 @@ mapped_pages:
 * Released on: 2025-01-06
 * [Changelog](https://github.com/logstash-plugins/logstash-integration-snmp/blob/v4.0.5/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/input-snmp-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/input-snmp-index.md).
 
 ## Getting help [_getting_help_50]
 
@@ -107,7 +107,7 @@ Also see [Common options](#plugins-inputs-snmp-common-options) for a list of opt
     * Otherwise, the default value is `disabled`.
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `get` [plugins-inputs-snmp-get]

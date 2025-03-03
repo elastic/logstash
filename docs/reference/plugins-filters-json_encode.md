@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2017-11-07
 * [Changelog](https://github.com/logstash-plugins/logstash-filter-json_encode/blob/v3.0.3/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/filter-json_encode-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/filter-json_encode-index.md).
 
 ## Installation [_installation_62]
 

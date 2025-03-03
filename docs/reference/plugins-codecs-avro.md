@@ -11,7 +11,7 @@ mapped_pages:
 * Released on: 2023-10-16
 * [Changelog](https://github.com/logstash-plugins/logstash-codec-avro/blob/v3.4.1/CHANGELOG.md)
 
-For other versions, see the [Versioned plugin docs](logstash-docs://docs/reference/codec-avro-index.md).
+For other versions, see the [Versioned plugin docs](logstash-docs://reference/codec-avro-index.md).
 
 ## Getting help [_getting_help_172]
 
@@ -90,7 +90,7 @@ output {
     * `v1`,`v8`: Elastic Common Schema compliant behavior (`[event][original]` is also added)
 
 
-Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://docs/reference/index.md)).
+Controls this plugin’s compatibility with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)).
 
 
 ### `encoding` [plugins-codecs-avro-encoding]
