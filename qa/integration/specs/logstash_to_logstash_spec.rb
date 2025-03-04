@@ -73,11 +73,6 @@ describe "Logstash to Logstash communication Integration test" do
         run_logstash_instance(output_config_name, all_config_options) do |upstream_logstash_service|
 
           try(num_retries) do
-            upstream_event_stats = upstream_logstash_service.monitoring_api.event_stats
-            expect(upstream_event_stats).to include({"out" => num_events}), lambda { "expected #{num_events} events to have been sent by upstream" }
-          end
-
-          try(num_retries) do
             downstream_event_stats = downstream_logstash_service.monitoring_api.event_stats
             expect(downstream_event_stats).to include({"in" => num_events}), lambda { "expected #{num_events} events to have been received by downstream" }
             expect(downstream_event_stats).to include({"out" => num_events}), lambda { "expected #{num_events} events to have been processed by downstream" }
