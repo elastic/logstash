@@ -79,6 +79,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     install_gems_list!(gems)
     remove_unused_locally_installed_gems!
     remove_unused_integration_overlaps!
+    remove_orphan_dependencies!
   end
 
   private
