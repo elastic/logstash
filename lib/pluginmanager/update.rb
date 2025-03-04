@@ -95,10 +95,8 @@ class LogStash::PluginManager::Update < LogStash::PluginManager::Command
       output << LogStash::Bundler.genericize_platform unless output.nil?
     end
 
-    # We currently dont removed unused gems from the logstash installation
-    # see: https://github.com/elastic/logstash/issues/6339
-    # output = LogStash::Bundler.invoke!(:clean => true)
     display_updated_plugins(previous_gem_specs_map)
+    remove_orphan_dependencies!
   rescue => exception
     gemfile.restore!
     report_exception("Updated Aborted", exception)
