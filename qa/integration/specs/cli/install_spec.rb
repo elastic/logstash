@@ -166,9 +166,6 @@ describe "CLI > logstash-plugin install" do
   context "rubygems hosted plugin" do
     include_context "pluginmanager validation helpers"
     shared_examples("overwriting existing") do
-      # let(:plugin_name) { defined?(super) ? super() : fail }
-      # let(:existing_plugin_version) { defined?(super) ? super() : fail }
-      # let(:specified_plugin_version) { defined?(super) ? super() : fail }
       before(:each) do
         aggregate_failures("precheck") do
           expect("#{plugin_name}-#{existing_plugin_version}").to_not be_installed_gem

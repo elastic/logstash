@@ -69,7 +69,7 @@ class LogStash::PluginManager::Command < Clamp::Command
     end
     puts "cleaned #{desc} #{spec.name} (#{spec.version})"
   rescue Gem::InstallError => e
-    fail "Failed to uninstall `#{spec.full_name}`"
+    report_exception("Failed to uninstall `#{spec.full_name}`", e)
   end
 
   def relative_path(path)
