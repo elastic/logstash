@@ -49,8 +49,7 @@ steps:
       diskSizeGb: 64
     retry:
       automatic:
-      # dont retry on failure while they are expected
-        - limit: 0
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -90,8 +89,7 @@ steps:
       diskSizeGb: 64
     retry:
       automatic:
-      # dont retry on failure while they are expected
-        - limit: 0
+        - limit: 3
     env:
       ENABLE_SONARQUBE: true
     command: |
@@ -135,8 +133,7 @@ steps:
       diskSizeGb: 64
     retry:
       automatic:
-      # dont retry on failure while they are expected
-        - limit: 0
+        - limit: 3
     command: |
       set -euo pipefail
 
@@ -153,8 +150,7 @@ steps:
       diskSizeGb: 64
     retry:
       automatic:
-      # dont retry on failure while they are expected
-        - limit: 0
+        - limit: 3
     command: |
       set -euo pipefail
 
