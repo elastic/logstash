@@ -5,5 +5,5 @@ mapped_pages:
 
 # Running Logstash on Kubernetes [running-logstash-kubernetes]
 
-Check out [QuickStart](docs-content://deploy-manage/deploy/cloud-on-k8s/install-using-yaml-manifest-quickstart.md) to install ECK and [Run {{ls}} on ECK](docs-content://deploy-manage/deploy/cloud-on-k8s/logstash.md) to deploy {{ls}} with ECK.
+Check out the [QuickStart](docs-content://deploy-manage/deploy/cloud-on-k8s/install-using-yaml-manifest-quickstart.md) to install ECK and [Run {{ls}} on ECK](docs-content://deploy-manage/deploy/cloud-on-k8s/logstash.md) to deploy {{ls}} with ECK.
 
