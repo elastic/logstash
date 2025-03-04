@@ -44,21 +44,18 @@ public class BufferedTokenizerBenchmark {
         multipleTokensSpreadMultipleFragments_3 = "f".repeat(256) + "\n" + "g".repeat(512) + "\n" + "h".repeat(512) + "\n";
     }
 
-    @SuppressWarnings("unchecked")
     @Benchmark
     public final void onlyOneTokenPerFragment(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(singleTokenPerFragment);
         blackhole.consume(tokens);
     }
 
-    @SuppressWarnings("unchecked")
     @Benchmark
     public final void multipleTokenPerFragment(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(multipleTokensPerFragment);
         blackhole.consume(tokens);
     }
 
-    @SuppressWarnings("unchecked")
     @Benchmark
     public final void multipleTokensCrossingMultipleFragments(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(multipleTokensSpreadMultipleFragments_1);
