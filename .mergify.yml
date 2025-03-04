@@ -112,3 +112,59 @@ pull_request_rules:
         labels:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to all active minor branches for the 8 major.
+    conditions:
+      - merged
+      - label=backport-active-8
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing minor branch reached EOL.
+        branches:
+          - "8.x"
+          - "8.18"
+          - "8.17"
+          - "8.16"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
+
+  - name: backport patches to all active minor branches for the 9 major.
+    conditions:
+      - merged
+      - label=backport-active-9
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing minor branch reached EOL.
+        branches:
+          - "9.0"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
+
+  - name: backport patches to all active branches
+    conditions:
+      - merged
+      - label=backport-active-all
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing release branch reached EOL.
+        branches:
+          - "9.0"
+          - "8.18"
+          - "8.17"
+          - "8.16"
+          - "8.x"
+          - "7.17"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
