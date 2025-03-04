@@ -203,4 +203,4 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 We’ve deprecated the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins. These plugins will receive only security updates and critical fixes moving forward.
 
-We recommend using our native {{es}} tools for your Search use cases. For more details, please visit [Search UI with Elasticsearch](search-ui://tutorials-elasticsearch.md).
+We recommend using our native {{es}} tools for your Search use cases. For more details, please visit the [Search solution and use case documentation](docs-content://solutions/search.md).
