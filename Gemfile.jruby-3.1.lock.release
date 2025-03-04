@@ -7,7 +7,7 @@ PATH
 PATH
   remote: logstash-core
   specs:
-    logstash-core (8.17.3-java)
+    logstash-core (8.17.4-java)
       clamp (~> 1)
       concurrent-ruby (~> 1, < 1.1.10)
       down (~> 5.2.0)
