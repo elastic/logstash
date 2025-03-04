@@ -133,8 +133,8 @@ module LogStash
     # update existing or add new
     def update_gem(_gem)
       if old = find_gem(_gem.name)
-        # always overwrite requirements if specified
-        old.requirements = _gem.requirements unless no_constrains?(_gem.requirements)
+        # always overwrite requirements
+        old.requirements = _gem.requirements
         # but merge options
         old.options = old.options.merge(_gem.options)
       else
