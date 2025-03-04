@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-5,Logstash 8.16.5>>
 * <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
@@ -73,6 +74,31 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-5]]
+=== Logstash 8.16.5 Release Notes
+
+[[notable-8-16-5]]
+==== Notable issues fixed
+
+* Improves performance of the Persistent Queue, especially in the case of large events, by moving deserialization out of the exclusive access lock. https://github.com/elastic/logstash/pull/17050[#17050]
+* Improve error logging when Centralized Pipeline Management cannot find a configured pipeline. https://github.com/elastic/logstash/pull/17052[#17052]
+
+[[plugins-8-16-5]]
+==== Plugins
+
+*Beats Input - 6.9.3*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-beats/pull/514[#514]
+
+*Http Input - 3.10.2*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-http/pull/194[#194]
+
+*Tcp Input - 6.4.6*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-tcp/pull/233[#233]
 
 
 [[logstash-8-16-4]]
