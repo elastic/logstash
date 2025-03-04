@@ -84,7 +84,7 @@ public class BufferedTokenizer {
         }
 
         public String flush() {
-            return accumulator.toString();
+            return accumulator.substring(currentIdx);
         }
 
         @Override

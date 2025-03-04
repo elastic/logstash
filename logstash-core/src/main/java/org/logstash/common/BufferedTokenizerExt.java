@@ -201,7 +201,20 @@ public class BufferedTokenizerExt extends RubyObject {
     @JRubyMethod
     public IRubyObject flush(final ThreadContext context) {
         String s = tokenizer.flush();
-        return RubyUtil.toRubyObject(s);
+
+        // create new RubyString with the last data specified encoding, if exists
+        if (encodingName != null) {
+            return toEncodedRubyString(context, s);
+        } else {
+            // When used with TCP input it could be that on socket connection the flush method
+            // is invoked while no invocation of extract, leaving the encoding name unassigned.
+            // In such case also the headToken must be empty
+            if (!s.isEmpty()) {
+                throw new IllegalStateException("invoked flush with unassigned encoding but not empty head token, this shouldn't happen");
+            }
+            return RubyUtil.toRubyObject(s);
+        }
+
 //        final IRubyObject buffer = RubyUtil.toRubyObject(headToken.toString());
 //        headToken = new StringBuilder();
 //        inputSize = 0;
