@@ -23,10 +23,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public final class BufferedTokenizerTest {
 
@@ -83,73 +85,4 @@ public final class BufferedTokenizerTest {
         tokens = toList(sut.extract("\n\n\n"));
         assertEquals(List.of("", "", ""), tokens);
     }
-
-//    @Test
-//    public void shouldNotChangeEncodingOfTokensAfterPartitioning() {
-//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
-//        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-//        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
-//
-//        // read the first token, the £ string
-//        IRubyObject firstToken = tokens.shift(context);
-//        assertEquals("£", firstToken.toString());
-//
-//        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
-//        RubyEncoding encoding = (RubyEncoding) firstToken.callMethod(context, "encoding");
-//        assertEquals("ISO-8859-1", encoding.toString());
-//    }
-//
-//    @Test
-//    public void shouldNotChangeEncodingOfTokensAfterPartitioningInCaseMultipleExtractionInInvoked() {
-//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3}); // £ character
-//        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-//        sut.extract(context, rubyInput);
-//        IRubyObject capitalAInLatin1 = RubyString.newString(RUBY, new byte[]{(byte) 0x41})
-//                .force_encoding(context, RUBY.newString("ISO8859-1"));
-//        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, capitalAInLatin1);
-//        assertTrue(tokens.isEmpty());
-//
-//        tokens = (RubyArray<RubyString>)sut.extract(context, RubyString.newString(RUBY, new byte[]{(byte) 0x0A}));
-//
-//        // read the first token, the £ string
-//        IRubyObject firstToken = tokens.shift(context);
-//        assertEquals("£A", firstToken.toString());
-//
-//        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
-//        RubyEncoding encoding = (RubyEncoding) firstToken.callMethod(context, "encoding");
-//        assertEquals("ISO-8859-1", encoding.toString());
-//    }
-//
-//    @Test
-//    public void shouldNotChangeEncodingOfTokensAfterPartitioningWhenRetrieveLastFlushedToken() {
-//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
-//        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-//        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
-//
-//        // read the first token, the £ string
-//        IRubyObject firstToken = tokens.shift(context);
-//        assertEquals("£", firstToken.toString());
-//
-//        // flush and check that the remaining A is still encoded in ISO8859-1
-//        IRubyObject lastToken = sut.flush(context);
-//        assertEquals("A", lastToken.toString());
-//
-//        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
-//        RubyEncoding encoding = (RubyEncoding) lastToken.callMethod(context, "encoding");
-//        assertEquals("ISO-8859-1", encoding.toString());
-//    }
-//
-//    @Test
-//    public void givenDirectFlushInvocationUTF8EncodingIsApplied() {
-//        RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x41}); // £ character, A
-//        IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-//
-//        // flush and check that the remaining A is still encoded in ISO8859-1
-//        IRubyObject lastToken = sut.flush(context);
-//        assertEquals("", lastToken.toString());
-//
-//        // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
-//        RubyEncoding encoding = (RubyEncoding) lastToken.callMethod(context, "encoding");
-//        assertEquals("UTF-8", encoding.toString());
-//    }
 }
