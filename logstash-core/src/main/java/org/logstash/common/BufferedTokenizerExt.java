@@ -21,7 +21,6 @@
 package org.logstash.common;
 
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyEncoding;
 import org.jruby.RubyObject;
@@ -41,15 +40,6 @@ public class BufferedTokenizerExt extends RubyObject {
 
     private static final long serialVersionUID = 1L;
 
-//    private static final RubyString NEW_LINE = (RubyString) RubyUtil.RUBY.newString("\n").
-//                                                                freeze(RubyUtil.RUBY.getCurrentContext());
-//    private @SuppressWarnings("rawtypes") RubyArray input = RubyUtil.RUBY.newArray();
-//    private StringBuilder headToken = new StringBuilder();
-//    private RubyString delimiter = NEW_LINE;
-//    private int sizeLimit;
-//    private boolean hasSizeLimit;
-//    private int inputSize;
-//    private boolean bufferFullErrorNotified = false;
     private String encodingName;
     private transient BufferedTokenizer tokenizer;
 
@@ -59,19 +49,6 @@ public class BufferedTokenizerExt extends RubyObject {
 
     @JRubyMethod(name = "initialize", optional = 2)
     public IRubyObject init(final ThreadContext context, IRubyObject[] args) {
-//        if (args.length >= 1) {
-//            this.delimiter = args[0].convertToString();
-//        }
-//        if (args.length == 2) {
-//            final int sizeLimit = args[1].convertToInteger().getIntValue();
-//            if (sizeLimit <= 0) {
-//                throw new IllegalArgumentException("Size limit must be positive");
-//            }
-//            this.sizeLimit = sizeLimit;
-//            this.hasSizeLimit = true;
-//        }
-//        this.inputSize = 0;
-
         String delimiter = "\n";
         if (args.length >= 1) {
             delimiter = args[0].convertToString().asJavaString();
@@ -105,7 +82,7 @@ public class BufferedTokenizerExt extends RubyObject {
 
         Iterable<String> extractor = tokenizer.extract(data.asJavaString());
 
-
+        // return an iterator that does the encoding conversion
         IRubyObject rubyIterable = RubyUtil.toRubyObject(new Iterable<CharSequence>() {
             @Override
             public Iterator<CharSequence> iterator() {
@@ -119,68 +96,6 @@ public class BufferedTokenizerExt extends RubyObject {
         });
 
         return rubyIterable;
-
-//        final RubyArray entities = data.convertToString().split(delimiter, -1);
-//        if (!bufferFullErrorNotified) {
-//            input.clear();
-//            input.concat(entities);
-//        } else {
-//            // after a full buffer signal
-//            if (input.isEmpty()) {
-//                // after a buffer full error, the remaining part of the line, till next delimiter,
-//                // has to be consumed, unless the input buffer doesn't still contain fragments of
-//                // subsequent tokens.
-//                entities.shift(context);
-//                input.concat(entities);
-//            } else {
-//                // merge last of the input with first of incoming data segment
-//                if (!entities.isEmpty()) {
-//                    RubyString last = ((RubyString) input.pop(context));
-//                    RubyString nextFirst = ((RubyString) entities.shift(context));
-//                    entities.unshift(last.concat(nextFirst));
-//                    input.concat(entities);
-//                }
-//            }
-//        }
-//
-//        if (hasSizeLimit) {
-//            if (bufferFullErrorNotified) {
-//                bufferFullErrorNotified = false;
-//                if (input.isEmpty()) {
-//                    return RubyUtil.RUBY.newArray();
-//                }
-//            }
-//            final int entitiesSize = ((RubyString) input.first()).size();
-//            if (inputSize + entitiesSize > sizeLimit) {
-//                bufferFullErrorNotified = true;
-//                headToken = new StringBuilder();
-//                String errorMessage = String.format("input buffer full, consumed token which exceeded the sizeLimit %d; inputSize: %d, entitiesSize %d", sizeLimit, inputSize, entitiesSize);
-//                inputSize = 0;
-//                input.shift(context); // consume the token fragment that generates the buffer full
-//                throw new IllegalStateException(errorMessage);
-//            }
-//            this.inputSize = inputSize + entitiesSize;
-//        }
-//
-//        if (input.getLength() < 2) {
-//            // this is a specialization case which avoid adding and removing from input accumulator
-//            // when it contains just one element
-//            headToken.append(input.shift(context)); // remove head
-//            return RubyUtil.RUBY.newArray();
-//        }
-//
-//        if (headToken.length() > 0) {
-//            // if there is a pending token part, merge it with the first token segment present
-//            // in the accumulator, and clean the pending token part.
-//            headToken.append(input.shift(context)); // append buffer to first element and
-//            // create new RubyString with the data specified encoding
-//            RubyString encodedHeadToken = toEncodedRubyString(context, headToken.toString());
-//            input.unshift(encodedHeadToken); // reinsert it into the array
-//            headToken = new StringBuilder();
-//        }
-//        headToken.append(input.pop(context)); // put the leftovers in headToken for later
-//        inputSize = headToken.length();
-//        return input;
     }
 
     private RubyString toEncodedRubyString(ThreadContext context, String input) {
@@ -213,31 +128,10 @@ public class BufferedTokenizerExt extends RubyObject {
             }
             return RubyUtil.toRubyObject(s);
         }
-
-//        final IRubyObject buffer = RubyUtil.toRubyObject(headToken.toString());
-//        headToken = new StringBuilder();
-//        inputSize = 0;
-//
-//        // create new RubyString with the last data specified encoding, if exists
-//        RubyString encodedHeadToken;
-//        if (encodingName != null) {
-//            encodedHeadToken = toEncodedRubyString(context, buffer.toString());
-//        } else {
-//            // When used with TCP input it could be that on socket connection the flush method
-//            // is invoked while no invocation of extract, leaving the encoding name unassigned.
-//            // In such case also the headToken must be empty
-//            if (!buffer.toString().isEmpty()) {
-//                throw new IllegalStateException("invoked flush with unassigned encoding but not empty head token, this shouldn't happen");
-//            }
-//            encodedHeadToken = (RubyString) buffer;
-//        }
-//
-//        return encodedHeadToken;
     }
 
     @JRubyMethod(name = "empty?")
     public IRubyObject isEmpty(final ThreadContext context) {
-//        return RubyUtil.RUBY.newBoolean(headToken.toString().isEmpty() && (inputSize == 0));
         return RubyUtil.RUBY.newBoolean(tokenizer.isEmpty());
     }
 
