@@ -221,6 +221,8 @@ class LogstashService < Service
   def rest_active?
     result = monitoring_api.node_info
     !result.nil?
+  rescue
+    return false
   end
 
   def monitoring_api
