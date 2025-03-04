@@ -8,18 +8,25 @@ public class BufferedTokenizer {
     private final DataSplitter dataSplitter;
     private Integer sizeLimit;
 
-    static class ValueLimitIteratorDecorator implements Iterator<String> {
-        private final Iterator<String> iterator;
-        private final int limit;
+    static abstract class IteratorDecorator<T> implements Iterator<T> {
+        protected final Iterator<String> iterator;
 
-        ValueLimitIteratorDecorator(Iterator<String> iterator, int sizeLimit) {
+        IteratorDecorator(Iterator<String> iterator) {
             this.iterator = iterator;
-            this.limit = sizeLimit;
         }
 
         @Override
         public boolean hasNext() {
             return iterator.hasNext();
+        }
+    }
+
+    static class ValueLimitIteratorDecorator extends IteratorDecorator<String> {
+        private final int limit;
+
+        ValueLimitIteratorDecorator(Iterator<String> iterator, int sizeLimit) {
+            super(iterator);
+            this.limit = sizeLimit;
         }
 
         @Override
@@ -46,7 +53,6 @@ public class BufferedTokenizer {
             int nextIdx = accumulator.indexOf(separator, currentIdx);
             if (nextIdx == -1) {
                 // not found next separator
-                System.out.println("hasNext return false because next token not found");
                 cleanupAccumulator();
                 return false;
             } else {
