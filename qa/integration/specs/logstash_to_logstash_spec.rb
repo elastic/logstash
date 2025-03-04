@@ -28,7 +28,7 @@ describe "Logstash to Logstash communication Integration test" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
-  
+
   after(:all) {
     @fixture.teardown
   }
