@@ -176,11 +176,11 @@ tasks.register("configureArtifactInfo") {
         int minor = splitVersion[1].toInteger()
         String branch = "${major}.${minor}"
         String fallbackMajorX = "${major}.x"
-        boolean isMajorFirstMinor = minor - 1 < 0
-        String fallbackMinor = isMajorFirstMinor ? "${major-1}.x" : "${major}.${minor-1}"
+        boolean isFallBackPreviousMajor = minor - 1 < 0
+        String fallbackBranch = isFallBackPreviousMajor ? "${major-1}.x" : "${major}.${minor-1}"
         def qualifiedVersion = ""
 
-        for (b in [branch, fallbackMajorX, fallbackMinor]) {
+        for (b in [branch, fallbackMajorX, fallbackBranch]) {
             def url = "https://storage.googleapis.com/artifacts-api/snapshots/${b}.json"
             try {
                 def snapshotInfo = new JsonSlurper().parseText(url.toURL().text)
@@ -432,10 +432,10 @@ tasks.register("downloadFilebeat") {
     doLast {
         download {
             String beatsVersion = project.ext.get("artifactApiVersion")
-            String downloadedFilebeatName = "filebeat-${beatVersion}-${project.ext.get("beatsArchitecture")}"
+            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
             project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
-            def res = SnapshotArtifactURLs.packageUrls("beats", beatVersion, downloadedFilebeatName)
+            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
             project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
             project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
 
