@@ -22,6 +22,7 @@ package org.logstash.common;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -108,5 +109,23 @@ public final class BufferedTokenizerWithSizeLimitTest {
         // now should resemble processing on c and d
         List<String> tokens = toList(sut.extract("ccc\nddd\n"));
         assertEquals(List.of("ccccc", "ddd"), tokens);
+    }
+
+    @Test
+    public void givenFragmentThatHasTheSecondTokenOverrunsSizeLimitThenAnErrorIsThrown() {
+        Iterable<String> tokensIterable = sut.extract("aaaa\nbbbbbbbbbbb\nccc\n");
+        Iterator<String> tokensIterator = tokensIterable.iterator();
+
+        // first token length = 4, it's ok
+        assertEquals("aaaa", tokensIterator.next());
+
+        // second token is an overrun, length = 11
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            tokensIterator.next();
+        });
+        assertThat(exception.getMessage(), containsString("input buffer full"));
+
+        // third token resumes
+        assertEquals("ccc", tokensIterator.next());
     }
 }
