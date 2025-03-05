@@ -70,12 +70,18 @@ public final class BufferedTokenizerWithSizeLimitTest {
     public void givenExtractInvokedWithDifferentFramingAfterBufferFullErrorTWhenFeedFreshDataThenReturnTokenStartingFromEndOfOffendingToken() {
         sut.extract("aaaa");
 
+        // it goes to 11 on a sizeLimit of 10, but doesn't trigger the exception till the next separator is reached
+        sut.extract("aaaaaaa").forEach(s -> {});
+
+        Iterable<String> tokenIterable = sut.extract("aa\nbbbb\nccc");
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract("aaaaaaa").forEach(s -> {});
+            // now when querying and the next delimiter is present, the error is raised
+            tokenIterable.forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
-        List<String> tokens = toList(sut.extract("aa\nbbbb\nccc"));
+        // the iteration on token can proceed
+        List<String> tokens = toList(tokenIterable);
         assertEquals(List.of("bbbb"), tokens);
     }
 
@@ -83,15 +89,20 @@ public final class BufferedTokenizerWithSizeLimitTest {
     public void giveMultipleSegmentsThatGeneratesMultipleBufferFullErrorsThenIsAbleToRecoverTokenization() {
         sut.extract("aaaa");
 
+        // it goes to 11 on a sizeLimit of 10, but doesn't trigger the exception till the next separator is reached
+        sut.extract("aaaaaaa").forEach(s -> {});
+
+        Iterable<String> tokenIterable = sut.extract("aa\nbbbbbbbbbbb\ncc");
+
         //first buffer full on 13 "a" letters
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract("aaaaaaa").forEach(s -> {});
+            tokenIterable.forEach(s -> {});
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
 
         // second buffer full on 11 "b" letters
         Exception secondThrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract("aa\nbbbbbbbbbbb\ncc");
+            tokenIterable.forEach(s -> {});
         });
         assertThat(secondThrownException.getMessage(), containsString("input buffer full"));
 
