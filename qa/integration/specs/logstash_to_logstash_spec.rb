@@ -36,9 +36,9 @@ describe "Logstash to Logstash communication Integration test" do
     @fixture.teardown
   }
 
-  def get_temp_path_dir
+  def get_temp_path_dir(config_name)
     tmp_path = Stud::Temporary.pathname
-    tmp_data_path = File.join(tmp_path, "data")
+    tmp_data_path = File.join(tmp_path, "data", config_name)
     FileUtils.mkdir_p(tmp_data_path)
     tmp_data_path
   end
@@ -55,7 +55,7 @@ describe "Logstash to Logstash communication Integration test" do
     logstash_service.spawn_logstash("--node.name", config_name,
                                     "--pipeline.id", config_name,
                                     "--path.config", config_to_temp_file(@fixture.config(config_name, options)),
-                                    "--path.data", get_temp_path_dir,
+                                    "--path.data", get_temp_path_dir(config_name),
                                     "--api.http.port", api_port.to_s)
     wait_for_logstash(logstash_service)
 
@@ -95,18 +95,23 @@ describe "Logstash to Logstash communication Integration test" do
       run_logstash_instance(input_config_name, all_config_options) do |downstream_logstash_service|
         run_logstash_instance(output_config_name, all_config_options) do |upstream_logstash_service|
 
+          file_output_path = File.join(downstream_logstash_service.logstash_home, output_file_path_with_datetime)
+
           try(num_retries) do
             downstream_event_stats = downstream_logstash_service.monitoring_api.event_stats
+            upstream_event_stats = upstream_logstash_service.monitoring_api.event_stats
+
+            expect(upstream_event_stats).to include({"in" => num_events}), lambda { "expected upstream generates #{num_events} events"}
+            puts "upstream has done generating events"
+
+            # make sure received events are in the file
+            expect(File).to exist(file_output_path), "Logstash to Logstash output file: #{file_output_path} does not exist"
+            actual_lines = File.read(file_output_path).lines.to_a
+            expected_lines = (0...num_events).map { |sequence| "#{sequence}:Hello world!\n" }
+            expect(actual_lines).to match_array(expected_lines)
 
             expect(downstream_event_stats).to include({"in" => num_events}), lambda { "expected #{num_events} events to have been received by downstream"}
           end
-
-          # make sure received events are in the file
-          file_output_path = File.join(downstream_logstash_service.logstash_home, output_file_path_with_datetime)
-          expect(File).to exist(file_output_path), "Logstash to Logstash output file: #{file_output_path} does not exist"
-          actual_lines = File.read(file_output_path).lines.to_a
-          expected_lines = (0...num_events).map { |sequence| "#{sequence}:Hello world!\n" }
-          expect(actual_lines).to match_array(expected_lines)
 
           File.delete(file_output_path)
         end
