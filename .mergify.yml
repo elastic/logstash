@@ -113,6 +113,36 @@ pull_request_rules:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
+ - name: backport patches to 8.18 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-8.18
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        branches:
+          - "8.18"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+ - name: backport patches to 9.0 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-9.0
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        branches:
+          - "9.0"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
   - name: backport patches to all active minor branches for the 8 major.
     conditions:
       - merged
@@ -130,7 +160,7 @@ pull_request_rules:
           - "8.16"
         labels:
           - "backport"
-        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to all active minor branches for the 9 major.
     conditions:
@@ -146,7 +176,7 @@ pull_request_rules:
           - "9.0"
         labels:
           - "backport"
-        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to all active branches
     conditions:
@@ -167,4 +197,4 @@ pull_request_rules:
           - "7.17"
         labels:
           - "backport"
-        title: "[{{ destination_branch }}](backport #{{ number }}) {{ title }}"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"

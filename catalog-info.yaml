@@ -455,7 +455,8 @@ spec:
         build_pull_requests: false
         build_tags: false
         trigger_mode: code
-        filter_condition: 'build.branch !~ /^backport.*$/'
+        filter_condition: >-
+          build.branch !~ /^backport.*$/ && build.branch !~ /^mergify\/bp\/.*$/
         filter_enabled: true
       cancel_intermediate_builds: false
       skip_intermediate_builds: false
