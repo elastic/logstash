@@ -57,7 +57,7 @@ describe "Logstash to Logstash communication Integration test" do
                                     "--path.config", config_to_temp_file(@fixture.config(config_name, options)),
                                     "--path.data", get_temp_path_dir,
                                     "--api.http.port", api_port.to_s,
-                                    "-r")
+                                    "--config.reload.automatic")
     wait_for_logstash(logstash_service)
 
     yield logstash_service
