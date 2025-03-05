@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 public class BufferedTokenizer {
 
     private final DataSplitter dataSplitter;
+    private final Iterable<String> iterable;
     private Integer sizeLimit;
 
     static abstract class IteratorDecorator<T> implements Iterator<T> {
@@ -99,6 +100,7 @@ public class BufferedTokenizer {
 
     public BufferedTokenizer(String separator) {
         this.dataSplitter = new DataSplitter(separator);
+        this.iterable = setupIterable();
     }
 
     public BufferedTokenizer(String separator, int sizeLimit) {
@@ -108,17 +110,22 @@ public class BufferedTokenizer {
 
         this.dataSplitter = new DataSplitter(separator);
         this.sizeLimit = sizeLimit;
+        this.iterable = setupIterable();
     }
 
     public Iterable<String> extract(String data) {
         dataSplitter.append(data);
 
+        return iterable;
+    }
+
+    private Iterable<String> setupIterable() {
         return new Iterable<String>() {
             @Override
             public Iterator<String> iterator() {
                 Iterator<String> returnedIterator = dataSplitter;
                 if (sizeLimit != null) {
-                    returnedIterator =  new ValueLimitIteratorDecorator(returnedIterator, sizeLimit);
+                    returnedIterator = new ValueLimitIteratorDecorator(returnedIterator, sizeLimit);
                 }
                 return returnedIterator;
             }
