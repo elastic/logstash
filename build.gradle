@@ -176,7 +176,7 @@ tasks.register("configureArtifactInfo") {
         def minor = splitVersion[1].toInteger()
         def branch = "${major}.${minor}"
         def fallbackMajorX = "${major}.x"
-        def fallbackMinor = "${major}.${minor-1}"
+        def fallbackMinor = (minor - 1 < 0)? "${major-1}.x" : "${major}.${minor-1}"
         def buildId = ""
         def qualifiedVersion = ""
 
