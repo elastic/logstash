@@ -431,7 +431,7 @@ tasks.register("downloadFilebeat") {
 
     doLast {
         download {
-            String beatVersion = project.ext.get("artifactApiVersion")
+            String beatsVersion = project.ext.get("artifactApiVersion")
             String downloadedFilebeatName = "filebeat-${beatVersion}-${project.ext.get("beatsArchitecture")}"
             project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
