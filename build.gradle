@@ -184,7 +184,7 @@ tasks.register("configureArtifactInfo") {
             try {
                 def snapshotInfo = new JsonSlurper().parseText(url.toURL().text)
                 qualifiedVersion = snapshotInfo.version
-                println "ArtifactInfo build_id: ${buildId}, version: ${qualifiedVersion}"
+                println "ArtifactInfo version: ${qualifiedVersion}"
                 break
             } catch (Exception e) {
                 println "Failed to fetch branch ${branch} from ${url}: ${e.message}"
