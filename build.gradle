@@ -172,11 +172,12 @@ tasks.register("configureArtifactInfo") {
 
     doLast {
         def splitVersion = version.split('\\.')
-        def major = splitVersion[0].toInteger()
-        def minor = splitVersion[1].toInteger()
-        def branch = "${major}.${minor}"
-        def fallbackMajorX = "${major}.x"
-        def fallbackMinor = (minor - 1 < 0)? "${major-1}.x" : "${major}.${minor-1}"
+        int major = splitVersion[0].toInteger()
+        int minor = splitVersion[1].toInteger()
+        String branch = "${major}.${minor}"
+        String fallbackMajorX = "${major}.x"
+        boolean isMajorFirstMinor = minor - 1 < 0
+        String fallbackMinor = isMajorFirstMinor ? "${major-1}.x" : "${major}.${minor-1}"
         def qualifiedVersion = ""
 
         for (b in [branch, fallbackMajorX, fallbackMinor]) {
