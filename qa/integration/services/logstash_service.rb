@@ -220,7 +220,9 @@ class LogstashService < Service
   # check REST API is responsive
   def rest_active?
     result = monitoring_api.node_info
-    started = !result.nil?
+    !result.nil?
+  rescue
+    return false
   end
 
   def monitoring_api
