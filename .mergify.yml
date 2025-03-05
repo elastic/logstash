@@ -1,18 +1,18 @@
 pull_request_rules:
-  - name: ask to resolve conflict
-    conditions:
-      - conflict
-    actions:
-      comment:
-        message: |
-          This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
-          To fixup this pull request, you can check out it locally. See documentation: https://help.github.com/articles/checking-out-pull-requests-locally/
-          ```
-          git fetch upstream
-          git checkout -b {{head}} upstream/{{head}}
-          git merge upstream/{{base}}
-          git push upstream {{head}}
-          ```
+#  - name: ask to resolve conflict
+#    conditions:
+#      - conflict
+#    actions:
+#      comment:
+#        message: |
+#          This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
+#          To fixup this pull request, you can check out it locally. See documentation: https://help.github.com/articles/checking-out-pull-requests-locally/
+#          ```
+#          git fetch upstream
+#          git checkout -b {{head}} upstream/{{head}}
+#          git merge upstream/{{base}}
+#          git push upstream {{head}}
+#          ```
 
   - name: notify the backport policy
     conditions:
