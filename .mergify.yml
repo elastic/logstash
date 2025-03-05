@@ -113,7 +113,7 @@ pull_request_rules:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
- - name: backport patches to 8.18 branch
+  - name: backport patches to 8.18 branch
     conditions:
       - merged
       - base=main
@@ -128,7 +128,7 @@ pull_request_rules:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
- - name: backport patches to 9.0 branch
+  - name: backport patches to 9.0 branch
     conditions:
       - merged
       - base=main
