@@ -22,15 +22,6 @@ config:
       generator {
         count => '<%=options[:generator_count]%>'
       }
-      heartbeat {
-        interval => 1
-        message => "heartbeat"
-      }
-    }
-    filter {
-      if "heartbeat" == [message] {
-        drop {}
-      }
     }
     output {
       logstash {
