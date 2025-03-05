@@ -22,6 +22,7 @@ package org.logstash.common;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -111,27 +112,20 @@ public final class BufferedTokenizerWithSizeLimitTest {
     }
 
     @Test
-    public void givenMaliciousInputExtractDoesntOverflow() {
-        assertEquals("Xmx must equals to what's defined in the Gradle's javaTests task",
-                12L * GB, Runtime.getRuntime().maxMemory());
+    public void givenFragmentThatHasTheSecondTokenOverrunsSizeLimitThenAnErrorIsThrown() {
+        Iterable<String> tokensIterable = sut.extract("aaaa\nbbbbbbbbbbb\nccc\n");
+        Iterator<String> tokensIterator = tokensIterable.iterator();
 
-        // re-init the tokenizer with big sizeLimit
-        initSUTWithSizeLimit((int) (2L * GB) - 3);
-        // Integer.MAX_VALUE is 2 * GB
-        String bigFirstPiece = generateString("a", Integer.MAX_VALUE - 1024);
-        sut.extract(context, RubyUtil.RUBY.newString(bigFirstPiece));
+        // first token length = 4, it's ok
+        assertEquals("aaaa", tokensIterator.next());
 
-        // add another small fragment to trigger int overflow
-        // sizeLimit is (2^32-1)-3 first segment length is (2^32-1) - 1024 second is 1024 +2
-        // so the combined length of first and second is > sizeLimit and should throw an expection
-        // but because of overflow it's negative and happens to be < sizeLimit
-        Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString(generateString("a", 1024 + 2)));
+        // second token is an overrun, length = 11
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            tokensIterator.next();
         });
-        assertThat(thrownException.getMessage(), containsString("input buffer full"));
-    }
+        assertThat(exception.getMessage(), containsString("input buffer full"));
 
-    private String generateString(String fill, int size) {
-        return fill.repeat(size);
+        // third token resumes
+        assertEquals("ccc", tokensIterator.next());
     }
 }
