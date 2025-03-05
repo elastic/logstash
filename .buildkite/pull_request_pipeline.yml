@@ -267,6 +267,40 @@ steps:
       source .buildkite/scripts/common/container-agent.sh
       x-pack/ci/integration_tests.sh
 
+  - label: ":lab_coat: x-pack unit tests - FIPS mode"
+    key: "x-pack-unit-tests-fips"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FIPS_MODE=true test-runner-image x-pack/ci/unit_tests.sh
+
+  - label: ":lab_coat: x-pack integration - FIPS mode"
+    key: "integration-tests-x-pack-fips"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FIPS_MODE=true test-runner-image x-pack/ci/integration_tests.sh
+
   - wait: ~
     continue_on_failure: true
 

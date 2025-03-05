@@ -17,4 +17,8 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   export LS_JAVA_HOME="$BUILD_JAVA_HOME"
 fi
 
-./gradlew runXPackIntegrationTests
+if [ -n "$FIPS_MODE" ]; then
+  ./gradlew runXPackIntegrationTests -PrunTestsInFIPSMode=true
+else
+  ./gradlew runXPackIntegrationTests
+fi

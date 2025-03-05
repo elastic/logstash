@@ -16,4 +16,8 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
 
-./gradlew runXPackUnitTests
+if [ -n "$FIPS_MODE" ]; then
+  ./gradlew runXPackUnitTests -PrunTestsInFIPSMode=true
+else
+  ./gradlew runXPackUnitTests
+fi
