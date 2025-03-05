@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 10, time = 3000, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
@@ -66,24 +66,29 @@ public class BufferedTokenizerBenchmark {
     @Benchmark
     public final void onlyOneTokenPerFragment(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(singleTokenPerFragment);
+        tokens.forEach(blackhole::consume);
         blackhole.consume(tokens);
     }
 
     @Benchmark
     public final void multipleTokenPerFragment(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(multipleTokensPerFragment);
+        tokens.forEach(blackhole::consume);
         blackhole.consume(tokens);
     }
 
     @Benchmark
     public final void multipleTokensCrossingMultipleFragments(Blackhole blackhole) {
         Iterable<String> tokens = sut.extract(multipleTokensSpreadMultipleFragments_1);
+        tokens.forEach(t -> {});
         blackhole.consume(tokens);
 
         tokens = sut.extract(multipleTokensSpreadMultipleFragments_2);
+        tokens.forEach(t -> {});
         blackhole.consume(tokens);
 
         tokens = sut.extract(multipleTokensSpreadMultipleFragments_3);
+        tokens.forEach(blackhole::consume);
         blackhole.consume(tokens);
     }
 }
