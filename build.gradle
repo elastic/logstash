@@ -177,14 +177,12 @@ tasks.register("configureArtifactInfo") {
         def branch = "${major}.${minor}"
         def fallbackMajorX = "${major}.x"
         def fallbackMinor = (minor - 1 < 0)? "${major-1}.x" : "${major}.${minor-1}"
-        def buildId = ""
         def qualifiedVersion = ""
 
         for (b in [branch, fallbackMajorX, fallbackMinor]) {
             def url = "https://storage.googleapis.com/artifacts-api/snapshots/${b}.json"
             try {
                 def snapshotInfo = new JsonSlurper().parseText(url.toURL().text)
-                buildId = snapshotInfo.build_id
                 qualifiedVersion = snapshotInfo.version
                 println "ArtifactInfo build_id: ${buildId}, version: ${qualifiedVersion}"
                 break
@@ -193,7 +191,6 @@ tasks.register("configureArtifactInfo") {
             }
         }
 
-        project.ext.set("artifactApiBuildId", buildId)
         project.ext.set("artifactApiVersion", qualifiedVersion)
     }
 }
