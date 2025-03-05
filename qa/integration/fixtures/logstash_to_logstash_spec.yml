@@ -22,7 +22,6 @@ config:
       generator {
         count => '<%=options[:generator_count]%>'
       }
-      # workaround for flushing the last batch of PQ
       heartbeat {
         interval => 1
         message => "heartbeat"
