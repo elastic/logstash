@@ -12,7 +12,7 @@ import yaml
 
 
 class Bootstrap:
-    ELASTIC_STACK_VERSIONS_URL = "https://artifacts-api.elastic.co/v1/versions"
+    ELASTIC_STACK_RELEASED_VERSION_URL = "https://storage.googleapis.com/artifacts-api/releases/current/"
 
     def __init__(self) -> None:
         f"""
@@ -43,20 +43,13 @@ class Bootstrap:
                                      f"rerun again")
 
     def __resolve_latest_stack_version_for(self, major_version: str) -> str:
-        resolved_version = ""
-        response = util.call_url_with_retry(self.ELASTIC_STACK_VERSIONS_URL)
-        release_versions = response.json()["versions"]
-        for release_version in reversed(release_versions):
-            if release_version.find("SNAPSHOT") > 0:
-                continue
-            if release_version.split(".")[0] == major_version:
-                print(f"Resolved latest version for {major_version} is {release_version}.")
-                resolved_version = release_version
-                break
+        resp = util.call_url_with_retry(self.ELASTIC_STACK_RELEASED_VERSION_URL + major_version)
+        release_version = resp.text.strip()
+        print(f"Resolved latest version for {major_version} is {release_version}.")
 
-        if resolved_version == "":
+        if release_version == "":
             raise ValueError(f"Cannot resolve latest version for {major_version} major")
-        return resolved_version
+        return release_version
 
     def install_plugin(self, plugin_path: str) -> None:
         util.run_or_raise_error(
