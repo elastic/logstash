@@ -146,7 +146,6 @@ subprojects {
 }
 
 version = versionMap['logstash-core']
-String artifactVersionsApi = "https://artifacts-api.elastic.co/v1/versions"
 
 tasks.register("configureArchitecture") {
     String arch = System.properties['os.arch']
@@ -172,33 +171,28 @@ tasks.register("configureArtifactInfo") {
     description "Set the url to download stack artifacts for select stack version"
 
     doLast {
-        def versionQualifier = System.getenv('VERSION_QUALIFIER')
-        if (versionQualifier) {
-            version = "$version-$versionQualifier"
-        }
+        def splitVersion = version.split('\\.')
+        int major = splitVersion[0].toInteger()
+        int minor = splitVersion[1].toInteger()
+        String branch = "${major}.${minor}"
+        String fallbackMajorX = "${major}.x"
+        boolean isFallBackPreviousMajor = minor - 1 < 0
+        String fallbackBranch = isFallBackPreviousMajor ? "${major-1}.x" : "${major}.${minor-1}"
+        def qualifiedVersion = ""
 
-        boolean isReleaseBuild = System.getenv('RELEASE') == "1" || versionQualifier
-        String apiResponse = artifactVersionsApi.toURL().text
-
-        def dlVersions = new JsonSlurper().parseText(apiResponse)
-        String qualifiedVersion = dlVersions['versions'].grep(isReleaseBuild ? ~/^${version}$/ : ~/^${version}-SNAPSHOT/)[0]
-        if (qualifiedVersion == null) {
-            if (!isReleaseBuild) {
-                project.ext.set("useProjectSpecificArtifactSnapshotUrl", true)
-                project.ext.set("stackArtifactSuffix", "${version}-SNAPSHOT")
-                return
+        for (b in [branch, fallbackMajorX, fallbackBranch]) {
+            def url = "https://storage.googleapis.com/artifacts-api/snapshots/${b}.json"
+            try {
+                def snapshotInfo = new JsonSlurper().parseText(url.toURL().text)
+                qualifiedVersion = snapshotInfo.version
+                println "ArtifactInfo version: ${qualifiedVersion}"
+                break
+            } catch (Exception e) {
+                println "Failed to fetch branch ${branch} from ${url}: ${e.message}"
             }
-            throw new GradleException("could not find the current artifact from the artifact-api ${artifactVersionsApi} for ${version}")
         }
-        // find latest reference to last build
-        String buildsListApi = "${artifactVersionsApi}/${qualifiedVersion}/builds/"
-        apiResponse = buildsListApi.toURL().text
-        def dlBuilds = new JsonSlurper().parseText(apiResponse)
-        def stackBuildVersion = dlBuilds["builds"][0]
 
-        project.ext.set("artifactApiVersionedBuildUrl", "${artifactVersionsApi}/${qualifiedVersion}/builds/${stackBuildVersion}")
-        project.ext.set("stackArtifactSuffix", qualifiedVersion)
-        project.ext.set("useProjectSpecificArtifactSnapshotUrl", false)
+        project.ext.set("artifactApiVersion", qualifiedVersion)
     }
 }
 
@@ -437,23 +431,13 @@ tasks.register("downloadFilebeat") {
 
     doLast {
         download {
-            String beatVersion = project.ext.get("stackArtifactSuffix")
-            String downloadedFilebeatName = "filebeat-${beatVersion}-${project.ext.get("beatsArchitecture")}"
+            String beatsVersion = project.ext.get("artifactApiVersion")
+            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
             project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
-            if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-                def res = SnapshotArtifactURLs.packageUrls("beats", beatVersion, downloadedFilebeatName)
-                project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-                project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-            } else {
-                // find url of build artifact
-                String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/beats/packages/${downloadedFilebeatName}.tar.gz"
-                String apiResponse = artifactApiUrl.toURL().text
-                def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-                project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
-                project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-            }
+            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
+            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
+            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
 
             src project.ext.filebeatSnapshotUrl
             onlyIfNewer true
@@ -489,20 +473,12 @@ tasks.register("checkEsSHA") {
     description "Download ES version remote's fingerprint file"
 
     doLast {
-        String esVersion = project.ext.get("stackArtifactSuffix")
+        String esVersion = project.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
         String remoteSHA
 
-        if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-            def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-            remoteSHA = res.packageShaUrl
-        } else {
-            // find url of build artifact
-            String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-            String apiResponse = artifactApiUrl.toURL().text
-            def buildUrls = new JsonSlurper().parseText(apiResponse)
-            remoteSHA = buildUrls.package.sha_url.toURL().text
-        }
+        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+        remoteSHA = res.packageShaUrl
 
         def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
         if (localESArchive.exists()) {
@@ -536,25 +512,14 @@ tasks.register("downloadEs") {
 
     doLast {
         download {
-            String esVersion = project.ext.get("stackArtifactSuffix")
+            String esVersion = project.ext.get("artifactApiVersion")
             String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
 
             project.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
 
-            if (project.ext.get("useProjectSpecificArtifactSnapshotUrl")) {
-                def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-                project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
-                project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-            } else {
-                // find url of build artifact
-                String artifactApiUrl = "${project.ext.get("artifactApiVersionedBuildUrl")}/projects/elasticsearch/packages/${downloadedElasticsearchName}.tar.gz"
-                String apiResponse = artifactApiUrl.toURL().text
-
-                def buildUrls = new JsonSlurper().parseText(apiResponse)
-
-                project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: buildUrls["package"]["url"])
-                project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-            }
+            def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+            project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
+            project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
 
             src project.ext.elasticsearchSnapshotURL
             onlyIfNewer true

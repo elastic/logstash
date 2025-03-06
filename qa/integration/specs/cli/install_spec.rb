@@ -165,11 +165,11 @@ describe "CLI > logstash-plugin install" do
 
   context "rubygems hosted plugin" do
     include_context "pluginmanager validation helpers"
-    shared_examples("overwriting existing") do
+    shared_context("install over existing") do
       before(:each) do
         aggregate_failures("precheck") do
           expect("#{plugin_name}-#{existing_plugin_version}").to_not be_installed_gem
-          expect("#{plugin_name}-#{specified_plugin_version}").to_not be_installed_gem
+          expect("#{plugin_name}").to_not be_installed_gem
         end
         aggregate_failures("setup") do
           execute = @logstash_plugin.install(plugin_name, version: existing_plugin_version)
@@ -178,9 +178,12 @@ describe "CLI > logstash-plugin install" do
           expect(execute.exit_code).to eq(0)
 
           expect("#{plugin_name}-#{existing_plugin_version}").to be_installed_gem
-          expect("#{plugin_name}-#{specified_plugin_version}").to_not be_installed_gem
+          expect(plugin_name).to be_in_gemfile.with_requirements(existing_plugin_version)
         end
       end
+    end
+    shared_examples("overwriting existing with explicit version") do
+      include_context "install over existing"
       it "installs the specified version and removes the pre-existing one" do
         execute = @logstash_plugin.install(plugin_name, version: specified_plugin_version)
 
@@ -197,20 +200,72 @@ describe "CLI > logstash-plugin install" do
       end
     end
 
-    context "when installing over an older version" do
+    context "when installing over an older version using --version" do
       let(:plugin_name) { "logstash-filter-qatest" }
       let(:existing_plugin_version) { "0.1.0" }
       let(:specified_plugin_version) { "0.1.1" }
 
-      include_examples "overwriting existing"
+      include_examples "overwriting existing with explicit version"
     end
 
-    context "when installing over a newer version" do
+    context "when installing over a newer version using --version" do
       let(:plugin_name) { "logstash-filter-qatest" }
       let(:existing_plugin_version) { "0.1.0" }
       let(:specified_plugin_version) { "0.1.1" }
 
-      include_examples "overwriting existing"
+      include_examples "overwriting existing with explicit version"
+    end
+
+    context "when installing over existing without --version" do
+      let(:plugin_name) { "logstash-filter-qatest" }
+      let(:existing_plugin_version) { "0.1.0" }
+
+      include_context "install over existing"
+
+      context "with --preserve" do
+        it "succeeds without changing the requirements in the Gemfile" do
+          execute = @logstash_plugin.install(plugin_name, preserve: true)
+
+          aggregate_failures("command execution") do
+            expect(execute.stderr_and_stdout).to match(INSTALLATION_SUCCESS_RE)
+            expect(execute.exit_code).to eq(0)
+          end
+
+          installed = @logstash_plugin.list(verbose: true)
+          expect(installed.stderr_and_stdout).to match(/#{Regexp.escape plugin_name}/)
+
+          # we want to ensure that the act of installing an already-installed plugin
+          # does not change its requirements in the gemfile, and leaves the previously-installed
+          # version in-tact.
+          expect(plugin_name).to be_in_gemfile.with_requirements(existing_plugin_version)
+          expect("#{plugin_name}-#{existing_plugin_version}").to be_installed_gem
+        end
+      end
+
+      context "without --preserve" do
+        # this spec is OBSERVED behaviour, which I believe to be undesirable.
+        it "succeeds and removes the version requirement from the Gemfile" do
+          execute = @logstash_plugin.install(plugin_name)
+
+          aggregate_failures("command execution") do
+            expect(execute.stderr_and_stdout).to match(INSTALLATION_SUCCESS_RE)
+            expect(execute.exit_code).to eq(0)
+          end
+
+          installed = @logstash_plugin.list(plugin_name, verbose: true)
+          expect(installed.stderr_and_stdout).to match(/#{Regexp.escape plugin_name}/)
+
+          # This is the potentially-undesirable surprising behaviour, specified here
+          # as a means of documentation, not a promise of future behavior.
+          expect(plugin_name).to be_in_gemfile.without_requirements
+
+          # we expect _a_ version of the plugin to be installed, but cannot be opinionated
+          # about which version was installed because bundler won't necessarily re-resolve
+          # the dependency graph to get us an upgrade since the no-requirements dependency
+          # is still met (but it MAY do so if also installing plugins that are not present).
+          expect("#{plugin_name}").to be_installed_gem
+        end
+      end
     end
 
     context "installing plugin that isn't present" do

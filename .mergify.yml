@@ -1,18 +1,18 @@
 pull_request_rules:
-  - name: ask to resolve conflict
-    conditions:
-      - conflict
-    actions:
-      comment:
-        message: |
-          This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
-          To fixup this pull request, you can check out it locally. See documentation: https://help.github.com/articles/checking-out-pull-requests-locally/
-          ```
-          git fetch upstream
-          git checkout -b {{head}} upstream/{{head}}
-          git merge upstream/{{base}}
-          git push upstream {{head}}
-          ```
+#  - name: ask to resolve conflict
+#    conditions:
+#      - conflict
+#    actions:
+#      comment:
+#        message: |
+#          This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
+#          To fixup this pull request, you can check out it locally. See documentation: https://help.github.com/articles/checking-out-pull-requests-locally/
+#          ```
+#          git fetch upstream
+#          git checkout -b {{head}} upstream/{{head}}
+#          git merge upstream/{{base}}
+#          git push upstream {{head}}
+#          ```
 
   - name: notify the backport policy
     conditions:
@@ -109,6 +109,92 @@ pull_request_rules:
           - "{{ author }}"
         branches:
           - "8.17"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to 8.18 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-8.18
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        branches:
+          - "8.18"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to 9.0 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-9.0
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        branches:
+          - "9.0"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to all active minor branches for the 8 major.
+    conditions:
+      - merged
+      - label=backport-active-8
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing minor branch reached EOL.
+        branches:
+          - "8.x"
+          - "8.18"
+          - "8.17"
+          - "8.16"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to all active minor branches for the 9 major.
+    conditions:
+      - merged
+      - label=backport-active-9
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing minor branch reached EOL.
+        branches:
+          - "9.0"
+        labels:
+          - "backport"
+        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to all active branches
+    conditions:
+      - merged
+      - label=backport-active-all
+    actions:
+      backport:
+        assignees:
+          - "{{ author }}"
+        # NOTE: this list needs to be changed when a new minor branch is created
+        #       or an existing release branch reached EOL.
+        branches:
+          - "9.0"
+          - "8.18"
+          - "8.17"
+          - "8.16"
+          - "8.x"
+          - "7.17"
         labels:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
