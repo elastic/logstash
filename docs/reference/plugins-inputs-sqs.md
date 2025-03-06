@@ -120,7 +120,7 @@ This plugin uses the AWS SDK and supports several ways to get credentials, which
 * Value type is [hash](/reference/configuration-file-structure.md#hash)
 * Default value is `{}`
 
-Key-value pairs of settings and corresponding values used to parametrize the connection to SQS. See full list in [the AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SQS/Client.md). Example:
+Key-value pairs of settings and corresponding values used to parametrize the connection to SQS. See full list in [the AWS SDK documentation](https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/SQS/Client.html). Example:
 
 ```ruby
     input {
@@ -204,7 +204,7 @@ Name of the SQS Queue name to pull messages from. Note that this is just the nam
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-ID of the AWS account owning the queue if you want to use a [cross-account queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-basic-examples-of-sqs-policies.md#grant-two-permissions-to-one-account) with embedded policy. Note that AWS SDK only support numerical account ID and not account aliases.
+ID of the AWS account owning the queue if you want to use a [cross-account queue](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-basic-examples-of-sqs-policies.html#grant-two-permissions-to-one-account) with embedded policy. Note that AWS SDK only support numerical account ID and not account aliases.
 
 
 ### `region` [plugins-inputs-sqs-region]
@@ -220,7 +220,7 @@ The AWS Region
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-The AWS IAM Role to assume, if any. This is used to generate temporary credentials, typically for cross-account access. See the [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.md) for more information.
+The AWS IAM Role to assume, if any. This is used to generate temporary credentials, typically for cross-account access. See the [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) for more information.
 
 
 ### `role_session_name` [plugins-inputs-sqs-role_session_name]

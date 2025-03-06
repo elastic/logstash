@@ -23,7 +23,7 @@ This section includes the following topics:
 * Java 17 (default). Check out [Using JDK 17](#jdk17-upgrade) for settings info.
 * Java 21
 
-Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/javase/downloads/index.md) or an open-source distribution, such as [OpenJDK](http://openjdk.java.net/). See the [Elastic Support Matrix](https://www.elastic.co/support/matrix#matrix_jvm) for the official word on supported versions across releases.
+Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or an open-source distribution, such as [OpenJDK](http://openjdk.java.net/). See the [Elastic Support Matrix](https://www.elastic.co/support/matrix#matrix_jvm) for the official word on supported versions across releases.
 
 ::::{admonition} Bundled JDK
 :class: note

@@ -71,10 +71,10 @@ When tuning Logstash you may have to adjust the heap size. You can use the [Visu
 
 In the first example we see that the CPU isn’t being used very efficiently. In fact, the JVM is often times having to stop the VM for “full GCs”. Full garbage collections are a common symptom of excessive memory pressure. This is visible in the spiky pattern on the CPU chart. In the more efficiently configured example, the GC graph pattern is more smooth, and the CPU is used in a more uniform manner. You can also see that there is ample headroom between the allocated heap size, and the maximum allowed, giving the JVM GC a lot of room to work with.
 
-Examining the in-depth GC statistics with a tool similar to the excellent [VisualGC](https://visualvm.github.io/plugins.md) plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
+Examining the in-depth GC statistics with a tool similar to the excellent [VisualGC](https://visualvm.github.io/plugins.html) plugin shows that the over-allocated VM spends very little time in the efficient Eden GC, compared to the time spent in the more resource-intensive Old Gen “Full” GCs.
 
 ::::{note}
-As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum. This document is not a comprehensive guide to JVM GC tuning. Read the official [Oracle guide](http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.md) for more information on the topic. We also recommend reading [Debugging Java Performance](https://www.semicomplete.com/blog/geekery/debugging-java-performance/).
+As long as the GC pattern is acceptable, heap sizes that occasionally increase to the maximum are acceptable. Such heap size spikes happen in response to a burst of large events passing through the pipeline. In general practice, maintain a gap between the used amount of heap memory and the maximum. This document is not a comprehensive guide to JVM GC tuning. Read the official [Oracle guide](http://www.oracle.com/webfolder/technetwork/tutorials/obe/java/gc01/index.html) for more information on the topic. We also recommend reading [Debugging Java Performance](https://www.semicomplete.com/blog/geekery/debugging-java-performance/).
 ::::
 
 

@@ -25,7 +25,7 @@ Pull events from a [RabbitMQ](http://www.rabbitmq.com/) queue.
 
 The default settings will create an entirely transient queue and listen for all messages by default. If you need durability or any other advanced settings, please set the appropriate options
 
-This plugin uses the [March Hare](http://rubymarchhare.info/) library for interacting with the RabbitMQ server. Most configuration options map directly to standard RabbitMQ and AMQP concepts. The [AMQP 0-9-1 reference guide](https://www.rabbitmq.com/amqp-0-9-1-reference.md) and other parts of the RabbitMQ documentation are useful for deeper understanding.
+This plugin uses the [March Hare](http://rubymarchhare.info/) library for interacting with the RabbitMQ server. Most configuration options map directly to standard RabbitMQ and AMQP concepts. The [AMQP 0-9-1 reference guide](https://www.rabbitmq.com/amqp-0-9-1-reference.html) and other parts of the RabbitMQ documentation are useful for deeper understanding.
 
 The properties of messages received will be stored in the `[@metadata][rabbitmq_properties]` field if the `@metadata_enabled` setting is enabled. Note that storing metadata may degrade performance. The following properties may be available (in most cases dependent on whether they were set by the sender):
 
@@ -119,9 +119,9 @@ Optional queue arguments as an array.
 
 Relevant RabbitMQ doc guides:
 
-* [Optional queue arguments](https://www.rabbitmq.com/queues.md#optional-arguments)
-* [Policies](https://www.rabbitmq.com/parameters.md#policies)
-* [Quorum Queues](https://www.rabbitmq.com/quorum-queues.md)
+* [Optional queue arguments](https://www.rabbitmq.com/queues.html#optional-arguments)
+* [Policies](https://www.rabbitmq.com/parameters.html#policies)
+* [Quorum Queues](https://www.rabbitmq.com/quorum-queues.html)
 
 
 ### `auto_delete` [plugins-inputs-rabbitmq-auto_delete]
@@ -137,7 +137,7 @@ Should the queue be deleted on the broker when the last consumer disconnects? Se
 * Value type is [boolean](/reference/configuration-file-structure.md#boolean)
 * Default value is `true`
 
-Set this to [automatically recover](https://www.rabbitmq.com/connections.md#automatic-recovery) from a broken connection. You almost certainly don’t want to override this!
+Set this to [automatically recover](https://www.rabbitmq.com/connections.html#automatic-recovery) from a broken connection. You almost certainly don’t want to override this!
 
 
 ### `connect_retry_interval` [plugins-inputs-rabbitmq-connect_retry_interval]
@@ -193,7 +193,7 @@ Is the queue exclusive? Exclusive queues can only be used by the connection that
 * Value type is [number](/reference/configuration-file-structure.md#number)
 * There is no default value for this setting.
 
-[Heartbeat timeout](https://www.rabbitmq.com/heartbeats.md) in seconds. If unspecified then heartbeat timeout of 60 seconds will be used.
+[Heartbeat timeout](https://www.rabbitmq.com/heartbeats.html) in seconds. If unspecified then heartbeat timeout of 60 seconds will be used.
 
 
 ### `host` [plugins-inputs-rabbitmq-host]

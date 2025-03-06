@@ -132,7 +132,7 @@ Logstash’s default output behaviour is to never lose events As such, we use tc
 * Value type is [hash](/reference/configuration-file-structure.md#hash)
 * There is no default value for this setting.
 
-A Hash to set Riemann event fields ([http://riemann.io/concepts.html](http://riemann.io/concepts.md)).
+A Hash to set Riemann event fields ([http://riemann.io/concepts.html](http://riemann.io/concepts.html)).
 
 The following event fields are supported: `description`, `state`, `metric`, `ttl`, `service`
 

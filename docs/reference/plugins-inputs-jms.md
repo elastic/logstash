@@ -22,7 +22,7 @@ For questions about the plugin, open a topic in the [Discuss](http://discuss.ela
 
 Read events from a Jms Broker. Supports both Jms Queues and Topics.
 
-For more information about Jms, see [https://javaee.github.io/tutorial/jms-concepts.html](https://javaee.github.io/tutorial/jms-concepts.md). For more information about the Ruby Gem used, see [http://github.com/reidmorrison/jruby-jms](http://github.com/reidmorrison/jruby-jms).
+For more information about Jms, see [https://javaee.github.io/tutorial/jms-concepts.html](https://javaee.github.io/tutorial/jms-concepts.html). For more information about the Ruby Gem used, see [http://github.com/reidmorrison/jruby-jms](http://github.com/reidmorrison/jruby-jms).
 
 JMS configurations can be done either entirely in the Logstash configuration file, or in a mixture of the Logstash configuration file, and a specified yaml file. Simple configurations that do not need to make calls to implementation specific methods on the connection factory can be specified entirely in the Logstash configuration, whereas more complex configurations, should also use the combination of yaml file and Logstash configuration.
 

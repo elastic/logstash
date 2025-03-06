@@ -25,7 +25,7 @@ For questions about the plugin, open a topic in the [Discuss](http://discuss.ela
 
 ## Description [_description_36]
 
-You can use this plugin to receive events through [AWS Kinesis](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.md). This plugin uses the [Java Kinesis Client Library](http://docs.aws.amazon.com/kinesis/latest/dev/kinesis-record-processor-implementation-app-java.md). The documentation at [https://github.com/awslabs/amazon-kinesis-client](https://github.com/awslabs/amazon-kinesis-client) will be useful.
+You can use this plugin to receive events through [AWS Kinesis](http://docs.aws.amazon.com/kinesis/latest/dev/introduction.html). This plugin uses the [Java Kinesis Client Library](http://docs.aws.amazon.com/kinesis/latest/dev/kinesis-record-processor-implementation-app-java.html). The documentation at [https://github.com/awslabs/amazon-kinesis-client](https://github.com/awslabs/amazon-kinesis-client) will be useful.
 
 AWS credentials can be specified either through environment variables, or an IAM instance role. The library uses a DynamoDB table for worker coordination, so you’ll need to grant access to that as well as to the Kinesis stream. The DynamoDB table has the same name as the `application_name` configuration option, which defaults to "logstash".
 
@@ -51,7 +51,7 @@ If you want to read a CloudWatch Logs subscription stream, you’ll also need to
 
 ## Authentication [plugins-inputs-kinesis-authentication]
 
-This plugin uses the default AWS SDK auth chain, [DefaultAWSCredentialsProviderChain](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.md), to determine which credentials the client will use, unless `profile` is set, in which case [ProfileCredentialsProvider](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/profile/ProfileCredentialsProvider.md) is used.
+This plugin uses the default AWS SDK auth chain, [DefaultAWSCredentialsProviderChain](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html), to determine which credentials the client will use, unless `profile` is set, in which case [ProfileCredentialsProvider](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/profile/ProfileCredentialsProvider.html) is used.
 
 The default chain reads the credentials in this order:
 
@@ -65,7 +65,7 @@ The credentials need access to the following services:
 * AWS DynamoDB. The client library stores information for worker coordination in DynamoDB (offsets and active worker per partition)
 * AWS CloudWatch. If the metrics are enabled the credentials need CloudWatch update permissions granted.
 
-See the [AWS documentation](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.md) for more information on the default chain.
+See the [AWS documentation](https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) for more information on the default chain.
 
 
 ## Kinesis Input Configuration Options [plugins-inputs-kinesis-options]

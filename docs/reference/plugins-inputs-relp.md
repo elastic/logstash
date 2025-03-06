@@ -27,7 +27,7 @@ For questions about the plugin, open a topic in the [Discuss](http://discuss.ela
 
 Read RELP events over a TCP socket.
 
-For more information about RELP, see [http://www.rsyslog.com/doc/imrelp.html](http://www.rsyslog.com/doc/imrelp.md)
+For more information about RELP, see [http://www.rsyslog.com/doc/imrelp.html](http://www.rsyslog.com/doc/imrelp.html)
 
 This protocol implements application-level acknowledgements to help protect against message loss.
 

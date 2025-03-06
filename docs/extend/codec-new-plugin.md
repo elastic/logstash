@@ -305,7 +305,7 @@ Deprecations are noted in the `logstash-deprecation.log` file in the `log` direc
 Gemfiles allow Ruby’s Bundler to maintain the dependencies for your plugin. Currently, all we’ll need is the Logstash gem, for testing, but if you require other gems, you should add them in here.
 
 ::::{tip}
-See [Bundler’s Gemfile page](http://bundler.io/gemfile.md) for more details.
+See [Bundler’s Gemfile page](http://bundler.io/gemfile.html) for more details.
 ::::
 
 

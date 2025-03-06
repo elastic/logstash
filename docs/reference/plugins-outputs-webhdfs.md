@@ -20,7 +20,7 @@ For questions about the plugin, open a topic in the [Discuss](http://discuss.ela
 
 ## Description [_description_119]
 
-This plugin sends Logstash events into files in HDFS via the [webhdfs](https://hadoop.apache.org/docs/r1.0.4/webhdfs.md) REST API.
+This plugin sends Logstash events into files in HDFS via the [webhdfs](https://hadoop.apache.org/docs/r1.0.4/webhdfs.html) REST API.
 
 
 ## Dependencies [_dependencies]

@@ -193,7 +193,7 @@ Z
     :   Timezone offset structured as HH:mm (colon in between hour and minute offsets). Example: `-07:00`.
 
     ZZZ
-    :   Timezone identity. Example: `America/Los_Angeles`. Note: Valid IDs are listed on the [Joda.org available time zones page](http://joda-time.sourceforge.net/timezones.md).
+    :   Timezone identity. Example: `America/Los_Angeles`. Note: Valid IDs are listed on the [Joda.org available time zones page](http://joda-time.sourceforge.net/timezones.html).
 
 
 z
@@ -227,7 +227,7 @@ E
 
 For non-formatting syntax, you’ll need to put single-quote characters around the value. For example, if you were parsing ISO8601 time, "2015-01-01T01:12:23" that little "T" isn’t a valid time format, and you want to say "literally, a T", your format would be this: "yyyy-MM-dd’T’HH:mm:ss"
 
-Other less common date units, such as era (G), century (C), am/pm (a), and # more, can be learned about on the [joda-time documentation](http://www.joda.org/joda-time/key_format.md).
+Other less common date units, such as era (G), century (C), am/pm (a), and # more, can be learned about on the [joda-time documentation](http://www.joda.org/joda-time/key_format.html).
 
 
 ### `tag_on_failure` [plugins-filters-date-tag_on_failure]
@@ -251,7 +251,7 @@ Store the matching timestamp into the given target field.  If not provided, defa
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-Specify a time zone canonical ID to be used for date parsing. The valid IDs are listed on the [Joda.org available time zones page](http://joda-time.sourceforge.net/timezones.md). This is useful in case the time zone cannot be extracted from the value, and is not the platform default. If this is not specified the platform default will be used. Canonical ID is good as it takes care of daylight saving time for you For example, `America/Los_Angeles` or `Europe/Paris` are valid IDs. This field can be dynamic and include parts of the event using the `%{{field}}` syntax
+Specify a time zone canonical ID to be used for date parsing. The valid IDs are listed on the [Joda.org available time zones page](http://joda-time.sourceforge.net/timezones.html). This is useful in case the time zone cannot be extracted from the value, and is not the platform default. If this is not specified the platform default will be used. Canonical ID is good as it takes care of daylight saving time for you For example, `America/Los_Angeles` or `Europe/Paris` are valid IDs. This field can be dynamic and include parts of the event using the `%{{field}}` syntax
 
 
 

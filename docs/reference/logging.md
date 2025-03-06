@@ -18,7 +18,7 @@ You can configure logging using the `log4j2.properties` file or the Logstash API
 
 ## Log4j2 configuration [log4j2]
 
-Logstash ships with a `log4j2.properties` file with out-of-the-box settings, including logging to console. You can modify this file to change the rotation policy, type, and other [log4j2 configuration](https://logging.apache.org/log4j/2.x/manual/configuration.md#Loggers).
+Logstash ships with a `log4j2.properties` file with out-of-the-box settings, including logging to console. You can modify this file to change the rotation policy, type, and other [log4j2 configuration](https://logging.apache.org/log4j/2.x/manual/configuration.html#Loggers).
 
 You must restart Logstash to apply any changes that you make to this file. Changes to `log4j2.properties` persist after Logstash is restarted.
 

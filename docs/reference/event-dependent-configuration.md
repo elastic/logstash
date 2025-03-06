@@ -59,7 +59,7 @@ output {
 
 Similarly, you can convert the UTC timestamp in the `@timestamp` field into a string.
 
-Instead of specifying a field name inside the curly braces, use the `%{{FORMAT}}` syntax where `FORMAT` is a [java time format](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.md#patterns).
+Instead of specifying a field name inside the curly braces, use the `%{{FORMAT}}` syntax where `FORMAT` is a [java time format](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns).
 
 For example, if you want to use the file output to write logs based on the event’s UTC date and hour and the `type` field:
 
@@ -72,7 +72,7 @@ output {
 ```
 
 ::::{note}
-The sprintf format continues to support [deprecated joda time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.md) strings as well using the `%{+FORMAT}` syntax. These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
+The sprintf format continues to support [deprecated joda time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html) strings as well using the `%{+FORMAT}` syntax. These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
 ::::
 
 

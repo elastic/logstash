@@ -212,7 +212,7 @@ Validate client certificate or certificate chain against these authorities. You 
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * Default value includes *all* cipher suites enabled by the JDK and depends on JDK configuration
 
-Supported cipher suites vary depending on Java version used, and entries look like `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`. For more information, see Oracle’s [JDK SunJSSE provider documentation](https://docs.oracle.com/en/java/javase/11/security/oracle-providers.md#GUID-7093246A-31A3-4304-AC5F-5FB6400405E2) and the table of supported [Java cipher suite names](https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.md#jsse-cipher-suite-names).
+Supported cipher suites vary depending on Java version used, and entries look like `TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384`. For more information, see Oracle’s [JDK SunJSSE provider documentation](https://docs.oracle.com/en/java/javase/11/security/oracle-providers.html#GUID-7093246A-31A3-4304-AC5F-5FB6400405E2) and the table of supported [Java cipher suite names](https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#jsse-cipher-suite-names).
 
 ::::{note}
 To check the supported cipher suites locally run the following script: `$LS_HOME/bin/ruby -e 'p javax.net.ssl.SSLServerSocketFactory.getDefault.getSupportedCipherSuites'`.
