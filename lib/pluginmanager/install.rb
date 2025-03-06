@@ -79,6 +79,7 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
     install_gems_list!(gems)
     remove_unused_locally_installed_gems!
     remove_unused_integration_overlaps!
+    remove_orphan_dependencies!
   end
 
   private
@@ -213,7 +214,9 @@ class LogStash::PluginManager::Install < LogStash::PluginManager::Command
       plugin_gem = gemfile.find(plugin)
       if preserve?
         puts("Preserving Gemfile gem options for plugin #{plugin}") if plugin_gem && !plugin_gem.options.empty?
-        gemfile.update(plugin, version, options)
+        # if the plugin exists and no version was specified, keep the existing requirements
+        requirements = (plugin_gem && version.nil? ? plugin_gem.requirements : [version]).compact
+        gemfile.update(plugin, *requirements, options)
       else
         gemfile.overwrite(plugin, version, options)
       end
