@@ -13,7 +13,6 @@ gem "ruby-maven-libs", "~> 3", ">= 3.9.6.1"
 gem "logstash-output-elasticsearch", ">= 11.14.0"
 gem "polyglot", require: false
 gem "treetop", require: false
-gem "faraday", "~> 1", :require => false # due elasticsearch-transport (elastic-transport) depending faraday '~> 1'
 gem "minitar", "~> 1", :group => :build
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856

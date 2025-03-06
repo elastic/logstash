@@ -138,7 +138,7 @@ describe "Read configuration from elasticsearch" do
 
     begin
       res = elasticsearch_client.search(index: '.monitoring-logstash-*', body: query)
-    rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable
+    rescue Elastic::Transport::Transport::Errors::ServiceUnavailable
       return nil
     end
 
