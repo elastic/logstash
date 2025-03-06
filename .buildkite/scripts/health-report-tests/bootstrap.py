@@ -12,7 +12,7 @@ import yaml
 
 
 class Bootstrap:
-    ELASTIC_STACK_RELEASED_VERSION = "https://storage.googleapis.com/artifacts-api/releases/current/"
+    ELASTIC_STACK_RELEASED_VERSION_URL = "https://storage.googleapis.com/artifacts-api/releases/current/"
 
     def __init__(self) -> None:
         f"""
@@ -43,7 +43,7 @@ class Bootstrap:
                                      f"rerun again")
 
     def __resolve_latest_stack_version_for(self, major_version: str) -> str:
-        resp = util.call_url_with_retry(self.ELASTIC_STACK_RELEASED_VERSION + major_version)
+        resp = util.call_url_with_retry(self.ELASTIC_STACK_RELEASED_VERSION_URL + major_version)
         release_version = resp.text.strip()
         print(f"Resolved latest version for {major_version} is {release_version}.")
 
