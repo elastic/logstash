@@ -49,9 +49,9 @@ If you want the full content of your events to be sent as json, you should set t
     }
 ```
 
-For more information see [https://kafka.apache.org/38/documentation.html#theproducer](https://kafka.apache.org/38/documentation.md#theproducer)
+For more information see [https://kafka.apache.org/38/documentation.html#theproducer](https://kafka.apache.org/38/documentation.html#theproducer)
 
-Kafka producer configuration: [https://kafka.apache.org/38/documentation.html#producerconfigs](https://kafka.apache.org/38/documentation.md#producerconfigs)
+Kafka producer configuration: [https://kafka.apache.org/38/documentation.html#producerconfigs](https://kafka.apache.org/38/documentation.html#producerconfigs)
 
 ::::{note}
 This plugin does not support using a proxy when communicating to the Kafka broker.
@@ -222,7 +222,7 @@ Please note that specifying `jaas_path` and `kerberos_config` in the config file
 * Value type is [path](/reference/configuration-file-structure.md#path)
 * There is no default value for this setting.
 
-Optional path to kerberos config file. This is krb5.conf style as detailed in [https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html](https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.md)
+Optional path to kerberos config file. This is krb5.conf style as detailed in [https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html](https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html)
 
 
 ### `key_serializer` [plugins-outputs-kafka-key_serializer]
@@ -339,7 +339,7 @@ If you choose to set `retries`, a value greater than zero will cause the client 
 
 A value less than zero is a configuration error.
 
-Starting with version 10.5.0, this plugin will only retry exceptions that are a subclass of [RetriableException](https://kafka.apache.org/38/javadoc/org/apache/kafka/common/errors/RetriableException.md) and [InterruptException](https://kafka.apache.org/38/javadoc/org/apache/kafka/common/errors/InterruptException.md). If producing a message throws any other exception, an error is logged and the message is dropped without retrying. This prevents the Logstash pipeline from hanging indefinitely.
+Starting with version 10.5.0, this plugin will only retry exceptions that are a subclass of [RetriableException](https://kafka.apache.org/38/javadoc/org/apache/kafka/common/errors/RetriableException.html) and [InterruptException](https://kafka.apache.org/38/javadoc/org/apache/kafka/common/errors/InterruptException.html). If producing a message throws any other exception, an error is logged and the message is dropped without retrying. This prevents the Logstash pipeline from hanging indefinitely.
 
 In versions prior to 10.5.0, any exception is retried indefinitely unless the `retries` option is configured.
 
@@ -449,7 +449,7 @@ The Kerberos principal name that Kafka broker runs as. This can be defined eithe
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * Default value is `"GSSAPI"`
 
-[SASL mechanism](http://kafka.apache.org/documentation.md#security_sasl) used for client connections. This may be any mechanism for which a security provider is available. GSSAPI is the default mechanism.
+[SASL mechanism](http://kafka.apache.org/documentation.html#security_sasl) used for client connections. This may be any mechanism for which a security provider is available. GSSAPI is the default mechanism.
 
 
 ### `security_protocol` [plugins-outputs-kafka-security_protocol]

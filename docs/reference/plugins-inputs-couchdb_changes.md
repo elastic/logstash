@@ -20,7 +20,7 @@ For questions about the plugin, open a topic in the [Discuss](http://discuss.ela
 
 ## Description [_description_12]
 
-This CouchDB input allows you to automatically stream events from the CouchDB [_changes](http://guide.couchdb.org/draft/notifications.md) URI. Moreover, any "future" changes will automatically be streamed as well making it easy to synchronize your CouchDB data with any target destination
+This CouchDB input allows you to automatically stream events from the CouchDB [_changes](http://guide.couchdb.org/draft/notifications.html) URI. Moreover, any "future" changes will automatically be streamed as well making it easy to synchronize your CouchDB data with any target destination
 
 ### Upsert and delete [_upsert_and_delete]
 

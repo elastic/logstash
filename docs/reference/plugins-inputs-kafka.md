@@ -48,9 +48,9 @@ Logstash instances by default form a single logical group to subscribe to Kafka 
 
 Ideally you should have as many threads as the number of partitions for a perfect balance — more threads than partitions means that some threads will be idle
 
-For more information see [https://kafka.apache.org/38/documentation.html#theconsumer](https://kafka.apache.org/38/documentation.md#theconsumer)
+For more information see [https://kafka.apache.org/38/documentation.html#theconsumer](https://kafka.apache.org/38/documentation.html#theconsumer)
 
-Kafka consumer configuration: [https://kafka.apache.org/38/documentation.html#consumerconfigs](https://kafka.apache.org/38/documentation.md#consumerconfigs)
+Kafka consumer configuration: [https://kafka.apache.org/38/documentation.html#consumerconfigs](https://kafka.apache.org/38/documentation.html#consumerconfigs)
 
 
 ## Metadata fields [_metadata_fields]
@@ -62,7 +62,7 @@ The following metadata from Kafka broker are added under the `[@metadata]` field
 * `[@metadata][kafka][partition]`: Partition info for this message.
 * `[@metadata][kafka][offset]`: Original record offset for this message.
 * `[@metadata][kafka][key]`: Record key, if any.
-* `[@metadata][kafka][timestamp]`: Timestamp in the Record. Depending on your broker configuration, this can be either when the record was created (default) or when it was received by the broker. See more about property log.message.timestamp.type at [https://kafka.apache.org/38/documentation.html#brokerconfigs](https://kafka.apache.org/38/documentation.md#brokerconfigs)
+* `[@metadata][kafka][timestamp]`: Timestamp in the Record. Depending on your broker configuration, this can be either when the record was created (default) or when it was received by the broker. See more about property log.message.timestamp.type at [https://kafka.apache.org/38/documentation.html#brokerconfigs](https://kafka.apache.org/38/documentation.html#brokerconfigs)
 
 Metadata is only added to the event if the `decorate_events` option is set to `basic` or `extended` (it defaults to `none`).
 
@@ -384,7 +384,7 @@ Please note that specifying `jaas_path` and `kerberos_config` in the config file
 * Value type is [path](/reference/configuration-file-structure.md#path)
 * There is no default value for this setting.
 
-Optional path to kerberos config file. This is krb5.conf style as detailed in [https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html](https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.md)
+Optional path to kerberos config file. This is krb5.conf style as detailed in [https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html](https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html)
 
 
 ### `key_deserializer_class` [plugins-inputs-kafka-key_deserializer_class]
@@ -439,7 +439,7 @@ The name of the partition assignment strategy that the client uses to distribute
 * `sticky`
 * `cooperative_sticky`
 
-These map to Kafka’s corresponding [`ConsumerPartitionAssignor`](https://kafka.apache.org/38/javadoc/org/apache/kafka/clients/consumer/ConsumerPartitionAssignor.md) implementations.
+These map to Kafka’s corresponding [`ConsumerPartitionAssignor`](https://kafka.apache.org/38/javadoc/org/apache/kafka/clients/consumer/ConsumerPartitionAssignor.html) implementations.
 
 
 ### `poll_timeout_ms` [plugins-inputs-kafka-poll_timeout_ms]
@@ -581,7 +581,7 @@ The Kerberos principal name that Kafka broker runs as. This can be defined eithe
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * Default value is `"GSSAPI"`
 
-[SASL mechanism](http://kafka.apache.org/documentation.md#security_sasl) used for client connections. This may be any mechanism for which a security provider is available. GSSAPI is the default mechanism.
+[SASL mechanism](http://kafka.apache.org/documentation.html#security_sasl) used for client connections. This may be any mechanism for which a security provider is available. GSSAPI is the default mechanism.
 
 
 ### `schema_registry_key` [plugins-inputs-kafka-schema_registry_key]

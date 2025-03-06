@@ -135,7 +135,7 @@ The recommended ways to provide the additional path configuration are:
 * an environment variable, or
 * a config file to provide the additional path configuration.
 
-See the "MODULE LOCATIONS" section of the [smi_config documentation](https://www.ibr.cs.tu-bs.de/projects/libsmi/smi_config.md#MODULE%20LOCATIONS) for more information.
+See the "MODULE LOCATIONS" section of the [smi_config documentation](https://www.ibr.cs.tu-bs.de/projects/libsmi/smi_config.html#MODULE%20LOCATIONS) for more information.
 
 
 ### Option 1: Use an environment variable [plugins-integrations-snmp-env-var]

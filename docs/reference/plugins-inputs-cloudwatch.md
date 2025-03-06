@@ -214,7 +214,7 @@ The default, `900`, means check every 15 minutes. Setting this value too low (ge
 * Value type is [array](/reference/configuration-file-structure.md#array)
 * Default value is `["CPUUtilization", "DiskReadOps", "DiskWriteOps", "NetworkIn", "NetworkOut"]`
 
-Specify the metrics to fetch for the namespace. The defaults are AWS/EC2 specific. See [http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html](http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.md) for the available metrics for other namespaces.
+Specify the metrics to fetch for the namespace. The defaults are AWS/EC2 specific. See [http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html](http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html) for the available metrics for other namespaces.
 
 
 ### `namespace` [plugins-inputs-cloudwatch-namespace]
@@ -224,7 +224,7 @@ Specify the metrics to fetch for the namespace. The defaults are AWS/EC2 specifi
 
 If undefined, LogStash will complain, even if codec is unused. The service namespace of the metrics to fetch.
 
-The default is for the EC2 service. See [http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html](http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.md) for valid values.
+The default is for the EC2 service. See [http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html](http://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/aws-namespaces.html) for valid values.
 
 
 ### `period` [plugins-inputs-cloudwatch-period]
@@ -258,7 +258,7 @@ The AWS Region
 * Value type is [string](/reference/configuration-file-structure.md#string)
 * There is no default value for this setting.
 
-The AWS IAM Role to assume, if any. This is used to generate temporary credentials, typically for cross-account access. See the [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.md) for more information.
+The AWS IAM Role to assume, if any. This is used to generate temporary credentials, typically for cross-account access. See the [AssumeRole API documentation](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) for more information.
 
 
 ### `role_session_name` [plugins-inputs-cloudwatch-role_session_name]
