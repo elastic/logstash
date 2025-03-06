@@ -44,7 +44,7 @@ class Bootstrap:
 
     def __resolve_latest_stack_version_for(self, major_version: str) -> str:
         resp = util.call_url_with_retry(self.ELASTIC_STACK_RELEASED_VERSION + major_version)
-        release_version = resp.text
+        release_version = resp.text.strip()
         print(f"Resolved latest version for {major_version} is {release_version}.")
 
         if release_version == "":
