@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10, time = 3000, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
 public class BufferedTokenizerBenchmark {
 
