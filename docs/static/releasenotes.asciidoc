@@ -7,6 +7,7 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-17-2,Logstash 8.17.2>>
 * <<logstash-8-17-1,Logstash 8.17.1>>
 * <<logstash-8-17-0,Logstash 8.17.0>>
+* <<logstash-8-16-5,Logstash 8.16.5>>
 * <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
 * <<logstash-8-16-2,Logstash 8.16.2>>
@@ -242,7 +243,7 @@ If you wish to also include breaking changes, you must specify `--level=major` h
 [[known-issue-8-17-0-jvm]]
 ===== JVM version changes needed when upgrading {ls} from 8.12.0 (or earlier)
 
-If the `jvm.options` file was modified and not overwritten with the newest version, you may see a "deserialize invocation error" message, causing the pipeline to crash. 
+If the `jvm.options` file was modified and not overwritten with the newest version, you may see a "deserialize invocation error" message, causing the pipeline to crash.
 Users are affected if the Persistent Queue (PQ) is enabled, and the pipeline is processing messages larger than 20MB.
 
 **Solution:** Apply the default change contained in the newer 'jvm.options' file, as seen in this https://github.com/elastic/logstash/blob/v8.17.0/config/jvm.options#L74-L90[example].
@@ -256,9 +257,9 @@ unable to process event. {:message=>"input buffer full", :class=>"Java::JavaLang
 ```
 The issue was fixed in https://github.com/elastic/logstash/pull/16760.
 
-This problem is most likely to be seen when you are using the <<plugins-integrations-logstash,{ls} integration>> plugin to ship data between two {ls} instances, but may appear in other situations, too. 
+This problem is most likely to be seen when you are using the <<plugins-integrations-logstash,{ls} integration>> plugin to ship data between two {ls} instances, but may appear in other situations, too.
 
-**Workaround for {ls}-to-{ls} communication** 
+**Workaround for {ls}-to-{ls} communication**
 
 The {ls}-to-{ls} issue can be mitigated by:
 
@@ -303,6 +304,31 @@ Other `json_lines` codec issues can be mitigated by:
 *Http_client Mixin - 7.5.0*
 
 * Adds new mixin configuration option `with_obsolete` to mark `ssl` options as obsolete https://github.com/logstash-plugins/logstash-mixin-http_client/pull/46[#46]
+
+[[logstash-8-16-5]]
+=== Logstash 8.16.5 Release Notes
+
+[[notable-8-16-5]]
+==== Notable issues fixed
+
+* Improves performance of the Persistent Queue, especially in the case of large events, by moving deserialization out of the exclusive access lock. https://github.com/elastic/logstash/pull/17050[#17050]
+* Improve error logging when Centralized Pipeline Management cannot find a configured pipeline. https://github.com/elastic/logstash/pull/17052[#17052]
+
+[[plugins-8-16-5]]
+==== Plugins
+
+*Beats Input - 6.9.3*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-beats/pull/514[#514]
+
+*Http Input - 3.10.2*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-http/pull/194[#194]
+
+*Tcp Input - 6.4.6*
+
+* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-tcp/pull/233[#233]
+
 
 [[logstash-8-16-4]]
 === Logstash 8.16.4 Release Notes
