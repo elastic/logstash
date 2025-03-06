@@ -26,19 +26,7 @@ pull_request_rules:
           branches, such as:
           * `backport-8./d` is the label to automatically backport to the `8./d` branch. `/d` is the digit.
           * `backport-8.x` is the label to automatically backport to the `8.x` branch.
-
-  - name: add backport-8.x for the all the PRs targeting main if no skipped or assigned already
-    conditions:
-      - -label~=^(backport-skip|backport-8.x)$
-      - base=main
-    actions:
-      comment:
-        message: |
-          `backport-8.x` has been added to help with the transition to the new branch `8.x`.
-          If you don't need it please use `backport-skip` label.
-      label:
-        add:
-          - backport-8.x
+          * If no backport is necessary, please add the `backport-skip` label
 
   - name: remove backport-skip label
     conditions:
