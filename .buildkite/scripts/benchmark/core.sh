@@ -81,8 +81,8 @@ pull_images() {
   else
     # pull the latest snapshot logstash image
     # select the SNAPSHOT artifact with the highest semantic version number
-    LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s https://artifacts-api.elastic.co/v1/versions | jq -r '.versions | map(select(endswith("-SNAPSHOT"))) | max_by(rtrimstr("-SNAPSHOT")|split(".")|map(tonumber))' )
-    BUILD_ID=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://artifacts-api.elastic.co/v1/versions/${LS_VERSION}/builds/latest" | jq -re '.build.build_id')
+    LS_VERSION=$( curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://storage.googleapis.com/artifacts-api/snapshots/main.json" | jq -r '.version' )
+    BUILD_ID=$(curl --retry-all-errors --retry 5 --retry-delay 1 -s "https://storage.googleapis.com/artifacts-api/snapshots/main.json" | jq -r '.build_id')
     ARCH=$(arch)
     IMAGE_URL="https://snapshots.elastic.co/${BUILD_ID}/downloads/logstash/logstash-$LS_VERSION-docker-image-$ARCH.tar.gz"
     IMAGE_FILENAME="$LS_VERSION.tar.gz"
