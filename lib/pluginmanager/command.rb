@@ -47,6 +47,31 @@ class LogStash::PluginManager::Command < Clamp::Command
     end
   end
 
+  def remove_orphan_dependencies!
+    locked_gem_names = ::Bundler::LockfileParser.new(File.read(LogStash::Environment::LOCKFILE)).specs.map(&:full_name).to_set
+    orphan_gem_specs = ::Gem::Specification.each
+                                           .reject(&:stubbed?) # skipped stubbed (uninstalled) gems
+                                           .reject(&:default_gem?) # don't touch jruby-included default gems
+                                           .reject{ |spec| locked_gem_names.include?(spec.full_name) }
+                                           .sort
+
+    inactive_plugins, orphaned_dependencies = orphan_gem_specs.partition { |spec| LogStash::PluginManager.logstash_plugin_gem_spec?(spec) }
+
+    # uninstall plugins first, to limit damage should one fail to uninstall
+    inactive_plugins.each { |plugin| uninstall_gem!("inactive plugin", plugin) }
+    orphaned_dependencies.each { |dep| uninstall_gem!("orphaned dependency", dep) }
+  end
+
+  def uninstall_gem!(desc, spec)
+    require "rubygems/uninstaller"
+    Gem::DefaultUserInteraction.use_ui(debug? ? Gem::DefaultUserInteraction.ui : Gem::SilentUI.new) do
+      Gem::Uninstaller.new(spec.name, version: spec.version, force: true, executables: true).uninstall
+    end
+    puts "cleaned #{desc} #{spec.name} (#{spec.version})"
+  rescue Gem::InstallError => e
+    report_exception("Failed to uninstall `#{spec.full_name}`", e)
+  end
+
   def relative_path(path)
     require "pathname"
     ::Pathname.new(path).relative_path_from(::Pathname.new(LogStash::Environment::LOGSTASH_HOME)).to_s
