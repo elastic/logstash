@@ -1,4 +1,5 @@
 require 'pathname'
+require 'bundler/definition'
 
 shared_context "pluginmanager validation helpers" do
 
@@ -40,10 +41,42 @@ shared_context "pluginmanager validation helpers" do
     end
   end
 
+  matcher :be_in_gemfile do
+    match do |actual|
+      common(actual)
+      @dep && (@version_requirements.nil? || @version_requirements == @dep.requirement)
+    end
+    define_method :common do |actual|
+      @definition = Bundler::Definition.build(logstash_gemfile, logstash_gemfile_lock, false)
+      @dep = @definition.dependencies.find { |s| s.name == actual }
+    end
+    chain :with_requirements do |version_requirements|
+      @version_requirements = Gem::Requirement.create(version_requirements)
+    end
+    chain :without_requirements do
+      @version_requirements = Gem::Requirement.default
+    end
+    failure_message do |actual|
+      if @dep.nil?
+        "expected the gem to be in the gemspec, but it wasn't (#{@definition.dependencies.map(&:name)})"
+      else
+        "expected the `#{actual}` gem to have requirements `#{@version_requirements}`, but they were `#{@dep.requirement}`"
+      end
+    end
+  end
+
   def logstash_home
     return super() if defined?(super)
     return @logstash.logstash_home if @logstash
     fail("no @logstash, so we can't get logstash_home")
+  end
+
+  def logstash_gemfile
+    Pathname.new(logstash_home) / "Gemfile"
+  end
+
+  def logstash_gemfile_lock
+    Pathname.new(logstash_home) / "Gemfile.lock"
   end
 
   def logstash_gemdir
