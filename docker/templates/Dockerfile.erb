@@ -1,5 +1,5 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
-<% if image_flavor == 'wolfi' -%>
+<% if %w(wolfi observability-sre).include?(image_flavor) -%>
 FROM docker.elastic.co/wolfi/go:1-dev as builder-env2yaml
 
 COPY env2yaml/env2yaml.go /tmp/go/src/env2yaml/env2yaml.go
@@ -70,7 +70,7 @@ RUN dnf -y upgrade && \
   rm /tmp/logstash.tar.gz
 <%# End image_flavor 'ironbank' %>
 <% else -%>
-<%# Start image_flavor 'full', oss', 'ubi8', 'wolfi' %>
+<%# Start image_flavor 'full', oss', 'ubi8', 'wolfi', 'observability-sre' %>
   <% if local_artifacts == 'false' -%>
     <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
   <% else -%>
@@ -79,6 +79,9 @@ RUN dnf -y upgrade && \
   <% if image_flavor == 'oss' -%>
     <%   tarball = "logstash-oss-#{elastic_version}-linux-$(arch).tar.gz" -%>
     <%   license = 'Apache 2.0' -%>
+  <% elsif image_flavor == 'observability-sre' %>
+    <%   tarball = "logstash-observability-sre-#{elastic_version}-linux-$(arch).tar.gz" -%>
+    <%   license = 'Elastic License' -%>
   <% else -%>
     <%   tarball = "logstash-#{elastic_version}-linux-$(arch).tar.gz" -%>
     <%   license = 'Elastic License' -%>
@@ -89,7 +92,7 @@ RUN dnf -y upgrade && \
     <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
-  <% elsif image_flavor == 'wolfi' %>
+  <% elsif %w(wolfi observability-sre).include?(image_flavor) %>
     <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
     <%   package_manager = 'apk' -%>
     <%   arch_command = 'uname -m' -%>
@@ -105,7 +108,7 @@ RUN dnf -y upgrade && \
 FROM <%= base_image %>
 
 RUN for iter in {1..10}; do \
-<% if image_flavor == 'wolfi' %>
+<% if %w(wolfi observability-sre).include?(image_flavor) %>
   <%= package_manager %> add --no-cache curl bash openssl && \
 <% else -%>
   <% if image_flavor == 'full' || image_flavor == 'oss' -%>
@@ -141,7 +144,7 @@ sleep 10; done; \
 (exit $exit_code)
 
 # Provide a non-root user to run the process.
-<% if image_flavor == 'wolfi' -%>
+<% if %w(wolfi observability-sre).include?(image_flavor) -%>
 RUN addgroup -g 1000 logstash && \
   adduser -u 1000 -G logstash \
   --disabled-password \
@@ -186,7 +189,7 @@ RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
-<% if image_flavor == 'wolfi' -%>
+<% if %w(wolfi observability-sre).include?(image_flavor) -%>
 COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
 <% else -%>
 COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
@@ -209,7 +212,7 @@ RUN set -eux; env2yamlarch="$(<%= arch_command %>)"; \
 COPY bin/docker-entrypoint /usr/local/bin/
 
 RUN chmod 0755 /usr/local/bin/docker-entrypoint
-<%# End image_flavor 'full', oss', 'ubi8', 'wolfi' %>
+<%# End image_flavor 'full', oss', 'ubi8', 'wolfi', 'observability-sre' %>
 <% end -%>
 
 USER 1000
