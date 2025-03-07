@@ -562,7 +562,7 @@ paths:
                                           type: object
                                           properties:
                                             worker_utilization:
-                                              $ref: '#/components/schemas/FlowCapture'
+                                              $ref: '#/components/schemas/FlowStat'
                                     impacts:
                                       type: array
                                       description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
@@ -674,7 +674,7 @@ components:
         - red
         - unknown
         - yellow
-    FlowCapture:
+    FlowStat:
       type: object
       properties:
         current:
@@ -690,6 +690,9 @@ components:
           type: number
           format: double
         last_1_hour:
+          type: number
+          format: double
+        last_24_hours:
           type: number
           format: double
         lifetime:
