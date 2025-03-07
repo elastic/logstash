@@ -3,6 +3,7 @@ pipeline.workers: ${WORKER}
 pipeline.batch.size: ${BATCH_SIZE}
 queue.type: ${QTYPE}
 
+xpack.monitoring.allow_legacy_collection: true
 xpack.monitoring.enabled: true
 xpack.monitoring.elasticsearch.username: ${MONITOR_ES_USER}
 xpack.monitoring.elasticsearch.password: ${MONITOR_ES_PW}
