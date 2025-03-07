@@ -64,17 +64,12 @@ tags:
     #   description:
     #   url:
 paths:
-  /_node/<types>:
+  /_node/pipelines:
     get:
-      summary: Get node info
+      summary: Get pipeline-specific information
       description: |
-        Get information about Logstash nodes, where `<types>` (optional) specifies the types of node info you want returned.
-        You can limit the info that is returned by combining any of these types in a comma-separated list:
-
-        - `pipelines`
-        - `os`
-        - `jvm`
-      operationId: nodeInfo
+        Gets pipeline-specific information and settings for each pipeline.
+      operationId: nodeInfoPipelines
       tags:
         - node info
       parameters:
@@ -89,23 +84,171 @@ paths:
           description: Indicates a successful call
           content:
             application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      pipelines:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/NodeInfoPipeline'
               examples:
-                nodeInfoExample1:
+                nodeInfoPipelineExample1:
                   # summary:
                   value:
                     pipelines:
-                      - test:
-                          workers: 1
-                          batch_size: 1
-                          batch_delay: 5
-                          config_reload_automatic: false
-                          config_reload_interval: 3
-                      - test2:
-                          workers: 8
-                          batch_size: 125
-                          batch_delay: 5
-                          config_reload_automatic: false
-                          config_reload_interval: 3
+                      test:
+                        workers: 1
+                        batch_size: 1
+                        batch_delay: 5
+                        config_reload_automatic: false
+                        config_reload_interval: 3
+                      test2:
+                        workers: 8
+                        batch_size: 125
+                        batch_delay: 5
+                        config_reload_automatic: false
+                        config_reload_interval: 3
+
+  /_node/pipelines/{pipeline_name}:
+    get:
+      summary: Get a specific pipeline information
+      description: Retrieves details for a specific pipeline.
+      operationId: nodeInfoPipeline
+      tags:
+        - node info
+      parameters:
+        - name: pipeline_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the pipeline to retrieve information for.
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      pipelines:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/NodeInfoPipeline'
+              examples:
+                nodeInfoPipelineExample1:
+                  # summary:
+                  value:
+                    pipelines:
+                      test:
+                        workers: 1
+                        batch_size: 1
+                        batch_delay: 5
+                        config_reload_automatic: false
+                        config_reload_interval: 3
+
+  /_node/os:
+    get:
+      summary: Get node-level OS information.
+      description: |
+        Show the OS name, architecture, version, and available processors
+      operationId: nodeInfoOS
+      tags:
+        - node info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      os:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          arch:
+                            type: string
+                          version:
+                            type: string
+                          available_processors:
+                            type: integer
+
+  /_node/jvm:
+    get:
+      summary: Gets node-level JVM info, including info about threads.
+      description: |
+        Show node-level JVM stats, such as the JVM process id, version, VM info, memory usage, and info about garbage collectors
+      operationId: nodeInfoJVM
+      tags:
+        - node info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      jvm:
+                        type: object
+                        properties:
+                          pid:
+                            type: integer
+                          version:
+                            type: string
+                          vm_name:
+                            type: string
+                          vm_version:
+                            type: string
+                          vm_vendor:
+                            type: string
+                          start_time_in_millis:
+                            type: integer
+                          mem:
+                            type: object
+                            properties:
+                              heap_init_in_bytes:
+                                type: integer
+                              heap_max_in_bytes:
+                                type: integer
+                              non_heap_init_in_bytes:
+                                type: integer
+                              non_heap_max_in_bytes:
+                                type: integer
+                          gc_collectors:
+                            type: array
+                            items:
+                              type: string
 
   /_node/plugins:
     get:
@@ -264,19 +407,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  hot_threads:
-                    type: object
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
                     properties:
-                      busiest_threads:
-                        type: integer
-                      threads:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Thread'
-                      time:
-                        type: string
+                      hot_threads:
+                        type: object
+                        properties:
+                          busiest_threads:
+                            type: integer
+                          threads:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Thread'
+                          time:
+                            type: string
               examples:
                 nodeHotThreadsExample1:
                   # summary:
@@ -286,14 +431,15 @@ paths:
                       busiest_threads: 3
                       threads:
                         - name: Ruby-0-Thread-7
+                          thread_id: 37
                           percent_of_cpu_time: 0.0
                           state: timed_waiting
-                          path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
                           traces:
                             - "java.lang.Object.wait(Native Method)"
                             - "org.jruby.RubyThread.sleep(RubyThread.java:1002)"
                             - "org.jruby.RubyKernel.sleep(RubyKernel.java:803)"
                         - name: "[test2]>worker3"
+                          thread_id: 10
                           percent_of_cpu_time: 0.85
                           state: waiting
                           traces:
@@ -301,6 +447,7 @@ paths:
                             - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
                             - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
                         - name: "[test2]>worker2"
+                          thread_id: 11
                           percent_of_cpu_time: 0.85
                           state: runnable
                           traces:
@@ -346,110 +493,90 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  host:
-                    type: string
-                    description: The name of the host machine.
-                  version:
-                    type: string
-                    description: The version of the Logstash instance.
-                  http_address:
-                    type: string
-                    description: The HTTP address where the Logstash instance is accessible including port.
-                  id:
-                    type: string
-                    description: A unique identifier (uuid) for the Logstash instance.
-                  name:
-                    type: string
-                    description: The name of the Logstash instance.
-                  ephemeral_id:
-                    type: string
-                    description: A unique identifier for the ephemeral session of the Logstash instance.
-                  indicators:
-                    description: Information about the health of Logstash indicators.
-                    type: object
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
                     properties:
-                      pipelines:
+                      symptom:
+                        type: string
+                        example: "3 indicators are healthy"
+                      indicators:
+                        description: Information about the health of Logstash indicators.
                         type: object
                         properties:
-                          status:
-                            $ref: '#/components/schemas/Status'
-                          symptom:
-                            type: string
-                          indicators:
+                          pipelines:
                             type: object
-                            additionalProperties:
-                              description: "pipeline name"
-                              type: object
-                              properties:
-                                status:
-                                  $ref: '#/components/schemas/Status'
-                                symptom:
-                                  type: string
-                                  description: "A message providing information about the current health status."
-                                  example: "The pipeline is healthy"
-                                details:
+                            properties:
+                              status:
+                                $ref: '#/components/schemas/Status'
+                              symptom:
+                                type: string
+                              indicators:
+                                type: object
+                                additionalProperties:
+                                  description: "pipeline name"
                                   type: object
-                                  description: "An object that contains additional information about the indicator that has lead to the current health status result."
                                   properties:
                                     status:
+                                      $ref: '#/components/schemas/Status'
+                                    symptom:
+                                      type: string
+                                      description: "A message providing information about the current health status."
+                                      example: "The pipeline is healthy"
+                                    details:
                                       type: object
+                                      description: "An object that contains additional information about the indicator that has lead to the current health status result."
                                       properties:
-                                        state:
-                                          type: string
-                                          enum:
-                                            - LOADING
-                                            - RUNNING
-                                            - FINISHED
-                                            - TERMINATED
-                                    flow:
-                                      type: object
-                                      properties:
-                                        worker_utilization:
+                                        status:
                                           type: object
-                                          $ref: '#/components/schemas/FlowCapture'
-                                impacts:
-                                  type: array
-                                  description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
-                                  items:
-                                    type: object
-                                    properties:
-                                      severity:
-                                        type: integer
-                                        minimum: 1
-                                        maximum: 10
-                                        description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
-                                      description:
-                                        type: string
-                                        description: "A description of the impact on Logstash"
-                                      impact_areas:
-                                        type: array
-                                        description: "The areas Logstash functionality that this impact affects. Possible values are:"
-                                        example: ["pipeline_execution"]
-                                        items:
-                                          type: string
-                                diagnosis:
-                                  type: array
-                                  items:
-                                    type: object
-                                    properties:
-                                      cause:
-                                        type: string
-                                        description: "A description of a root cause of this health problem."
-                                      action:
-                                        type: string
-                                        description: "A brief description the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field"
-                                      help_url:
-                                        type: string
-                                        format: uri
-                                        description: "A link to the troubleshooting guide that’ll fix the health problem."
-
-                  status:
-                    $ref: '#/components/schemas/Status'
-                  symptom:
-                    type: string
-                    example: "3 indicators are healthy"
+                                          properties:
+                                            state:
+                                              type: string
+                                              enum:
+                                                - LOADING
+                                                - RUNNING
+                                                - FINISHED
+                                                - TERMINATED
+                                        flow:
+                                          type: object
+                                          properties:
+                                            worker_utilization:
+                                              $ref: '#/components/schemas/FlowCapture'
+                                    impacts:
+                                      type: array
+                                      description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
+                                      items:
+                                        type: object
+                                        properties:
+                                          severity:
+                                            type: integer
+                                            minimum: 1
+                                            maximum: 10
+                                            description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
+                                          description:
+                                            type: string
+                                            description: "A description of the impact on Logstash"
+                                          impact_areas:
+                                            type: array
+                                            description: "The areas Logstash functionality that this impact affects. Possible values are:"
+                                            example: ["pipeline_execution"]
+                                            items:
+                                              type: string
+                                    diagnosis:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          cause:
+                                            type: string
+                                            description: "A description of a root cause of this health problem."
+                                          action:
+                                            type: string
+                                            description: "A brief description the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field"
+                                          help_url:
+                                            type: string
+                                            format: uri
+                                            description: "A link to the troubleshooting guide that’ll fix the health problem."
 
 components:
   securitySchemes:
@@ -459,6 +586,46 @@ components:
       name: Authorization
       type: apiKey
   schemas:
+    Common:
+      type: object
+      properties:
+        host:
+          type: string
+          description: The name of the host machine.
+        version:
+          type: string
+          description: The version of the Logstash instance.
+        http_address:
+          type: string
+          description: The HTTP address where the Logstash instance is accessible including port.
+        id:
+          type: string
+          description: A unique identifier (uuid) for the Logstash instance.
+        name:
+          type: string
+          description: The name of the Logstash instance.
+        ephemeral_id:
+          type: string
+          description: A unique identifier for the ephemeral session of the Logstash instance.
+        snapshot:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status'
+    NodeInfoPipeline:
+      type: object
+      properties:
+        workers:
+          type: integer
+        batch_size:
+          type: integer
+        batch_delay:
+          type: integer
+        config_reload_automatic:
+          type: boolean
+        config_reload_interval:
+          type: integer
+
     Status:
       type: string
       description: |
@@ -500,8 +667,8 @@ components:
       properties:
         name:
           type: string
-        path:
-          type: string
+        thread_id:
+          type: integer
         percent_of_cpu_time:
           type: number
           format: double
