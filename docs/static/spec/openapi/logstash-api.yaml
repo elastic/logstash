@@ -32,38 +32,38 @@ security:
 tags:
   - name: health
     x-displayName: Health report
-    # description: 
+    # description:
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: hot threads
     x-displayName: Hot threads
-    # description: 
+    # description:
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: node info
     x-displayName: Node info
     description: |
       Logstash node info, like pipeline settings, OS info, and JVM info.
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: node stats
     x-displayName: Node stats
     description: |
       Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: plugin info
     x-displayName: Plugins info
     description: |
       Plugin info, including a list of installed plugins.
     # externalDocs:
-    #   description: 
-    #   url: 
-paths: 
+    #   description:
+    #   url:
+paths:
   /_node/<types>:
     get:
       summary: Get node info
@@ -94,18 +94,18 @@ paths:
                   # summary:
                   value:
                     pipelines:
-                      - test: 
+                      - test:
                           workers: 1
                           batch_size: 1
                           batch_delay: 5
                           config_reload_automatic: false
                           config_reload_interval: 3
-                      - test2: 
+                      - test2:
                           workers: 8
                           batch_size: 125
                           batch_delay: 5
                           config_reload_automatic: false
-                          config_reload_interval: 3                      
+                          config_reload_interval: 3
 
   /_node/plugins:
     get:
@@ -141,7 +141,7 @@ paths:
                       - name: logstash-codec-dots
                         version: 3.0.2
                       - name: logstash-coded-edn
-                        version: 3.0.2 
+                        version: 3.0.2
 
   /_node/stats:
     get:
@@ -158,7 +158,7 @@ paths:
         - `reloads` gets runtime stats about config reload successes and failures.
         - `os` gets runtime stats about cgroups when Logstash is running in a container.
         - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
-        
+
       operationId: nodeStats
       tags:
         - node stats
@@ -223,7 +223,7 @@ paths:
       summary: Get hot threads
       description: >
         Get information about current hot threads for Logstash.
-        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute. 
+        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute.
       operationId: nodeHot_threads
       tags:
         - hot threads
@@ -233,19 +233,19 @@ paths:
           schema:
             type: integer
           description: >
-            The number of hot threads to return. The default is 10. 
+            The number of hot threads to return. The default is 10.
         - name: stacktrace_size
           in: query
           schema:
             type: integer
           description: >
-            The depth of the stack trace to report for each thread. The default is 50. 
+            The depth of the stack trace to report for each thread. The default is 50.
         - name: ignore_idle_threads
           in: query
           schema:
             type: boolean
           description: >
-            If true, does not return idle threads. The default is `true`. 
+            If true, does not return idle threads. The default is `true`.
         - name: pretty
           in: query
           schema:
@@ -284,7 +284,7 @@ paths:
                     hot_threads:
                       time: 2025-01-06T18:25:28-07:00
                       busiest_threads: 3
-                      threads: 
+                      threads:
                         - name: Ruby-0-Thread-7
                           percent_of_cpu_time: 0.0
                           state: timed_waiting
@@ -329,7 +329,7 @@ paths:
         
         NOTE: The health indicators perform root cause analysis of non-green health statuses. 
         This can be computationally expensive when called frequently.
-        
+
       operationId: healthStatus
       tags:
         - health
@@ -348,11 +348,109 @@ paths:
               schema:
                 type: object
                 properties:
+                  host:
+                    type: string
+                    description: The name of the host machine.
+                  version:
+                    type: string
+                    description: The version of the Logstash instance.
+                  http_address:
+                    type: string
+                    description: The HTTP address where the Logstash instance is accessible including port.
+                  id:
+                    type: string
+                    description: A unique identifier (uuid) for the Logstash instance.
+                  name:
+                    type: string
+                    description: The name of the Logstash instance.
+                  ephemeral_id:
+                    type: string
+                    description: A unique identifier for the ephemeral session of the Logstash instance.
                   indicators:
                     description: Information about the health of Logstash indicators.
                     type: object
+                    properties:
+                      pipelines:
+                        type: object
+                        properties:
+                          status:
+                            $ref: '#/components/schemas/Status'
+                          symptom:
+                            type: string
+                          indicators:
+                            type: object
+                            additionalProperties:
+                              description: "pipeline name"
+                              type: object
+                              properties:
+                                status:
+                                  $ref: '#/components/schemas/Status'
+                                symptom:
+                                  type: string
+                                  description: "A message providing information about the current health status."
+                                  example: "The pipeline is healthy"
+                                details:
+                                  type: object
+                                  description: "An object that contains additional information about the indicator that has lead to the current health status result."
+                                  properties:
+                                    status:
+                                      type: object
+                                      properties:
+                                        state:
+                                          type: string
+                                          enum:
+                                            - LOADING
+                                            - RUNNING
+                                            - FINISHED
+                                            - TERMINATED
+                                    flow:
+                                      type: object
+                                      properties:
+                                        worker_utilization:
+                                          type: object
+                                          $ref: '#/components/schemas/FlowCapture'
+                                impacts:
+                                  type: array
+                                  description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
+                                  items:
+                                    type: object
+                                    properties:
+                                      severity:
+                                        type: integer
+                                        minimum: 1
+                                        maximum: 10
+                                        description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
+                                      description:
+                                        type: string
+                                        description: "A description of the impact on Logstash"
+                                      impact_areas:
+                                        type: array
+                                        description: "The areas Logstash functionality that this impact affects. Possible values are:"
+                                        example: ["pipeline_execution"]
+                                        items:
+                                          type: string
+                                diagnosis:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      cause:
+                                        type: string
+                                        description: "A description of a root cause of this health problem."
+                                      action:
+                                        type: string
+                                        description: "A brief description the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field"
+                                      help_url:
+                                        type: string
+                                        format: uri
+                                        description: "A link to the troubleshooting guide that’ll fix the health problem."
+
                   status:
-                    $ref: '#/components/schemas/Statuses'
+                    $ref: '#/components/schemas/Status'
+                  symptom:
+                    type: string
+                    example: "3 indicators are healthy"
+
 components:
   securitySchemes:
     apiKeyAuth:
@@ -361,7 +459,7 @@ components:
       name: Authorization
       type: apiKey
   schemas:
-    Statuses:
+    Status:
       type: string
       description: |
         Health status of Logstash, based on the aggregated status of all indicators.
@@ -370,12 +468,33 @@ components:
         - `green`: Logstash is healthy.
         - `unknown`: Logstash health could not be determined.
         - `yellow`: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
-        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.  
+        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.
       enum:
         - green
         - red
         - unknown
         - yellow
+    FlowCapture:
+      type: object
+      properties:
+        current:
+          type: number
+          format: double
+        last_1_minute:
+          type: number
+          format: double
+        last_5_minutes:
+          type: number
+          format: double
+        last_15_minutes:
+          type: number
+          format: double
+        last_1_hour:
+          type: number
+          format: double
+        lifetime:
+          type: number
+          format: double
     Thread:
       type: object
       properties:
