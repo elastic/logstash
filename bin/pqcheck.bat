@@ -16,7 +16,7 @@ for %%i in ("%LS_HOME%\logstash-core\lib\jars\*.jar") do (
 	call :concat "%%i"
 )
 
-"%JAVACMD%" "%JAVA_OPTS%" -cp "%CLASSPATH%" org.logstash.ackedqueue.PqCheck %*
+"%JAVACMD%" %JAVA_OPTS% org.logstash.ackedqueue.PqCheck %*
 
 :concat
 IF not defined CLASSPATH (
