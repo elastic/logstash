@@ -87,6 +87,7 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       pipelines:
@@ -139,6 +140,7 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       pipelines:
@@ -180,6 +182,7 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       os:
@@ -217,6 +220,7 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       jvm:
@@ -271,11 +275,27 @@ paths:
           description: Indicates a successful call
           content:
             application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      plugins:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            version:
+                              type: string
+
               examples:
                 nodePluginsExample1:
                   # summary:
                   value:
-                    total: 1
+                    total: 4
                     plugins:
                       - name: logstash-codec-cef
                         version: 6.2.8
@@ -409,6 +429,7 @@ paths:
               schema:
                 allOf:
                   - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       hot_threads:
@@ -612,6 +633,18 @@ components:
           nullable: true
         status:
           $ref: '#/components/schemas/Status'
+    PipelineSettings:
+      type: object
+      properties:
+        pipeline:
+          type: object
+          properties:
+            workers:
+              type: integer
+            batch_size:
+              type: integer
+            batch_delay:
+              type: integer
     NodeInfoPipeline:
       type: object
       properties:
