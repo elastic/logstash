@@ -309,19 +309,7 @@ paths:
   /_node/stats:
     get:
       summary: Get node stats
-      description: |
-        Get runtime stats for Logstash, where `<types>` (optional) specifies the types of stats you want to return.
-        You can limit the info that is returned by combining any of these types in a comma-separated list:
-
-        - `jvm` gets JVM stats, including stats about threads, memory usage, garbage collectors, and uptime.
-        - `process` gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
-        - `events` gets event-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
-        - `flow` gets flow-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
-        - `pipelines` gets runtime stats about each Logstash pipeline.
-        - `reloads` gets runtime stats about config reload successes and failures.
-        - `os` gets runtime stats about cgroups when Logstash is running in a container.
-        - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
-
+      description: Returns node statistics including jvm, process, events, flow and queue
       operationId: nodeStats
       tags:
         - node stats
@@ -333,53 +321,151 @@ paths:
           description: >
             If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
       responses:
-        '200':
-          description: Indicates a successful call
+        "200":
+          description: A JSON object containing pipelines statistics.
           content:
             application/json:
-              examples:
-                nodeStatsExample1:
-                  # summary:
-                  value:
-                    jvm:
-                      threads:
-                        count: 49
-                        peak_count: 50
-                      mem:
-                        heap_used_percent: 14
-                        heap_committed_in_bytes: 309866496
-                        heap_max_in_bytes: 1037959168
-                        heap_used_in_bytes: 151686096
-                        non_heap_used_in_bytes: 122486176
-                        non_heap_committed_in_bytes: 133222400
-                        pools:
-                          survivor:
-                            peak_used_in_bytes: 8912896
-                            used_in_bytes: 288776
-                            peak_max_in_bytes: 35782656
-                            max_in_bytes: 35782656
-                            committed_in_bytes: 8912896
-                          old:
-                            peak_used_in_bytes: 148656848
-                            used_in_bytes: 148656848
-                            peak_max_in_bytes: 715849728
-                            max_in_bytes: 715849728
-                            committed_in_bytes: 229322752
-                          young:
-                            peak_used_in_bytes: 71630848
-                            used_in_bytes: 2740472
-                            peak_max_in_bytes: 286326784
-                            max_in_bytes: 286326784
-                            committed_in_bytes: 71630848
-                      gc:
-                        collectors:
-                          old:
-                            collection_time_in_millis: 607
-                            collection_count: 12
-                          young:
-                            collection_time_in_millis: 4904
-                            collection_count: 1033
-                      uptime_in_millis: 1809643
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: '#/components/schemas/JVMStats'
+                  - $ref: '#/components/schemas/ProcessStats'
+                  - $ref: '#/components/schemas/EventsStats'
+                  - $ref: '#/components/schemas/FlowStats'
+                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: '#/components/schemas/QueueStats'
+                  - $ref: '#/components/schemas/ReloadStats'
+
+  /_node/stats/pipelines:
+    get:
+      summary: Get pipeline statistics
+      description: Returns pipeline performance metrics and plugin details.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing pipelines statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: '#/components/schemas/QueueStats'
+                  - $ref: '#/components/schemas/ReloadStats'
+
+  /_node/stats/pipelines/{pipeline_name}:
+    get:
+      summary: Get pipeline statistics
+      description: Returns pipeline performance metrics and plugin details.
+      tags:
+        - node stats
+      parameters:
+        - name: pipeline_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the pipeline to retrieve information for.
+      responses:
+        "200":
+          description: A JSON object containing a single pipeline statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: '#/components/schemas/QueueStats'
+                  - $ref: '#/components/schemas/ReloadStats'
+
+  /_node/stats/jvm:
+    get:
+      summary: Get flow statistics
+      description: Return throughput and backpressure details.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing flow statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/JVMStats"
+
+  /_node/stats/flow:
+    get:
+      summary: Get flow statistics
+      description: Return throughput and backpressure details.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing flow statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/FlowStats"
+
+  /_node/stats/events:
+    get:
+      summary: Get events statistics
+      description: Return statistics related to event processing.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing events statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/EventsStats"
+
+  /_node/stats/process:
+    get:
+      summary: Get process statistics
+      description: Return system-level process statistics.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing process statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/ProcessStats"
+
+  /_node/stats/reloads:
+    get:
+      summary: Get config reload statistics
+      description: Show info about config reload successes and failures.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing process statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/ReloadStats"
 
   /_node/hot_threads:
     get:
@@ -562,7 +648,7 @@ paths:
                                           type: object
                                           properties:
                                             worker_utilization:
-                                              $ref: '#/components/schemas/FlowStat'
+                                              $ref: '#/components/schemas/FlowWindows'
                                     impacts:
                                       type: array
                                       description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
@@ -629,10 +715,11 @@ components:
           type: string
           description: A unique identifier for the ephemeral session of the Logstash instance.
         snapshot:
-          type: string
+          type: boolean
           nullable: true
         status:
           $ref: '#/components/schemas/Status'
+
     PipelineSettings:
       type: object
       properties:
@@ -645,6 +732,7 @@ components:
               type: integer
             batch_delay:
               type: integer
+
     NodeInfoPipeline:
       type: object
       properties:
@@ -674,7 +762,8 @@ components:
         - red
         - unknown
         - yellow
-    FlowStat:
+
+    FlowWindows:
       type: object
       properties:
         current:
@@ -698,6 +787,43 @@ components:
         lifetime:
           type: number
           format: double
+    MQFlowStats:
+      type: object
+      properties:
+        input_throughput:
+          $ref: "#/components/schemas/FlowWindows"
+        filter_throughput:
+          $ref: "#/components/schemas/FlowWindows"
+        output_throughput:
+          $ref: "#/components/schemas/FlowWindows"
+        queue_backpressure:
+          $ref: "#/components/schemas/FlowWindows"
+        worker_concurrency:
+          $ref: "#/components/schemas/FlowWindows"
+        worker_utilization:
+          $ref: "#/components/schemas/FlowWindows"
+        queue_persisted_growth_bytes:
+          $ref: "#/components/schemas/FlowWindows"
+        queue_persisted_growth_events:
+          $ref: "#/components/schemas/FlowWindows"
+    PQFlowStats:
+      type: object
+      properties:
+        queue_persisted_growth_bytes:
+          $ref: "#/components/schemas/FlowWindows"
+        queue_persisted_growth_events:
+          $ref: "#/components/schemas/FlowWindows"
+    FlowStats:
+      type: object
+      properties:
+        flow:
+          oneOf:
+            - $ref: "#/components/schemas/MQFlowStats" # For memory queue
+            - type: object
+              allOf:
+                - $ref: "#/components/schemas/MQFlowStats"
+                - $ref: "#/components/schemas/PQFlowStats" # For persisted queue
+
     Thread:
       type: object
       properties:
@@ -714,3 +840,370 @@ components:
           type: array
           items:
             type: string
+
+    EventsStats:
+      type: object
+      properties:
+        events:
+          type: object
+          properties:
+            in:
+              type: integer
+              format: int64
+            filtered:
+              type: integer
+              format: int64
+            out:
+              type: integer
+              format: int64
+            duration_in_millis:
+              type: integer
+              format: int64
+            queue_push_duration_in_millis:
+              type: integer
+              format: int64
+    InputPluginEventsStats:
+      type: object
+      properties:
+        out:
+          type: integer
+          format: int64
+        queue_push_duration_in_millis:
+          type: integer
+          format: int64
+    FilterOutputPluginEventsStats:
+      type: object
+      properties:
+        in:
+          type: integer
+          format: int64
+        out:
+          type: integer
+          format: int64
+        duration_in_millis:
+          type: integer
+          format: int64
+
+    JVMStats:
+      type: object
+      properties:
+        jvm:
+          type: object
+          properties:
+            threads:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  description: Number of active JVM threads
+                peak_count:
+                  type: integer
+                  description: Peak number of active JVM threads
+            mem:
+              type: object
+              properties:
+                heap_used_percent:
+                  type: integer
+                  description: Percentage of heap memory used
+                heap_committed_in_bytes:
+                  type: integer
+                  format: int64
+                  description: Committed heap memory in bytes
+                heap_max_in_bytes:
+                  type: integer
+                  format: int64
+                  description: Maximum heap memory in bytes
+                heap_used_in_bytes:
+                  type: integer
+                  format: int64
+                  description: Used heap memory in bytes
+                non_heap_used_in_bytes:
+                  type: integer
+                  format: int64
+                  description: Used non-heap memory in bytes
+                non_heap_committed_in_bytes:
+                  type: integer
+                  format: int64
+                  description: Committed non-heap memory in bytes
+                pools:
+                  $ref: "#/components/schemas/JVMMemoryPools"
+            gc:
+              type: object
+              properties:
+                collectors:
+                  $ref: "#/components/schemas/JVMGCCollectors"
+            uptime_in_millis:
+              type: integer
+              format: int64
+              description: JVM uptime in milliseconds
+    JVMMemoryPool:
+      type: object
+      properties:
+        peak_used_in_bytes:
+          type: integer
+          format: int64
+        used_in_bytes:
+          type: integer
+          format: int64
+        peak_max_in_bytes:
+          type: integer
+          format: int64
+        max_in_bytes:
+          type: integer
+          format: int64
+        committed_in_bytes:
+          type: integer
+          format: int64
+    JVMMemoryPools:
+      type: object
+      properties:
+        survivor:
+          $ref: "#/components/schemas/JVMMemoryPool"
+        old:
+          $ref: "#/components/schemas/JVMMemoryPool"
+        young:
+          $ref: "#/components/schemas/JVMMemoryPool"
+    JVMGCCollector:
+      type: object
+      properties:
+        collection_time_in_millis:
+          type: integer
+          format: int64
+        collection_count:
+          type: integer
+    JVMGCCollectors:
+      type: object
+      properties:
+        old:
+          $ref: "#/components/schemas/JVMGCCollector"
+        young:
+          $ref: "#/components/schemas/JVMGCCollector"
+
+    ProcessStats:
+      type: object
+      properties:
+        process:
+          type: object
+          properties:
+            open_file_descriptors:
+              type: integer
+            peak_open_file_descriptors:
+              type: integer
+            max_file_descriptors:
+              type: integer
+            mem:
+              type: object
+              properties:
+                total_virtual_in_bytes:
+                  type: integer
+            cpu:
+              type: object
+              properties:
+                total_in_millis:
+                  type: integer
+                percent:
+                  type: integer
+                load_average:
+                  type: object
+                  properties:
+                    "1m":
+                      type: number
+
+    ThroughputStats:
+      type: object
+      properties:
+        throughput:
+          $ref: "#/components/schemas/FlowWindows"
+    WorkerStats:
+      type: object
+      properties:
+        worker_utilization:
+          $ref: "#/components/schemas/FlowWindows"
+        worker_millis_per_event:
+          $ref: "#/components/schemas/FlowWindows"
+
+    InputPluginStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        flow:
+          $ref: "#/components/schemas/ThroughputStats"
+        events:
+          $ref: "#/components/schemas/InputPluginEventsStats"
+    FilterOutputPluginStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        flow:
+          $ref: "#/components/schemas/WorkerStats"
+        events:
+          $ref: "#/components/schemas/FilterOutputPluginEventsStats"
+    CodecStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        decode:
+          type: object
+          properties:
+            duration_in_millis:
+              type: integer
+            writes_in:
+              type: integer
+            out:
+              type: integer
+        encode:
+          type: object
+          properties:
+            duration_in_millis:
+              type: integer
+            writes_in:
+              type: integer
+
+    PipelineStats:
+      type: object
+      properties:
+        pipelines:
+          type: object
+          additionalProperties:
+            description: "pipeline name"
+            type: object
+            allOf:
+              - $ref: "#/components/schemas/EventsStats"
+              - $ref: "#/components/schemas/FlowStats"
+              - type: object
+                properties:
+                  plugins:
+                    type: object
+                    properties:
+                      inputs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/InputPluginStats"
+                      codecs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CodecStats"
+                      filters:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FilterOutputPluginStats"
+                      outputs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FilterOutputPluginStats"
+              - $ref: "#/components/schemas/PipelineReloadStats"
+              - $ref: "#/components/schemas/QueueStats"
+
+
+    PipelineReloadStats:
+      type: object
+      properties:
+        relaods:
+          type: object
+          properties:
+            last_error:
+              type: string
+              nullable: true
+            successes:
+              type: integer
+              format: int64
+            last_success_timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            last_failure_timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            failures:
+              type: integer
+              format: int64
+
+    ReloadStats:
+      type: object
+      properties:
+        relaods:
+          type: object
+          properties:
+            successes:
+              type: integer
+              format: int64
+            failures:
+              type: integer
+              format: int64
+
+    QueueStats:
+      type: object
+      properties:
+        queue:
+          type: object
+          oneOf:
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - persisted
+                capacity:
+                  type: object
+                  properties:
+                    max_unread_events:
+                      type: integer
+                      format: int64
+                    page_capacity_in_bytes:
+                      type: integer
+                      format: int64
+                    max_queue_size_in_bytes:
+                      type: integer
+                      format: int64
+                    queue_size_in_bytes:
+                      type: integer
+                      format: int64
+                data:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    free_space_in_bytes:
+                      type: integer
+                      format: int64
+                    storage_type:
+                      type: string
+                events:
+                  type: integer
+                  format: int64
+                events_count:
+                  type: integer
+                  format: int64
+                queue_size_in_bytes:
+                  type: integer
+                  format: int64
+                max_queue_size_in_bytes:
+                  type: integer
+                  format: int64
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - memory
+                events_count:
+                  type: integer
+                  format: int64
+                queue_size_in_bytes:
+                  type: integer
+                  format: int64
+                max_queue_size_in_bytes:
+                  type: integer
+                  format: int64
+          discriminator:
+            propertyName: type
