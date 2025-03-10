@@ -281,6 +281,8 @@ paths:
                   - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
+                      total:
+                        type: integer
                       plugins:
                         type: array
                         items:
@@ -521,14 +523,14 @@ paths:
                       hot_threads:
                         type: object
                         properties:
+                          time:
+                            type: string
                           busiest_threads:
                             type: integer
                           threads:
                             type: array
                             items:
                               $ref: '#/components/schemas/Thread'
-                          time:
-                            type: string
               examples:
                 nodeHotThreadsExample1:
                   # summary:
