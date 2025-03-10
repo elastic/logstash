@@ -774,7 +774,7 @@ class JDKDetails {
                 return "aarch64"
                 break
             default:
-                throw new GradleException("Can't handle CPU architechture: ${jdkArch}")
+                throw new GradleException("Can't handle CPU architecture: ${jdkArch}")
         }
     }
 }

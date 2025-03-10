@@ -71,7 +71,7 @@ To protect sensitive information leaking into the logs, follow the best practice
 - Logstash core and plugin should flag any settings that may contain secrets. If your source changes are in Ruby, apply `:password` validation or wrap the object with `Logstash::Util::Password` object.
 - A setting marked as secret should not disclose its value unless retrieved in a non-obvious way. If you are introducing a new class for sensitive object (check `Password.java` and `SecretVariable.java` classes before doing so), make sure to mask the sensitive info by overriding get value (or `toString()` of Java class) default methods.
 - Logstash should not log secrets on any log level by default. Make sure you double-check the loggers if they are touching the objects carrying sensitive info.
-- Logstash has a dedicated flag, disabled by default, that the raw configuration text be logged for debugging purposes only. Use of `config.debug` will log/display sensitive info in the debug logs, so beware of using it in Produciton.
+- Logstash has a dedicated flag, disabled by default, that the raw configuration text be logged for debugging purposes only. Use of `config.debug` will log/display sensitive info in the debug logs, so beware of using it in Production.
 
 As an example, suppose you have `my_auth` config which carries the sensitive key. Defining with `:password` validated protects `my_auth` being leaked in Logstash core logics. 
 ```
