@@ -60,7 +60,7 @@ build-from-local-observability-sre-artifacts: dockerfile
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-observability-sre:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-observability-sre data/logstash || \
-	  (docker kill $(HTTPD); false); \
+	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
 build-from-local-wolfi-artifacts: dockerfile
