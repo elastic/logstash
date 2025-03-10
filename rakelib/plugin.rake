@@ -48,7 +48,7 @@ namespace "plugin" do
       # post-execution filtration is needed until 8.19 and 9.1
       # when list --[no-]expand flag is supported, use it instead
       # https://github.com/elastic/logstash/pull/17124
-      expand || p.match?(/^[a-z]/)
+      expand || line.match?(/^[a-z]/)
     end.map(&:chomp)
   end
 
