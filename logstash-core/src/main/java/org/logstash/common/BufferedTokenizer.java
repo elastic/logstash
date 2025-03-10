@@ -20,7 +20,6 @@ package org.logstash.common;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.function.IntPredicate;
 
 public class BufferedTokenizer {
 
@@ -42,25 +41,29 @@ public class BufferedTokenizer {
 
     static class DataSplitter implements Iterator<String> {
         private final String separator;
-        private final IntPredicate sizeChecker;
         private final StringBuilder accumulator = new StringBuilder();
         private int currentIdx = 0;
         private boolean dropNextPartialFragments = false;
+        private final int sizeLimit;
 
+        /**
+         * @param separator
+         *      is the token separator string.
+         * */
         DataSplitter(String separator) {
             this.separator = separator;
-            this.sizeChecker = value -> false;
+            this.sizeLimit = Integer.MIN_VALUE;
         }
 
         /**
          * @param separator
          *      is the token separator string.
-         * @param sizeChecker
-         *      function that verifies if token size is bigger then a limit
+         * @param sizeLimit
+         *      maximum token size length.
          * */
-        DataSplitter(String separator, IntPredicate sizeChecker) {
+        DataSplitter(String separator, int sizeLimit) {
             this.separator = separator;
-            this.sizeChecker = sizeChecker;
+            this.sizeLimit = sizeLimit;
         }
 
         @Override
@@ -71,7 +74,7 @@ public class BufferedTokenizer {
                 cleanupAccumulator();
                 // if it has a remaining bigger than the admitted size, then it start drop other next fragments that
                 // doesn't contain any separator
-                if (sizeChecker.test(accumulator.length())) {
+                if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
                     dropNextPartialFragments = true;
                 }
                 return false;
@@ -90,8 +93,8 @@ public class BufferedTokenizer {
             } else {
                 String token = accumulator.substring(currentIdx, nextIdx);
                 currentIdx = nextIdx + separator.length();
-                if (sizeChecker.test(token.length())) {
-                    throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit "); // TODO  + sizeLimit
+                if (sizeLimit != Integer.MIN_VALUE && token.length() > sizeLimit) {
+                    throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit);
                 }
                 return token;
             }
@@ -134,7 +137,7 @@ public class BufferedTokenizer {
             throw new IllegalArgumentException("Size limit must be positive");
         }
 
-        this.dataSplitter = new DataSplitter(separator, tokenSize -> tokenSize > sizeLimit);
+        this.dataSplitter = new DataSplitter(separator, sizeLimit);
         this.iterable = () -> dataSplitter;
     }
 
