@@ -52,10 +52,6 @@ namespace "plugin" do
     end.map(&:chomp)
   end
 
-  def clean_plugins
-    invoke_plugin_manager!("clean")
-  end
-
   # the plugin manager's list command (and possibly others)
   def invoke_plugin_manager!(command, *args)
     plugin_manager_bin = Pathname.new(LogStash::Environment::LOGSTASH_HOME) / "bin" / "logstash-plugin"
