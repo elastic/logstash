@@ -26,9 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.logstash.common.BufferedTokenizerTest.toList;
 
 public final class BufferedTokenizerWithSizeLimitTest {
@@ -127,5 +126,31 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         // third token resumes
         assertEquals("ccc", tokensIterator.next());
+    }
+
+    @Test
+    public void givenSequenceOfFragmentsWithoutSeparatorThenDoesntGenerateOutOfMemory() {
+        final String neverEndingData = generate(8, "a");
+        for (int i = 0; i < 10; i++) {
+            // iterator has to be engaged
+            boolean hasNext = sut.extract(neverEndingData).iterator().hasNext();
+            assertFalse(hasNext);
+        }
+
+        // with the second fragment passed to extract it overrun the sizeLimit, the tokenizer
+        // drop starting from the third fragment
+        assertThat("Accumulator include only a part of an exploding payload", sut.flush().length(), is(lessThan(neverEndingData.length() * 3)));
+
+        Iterable<String> tokensIterable = sut.extract("\nbbb\n");
+        Iterator<String> tokensIterator = tokensIterable.iterator();
+        // send a token delimiter and check an error is raised
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            tokensIterator.next();
+        });
+        assertThat(exception.getMessage(), containsString("input buffer full"));
+    }
+
+    private static String generate(int length, String fillChar) {
+        return fillChar.repeat(length);
     }
 }
