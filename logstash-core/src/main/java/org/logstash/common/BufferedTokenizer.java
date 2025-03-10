@@ -20,12 +20,14 @@ package org.logstash.common;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.BiFunction;
+import java.util.function.IntPredicate;
 
 public class BufferedTokenizer {
 
     private final DataSplitter dataSplitter;
     private final Iterable<String> iterable;
-    private Integer sizeLimit;
+//    private Integer sizeLimit;
 
     static abstract class IteratorDecorator<T> implements Iterator<T> {
         protected final Iterator<String> iterator;
@@ -40,31 +42,45 @@ public class BufferedTokenizer {
         }
     }
 
-    static class ValueLimitIteratorDecorator extends IteratorDecorator<String> {
-        private final int limit;
-
-        ValueLimitIteratorDecorator(Iterator<String> iterator, int sizeLimit) {
-            super(iterator);
-            this.limit = sizeLimit;
-        }
-
-        @Override
-        public String next() {
-            String value = iterator.next();
-            if (value.length() > limit) {
-                throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + limit);
-            }
-            return value;
-        }
-    }
+//    static class ValueLimitIteratorDecorator extends IteratorDecorator<String> {
+//        private final int limit;
+//
+//        ValueLimitIteratorDecorator(Iterator<String> iterator, int sizeLimit) {
+//            super(iterator);
+//            this.limit = sizeLimit;
+//        }
+//
+//        @Override
+//        public String next() {
+//            String value = iterator.next();
+//            if (value.length() > limit) {
+//                throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + limit);
+//            }
+//            return value;
+//        }
+//    }
 
     static class DataSplitter implements Iterator<String> {
         private final String separator;
+        private final IntPredicate sizeChecker;
         private int currentIdx = 0;
         private final StringBuilder accumulator = new StringBuilder();
+        private boolean dropNextPartialFragments = false;
 
         DataSplitter(String separator) {
             this.separator = separator;
+            this.sizeChecker = value -> false;
+        }
+
+        /**
+         * @param separator
+         *      is the token separator string.
+         * @param sizeChecker
+         *      function that verifies if token size is bigger then a limit
+         * */
+        DataSplitter(String separator, IntPredicate sizeChecker) {
+            this.separator = separator;
+            this.sizeChecker = sizeChecker;
         }
 
         @Override
@@ -73,6 +89,11 @@ public class BufferedTokenizer {
             if (nextIdx == -1) {
                 // not found next separator
                 cleanupAccumulator();
+                // if it has a remaining bigger than the admitted size, then it start drop other next fragments that
+                // doesn't contain any separator
+                if (sizeChecker.test(accumulator.length())) {
+                    dropNextPartialFragments = true;
+                }
                 return false;
             } else {
                 return true;
@@ -89,6 +110,9 @@ public class BufferedTokenizer {
             } else {
                 String token = accumulator.substring(currentIdx, nextIdx);
                 currentIdx = nextIdx + separator.length();
+                if (sizeChecker.test(token.length())) {
+                    throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit "); // TODO  + sizeLimit
+                }
                 return token;
             }
         }
@@ -99,6 +123,10 @@ public class BufferedTokenizer {
         }
 
         public void append(String data) {
+            if (!data.contains(separator) && dropNextPartialFragments) {
+                return;
+            }
+            dropNextPartialFragments = false;
             accumulator.append(data);
         }
 
@@ -118,7 +146,8 @@ public class BufferedTokenizer {
 
     public BufferedTokenizer(String separator) {
         this.dataSplitter = new DataSplitter(separator);
-        this.iterable = setupIterable();
+        this.iterable = () -> dataSplitter;
+//        this.iterable = setupIterable();
     }
 
     public BufferedTokenizer(String separator, int sizeLimit) {
@@ -126,9 +155,10 @@ public class BufferedTokenizer {
             throw new IllegalArgumentException("Size limit must be positive");
         }
 
-        this.dataSplitter = new DataSplitter(separator);
-        this.sizeLimit = sizeLimit;
-        this.iterable = setupIterable();
+        this.dataSplitter = new DataSplitter(separator, tokenSize -> tokenSize > sizeLimit);
+//        this.sizeLimit = sizeLimit;
+        this.iterable = () -> dataSplitter;
+//        this.iterable = setupIterable();
     }
 
     public Iterable<String> extract(String data) {
@@ -137,15 +167,15 @@ public class BufferedTokenizer {
         return iterable;
     }
 
-    private Iterable<String> setupIterable() {
-        return () -> {
-            Iterator<String> returnedIterator = dataSplitter;
-            if (sizeLimit != null) {
-                returnedIterator = new ValueLimitIteratorDecorator(returnedIterator, sizeLimit);
-            }
-            return returnedIterator;
-        };
-    }
+//    private Iterable<String> setupIterable() {
+//        return () -> {
+//            Iterator<String> returnedIterator = dataSplitter;
+//            if (sizeLimit != null) {
+//                returnedIterator = new ValueLimitIteratorDecorator(returnedIterator, sizeLimit);
+//            }
+//            return returnedIterator;
+//        };
+//    }
 
     public String flush() {
         return dataSplitter.flush();
