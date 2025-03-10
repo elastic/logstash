@@ -32,16 +32,24 @@ namespace "plugin" do
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin] + more_plugins)
   end
 
-  def list_plugins(search=nil, expand: true, verbose: false)
+  def list_plugins(search=nil, expand: nil, verbose: nil)
     require_relative "../lib/pluginmanager/main"
     args = []
     args << "--verbose" if verbose
-    # args << (expand ? "--expand" : "--no-expand")
     args << search unless search.nil?
 
     stdout = invoke_plugin_manager!("list", *args)
 
-    stdout.lines.map(&:chomp).select { |p| p.start_with?('logstash-') }
+    stdout.lines.select do |line|
+      # STDOUT pollution removal needed until 8.19 and 9.1
+      # https://github.com/elastic/logstash/pull/17125
+      next false if line.match?(/^Using (system java|bundled JDK|LS_JAVA_HOME defined java)/)
+      
+      # post-execution filtration is needed until 8.19 and 9.1
+      # when list --[no-]expand flag is supported, use it instead
+      # https://github.com/elastic/logstash/pull/17124
+      expand || p.match?(/^[a-z]/)
+    end.map(&:chomp)
   end
 
   def clean_plugins
@@ -53,7 +61,7 @@ namespace "plugin" do
     plugin_manager_bin = Pathname.new(LogStash::Environment::LOGSTASH_HOME) / "bin" / "logstash-plugin"
     stdout_and_stderr = %x(#{Shellwords.escape(plugin_manager_bin)} #{Shellwords.join([command]+args)} 2>&1)
     unless $?.success?
-      fail "ERROR LISTING: #{stdout_and_stderr}"
+      fail "ERROR INVOKING PLUGIN MANAGER: #{stdout_and_stderr}"
     end
     stdout_and_stderr
   end
