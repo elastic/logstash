@@ -129,8 +129,12 @@ namespace "artifact" do
 
   # execute Kernel#system call,checking the exist status of the executed command and eventually reporting as exception
   def safe_system(*args)
-    if !system(*args)
-      status = $?
+    require 'open3'
+    stdout, stderr, status = Open3.capture3(*args)
+
+    if !status.success?
+      puts "STDOUT: #{stdout}"
+      puts "STDERR: #{stderr}"
       raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
     end
   end
