@@ -127,17 +127,30 @@ namespace "artifact" do
     result
   end
 
-  # execute Kernel#system call,checking the exist status of the executed command and eventually reporting as exception
   def safe_system(*args)
-    require 'open3'
-    stdout, stderr, status = Open3.capture3(*args)
-
+    if args.first.is_a?(Hash) && args.length > 1
+      env_vars = args.shift
+      cmd = args.join(' ')
+      
+      # Format environment variables for command line
+      env_string = env_vars.map { |k, v| "#{k}=#{v}" }.join(' ')
+      full_cmd = "#{env_string} #{cmd}"
+      
+      output = `#{full_cmd} 2>&1`
+    else
+      cmd = args.join(' ')
+      output = `#{cmd} 2>&1`
+    end
+    
+    status = $?
+    
     if !status.success?
-      puts "STDOUT: #{stdout}"
-      puts "STDERR: #{stderr}"
+      puts "Command failed: #{args.inspect}"
+      puts "Output: #{output}"
       raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
     end
   end
+
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
