@@ -10,6 +10,9 @@ export GRADLE_OPTS="-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
+# Source shared function for splitting integration tests
+source "$(dirname "${BASH_SOURCE[0]}")/get-test-half.sh"
+
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
@@ -19,20 +22,10 @@ if [[ $1 = "setup" ]]; then
  exit 0
 
 elif [[ $1 == "split" ]]; then
-    cd qa/integration
-    glob1=(specs/*spec.rb)
-    glob2=(specs/**/*spec.rb)
-    all_specs=("${glob1[@]}" "${glob2[@]}")
-
-    specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
-    specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
-    cd ../..
-    if [[ $2 == 0 ]]; then
-       echo "Running the first half of integration specs: $specs0"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0" --console=plain
-    elif [[ $2 == 1 ]]; then
-       echo "Running the second half of integration specs: $specs1"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1" --console=plain
+    if [[ $2 =~ ^[01]$ ]]; then
+        specs=$(get_test_half "$2")
+        echo "Running half $2 of integration specs: $specs"
+        ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs" --console=plain
     else
        echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
        exit 1
