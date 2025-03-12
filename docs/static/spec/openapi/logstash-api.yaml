@@ -64,6 +64,101 @@ tags:
     #   description:
     #   url:
 paths:
+  /_node/jvm:
+    get:
+      summary: Gets node-level JVM info, including info about threads.
+      description: |
+        Show node-level JVM stats, such as the JVM process id, version, VM info, memory usage, and info about garbage collectors
+      operationId: nodeInfoJVM
+      tags:
+        - node info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      jvm:
+                        type: object
+                        properties:
+                          pid:
+                            type: integer
+                          version:
+                            type: string
+                          vm_name:
+                            type: string
+                          vm_version:
+                            type: string
+                          vm_vendor:
+                            type: string
+                          start_time_in_millis:
+                            type: integer
+                          mem:
+                            type: object
+                            properties:
+                              heap_init_in_bytes:
+                                type: integer
+                              heap_max_in_bytes:
+                                type: integer
+                              non_heap_init_in_bytes:
+                                type: integer
+                              non_heap_max_in_bytes:
+                                type: integer
+                          gc_collectors:
+                            type: array
+                            items:
+                              type: string
+
+  /_node/os:
+    get:
+      summary: Get node-level OS information.
+      description: |
+        Show the OS name, architecture, version, and available processors
+      operationId: nodeInfoOS
+      tags:
+        - node info
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      os:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          arch:
+                            type: string
+                          version:
+                            type: string
+                          available_processors:
+                            type: integer
+
   /_node/pipelines:
     get:
       summary: Get pipeline-specific information
@@ -159,101 +254,6 @@ paths:
                         config_reload_automatic: false
                         config_reload_interval: 3
 
-  /_node/os:
-    get:
-      summary: Get node-level OS information.
-      description: |
-        Show the OS name, architecture, version, and available processors
-      operationId: nodeInfoOS
-      tags:
-        - node info
-      parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
-      responses:
-        '200':
-          description: Indicates a successful call
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
-                  - type: object
-                    properties:
-                      os:
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                          arch:
-                            type: string
-                          version:
-                            type: string
-                          available_processors:
-                            type: integer
-
-  /_node/jvm:
-    get:
-      summary: Gets node-level JVM info, including info about threads.
-      description: |
-        Show node-level JVM stats, such as the JVM process id, version, VM info, memory usage, and info about garbage collectors
-      operationId: nodeInfoJVM
-      tags:
-        - node info
-      parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
-      responses:
-        '200':
-          description: Indicates a successful call
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
-                  - type: object
-                    properties:
-                      jvm:
-                        type: object
-                        properties:
-                          pid:
-                            type: integer
-                          version:
-                            type: string
-                          vm_name:
-                            type: string
-                          vm_version:
-                            type: string
-                          vm_vendor:
-                            type: string
-                          start_time_in_millis:
-                            type: integer
-                          mem:
-                            type: object
-                            properties:
-                              heap_init_in_bytes:
-                                type: integer
-                              heap_max_in_bytes:
-                                type: integer
-                              non_heap_init_in_bytes:
-                                type: integer
-                              non_heap_max_in_bytes:
-                                type: integer
-                          gc_collectors:
-                            type: array
-                            items:
-                              type: string
-
   /_node/plugins:
     get:
       summary: Get plugin info
@@ -339,6 +339,109 @@ paths:
                   - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
 
+  /_node/stats/events:
+    get:
+      summary: Get events statistics
+      description: Return statistics related to event processing.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing events statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/EventsStats"
+
+  /_node/stats/flow:
+    get:
+      summary: Get flow statistics
+      description: Return throughput and backpressure details.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing flow statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/FlowStats"
+
+  /_node/stats/jvm:
+    get:
+      summary: Get flow statistics
+      description: Return throughput and backpressure details.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing jvm statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/JVMStats"
+
+  /_node/stats/os:
+    get:
+      summary: Get Cgroup statistics
+      description: Return a more accurate view of CPU statistics from Cgroup if available.
+      tags:
+        - node stats
+      responses:
+        "200":
+          description: A JSON object containing OS statistics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  os:
+                    type: object
+                    properties:
+                      cgroup:
+                        type: object
+                        properties:
+                          cpuacct:
+                            type: object
+                            properties:
+                              control_group:
+                                type: string
+                              usage_nanos:
+                                type: integer
+                                format: int64
+                          cpu:
+                            type: object
+                            properties:
+                              control_group:
+                                type: string
+                              cfs_period_micros:
+                                type: integer
+                                format: int64
+                              cfs_quota_micros:
+                                type: integer
+                                format: int64
+                              stat:
+                                type: object
+                                properties:
+                                  number_of_elapsed_periods:
+                                    type: integer
+                                    format: int64
+                                  number_of_times_throttled:
+                                    type: integer
+                                    format: int64
+                                  time_throttled_nanos:
+                                    type: integer
+                                    format: int64
+
   /_node/stats/pipelines:
     get:
       summary: Get pipeline statistics
@@ -383,57 +486,6 @@ paths:
                   - $ref: "#/components/schemas/PipelineStats"
                   - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
-
-  /_node/stats/jvm:
-    get:
-      summary: Get flow statistics
-      description: Return throughput and backpressure details.
-      tags:
-        - node stats
-      responses:
-        "200":
-          description: A JSON object containing flow statistics.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/JVMStats"
-
-  /_node/stats/flow:
-    get:
-      summary: Get flow statistics
-      description: Return throughput and backpressure details.
-      tags:
-        - node stats
-      responses:
-        "200":
-          description: A JSON object containing flow statistics.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/FlowStats"
-
-  /_node/stats/events:
-    get:
-      summary: Get events statistics
-      description: Return statistics related to event processing.
-      tags:
-        - node stats
-      responses:
-        "200":
-          description: A JSON object containing events statistics.
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/EventsStats"
 
   /_node/stats/process:
     get:
