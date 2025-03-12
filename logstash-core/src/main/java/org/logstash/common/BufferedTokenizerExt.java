@@ -83,12 +83,32 @@ public class BufferedTokenizerExt extends RubyObject {
         Iterable<String> extractor = tokenizer.extract(data.asJavaString());
 
         // return an iterator that does the encoding conversion
-        return RubyUtil.toRubyObject((Iterable<CharSequence>) () -> new BufferedTokenizer.IteratorDecorator<>(extractor.iterator()) {
+        Iterator<CharSequence> rubyStringAdpaterIterator = new BufferedTokenizer.IteratorDecorator<>(extractor.iterator()) {
             @Override
             public CharSequence next() {
                 return toEncodedRubyString(context, iterator.next());
             }
-        });
+        };
+
+        return RubyUtil.toRubyObject(new IterableAdapterWithEmptyCheck(rubyStringAdpaterIterator));
+    }
+
+    // Iterator to Iterable adapter with addition of isEmpty method
+    public static class IterableAdapterWithEmptyCheck implements Iterable<CharSequence> {
+        private final Iterator<CharSequence> origIterator;
+
+        public IterableAdapterWithEmptyCheck(Iterator<CharSequence> origIterator) {
+            this.origIterator = origIterator;
+        }
+
+        @Override
+        public Iterator<CharSequence> iterator() {
+            return origIterator;
+        }
+
+        public boolean isEmpty() {
+            return origIterator.hasNext();
+        }
     }
 
     private RubyString toEncodedRubyString(ThreadContext context, String input) {
