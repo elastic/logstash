@@ -54,7 +54,7 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-build-from-local-observability-sre-artifacts: dockerfile
+build-from-local-observability-sre-artifacts: dockerfile env2yaml
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
