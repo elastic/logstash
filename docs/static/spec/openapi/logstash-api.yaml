@@ -209,7 +209,7 @@ paths:
 
   /_node/pipelines/{pipeline_name}:
     get:
-      summary: Get a specific pipeline information
+      summary: Get information for a pipeline
       description: Get details for a specific pipeline.
       operationId: nodeInfoPipeline
       tags:
