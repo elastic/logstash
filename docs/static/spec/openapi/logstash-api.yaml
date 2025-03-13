@@ -125,7 +125,7 @@ paths:
     get:
       summary: Get node-level OS information
       description: |
-        Show the OS name, architecture, version, and available processors
+        Get the operating system (OS) name, architecture, version, and available processors.
       operationId: nodeInfoOS
       tags:
         - node info
