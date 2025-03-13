@@ -136,7 +136,12 @@ steps:
         - limit: 3
     command: |
       set -euo pipefail
-      ci/run-observability-sre-container-smoketest.sh
+      source .buildkite/scripts/common/vm-agent.sh
+      # Provides QUALIFIED_VERSION
+      source ci/version-qualifier.sh
+      ./gradlew --stacktrace artifactDockerObservabilitySRE
+      docker run docker.elastic.co/logstash/logstash-observability-sre:${QUALIFIED_VERSION} \
+        logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1"
     key: "integration-tests-fips-part-1"
