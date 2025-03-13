@@ -120,6 +120,23 @@ paths:
                             type: array
                             items:
                               type: string
+              example:
+                jvm:
+                  pid: 84013
+                  version: "21.0.4"
+                  vm_name: "OpenJDK 64-Bit Server VM"
+                  vm_version: "21.0.4"
+                  vm_vendor: "Eclipse Adoptium"
+                  start_time_in_millis: 1630980000000
+                  mem:
+                    heap_init_in_bytes: 1073741824
+                    heap_max_in_bytes: 1073741824
+                    non_heap_init_in_bytes: 2555904
+                    non_heap_max_in_bytes: 0
+                  gc_collectors:
+                    - "G1 Young Generation"
+                    - "G1 Concurrent GC"
+                    - "G1 Old Generation"
 
   /_node/os:
     get:
@@ -158,6 +175,12 @@ paths:
                             type: string
                           available_processors:
                             type: integer
+              example:
+                os:
+                  name: "Mac OS X"
+                  arch: "aarch64"
+                  version: "15.3.1"
+                  available_processors: 12
 
   /_node/pipelines:
     get:
@@ -189,23 +212,22 @@ paths:
                         type: object
                         additionalProperties:
                           $ref: '#/components/schemas/NodeInfoPipeline'
-              examples:
-                nodeInfoPipelineExample1:
-                  # summary:
-                  value:
-                    pipelines:
-                      test:
-                        workers: 1
-                        batch_size: 1
-                        batch_delay: 5
-                        config_reload_automatic: false
-                        config_reload_interval: 3
-                      test2:
-                        workers: 8
-                        batch_size: 125
-                        batch_delay: 5
-                        config_reload_automatic: false
-                        config_reload_interval: 3
+              example:
+                pipelines:
+                  aggregation-pipeline:
+                    workers: 1
+                    batch_size: 125
+                    batch_delay: 50
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
+                  ingestion-pipeline:
+                    workers: 8
+                    batch_size: 125
+                    batch_delay: 5
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
 
   /_node/pipelines/{pipeline_name}:
     get:
@@ -242,17 +264,15 @@ paths:
                         type: object
                         additionalProperties:
                           $ref: '#/components/schemas/NodeInfoPipeline'
-              examples:
-                nodeInfoPipelineExample1:
-                  # summary:
-                  value:
-                    pipelines:
-                      test:
-                        workers: 1
-                        batch_size: 1
-                        batch_delay: 5
-                        config_reload_automatic: false
-                        config_reload_interval: 3
+              example:
+                pipelines:
+                  aggregation-pipeline:
+                    workers: 1
+                    batch_size: 125
+                    batch_delay: 50
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
 
   /_node/plugins:
     get:
@@ -879,6 +899,8 @@ components:
           type: boolean
         config_reload_interval:
           type: integer
+        dead_letter_queue_enabled:
+          type: boolean
 
     Status:
       type: string
