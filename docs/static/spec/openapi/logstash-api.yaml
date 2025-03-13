@@ -163,7 +163,7 @@ paths:
     get:
       summary: Get pipeline-specific information
       description: |
-        Gets pipeline-specific information and settings for each pipeline.
+        Get information and settings for each pipeline.
       operationId: nodeInfoPipelines
       tags:
         - node info
