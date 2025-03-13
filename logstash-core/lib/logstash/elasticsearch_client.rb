@@ -68,7 +68,10 @@ module LogStash class ElasticsearchClient
       rescue Elastic::Transport::Transport::Errors::BadRequest
         true
       rescue Elastic::Transport::Transport::Errors::Unauthorized
-        false
+        true
+      rescue Exception => e
+        return true if e.message.include?('Connection refused')
+        raise e
       rescue Manticore::SocketException
         false
       end
