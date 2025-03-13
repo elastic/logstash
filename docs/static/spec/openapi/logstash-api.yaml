@@ -310,7 +310,7 @@ paths:
 
   /_node/stats:
     get:
-      summary: Get node stats
+      summary: Get node statistics
       description: Returns node statistics including jvm, process, events, flow and queue
       operationId: nodeStats
       tags:
