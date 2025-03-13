@@ -73,12 +73,7 @@ paths:
       tags:
         - node info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -147,12 +142,7 @@ paths:
       tags:
         - node info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -179,12 +169,7 @@ paths:
       tags:
         - node info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -231,12 +216,7 @@ paths:
           schema:
             type: string
           description: The name of the pipeline to retrieve information for.
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -272,12 +252,7 @@ paths:
       tags:
         - plugin info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -323,12 +298,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing pipelines statistics.
@@ -355,12 +325,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing events statistics.
@@ -387,15 +352,13 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
-          description: A JSON object containing flow statistics.
+          description: |
+            Flow rates provide visibility into how a Logstash instance or an individual pipeline is currently performing relative to itself over time. This allows us to attach meaning to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
+
+            The following flow rates are available for the logstash process as a whole and for each of its pipelines individually. In addition, pipelines may have [additional flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#pipeline-flow-rates) depending on their configuration.
           content:
             application/json:
               schema:
@@ -439,17 +402,12 @@ paths:
   /_node/stats/geoip_download_manager:
     get:
       summary: Get geoip databases statistics
-      description: Get license checks and download status of Geoip filter plugin.
+      description: Get license checks and download status of [Geoip filter plugin](https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html).
       operationId: nodeStatsGeoIPDownloadManager
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing geoip database license and download status.
@@ -493,12 +451,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing jvm statistics.
@@ -558,12 +511,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing OS statistics.
@@ -632,15 +580,17 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
-          description: A JSON object containing pipelines statistics.
+          description: |
+            A JSON object containing pipelines statistics.
+            
+            - the number of events that were input, filtered, or output by each pipeline
+            - the current and lifetime [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats for each pipeline
+            - stats for each configured filter or output stage
+            - info about config reload successes and failures (when [config reload](https://www.elastic.co/guide/en/logstash/current/reloading-config.html) is enabled)
+            - info about the persistent queue (when [persistent queues](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html) are enabled)
           content:
             application/json:
               schema:
@@ -905,12 +855,7 @@ paths:
           schema:
             type: string
           description: The name of the pipeline to retrieve information for.
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing a single pipeline statistics.
@@ -1195,12 +1140,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing process statistics.
@@ -1233,12 +1173,7 @@ paths:
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         "200":
           description: A JSON object containing process statistics.
@@ -1281,12 +1216,7 @@ paths:
             type: boolean
           description: >
             If true, does not return idle threads. The default is `true`.
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
         - name: human
           in: query
           schema:
@@ -1373,12 +1303,7 @@ paths:
       tags:
         - health
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
@@ -1542,6 +1467,14 @@ paths:
                                   last_1_minute: 100.0
                                   last_5_minutes: 100.0
 components:
+  parameters:
+    pretty:
+      name: pretty
+      in: query
+      schema:
+        type: boolean
+      description: >
+        If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
   securitySchemes:
     apiKeyAuth:
       # description:
@@ -1623,46 +1556,70 @@ components:
 
     FlowWindows:
       type: object
+      description: |
+        When the rate for a given flow metric window is infinite, it is presented as a string.
+        This occurs when the numerator metric has changed during the window without a change in the rate’s denominator metric.
       properties:
         current:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
           description: "The most recent ~10s."
         last_1_minute:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
         last_5_minutes:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
         last_15_minutes:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
         last_1_hour:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
         last_24_hours:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
         lifetime:
-          type: number
-          format: double
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
           description: "The lifetime of the relevant pipeline or process."
     PipelineMQFlowStats:
       type: object
       properties:
         input_throughput:
           description: |
-            This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (events.in / second). It includes events that are blocked by the queue and have not yet been accepted.
+            This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second). It includes events that are blocked by the queue and have not yet been accepted.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
         filter_throughput:
           description: |
-            This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (events.filtered / second).
+            This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
         output_throughput:
           description: |
-            This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (events.out / second).
+            This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
         queue_backpressure:
@@ -1683,35 +1640,39 @@ components:
             A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
-        worker_utilization:
-          description: |
-            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * pipeline.workers). It is useful for identifying which plugins in a pipeline are using the available worker resources.
-
-            A pipeline is considered "saturated" when worker_utilization approaches 100, because it indicates that all of its workers are being kept busy. This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
-
-            A pipeline is considered "starved" when worker_utilization approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
-          allOf:
-            - $ref: "#/components/schemas/FlowWindows"
     PipelinePQFlowStats:
       type: object
       allOf:
         - $ref: "#/components/schemas/PipelineMQFlowStats"
         - type: object
           properties:
+            worker_utilization:
+              description: |
+                This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * `pipeline.workers`). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+    
+                A pipeline is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy. This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+    
+                A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
             queue_persisted_growth_bytes:
               description: |
-                This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (queue.queue_size_in_bytes / second). A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
+                This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second). A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
 
-                NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events. This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: PQ disk garbage collection).
+                NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events. This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: [PQ disk garbage collection](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html#garbage-collection)).
               allOf:
                 - $ref: "#/components/schemas/FlowWindows"
             queue_persisted_growth_events:
               description: |
-                This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (queue.events_count / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
+                This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
               allOf:
                 - $ref: "#/components/schemas/FlowWindows"
     PipelineFlowStats:
       type: object
+      description: |
+        Each pipeline’s entry in the API response includes a number of pipeline-scoped [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats) such as `input_throughput`, `worker_concurrency`, and `queue_backpressure` to provide visibility into the flow of events through the pipeline.
+        
+        When configured with a [persistent queue](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html, the pipeline’s flow will include additional rates to provide visibility into the health of the pipeline’s persistent queue:
       properties:
         flow:
           type: object
@@ -1723,18 +1684,7 @@ components:
       type: object
       properties:
         flow:
-          type: object
-          properties:
-            input_throughput:
-              $ref: "#/components/schemas/FlowWindows"
-            filter_throughput:
-              $ref: "#/components/schemas/FlowWindows"
-            output_throughput:
-              $ref: "#/components/schemas/FlowWindows"
-            queue_backpressure:
-              $ref: "#/components/schemas/FlowWindows"
-            worker_concurrency:
-              $ref: "#/components/schemas/FlowWindows"
+          $ref: "#/components/schemas/PipelineMQFlowStats"
 
     Thread:
       type: object
@@ -1920,7 +1870,7 @@ components:
       properties:
         throughput:
           description: |
-            This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline’s queue relative to wall-clock time (events.in / second). It includes events that are blocked by the queue and have not yet been accepted.
+            This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline’s queue relative to wall-clock time (`events.in` / second). It includes events that are blocked by the queue and have not yet been accepted.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
     WorkerStats:
@@ -1928,12 +1878,12 @@ components:
       properties:
         worker_utilization:
           description: |
-            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * pipeline.workers). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`). It is useful for identifying which plugins in a pipeline are using the available worker resources.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
         worker_millis_per_event:
           description:
-            This metric is expressed in worker-millis-spent-per-event (duration_in_millis / events.in) with higher scores indicating more resources spent per event. It is especially useful for identifying issues with plugins that operate on a small subset of events. An "Infinity" value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
+            This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event. It is especially useful for identifying issues with plugins that operate on a small subset of events. An "Infinity" value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
 
