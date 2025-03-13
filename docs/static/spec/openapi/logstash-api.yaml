@@ -686,7 +686,7 @@ paths:
                                       example: "The pipeline is healthy"
                                     details:
                                       type: object
-                                      description: "An object that contains additional information about the indicator that has lead to the current health status result."
+                                      description: "An object that contains additional information about the indicator that has led to the current health status result."
                                       properties:
                                         status:
                                           type: object
