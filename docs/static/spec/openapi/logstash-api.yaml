@@ -921,155 +921,270 @@ paths:
 #                  - $ref: "#/components/schemas/Common"
 #                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
-              example:
-                pipelines:
-                  heartbeat-ruby-stdout:
-                    events:
-                      queue_push_duration_in_millis: 159
-                      in: 45
-                      duration_in_millis: 341
-                      filtered: 45
-                      out: 45
-                    flow:
-                      filter_throughput:
-                        current: 0
-                        last_1_minute: 0.01614
-                        last_5_minutes: 0.01627
-                        last_15_minutes: 0.01643
-                        lifetime: 0.0167
-                      queue_persisted_growth_bytes:
-                        current: 0
-                        last_1_minute: 4.068
-                        last_5_minutes: 4.101
-                        last_15_minutes: 4.14
-                        lifetime: 4.214
-                      queue_persisted_growth_events:
-                        current: 0
-                        last_1_minute: 0
-                        last_5_minutes: 0
-                        last_15_minutes: 0
-                        lifetime: 0
-                      queue_backpressure:
-                        current: 0
-                        last_1_minute: 1.614e-05
-                        last_5_minutes: 2.278e-05
-                        last_15_minutes: 4.272e-05
-                        lifetime: 5.901e-05
-                      output_throughput:
-                        current: 0
-                        last_1_minute: 0.01614
-                        last_5_minutes: 0.01627
-                        last_15_minutes: 0.01643
-                        lifetime: 0.0167
-                      worker_utilization:
-                        current: 0
-                        last_1_minute: 0.0004036
-                        last_5_minutes: 0.0006239
-                        last_15_minutes: 0.0009858
-                        lifetime: 0.001055
-                      worker_concurrency:
-                        current: 0
-                        last_1_minute: 4.843e-05
-                        last_5_minutes: 7.486e-05
-                        last_15_minutes: 0.0001183
-                        lifetime: 0.0001266
-                      input_throughput:
-                        current: 0
-                        last_1_minute: 0.01614
-                        last_5_minutes: 0.01627
-                        last_15_minutes: 0.01643
-                        lifetime: 0.0167
-                    plugins:
-                      inputs:
-                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
-                          events:
-                            queue_push_duration_in_millis: 159
-                            out: 45
-                          name: heartbeat
-                          flow:
-                            throughput:
-                              current: 0
-                              last_1_minute: 0.01614
-                              last_5_minutes: 0.01627
-                              last_15_minutes: 0.01643
-                              lifetime: 0.0167
-                      codecs:
-                        - id: plain_b0090202-daac-428e-8355-18c35a0826cb
-                          decode:
-                            writes_in: 0
-                            duration_in_millis: 0
-                            out: 0
-                          name: plain
-                          encode:
-                            writes_in: 0
-                            duration_in_millis: 0
-                        - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
-                          name: rubydebug
-                      filters:
-                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
-                          events:
-                            in: 45
-                            duration_in_millis: 86
-                            out: 45
-                          name: ruby
-                          flow:
-                            worker_utilization:
-                              current: 0
-                              last_1_minute: 0.0001345
-                              last_5_minutes: 0.0001627
-                              last_15_minutes: 0.0002191
-                              lifetime: 0.000266
-                            worker_millis_per_event:
-                              last_1_minute: 1
-                              last_5_minutes: 1.2
-                              last_15_minutes: 1.6
-                              lifetime: 1.911
-                      outputs:
-                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
-                          events:
-                            in: 45
-                            duration_in_millis: 216
-                            out: 45
-                          name: stdout
-                          flow:
-                            worker_utilization:
-                              current: 0
-                              last_1_minute: 0.000269
-                              last_5_minutes: 0.000434
-                              last_15_minutes: 0.0006663
-                              lifetime: 0.000668
-                            worker_millis_per_event:
-                              last_1_minute: 2
-                              last_5_minutes: 3.2
-                              last_15_minutes: 4.867
-                              lifetime: 4.8
-                    reloads:
-                      last_failure_timestamp:
-                      successes: 0
-                      failures: 0
-                      last_success_timestamp:
-                      last_error:
-                    queue:
-                      events: 0
-                      capacity:
-                        max_queue_size_in_bytes: 1073741824
-                        max_unread_events: 0
-                        queue_size_in_bytes: 11341
-                        page_capacity_in_bytes: 67108864
-                      data:
-                        free_space_in_bytes: 60833390592
-                        path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
-                        storage_type: apfs
-                      type: persisted
-                      events_count: 0
-                      queue_size_in_bytes: 11341
-                      max_queue_size_in_bytes: 1073741824
-                    pipeline:
-                      workers: 12
-                      batch_size: 125
-                      batch_delay: 50
-                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
-                    ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+              examples:
+                PipelineWithPersistedQueue:
+                  description: A pipeline with a persisted queue.
+                  value:
+                    pipelines:
+                      heartbeat-ruby-stdout:
+                        events:
+                          queue_push_duration_in_millis: 159
+                          in: 45
+                          duration_in_millis: 341
+                          filtered: 45
+                          out: 45
+                        flow:
+                          filter_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                          queue_persisted_growth_bytes:
+                            current: 0
+                            last_1_minute: 4.068
+                            last_5_minutes: 4.101
+                            last_15_minutes: 4.14
+                            lifetime: 4.214
+                          queue_persisted_growth_events:
+                            current: 0
+                            last_1_minute: 0
+                            last_5_minutes: 0
+                            last_15_minutes: 0
+                            lifetime: 0
+                          queue_backpressure:
+                            current: 0
+                            last_1_minute: 1.614e-05
+                            last_5_minutes: 2.278e-05
+                            last_15_minutes: 4.272e-05
+                            lifetime: 5.901e-05
+                          output_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                          worker_utilization:
+                            current: 0
+                            last_1_minute: 0.0004036
+                            last_5_minutes: 0.0006239
+                            last_15_minutes: 0.0009858
+                            lifetime: 0.001055
+                          worker_concurrency:
+                            current: 0
+                            last_1_minute: 4.843e-05
+                            last_5_minutes: 7.486e-05
+                            last_15_minutes: 0.0001183
+                            lifetime: 0.0001266
+                          input_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                        plugins:
+                          inputs:
+                            - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                              events:
+                                queue_push_duration_in_millis: 159
+                                out: 45
+                              name: heartbeat
+                              flow:
+                                throughput:
+                                  current: 0
+                                  last_1_minute: 0.01614
+                                  last_5_minutes: 0.01627
+                                  last_15_minutes: 0.01643
+                                  lifetime: 0.0167
+                          codecs:
+                            - id: plain_b0090202-daac-428e-8355-18c35a0826cb
+                              decode:
+                                writes_in: 0
+                                duration_in_millis: 0
+                                out: 0
+                              name: plain
+                              encode:
+                                writes_in: 0
+                                duration_in_millis: 0
+                            - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
+                              name: rubydebug
+                          filters:
+                            - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                              events:
+                                in: 45
+                                duration_in_millis: 86
+                                out: 45
+                              name: ruby
+                              flow:
+                                worker_utilization:
+                                  current: 0
+                                  last_1_minute: 0.0001345
+                                  last_5_minutes: 0.0001627
+                                  last_15_minutes: 0.0002191
+                                  lifetime: 0.000266
+                                worker_millis_per_event:
+                                  last_1_minute: 1
+                                  last_5_minutes: 1.2
+                                  last_15_minutes: 1.6
+                                  lifetime: 1.911
+                          outputs:
+                            - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                              events:
+                                in: 45
+                                duration_in_millis: 216
+                                out: 45
+                              name: stdout
+                              flow:
+                                worker_utilization:
+                                  current: 0
+                                  last_1_minute: 0.000269
+                                  last_5_minutes: 0.000434
+                                  last_15_minutes: 0.0006663
+                                  lifetime: 0.000668
+                                worker_millis_per_event:
+                                  last_1_minute: 2
+                                  last_5_minutes: 3.2
+                                  last_15_minutes: 4.867
+                                  lifetime: 4.8
+                        reloads:
+                          last_failure_timestamp:
+                          successes: 0
+                          failures: 0
+                          last_success_timestamp:
+                          last_error:
+                        queue:
+                          events: 0
+                          capacity:
+                            max_queue_size_in_bytes: 1073741824
+                            max_unread_events: 0
+                            queue_size_in_bytes: 11341
+                            page_capacity_in_bytes: 67108864
+                          data:
+                            free_space_in_bytes: 60833390592
+                            path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
+                            storage_type: apfs
+                          type: persisted
+                          events_count: 0
+                          queue_size_in_bytes: 11341
+                          max_queue_size_in_bytes: 1073741824
+                        pipeline:
+                          workers: 12
+                          batch_size: 125
+                          batch_delay: 50
+                        hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                        ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+
+                PipelineWithMemoryQueue:
+                  description: A pipeline with a memory queue.
+                  value:
+                    pipelines:
+                      heartbeat-ruby-stdout:
+                        events:
+                          duration_in_millis: 14
+                          filtered: 2
+                          in: 2
+                          queue_push_duration_in_millis: 0
+                          out: 2
+                        flow:
+                          input_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          output_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          worker_utilization:
+                            current: 0.002469
+                            last_1_minute: 0.001384
+                            lifetime: 0.001805
+                          filter_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          worker_concurrency:
+                            current: 0.0002963
+                            last_1_minute: 0.0001661
+                            lifetime: 0.0002166
+                          queue_backpressure:
+                            current: 0
+                            last_1_minute: 0
+                            lifetime: 0
+                        plugins:
+                          inputs:
+                            - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                              events:
+                                queue_push_duration_in_millis: 0
+                                out: 2
+                              name: heartbeat
+                              flow:
+                                throughput:
+                                  current: 0.09876
+                                  last_1_minute: 0.01661
+                                  lifetime: 0.03094
+                          codecs:
+                            - id: 8b2798ec-d828-445a-a5c3-b0ebe2ec142a
+                              name: rubydebug
+                            - id: plain_dc12bcf8-1c2e-4f28-b55d-a82ab127d00a
+                              encode:
+                                duration_in_millis: 0
+                                writes_in: 0
+                              name: plain
+                              decode:
+                                duration_in_millis: 0
+                                writes_in: 0
+                                out: 0
+                          filters:
+                            - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                              events:
+                                duration_in_millis: 4
+                                in: 2
+                                out: 2
+                              name: ruby
+                              flow:
+                                worker_millis_per_event:
+                                  current: 1
+                                  last_1_minute: 4
+                                  lifetime: 2
+                                worker_utilization:
+                                  current: 0.000823
+                                  last_1_minute: 0.0005537
+                                  lifetime: 0.0005157
+                          outputs:
+                            - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                              events:
+                                duration_in_millis: 7
+                                in: 2
+                                out: 2
+                              name: stdout
+                              flow:
+                                worker_millis_per_event:
+                                  current: 3
+                                  last_1_minute: 4
+                                  lifetime: 3.5
+                                worker_utilization:
+                                  current: 0.002469
+                                  last_1_minute: 0.0005537
+                                  lifetime: 0.0009025
+                        reloads:
+                          successes: 0
+                          last_failure_timestamp:
+                          failures: 0
+                          last_success_timestamp:
+                          last_error:
+                        queue:
+                          type: memory
+                          events_count: 0
+                          queue_size_in_bytes: 0
+                          max_queue_size_in_bytes: 0
+                        pipeline:
+                          workers: 12
+                          batch_size: 125
+                          batch_delay: 50
+                        hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                        ephemeral_id: c91bff2b-c92b-45ac-8c74-04783f6cc1dd
+
+
 
 
   /_node/stats/process:
