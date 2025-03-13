@@ -393,7 +393,7 @@ paths:
   /_node/stats/os:
     get:
       summary: Get Cgroup statistics
-      description: Return a more accurate view of CPU statistics from Cgroup if available.
+      description: Get a more accurate view of CPU statistics from control groups (Cgroup) if available.
       tags:
         - node stats
       responses:
