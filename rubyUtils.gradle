@@ -158,10 +158,23 @@ void rake(File projectDir, File buildDir, String task) {
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require 'rake'; require 'time'")
         jruby.runScriptlet("""
+<<<<<<< HEAD
                 rake = Rake.application
                 rake.init
                 rake.load_rakefile
                 rake['${task}'].invoke
+=======
+                begin
+                    rake = Rake.application
+                    rake.init
+                    rake.load_rakefile
+                    rake['${task}'].invoke(${rakeArgs})
+                rescue => e
+                    puts "Rake task error: #{e.class}: #{e.message}"
+                    puts "Backtrace: #{e.backtrace.join("\\n")}"
+                    raise e
+                end
+>>>>>>> 0d931a50 (Surface failures from nested rake/shell tasks (#17310))
                 """
         )
     }
