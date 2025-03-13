@@ -463,8 +463,8 @@ paths:
 
   /_node/stats/pipelines/{pipeline_name}:
     get:
-      summary: Get pipeline statistics
-      description: Returns pipeline performance metrics and plugin details.
+      summary: Get statistics for a pipeline
+      description: Get performance metrics and plugin details for a pipeline.
       tags:
         - node stats
       parameters:
@@ -490,7 +490,7 @@ paths:
   /_node/stats/process:
     get:
       summary: Get process statistics
-      description: Return system-level process statistics.
+      description: Get system-level process statistics.
       tags:
         - node stats
       responses:
@@ -507,7 +507,7 @@ paths:
   /_node/stats/reloads:
     get:
       summary: Get config reload statistics
-      description: Show info about config reload successes and failures.
+      description: Get information about config reload successes and failures.
       tags:
         - node stats
       responses:
@@ -716,10 +716,10 @@ paths:
                                             description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
                                           description:
                                             type: string
-                                            description: "A description of the impact on Logstash"
+                                            description: "A description of the impact on Logstash."
                                           impact_areas:
                                             type: array
-                                            description: "The areas Logstash functionality that this impact affects. Possible values are:"
+                                            description: "The areas of Logstash affected by the health status. Possible values are:"
                                             example: ["pipeline_execution"]
                                             items:
                                               type: string
@@ -733,11 +733,11 @@ paths:
                                             description: "A description of a root cause of this health problem."
                                           action:
                                             type: string
-                                            description: "A brief description the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field"
+                                            description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
                                           help_url:
                                             type: string
                                             format: uri
-                                            description: "A link to the troubleshooting guide that’ll fix the health problem."
+                                            description: "A link to the troubleshooting guide that will fix the health problem."
 
 components:
   securitySchemes:
@@ -758,7 +758,7 @@ components:
           description: The version of the Logstash instance.
         http_address:
           type: string
-          description: The HTTP address where the Logstash instance is accessible including port.
+          description: The HTTP address where the Logstash instance is accessible, including the port number.
         id:
           type: string
           description: A unique identifier (uuid) for the Logstash instance.
@@ -949,24 +949,24 @@ components:
               properties:
                 count:
                   type: integer
-                  description: Number of active JVM threads
+                  description: The number of active JVM threads.
                 peak_count:
                   type: integer
-                  description: Peak number of active JVM threads
+                  description: The peak number of active JVM threads.
             mem:
               type: object
               properties:
                 heap_used_percent:
                   type: integer
-                  description: Percentage of heap memory used
+                  description: The percentage of heap memory used.
                 heap_committed_in_bytes:
                   type: integer
                   format: int64
-                  description: Committed heap memory in bytes
+                  description: The committed heap memory in bytes.
                 heap_max_in_bytes:
                   type: integer
                   format: int64
-                  description: Maximum heap memory in bytes
+                  description: The maximum heap memory in bytes.
                 heap_used_in_bytes:
                   type: integer
                   format: int64
