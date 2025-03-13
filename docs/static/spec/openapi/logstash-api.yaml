@@ -140,7 +140,7 @@ paths:
 
   /_node/os:
     get:
-      summary: Get node-level OS information
+      summary: Get node-level OS info
       description: |
         Get the operating system (OS) name, architecture, version, and available processors.
       operationId: nodeInfoOS
@@ -172,9 +172,9 @@ paths:
 
   /_node/pipelines:
     get:
-      summary: Get information for pipelines
+      summary: Get settings for pipelines
       description: |
-        Get information and settings for each pipeline.
+        Get information and settings for all pipelines.
       operationId: nodeInfoPipelines
       tags:
         - node info
@@ -219,8 +219,8 @@ paths:
 
   /_node/pipelines/{pipeline_name}:
     get:
-      summary: Get information for a pipeline
-      description: Get details for a specific pipeline.
+      summary: Get settings for a pipeline
+      description: Get information and settings for all pipelines.
       operationId: nodeInfoPipeline
       tags:
         - node info
@@ -303,7 +303,6 @@ paths:
 
               examples:
                 nodePluginsExample1:
-                  # summary:
                   value:
                     total: 4
                     plugins:
@@ -473,13 +472,16 @@ paths:
                         type: object
                         properties:
                           successes:
+                            description: "The number of successful checks and downloads"
                             type: integer
                           failures:
+                            description: "The number of failed check or downloads"
                             type: integer
                           last_checked_at:
                             type: string
                             format: date-time
                           status:
+                            description: "The last download status."
                             type: string
                             enum: [ "succeeded", "failed", "updating" ]
 
@@ -1200,7 +1202,6 @@ paths:
                               $ref: '#/components/schemas/Thread'
               examples:
                 nodeHotThreadsExample1:
-                  # summary:
                   value:
                     hot_threads:
                       time: 2025-01-06T18:25:28-07:00
