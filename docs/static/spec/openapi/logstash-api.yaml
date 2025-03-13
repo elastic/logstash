@@ -342,7 +342,7 @@ paths:
   /_node/stats/events:
     get:
       summary: Get events statistics
-      description: Return statistics related to event processing.
+      description: Get statistics related to event processing.
       tags:
         - node stats
       responses:
