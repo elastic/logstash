@@ -445,7 +445,7 @@ paths:
   /_node/stats/pipelines:
     get:
       summary: Get statistics for pipelines
-      description: Returns pipeline performance metrics and plugin details.
+      description: Get pipeline performance metrics and plugin details.
       tags:
         - node stats
       responses:
