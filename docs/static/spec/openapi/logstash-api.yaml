@@ -335,7 +335,7 @@ paths:
                   - $ref: '#/components/schemas/ProcessStats'
                   - $ref: '#/components/schemas/EventsStats'
                   - $ref: '#/components/schemas/FlowStats'
-                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: "#/components/schemas/PipelinesStats"
                   - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
 
@@ -457,7 +457,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: "#/components/schemas/PipelinesStats"
                   - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
 
@@ -483,7 +483,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/PipelineStats"
+                  - $ref: "#/components/schemas/PipelinesStats"
                   - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
 
@@ -1122,13 +1122,15 @@ components:
             writes_in:
               type: integer
 
-    PipelineStats:
+    PipelinesStats:
       type: object
       properties:
         pipelines:
           type: object
+          description: |
+            A map where each key is a user-defined pipeline name, and the value contains the metrics for that pipeline.
           additionalProperties:
-            description: "pipeline name"
+            description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
             type: object
             allOf:
               - $ref: "#/components/schemas/EventsStats"
