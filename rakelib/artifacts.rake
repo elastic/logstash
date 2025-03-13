@@ -127,12 +127,34 @@ namespace "artifact" do
     result
   end
 
-  # execute Kernel#system call,checking the exist status of the executed command and eventually reporting as exception
+  ##
+  # @override safe_system([env,] command... [,options])
+  # execute Kernel#system call,checking the exit status of the executed command and eventually reporting as exception
   def safe_system(*args)
-    if !system(*args)
-      status = $?
+    command = args.dup # avoid mutating input for reporting
+    env = command.size > 1 && command.first.kind_of?(Hash) ? command.shift : {}
+    options = command.size > 1 && command.last.kind_of?(Hash) ? command.pop : {}
+    fail("unsupported options #{options}") unless options.empty?
+
+    # Normalize command to a single string from either a multi-word string
+    # or an array of individual words
+    command = command.size > 1 ? Shellwords.join(command.map(&:to_s)) : command.first.to_s
+
+    # prepend the environment
+    env.each do |k,v|
+      command.prepend("#{Shellwords.escape(k.to_s)}=#{Shellwords.escape(v.to_s)} ")
+    end
+
+    output = `#{command} 2>&1`
+    status = $?
+
+    if !status.success?
+      puts "Command failed: #{args.inspect}"
+      puts "Output: #{output}"
       raise "Got exit status #{status.exitstatus} attempting to execute #{args.inspect}!"
     end
+
+    true
   end
 
   desc "Generate rpm, deb, tar and zip artifacts"
