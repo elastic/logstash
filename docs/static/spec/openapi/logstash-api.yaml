@@ -343,6 +343,7 @@ paths:
     get:
       summary: Get events statistics
       description: Get statistics related to event processing.
+      operationId: nodeStatsEvents
       tags:
         - node stats
       responses:
@@ -360,6 +361,7 @@ paths:
     get:
       summary: Get flow statistics
       description: Get throughput and backpressure details.
+      operationId: nodeStatsFlow
       tags:
         - node stats
       responses:
@@ -377,6 +379,7 @@ paths:
     get:
       summary: Get JVM statistics
       description: Get threads count, garbage collators(GC) and memory details.
+      operationId: nodeStatsJVM
       tags:
         - node stats
       responses:
@@ -394,6 +397,7 @@ paths:
     get:
       summary: Get Cgroup statistics
       description: Get a more accurate view of CPU statistics from control groups (Cgroup) if available.
+      operationId: nodeStatsOS
       tags:
         - node stats
       responses:
@@ -446,6 +450,7 @@ paths:
     get:
       summary: Get statistics for pipelines
       description: Get pipeline performance metrics and plugin details.
+      operationId: nodeStatsPipelines
       tags:
         - node stats
       responses:
@@ -465,6 +470,7 @@ paths:
     get:
       summary: Get statistics for a pipeline
       description: Get performance metrics and plugin details for a pipeline.
+      operationId: nodeStatsPipeline
       tags:
         - node stats
       parameters:
@@ -491,6 +497,7 @@ paths:
     get:
       summary: Get process statistics
       description: Get system-level process statistics.
+      operationId: nodeStatsProcess
       tags:
         - node stats
       responses:
@@ -508,6 +515,7 @@ paths:
     get:
       summary: Get config reload statistics
       description: Get information about config reload successes and failures.
+      operationId: nodeStatsReloads
       tags:
         - node stats
       responses:
@@ -527,7 +535,7 @@ paths:
       description: >
         Get information about current hot threads for Logstash.
         A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute.
-      operationId: nodeHot_threads
+      operationId: nodeHotThreads
       tags:
         - hot threads
       parameters:
@@ -638,7 +646,7 @@ paths:
         NOTE: The health indicators perform root cause analysis of non-green health statuses. 
         This can be computationally expensive when called frequently.
 
-      operationId: healthStatus
+      operationId: healthReport
       tags:
         - health
       parameters:
