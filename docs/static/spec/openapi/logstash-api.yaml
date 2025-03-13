@@ -355,6 +355,13 @@ paths:
       operationId: nodeStatsEvents
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing events statistics.
@@ -380,6 +387,13 @@ paths:
       operationId: nodeStatsFlow
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing flow statistics.
@@ -423,6 +437,51 @@ paths:
                     last_15_minutes: 0.0002941
                     lifetime: 0.000242
 
+  /_node/stats/geoip_download_manager:
+    get:
+      summary: Get geoip databases statistics
+      description: Get license checks and download status of Geoip filter plugin.
+      operationId: nodeStatsGeoIPDownloadManager
+      tags:
+        - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+      responses:
+        "200":
+          description: A JSON object containing geoip database license and download status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  geoip_download_manager:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          ASN:
+                            $ref: "#/components/schemas/GeoIPDBLicenseStats"
+                          CITY:
+                            $ref: "#/components/schemas/GeoIPDBLicenseStats"
+                      download_stats:
+                        type: object
+                        properties:
+                          successes:
+                            type: integer
+                          failures:
+                            type: integer
+                          last_checked_at:
+                            type: string
+                            format: date-time
+                          status:
+                            type: string
+                            enum: [ "succeeded", "failed", "updating" ]
 
   /_node/stats/jvm:
     get:
@@ -431,6 +490,13 @@ paths:
       operationId: nodeStatsJVM
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing jvm statistics.
@@ -489,6 +555,13 @@ paths:
       operationId: nodeStatsOS
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing OS statistics.
@@ -556,6 +629,13 @@ paths:
       operationId: nodeStatsPipelines
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing pipelines statistics.
@@ -823,6 +903,12 @@ paths:
           schema:
             type: string
           description: The name of the pipeline to retrieve information for.
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing a single pipeline statistics.
@@ -991,6 +1077,13 @@ paths:
       operationId: nodeStatsProcess
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing process statistics.
@@ -1022,6 +1115,13 @@ paths:
       operationId: nodeStatsReloads
       tags:
         - node stats
+      parameters:
+        - name: pretty
+          in: query
+          schema:
+            type: boolean
+          description: >
+            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
       responses:
         "200":
           description: A JSON object containing process statistics.
@@ -1950,3 +2050,18 @@ components:
             events_count:
               type: integer
               format: int64
+
+    GeoIPDBLicenseStats:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ "init", "up_to_date", "to_be_expired", "expired" ]
+          description: The status of the database license.
+        fail_check_in_days:
+          type: integer
+          description: The number of days since the last successful check.
+        last_updated_at:
+          type: string
+          format: date-time
+          description: The last update timestamp.
