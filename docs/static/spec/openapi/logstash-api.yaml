@@ -86,8 +86,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       jvm:
@@ -160,8 +160,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: '#/components/schemas/OSStats'
               example:
                 os:
@@ -192,8 +192,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       pipelines:
@@ -244,8 +244,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       pipelines:
@@ -285,8 +285,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       total:
@@ -336,8 +336,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: '#/components/schemas/JVMStats'
                   - $ref: '#/components/schemas/ProcessStats'
                   - $ref: '#/components/schemas/EventsStats'
@@ -368,8 +368,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/EventsStats"
               example:
                 events:
@@ -400,8 +400,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/NodeStatsFlow"
               example:
                 flow:
@@ -506,8 +506,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/JVMStats"
               example:
                 jvm:
@@ -645,8 +645,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
               example:
                 pipelines:
@@ -918,8 +918,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
               example:
                 pipelines:
@@ -1093,8 +1093,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/ProcessStats"
               example:
                 process:
@@ -1131,8 +1131,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/Common"
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/ReloadStats"
               example:
                 reloads:
@@ -1185,8 +1185,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/Common'
-                  - $ref: '#/components/schemas/PipelineSettings'
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
                     properties:
                       hot_threads:
