@@ -66,7 +66,7 @@ tags:
 paths:
   /_node/jvm:
     get:
-      summary: Gets node-level JVM info, including info about threads.
+      summary: Gets node-level JVM info
       description: |
         Show node-level JVM stats, such as the JVM process id, version, VM info, memory usage, and info about garbage collectors
       operationId: nodeInfoJVM
