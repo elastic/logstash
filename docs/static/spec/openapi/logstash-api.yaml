@@ -161,7 +161,7 @@ paths:
 
   /_node/pipelines:
     get:
-      summary: Get pipeline-specific information
+      summary: Get information for pipelines
       description: |
         Get information and settings for each pipeline.
       operationId: nodeInfoPipelines
