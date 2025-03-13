@@ -746,7 +746,78 @@ paths:
                                             type: string
                                             format: uri
                                             description: "A link to the troubleshooting guide that will fix the health problem."
-
+              examples:
+                normalTerminatedCase:
+                  description: "The pipeline has finished without errors or interruptions."
+                  value:
+                    symptom: "1 indicator is concerning (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "yellow"
+                        symptom: "1 indicator is concerning (`normal-completion-pipeline`)"
+                        indicators:
+                          normal-completion-pipeline:
+                            status: "yellow"
+                            symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
+                                action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+                            impacts:
+                              - impact_areas: ["pipeline_execution"]
+                            details:
+                              status:
+                                state: "FINISHED"
+                abnormalTerminatedCase:
+                  description: "The pipeline is terminated with errors."
+                  value:
+                    status: "red"
+                    symptom: "1 indicator is unhealthy (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "red"
+                        symptom: "1 indicator is unhealthy (`abnormal-termination-pipeline`)"
+                        indicators:
+                          abnormal-termination-pipeline:
+                            status: "red"
+                            symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - cause: "pipeline is not running, likely because it has encountered an error"
+                                action: "view logs to determine the cause of abnormal pipeline shutdown"
+                            impacts:
+                              - description: "the pipeline is not currently processing"
+                                impact_areas: [ "pipeline_execution" ]
+                            details:
+                              status:
+                                state: "TERMINATED"
+                backpressureCase:
+                  description: "A pipeline is blocked by slow downstream processing."
+                  value:
+                    status: "red"
+                    symptom: "1 indicator is unhealthy (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "red"
+                        symptom: "1 indicator is unhealthy (`blocked-pipeline`)"
+                        indicators:
+                          blocked-pipeline:
+                            status: "red"
+                            symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+                                cause: "pipeline workers have been completely blocked for at least five minutes"
+                                action: "address bottleneck or add resources"
+                            impacts:
+                              - id: "logstash:health:pipeline:flow:impact:blocked_processing"
+                                severity: 1
+                                description: "the pipeline is blocked"
+                                impact_areas: [ "pipeline_execution" ]
+                            details:
+                              status:
+                                state: "RUNNING"
+                              flow:
+                                worker_utilization:
+                                  last_1_minute: 100.0
+                                  last_5_minutes: 100.0
 components:
   securitySchemes:
     apiKeyAuth:
