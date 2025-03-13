@@ -28,7 +28,8 @@ info:
 servers:
   - url: /
 security:
-  - apiKeyAuth: []
+  - {}           # Allows requests without authentication
+  - BasicAuth: [] # Allows requests with Basic Authentication
 tags:
   - name: health
     x-displayName: Health report
@@ -1476,11 +1477,9 @@ components:
       description: >
         If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
   securitySchemes:
-    apiKeyAuth:
-      # description:
-      in: header
-      name: Authorization
-      type: apiKey
+    BasicAuth:
+      type: http
+      scheme: basic
   schemas:
     Common:
       type: object
