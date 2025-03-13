@@ -970,7 +970,7 @@ components:
                 heap_used_in_bytes:
                   type: integer
                   format: int64
-                  description: Used heap memory in bytes
+                  description: The used heap memory in bytes.
                 non_heap_used_in_bytes:
                   type: integer
                   format: int64
