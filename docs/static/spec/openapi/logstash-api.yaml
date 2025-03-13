@@ -162,19 +162,7 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/Common'
                   - $ref: '#/components/schemas/PipelineSettings'
-                  - type: object
-                    properties:
-                      os:
-                        type: object
-                        properties:
-                          name:
-                            type: string
-                          arch:
-                            type: string
-                          version:
-                            type: string
-                          available_processors:
-                            type: integer
+                  - $ref: '#/components/schemas/OSStats'
               example:
                 os:
                   name: "Mac OS X"
@@ -354,10 +342,11 @@ paths:
                   - $ref: '#/components/schemas/JVMStats'
                   - $ref: '#/components/schemas/ProcessStats'
                   - $ref: '#/components/schemas/EventsStats'
-                  - $ref: '#/components/schemas/FlowStats'
+                  - $ref: '#/components/schemas/NodeStatsFlow'
                   - $ref: "#/components/schemas/PipelinesStats"
-                  - $ref: '#/components/schemas/QueueStats'
                   - $ref: '#/components/schemas/ReloadStats'
+                  - $ref: '#/components/schemas/OSStats'
+                  - $ref: '#/components/schemas/QueueStats'
 
   /_node/stats/events:
     get:
@@ -376,6 +365,13 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/EventsStats"
+              example:
+                events:
+                  duration_in_millis: 1109
+                  in: 56
+                  filtered: 56
+                  out: 56
+                  queue_push_duration_in_millis: 2
 
   /_node/stats/flow:
     get:
@@ -393,7 +389,40 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
-                  - $ref: "#/components/schemas/FlowStats"
+                  - $ref: "#/components/schemas/NodeStatsFlow"
+              example:
+                flow:
+                  input_throughput:
+                    current: 0.07381
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  filter_throughput:
+                    current: 0.07379
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  output_throughput:
+                    current: 0.07379
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  queue_backpressure:
+                    "current": 0.00007379,
+                    "last_1_minute": 0.00001572,
+                    "last_5_minutes": 0.00004532,
+                    "last_15_minutes": 0.00005407,
+                    "lifetime": 0.00006464
+                  worker_concurrency:
+                    current: 0.0001476
+                    last_1_minute: 0.0001257
+                    last_5_minutes: 0.000246
+                    last_15_minutes: 0.0002941
+                    lifetime: 0.000242
+
 
   /_node/stats/jvm:
     get:
@@ -412,6 +441,46 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/JVMStats"
+              example:
+                jvm:
+                  threads:
+                    count: 117
+                    peak_count: 119
+                  mem:
+                    heap_used_percent: 4
+                    heap_committed_in_bytes: 245366784
+                    heap_max_in_bytes: 4294967294
+                    heap_used_in_bytes: 206685392
+                    non_heap_used_in_bytes: 175223280
+                    non_heap_committed_in_bytes: 196739072
+                    pools:
+                      young:
+                        committed_in_bytes: 92274688
+                        max_in_bytes: -1
+                        used_in_bytes: 69206016
+                        peak_max_in_bytes: -1
+                        peak_used_in_bytes: 171966464
+                      old:
+                        committed_in_bytes: 146800640
+                        max_in_bytes: 4294967296
+                        used_in_bytes: 131187920
+                        peak_max_in_bytes: 4294967296
+                        peak_used_in_bytes: 135186368
+                      survivor:
+                        committed_in_bytes: 6291456
+                        max_in_bytes: -1
+                        used_in_bytes: 6291456
+                        peak_max_in_bytes: -1
+                        peak_used_in_bytes: 23068672
+                  gc:
+                    collectors:
+                      young:
+                        collection_count: 37
+                        collection_time_in_millis: 192
+                      old:
+                        collection_count: 0
+                        collection_time_in_millis: 0
+                  uptime_in_millis: 2512572
 
   /_node/stats/os:
     get:
@@ -465,6 +534,20 @@ paths:
                                   time_throttled_nanos:
                                     type: integer
                                     format: int64
+              example:
+                os:
+                  cgroup:
+                    cpuacct:
+                      control_group: "/elastic1"
+                      usage_nanos: 378477588075
+                    cpu:
+                      control_group: "/elastic1"
+                      cfs_period_micros: 1000000
+                      cfs_quota_micros: 800000
+                      stat:
+                        number_of_elapsed_periods: 4157
+                        number_of_times_throttled: 460
+                        time_throttled_nanos: 581617440755
 
   /_node/stats/pipelines:
     get:
@@ -483,8 +566,248 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
-                  - $ref: '#/components/schemas/QueueStats'
-                  - $ref: '#/components/schemas/ReloadStats'
+              example:
+                pipelines:
+                  beats-es:
+                    events:
+                      duration_in_millis: 365495
+                      in: 216610
+                      filtered: 216485
+                      out: 216485
+                      queue_push_duration_in_millis: 342466
+                    flow:
+                      input_throughput:
+                        current: 603.1
+                        lifetime: 575.4
+                      filter_throughput:
+                        current: 604.2
+                        lifetime: 575.1
+                      output_throughput:
+                        current: 604.8
+                        lifetime: 575.1
+                      queue_backpressure:
+                        current: 0.214
+                        lifetime: 0.937
+                      worker_concurrency:
+                        current: 0.941
+                        lifetime: 0.9709
+                      worker_utilization:
+                        current: 93.092
+                        lifetime: 92.187
+                    plugins:
+                      inputs:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-1
+                          events:
+                            out: 216485
+                            queue_push_duration_in_millis: 342466
+                          flow:
+                            throughput:
+                              current: 603.1
+                              lifetime: 590.7
+                          name: beats
+                      filters:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-2
+                          events:
+                            duration_in_millis: 55969
+                            in: 216485
+                            out: 216485
+                          failures: 216485
+                          patterns_per_field:
+                            message: 1
+                          flow:
+                            worker_utilization:
+                              current: 16.71
+                              lifetime: 15.27
+                            worker_millis_per_event:
+                              current: 2829
+                              lifetime: 0.2585
+                          name: grok
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-3
+                          events:
+                            duration_in_millis: 3326
+                            in: 216485
+                            out: 216485
+                          flow:
+                            worker_utilization:
+                              current: 1.042
+                              lifetime: 0.9076
+                            worker_millis_per_event:
+                              current: 0.01763
+                              lifetime: 0.01536
+                          name: geoip
+                      outputs:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-4
+                          events:
+                            duration_in_millis: 278557
+                            in: 216485
+                            out: 216485
+                          flow:
+                            worker_utilization:
+                              current: 75.34
+                              lifetime: 76.01
+                            worker_millis_per_event:
+                              current: 1.276
+                              lifetime: 1.287
+                          name: elasticsearch
+                    reloads:
+                      last_error:
+                      successes: 0
+                      last_success_timestamp:
+                      last_failure_timestamp:
+                      failures: 0
+                    queue:
+                      type: memory
+                    pipeline:
+                      workers: 4
+                      batch_size: 125
+                      batch_delay: 50
+                  heartbeat-ruby-stdout:
+                    events:
+                      queue_push_duration_in_millis: 159
+                      in: 45
+                      duration_in_millis: 341
+                      filtered: 45
+                      out: 45
+                    flow:
+                      filter_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      queue_persisted_growth_bytes:
+                        current: 0
+                        last_1_minute: 4.068
+                        last_5_minutes: 4.101
+                        last_15_minutes: 4.14
+                        lifetime: 4.214
+                      queue_persisted_growth_events:
+                        current: 0
+                        last_1_minute: 0
+                        last_5_minutes: 0
+                        last_15_minutes: 0
+                        lifetime: 0
+                      queue_backpressure:
+                        current: 0
+                        last_1_minute: 1.614e-05
+                        last_5_minutes: 2.278e-05
+                        last_15_minutes: 4.272e-05
+                        lifetime: 5.901e-05
+                      output_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      worker_utilization:
+                        current: 0
+                        last_1_minute: 0.0004036
+                        last_5_minutes: 0.0006239
+                        last_15_minutes: 0.0009858
+                        lifetime: 0.001055
+                      worker_concurrency:
+                        current: 0
+                        last_1_minute: 4.843e-05
+                        last_5_minutes: 7.486e-05
+                        last_15_minutes: 0.0001183
+                        lifetime: 0.0001266
+                      input_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                    plugins:
+                      inputs:
+                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                          events:
+                            queue_push_duration_in_millis: 159
+                            out: 45
+                          name: heartbeat
+                          flow:
+                            throughput:
+                              current: 0
+                              last_1_minute: 0.01614
+                              last_5_minutes: 0.01627
+                              last_15_minutes: 0.01643
+                              lifetime: 0.0167
+                      codecs:
+                        - id: plain_b0090202-daac-428e-8355-18c35a0826cb
+                          decode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                            out: 0
+                          name: plain
+                          encode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                        - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
+                          name: rubydebug
+                      filters:
+                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                          events:
+                            in: 45
+                            duration_in_millis: 86
+                            out: 45
+                          name: ruby
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.0001345
+                              last_5_minutes: 0.0001627
+                              last_15_minutes: 0.0002191
+                              lifetime: 0.000266
+                            worker_millis_per_event:
+                              last_1_minute: 1
+                              last_5_minutes: 1.2
+                              last_15_minutes: 1.6
+                              lifetime: 1.911
+                      outputs:
+                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                          events:
+                            in: 45
+                            duration_in_millis: 216
+                            out: 45
+                          name: stdout
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.000269
+                              last_5_minutes: 0.000434
+                              last_15_minutes: 0.0006663
+                              lifetime: 0.000668
+                            worker_millis_per_event:
+                              last_1_minute: 2
+                              last_5_minutes: 3.2
+                              last_15_minutes: 4.867
+                              lifetime: 4.8
+                    reloads:
+                      last_failure_timestamp:
+                      successes: 0
+                      failures: 0
+                      last_success_timestamp:
+                      last_error:
+                    queue:
+                      events: 0
+                      capacity:
+                        max_queue_size_in_bytes: 1073741824
+                        max_unread_events: 0
+                        queue_size_in_bytes: 11341
+                        page_capacity_in_bytes: 67108864
+                      data:
+                        free_space_in_bytes: 60833390592
+                        path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
+                        storage_type: apfs
+                      type: persisted
+                      events_count: 0
+                      queue_size_in_bytes: 11341
+                      max_queue_size_in_bytes: 1073741824
+                    pipeline:
+                      workers: 12
+                      batch_size: 125
+                      batch_delay: 50
+                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                    ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
 
   /_node/stats/pipelines/{pipeline_name}:
     get:
@@ -510,8 +833,156 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
-                  - $ref: '#/components/schemas/QueueStats'
-                  - $ref: '#/components/schemas/ReloadStats'
+              example:
+                pipelines:
+                  heartbeat-ruby-stdout:
+                    events:
+                      queue_push_duration_in_millis: 159
+                      in: 45
+                      duration_in_millis: 341
+                      filtered: 45
+                      out: 45
+                    flow:
+                      filter_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      queue_persisted_growth_bytes:
+                        current: 0
+                        last_1_minute: 4.068
+                        last_5_minutes: 4.101
+                        last_15_minutes: 4.14
+                        lifetime: 4.214
+                      queue_persisted_growth_events:
+                        current: 0
+                        last_1_minute: 0
+                        last_5_minutes: 0
+                        last_15_minutes: 0
+                        lifetime: 0
+                      queue_backpressure:
+                        current: 0
+                        last_1_minute: 1.614e-05
+                        last_5_minutes: 2.278e-05
+                        last_15_minutes: 4.272e-05
+                        lifetime: 5.901e-05
+                      output_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      worker_utilization:
+                        current: 0
+                        last_1_minute: 0.0004036
+                        last_5_minutes: 0.0006239
+                        last_15_minutes: 0.0009858
+                        lifetime: 0.001055
+                      worker_concurrency:
+                        current: 0
+                        last_1_minute: 4.843e-05
+                        last_5_minutes: 7.486e-05
+                        last_15_minutes: 0.0001183
+                        lifetime: 0.0001266
+                      input_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                    plugins:
+                      inputs:
+                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                          events:
+                            queue_push_duration_in_millis: 159
+                            out: 45
+                          name: heartbeat
+                          flow:
+                            throughput:
+                              current: 0
+                              last_1_minute: 0.01614
+                              last_5_minutes: 0.01627
+                              last_15_minutes: 0.01643
+                              lifetime: 0.0167
+                      codecs:
+                        - id: plain_b0090202-daac-428e-8355-18c35a0826cb
+                          decode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                            out: 0
+                          name: plain
+                          encode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                        - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
+                          name: rubydebug
+                      filters:
+                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                          events:
+                            in: 45
+                            duration_in_millis: 86
+                            out: 45
+                          name: ruby
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.0001345
+                              last_5_minutes: 0.0001627
+                              last_15_minutes: 0.0002191
+                              lifetime: 0.000266
+                            worker_millis_per_event:
+                              last_1_minute: 1
+                              last_5_minutes: 1.2
+                              last_15_minutes: 1.6
+                              lifetime: 1.911
+                      outputs:
+                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                          events:
+                            in: 45
+                            duration_in_millis: 216
+                            out: 45
+                          name: stdout
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.000269
+                              last_5_minutes: 0.000434
+                              last_15_minutes: 0.0006663
+                              lifetime: 0.000668
+                            worker_millis_per_event:
+                              last_1_minute: 2
+                              last_5_minutes: 3.2
+                              last_15_minutes: 4.867
+                              lifetime: 4.8
+                    reloads:
+                      last_failure_timestamp:
+                      successes: 0
+                      failures: 0
+                      last_success_timestamp:
+                      last_error:
+                    queue:
+                      events: 0
+                      capacity:
+                        max_queue_size_in_bytes: 1073741824
+                        max_unread_events: 0
+                        queue_size_in_bytes: 11341
+                        page_capacity_in_bytes: 67108864
+                      data:
+                        free_space_in_bytes: 60833390592
+                        path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
+                        storage_type: apfs
+                      type: persisted
+                      events_count: 0
+                      queue_size_in_bytes: 11341
+                      max_queue_size_in_bytes: 1073741824
+                    pipeline:
+                      workers: 12
+                      batch_size: 125
+                      batch_delay: 50
+                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                    ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+
 
   /_node/stats/process:
     get:
@@ -530,6 +1001,19 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/ProcessStats"
+              example:
+                process:
+                  open_file_descriptors: 221
+                  peak_open_file_descriptors: 221
+                  max_file_descriptors: 10240
+                  mem:
+                    total_virtual_in_bytes: 428771917824
+                  cpu:
+                    total_in_millis: 74913
+                    percent: 0
+                    load_average:
+                      1m: 6.06201171875
+
 
   /_node/stats/reloads:
     get:
@@ -548,7 +1032,10 @@ paths:
                   - $ref: "#/components/schemas/Common"
                   - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/ReloadStats"
-
+              example:
+                reloads:
+                  successes: 0
+                  failures: 0
   /_node/hot_threads:
     get:
       summary: Get hot threads
@@ -924,6 +1411,7 @@ components:
         current:
           type: number
           format: double
+          description: "The most recent ~10s."
         last_1_minute:
           type: number
           format: double
@@ -942,42 +1430,98 @@ components:
         lifetime:
           type: number
           format: double
-    MQFlowStats:
-      type: object
-      properties:
-        input_throughput:
-          $ref: "#/components/schemas/FlowWindows"
-        filter_throughput:
-          $ref: "#/components/schemas/FlowWindows"
-        output_throughput:
-          $ref: "#/components/schemas/FlowWindows"
-        queue_backpressure:
-          $ref: "#/components/schemas/FlowWindows"
-        worker_concurrency:
-          $ref: "#/components/schemas/FlowWindows"
-        worker_utilization:
-          $ref: "#/components/schemas/FlowWindows"
-        queue_persisted_growth_bytes:
-          $ref: "#/components/schemas/FlowWindows"
-        queue_persisted_growth_events:
-          $ref: "#/components/schemas/FlowWindows"
-    PQFlowStats:
-      type: object
-      properties:
-        queue_persisted_growth_bytes:
-          $ref: "#/components/schemas/FlowWindows"
-        queue_persisted_growth_events:
-          $ref: "#/components/schemas/FlowWindows"
-    FlowStats:
+          description: "The lifetime of the relevant pipeline or process."
+    PipelineMQFlowStats:
       type: object
       properties:
         flow:
-          oneOf:
-            - $ref: "#/components/schemas/MQFlowStats" # For memory queue
-            - type: object
+          type: object
+          properties:
+            input_throughput:
+              description: |
+                This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (events.in / second). It includes events that are blocked by the queue and have not yet been accepted.
               allOf:
-                - $ref: "#/components/schemas/MQFlowStats"
-                - $ref: "#/components/schemas/PQFlowStats" # For persisted queue
+                - $ref: "#/components/schemas/FlowWindows"
+            filter_throughput:
+              description: |
+                This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (events.filtered / second).
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
+            output_throughput:
+              description: |
+                This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (events.out / second).
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
+            queue_backpressure:
+              description: |
+                This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline’s queue, relative to wall-clock time (queue_push_duration_in_millis / millisecond). It is typically most useful when looking at the stats for an individual pipeline.
+  
+                While a "zero" value indicates no back-pressure to the queue, the magnitude of this metric is highly dependent on the shape of the pipelines and their inputs. It cannot be used to compare one pipeline to another or even one process to itself if the quantity or shape of its pipelines changes. A pipeline with only one single-threaded input may contribute up to 1.00, a pipeline whose inputs have hundreds of inbound connections may contribute much higher numbers to this combined value.
+  
+                Additionally, some amount of back-pressure is both normal and expected for pipelines that are pulling data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
+            worker_concurrency:
+              description: |
+                This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (duration_in_millis / millisecond).
+
+                A pipeline is considered "saturated" when its worker_concurrency flow metric approaches its available pipeline.workers, because it indicates that all of its available workers are being kept busy. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+                A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
+            worker_utilization:
+              description: |
+                This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * pipeline.workers). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+
+                A pipeline is considered "saturated" when worker_utilization approaches 100, because it indicates that all of its workers are being kept busy. This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+                A pipeline is considered "starved" when worker_utilization approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
+              allOf:
+                - $ref: "#/components/schemas/FlowWindows"
+    PipelinePQFlowStats:
+      type: object
+      properties:
+        flow:
+          type: object
+          allOf:
+            - $ref: "#/components/schemas/PipelineMQFlowStats"
+            - type: object
+              properties:
+                queue_persisted_growth_bytes:
+                  description: |
+                    This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (queue.queue_size_in_bytes / second). A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
+
+                    NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events. This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: PQ disk garbage collection).
+                  allOf:
+                    - $ref: "#/components/schemas/FlowWindows"
+                queue_persisted_growth_events:
+                  description: |
+                    This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (queue.events_count / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
+                  allOf:
+                    - $ref: "#/components/schemas/FlowWindows"
+    PipelineFlowStats:
+      type: object
+      oneOf:
+        - $ref: "#/components/schemas/PipelineMQFlowStats" # For memory queue
+        - $ref: "#/components/schemas/PipelinePQFlowStats" # For persisted queue
+
+    NodeStatsFlow:
+      type: object
+      properties:
+        flow:
+          type: object
+          properties:
+            input_throughput:
+              $ref: "#/components/schemas/FlowWindows"
+            filter_throughput:
+              $ref: "#/components/schemas/FlowWindows"
+            output_throughput:
+              $ref: "#/components/schemas/FlowWindows"
+            queue_backpressure:
+              $ref: "#/components/schemas/FlowWindows"
+            worker_concurrency:
+              $ref: "#/components/schemas/FlowWindows"
 
     Thread:
       type: object
@@ -1113,6 +1657,21 @@ components:
         young:
           $ref: "#/components/schemas/JVMGCCollector"
 
+    OSStats:
+      type: object
+      properties:
+        os:
+          type: object
+          properties:
+            name:
+              type: string
+            arch:
+              type: string
+            version:
+              type: string
+            available_processors:
+              type: integer
+
     ProcessStats:
       type: object
       properties:
@@ -1147,14 +1706,23 @@ components:
       type: object
       properties:
         throughput:
-          $ref: "#/components/schemas/FlowWindows"
+          description: |
+            This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline’s queue relative to wall-clock time (events.in / second). It includes events that are blocked by the queue and have not yet been accepted.
+          allOf:
+            - $ref: "#/components/schemas/FlowWindows"
     WorkerStats:
       type: object
       properties:
         worker_utilization:
-          $ref: "#/components/schemas/FlowWindows"
+          description: |
+            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * pipeline.workers). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+          allOf:
+            - $ref: "#/components/schemas/FlowWindows"
         worker_millis_per_event:
-          $ref: "#/components/schemas/FlowWindows"
+          description:
+            This metric is expressed in worker-millis-spent-per-event (duration_in_millis / events.in) with higher scores indicating more resources spent per event. It is especially useful for identifying issues with plugins that operate on a small subset of events. An "Infinity" value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
+          allOf:
+            - $ref: "#/components/schemas/FlowWindows"
 
     InputPluginEventsStats:
       type: object
@@ -1235,7 +1803,7 @@ components:
             type: object
             allOf:
               - $ref: "#/components/schemas/EventsStats"
-              - $ref: "#/components/schemas/FlowStats"
+              - $ref: "#/components/schemas/PipelineFlowStats"
               - type: object
                 properties:
                   plugins:
@@ -1258,7 +1826,17 @@ components:
                         items:
                           $ref: "#/components/schemas/FilterOutputPluginStats"
               - $ref: "#/components/schemas/PipelineReloadStats"
-              - $ref: "#/components/schemas/QueueStats"
+              - $ref: "#/components/schemas/PipelineQueueStats"
+              - $ref: "#/components/schemas/PipelineSettings"
+              - type: object
+                properties:
+                  hash:
+                    type: string
+                    description: "A unique hash identifier."
+                  ephemeral_id:
+                    type: string
+                    format: uuid
+                    description: "A temporary unique identifier for the instance."
 
     PipelineReloadStats:
       type: object
@@ -1297,7 +1875,7 @@ components:
               type: integer
               format: int64
 
-    QueueStats:
+    PipelineQueueStats:
       type: object
       properties:
         queue:
@@ -1363,3 +1941,12 @@ components:
                   format: int64
           discriminator:
             propertyName: type
+    QueueStats:
+      type: object
+      properties:
+        queue:
+          type: object
+          properties:
+            events_count:
+              type: integer
+              format: int64
