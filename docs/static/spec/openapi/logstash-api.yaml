@@ -311,7 +311,7 @@ paths:
   /_node/stats:
     get:
       summary: Get node statistics
-      description: Returns node statistics including jvm, process, events, flow and queue
+      description: Get node statistics including information about the JVM, process, events, flow, and queue.
       operationId: nodeStats
       tags:
         - node stats
