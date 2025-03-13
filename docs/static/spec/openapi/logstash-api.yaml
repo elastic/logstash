@@ -123,7 +123,7 @@ paths:
 
   /_node/os:
     get:
-      summary: Get node-level OS information.
+      summary: Get node-level OS information
       description: |
         Show the OS name, architecture, version, and available processors
       operationId: nodeInfoOS
