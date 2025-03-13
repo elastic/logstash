@@ -191,7 +191,7 @@ describe LogStash::WebServer do
     context "and invalid basic auth is provided" do
       it 'emits an HTTP 401 with WWW-Authenticate header' do
         response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
-          conn.request :basic_auth, 'john-doe', 'open-sesame'
+          conn.request :authorization, :basic, 'john-doe', 'open-sesame'
         end.get('/')
         aggregate_failures do
           expect(response.status).to eq(401)
@@ -202,7 +202,7 @@ describe LogStash::WebServer do
     context "and valid auth is provided" do
       it "returns a relevant response" do
         response = Faraday.new("http://#{api_host}:#{webserver.port}") do |conn|
-          conn.request :basic_auth, 'a-user', 's3cur3dPas!'
+          conn.request :authorization, :basic, 'a-user', 's3cur3dPas!'
         end.get('/')
         aggregate_failures do
           expect(response.status).to eq(200)
