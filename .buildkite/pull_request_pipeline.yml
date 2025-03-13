@@ -137,10 +137,10 @@ steps:
     command: |
       set -euo pipefail
       source .buildkite/scripts/common/vm-agent.sh
-      # Provides QUALIFIED_VERSION
-      source ci/version-qualifier.sh
+      # TODO: Use https://github.com/elastic/logstash/pull/17311 to compute QUALIFIED_VERSION once merged
+      QUALIFIED_VERSION="8.19.0-SNAPSHOT"
       ./gradlew --stacktrace artifactDockerObservabilitySRE
-      docker run docker.elastic.co/logstash/logstash-observability-sre:${QUALIFIED_VERSION} \
+      docker run docker.elastic.co/logstash/logstash-observability-sre:$${QUALIFIED_VERSION} \
         logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1"
