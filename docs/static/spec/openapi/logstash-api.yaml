@@ -359,7 +359,7 @@ paths:
   /_node/stats/flow:
     get:
       summary: Get flow statistics
-      description: Return throughput and backpressure details.
+      description: Get throughput and backpressure details.
       tags:
         - node stats
       responses:
