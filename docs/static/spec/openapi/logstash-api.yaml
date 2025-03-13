@@ -375,7 +375,7 @@ paths:
 
   /_node/stats/jvm:
     get:
-      summary: Get flow statistics
+      summary: Get JVM statistics
       description: Return throughput and backpressure details.
       tags:
         - node stats
