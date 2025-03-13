@@ -989,7 +989,7 @@ components:
             uptime_in_millis:
               type: integer
               format: int64
-              description: JVM uptime in milliseconds
+              description: The JVM uptime in milliseconds.
     JVMMemoryPool:
       type: object
       properties:
