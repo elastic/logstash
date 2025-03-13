@@ -916,27 +916,6 @@ components:
             queue_push_duration_in_millis:
               type: integer
               format: int64
-    InputPluginEventsStats:
-      type: object
-      properties:
-        out:
-          type: integer
-          format: int64
-        queue_push_duration_in_millis:
-          type: integer
-          format: int64
-    FilterOutputPluginEventsStats:
-      type: object
-      properties:
-        in:
-          type: integer
-          format: int64
-        out:
-          type: integer
-          format: int64
-        duration_in_millis:
-          type: integer
-          format: int64
 
     JVMStats:
       type: object
@@ -1076,6 +1055,15 @@ components:
         worker_millis_per_event:
           $ref: "#/components/schemas/FlowWindows"
 
+    InputPluginEventsStats:
+      type: object
+      properties:
+        out:
+          type: integer
+          format: int64
+        queue_push_duration_in_millis:
+          type: integer
+          format: int64
     InputPluginStats:
       type: object
       properties:
@@ -1087,6 +1075,18 @@ components:
           $ref: "#/components/schemas/ThroughputStats"
         events:
           $ref: "#/components/schemas/InputPluginEventsStats"
+    FilterOutputPluginEventsStats:
+      type: object
+      properties:
+        in:
+          type: integer
+          format: int64
+        out:
+          type: integer
+          format: int64
+        duration_in_millis:
+          type: integer
+          format: int64
     FilterOutputPluginStats:
       type: object
       properties:
@@ -1098,7 +1098,7 @@ components:
           $ref: "#/components/schemas/WorkerStats"
         events:
           $ref: "#/components/schemas/FilterOutputPluginEventsStats"
-    CodecStats:
+    CodecPluginStats:
       type: object
       properties:
         id:
@@ -1147,7 +1147,7 @@ components:
                       codecs:
                         type: array
                         items:
-                          $ref: "#/components/schemas/CodecStats"
+                          $ref: "#/components/schemas/CodecPluginStats"
                       filters:
                         type: array
                         items:
@@ -1158,7 +1158,6 @@ components:
                           $ref: "#/components/schemas/FilterOutputPluginStats"
               - $ref: "#/components/schemas/PipelineReloadStats"
               - $ref: "#/components/schemas/QueueStats"
-
 
     PipelineReloadStats:
       type: object
