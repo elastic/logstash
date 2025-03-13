@@ -159,10 +159,16 @@ void rake(File projectDir, File buildDir, String task, String... args) {
         jruby.runScriptlet("require 'rake'; require 'time'")
         def rakeArgs = args ? "'${args.join("','")}'" : ""
         jruby.runScriptlet("""
-                rake = Rake.application
-                rake.init
-                rake.load_rakefile
-                rake['${task}'].invoke(${rakeArgs})
+                begin
+                    rake = Rake.application
+                    rake.init
+                    rake.load_rakefile
+                    rake['${task}'].invoke(${rakeArgs})
+                rescue => e
+                    puts "Rake task error: #{e.class}: #{e.message}"
+                    puts "Backtrace: #{e.backtrace.join("\\n")}"
+                    raise e
+                end
                 """
         )
     }
