@@ -376,7 +376,7 @@ paths:
   /_node/stats/jvm:
     get:
       summary: Get JVM statistics
-      description: Return throughput and backpressure details.
+      description: Get threads count, garbage collators(GC) and memory details.
       tags:
         - node stats
       responses:
