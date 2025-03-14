@@ -23,17 +23,7 @@ esac
 
 SKIP_DOCKER=1 rake artifact:all || error "rake artifact:all build failed."
 
-if [[ "$WORKFLOW_TYPE" == "staging" ]] && [[ -n "$VERSION_QUALIFIER" ]]; then
-    # Qualifier is passed from CI as optional field and specify the version postfix
-    # in case of alpha or beta releases for staging builds only:
-    # e.g: 8.0.0-alpha1
-    STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER}"
-fi
-
-if [[ "$WORKFLOW_TYPE" == "snapshot" ]]; then
-    STACK_VERSION="${STACK_VERSION}-SNAPSHOT"
-fi
-
+STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
 info "Build complete, setting STACK_VERSION to $STACK_VERSION."
 
 info "Generated Artifacts"
