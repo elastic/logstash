@@ -388,11 +388,11 @@ paths:
                     last_15_minutes: 0.0173
                     lifetime: 0.01701
                   queue_backpressure:
-                    "current": 0.00007379,
-                    "last_1_minute": 0.00001572,
-                    "last_5_minutes": 0.00004532,
-                    "last_15_minutes": 0.00005407,
-                    "lifetime": 0.00006464
+                    current: 0.00007379
+                    last_1_minute: 0.00001572
+                    last_5_minutes: 0.00004532
+                    last_15_minutes: 0.00005407
+                    lifetime: 0.00006464
                   worker_concurrency:
                     current: 0.0001476
                     last_1_minute: 0.0001257
@@ -592,6 +592,7 @@ paths:
             - stats for each configured filter or output stage
             - info about config reload successes and failures (when [config reload](https://www.elastic.co/guide/en/logstash/current/reloading-config.html) is enabled)
             - info about the persistent queue (when [persistent queues](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html) are enabled)
+
           content:
             application/json:
               schema:
@@ -1203,27 +1204,26 @@ paths:
           in: query
           schema:
             type: integer
-          description: >
-            The number of hot threads to return. The default is 10.
+            default: 10
+          description: The number of hot threads to return.
         - name: stacktrace_size
           in: query
           schema:
             type: integer
-          description: >
-            The depth of the stack trace to report for each thread. The default is 50.
+            default: 50
+          description: The depth of the stack trace to report for each thread.
         - name: ignore_idle_threads
           in: query
           schema:
             type: boolean
-          description: >
-            If true, does not return idle threads. The default is `true`.
+            default: true
+          description: If true, does not return idle threads.
         - $ref: "#/components/parameters/pretty"
         - name: human
           in: query
           schema:
             type: boolean
-          description: >
-            If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
+          description: If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
       responses:
         '200':
           description: Indicates a successful call
@@ -1366,6 +1366,12 @@ paths:
                                       items:
                                         type: object
                                         properties:
+                                          id:
+                                            type: string
+                                            description: |
+                                              A unique identifier that may appear associated with a known impacts or issue.
+                                              This ID follows a structured format that helps identify the specific problem.
+                                            example: "logstash:health:pipeline:flow:impact:blocked_processing"
                                           severity:
                                             type: integer
                                             minimum: 1
@@ -1385,6 +1391,12 @@ paths:
                                       items:
                                         type: object
                                         properties:
+                                          id:
+                                            type: string
+                                            description: |
+                                              A unique identifier that may appear associated with a known diagnosis or issue.
+                                              This ID follows a structured format that helps identify the specific problem.
+                                            example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
                                           cause:
                                             type: string
                                             description: "A description of a root cause of this health problem."
@@ -1609,17 +1621,17 @@ components:
         input_throughput:
           description: |
             This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second). It includes events that are blocked by the queue and have not yet been accepted.
-          allOf:
+          allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
         filter_throughput:
           description: |
             This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
-          allOf:
+          allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
         output_throughput:
           description: |
             This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
-          allOf:
+          allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
         queue_backpressure:
           description: |
@@ -1628,7 +1640,7 @@ components:
             While a "zero" value indicates no back-pressure to the queue, the magnitude of this metric is highly dependent on the shape of the pipelines and their inputs. It cannot be used to compare one pipeline to another or even one process to itself if the quantity or shape of its pipelines changes. A pipeline with only one single-threaded input may contribute up to 1.00, a pipeline whose inputs have hundreds of inbound connections may contribute much higher numbers to this combined value.
 
             Additionally, some amount of back-pressure is both normal and expected for pipelines that are pulling data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
-          allOf:
+          allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
         worker_concurrency:
           description: |
@@ -1637,7 +1649,7 @@ components:
             A pipeline is considered "saturated" when its worker_concurrency flow metric approaches its available pipeline.workers, because it indicates that all of its available workers are being kept busy. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
 
             A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
-          allOf:
+          allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
     PipelinePQFlowStats:
       type: object
@@ -1652,19 +1664,19 @@ components:
                 A pipeline is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy. This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
     
                 A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
-              allOf:
+              allOf: # need to use allOf to keep the description
                 - $ref: "#/components/schemas/FlowWindows"
             queue_persisted_growth_bytes:
               description: |
                 This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second). A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
 
                 NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events. This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: [PQ disk garbage collection](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html#garbage-collection)).
-              allOf:
+              allOf: # need to use allOf to keep the description
                 - $ref: "#/components/schemas/FlowWindows"
             queue_persisted_growth_events:
               description: |
-                This metric is expressed in events-per-second, and is the rate of change of the number of unacknowleged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
-              allOf:
+                This metric is expressed in events-per-second, and is the rate of change of the number of unacknowledged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
+              allOf: # need to use allOf to keep the description
                 - $ref: "#/components/schemas/FlowWindows"
     PipelineFlowStats:
       type: object
@@ -1881,7 +1893,7 @@ components:
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
         worker_millis_per_event:
-          description:
+          description: |
             This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event. It is especially useful for identifying issues with plugins that operate on a small subset of events. An "Infinity" value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
           allOf:
             - $ref: "#/components/schemas/FlowWindows"
@@ -2003,7 +2015,7 @@ components:
     PipelineReloadStats:
       type: object
       properties:
-        relaods:
+        reloads:
           type: object
           properties:
             last_error:
@@ -2027,7 +2039,7 @@ components:
     ReloadStats:
       type: object
       properties:
-        relaods:
+        reloads:
           type: object
           properties:
             successes:
