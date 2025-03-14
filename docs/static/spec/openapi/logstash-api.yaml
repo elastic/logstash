@@ -307,8 +307,8 @@ paths:
             application/json:
               schema:
                 allOf:
-#                  - $ref: "#/components/schemas/Common"
-#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: '#/components/schemas/JVMStats'
                   - $ref: '#/components/schemas/ProcessStats'
                   - $ref: '#/components/schemas/EventsStats'
@@ -317,6 +317,192 @@ paths:
                   - $ref: '#/components/schemas/ReloadStats'
                   - $ref: '#/components/schemas/OSStats'
                   - $ref: '#/components/schemas/QueueStats'
+              example:
+                host: Mac
+                version: 9.1.0
+                http_address: 127.0.0.1:9600
+                id: 46e32c2e-b41f-45b7-84c1-1642457f3eba
+                name: Mac
+                ephemeral_id: 1752e2fe-7710-44d0-a2f8-a3005b6273c8
+                snapshot:
+                status: green
+                pipeline:
+                  workers: 12
+                  batch_size: 125
+                  batch_delay: 50
+                jvm:
+                  threads:
+                    count: 47
+                    peak_count: 47
+                  mem:
+                    heap_used_percent: 20
+                    heap_committed_in_bytes: 1073741824
+                    heap_max_in_bytes: 1073741822
+                    heap_used_in_bytes: 222298112
+                    non_heap_used_in_bytes: 170675352
+                    non_heap_committed_in_bytes: 176553984
+                    pools:
+                      survivor:
+                        max_in_bytes: -1
+                        peak_used_in_bytes: 42991616
+                        peak_max_in_bytes: -1
+                        committed_in_bytes: 26214400
+                        used_in_bytes: 26214400
+                      old:
+                        max_in_bytes: 1073741824
+                        peak_used_in_bytes: 96468992
+                        peak_max_in_bytes: 1073741824
+                        committed_in_bytes: 848297984
+                        used_in_bytes: 96468992
+                      young:
+                        max_in_bytes: -1
+                        peak_used_in_bytes: 329252864
+                        peak_max_in_bytes: -1
+                        committed_in_bytes: 199229440
+                        used_in_bytes: 99614720
+                  gc:
+                    collectors:
+                      old:
+                        collection_time_in_millis: 0
+                        collection_count: 0
+                      young:
+                        collection_time_in_millis: 49
+                        collection_count: 7
+                  uptime_in_millis: 14712
+                process:
+                  open_file_descriptors: 87
+                  peak_open_file_descriptors: 87
+                  max_file_descriptors: 10240
+                  mem:
+                    total_virtual_in_bytes: 425113862144
+                  cpu:
+                    total_in_millis: 20823
+                    percent: 0
+                    load_average:
+                      1m: 4.07177734375
+                events:
+                  in: 1
+                  filtered: 1
+                  out: 1
+                  duration_in_millis: 6
+                  queue_push_duration_in_millis: 0
+                flow:
+                  input_throughput:
+                    current: 0.0776
+                    lifetime: 0.0776
+                  filter_throughput:
+                    current: 0.07759
+                    lifetime: 0.07759
+                  output_throughput:
+                    current: 0.07759
+                    lifetime: 0.07759
+                  queue_backpressure:
+                    current: 0
+                    lifetime: 0
+                  worker_concurrency:
+                    current: 0.0004656
+                    lifetime: 0.0004656
+                pipelines:
+                  heartbeat-ruby-stdout:
+                    events:
+                      queue_push_duration_in_millis: 0
+                      filtered: 1
+                      out: 1
+                      duration_in_millis: 6
+                      in: 1
+                    flow:
+                      worker_concurrency:
+                        current: 0.0004779
+                        lifetime: 0.0004779
+                      filter_throughput:
+                        current: 0.07963
+                        lifetime: 0.07963
+                      worker_utilization:
+                        current: 0.003982
+                        lifetime: 0.003982
+                      queue_backpressure:
+                        current: 0
+                        lifetime: 0
+                      output_throughput:
+                        current: 0.07963
+                        lifetime: 0.07963
+                      input_throughput:
+                        current: 0.07962
+                        lifetime: 0.07962
+                    plugins:
+                      inputs:
+                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                          flow:
+                            throughput:
+                              current: 0.07963
+                              lifetime: 0.07963
+                          name: heartbeat
+                          events:
+                            queue_push_duration_in_millis: 0
+                            out: 1
+                      codecs:
+                        - id: be3a3aba-ee75-4978-af58-d22b856d0e35
+                          name: rubydebug
+                        - id: plain_22e7b41b-756a-4b52-b03c-a30b31bb6266
+                          name: plain
+                          decode:
+                            out: 0
+                            duration_in_millis: 0
+                            writes_in: 0
+                          encode:
+                            duration_in_millis: 0
+                            writes_in: 0
+                      filters:
+                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                          flow:
+                            worker_utilization:
+                              current: 0.0006636
+                              lifetime: 0.0006636
+                            worker_millis_per_event:
+                              current: 1
+                              lifetime: 1
+                          name: ruby
+                          events:
+                            out: 1
+                            in: 1
+                            duration_in_millis: 1
+                      outputs:
+                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                          flow:
+                            worker_utilization:
+                              current: 0.001991
+                              lifetime: 0.001991
+                            worker_millis_per_event:
+                              current: 3
+                              lifetime: 3
+                          name: stdout
+                          events:
+                            out: 1
+                            in: 1
+                            duration_in_millis: 3
+                    reloads:
+                      last_failure_timestamp:
+                      successes: 0
+                      last_success_timestamp:
+                      last_error:
+                      failures: 0
+                    queue:
+                      type: memory
+                      events_count: 0
+                      queue_size_in_bytes: 0
+                      max_queue_size_in_bytes: 0
+                    pipeline:
+                      workers: 12
+                      batch_size: 125
+                      batch_delay: 50
+                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                    ephemeral_id: cd90b521-c192-437e-a49e-62fabebde7e2
+                reloads:
+                  successes: 0
+                  failures: 0
+                os: { }
+                queue:
+                  events_count: 0
 
   /_node/stats/events:
     get:
