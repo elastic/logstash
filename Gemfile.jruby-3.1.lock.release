@@ -860,7 +860,6 @@ DEPENDENCIES
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
   date (= 3.3.3)
-  faraday (~> 2)
   fileutils (~> 1.7)
   flores (~> 0.0.8)
   fpm (~> 1, >= 1.14.1)
