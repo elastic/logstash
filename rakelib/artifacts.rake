@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'shellwords'
+
 namespace "artifact" do
   SNAPSHOT_BUILD = ENV["RELEASE"] != "1"
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"].to_s.strip.empty? ? nil : ENV["VERSION_QUALIFIER"]
