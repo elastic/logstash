@@ -1822,6 +1822,12 @@ components:
             A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
+      required:
+        - input_throughput
+        - filter_throughput
+        - output_throughput
+        - queue_backpressure
+        - worker_concurrency
     FlowStatsWorker:
       type: object
       properties:
@@ -1834,6 +1840,8 @@ components:
             A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
+      required:
+        - worker_utilization
     FlowStatsPersistedQueue:
       type: object
       properties:
@@ -1849,6 +1857,9 @@ components:
             This metric is expressed in events-per-second, and is the rate of change of the number of unacknowledged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
+      required:
+        - queue_persisted_growth_bytes
+        - queue_persisted_growth_events
     PipelineMQFlowStats:
       type: object
       allOf:
