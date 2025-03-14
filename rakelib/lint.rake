@@ -14,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 namespace "lint" do
   module RuboCLI
     def self.run!(*args)
@@ -25,28 +24,44 @@ namespace "lint" do
     end
   end
 
-  # task that runs lint report
-  desc "Report all Lint Cops"
-  task "report" do
-    RuboCLI.run!("--lint")
+  desc "Report all Lint Cops. Optional: Specify one or more files"
+  task :report, [:file] do |t, args|
+    files = [args[:file], *args.extras].compact
+
+    if files.empty?
+      RuboCLI.run!("--lint")
+    else
+      puts "Running lint report on specific files: #{files.join(', ')}"
+      RuboCLI.run!("--lint", *files)
+    end
   end
 
-  # Tasks automatically fixes a Cop passed as a parameter (e.g. Lint/DeprecatedClassMethods)
-  # TODO: Add a way to autocorrect all cops, and not just the one passed as parameter
-  desc "Automatically fix all instances of a Cop passed as a parameter"
-  task "correct", [:cop] do |t, args|
+  # Tasks automatically fixes a Cop passed as a parameter
+  desc "Automatically fix all instances of a Cop passed as a parameter. Optional: Specify one or more files"
+  task :correct, [:cop] do |t, args|
     if args[:cop].to_s.empty?
       puts "No Cop has been provided, aborting..."
       exit(0)
     else
-      puts "Attempting to correct Lint issues for: #{args[:cop].to_s}"
-      RuboCLI.run!("--autocorrect-all", "--only", args[:cop].to_s)
+      files = args.extras
+      if files.empty?
+        puts "Attempting to correct Lint issues for: #{args[:cop]}"
+        RuboCLI.run!("--autocorrect-all", "--only", args[:cop])
+      else
+        puts "Attempting to correct Lint issues for #{args[:cop]} in files: #{files.join(', ')}"
+        RuboCLI.run!("--autocorrect-all", "--only", args[:cop], *files)
+      end
     end
   end
 
-  # task that automatically fixes code formatting
-  desc "Automatically fix Layout Cops"
-  task "format" do
-    RuboCLI.run!("--fix-layout")
+  desc "Automatically fix Layout Cops. Optional: Specify one or more files"
+  task :format, [:file] do |t, args|
+    files = [args[:file], *args.extras].compact
+    if files.empty?
+      RuboCLI.run!("--fix-layout")
+    else
+      puts "Running format fixes on specific files: #{files.join(', ')}"
+      RuboCLI.run!("--fix-layout", *files)
+    end
   end
 end
