@@ -1755,56 +1755,37 @@ components:
         - unknown
         - yellow
 
-    FlowWindows:
-      type: object
+    FlowValue:
       description: |
         When the rate for a given flow metric window is infinite, it is presented as a string.
         This occurs when the numerator metric has changed during the window without a change in the rate’s denominator metric.
+      oneOf:
+        - type: number
+          format: double
+        - type: string
+          enum: ["Infinity", "-Infinity"]
+    FlowWindows:
+      type: object
       properties:
         current:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
           description: "The most recent ~10s."
+          oneOf:
+            - $ref: "#/components/schemas/FlowValue"
         last_1_minute:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_5_minutes:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_15_minutes:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_1_hour:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_24_hours:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         lifetime:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
           description: "The lifetime of the relevant pipeline or process."
+          oneOf:
+            - $ref: "#/components/schemas/FlowValue"
+      additionalProperties: false
     FlowStatsPart1:
       type: object
       properties:
