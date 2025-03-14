@@ -10,9 +10,6 @@ export GRADLE_OPTS="-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
-# Source shared function for splitting integration tests
-source "$(dirname "${BASH_SOURCE[0]}")/get-test-half.sh"
-
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
@@ -22,14 +19,15 @@ if [[ $1 = "setup" ]]; then
  exit 0
 
 elif [[ $1 == "split" ]]; then
-    if [[ $2 =~ ^[01]$ ]]; then
-        specs=$(get_test_half "$2")
-        echo "Running half $2 of integration specs: $specs"
-        ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs" --console=plain
-    else
-       echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
-       exit 1
-    fi
+  # Source shared function for splitting integration tests
+  source "$(dirname "${BASH_SOURCE[0]}")/partition-files.lib.sh"
+
+  index="${2:?index}"
+  count="${3:-2}"
+  specs=($(cd qa/integration; partition_files "${index}" "${count}" < <(find specs -name '*_spec.rb') ))
+
+  echo "Running integration tests partition[${index}] of ${count}: ${specs[*]}"
+  ./gradlew runIntegrationTests -PrubyIntegrationSpecs="${specs[*]}" --console=plain
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"

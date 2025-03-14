@@ -35,48 +35,71 @@ steps:
           automatic:
             - limit: 3
 
-      - label: ":lab_coat: Integration Tests / part 1"
-        key: "integration-tests-part-1"
+      - label: ":lab_coat: Integration Tests / part 1-of-3"
+        key: "integration-tests-part-1-of-3"
         command: |
           set -euo pipefail
 
           source .buildkite/scripts/common/vm-agent.sh
-          ci/integration_tests.sh split 0
+          ci/integration_tests.sh split 0 3
         retry:
           automatic:
             - limit: 3
 
-      - label: ":lab_coat: Integration Tests / part 2"
-        key: "integration-tests-part-2"
+      - label: ":lab_coat: Integration Tests / part 2-of-3"
+        key: "integration-tests-part-2-of-3"
         command: |
           set -euo pipefail
 
           source .buildkite/scripts/common/vm-agent.sh
-          ci/integration_tests.sh split 1
+          ci/integration_tests.sh split 1 3
         retry:
           automatic:
             - limit: 3
 
-      - label: ":lab_coat: IT Persistent Queues / part 1"
-        key: "integration-tests-qa-part-1"
+      - label: ":lab_coat: Integration Tests / part 3-of-3"
+        key: "integration-tests-part-3-of-3"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          ci/integration_tests.sh split 2 3
+        retry:
+          automatic:
+            - limit: 3
+
+      - label: ":lab_coat: IT Persistent Queues / part 1-of-3"
+        key: "integration-tests-qa-part-1-of-3"
         command: |
           set -euo pipefail
 
           source .buildkite/scripts/common/vm-agent.sh
           export FEATURE_FLAG=persistent_queues
-          ci/integration_tests.sh split 0
+          ci/integration_tests.sh split 0 3
         retry:
           automatic:
             - limit: 3
 
-      - label: ":lab_coat: IT Persistent Queues / part 2"
-        key: "integration-tests-qa-part-2"
+      - label: ":lab_coat: IT Persistent Queues / part 2-of-3"
+        key: "integration-tests-qa-part-2-of-3"
         command: |
           set -euo pipefail
 
           source .buildkite/scripts/common/vm-agent.sh
           export FEATURE_FLAG=persistent_queues
-          ci/integration_tests.sh split 1
+          ci/integration_tests.sh split 1 3
+        retry:
+          automatic:
+            - limit: 3
+
+      - label: ":lab_coat: IT Persistent Queues / part 3-of-3"
+        key: "integration-tests-qa-part-3-of-3"
+        command: |
+          set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
+          export FEATURE_FLAG=persistent_queues
+          ci/integration_tests.sh split 2 3
         retry:
           automatic:
             - limit: 3

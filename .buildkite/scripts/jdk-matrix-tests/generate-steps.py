@@ -177,17 +177,15 @@ class LinuxJobs(Jobs):
       super().__init__(os=os, jdk=jdk, group_key=group_key, agent=agent)
 
     def all_jobs(self) -> list[typing.Callable[[], JobRetValues]]:
-        return [
-            self.init_annotation,
-            self.java_unit_test,
-            self.ruby_unit_test,
-            self.integration_tests_part_1,
-            self.integration_tests_part_2,
-            self.pq_integration_tests_part_1,
-            self.pq_integration_tests_part_2,
-            self.x_pack_unit_tests,
-            self.x_pack_integration,
-        ]
+        jobs=list()
+        jobs.append(self.init_annotation)
+        jobs.append(self.java_unit_test)
+        jobs.append(self.ruby_unit_test)
+        jobs.extend(self.integration_test_parts(3))
+        jobs.extend(self.pq_integration_test_parts(3))
+        jobs.append(self.x_pack_unit_tests)
+        jobs.append(self.x_pack_integration)
+        return jobs
 
     def prepare_shell(self) -> str:
         jdk_dir = f"/opt/buildkite-agent/.java/{self.jdk}"
@@ -259,17 +257,14 @@ ci/unit_tests.sh ruby
             retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
-    def integration_tests_part_1(self) -> JobRetValues:
-        return self.integration_tests(part=1)
+    def integration_test_parts(self, parts) -> list[JobRetValues]:
+        return list(map(lambda idx: integration_tests(self, idx+1, parts), range(parts))
 
-    def integration_tests_part_2(self) -> JobRetValues:
-        return self.integration_tests(part=2)
-
-    def integration_tests(self, part: int) -> JobRetValues:
-        step_name_human = f"Integration Tests - {part}"
-        step_key = f"{self.group_key}-integration-tests-{part}"
+    def integration_tests(self, part: int, parts: int) -> JobRetValues:
+        step_name_human = f"Integration Tests - {part}/{parts}"
+        step_key = f"{self.group_key}-integration-tests-{part}-of-{parts}"
         test_command = f"""
-ci/integration_tests.sh split {part-1}
+ci/integration_tests.sh split {part-1} {parts}
         """
 
         return JobRetValues(
@@ -281,18 +276,15 @@ ci/integration_tests.sh split {part-1}
             retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
-    def pq_integration_tests_part_1(self) -> JobRetValues:
-        return self.pq_integration_tests(part=1)
+    def pq_integration_test_parts(self, parts) -> list[JobRetValues]:
+        return list(map(lambda idx: pq_integration_tests(self, idx+1, parts), range(parts))
 
-    def pq_integration_tests_part_2(self) -> JobRetValues:
-        return self.pq_integration_tests(part=2)
-
-    def pq_integration_tests(self, part: int) -> JobRetValues:
-        step_name_human = f"IT Persistent Queues - {part}"
-        step_key = f"{self.group_key}-it-persistent-queues-{part}"
+    def pq_integration_tests(self, part: int, parts: int) -> JobRetValues:
+        step_name_human = f"IT Persistent Queues - {part}/{parts}"
+        step_key = f"{self.group_key}-it-persistent-queues-{part}-of-{parts}"
         test_command = f"""
 export FEATURE_FLAG=persistent_queues
-ci/integration_tests.sh split {part-1}
+ci/integration_tests.sh split {part-1} {parts}
         """
 
         return JobRetValues(
