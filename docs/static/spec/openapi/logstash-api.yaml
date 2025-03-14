@@ -188,8 +188,10 @@ paths:
                     properties:
                       pipelines:
                         type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/NodeInfoPipeline'
+                        patternProperties:
+                          "^(?<pipeline_name>.+)$":
+                            $ref: '#/components/schemas/NodeInfoPipeline'
+                        additionalProperties: false
               example:
                 pipelines:
                   aggregation-pipeline:
@@ -235,8 +237,10 @@ paths:
                     properties:
                       pipelines:
                         type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/NodeInfoPipeline'
+                        patternProperties:
+                          "^(?<pipeline_name>.+)$":
+                            $ref: '#/components/schemas/NodeInfoPipeline'
+                        additionalProperties: false
               example:
                 pipelines:
                   aggregation-pipeline:
@@ -1521,82 +1525,84 @@ paths:
                                 type: string
                               indicators:
                                 type: object
-                                additionalProperties:
-                                  description: "pipeline name"
-                                  type: object
-                                  properties:
-                                    status:
-                                      $ref: '#/components/schemas/Status'
-                                    symptom:
-                                      type: string
-                                      description: "A message providing information about the current health status."
-                                      example: "The pipeline is healthy"
-                                    details:
-                                      type: object
-                                      description: "An object that contains additional information about the indicator that has led to the current health status result."
-                                      properties:
-                                        status:
+                                patternProperties:
+                                  "^(?<pipeline_name>.+)$":
+                                    description: "pipeline name"
+                                    type: object
+                                    properties:
+                                      status:
+                                        $ref: '#/components/schemas/Status'
+                                      symptom:
+                                        type: string
+                                        description: "A message providing information about the current health status."
+                                        example: "The pipeline is healthy"
+                                      details:
+                                        type: object
+                                        description: "An object that contains additional information about the indicator that has led to the current health status result."
+                                        properties:
+                                          status:
+                                            type: object
+                                            properties:
+                                              state:
+                                                type: string
+                                                enum:
+                                                  - LOADING
+                                                  - RUNNING
+                                                  - FINISHED
+                                                  - TERMINATED
+                                          flow:
+                                            type: object
+                                            properties:
+                                              worker_utilization:
+                                                $ref: '#/components/schemas/FlowWindows'
+                                      impacts:
+                                        type: array
+                                        description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
+                                        items:
                                           type: object
                                           properties:
-                                            state:
+                                            id:
                                               type: string
-                                              enum:
-                                                - LOADING
-                                                - RUNNING
-                                                - FINISHED
-                                                - TERMINATED
-                                        flow:
+                                              description: |
+                                                A unique identifier that may appear associated with a known impacts or issue.
+                                                This ID follows a structured format that helps identify the specific problem.
+                                              example: "logstash:health:pipeline:flow:impact:blocked_processing"
+                                            severity:
+                                              type: integer
+                                              minimum: 1
+                                              maximum: 10
+                                              description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
+                                            description:
+                                              type: string
+                                              description: "A description of the impact on Logstash."
+                                            impact_areas:
+                                              type: array
+                                              description: "The areas of Logstash affected by the health status. Possible values are:"
+                                              example: ["pipeline_execution"]
+                                              items:
+                                                type: string
+                                      diagnosis:
+                                        type: array
+                                        items:
                                           type: object
                                           properties:
-                                            worker_utilization:
-                                              $ref: '#/components/schemas/FlowWindows'
-                                    impacts:
-                                      type: array
-                                      description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
-                                      items:
-                                        type: object
-                                        properties:
-                                          id:
-                                            type: string
-                                            description: |
-                                              A unique identifier that may appear associated with a known impacts or issue.
-                                              This ID follows a structured format that helps identify the specific problem.
-                                            example: "logstash:health:pipeline:flow:impact:blocked_processing"
-                                          severity:
-                                            type: integer
-                                            minimum: 1
-                                            maximum: 10
-                                            description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
-                                          description:
-                                            type: string
-                                            description: "A description of the impact on Logstash."
-                                          impact_areas:
-                                            type: array
-                                            description: "The areas of Logstash affected by the health status. Possible values are:"
-                                            example: ["pipeline_execution"]
-                                            items:
+                                            id:
                                               type: string
-                                    diagnosis:
-                                      type: array
-                                      items:
-                                        type: object
-                                        properties:
-                                          id:
-                                            type: string
-                                            description: |
-                                              A unique identifier that may appear associated with a known diagnosis or issue.
-                                              This ID follows a structured format that helps identify the specific problem.
-                                            example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
-                                          cause:
-                                            type: string
-                                            description: "A description of a root cause of this health problem."
-                                          action:
-                                            type: string
-                                            description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
-                                          help_url:
-                                            type: string
-                                            format: uri
-                                            description: "A link to the troubleshooting guide that will fix the health problem."
+                                              description: |
+                                                A unique identifier that may appear associated with a known diagnosis or issue.
+                                                This ID follows a structured format that helps identify the specific problem.
+                                              example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+                                            cause:
+                                              type: string
+                                              description: "A description of a root cause of this health problem."
+                                            action:
+                                              type: string
+                                              description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
+                                            help_url:
+                                              type: string
+                                              format: uri
+                                              description: "A link to the troubleshooting guide that will fix the health problem."
+                                additionalProperties: false
               examples:
                 normalTerminatedCase:
                   description: "The pipeline has finished without errors or interruptions."
@@ -2168,45 +2174,47 @@ components:
           type: object
           description: |
             A map where each key is a user-defined pipeline name, and the value contains the metrics for that pipeline.
-          additionalProperties:
-            description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
-            type: object
-            allOf:
-              - $ref: "#/components/schemas/EventsStats"
-              - $ref: "#/components/schemas/PipelineFlowStats"
-              - type: object
-                properties:
-                  plugins:
-                    type: object
-                    properties:
-                      inputs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/InputPluginStats"
-                      codecs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CodecPluginStats"
-                      filters:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/FilterOutputPluginStats"
-                      outputs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/FilterOutputPluginStats"
-              - $ref: "#/components/schemas/PipelineReloadStats"
-              - $ref: "#/components/schemas/PipelineQueueStats"
-              - $ref: "#/components/schemas/PipelineSettings"
-              - type: object
-                properties:
-                  hash:
-                    type: string
-                    description: "A unique hash identifier."
-                  ephemeral_id:
-                    type: string
-                    format: uuid
-                    description: "A temporary unique identifier for the instance."
+          patternProperties:
+            "^(?<pipeline_name>.+)$":
+              description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/EventsStats"
+                - $ref: "#/components/schemas/PipelineFlowStats"
+                - type: object
+                  properties:
+                    plugins:
+                      type: object
+                      properties:
+                        inputs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/InputPluginStats"
+                        codecs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CodecPluginStats"
+                        filters:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/FilterOutputPluginStats"
+                        outputs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/FilterOutputPluginStats"
+                - $ref: "#/components/schemas/PipelineReloadStats"
+                - $ref: "#/components/schemas/PipelineQueueStats"
+                - $ref: "#/components/schemas/PipelineSettings"
+                - type: object
+                  properties:
+                    hash:
+                      type: string
+                      description: "A unique hash identifier."
+                    ephemeral_id:
+                      type: string
+                      format: uuid
+                      description: "A temporary unique identifier for the instance."
+          additionalProperties: false
 
     PipelineReloadStats:
       type: object
