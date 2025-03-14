@@ -5,7 +5,7 @@ mapped_pages:
   - https://www.elastic.co/guide/en/serverless/current/elasticsearch-ingest-data-through-logstash.html
 ---
 
-# Logstash Introduction [introduction]
+# Logstash introduction [introduction]
 
 Logstash is an open source data collection engine with real-time pipelining capabilities. 
 Logstash can dynamically unify data from disparate sources and normalize the data into destinations of your choice. 
@@ -15,7 +15,7 @@ While Logstash originally drove innovation in log collection, its capabilities e
 Any type of event can be enriched and transformed with a broad array of input, filter, and output plugins, with many native codecs further simplifying the ingestion process. 
 Logstash accelerates your insights by harnessing a greater volume and variety of data.
 
-::::{admonition} Logstash to {serverless-full}
+::::{admonition} {{ls}} to {{serverless-full}}
 You’ll use the {{ls}} [{{es}} output plugin](/logstash/docs/reference/plugins-outputs-elasticsearch.md) to send data to {{serverless-full}}. 
 Note these differences between {{es-serverless}} and both {{ess}} and self-managed {{es}}:
 
