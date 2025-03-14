@@ -6,13 +6,14 @@ info:
     When you run Logstash, it automatically captures runtime metrics that you can use to monitor the health and performance of your Logstash deployment.
     The metrics collected by Logstash include:
     
-    - Logstash node info, like pipeline settings, OS info, and JVM info.
-    - Plugin info, including a list of installed plugins.
-    - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    - Health report.
     - Hot threads.
-    - Health report. 
+    - Logstash node info, like pipeline settings, OS info, and JVM info.
+    - Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
+    - Plugins info, including a list of installed plugins.
 
-    The APIs that retrieve these metrics are available by default without requiring any extra configuration.
+
+    The APIs that retrieve these metrics are available by default, with no extra configuration needed.
 
     ## Documentation source and versions
 
