@@ -106,6 +106,7 @@ To monitor Logstash nodes:
 3. Configure your Logstash nodes to send metrics by setting `xpack.monitoring.enabled` to `true` and specifying the destination {{es}} node(s) as `xpack.monitoring.elasticsearch.hosts` in `logstash.yml`. If {{security-features}} are enabled, you also need to specify the credentials for the [built-in `logstash_system` user](docs-content://deploy-manage/users-roles/cluster-or-deployment-auth/built-in-users.md). For more information about these settings, see [Monitoring Settings](#monitoring-settings-legacy).
 
     ```yaml
+    xpack.monitoring.allow_legacy_collection: true
     xpack.monitoring.enabled: true
     xpack.monitoring.elasticsearch.hosts: ["http://es-prod-node-1:9200", "http://es-prod-node-2:9200"] <1>
     xpack.monitoring.elasticsearch.username: "logstash_system"
