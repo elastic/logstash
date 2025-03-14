@@ -32,6 +32,7 @@ import org.logstash.ackedqueue.Queueable;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.plugins.BasicEventFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
@@ -41,6 +42,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 import static org.logstash.ObjectMappers.CBOR_MAPPER;
 import static org.logstash.ObjectMappers.JSON_MAPPER;
@@ -536,15 +540,14 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         appendTag(tags, tag);
     }
 
-    @Override
-    public byte[] serialize() throws JsonProcessingException {
+    private byte[] _serialize() throws JsonProcessingException {
         final Map<String, Map<String, Object>> map = new HashMap<>(2, 1.0F);
         map.put(DATA_MAP_KEY, this.data);
         map.put(META_MAP_KEY, this.metadata);
         return CBOR_MAPPER.writeValueAsBytes(map);
     }
 
-    public static Event deserialize(byte[] data) throws IOException {
+    private static Event _deserialize(byte[] data) throws IOException {
         if (data == null || data.length == 0) {
             return new Event();
         }
@@ -565,6 +568,52 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             List<String> path = new ArrayList<>(List.of(field.getPath()));
             path.add(field.getKey());
             return path.stream().collect(Collectors.joining("][", "[", "]"));
+        }
+    }
+
+    // Thread-local instances for reuse
+    private static final ThreadLocal<Deflater> deflaterThreadLocal =
+            ThreadLocal.withInitial(() -> new Deflater(Deflater.DEFAULT_COMPRESSION));
+
+    private static final ThreadLocal<Inflater> inflaterThreadLocal =
+            ThreadLocal.withInitial(Inflater::new);
+
+    @Override
+    public byte[] serialize() throws IOException {
+        byte[] serializedData = _serialize();
+
+        Deflater deflater = deflaterThreadLocal.get();
+        deflater.reset();
+        deflater.setInput(serializedData);
+        deflater.finish();
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(serializedData.length)) {
+            byte[] buffer = new byte[1024];
+            while (!deflater.finished()) {
+                int count = deflater.deflate(buffer);
+                baos.write(buffer, 0, count);
+            }
+            return baos.toByteArray();
+        }
+    }
+
+    public static Event deserialize(byte[] compressedData) throws IOException {
+        Inflater inflater = inflaterThreadLocal.get();
+        inflater.reset();
+        inflater.setInput(compressedData);
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(compressedData.length)) {
+            byte[] buffer = new byte[1024];
+            while (!inflater.finished()) {
+                int count;
+                try {
+                    count = inflater.inflate(buffer);
+                } catch (DataFormatException e) {
+                    throw new IOException("Failed to decompress data", e);
+                }
+                baos.write(buffer, 0, count);
+            }
+            return _deserialize(baos.toByteArray());
         }
     }
 }
