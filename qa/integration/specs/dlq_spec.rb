@@ -83,10 +83,10 @@ describe "Test Dead Letter Queue" do
       try(60) do
         begin
           result = es_client.search(index: 'test-index', size: 0, q: '*')
-        rescue Elasticsearch::Transport::Transport::Errors::ServiceUnavailable => e
+        rescue Elastic::Transport::Transport::Errors::ServiceUnavailable => e
           puts "Elasticsearch unavailable #{e.inspect}"
           hits = 0
-        rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+        rescue Elastic::Transport::Transport::Errors::NotFound => e
           puts "Index not found"
           hits = 0
         end

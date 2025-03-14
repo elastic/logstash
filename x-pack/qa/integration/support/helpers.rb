@@ -124,7 +124,7 @@ def cleanup_system_indices(pipeline_ids)
     pipeline_ids.each do |id|
       begin
         elasticsearch_client.perform_request(:delete, "_logstash/pipeline/#{id}")
-      rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+      rescue Elastic::Transport::Transport::Errors::NotFound => e
         puts ".logstash can be empty #{e.message}"
       end
     end

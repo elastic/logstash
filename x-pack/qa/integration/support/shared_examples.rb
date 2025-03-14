@@ -9,8 +9,8 @@ shared_examples "record monitoring data to es" do
   let(:retryable_errors) do
     [NoMethodError,
      RSpec::Expectations::ExpectationNotMetError,
-     Elasticsearch::Transport::Transport::Errors::ServiceUnavailable,
-     Elasticsearch::Transport::Transport::Errors::NotFound]
+     Elastic::Transport::Transport::Errors::ServiceUnavailable,
+     Elastic::Transport::Transport::Errors::NotFound]
   end
 
   describe "metrics" do
