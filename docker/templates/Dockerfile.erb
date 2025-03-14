@@ -92,8 +92,14 @@ RUN dnf -y upgrade && \
     <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
-  <% elsif %w(wolfi observability-sre).include?(image_flavor) %>
+  <% elsif image_flavor == 'wolfi' %>
     <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
+    <%   package_manager = 'apk' -%>
+    <%   arch_command = 'uname -m' -%>
+    # Minimal distributions do not ship with en language packs.
+    <%   locale = 'C.UTF-8' -%>
+  <% elsif image_flavor == 'observability-sre' %>
+    <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
     <%   package_manager = 'apk' -%>
     <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
@@ -174,6 +180,56 @@ RUN curl -Lo - <%= url_root %>/<%= tarball %> | \
 WORKDIR /usr/share/logstash
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
+
+# Add FIPS configuration for observability-sre image flavor
+<% if image_flavor == 'observability-sre' -%>
+
+RUN mkdir -p /usr/share/logstash/config/security
+
+# Copy JVM security configuration files from the unpacked tarball
+RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
+    cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.policy /usr/share/logstash/config/security/ && \
+    chown --recursive logstash:root /usr/share/logstash/config/security/
+
+# Convert JKS to BCFKS for truststore and keystore
+RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
+    -srckeystore /usr/share/logstash/jdk/lib/security/cacerts \
+    -destkeystore /usr/share/logstash/config/security/cacerts.bcfks \
+    -srcstoretype jks \
+    -deststoretype bcfks \
+    -providerpath /usr/share/logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
+    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
+    -deststorepass changeit \
+    -srcstorepass changeit \
+    -noprompt
+
+RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
+    -srckeystore /usr/share/logstash/jdk/lib/security/cacerts \
+    -destkeystore /usr/share/logstash/config/security/keystore.bcfks \
+    -srcstoretype jks \
+    -deststoretype bcfks \
+    -providerpath /usr/share/logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
+    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
+    -deststorepass changeit \
+    -srcstorepass changeit \
+    -noprompt
+
+# Set Java security properties through LS_JAVA_OPTS
+ENV LS_JAVA_OPTS="\
+    -Djava.security.properties=/usr/share/logstash/config/security/java.security \
+    -Djava.security.policy=/usr/share/logstash/config/security/java.policy \
+    -Djavax.net.ssl.keyStore=/usr/share/logstash/config/security/keystore.bcfks \
+    -Djavax.net.ssl.keyStoreType=BCFKS \
+    -Djavax.net.ssl.keyStoreProvider=BCFIPS \
+    -Djavax.net.ssl.keyStorePassword=changeit \
+    -Djavax.net.ssl.trustStore=/usr/share/logstash/config/security/cacerts.bcfks \
+    -Djavax.net.ssl.trustStoreType=BCFKS \
+    -Djavax.net.ssl.trustStoreProvider=BCFIPS \
+    -Djavax.net.ssl.trustStorePassword=changeit \
+    -Dssl.KeyManagerFactory.algorithm=PKIX \
+    -Dssl.TrustManagerFactory.algorithm=PKIX \
+    -Dorg.bouncycastle.fips.approved_only=true"
+<% end -%>
 
 # Provide a minimal configuration, so that simple invocations will provide
 # a good experience.
