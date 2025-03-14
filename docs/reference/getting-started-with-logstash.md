@@ -5,9 +5,11 @@ mapped_pages:
 
 # Getting started with Logstash [getting-started-with-logstash]
 
-This section guides you through the process of installing Logstash and verifying that everything is running properly. After learning how to stash your first event, you go on to create a more advanced pipeline that takes Apache web logs as input, parses the logs, and writes the parsed data to an Elasticsearch cluster. Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
+This section guides you through the process of installing Logstash and verifying that everything is running properly. 
+After learning how to stash your first event, you can go on to create a more advanced pipeline that takes Apache web logs as input, parses the logs, and writes the parsed data to an Elasticsearch cluster. 
+Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
 
-This section includes the following topics:
+This section includes these topics:
 
 * [Java (JVM) version](#ls-jvm)
 * [Installing Logstash](/reference/installing-logstash.md)
