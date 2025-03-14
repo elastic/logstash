@@ -28,84 +28,220 @@ info:
 servers:
   - url: /
 security:
-  - apiKeyAuth: []
+  - {}           # Allows requests without authentication
+  - BasicAuth: [] # Allows requests with Basic Authentication
 tags:
   - name: health
     x-displayName: Health report
-    # description: 
+    # description:
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: hot threads
     x-displayName: Hot threads
-    # description: 
+    # description:
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: node info
     x-displayName: Node info
     description: |
       Logstash node info, like pipeline settings, OS info, and JVM info.
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: node stats
     x-displayName: Node stats
     description: |
       Node stats, like JVM stats, process stats, event-related stats, and pipeline runtime stats.
     # externalDocs:
-    #   description: 
-    #   url: 
+    #   description:
+    #   url:
   - name: plugin info
     x-displayName: Plugins info
     description: |
       Plugin info, including a list of installed plugins.
     # externalDocs:
-    #   description: 
-    #   url: 
-paths: 
-  /_node/<types>:
+    #   description:
+    #   url:
+paths:
+  /_node/jvm:
     get:
-      summary: Get node info
+      summary: Gets node-level JVM info
       description: |
-        Get information about Logstash nodes, where `<types>` (optional) specifies the types of node info you want returned.
-        You can limit the info that is returned by combining any of these types in a comma-separated list:
-
-        - `pipelines`
-        - `os`
-        - `jvm`
-      operationId: nodeInfo
+        Show node-level JVM stats, such as the JVM process id, version, VM info, memory usage, and info about garbage collectors.
+      operationId: nodeInfoJVM
       tags:
         - node info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
           content:
             application/json:
-              examples:
-                nodeInfoExample1:
-                  # summary:
-                  value:
-                    pipelines:
-                      - test: 
-                          workers: 1
-                          batch_size: 1
-                          batch_delay: 5
-                          config_reload_automatic: false
-                          config_reload_interval: 3
-                      - test2: 
-                          workers: 8
-                          batch_size: 125
-                          batch_delay: 5
-                          config_reload_automatic: false
-                          config_reload_interval: 3                      
+              schema:
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      jvm:
+                        type: object
+                        properties:
+                          pid:
+                            type: integer
+                          version:
+                            type: string
+                          vm_name:
+                            type: string
+                          vm_version:
+                            type: string
+                          vm_vendor:
+                            type: string
+                          start_time_in_millis:
+                            type: integer
+                          mem:
+                            type: object
+                            properties:
+                              heap_init_in_bytes:
+                                type: integer
+                              heap_max_in_bytes:
+                                type: integer
+                              non_heap_init_in_bytes:
+                                type: integer
+                              non_heap_max_in_bytes:
+                                type: integer
+                          gc_collectors:
+                            type: array
+                            items:
+                              type: string
+              example:
+                jvm:
+                  pid: 84013
+                  version: "21.0.4"
+                  vm_name: "OpenJDK 64-Bit Server VM"
+                  vm_version: "21.0.4"
+                  vm_vendor: "Eclipse Adoptium"
+                  start_time_in_millis: 1630980000000
+                  mem:
+                    heap_init_in_bytes: 1073741824
+                    heap_max_in_bytes: 1073741824
+                    non_heap_init_in_bytes: 2555904
+                    non_heap_max_in_bytes: 0
+                  gc_collectors:
+                    - "G1 Young Generation"
+                    - "G1 Concurrent GC"
+                    - "G1 Old Generation"
+
+  /_node/os:
+    get:
+      summary: Get node-level OS info
+      description: |
+        Get the operating system (OS) name, architecture, version, and available processors.
+      operationId: nodeInfoOS
+      tags:
+        - node info
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: '#/components/schemas/OSStats'
+              example:
+                os:
+                  name: "Mac OS X"
+                  arch: "aarch64"
+                  version: "15.3.1"
+                  available_processors: 12
+
+  /_node/pipelines:
+    get:
+      summary: Get settings for pipelines
+      description: |
+        Get information and settings for all pipelines.
+      operationId: nodeInfoPipelines
+      tags:
+        - node info
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      pipelines:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/NodeInfoPipeline'
+              example:
+                pipelines:
+                  aggregation-pipeline:
+                    workers: 1
+                    batch_size: 125
+                    batch_delay: 50
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
+                  ingestion-pipeline:
+                    workers: 8
+                    batch_size: 125
+                    batch_delay: 5
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
+
+  /_node/pipelines/{pipeline_name}:
+    get:
+      summary: Get settings for a pipeline
+      description: Get information and settings for all pipelines.
+      operationId: nodeInfoPipeline
+      tags:
+        - node info
+      parameters:
+        - name: pipeline_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the pipeline to retrieve information for.
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      pipelines:
+                        type: object
+                        additionalProperties:
+                          $ref: '#/components/schemas/NodeInfoPipeline'
+              example:
+                pipelines:
+                  aggregation-pipeline:
+                    workers: 1
+                    batch_size: 125
+                    batch_delay: 50
+                    config_reload_automatic: false
+                    config_reload_interval: 3
+                    dead_letter_queue_enabled: false
 
   /_node/plugins:
     get:
@@ -117,22 +253,34 @@ paths:
       tags:
         - plugin info
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
           content:
             application/json:
+              schema:
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
+                    properties:
+                      total:
+                        type: integer
+                      plugins:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            version:
+                              type: string
+
               examples:
                 nodePluginsExample1:
-                  # summary:
                   value:
-                    total: 1
+                    total: 4
                     plugins:
                       - name: logstash-codec-cef
                         version: 6.2.8
@@ -141,90 +289,1100 @@ paths:
                       - name: logstash-codec-dots
                         version: 3.0.2
                       - name: logstash-coded-edn
-                        version: 3.0.2 
+                        version: 3.0.2
 
   /_node/stats:
     get:
-      summary: Get node stats
-      description: |
-        Get runtime stats for Logstash, where `<types>` (optional) specifies the types of stats you want to return.
-        You can limit the info that is returned by combining any of these types in a comma-separated list:
-
-        - `jvm` gets JVM stats, including stats about threads, memory usage, garbage collectors, and uptime.
-        - `process` gets process stats, including stats about file descriptors, memory consumption, and CPU usage.
-        - `events` gets event-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
-        - `flow` gets flow-related statistics for the Logstash instance (regardless of how many pipelines were created and destroyed).
-        - `pipelines` gets runtime stats about each Logstash pipeline.
-        - `reloads` gets runtime stats about config reload successes and failures.
-        - `os` gets runtime stats about cgroups when Logstash is running in a container.
-        - `geoip_download_manager` gets stats for databases used with the Geoip filter plugin.
-        
+      summary: Get node statistics
+      description: Get node statistics including information about the JVM, process, events, flow, and queue.
       operationId: nodeStats
       tags:
         - node stats
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted (use it for debugging only!).
+        - $ref: "#/components/parameters/pretty"
       responses:
-        '200':
-          description: Indicates a successful call
+        "200":
+          description: A JSON object containing pipelines statistics.
           content:
             application/json:
-              examples:
-                nodeStatsExample1:
-                  # summary:
-                  value:
-                    jvm:
-                      threads:
-                        count: 49
-                        peak_count: 50
-                      mem:
-                        heap_used_percent: 14
-                        heap_committed_in_bytes: 309866496
-                        heap_max_in_bytes: 1037959168
-                        heap_used_in_bytes: 151686096
-                        non_heap_used_in_bytes: 122486176
-                        non_heap_committed_in_bytes: 133222400
-                        pools:
-                          survivor:
-                            peak_used_in_bytes: 8912896
-                            used_in_bytes: 288776
-                            peak_max_in_bytes: 35782656
-                            max_in_bytes: 35782656
-                            committed_in_bytes: 8912896
-                          old:
-                            peak_used_in_bytes: 148656848
-                            used_in_bytes: 148656848
-                            peak_max_in_bytes: 715849728
-                            max_in_bytes: 715849728
-                            committed_in_bytes: 229322752
-                          young:
-                            peak_used_in_bytes: 71630848
-                            used_in_bytes: 2740472
-                            peak_max_in_bytes: 286326784
-                            max_in_bytes: 286326784
-                            committed_in_bytes: 71630848
-                      gc:
-                        collectors:
-                          old:
-                            collection_time_in_millis: 607
-                            collection_count: 12
-                          young:
-                            collection_time_in_millis: 4904
-                            collection_count: 1033
-                      uptime_in_millis: 1809643
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Common"
+                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: '#/components/schemas/JVMStats'
+                  - $ref: '#/components/schemas/ProcessStats'
+                  - $ref: '#/components/schemas/EventsStats'
+                  - $ref: '#/components/schemas/NodeStatsFlow'
+                  - $ref: "#/components/schemas/PipelinesStats"
+                  - $ref: '#/components/schemas/ReloadStats'
+                  - $ref: '#/components/schemas/OSStats'
+                  - $ref: '#/components/schemas/QueueStats'
+              example:
+                host: Mac
+                version: 9.1.0
+                http_address: 127.0.0.1:9600
+                id: 46e32c2e-b41f-45b7-84c1-1642457f3eba
+                name: Mac
+                ephemeral_id: 1752e2fe-7710-44d0-a2f8-a3005b6273c8
+                snapshot:
+                status: green
+                pipeline:
+                  workers: 12
+                  batch_size: 125
+                  batch_delay: 50
+                jvm:
+                  threads:
+                    count: 47
+                    peak_count: 47
+                  mem:
+                    heap_used_percent: 20
+                    heap_committed_in_bytes: 1073741824
+                    heap_max_in_bytes: 1073741822
+                    heap_used_in_bytes: 222298112
+                    non_heap_used_in_bytes: 170675352
+                    non_heap_committed_in_bytes: 176553984
+                    pools:
+                      survivor:
+                        max_in_bytes: -1
+                        peak_used_in_bytes: 42991616
+                        peak_max_in_bytes: -1
+                        committed_in_bytes: 26214400
+                        used_in_bytes: 26214400
+                      old:
+                        max_in_bytes: 1073741824
+                        peak_used_in_bytes: 96468992
+                        peak_max_in_bytes: 1073741824
+                        committed_in_bytes: 848297984
+                        used_in_bytes: 96468992
+                      young:
+                        max_in_bytes: -1
+                        peak_used_in_bytes: 329252864
+                        peak_max_in_bytes: -1
+                        committed_in_bytes: 199229440
+                        used_in_bytes: 99614720
+                  gc:
+                    collectors:
+                      old:
+                        collection_time_in_millis: 0
+                        collection_count: 0
+                      young:
+                        collection_time_in_millis: 49
+                        collection_count: 7
+                  uptime_in_millis: 14712
+                process:
+                  open_file_descriptors: 87
+                  peak_open_file_descriptors: 87
+                  max_file_descriptors: 10240
+                  mem:
+                    total_virtual_in_bytes: 425113862144
+                  cpu:
+                    total_in_millis: 20823
+                    percent: 0
+                    load_average:
+                      1m: 4.07177734375
+                events:
+                  in: 1
+                  filtered: 1
+                  out: 1
+                  duration_in_millis: 6
+                  queue_push_duration_in_millis: 0
+                flow:
+                  input_throughput:
+                    current: 0.0776
+                    lifetime: 0.0776
+                  filter_throughput:
+                    current: 0.07759
+                    lifetime: 0.07759
+                  output_throughput:
+                    current: 0.07759
+                    lifetime: 0.07759
+                  queue_backpressure:
+                    current: 0
+                    lifetime: 0
+                  worker_concurrency:
+                    current: 0.0004656
+                    lifetime: 0.0004656
+                pipelines:
+                  heartbeat-ruby-stdout:
+                    events:
+                      queue_push_duration_in_millis: 0
+                      filtered: 1
+                      out: 1
+                      duration_in_millis: 6
+                      in: 1
+                    flow:
+                      worker_concurrency:
+                        current: 0.0004779
+                        lifetime: 0.0004779
+                      filter_throughput:
+                        current: 0.07963
+                        lifetime: 0.07963
+                      worker_utilization:
+                        current: 0.003982
+                        lifetime: 0.003982
+                      queue_backpressure:
+                        current: 0
+                        lifetime: 0
+                      output_throughput:
+                        current: 0.07963
+                        lifetime: 0.07963
+                      input_throughput:
+                        current: 0.07962
+                        lifetime: 0.07962
+                    plugins:
+                      inputs:
+                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                          flow:
+                            throughput:
+                              current: 0.07963
+                              lifetime: 0.07963
+                          name: heartbeat
+                          events:
+                            queue_push_duration_in_millis: 0
+                            out: 1
+                      codecs:
+                        - id: be3a3aba-ee75-4978-af58-d22b856d0e35
+                          name: rubydebug
+                        - id: plain_22e7b41b-756a-4b52-b03c-a30b31bb6266
+                          name: plain
+                          decode:
+                            out: 0
+                            duration_in_millis: 0
+                            writes_in: 0
+                          encode:
+                            duration_in_millis: 0
+                            writes_in: 0
+                      filters:
+                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                          flow:
+                            worker_utilization:
+                              current: 0.0006636
+                              lifetime: 0.0006636
+                            worker_millis_per_event:
+                              current: 1
+                              lifetime: 1
+                          name: ruby
+                          events:
+                            out: 1
+                            in: 1
+                            duration_in_millis: 1
+                      outputs:
+                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                          flow:
+                            worker_utilization:
+                              current: 0.001991
+                              lifetime: 0.001991
+                            worker_millis_per_event:
+                              current: 3
+                              lifetime: 3
+                          name: stdout
+                          events:
+                            out: 1
+                            in: 1
+                            duration_in_millis: 3
+                    reloads:
+                      last_failure_timestamp:
+                      successes: 0
+                      last_success_timestamp:
+                      last_error:
+                      failures: 0
+                    queue:
+                      type: memory
+                      events_count: 0
+                      queue_size_in_bytes: 0
+                      max_queue_size_in_bytes: 0
+                    pipeline:
+                      workers: 12
+                      batch_size: 125
+                      batch_delay: 50
+                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                    ephemeral_id: cd90b521-c192-437e-a49e-62fabebde7e2
+                reloads:
+                  successes: 0
+                  failures: 0
+                os: { }
+                queue:
+                  events_count: 0
 
+  /_node/stats/events:
+    get:
+      summary: Get events statistics
+      description: Get statistics related to event processing.
+      operationId: nodeStatsEvents
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing events statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/EventsStats"
+              example:
+                events:
+                  duration_in_millis: 1109
+                  in: 56
+                  filtered: 56
+                  out: 56
+                  queue_push_duration_in_millis: 2
+
+  /_node/stats/flow:
+    get:
+      summary: Get flow statistics
+      description: Get throughput and backpressure details.
+      operationId: nodeStatsFlow
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: |
+            Flow rates provide visibility into how a Logstash instance or an individual pipeline is currently performing relative to itself over time. This allows us to attach meaning to the cumulative-value metrics that are also presented by this API, and to determine whether an instance or pipeline is behaving better or worse than it has in the past.
+
+            The following flow rates are available for the logstash process as a whole and for each of its pipelines individually. In addition, pipelines may have [additional flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#pipeline-flow-rates) depending on their configuration.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/NodeStatsFlow"
+              example:
+                flow:
+                  input_throughput:
+                    current: 0.07381
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  filter_throughput:
+                    current: 0.07379
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  output_throughput:
+                    current: 0.07379
+                    last_1_minute: 0.01572
+                    last_5_minutes: 0.01618
+                    last_15_minutes: 0.0173
+                    lifetime: 0.01701
+                  queue_backpressure:
+                    current: 0.00007379
+                    last_1_minute: 0.00001572
+                    last_5_minutes: 0.00004532
+                    last_15_minutes: 0.00005407
+                    lifetime: 0.00006464
+                  worker_concurrency:
+                    current: 0.0001476
+                    last_1_minute: 0.0001257
+                    last_5_minutes: 0.000246
+                    last_15_minutes: 0.0002941
+                    lifetime: 0.000242
+
+  /_node/stats/geoip_download_manager:
+    get:
+      summary: Get geoip databases statistics
+      description: Get license checks and download status of [Geoip filter plugin](https://www.elastic.co/guide/en/logstash/current/plugins-filters-geoip.html).
+      operationId: nodeStatsGeoIPDownloadManager
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing geoip database license and download status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  geoip_download_manager:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          ASN:
+                            $ref: "#/components/schemas/GeoIPDBLicenseStats"
+                          CITY:
+                            $ref: "#/components/schemas/GeoIPDBLicenseStats"
+                      download_stats:
+                        type: object
+                        properties:
+                          successes:
+                            description: "The number of successful checks and downloads"
+                            type: integer
+                          failures:
+                            description: "The number of failed check or downloads"
+                            type: integer
+                          last_checked_at:
+                            type: string
+                            format: date-time
+                          status:
+                            description: "The last download status."
+                            type: string
+                            enum: [ "succeeded", "failed", "updating" ]
+
+  /_node/stats/jvm:
+    get:
+      summary: Get JVM statistics
+      description: Get threads count, garbage collators(GC) and memory details.
+      operationId: nodeStatsJVM
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing jvm statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/JVMStats"
+              example:
+                jvm:
+                  threads:
+                    count: 117
+                    peak_count: 119
+                  mem:
+                    heap_used_percent: 4
+                    heap_committed_in_bytes: 245366784
+                    heap_max_in_bytes: 4294967294
+                    heap_used_in_bytes: 206685392
+                    non_heap_used_in_bytes: 175223280
+                    non_heap_committed_in_bytes: 196739072
+                    pools:
+                      young:
+                        committed_in_bytes: 92274688
+                        max_in_bytes: -1
+                        used_in_bytes: 69206016
+                        peak_max_in_bytes: -1
+                        peak_used_in_bytes: 171966464
+                      old:
+                        committed_in_bytes: 146800640
+                        max_in_bytes: 4294967296
+                        used_in_bytes: 131187920
+                        peak_max_in_bytes: 4294967296
+                        peak_used_in_bytes: 135186368
+                      survivor:
+                        committed_in_bytes: 6291456
+                        max_in_bytes: -1
+                        used_in_bytes: 6291456
+                        peak_max_in_bytes: -1
+                        peak_used_in_bytes: 23068672
+                  gc:
+                    collectors:
+                      young:
+                        collection_count: 37
+                        collection_time_in_millis: 192
+                      old:
+                        collection_count: 0
+                        collection_time_in_millis: 0
+                  uptime_in_millis: 2512572
+
+  /_node/stats/os:
+    get:
+      summary: Get Cgroup statistics
+      description: Get a more accurate view of CPU statistics from control groups (Cgroup) if available.
+      operationId: nodeStatsOS
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing OS statistics.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  os:
+                    type: object
+                    properties:
+                      cgroup:
+                        type: object
+                        properties:
+                          cpuacct:
+                            type: object
+                            properties:
+                              control_group:
+                                type: string
+                              usage_nanos:
+                                type: integer
+                                format: int64
+                          cpu:
+                            type: object
+                            properties:
+                              control_group:
+                                type: string
+                              cfs_period_micros:
+                                type: integer
+                                format: int64
+                              cfs_quota_micros:
+                                type: integer
+                                format: int64
+                              stat:
+                                type: object
+                                properties:
+                                  number_of_elapsed_periods:
+                                    type: integer
+                                    format: int64
+                                  number_of_times_throttled:
+                                    type: integer
+                                    format: int64
+                                  time_throttled_nanos:
+                                    type: integer
+                                    format: int64
+              example:
+                os:
+                  cgroup:
+                    cpuacct:
+                      control_group: "/elastic1"
+                      usage_nanos: 378477588075
+                    cpu:
+                      control_group: "/elastic1"
+                      cfs_period_micros: 1000000
+                      cfs_quota_micros: 800000
+                      stat:
+                        number_of_elapsed_periods: 4157
+                        number_of_times_throttled: 460
+                        time_throttled_nanos: 581617440755
+
+  /_node/stats/pipelines:
+    get:
+      summary: Get statistics for pipelines
+      description: Get pipeline performance metrics and plugin details.
+      operationId: nodeStatsPipelines
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: |
+            A JSON object containing pipelines statistics.
+            
+            - the number of events that were input, filtered, or output by each pipeline
+            - the current and lifetime [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats for each pipeline
+            - stats for each configured filter or output stage
+            - info about config reload successes and failures (when [config reload](https://www.elastic.co/guide/en/logstash/current/reloading-config.html) is enabled)
+            - info about the persistent queue (when [persistent queues](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html) are enabled)
+
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/PipelinesStats"
+              example:
+                pipelines:
+                  beats-es:
+                    events:
+                      duration_in_millis: 365495
+                      in: 216610
+                      filtered: 216485
+                      out: 216485
+                      queue_push_duration_in_millis: 342466
+                    flow:
+                      input_throughput:
+                        current: 603.1
+                        lifetime: 575.4
+                      filter_throughput:
+                        current: 604.2
+                        lifetime: 575.1
+                      output_throughput:
+                        current: 604.8
+                        lifetime: 575.1
+                      queue_backpressure:
+                        current: 0.214
+                        lifetime: 0.937
+                      worker_concurrency:
+                        current: 0.941
+                        lifetime: 0.9709
+                      worker_utilization:
+                        current: 93.092
+                        lifetime: 92.187
+                    plugins:
+                      inputs:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-1
+                          events:
+                            out: 216485
+                            queue_push_duration_in_millis: 342466
+                          flow:
+                            throughput:
+                              current: 603.1
+                              lifetime: 590.7
+                          name: beats
+                      filters:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-2
+                          events:
+                            duration_in_millis: 55969
+                            in: 216485
+                            out: 216485
+                          failures: 216485
+                          patterns_per_field:
+                            message: 1
+                          flow:
+                            worker_utilization:
+                              current: 16.71
+                              lifetime: 15.27
+                            worker_millis_per_event:
+                              current: 2829
+                              lifetime: 0.2585
+                          name: grok
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-3
+                          events:
+                            duration_in_millis: 3326
+                            in: 216485
+                            out: 216485
+                          flow:
+                            worker_utilization:
+                              current: 1.042
+                              lifetime: 0.9076
+                            worker_millis_per_event:
+                              current: 0.01763
+                              lifetime: 0.01536
+                          name: geoip
+                      outputs:
+                        - id: 35131f351e2dc5ed13ee04265a8a5a1f95292165-4
+                          events:
+                            duration_in_millis: 278557
+                            in: 216485
+                            out: 216485
+                          flow:
+                            worker_utilization:
+                              current: 75.34
+                              lifetime: 76.01
+                            worker_millis_per_event:
+                              current: 1.276
+                              lifetime: 1.287
+                          name: elasticsearch
+                    reloads:
+                      last_error:
+                      successes: 0
+                      last_success_timestamp:
+                      last_failure_timestamp:
+                      failures: 0
+                    queue:
+                      type: memory
+                    pipeline:
+                      workers: 4
+                      batch_size: 125
+                      batch_delay: 50
+                  heartbeat-ruby-stdout:
+                    events:
+                      queue_push_duration_in_millis: 159
+                      in: 45
+                      duration_in_millis: 341
+                      filtered: 45
+                      out: 45
+                    flow:
+                      filter_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      queue_persisted_growth_bytes:
+                        current: 0
+                        last_1_minute: 4.068
+                        last_5_minutes: 4.101
+                        last_15_minutes: 4.14
+                        lifetime: 4.214
+                      queue_persisted_growth_events:
+                        current: 0
+                        last_1_minute: 0
+                        last_5_minutes: 0
+                        last_15_minutes: 0
+                        lifetime: 0
+                      queue_backpressure:
+                        current: 0
+                        last_1_minute: 1.614e-05
+                        last_5_minutes: 2.278e-05
+                        last_15_minutes: 4.272e-05
+                        lifetime: 5.901e-05
+                      output_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                      worker_utilization:
+                        current: 0
+                        last_1_minute: 0.0004036
+                        last_5_minutes: 0.0006239
+                        last_15_minutes: 0.0009858
+                        lifetime: 0.001055
+                      worker_concurrency:
+                        current: 0
+                        last_1_minute: 4.843e-05
+                        last_5_minutes: 7.486e-05
+                        last_15_minutes: 0.0001183
+                        lifetime: 0.0001266
+                      input_throughput:
+                        current: 0
+                        last_1_minute: 0.01614
+                        last_5_minutes: 0.01627
+                        last_15_minutes: 0.01643
+                        lifetime: 0.0167
+                    plugins:
+                      inputs:
+                        - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                          events:
+                            queue_push_duration_in_millis: 159
+                            out: 45
+                          name: heartbeat
+                          flow:
+                            throughput:
+                              current: 0
+                              last_1_minute: 0.01614
+                              last_5_minutes: 0.01627
+                              last_15_minutes: 0.01643
+                              lifetime: 0.0167
+                      codecs:
+                        - id: plain_b0090202-daac-428e-8355-18c35a0826cb
+                          decode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                            out: 0
+                          name: plain
+                          encode:
+                            writes_in: 0
+                            duration_in_millis: 0
+                        - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
+                          name: rubydebug
+                      filters:
+                        - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                          events:
+                            in: 45
+                            duration_in_millis: 86
+                            out: 45
+                          name: ruby
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.0001345
+                              last_5_minutes: 0.0001627
+                              last_15_minutes: 0.0002191
+                              lifetime: 0.000266
+                            worker_millis_per_event:
+                              last_1_minute: 1
+                              last_5_minutes: 1.2
+                              last_15_minutes: 1.6
+                              lifetime: 1.911
+                      outputs:
+                        - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                          events:
+                            in: 45
+                            duration_in_millis: 216
+                            out: 45
+                          name: stdout
+                          flow:
+                            worker_utilization:
+                              current: 0
+                              last_1_minute: 0.000269
+                              last_5_minutes: 0.000434
+                              last_15_minutes: 0.0006663
+                              lifetime: 0.000668
+                            worker_millis_per_event:
+                              last_1_minute: 2
+                              last_5_minutes: 3.2
+                              last_15_minutes: 4.867
+                              lifetime: 4.8
+                    reloads:
+                      last_failure_timestamp:
+                      successes: 0
+                      failures: 0
+                      last_success_timestamp:
+                      last_error:
+                    queue:
+                      events: 0
+                      capacity:
+                        max_queue_size_in_bytes: 1073741824
+                        max_unread_events: 0
+                        queue_size_in_bytes: 11341
+                        page_capacity_in_bytes: 67108864
+                      data:
+                        free_space_in_bytes: 60833390592
+                        path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
+                        storage_type: apfs
+                      type: persisted
+                      events_count: 0
+                      queue_size_in_bytes: 11341
+                      max_queue_size_in_bytes: 1073741824
+                    pipeline:
+                      workers: 12
+                      batch_size: 125
+                      batch_delay: 50
+                    hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                    ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+
+  /_node/stats/pipelines/{pipeline_name}:
+    get:
+      summary: Get statistics for a pipeline
+      description: Get performance metrics and plugin details for a pipeline.
+      operationId: nodeStatsPipeline
+      tags:
+        - node stats
+      parameters:
+        - name: pipeline_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the pipeline to retrieve information for.
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing a single pipeline statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/PipelinesStats"
+              examples:
+                PipelineWithPersistedQueue:
+                  description: A pipeline with a persisted queue.
+                  value:
+                    pipelines:
+                      heartbeat-ruby-stdout:
+                        events:
+                          queue_push_duration_in_millis: 159
+                          in: 45
+                          duration_in_millis: 341
+                          filtered: 45
+                          out: 45
+                        flow:
+                          filter_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                          queue_persisted_growth_bytes:
+                            current: 0
+                            last_1_minute: 4.068
+                            last_5_minutes: 4.101
+                            last_15_minutes: 4.14
+                            lifetime: 4.214
+                          queue_persisted_growth_events:
+                            current: 0
+                            last_1_minute: 0
+                            last_5_minutes: 0
+                            last_15_minutes: 0
+                            lifetime: 0
+                          queue_backpressure:
+                            current: 0
+                            last_1_minute: 1.614e-05
+                            last_5_minutes: 2.278e-05
+                            last_15_minutes: 4.272e-05
+                            lifetime: 5.901e-05
+                          output_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                          worker_utilization:
+                            current: 0
+                            last_1_minute: 0.0004036
+                            last_5_minutes: 0.0006239
+                            last_15_minutes: 0.0009858
+                            lifetime: 0.001055
+                          worker_concurrency:
+                            current: 0
+                            last_1_minute: 4.843e-05
+                            last_5_minutes: 7.486e-05
+                            last_15_minutes: 0.0001183
+                            lifetime: 0.0001266
+                          input_throughput:
+                            current: 0
+                            last_1_minute: 0.01614
+                            last_5_minutes: 0.01627
+                            last_15_minutes: 0.01643
+                            lifetime: 0.0167
+                        plugins:
+                          inputs:
+                            - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                              events:
+                                queue_push_duration_in_millis: 159
+                                out: 45
+                              name: heartbeat
+                              flow:
+                                throughput:
+                                  current: 0
+                                  last_1_minute: 0.01614
+                                  last_5_minutes: 0.01627
+                                  last_15_minutes: 0.01643
+                                  lifetime: 0.0167
+                          codecs:
+                            - id: plain_b0090202-daac-428e-8355-18c35a0826cb
+                              decode:
+                                writes_in: 0
+                                duration_in_millis: 0
+                                out: 0
+                              name: plain
+                              encode:
+                                writes_in: 0
+                                duration_in_millis: 0
+                            - id: 6bff4bc6-3a8c-494c-aa65-d16e1eb09578
+                              name: rubydebug
+                          filters:
+                            - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                              events:
+                                in: 45
+                                duration_in_millis: 86
+                                out: 45
+                              name: ruby
+                              flow:
+                                worker_utilization:
+                                  current: 0
+                                  last_1_minute: 0.0001345
+                                  last_5_minutes: 0.0001627
+                                  last_15_minutes: 0.0002191
+                                  lifetime: 0.000266
+                                worker_millis_per_event:
+                                  last_1_minute: 1
+                                  last_5_minutes: 1.2
+                                  last_15_minutes: 1.6
+                                  lifetime: 1.911
+                          outputs:
+                            - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                              events:
+                                in: 45
+                                duration_in_millis: 216
+                                out: 45
+                              name: stdout
+                              flow:
+                                worker_utilization:
+                                  current: 0
+                                  last_1_minute: 0.000269
+                                  last_5_minutes: 0.000434
+                                  last_15_minutes: 0.0006663
+                                  lifetime: 0.000668
+                                worker_millis_per_event:
+                                  last_1_minute: 2
+                                  last_5_minutes: 3.2
+                                  last_15_minutes: 4.867
+                                  lifetime: 4.8
+                        reloads:
+                          last_failure_timestamp:
+                          successes: 0
+                          failures: 0
+                          last_success_timestamp:
+                          last_error:
+                        queue:
+                          events: 0
+                          capacity:
+                            max_queue_size_in_bytes: 1073741824
+                            max_unread_events: 0
+                            queue_size_in_bytes: 11341
+                            page_capacity_in_bytes: 67108864
+                          data:
+                            free_space_in_bytes: 60833390592
+                            path: "/path/to/logstash/data/queue/heartbeat-ruby-stdout"
+                            storage_type: apfs
+                          type: persisted
+                          events_count: 0
+                          queue_size_in_bytes: 11341
+                          max_queue_size_in_bytes: 1073741824
+                        pipeline:
+                          workers: 12
+                          batch_size: 125
+                          batch_delay: 50
+                        hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                        ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+
+                PipelineWithMemoryQueue:
+                  description: A pipeline with a memory queue.
+                  value:
+                    pipelines:
+                      heartbeat-ruby-stdout:
+                        events:
+                          duration_in_millis: 14
+                          filtered: 2
+                          in: 2
+                          queue_push_duration_in_millis: 0
+                          out: 2
+                        flow:
+                          input_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          output_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          worker_utilization:
+                            current: 0.002469
+                            last_1_minute: 0.001384
+                            lifetime: 0.001805
+                          filter_throughput:
+                            current: 0.09877
+                            last_1_minute: 0.01661
+                            lifetime: 0.03094
+                          worker_concurrency:
+                            current: 0.0002963
+                            last_1_minute: 0.0001661
+                            lifetime: 0.0002166
+                          queue_backpressure:
+                            current: 0
+                            last_1_minute: 0
+                            lifetime: 0
+                        plugins:
+                          inputs:
+                            - id: c9ca46e359d73146590ca8af40092342afa922f3cbf07adc4b5009e346cb19f7
+                              events:
+                                queue_push_duration_in_millis: 0
+                                out: 2
+                              name: heartbeat
+                              flow:
+                                throughput:
+                                  current: 0.09876
+                                  last_1_minute: 0.01661
+                                  lifetime: 0.03094
+                          codecs:
+                            - id: 8b2798ec-d828-445a-a5c3-b0ebe2ec142a
+                              name: rubydebug
+                            - id: plain_dc12bcf8-1c2e-4f28-b55d-a82ab127d00a
+                              encode:
+                                duration_in_millis: 0
+                                writes_in: 0
+                              name: plain
+                              decode:
+                                duration_in_millis: 0
+                                writes_in: 0
+                                out: 0
+                          filters:
+                            - id: 585fa932a4fd506055ead07ee5ebcb3033c27c82ba90cbee73d6ac7e9357333a
+                              events:
+                                duration_in_millis: 4
+                                in: 2
+                                out: 2
+                              name: ruby
+                              flow:
+                                worker_millis_per_event:
+                                  current: 1
+                                  last_1_minute: 4
+                                  lifetime: 2
+                                worker_utilization:
+                                  current: 0.000823
+                                  last_1_minute: 0.0005537
+                                  lifetime: 0.0005157
+                          outputs:
+                            - id: c4f801c8f170b4cb0679f704413773acd5f291929f42302d0a56361400c3741b
+                              events:
+                                duration_in_millis: 7
+                                in: 2
+                                out: 2
+                              name: stdout
+                              flow:
+                                worker_millis_per_event:
+                                  current: 3
+                                  last_1_minute: 4
+                                  lifetime: 3.5
+                                worker_utilization:
+                                  current: 0.002469
+                                  last_1_minute: 0.0005537
+                                  lifetime: 0.0009025
+                        reloads:
+                          successes: 0
+                          last_failure_timestamp:
+                          failures: 0
+                          last_success_timestamp:
+                          last_error:
+                        queue:
+                          type: memory
+                          events_count: 0
+                          queue_size_in_bytes: 0
+                          max_queue_size_in_bytes: 0
+                        pipeline:
+                          workers: 12
+                          batch_size: 125
+                          batch_delay: 50
+                        hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
+                        ephemeral_id: c91bff2b-c92b-45ac-8c74-04783f6cc1dd
+
+
+
+
+  /_node/stats/process:
+    get:
+      summary: Get process statistics
+      description: Get system-level process statistics.
+      operationId: nodeStatsProcess
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing process statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/ProcessStats"
+              example:
+                process:
+                  open_file_descriptors: 221
+                  peak_open_file_descriptors: 221
+                  max_file_descriptors: 10240
+                  mem:
+                    total_virtual_in_bytes: 428771917824
+                  cpu:
+                    total_in_millis: 74913
+                    percent: 0
+                    load_average:
+                      1m: 6.06201171875
+
+
+  /_node/stats/reloads:
+    get:
+      summary: Get config reload statistics
+      description: Get information about config reload successes and failures.
+      operationId: nodeStatsReloads
+      tags:
+        - node stats
+      parameters:
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        "200":
+          description: A JSON object containing process statistics.
+          content:
+            application/json:
+              schema:
+                allOf:
+#                  - $ref: "#/components/schemas/Common"
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - $ref: "#/components/schemas/ReloadStats"
+              example:
+                reloads:
+                  successes: 0
+                  failures: 0
   /_node/hot_threads:
     get:
       summary: Get hot threads
       description: >
         Get information about current hot threads for Logstash.
-        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute. 
-      operationId: nodeHot_threads
+        A hot thread is a Java thread that has high CPU usage and takes longer than normal to execute.
+      operationId: nodeHotThreads
       tags:
         - hot threads
       parameters:
@@ -232,68 +1390,65 @@ paths:
           in: query
           schema:
             type: integer
-          description: >
-            The number of hot threads to return. The default is 10. 
+            default: 10
+          description: The number of hot threads to return.
         - name: stacktrace_size
           in: query
           schema:
             type: integer
-          description: >
-            The depth of the stack trace to report for each thread. The default is 50. 
+            default: 50
+          description: The depth of the stack trace to report for each thread.
         - name: ignore_idle_threads
           in: query
           schema:
             type: boolean
-          description: >
-            If true, does not return idle threads. The default is `true`. 
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+            default: true
+          description: If true, does not return idle threads.
+        - $ref: "#/components/parameters/pretty"
         - name: human
           in: query
           schema:
             type: boolean
-          description: >
-            If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
+          description: If you append `?human=true` to the request, the JSON returned will be in a human-readable format.
       responses:
         '200':
           description: Indicates a successful call
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  hot_threads:
-                    type: object
+                allOf:
+#                  - $ref: '#/components/schemas/Common'
+#                  - $ref: '#/components/schemas/PipelineSettings'
+                  - type: object
                     properties:
-                      busiest_threads:
-                        type: integer
-                      threads:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Thread'
-                      time:
-                        type: string
+                      hot_threads:
+                        type: object
+                        properties:
+                          time:
+                            type: string
+                          busiest_threads:
+                            type: integer
+                          threads:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Thread'
               examples:
                 nodeHotThreadsExample1:
-                  # summary:
                   value:
                     hot_threads:
                       time: 2025-01-06T18:25:28-07:00
                       busiest_threads: 3
-                      threads: 
+                      threads:
                         - name: Ruby-0-Thread-7
+                          thread_id: 37
                           percent_of_cpu_time: 0.0
                           state: timed_waiting
-                          path: /path/to/logstash-8.17.0/vendor/bundle/jruby/1.9/gems/puma-2.16.0-java/lib/puma/thread_pool.rb:187
                           traces:
                             - "java.lang.Object.wait(Native Method)"
                             - "org.jruby.RubyThread.sleep(RubyThread.java:1002)"
                             - "org.jruby.RubyKernel.sleep(RubyKernel.java:803)"
                         - name: "[test2]>worker3"
+                          thread_id: 10
                           percent_of_cpu_time: 0.85
                           state: waiting
                           traces:
@@ -301,6 +1456,7 @@ paths:
                             - "java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)"
                             - "java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)"
                         - name: "[test2]>worker2"
+                          thread_id: 11
                           percent_of_cpu_time: 0.85
                           state: runnable
                           traces:
@@ -329,39 +1485,257 @@ paths:
         
         NOTE: The health indicators perform root cause analysis of non-green health statuses. 
         This can be computationally expensive when called frequently.
-        
-      operationId: healthStatus
+
+      operationId: healthReport
       tags:
         - health
       parameters:
-        - name: pretty
-          in: query
-          schema:
-            type: boolean
-          description: >
-            If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
+        - $ref: "#/components/parameters/pretty"
       responses:
         '200':
           description: Indicates a successful call
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  indicators:
-                    description: Information about the health of Logstash indicators.
-                    type: object
-                  status:
-                    $ref: '#/components/schemas/Statuses'
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      symptom:
+                        type: string
+                        example: "3 indicators are healthy"
+                      indicators:
+                        description: Information about the health of Logstash indicators.
+                        type: object
+                        properties:
+                          pipelines:
+                            type: object
+                            properties:
+                              status:
+                                $ref: '#/components/schemas/Status'
+                              symptom:
+                                type: string
+                              indicators:
+                                type: object
+                                additionalProperties:
+                                  description: "pipeline name"
+                                  type: object
+                                  properties:
+                                    status:
+                                      $ref: '#/components/schemas/Status'
+                                    symptom:
+                                      type: string
+                                      description: "A message providing information about the current health status."
+                                      example: "The pipeline is healthy"
+                                    details:
+                                      type: object
+                                      description: "An object that contains additional information about the indicator that has led to the current health status result."
+                                      properties:
+                                        status:
+                                          type: object
+                                          properties:
+                                            state:
+                                              type: string
+                                              enum:
+                                                - LOADING
+                                                - RUNNING
+                                                - FINISHED
+                                                - TERMINATED
+                                        flow:
+                                          type: object
+                                          properties:
+                                            worker_utilization:
+                                              $ref: '#/components/schemas/FlowWindows'
+                                    impacts:
+                                      type: array
+                                      description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
+                                      items:
+                                        type: object
+                                        properties:
+                                          id:
+                                            type: string
+                                            description: |
+                                              A unique identifier that may appear associated with a known impacts or issue.
+                                              This ID follows a structured format that helps identify the specific problem.
+                                            example: "logstash:health:pipeline:flow:impact:blocked_processing"
+                                          severity:
+                                            type: integer
+                                            minimum: 1
+                                            maximum: 10
+                                            description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
+                                          description:
+                                            type: string
+                                            description: "A description of the impact on Logstash."
+                                          impact_areas:
+                                            type: array
+                                            description: "The areas of Logstash affected by the health status. Possible values are:"
+                                            example: ["pipeline_execution"]
+                                            items:
+                                              type: string
+                                    diagnosis:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          id:
+                                            type: string
+                                            description: |
+                                              A unique identifier that may appear associated with a known diagnosis or issue.
+                                              This ID follows a structured format that helps identify the specific problem.
+                                            example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+                                          cause:
+                                            type: string
+                                            description: "A description of a root cause of this health problem."
+                                          action:
+                                            type: string
+                                            description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
+                                          help_url:
+                                            type: string
+                                            format: uri
+                                            description: "A link to the troubleshooting guide that will fix the health problem."
+              examples:
+                normalTerminatedCase:
+                  description: "The pipeline has finished without errors or interruptions."
+                  value:
+                    symptom: "1 indicator is concerning (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "yellow"
+                        symptom: "1 indicator is concerning (`normal-completion-pipeline`)"
+                        indicators:
+                          normal-completion-pipeline:
+                            status: "yellow"
+                            symptom: "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
+                                action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+                            impacts:
+                              - impact_areas: ["pipeline_execution"]
+                            details:
+                              status:
+                                state: "FINISHED"
+                abnormalTerminatedCase:
+                  description: "The pipeline is terminated with errors."
+                  value:
+                    status: "red"
+                    symptom: "1 indicator is unhealthy (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "red"
+                        symptom: "1 indicator is unhealthy (`abnormal-termination-pipeline`)"
+                        indicators:
+                          abnormal-termination-pipeline:
+                            status: "red"
+                            symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - cause: "pipeline is not running, likely because it has encountered an error"
+                                action: "view logs to determine the cause of abnormal pipeline shutdown"
+                            impacts:
+                              - description: "the pipeline is not currently processing"
+                                impact_areas: [ "pipeline_execution" ]
+                            details:
+                              status:
+                                state: "TERMINATED"
+                backpressureCase:
+                  description: "A pipeline is blocked by slow downstream processing."
+                  value:
+                    status: "red"
+                    symptom: "1 indicator is unhealthy (`pipelines`)"
+                    indicators:
+                      pipelines:
+                        status: "red"
+                        symptom: "1 indicator is unhealthy (`blocked-pipeline`)"
+                        indicators:
+                          blocked-pipeline:
+                            status: "red"
+                            symptom: "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available"
+                            diagnosis:
+                              - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+                                cause: "pipeline workers have been completely blocked for at least five minutes"
+                                action: "address bottleneck or add resources"
+                            impacts:
+                              - id: "logstash:health:pipeline:flow:impact:blocked_processing"
+                                severity: 1
+                                description: "the pipeline is blocked"
+                                impact_areas: [ "pipeline_execution" ]
+                            details:
+                              status:
+                                state: "RUNNING"
+                              flow:
+                                worker_utilization:
+                                  last_1_minute: 100.0
+                                  last_5_minutes: 100.0
 components:
+  parameters:
+    pretty:
+      name: pretty
+      in: query
+      schema:
+        type: boolean
+      description: >
+        If you append `?pretty=true` to the request, the JSON returned will be pretty formatted. Use it for debugging only!
   securitySchemes:
-    apiKeyAuth:
-      # description:
-      in: header
-      name: Authorization
-      type: apiKey
+    BasicAuth:
+      type: http
+      scheme: basic
   schemas:
-    Statuses:
+    Common:
+      type: object
+      properties:
+        host:
+          type: string
+          description: The name of the host machine.
+        version:
+          type: string
+          description: The version of the Logstash instance.
+        http_address:
+          type: string
+          description: The HTTP address where the Logstash instance is accessible, including the port number.
+        id:
+          type: string
+          description: A unique identifier (uuid) for the Logstash instance.
+        name:
+          type: string
+          description: The name of the Logstash instance.
+        ephemeral_id:
+          type: string
+          description: A unique identifier for the ephemeral session of the Logstash instance.
+        snapshot:
+          type: boolean
+          nullable: true
+        status:
+          $ref: '#/components/schemas/Status'
+
+    PipelineSettings:
+      type: object
+      properties:
+        pipeline:
+          type: object
+          properties:
+            workers:
+              type: integer
+            batch_size:
+              type: integer
+            batch_delay:
+              type: integer
+
+    NodeInfoPipeline:
+      type: object
+      properties:
+        workers:
+          type: integer
+        batch_size:
+          type: integer
+        batch_delay:
+          type: integer
+        config_reload_automatic:
+          type: boolean
+        config_reload_interval:
+          type: integer
+        dead_letter_queue_enabled:
+          type: boolean
+
+    Status:
       type: string
       description: |
         Health status of Logstash, based on the aggregated status of all indicators.
@@ -370,19 +1744,163 @@ components:
         - `green`: Logstash is healthy.
         - `unknown`: Logstash health could not be determined.
         - `yellow`: The functionality of Logstash is in a degraded state and may need remediation to avoid the health becoming red.
-        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.  
+        - `red`: Logstash is experiencing an outage or certain features are unavailable for use.
       enum:
         - green
         - red
         - unknown
         - yellow
+
+    FlowWindows:
+      type: object
+      description: |
+        When the rate for a given flow metric window is infinite, it is presented as a string.
+        This occurs when the numerator metric has changed during the window without a change in the rate’s denominator metric.
+      properties:
+        current:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+          description: "The most recent ~10s."
+        last_1_minute:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+        last_5_minutes:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+        last_15_minutes:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+        last_1_hour:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+        last_24_hours:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+        lifetime:
+          oneOf:
+            - type: number
+              format: double
+            - type: string
+              enum: ["Infinity"]
+          description: "The lifetime of the relevant pipeline or process."
+    FlowStatsPart1:
+      type: object
+      properties:
+        input_throughput:
+          description: |
+            This metric is expressed in events-per-second, and is the rate of events being pushed into the pipeline(s) queue(s) relative to wall-clock time (`events.in` / second). It includes events that are blocked by the queue and have not yet been accepted.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        filter_throughput:
+          description: |
+            This metric is expressed in events-per-second, and is the rate of events flowing through the filter phase of the pipeline(s) relative to wall-clock time (`events.filtered` / second).
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        output_throughput:
+          description: |
+            This metric is expressed in events-per-second, and is the rate of events flowing through the output phase of the pipeline(s) relative to wall-clock time (`events.out` / second).
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        queue_backpressure:
+          description: |
+            This is a unitless metric representing the cumulative time spent by all inputs blocked pushing events into their pipeline’s queue, relative to wall-clock time (queue_push_duration_in_millis / millisecond). It is typically most useful when looking at the stats for an individual pipeline.
+
+            While a "zero" value indicates no back-pressure to the queue, the magnitude of this metric is highly dependent on the shape of the pipelines and their inputs. It cannot be used to compare one pipeline to another or even one process to itself if the quantity or shape of its pipelines changes. A pipeline with only one single-threaded input may contribute up to 1.00, a pipeline whose inputs have hundreds of inbound connections may contribute much higher numbers to this combined value.
+
+            Additionally, some amount of back-pressure is both normal and expected for pipelines that are pulling data, as this back-pressure allows them to slow down and pull data at a rate its downstream pipeline can tolerate.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        worker_concurrency:
+          description: |
+            This is a unitless metric representing the cumulative time spent by all workers relative to wall-clock time (duration_in_millis / millisecond).
+
+            A pipeline is considered "saturated" when its worker_concurrency flow metric approaches its available pipeline.workers, because it indicates that all of its available workers are being kept busy. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+            A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+    FlowStatsPart2:
+      type: object
+      properties:
+        worker_utilization:
+          description: |
+            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (duration / (uptime * `pipeline.workers`). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+
+            A pipeline is considered "saturated" when `worker_utilization` approaches 100, because it indicates that all of its workers are being kept busy. This is typically an indication of either downstream back-pressure or insufficient resources allocated to the pipeline. Tuning a saturated pipeline to have more workers can often work to increase that pipeline’s throughput and decrease back-pressure to its queue, unless the pipeline is experiencing back-pressure from its outputs.
+
+            A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+    FlowStatsPart3:
+      type: object
+      properties:
+        queue_persisted_growth_bytes:
+          description: |
+            This metric is expressed in bytes-per-second, and is the rate of change of the size of the persistent queue on disk, relative to wall-clock time (`queue.queue_size_in_bytes` / second). A positive number indicates that the queue size-on-disk is growing, and a negative number indicates that the queue is shrinking.
+
+            NOTE: The size of a PQ on disk includes both unacknowledged events and previously-acknowledged events from pages that contain one or more unprocessed events. This means it grows gradually as individual events are added, but shrinks in large chunks each time a whole page of processed events is reclaimed (read more: [PQ disk garbage collection](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html#garbage-collection)).
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        queue_persisted_growth_events:
+          description: |
+            This metric is expressed in events-per-second, and is the rate of change of the number of unacknowledged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+    PipelineMQFlowStats:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/FlowStatsPart1"
+        - $ref: "#/components/schemas/FlowStatsPart2"
+    PipelinePQFlowStats:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/FlowStatsPart1"
+        - $ref: "#/components/schemas/FlowStatsPart2"
+        - $ref: "#/components/schemas/FlowStatsPart3"
+    PipelineFlowStats:
+      type: object
+      description: |
+        Each pipeline’s entry in the API response includes a number of pipeline-scoped [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats) such as `input_throughput`, `worker_concurrency`, and `queue_backpressure` to provide visibility into the flow of events through the pipeline.
+        
+        When configured with a [persistent queue](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html, the pipeline’s flow will include additional rates to provide visibility into the health of the pipeline’s persistent queue:
+      properties:
+        flow:
+          type: object
+          oneOf:
+            - $ref: "#/components/schemas/PipelineMQFlowStats" # For memory queue
+            - $ref: "#/components/schemas/PipelinePQFlowStats" # For persisted queue
+
+    NodeStatsFlow:
+      type: object
+      properties:
+        flow:
+          $ref: "#/components/schemas/FlowStatsPart1"
+
     Thread:
       type: object
       properties:
         name:
           type: string
-        path:
-          type: string
+        thread_id:
+          type: integer
         percent_of_cpu_time:
           type: number
           format: double
@@ -392,3 +1910,431 @@ components:
           type: array
           items:
             type: string
+
+    EventsStats:
+      type: object
+      properties:
+        events:
+          type: object
+          properties:
+            in:
+              type: integer
+              format: int64
+            filtered:
+              type: integer
+              format: int64
+            out:
+              type: integer
+              format: int64
+            duration_in_millis:
+              type: integer
+              format: int64
+            queue_push_duration_in_millis:
+              type: integer
+              format: int64
+
+    JVMStats:
+      type: object
+      properties:
+        jvm:
+          type: object
+          properties:
+            threads:
+              type: object
+              properties:
+                count:
+                  type: integer
+                  description: The number of active JVM threads.
+                peak_count:
+                  type: integer
+                  description: The peak number of active JVM threads.
+            mem:
+              type: object
+              properties:
+                heap_used_percent:
+                  type: integer
+                  description: The percentage of heap memory used.
+                heap_committed_in_bytes:
+                  type: integer
+                  format: int64
+                  description: The committed heap memory in bytes.
+                heap_max_in_bytes:
+                  type: integer
+                  format: int64
+                  description: The maximum heap memory in bytes.
+                heap_used_in_bytes:
+                  type: integer
+                  format: int64
+                  description: The used heap memory in bytes.
+                non_heap_used_in_bytes:
+                  type: integer
+                  format: int64
+                  description: The used non-heap memory in bytes.
+                non_heap_committed_in_bytes:
+                  type: integer
+                  format: int64
+                  description: The committed non-heap memory in bytes.
+                pools:
+                  $ref: "#/components/schemas/JVMMemoryPools"
+            gc:
+              type: object
+              properties:
+                collectors:
+                  $ref: "#/components/schemas/JVMGCCollectors"
+            uptime_in_millis:
+              type: integer
+              format: int64
+              description: The JVM uptime in milliseconds.
+    JVMMemoryPool:
+      type: object
+      properties:
+        peak_used_in_bytes:
+          type: integer
+          format: int64
+        used_in_bytes:
+          type: integer
+          format: int64
+        peak_max_in_bytes:
+          type: integer
+          format: int64
+        max_in_bytes:
+          type: integer
+          format: int64
+        committed_in_bytes:
+          type: integer
+          format: int64
+    JVMMemoryPools:
+      type: object
+      properties:
+        survivor:
+          $ref: "#/components/schemas/JVMMemoryPool"
+        old:
+          $ref: "#/components/schemas/JVMMemoryPool"
+        young:
+          $ref: "#/components/schemas/JVMMemoryPool"
+    JVMGCCollector:
+      type: object
+      properties:
+        collection_time_in_millis:
+          type: integer
+          format: int64
+        collection_count:
+          type: integer
+    JVMGCCollectors:
+      type: object
+      properties:
+        old:
+          $ref: "#/components/schemas/JVMGCCollector"
+        young:
+          $ref: "#/components/schemas/JVMGCCollector"
+
+    OSStats:
+      type: object
+      properties:
+        os:
+          type: object
+          properties:
+            name:
+              type: string
+            arch:
+              type: string
+            version:
+              type: string
+            available_processors:
+              type: integer
+
+    ProcessStats:
+      type: object
+      properties:
+        process:
+          type: object
+          properties:
+            open_file_descriptors:
+              type: integer
+            peak_open_file_descriptors:
+              type: integer
+            max_file_descriptors:
+              type: integer
+            mem:
+              type: object
+              properties:
+                total_virtual_in_bytes:
+                  type: integer
+            cpu:
+              type: object
+              properties:
+                total_in_millis:
+                  type: integer
+                percent:
+                  type: integer
+                load_average:
+                  type: object
+                  properties:
+                    "1m":
+                      type: number
+
+    ThroughputStats:
+      type: object
+      properties:
+        throughput:
+          description: |
+            This metric is expressed in events-per-second, and is the rate of events this input plugin is pushing into the pipeline’s queue relative to wall-clock time (`events.in` / second). It includes events that are blocked by the queue and have not yet been accepted.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+    WorkerStats:
+      type: object
+      properties:
+        worker_utilization:
+          description: |
+            This is a unitless metric that indicates the percentage of available worker time being used by this individual plugin (`duration` / (`uptime` * `pipeline.workers`). It is useful for identifying which plugins in a pipeline are using the available worker resources.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+        worker_millis_per_event:
+          description: |
+            This metric is expressed in worker-millis-spent-per-event (`duration_in_millis` / `events.in`) with higher scores indicating more resources spent per event. It is especially useful for identifying issues with plugins that operate on a small subset of events. An "Infinity" value for a given flow window indicates that worker millis have been spent without any events completing processing; this can indicate a plugin that is either stuck or handling only empty batches.
+          allOf: # need to use allOf to keep the description
+            - $ref: "#/components/schemas/FlowWindows"
+
+    InputPluginEventsStats:
+      type: object
+      properties:
+        out:
+          type: integer
+          format: int64
+        queue_push_duration_in_millis:
+          type: integer
+          format: int64
+    InputPluginStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        flow:
+          $ref: "#/components/schemas/ThroughputStats"
+        events:
+          $ref: "#/components/schemas/InputPluginEventsStats"
+    FilterOutputPluginEventsStats:
+      type: object
+      properties:
+        in:
+          type: integer
+          format: int64
+        out:
+          type: integer
+          format: int64
+        duration_in_millis:
+          type: integer
+          format: int64
+    FilterOutputPluginStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        flow:
+          $ref: "#/components/schemas/WorkerStats"
+        events:
+          $ref: "#/components/schemas/FilterOutputPluginEventsStats"
+    CodecPluginStats:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        decode:
+          type: object
+          properties:
+            duration_in_millis:
+              type: integer
+            writes_in:
+              type: integer
+            out:
+              type: integer
+        encode:
+          type: object
+          properties:
+            duration_in_millis:
+              type: integer
+            writes_in:
+              type: integer
+
+    PipelinesStats:
+      type: object
+      properties:
+        pipelines:
+          type: object
+          description: |
+            A map where each key is a user-defined pipeline name, and the value contains the metrics for that pipeline.
+          additionalProperties:
+            description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
+            type: object
+            allOf:
+              - $ref: "#/components/schemas/EventsStats"
+              - $ref: "#/components/schemas/PipelineFlowStats"
+              - type: object
+                properties:
+                  plugins:
+                    type: object
+                    properties:
+                      inputs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/InputPluginStats"
+                      codecs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CodecPluginStats"
+                      filters:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FilterOutputPluginStats"
+                      outputs:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/FilterOutputPluginStats"
+              - $ref: "#/components/schemas/PipelineReloadStats"
+              - $ref: "#/components/schemas/PipelineQueueStats"
+              - $ref: "#/components/schemas/PipelineSettings"
+              - type: object
+                properties:
+                  hash:
+                    type: string
+                    description: "A unique hash identifier."
+                  ephemeral_id:
+                    type: string
+                    format: uuid
+                    description: "A temporary unique identifier for the instance."
+
+    PipelineReloadStats:
+      type: object
+      properties:
+        reloads:
+          type: object
+          properties:
+            last_error:
+              type: string
+              nullable: true
+            successes:
+              type: integer
+              format: int64
+            last_success_timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            last_failure_timestamp:
+              type: string
+              format: date-time
+              nullable: true
+            failures:
+              type: integer
+              format: int64
+
+    ReloadStats:
+      type: object
+      properties:
+        reloads:
+          type: object
+          properties:
+            successes:
+              type: integer
+              format: int64
+            failures:
+              type: integer
+              format: int64
+
+    PipelineQueueStats:
+      type: object
+      properties:
+        queue:
+          type: object
+          oneOf:
+            - type: object
+              description: "The metrics of persisted queue."
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - persisted
+                capacity:
+                  type: object
+                  properties:
+                    max_unread_events:
+                      type: integer
+                      format: int64
+                    page_capacity_in_bytes:
+                      type: integer
+                      format: int64
+                    max_queue_size_in_bytes:
+                      type: integer
+                      format: int64
+                    queue_size_in_bytes:
+                      type: integer
+                      format: int64
+                data:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    free_space_in_bytes:
+                      type: integer
+                      format: int64
+                    storage_type:
+                      type: string
+                events:
+                  type: integer
+                  format: int64
+                events_count:
+                  type: integer
+                  format: int64
+                queue_size_in_bytes:
+                  type: integer
+                  format: int64
+                max_queue_size_in_bytes:
+                  type: integer
+                  format: int64
+            - type: object
+              description: "The metrics of memory queue."
+              properties:
+                type:
+                  type: string
+                  enum:
+                    - memory
+                events_count:
+                  type: integer
+                  format: int64
+                queue_size_in_bytes:
+                  type: integer
+                  format: int64
+                max_queue_size_in_bytes:
+                  type: integer
+                  format: int64
+          discriminator:
+            propertyName: type
+    QueueStats:
+      type: object
+      properties:
+        queue:
+          type: object
+          properties:
+            events_count:
+              type: integer
+              format: int64
+
+    GeoIPDBLicenseStats:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ "init", "up_to_date", "to_be_expired", "expired" ]
+          description: The status of the database license.
+        fail_check_in_days:
+          type: integer
+          description: The number of days since the last successful check.
+        last_updated_at:
+          type: string
+          format: date-time
+          description: The last update timestamp.
