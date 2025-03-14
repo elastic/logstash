@@ -1786,7 +1786,7 @@ components:
           oneOf:
             - $ref: "#/components/schemas/FlowValue"
       additionalProperties: false
-    FlowStatsPart1:
+    FlowStatsCommon:
       type: object
       properties:
         input_throughput:
@@ -1822,7 +1822,7 @@ components:
             A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
-    FlowStatsPart2:
+    FlowStatsWorker:
       type: object
       properties:
         worker_utilization:
@@ -1834,7 +1834,7 @@ components:
             A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
-    FlowStatsPart3:
+    FlowStatsPersistedQueue:
       type: object
       properties:
         queue_persisted_growth_bytes:
@@ -1852,14 +1852,14 @@ components:
     PipelineMQFlowStats:
       type: object
       allOf:
-        - $ref: "#/components/schemas/FlowStatsPart1"
-        - $ref: "#/components/schemas/FlowStatsPart2"
+        - $ref: "#/components/schemas/FlowStatsCommon"
+        - $ref: "#/components/schemas/FlowStatsWorker"
     PipelinePQFlowStats:
       type: object
       allOf:
-        - $ref: "#/components/schemas/FlowStatsPart1"
-        - $ref: "#/components/schemas/FlowStatsPart2"
-        - $ref: "#/components/schemas/FlowStatsPart3"
+        - $ref: "#/components/schemas/FlowStatsCommon"
+        - $ref: "#/components/schemas/FlowStatsWorker"
+        - $ref: "#/components/schemas/FlowStatsPersistedQueue"
     PipelineFlowStats:
       type: object
       description: |
@@ -1869,7 +1869,7 @@ components:
       properties:
         flow:
           type: object
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/PipelineMQFlowStats" # For memory queue
             - $ref: "#/components/schemas/PipelinePQFlowStats" # For persisted queue
 
@@ -1877,7 +1877,7 @@ components:
       type: object
       properties:
         flow:
-          $ref: "#/components/schemas/FlowStatsPart1"
+          $ref: "#/components/schemas/FlowStatsCommon"
 
     Thread:
       type: object
