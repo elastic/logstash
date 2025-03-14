@@ -123,6 +123,26 @@ steps:
       manual:
         allowed: true
 
+  - label: "Observability SRE container smoke test"
+    key: "observability-sre-container-smoke-test"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      # TODO: Use https://github.com/elastic/logstash/pull/17311 to compute QUALIFIED_VERSION once merged
+      QUALIFIED_VERSION="8.19.0-SNAPSHOT"
+      ./gradlew --stacktrace artifactDockerObservabilitySRE
+      docker run docker.elastic.co/logstash/logstash-observability-sre:$${QUALIFIED_VERSION} \
+        logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
+
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1"
     key: "integration-tests-fips-part-1"
     agents:
