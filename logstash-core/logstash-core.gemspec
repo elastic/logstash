@@ -39,7 +39,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["info@elastic.co"]
   gem.description   = %q{The core components of logstash, the scalable log and event management tool}
   gem.summary       = %q{logstash-core - The core components of logstash}
-  gem.homepage      = "http://www.elastic.co/guide/en/logstash/current/index.html"
+  gem.homepage      = "https://www.elastic.co/logstash"
   gem.license       = "Apache-2.0"
 
   gem.files         = Dir.glob(
@@ -78,7 +78,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-  gem.add_runtime_dependency "elasticsearch", '~> 7'
+  gem.add_runtime_dependency "elasticsearch", '~> 8'
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
   # xpack geoip database service
