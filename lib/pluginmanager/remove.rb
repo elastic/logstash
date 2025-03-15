@@ -53,7 +53,7 @@ class LogStash::PluginManager::Remove < LogStash::PluginManager::Command
         # it is not possible to uninstall a dependency not listed in the Gemfile, for example a dependent codec
         signal_error(not_installed_message) unless LogStash::PluginManager.installed_plugin?(plugin, gemfile)
       else
-        # locally installed plugins are not recoginized by ::Gem::Specification
+        # locally installed plugins are not recognized by ::Gem::Specification
         # we may ::Bundler.setup to reload but it resets all dependencies so we get error message for future bundler operations
         # error message: `Bundler::GemNotFound: Could not find rubocop-1.60.2... in locally installed gems`
         # instead we make sure Gemfile has a definition and ::Gem::Specification recognizes local gem
