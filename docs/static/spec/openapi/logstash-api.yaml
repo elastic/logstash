@@ -1543,7 +1543,8 @@ paths:
                                 type: object
                                 patternProperties:
                                   "^(?<pipeline_name>.+)$":
-                                    description: "pipeline name"
+                                    description: |
+                                      An indicator for the individual named pipeline
                                     type: object
                                     required:
                                       - status
@@ -1826,9 +1827,9 @@ components:
         - `red`: Logstash is experiencing an outage or certain features are unavailable for use.
       enum:
         - green
-        - red
         - unknown
         - yellow
+        - red
 
     FlowValue:
       description: |
