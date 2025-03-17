@@ -3610,12 +3610,8 @@ module LogStashCompilerLSCLGrammar
 
     r0
   end
-
-
-  class Parser < Treetop::Runtime::CompiledParser
-    include LogStashCompilerLSCLGrammar
-  end
 end
 
-LogStashCompilerLSCLGrammarParser = LogStashCompilerLSCLGrammar::Parser
-
+class LogStashCompilerLSCLGrammarParser < Treetop::Runtime::CompiledParser
+  include LogStashCompilerLSCLGrammar
+end
