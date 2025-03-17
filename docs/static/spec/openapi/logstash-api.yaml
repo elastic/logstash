@@ -1448,6 +1448,7 @@ paths:
                           - time
                           - busiest_threads
                           - threads
+                        additionalProperties: false
               examples:
                 nodeHotThreadsExample1:
                   value:
@@ -1794,6 +1795,7 @@ components:
               type: integer
             batch_delay:
               type: integer
+          additionalProperties: false
 
     NodeInfoPipeline:
       type: object
@@ -1810,6 +1812,7 @@ components:
           type: integer
         dead_letter_queue_enabled:
           type: boolean
+      additionalProperties: false
 
     Status:
       type: string
@@ -2006,6 +2009,7 @@ components:
             queue_push_duration_in_millis:
               type: integer
               format: int64
+          additionalProperties: false
 
     JVMStats:
       type: object
@@ -2200,6 +2204,7 @@ components:
           $ref: "#/components/schemas/ThroughputStats"
         events:
           $ref: "#/components/schemas/InputPluginEventsStats"
+      additionalProperties: false
     FilterOutputPluginEventsStats:
       type: object
       properties:
@@ -2300,6 +2305,7 @@ components:
                           type: array
                           items:
                             $ref: "#/components/schemas/FilterOutputPluginStats"
+                      additionalProperties: false
                 - $ref: "#/components/schemas/PipelineReloadStats"
                 - $ref: "#/components/schemas/PipelineQueueStats"
                 - $ref: "#/components/schemas/PipelineSettings"
