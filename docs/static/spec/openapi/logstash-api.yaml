@@ -889,6 +889,8 @@ paths:
                       workers: 4
                       batch_size: 125
                       batch_delay: 50
+                    hash: 09a35286efbb04cb7349b2f5767faabd549fc34d0e1512ce1942a60a590f24fc
+                    ephemeral_id: a34fb011-8a9b-42b1-b10e-69f6f8054c18
                   heartbeat-ruby-stdout:
                     events:
                       queue_push_duration_in_millis: 159
@@ -1428,6 +1430,8 @@ paths:
 #                  - $ref: '#/components/schemas/Common'
 #                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
+                    required:
+                      - hot_threads
                     properties:
                       hot_threads:
                         type: object
@@ -1440,6 +1444,10 @@ paths:
                             type: array
                             items:
                               $ref: '#/components/schemas/Thread'
+                        required:
+                          - time
+                          - busiest_threads
+                          - threads
               examples:
                 nodeHotThreadsExample1:
                   value:
@@ -1508,6 +1516,9 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/Common'
                   - type: object
+                    required:
+                      - symptom
+                      - indicators
                     properties:
                       symptom:
                         type: string
@@ -1518,6 +1529,10 @@ paths:
                         properties:
                           pipelines:
                             type: object
+                            required:
+                              - status
+                              - symptom
+                              - indicators
                             properties:
                               status:
                                 $ref: '#/components/schemas/Status'
@@ -1529,6 +1544,9 @@ paths:
                                   "^(?<pipeline_name>.+)$":
                                     description: "pipeline name"
                                     type: object
+                                    required:
+                                      - status
+                                      - symptom
                                     properties:
                                       status:
                                         $ref: '#/components/schemas/Status'
@@ -1560,6 +1578,9 @@ paths:
                                         description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
                                         items:
                                           type: object
+                                          required:
+                                            - severity
+                                            - description
                                           properties:
                                             id:
                                               type: string
@@ -1585,6 +1606,10 @@ paths:
                                         type: array
                                         items:
                                           type: object
+                                          required:
+                                            - cause
+                                            - action
+                                            - help_url
                                           properties:
                                             id:
                                               type: string
@@ -1603,10 +1628,20 @@ paths:
                                               format: uri
                                               description: "A link to the troubleshooting guide that will fix the health problem."
                                 additionalProperties: false
+                        required:
+                          - pipelines
               examples:
                 normalTerminatedCase:
                   description: "The pipeline has finished without errors or interruptions."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
+                    status: "yellow"
                     symptom: "1 indicator is concerning (`pipelines`)"
                     indicators:
                       pipelines:
@@ -1619,14 +1654,24 @@ paths:
                             diagnosis:
                               - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
                                 action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-status.html#finished"
                             impacts:
-                              - impact_areas: ["pipeline_execution"]
+                              - description: "pipeline has finished running"
+                                severity: 10
+                                impact_areas: ["pipeline_execution"]
                             details:
                               status:
                                 state: "FINISHED"
                 abnormalTerminatedCase:
                   description: "The pipeline is terminated with errors."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1640,8 +1685,10 @@ paths:
                             diagnosis:
                               - cause: "pipeline is not running, likely because it has encountered an error"
                                 action: "view logs to determine the cause of abnormal pipeline shutdown"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-status.html#terminated"
                             impacts:
                               - description: "the pipeline is not currently processing"
+                                severity: 1
                                 impact_areas: [ "pipeline_execution" ]
                             details:
                               status:
@@ -1649,6 +1696,13 @@ paths:
                 backpressureCase:
                   description: "A pipeline is blocked by slow downstream processing."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1663,6 +1717,7 @@ paths:
                               - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
                                 cause: "pipeline workers have been completely blocked for at least five minutes"
                                 action: "address bottleneck or add resources"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-flow-worker-utilization.html#blocked-5m"
                             impacts:
                               - id: "logstash:health:pipeline:flow:impact:blocked_processing"
                                 severity: 1
@@ -1691,6 +1746,15 @@ components:
   schemas:
     Common:
       type: object
+      required:
+        - host
+        - version
+        - http_address
+        - id
+        - name
+        - ephemeral_id
+        - snapshot
+        - status
       properties:
         host:
           type: string
@@ -1718,6 +1782,8 @@ components:
 
     PipelineSettings:
       type: object
+      required:
+        - pipeline
       properties:
         pipeline:
           type: object
@@ -1883,6 +1949,8 @@ components:
         Each pipeline’s entry in the API response includes a number of pipeline-scoped [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats) such as `input_throughput`, `worker_concurrency`, and `queue_backpressure` to provide visibility into the flow of events through the pipeline.
         
         When configured with a [persistent queue](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html, the pipeline’s flow will include additional rates to provide visibility into the health of the pipeline’s persistent queue:
+      required:
+        - flow
       properties:
         flow:
           type: object
@@ -1892,6 +1960,8 @@ components:
 
     NodeStatsFlow:
       type: object
+      required:
+        - flow
       properties:
         flow:
           $ref: "#/components/schemas/FlowStatsCommon"
@@ -1915,6 +1985,8 @@ components:
 
     EventsStats:
       type: object
+      required:
+        - events
       properties:
         events:
           type: object
@@ -1937,6 +2009,8 @@ components:
 
     JVMStats:
       type: object
+      required:
+        - jvm
       properties:
         jvm:
           type: object
@@ -2032,6 +2106,8 @@ components:
 
     OSStats:
       type: object
+      required:
+        - os
       properties:
         os:
           type: object
@@ -2047,6 +2123,8 @@ components:
 
     ProcessStats:
       type: object
+      required:
+        - process
       properties:
         process:
           type: object
@@ -2108,6 +2186,11 @@ components:
           format: int64
     InputPluginStats:
       type: object
+      required:
+        - id
+        - name
+        - flow
+        - events
       properties:
         id:
           type: string
@@ -2131,6 +2214,11 @@ components:
           format: int64
     FilterOutputPluginStats:
       type: object
+      required:
+        - id
+        - name
+        - flow
+        - events
       properties:
         id:
           type: string
@@ -2145,6 +2233,9 @@ components:
           pattern: "^[a-z][a-z0-9_]*$"
     CodecPluginStats:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: string
@@ -2169,6 +2260,8 @@ components:
 
     PipelinesStats:
       type: object
+      required:
+        - pipelines
       properties:
         pipelines:
           type: object
@@ -2182,9 +2275,14 @@ components:
                 - $ref: "#/components/schemas/EventsStats"
                 - $ref: "#/components/schemas/PipelineFlowStats"
                 - type: object
+                  required:
+                    - plugins
                   properties:
                     plugins:
                       type: object
+                      required:
+                        - inputs
+                        - outputs
                       properties:
                         inputs:
                           type: array
@@ -2206,6 +2304,9 @@ components:
                 - $ref: "#/components/schemas/PipelineQueueStats"
                 - $ref: "#/components/schemas/PipelineSettings"
                 - type: object
+                  required:
+                    - hash
+                    - ephemeral_id
                   properties:
                     hash:
                       type: string
@@ -2218,6 +2319,8 @@ components:
 
     PipelineReloadStats:
       type: object
+      required:
+        - reloads
       properties:
         reloads:
           type: object
@@ -2242,6 +2345,8 @@ components:
 
     ReloadStats:
       type: object
+      required:
+        - reloads
       properties:
         reloads:
           type: object
@@ -2314,6 +2419,8 @@ components:
           format: int64
     PipelineQueueStats:
       type: object
+      required:
+        - queue
       properties:
         queue:
           type: object
@@ -2327,6 +2434,8 @@ components:
               persisted: "#/components/schemas/PipelineQueueStatsPersisted"
     QueueStats:
       type: object
+      required:
+        - queue
       properties:
         queue:
           type: object
