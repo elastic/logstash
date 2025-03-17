@@ -5,9 +5,11 @@ mapped_pages:
 
 # Getting started with Logstash [getting-started-with-logstash]
 
-This section guides you through the process of installing Logstash and verifying that everything is running properly. After learning how to stash your first event, you go on to create a more advanced pipeline that takes Apache web logs as input, parses the logs, and writes the parsed data to an Elasticsearch cluster. Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
+This section guides you through the process of installing Logstash and verifying that everything is running properly. 
+After learning how to stash your first event, you can go on to create a more advanced pipeline that takes Apache web logs as input, parses the logs, and writes the parsed data to an Elasticsearch cluster. 
+Then you learn how to stitch together multiple input and output plugins to unify data from a variety of disparate sources.
 
-This section includes the following topics:
+This section includes these topics:
 
 * [Java (JVM) version](#ls-jvm)
 * [Installing Logstash](/reference/installing-logstash.md)
@@ -20,8 +22,8 @@ This section includes the following topics:
 
 {{ls}} requires one of these versions:
 
-* Java 17 (default). Check out [Using JDK 17](#jdk17-upgrade) for settings info.
-* Java 21
+* Java 17 
+* Java 21 (default).
 
 Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or an open-source distribution, such as [OpenJDK](http://openjdk.java.net/). See the [Elastic Support Matrix](https://www.elastic.co/support/matrix#matrix_jvm) for the official word on supported versions across releases.
 
@@ -30,7 +32,7 @@ Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/ja
 
 :name: bundled-jdk
 
-{{ls}} offers architecture-specific [downloads](https://www.elastic.co/downloads/logstash) that include Adoptium Eclipse Temurin 17, a long term support (LTS) release of the JDK.
+{{ls}} offers architecture-specific [downloads](https://www.elastic.co/downloads/logstash) that include Adoptium Eclipse Temurin 21, a long term support (LTS) release of the JDK.
 
 Use the LS_JAVA_HOME environment variable if you want to use a JDK other than the version that is bundled. If you have the LS_JAVA_HOME environment variable set to use a custom JDK, Logstash will continue to use the JDK version you have specified, even after you upgrade.
 
@@ -40,13 +42,13 @@ Use the LS_JAVA_HOME environment variable if you want to use a JDK other than th
 
 #### Check your Java version [check-jvm]
 
-Run the following command:
+Run this command:
 
 ```shell
 java -version
 ```
 
-On systems with Java installed, this command produces output similar to the following:
+On systems with Java installed, this command produces output similar to:
 
 ```shell
 openjdk version "17.0.12" 2024-07-16
@@ -62,9 +64,10 @@ OpenJDK 64-Bit Server VM Temurin-17.0.12+7 (build 17.0.12+7, mixed mode)
 On some Linux systems, you may need to have the `LS_JAVA_HOME` environment exported before installing {{ls}}, particularly if you installed Java from a tarball. {{ls}} uses Java during installation to automatically detect your environment and install the correct startup method (SysV init scripts, Upstart, or systemd). If {{ls}} is unable to find the `LS_JAVA_HOME` environment variable during package installation, you may get an error message, and {{ls}} will not start properly.
 
 
-#### Using JDK 17 [jdk17-upgrade]
+#### Update JDK settings when upgrading from {{ls}} 7.11.x (or earlier)[jdk-upgrade]
 
-{{ls}} uses JDK 17 by default, but you need to update settings in `jvm.options` and `log4j2.properties` if you are upgrading from  {{ls}} 7.11.x (or earlier) to 7.12 or later.
+{{ls}} uses JDK 21 by default.
+If you are upgrading from {{ls}} 7.11.x (or earlier), you need to update Java settings in `jvm.options` and `log4j2.properties`.
 
 
 ##### Updates to `jvm.options` [_updates_to_jvm_options]
