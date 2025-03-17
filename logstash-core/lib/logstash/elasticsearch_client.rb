@@ -16,7 +16,7 @@
 # under the License.
 
 require "elasticsearch"
-require "elasticsearch/transport/transport/http/manticore"
+require "elastic/transport/transport/http/manticore"
 require 'logstash/util/manticore_ssl_config_helper'
 require 'logstash/util/password'
 
@@ -24,7 +24,7 @@ module LogStash class ElasticsearchClient
   include LogStash::Util::Loggable
 
   class Response
-    # duplicated here from Elasticsearch::Transport::Transport::Response
+    # duplicated here from Elastic::Transport::Transport::Response
     # to create a normalised response across different client IMPL
     attr_reader :status, :body, :headers
 
@@ -65,8 +65,13 @@ module LogStash class ElasticsearchClient
     def can_connect?
       begin
         head(SecureRandom.hex(32).prepend('_'))
-      rescue Elasticsearch::Transport::Transport::Errors::BadRequest
+      rescue Elastic::Transport::Transport::Errors::BadRequest
         true
+      rescue Elastic::Transport::Transport::Errors::Unauthorized
+        true
+      rescue Exception => e
+        return true if e.message.include?('Connection refused')
+        raise e
       rescue Manticore::SocketException
         false
       end
@@ -116,7 +121,7 @@ module LogStash class ElasticsearchClient
 
     def client_args
       {
-        :transport_class => Elasticsearch::Transport::Transport::HTTP::Manticore,
+        :transport_class => Elastic::Transport::Transport::HTTP::Manticore,
         :hosts => [*unpack_hosts],
         # :logger => @logger, # silence the client logging
       }
