@@ -45,14 +45,7 @@ fi
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done
 
-FINAL_VERSION=$STACK_VERSION
-if [[ -n "$VERSION_QUALIFIER" ]]; then
-  FINAL_VERSION="$FINAL_VERSION-${VERSION_QUALIFIER}"
-fi
-
-if [[ "$WORKFLOW_TYPE" == "snapshot" ]]; then
-    FINAL_VERSION="${STACK_VERSION}-SNAPSHOT"
-fi
+FINAL_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
 
 mv build/distributions/dependencies-reports/logstash-${FINAL_VERSION}.csv build/distributions/dependencies-${FINAL_VERSION}.csv
 
