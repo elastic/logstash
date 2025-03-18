@@ -26,7 +26,6 @@ import java.io.StringWriter;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
@@ -48,7 +47,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -145,8 +143,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @SuppressWarnings({"rawtypes", "serial"})
     private List<SourceWithMetadata> configParts;
-
-    private RubyString configHash;
 
     private transient IRubyObject settings;
 
@@ -263,11 +259,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
         pipelineSettings = pipelineConfig;
         configString = (RubyString) pipelineSettings.callMethod(context, "config_string");
         configParts = pipelineSettings.toJava(PipelineConfig.class).getConfigParts();
-        configHash = context.runtime.newString(
-            Hex.encodeHexString(
-                MessageDigest.getInstance("SHA1").digest(configString.getBytes())
-            )
-        );
         settings = pipelineSettings.callMethod(context, "settings");
         final IRubyObject id = getSetting(context, SettingKeyDefinitions.PIPELINE_ID);
         if (id.isNil()) {
@@ -354,11 +345,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "config_str")
     public final RubyString configStr() {
         return configString;
-    }
-
-    @JRubyMethod(name = "config_hash")
-    public final RubyString configHash() {
-        return configHash;
     }
 
     @JRubyMethod(name = "ephemeral_id")
