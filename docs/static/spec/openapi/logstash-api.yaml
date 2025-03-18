@@ -2246,75 +2246,79 @@ components:
             failures:
               type: integer
               format: int64
-
+    PipelineQueueStatsMemory:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - memory
+        events_count:
+          type: integer
+          format: int64
+        queue_size_in_bytes:
+          type: integer
+          format: int64
+        max_queue_size_in_bytes:
+          type: integer
+          format: int64
+    PipelineQueueStatsPersisted:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - persisted
+        capacity:
+          type: object
+          properties:
+            max_unread_events:
+              type: integer
+              format: int64
+            page_capacity_in_bytes:
+              type: integer
+              format: int64
+            max_queue_size_in_bytes:
+              type: integer
+              format: int64
+            queue_size_in_bytes:
+              type: integer
+              format: int64
+        data:
+          type: object
+          properties:
+            path:
+              type: string
+            free_space_in_bytes:
+              type: integer
+              format: int64
+            storage_type:
+              type: string
+        events:
+          type: integer
+          format: int64
+        events_count:
+          type: integer
+          format: int64
+        queue_size_in_bytes:
+          type: integer
+          format: int64
+        max_queue_size_in_bytes:
+          type: integer
+          format: int64
     PipelineQueueStats:
       type: object
       properties:
         queue:
           type: object
           oneOf:
-            - type: object
-              description: "The metrics of persisted queue."
-              properties:
-                type:
-                  type: string
-                  enum:
-                    - persisted
-                capacity:
-                  type: object
-                  properties:
-                    max_unread_events:
-                      type: integer
-                      format: int64
-                    page_capacity_in_bytes:
-                      type: integer
-                      format: int64
-                    max_queue_size_in_bytes:
-                      type: integer
-                      format: int64
-                    queue_size_in_bytes:
-                      type: integer
-                      format: int64
-                data:
-                  type: object
-                  properties:
-                    path:
-                      type: string
-                    free_space_in_bytes:
-                      type: integer
-                      format: int64
-                    storage_type:
-                      type: string
-                events:
-                  type: integer
-                  format: int64
-                events_count:
-                  type: integer
-                  format: int64
-                queue_size_in_bytes:
-                  type: integer
-                  format: int64
-                max_queue_size_in_bytes:
-                  type: integer
-                  format: int64
-            - type: object
-              description: "The metrics of memory queue."
-              properties:
-                type:
-                  type: string
-                  enum:
-                    - memory
-                events_count:
-                  type: integer
-                  format: int64
-                queue_size_in_bytes:
-                  type: integer
-                  format: int64
-                max_queue_size_in_bytes:
-                  type: integer
-                  format: int64
+            - $ref: "#/components/schemas/PipelineQueueStatsMemory"
+            - $ref: "#/components/schemas/PipelineQueueStatsPersisted"
           discriminator:
             propertyName: type
+            mapping:
+              memory: "#/components/schemas/PipelineQueueStatsMemory"
+              persisted: "#/components/schemas/PipelineQueueStatsPersisted"
     QueueStats:
       type: object
       properties:
