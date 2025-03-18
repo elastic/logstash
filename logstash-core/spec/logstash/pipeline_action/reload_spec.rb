@@ -60,7 +60,7 @@ describe LogStash::PipelineAction::Reload do
 
     it "run the new pipeline code" do
       subject.execute(agent, pipelines)
-      expect(pipelines.get_pipeline(pipeline_id).config_hash).to eq(new_pipeline_config.config_hash)
+      expect(pipelines.get_pipeline(pipeline_id).pipeline_config.config_hash).to eq(new_pipeline_config.config_hash)
     end
   end
 
