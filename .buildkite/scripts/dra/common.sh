@@ -29,12 +29,12 @@ export JRUBY_OPTS="-J-Xmx4g"
 
 # Extract the version number from the version.yml file
 # e.g.: 8.6.0
-# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER_OPT environment variable
+# The suffix part like alpha1 etc is managed by the optional VERSION_QUALIFIER environment variable
 STACK_VERSION=`cat versions.yml | sed -n 's/^logstash\:[[:space:]]\([[:digit:]]*\.[[:digit:]]*\.[[:digit:]]*\)$/\1/p'`
 
 info "Agent is running on architecture [$(uname -i)]"
 
-export VERSION_QUALIFIER_OPT=${VERSION_QUALIFIER_OPT:-""}
+export VERSION_QUALIFIER=${VERSION_QUALIFIER:-""}
 export DRA_DRY_RUN=${DRA_DRY_RUN:-""}
 
 if [[ ! -z $DRA_DRY_RUN && $BUILDKITE_STEP_KEY == "logstash_publish_dra" ]]; then
