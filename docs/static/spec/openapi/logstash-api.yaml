@@ -2139,6 +2139,9 @@ components:
           $ref: "#/components/schemas/WorkerStats"
         events:
           $ref: "#/components/schemas/FilterOutputPluginEventsStats"
+      additionalProperties:
+        propertyNames:
+          pattern: "^[a-z][a-z0-9_]*$"
     CodecPluginStats:
       type: object
       properties:
