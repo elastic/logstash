@@ -34,12 +34,15 @@ security:
 tags:
   - name: health
     x-displayName: Health report
-    # description:
+    description: |
+      A report of the health of the Logstash process and its pipelines
     # externalDocs:
     #   description:
     #   url:
   - name: hot threads
     x-displayName: Hot threads
+    description: |
+      Information about the threads that are considered "hot" and consuming significant resources.
     # description:
     # externalDocs:
     #   description:
