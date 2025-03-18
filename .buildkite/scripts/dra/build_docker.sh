@@ -26,25 +26,11 @@ rake artifact:docker_oss || error "artifact:docker_oss build failed."
 rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
 
-<<<<<<< HEAD
 if [[ "$ARCH" != "aarch64" ]]; then
   rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
 fi
 
-if [[ "$WORKFLOW_TYPE" == "staging" ]] && [[ -n "$VERSION_QUALIFIER" ]]; then
-    # Qualifier is passed from CI as optional field and specify the version postfix
-    # in case of alpha or beta releases for staging builds only:
-    # e.g: 8.0.0-alpha1
-    STACK_VERSION="${STACK_VERSION}-${VERSION_QUALIFIER}"
-fi
-
-if [[ "$WORKFLOW_TYPE" == "snapshot" ]]; then
-    STACK_VERSION="${STACK_VERSION}-SNAPSHOT"
-fi
-
-=======
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
->>>>>>> 10b5a84f (add ci shared qualified-version script (#17311))
 info "Build complete, setting STACK_VERSION to $STACK_VERSION."
 
 info "Saving tar.gz for docker images"
