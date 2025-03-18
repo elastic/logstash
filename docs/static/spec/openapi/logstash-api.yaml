@@ -27,7 +27,19 @@ info:
     label: Feedback
     url: https://github.com/elastic/docs-content/issues/new?assignees=&labels=feedback%2Ccommunity&projects=&template=api-feedback.yaml&title=%5BFeedback%5D%3A+
 servers:
-  - url: /
+  - url: "{scheme}://{address}:{port}"
+    variables:
+      scheme:
+        default: http
+        enum:
+          - http
+          - https
+      address:
+        default: localhost
+        description: the hostname or ip address of your logstash instance
+      port:
+        default: 9600
+        description: the port on which your Logstash API is running
 security:
   - {}           # Allows requests without authentication
   - BasicAuth: [] # Allows requests with Basic Authentication
