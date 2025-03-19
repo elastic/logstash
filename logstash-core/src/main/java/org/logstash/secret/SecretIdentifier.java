@@ -60,15 +60,13 @@ public class SecretIdentifier {
     /**
      * Minor validation and downcases the parts
      *
-     * @param part     The part of the URN to validate
+     * @param key      The key, a part of the URN to validate.
      * @param partName The name of the part used for logging.
      * @return The validated and transformed part.
      */
-    private static String validateWithTransform(String part, String partName) {
-        if (part == null || part.isEmpty()) {
-            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
-        }
-        return part.toLowerCase(Locale.US);
+    private static String validateWithTransform(String key, String partName) {
+        KeyValidator.validateKey(key, partName);
+        return key.toLowerCase(Locale.US);
     }
 
     @Override
