@@ -18,7 +18,7 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
 fi
 
 if [ -n "$FIPS_MODE" ]; then
-  ./gradlew runXPackIntegrationTests -PrunTestsInFIPSMode=true
+  ./gradlew runXPackIntegrationTests -PfedrampHighMode=true
 else
   ./gradlew runXPackIntegrationTests
 fi

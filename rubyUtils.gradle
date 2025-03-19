@@ -191,6 +191,10 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
     env.put "GEM_PATH", gemDir
+    // Pass through FEDRAMP_HIGH_MODE if it exists in the project properties
+    if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
+        env.put "FEDRAMP_HIGH_MODE", "true"
+    }
     try {
         block(jruby)
     } finally {
