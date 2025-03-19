@@ -21,12 +21,12 @@ While upgrading Logstash:
 
 If you’re upgrading other products in the stack, also read the [Elastic Stack Installation and Upgrade Guide](docs-content://deploy-manage/index.md).
 
-See the following topics for information about upgrading Logstash:
+See these topics for information about upgrading Logstash:
 
 * [Upgrading using package managers](/reference/upgrading-using-package-managers.md)
 * [Upgrading using a direct download](/reference/upgrading-using-direct-download.md)
 * [Upgrading between minor versions](/reference/upgrading-minor-versions.md)
-* [Upgrading Logstash to 9.0](https://www.elastic.co/guide/en/logstash/master/upgrading-logstash-9.0.html)
+* [Upgrading Logstash to 9.0](/reference/upgrading-logstash-9-0.md)
 
 
 ## When to upgrade [_when_to_upgrade]
