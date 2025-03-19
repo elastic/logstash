@@ -238,7 +238,7 @@ dependencies {
     implementation('org.reflections:reflections:0.10.2') {
         exclude group: 'com.google.guava', module: 'guava'
     }
-    implementation 'commons-codec:commons-codec:1.17.0'
+    implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"

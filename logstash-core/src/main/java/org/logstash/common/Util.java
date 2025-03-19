@@ -35,6 +35,13 @@ public class Util {
         }
     }
 
+    /**
+     * Returns the hexadecimal string of UTF-8 bytes that make up the string.
+     * @param base
+     *      the string to hash.
+     * @return
+     *      hexadecimal string that contains the hash.
+     * */
     public static String digest(String base) {
         MessageDigest digest = defaultMessageDigest();
         byte[] hash = digest.digest(base.getBytes(StandardCharsets.UTF_8));
