@@ -48,7 +48,7 @@ public class BufferedTokenizerExt extends RubyObject {
     private RubyString delimiter = NEW_LINE;
     private int sizeLimit;
     private boolean hasSizeLimit;
-    private int inputSize;
+    private long inputSize;
     private boolean bufferFullErrorNotified = false;
     private String encodingName;
 
