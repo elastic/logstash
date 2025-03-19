@@ -20,27 +20,33 @@ require "spec_helper"
 describe  FileWatch::BufferedTokenizer  do
   subject { FileWatch::BufferedTokenizer.new }
 
+  def to_list(iterator)
+    a = []
+    iterator.each { |v| a << v }
+    return a
+  end
+
   it "should tokenize a single token" do
-    expect(subject.extract("foo\n")).to eq(["foo"])
+    expect(to_list(subject.extract("foo\n"))).to eq(["foo"])
   end
 
   it "should merge multiple token" do
-    expect(subject.extract("foo")).to eq([])
-    expect(subject.extract("bar\n")).to eq(["foobar"])
+    expect(to_list(subject.extract("foo"))).to eq([])
+    expect(to_list(subject.extract("bar\n"))).to eq(["foobar"])
   end
 
   it "should tokenize multiple token" do
-    expect(subject.extract("foo\nbar\n")).to eq(["foo", "bar"])
+    expect(to_list(subject.extract("foo\nbar\n"))).to eq(["foo", "bar"])
   end
 
   it "should ignore empty payload" do
-    expect(subject.extract("")).to eq([])
-    expect(subject.extract("foo\nbar")).to eq(["foo"])
+    expect(to_list(subject.extract(""))).to eq([])
+    expect(to_list(subject.extract("foo\nbar"))).to eq(["foo"])
   end
 
   it "should tokenize empty payload with newline" do
-    expect(subject.extract("\n")).to eq([""])
-    expect(subject.extract("\n\n\n")).to eq(["", "", ""])
+    expect(to_list(subject.extract("\n"))).to eq([""])
+    expect(to_list(subject.extract("\n\n\n"))).to eq(["", "", ""])
   end
 
   describe 'flush' do
@@ -83,12 +89,12 @@ describe  FileWatch::BufferedTokenizer  do
     let(:delimiter) { "||" }
 
     it "should tokenize multiple token" do
-      expect(subject.extract("foo||b|r||")).to eq(["foo", "b|r"])
+      expect(to_list(subject.extract("foo||b|r||"))).to eq(["foo", "b|r"])
     end
 
     it "should ignore empty payload" do
-      expect(subject.extract("")).to eq([])
-      expect(subject.extract("foo||bar")).to eq(["foo"])
+      expect(to_list(subject.extract(""))).to eq([])
+      expect(to_list(subject.extract("foo||bar"))).to eq(["foo"])
     end
   end
 end
