@@ -117,7 +117,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     @Test
     public void givenMaliciousInputExtractDoesntOverflow() {
         System.out.println("DBG: Xmx is " + Runtime.getRuntime().maxMemory());
-        assertEquals(12L * GB, Runtime.getRuntime().maxMemory());
+        assertEquals(6L * GB, Runtime.getRuntime().maxMemory());
         // re-init the tokenizer with big sizeLimit
         initSUTWithSizeLimit((int) (2L * GB) - 3);
         // Integer.MAX_VALUE is 2 * GB

@@ -124,7 +124,7 @@ tasks.register("javaTests", Test) {
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
 
-    maxHeapSize = "12g"
+    maxHeapSize = "6g"
 
     jacoco {
         enabled = true
