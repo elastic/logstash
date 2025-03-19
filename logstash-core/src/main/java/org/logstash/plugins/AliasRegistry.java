@@ -1,8 +1,8 @@
 package org.logstash.plugins;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.logstash.common.Util;
 import org.logstash.plugins.PluginLookup.PluginType;
 import org.logstash.plugins.aliases.AliasDocumentReplace;
 import org.logstash.plugins.aliases.AliasPlugin;
@@ -109,7 +109,7 @@ public class AliasRegistry {
         }
 
         private String computeHashFromContent() {
-            return DigestUtils.sha256Hex(yamlContents);
+            return Util.digest(yamlContents);
         }
 
         @SuppressWarnings("unchecked")

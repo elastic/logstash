@@ -19,16 +19,24 @@
 
 package org.logstash.config.ir;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.*;
+import org.jruby.RubyArray;
+import org.jruby.RubyClass;
+import org.jruby.RubyObject;
+import org.jruby.RubyString;
+import org.jruby.RubySymbol;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.common.IncompleteSourceWithMetadataException;
 import org.logstash.common.SourceWithMetadata;
+import org.logstash.common.Util;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.logstash.RubyUtil.RUBY;
@@ -105,7 +113,7 @@ public final class PipelineConfig {
 
     public String configHash() {
         if (configHash == null) {
-            configHash = DigestUtils.sha1Hex(configString() + metadataString());
+            configHash = Util.digest(configString() + metadataString());
         }
         return configHash;
     }
