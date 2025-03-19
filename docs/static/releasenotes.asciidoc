@@ -101,32 +101,36 @@ This section summarizes the changes in the following releases:
 * Set Jackson stream read constraints defaults in code to avoid missed `jvm.options` updates during installation upgrade https://github.com/elastic/logstash/pull/16854[#16854].
 
 ==== Plugins
+*Elasticsearch Filter - 3.17.1*
+
+* Add elastic-transport client support used in elasticsearch-ruby 8.x https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/193[#193]
+
 *Xml Filter - 4.3.0*
 
 * Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/87[#87]
-
-*Beats Input - 6.9.3*
-
-* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-beats/pull/514[#514]
 
 *Elastic_serverless_forwarder Input - 1.0.0*
 
 * Promote from technical preview to GA https://github.com/logstash-plugins/logstash-input-elastic_serverless_forwarder/pull/10[#10]
 
-*Http Input - 3.10.2*
+*Elasticsearch Input - 4.21.2*
 
-* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-http/pull/194[#194]
+* Add elastic-transport client support used in elasticsearch-ruby 8.x https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/225[#225]
 
-*Tcp Input - 6.4.6*
+*Syslog Input - 3.7.1*
 
-* Upgrade netty to 4.1.118 https://github.com/logstash-plugins/logstash-input-tcp/pull/233[#233]
+* Fix issue where the priority field was not being set correctly when grok failed https://github.com/logstash-plugins/logstash-input-syslog/pull/78[#76]
 
 *Aws Integration - 7.2.1*
 
 * [DOC] Remove unneeded content and links in SNS and CloudWatch https://github.com/logstash-plugins/logstash-integration-aws/pull/54[#54]
 
 * Added an option `web_identity_token_file` to support IRSA (IAM Roles for Service Accounts) https://github.com/logstash-plugins/logstash-integration-aws/pull/52[#52]
+  
 
+*Jdbc Integration - 5.5.3*
+
+* [DOC] Rework inline comment to a callout in preparation for upcoming MD conversion https://github.com/logstash-plugins/logstash-integration-jdbc/pull/181[#181]
 
 *Kafka Integration - 11.6.0*
 
