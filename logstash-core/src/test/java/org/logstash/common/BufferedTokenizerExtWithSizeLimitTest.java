@@ -160,6 +160,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
             System.out.println(e.getMessage());
             return false;
         }
+        System.out.println("Physical memory on the VM is: " + physicalMemory + " bytes");
         return physicalMemory > requiredPhysicalMemory;
     }
 
