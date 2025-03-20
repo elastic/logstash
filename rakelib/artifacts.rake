@@ -233,9 +233,13 @@ namespace "artifact" do
   task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    # rejection point: if `license_details` has a third entry, it is used in place of the default_exclude_paths
-    # license_details = ['ELASTIC-LICENSE','-observability-sre', default_exclude_paths]
-    license_details = ['ELASTIC-LICENSE','-observability-sre']
+    exclude_paths = default_exclude_paths + %w(
+      bin/logstash-plugin
+      bin/logstash-plugin.bat
+      bin/logstash-keystore
+      bin/logstash-keystore.bat
+    )
+    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
     %w(x86_64 arm64).each do |arch|
       create_archive_pack(license_details, arch, "linux") do |dedicated_directory_tar|
         # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
