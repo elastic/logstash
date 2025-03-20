@@ -24,7 +24,7 @@ Each event written to the dead letter queue includes the original event, metadat
 
 To process events in the dead letter queue, create a Logstash pipeline configuration that uses the [`dead_letter_queue` input plugin](/reference/plugins-inputs-dead_letter_queue.md) to read from the queue. See [Processing events in the dead letter queue](#processing-dlq-events) for more information.
 
-:::{image} ../images/dead_letter_queue.png
+:::{image} images/dead_letter_queue.png
 :alt: Diagram showing pipeline reading from the dead letter queue
 :::
 

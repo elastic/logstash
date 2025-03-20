@@ -9,7 +9,7 @@ First, let’s test your Logstash installation by running the most basic *Logsta
 
 A Logstash pipeline has two required elements, `input` and `output`, and one optional element, `filter`. The input plugins consume data from a source, the filter plugins modify the data as you specify, and the output plugins write the data to a destination.
 
-:::{image} ../images/basic_logstash_pipeline.png
+:::{image} images/basic_logstash_pipeline.png
 :alt: basic logstash pipeline
 :::
 
