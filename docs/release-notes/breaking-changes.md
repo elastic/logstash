@@ -16,7 +16,59 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 % ::::
 
 ## 9.0.0 [logstash-900-breaking-changes]
+**Release date:** April 2, 2025
 
+== Breaking changes
+
+[[pipeline-buffer-type]]
+=== Pipeline buffer type changed to 'heap'
+
+
+
+Set `pipeline.buffer.type` to `direct` to continue using direct memory with {agent}, {beats}, TCP, and HTTP input plugins https://github.com/elastic/logstash/pull/16500[#16500]
+
+[[removed-params]]
+=== Removed deprecated params
+
+`http.*` params replaced by `api.*` are removed https://github.com/elastic/logstash/pull/16552[#16552]
+
+`event_api.tags.illegal` no longer exists.
+Instead, {ls} generates `_tagsparsefailure` in the event `tags` and the illegal value is written to the `_tags` field https://github.com/elastic/logstash/pull/16461[#16461]
+
+[[removed-modules]]
+=== Removed {ls} modules
+
+Removed netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
+
+Removed Arcsight module and the modules framework https://github.com/elastic/logstash/pull/16794[#16794]
+
+[[removed-ingest-converter]]
+Removed ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
+
+[[jdk-11-support-drop]]
+=== JDK 11 support drop
+
+Starting with {ls} 9.0, we no longer support Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
+
+[[docker-base-image-change]]
+=== Docker base image change
+
+{ls} on Docker, Ubuntu base image changed to UBI https://github.com/elastic/logstash/pull/16599[#16599]
+
+[[allow-superuser]]
+=== {ls} does not run with superuser by default
+
+Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as a superuser https://github.com/elastic/logstash/pull/16558[#16558]
+
+[[allow-legacy-monitoring]]
+=== {ls} introduces new setting to allow legacy internal monitoring
+
+Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
+
+[[avoid-collision-on-json-fileds]]
+=== {ls} avoids JSON log lines collision
+
+`log.format.json.fix_duplicate_message_fields` config is enabled by default to avoid collision on `message` field in log lines when `log.format` is JSON https://github.com/elastic/logstash/pull/16578[#16578]
 ### Changes to SSL settings in {{ls}} plugins [ssl-settings-9.0]
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
 
