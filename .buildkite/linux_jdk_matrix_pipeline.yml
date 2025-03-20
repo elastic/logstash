@@ -64,10 +64,13 @@ steps:
             value: "adoptiumjdk_11"
           - label: "OpenJDK 21"
             value: "openjdk_21"
+<<<<<<< HEAD
           - label: "OpenJDK 17"
             value: "openjdk_17"
           - label: "OpenJDK 11"
             value: "openjdk_11"
+=======
+>>>>>>> 76839831 (Disable support of OpenJDK 17 (#17338))
           - label: "Zulu 21"
             value: "zulu_21"
           - label: "Zulu 17"
