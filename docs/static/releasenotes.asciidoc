@@ -84,42 +84,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-4]]
 === Logstash 8.17.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.4
+[[notable-8-17-4]]
+==== Notable issues fixed
 
-* Update rack to 3.1.11 https://github.com/elastic/logstash/pull/17230[#17230]
-* gradle task migrate to the new artifacts-api https://github.com/elastic/logstash/pull/17232[#17232]
-* Backport PR #17230 to 8.17: Update rack to 3.1.11 https://github.com/elastic/logstash/pull/17234[#17234]
-* Backport PR #17232 to 8.17: gradle task migrate to the new artifacts-api https://github.com/elastic/logstash/pull/17244[#17244]
+* Fix pqcheck and pqrepair on Windows. https://github.com/elastic/logstash/pull/17210[#17210]
+* Avoid possible integer overflow in string tokenization. https://github.com/elastic/logstash/pull/17353[#17353]
+* Fixed an issue where the /_node/stats API displayed empty pipeline metrics when X-Pack monitoring was enabled. https://github.com/elastic/logstash/pull/17185[#17185]
 
-=== Logstash Commits between 8.17 and 8.17.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.3..8.17"
-
-59c51d13c - (HEAD -> 8.17, origin/8.17) [8.17] Surface failures from nested rake/shell tasks (backport #17310) (#17315) (19 minutes ago) <mergify[bot]>
-f679ecb37 - tests: make integration split quantity configurable (#17219) (#17369) (3 hours ago) <mergify[bot]>
-e095a1805 - Added test to verify the int overflow happen (#17353) (#17356) (23 hours ago) <mergify[bot]>
-9228b1eae - [8.17] Upgrade elasticsearch-ruby client. (backport #17161) (backport #17306) (#17339) (3 days ago) <mergify[bot]>
-7c46a7ddb - bump lock file for 8.17 (#17337) (3 days ago) <github-actions[bot]>
-e3333b3c8 - Add Deprecation tag to arcsight module (#17331) (#17333) (3 days ago) <mergify[bot]>
-3e7482e04 - Shareable function for partitioning integration tests (#17223) (#17301) (8 days ago) <mergify[bot]>
-9c80c9c7f - Fix pqcheck and pqrepair on Windows (#17210) (#17261) (13 days ago) <mergify[bot]>
-829858e8f - [CI] Health report integration tests use the new artifacts-api (#17274) (#17286) (2 weeks ago) <mergify[bot]>
-b6bfa855e - Forward Port of Release notes for 8.16.5 (#17188) (#17265) (2 weeks ago) <Rob Bavey>
-3be9a29c5 - gradle task migrate to the new artifacts-api (#17232) (#17238) (2 weeks ago) <mergify[bot]>
-a3ff8ef76 - Update rack to 3.1.11 (#17230) (#17234) (2 weeks ago) <github-actions[bot]>
-c36957c37 - Fix empty node stats pipelines (#17185) (#17198) (2 weeks ago) <mergify[bot]>
-62b1f5fa2 - 8.17.4 version bump (#17216) (2 weeks ago) <Rob Bavey>
-80ac2024d - Release notes for 8.17.3 (#17187) (2 weeks ago) <github-actions[bot]>
-2c4fdf711 - Update Dockerfile.erb to set eux on RUN command with semicolons (#17141) (#17199) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.3..8.17 *.release"
-Changed plugin versions:
-logstash-input-syslog: 3.7.0 -> 3.7.1
-logstash-integration-jdbc: 5.5.2 -> 5.5.3
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-17-4]]
 ==== Plugins
 
 *Syslog Input - 3.7.1*
