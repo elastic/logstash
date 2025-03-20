@@ -191,6 +191,12 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
     env.put "GEM_HOME", gemDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
     env.put "GEM_PATH", gemDir
+    // Pass through ORG_GRADLE_PROJECT_fedrampHighMode if it exists in the project properties
+    // See https://docs.gradle.org/current/userguide/build_environment.html#setting_a_project_property
+    // For more information about setting properties via env vars prefixed with ORG_GRADLE_PROJECT
+    if (project.hasProperty('fedrampHighMode') && project.property('fedrampHighMode').toBoolean()) {
+        env.put "ORG_GRADLE_PROJECT_fedrampHighMode", "true"
+    }
     try {
         block(jruby)
     } finally {

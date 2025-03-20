@@ -43,7 +43,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Initial build using JKS truststore
-RUN ./gradlew clean bootstrap assemble installDefaultGems
+RUN ./gradlew clean bootstrap assemble installDefaultGems -PfedrampHighMode=true
 
 # Convert JKS to BCFKS for truststore and keystore
 RUN keytool -importkeystore \
@@ -87,4 +87,4 @@ ENV LS_JAVA_OPTS="\
     -Dorg.bouncycastle.fips.approved_only=true"
 
 # Example test run, most use cases will override this
-CMD ["./gradlew", "--info", "--stacktrace", "-PrunTestsInFIPSMode=true", "runIntegrationTests"]
+CMD ["./gradlew", "--info", "--stacktrace", "-PfedrampHighMode=true", "runIntegrationTests"]

@@ -54,7 +54,7 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run test-runner-image ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true rubyTests
+      docker run test-runner-image ./gradlew --info --stacktrace -PfedrampHighMode=true rubyTests
     artifact_paths:
       - "coverage/coverage.json"
 
@@ -96,7 +96,7 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run test-runner-image ./gradlew --info --stacktrace -PrunTestsInFIPSMode=true javaTests
+      docker run test-runner-image ./gradlew --info --stacktrace -PfedrampHighMode=true javaTests
     artifact_paths:
       - "**/build/test-results/javaTests/TEST-*.xml"
       - "**/jacocoTestReport.xml"
@@ -139,7 +139,7 @@ steps:
       source .buildkite/scripts/common/vm-agent.sh
       # TODO: Use https://github.com/elastic/logstash/pull/17311 to compute QUALIFIED_VERSION once merged
       QUALIFIED_VERSION="8.19.0-SNAPSHOT"
-      ./gradlew --stacktrace artifactDockerObservabilitySRE
+      ./gradlew --stacktrace artifactDockerObservabilitySRE -PfedrampHighMode=true
       docker run docker.elastic.co/logstash/logstash-observability-sre:$${QUALIFIED_VERSION} \
         logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
 

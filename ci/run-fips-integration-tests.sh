@@ -6,4 +6,4 @@
 half_number=$1
 source ci/get-test-half.sh
 specs=$(get_test_half "$half_number")
-./gradlew --info --stacktrace -PrunTestsInFIPSMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
+./gradlew --info --stacktrace -PfedrampHighMode=true runIntegrationTests -PrubyIntegrationSpecs="$specs"
