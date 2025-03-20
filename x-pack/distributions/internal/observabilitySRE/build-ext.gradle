@@ -1,6 +1,5 @@
 ext {
-    fedrampHighMode = System.getenv('FEDRAMP_HIGH_MODE') == 'true' ||
-                      (project.hasProperty('fedrampHighMode') ? project.property('fedrampHighMode').toBoolean() : false)
+    fedrampHighMode = Objects.requireNonNullElse(project.findProperty('fedrampHighMode'), false).toBoolean()
 }
 
 subprojects {
@@ -14,14 +13,13 @@ allprojects {
         // Preserve fedrampHighMode option across subprocesses
         if (rootProject.fedrampHighMode) {
             tasks.withType(JavaExec).configureEach {
-                environment("FEDRAMP_HIGH_MODE", "true")
+                environment("ORG_GRADLE_PROJECT_fedrampHighMode", "true")
             }
 
             tasks.withType(Exec).configureEach {
-                environment("FEDRAMP_HIGH_MODE", "true")
+                environment("ORG_GRADLE_PROJECT_fedrampHighMode", "true")
             }
         }
-
         tasks.withType(Test) {
             if (rootProject.fedrampHighMode) {
                 logger.debug("configuring ${it} to run in FIPSMode ")
