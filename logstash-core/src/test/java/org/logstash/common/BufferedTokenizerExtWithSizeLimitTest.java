@@ -37,8 +37,8 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 import static org.logstash.RubyUtil.RUBY;
 
@@ -122,7 +122,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     }
 
     @Test
-    public void givenMaliciousInputExtractDoesntOverflow() {
+    public void givenTooLongInputExtractDoesntOverflow() {
         long expectedNeedHeapMemory = 10L * GB;
         assumeTrue("Skip the test because VM hasn't enough physical memory", hasEnoughPhysicalMemory(expectedNeedHeapMemory));
 

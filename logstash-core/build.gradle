@@ -125,7 +125,6 @@ tasks.register("javaTests", Test) {
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
 
     maxHeapSize = "10g"
-    jvmArgs '-XX:+HeapDumpOnOutOfMemoryError'
 
     jacoco {
         enabled = true
