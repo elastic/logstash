@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-16-6,Logstash 8.16.6>>
 * <<logstash-8-16-5,Logstash 8.16.5>>
 * <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
@@ -74,6 +75,53 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-16-6]]
+=== Logstash 8.16.6 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.16.6
+
+* Update rack to 3.1.11 https://github.com/elastic/logstash/pull/17230[#17230]
+* gradle task migrate to the new artifacts-api https://github.com/elastic/logstash/pull/17232[#17232]
+* Backport PR #17230 to 8.16: Update rack to 3.1.11 https://github.com/elastic/logstash/pull/17235[#17235]
+* Backport PR #17232 to 8.16: gradle task migrate to the new artifacts-api https://github.com/elastic/logstash/pull/17245[#17245]
+
+=== Logstash Commits between 8.16 and 8.16.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.16.5..8.16"
+
+cdf6d79e7 - (HEAD -> 8.16, origin/8.16) [8.16] Surface failures from nested rake/shell tasks (backport #17310) (#17316) (16 minutes ago) <mergify[bot]>
+9f7429021 - tests: make integration split quantity configurable (#17219) (#17370) (3 hours ago) <mergify[bot]>
+7243b3a9e - Added test to verify the int overflow happen (#17353) (#17357) (23 hours ago) <mergify[bot]>
+fd002bf12 - bump lock file for 8.16 (#17335) (3 days ago) <github-actions[bot]>
+968eca8ac - Add Deprecation tag to arcsight module (#17331) (#17332) (3 days ago) <mergify[bot]>
+fdd5b7369 - Shareable function for partitioning integration tests (#17223) (#17302) (8 days ago) <mergify[bot]>
+ba84f9627 - Fix pqcheck and pqrepair on Windows (#17210) (#17260) (13 days ago) <mergify[bot]>
+a28d54eac - [CI] Health report integration tests use the new artifacts-api (#17274) (#17287) (2 weeks ago) <mergify[bot]>
+80ff83e0a - gradle task migrate to the new artifacts-api (#17232) (#17237) (2 weeks ago) <mergify[bot]>
+7416df2bd - Update rack to 3.1.11 (#17230) (#17235) (2 weeks ago) <github-actions[bot]>
+2a245d378 - 8.16.6 version bump (#17215) (2 weeks ago) <Rob Bavey>
+0f47402d4 - Release notes for 8.16.5 (#17188) (2 weeks ago) <github-actions[bot]>
+339ad2c8a - Update Dockerfile.erb to set eux on RUN command with semicolons (#17141) (#17201) (3 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.16.5..8.16 *.release"
+Changed plugin versions:
+logstash-input-syslog: 3.7.0 -> 3.7.1
+logstash-integration-jdbc: 5.5.2 -> 5.5.3
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Syslog Input - 3.7.1*
+
+* Fix issue where the priority field was not being set correctly when grok failed https://github.com/logstash-plugins/logstash-input-syslog/pull/78[#76]
+
+*Jdbc Integration - 5.5.3*
+
+* [DOC] Rework inline comment to a callout in preparation for upcoming MD conversion https://github.com/logstash-plugins/logstash-integration-jdbc/pull/181[#181]
 
 
 [[logstash-8-16-5]]
