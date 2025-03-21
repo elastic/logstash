@@ -27,12 +27,9 @@ describe "Logstash to Logstash communication Integration test" do
 
   before(:all) {
     @fixture = Fixture.new(__FILE__)
-    # backup original setting file since we change API port number, and restore after all tests
-    FileUtils.cp(@fixture.get_service('logstash').application_settings_file, "#{@fixture.get_service('logstash').application_settings_file}.original")
   }
 
   after(:all) {
-    FileUtils.mv("#{@fixture.get_service('logstash').application_settings_file}.original", @fixture.get_service('logstash').application_settings_file)
     @fixture.teardown
   }
 
@@ -56,27 +53,12 @@ describe "Logstash to Logstash communication Integration test" do
                                     "--pipeline.id", config_name,
                                     "--path.config", config_to_temp_file(@fixture.config(config_name, options)),
                                     "--path.data", get_temp_path_dir,
-                                    "--api.http.port", api_port.to_s)
-    wait_for_logstash(logstash_service)
-
+                                    "--api.http.port", api_port.to_s,
+                                    "--config.reload.automatic")
+    logstash_service.wait_for_rest_api
     yield logstash_service
-
   ensure
-    logstash_service&.teardown
-  end
-
-  def wait_for_logstash(service)
-    wait_in_seconds = 60
-    while wait_in_seconds > 0 do
-      begin
-        return if service.rest_active?
-      rescue => e
-        puts "Exception: #{e.message}"
-        wait_in_seconds -= 1
-        sleep 1
-      end
-    end
-    raise "Logstash is not responsive after 60 seconds."
+    logstash_service.teardown
   end
 
   let(:num_retries) { 60 }
@@ -97,8 +79,8 @@ describe "Logstash to Logstash communication Integration test" do
 
           try(num_retries) do
             downstream_event_stats = downstream_logstash_service.monitoring_api.event_stats
-
-            expect(downstream_event_stats).to include({"in" => num_events}), lambda { "expected #{num_events} events to have been received by downstream"}
+            expect(downstream_event_stats).to include({"in" => num_events}), lambda { "expected #{num_events} events to have been received by downstream" }
+            expect(downstream_event_stats).to include({"out" => num_events}), lambda { "expected #{num_events} events to have been processed by downstream" }
           end
 
           # make sure received events are in the file

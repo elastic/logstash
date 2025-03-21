@@ -30,3 +30,12 @@ jqavg() {
 jqmax() {
   jq -r "$1  | select(. != null)" $2 | jq -s . | jq 'max'
 }
+
+# return true if $1 is non empty and not "null"
+not_empty() {
+  if [[ -n "$1" && "$1" != "null" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
