@@ -10,8 +10,9 @@ export GRADLE_OPTS="-Xmx2g -Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.daemon=false
 export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
-# Source shared function for splitting integration tests
-source "$(dirname "${BASH_SOURCE[0]}")/get-test-half.sh"
+# Option for running in fedramp high mode
+FEDRAMP_FLAG=""
+[ "$FEDRAMP_HIGH_MODE" == "true" ] && FEDRAMP_FLAG="-PfedrampHighMode=true"
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
@@ -30,13 +31,13 @@ elif [[ $1 == "split" ]]; then
   specs=($(cd qa/integration; partition_files "${index}" "${count}" < <(find specs -name '*_spec.rb') ))
 
   echo "Running integration tests partition[${index}] of ${count}: ${specs[*]}"
-  ./gradlew runIntegrationTests -PrubyIntegrationSpecs="${specs[*]}" --console=plain
+  ./gradlew runIntegrationTests $FEDRAMP_FLAG -PrubyIntegrationSpecs="${specs[*]}" --console=plain
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
-    ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$@" --console=plain
+    ./gradlew runIntegrationTests $FEDRAMP_FLAG -PrubyIntegrationSpecs="$@" --console=plain
 
 else
     echo "Running all integration tests"
-    ./gradlew runIntegrationTests --console=plain
+    ./gradlew runIntegrationTests $FEDRAMP_FLAG --console=plain
 fi

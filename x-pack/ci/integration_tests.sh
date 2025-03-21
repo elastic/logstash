@@ -17,8 +17,8 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   export LS_JAVA_HOME="$BUILD_JAVA_HOME"
 fi
 
-if [ -n "$FIPS_MODE" ]; then
-  ./gradlew runXPackIntegrationTests -PfedrampHighMode=true
-else
-  ./gradlew runXPackIntegrationTests
-fi
+# Option for running in fedramp high mode
+FEDRAMP_FLAG=""
+[ "$FEDRAMP_HIGH_MODE" == "true" ] && FEDRAMP_FLAG="-PfedrampHighMode=true"
+
+./gradlew runXPackIntegrationTests $FEDRAMP_FLAG

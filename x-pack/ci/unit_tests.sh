@@ -16,8 +16,9 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
 
-if [ -n "$FIPS_MODE" ]; then
-  ./gradlew runXPackUnitTests -PfedrampHighMode=true
-else
-  ./gradlew runXPackUnitTests
-fi
+# Option for running in fedramp high mode
+FEDRAMP_FLAG=""
+[ "$FEDRAMP_HIGH_MODE" == "true" ] && FEDRAMP_FLAG="-PfedrampHighMode=true"
+
+./gradlew runXPackUnitTests $FEDRAMP_FLAG
+
