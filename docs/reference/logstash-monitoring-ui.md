@@ -7,13 +7,13 @@ mapped_pages:
 
 Use the {{stack}} {{monitor-features}} to view metrics and gain insight into how your {{ls}} deployment is running. In the overview dashboard, you can see all events received and sent by Logstash, plus info about memory usage and uptime:
 
-:::{image} ../images/overviewstats.png
+:::{image} images/overviewstats.png
 :alt: Logstash monitoring overview dashboard in Kibana
 :::
 
 Then you can drill down to see stats about a specific node:
 
-:::{image} ../images/nodestats.png
+:::{image} images/nodestats.png
 :alt: Logstash monitoring node stats dashboard in Kibana
 :::
 
