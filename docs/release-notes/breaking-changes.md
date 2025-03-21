@@ -18,7 +18,7 @@ To learn how to upgrade, check out <uprade docs>.
 % ::::
 
 ## 9.0.0 [logstash-900-breaking-changes]
-**Release date:** March 25, 2025
+**Release date:** April 2, 2025
 
 ### Changes to SSL settings in {{ls}} plugins [ssl-settings-9.0]
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
