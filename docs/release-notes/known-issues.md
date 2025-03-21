@@ -1,5 +1,5 @@
 ---
-navigation_title: "Logstash"
+navigation_title: "Known issues"
 ---
 
 # Logstash known issues
