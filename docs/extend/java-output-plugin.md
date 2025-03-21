@@ -159,7 +159,7 @@ JavaOutputExample(final String id, final Configuration config, final Context con
 }
 ```
 
-All Java output plugins must have a constructor taking a `String` id and a `Configuration` and `Context` argument. This is the constructor that will be used to instantiate them at runtime. The retrieval and validation of all plugin settings should occur in this constructor. In this example, the values of the `prefix` setting is retrieved and stored in a local variable for later use in the `output` method. In this example, a second, pacakge private constructor is defined that is useful for unit testing with a `Stream` other than `System.out`.
+All Java output plugins must have a constructor taking a `String` id and a `Configuration` and `Context` argument. This is the constructor that will be used to instantiate them at runtime. The retrieval and validation of all plugin settings should occur in this constructor. In this example, the values of the `prefix` setting is retrieved and stored in a local variable for later use in the `output` method. In this example, a second, package private constructor is defined that is useful for unit testing with a `Stream` other than `System.out`.
 
 Any additional initialization may occur in the constructor as well. If there are any unrecoverable errors encountered in the configuration or initialization of the output plugin, a descriptive exception should be thrown. The exception will be logged and will prevent Logstash from starting.
 
