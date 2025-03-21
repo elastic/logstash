@@ -61,11 +61,11 @@ If you plan to modify the default pipeline settings, take into account the follo
 
 When tuning Logstash you may have to adjust the heap size. You can use the [VisualVM](https://visualvm.github.io/) tool to profile the heap. The **Monitor** pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample **Monitor** panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
 
-:::{image} ../images/pipeline_overload.png
+:::{image} images/pipeline_overload.png
 :alt: pipeline overload
 :::
 
-:::{image} ../images/pipeline_correct_load.png
+:::{image} images/pipeline_correct_load.png
 :alt: pipeline correct load
 :::
 
