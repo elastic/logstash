@@ -157,7 +157,7 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true  test-runner-image ci/run-fips-integration-tests.sh 0 3
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 0 3
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 2-of-3"
     key: "integration-tests-fips-part-2-of-3"
@@ -174,7 +174,7 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true  test-runner-image ci/run-fips-integration-tests.sh 1 3
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 1 3
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 3-of-3"
     key: "integration-tests-fips-part-3-of-3"
@@ -191,7 +191,7 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true  test-runner-image ci/run-fips-integration-tests.sh 2 3
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split  2 3
 
   - label: ":lab_coat: Integration Tests / part 1-of-3"
     key: "integration-tests-part-1"
