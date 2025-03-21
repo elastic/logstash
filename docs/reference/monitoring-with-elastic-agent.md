@@ -54,7 +54,7 @@ The following minimal permissions are required to send Logstash monitoring data 
 
 `monitor` cluster privilege
 `auto_configure` and `create_doc` index privileges on `logs-*` and `metrics-*` indices.
-See [Grant standalone Elastic Agents access to Elasticsearch](docs-content://ingestion-tools/fleet/grant-access-to-elasticsearch.md)
+See [Grant standalone Elastic Agents access to Elasticsearch](docs-content://reference/fleet/grant-access-to-elasticsearch.md)
 
 ::::
 
