@@ -2,8 +2,6 @@
 navigation_title: "Breaking changes"
 ---
 
-# Logstash breaking changes [logstash-breaking-changes]
-Breaking changes can impact your Elastic applications, potentially disrupting normal operations. Before you upgrade, carefully review the Logstash breaking changes and take the necessary steps to mitigate any issues. To learn how to upgrade, check [Upgrade](docs-content://deploy-manage/upgrade.md).
 # {{ls}} breaking changes [logstash-breaking-changes]
 Before you upgrade, carefully review the {{ls}} breaking changes and take the necessary steps to mitigate any issues.
 
@@ -246,7 +244,7 @@ For more information, check [#16453](https://github.com/elastic/logstash/pull/16
 ### Support for JDK11 dropped [jdk-11-support-drop]
 
 {{ls}} 9.0 will no longer run under JDK11, with JDK17 being the minimum version of the JDK required to run Logstash.
-For the best experience, we still recommend running {{ls}} using the bundled-jdk. See [Logstash JVM requirements](/reference/logstash/getting-started-with-logstash.md#[ls-jvm])
+For the best experience, we still recommend running {{ls}} using the bundled-jdk. See [Logstash JVM requirements](/reference/getting-started-with-logstash.md#ls-jvm)
 for details.
 
 For more information, check [#16443](https://github.com/elastic/logstash/pull/16443)
@@ -287,7 +285,7 @@ clients do not parse this data correctly, and either crash or discard one of the
 the option to fix duplicates, and for `9.0` onwards, this will be the default.
 To re-enable the previous behavior {{ls}} provides a `log.format.json.fix_duplicate_message_fields` setting in
 [logstash.yml](/reference/logstash-settings-file.md).
-See [Logging in json format can write duplicate message fields](docs-content://troubleshoot/ingest/logstash.md#logging-in-json-format-can-write-duplicate-message-fields-ts-pipeline-logging-json-duplicated-message-field)
+See [Logging in json format can write duplicate message fields](docs-content://troubleshoot/ingest/logstash.md)
 for more details about the issue.
 
 For more information, check [#16578](https://github.com/elastic/logstash/pull/16578)
