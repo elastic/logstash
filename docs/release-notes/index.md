@@ -23,7 +23,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % *
 
 ## 9.0.0 [logstash-900-release-notes]
-**Release date:** March 25, 2025
+**Release date:** April 2, 2025
 
 ### Features and enhancements [logstash-900-features-enhancements]
 
