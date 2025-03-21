@@ -22,7 +22,7 @@ However, version 9.0.0 of Logstash has not yet been released, so no Docker image
 
 Although it’s optional, we highly recommend verifying the signatures included with your downloaded Docker images to ensure that the images are valid.
 
-Elastic images are signed with [Cosign](https://docs.sigstore.dev/cosign/overview/) which is part of the [Sigstore](https://www.sigstore.dev/) project. Cosign supports container signing, verification, and storage in an OCI registry. Install the appropriate [Cosign application](https://docs.sigstore.dev/cosign/installation/) for your operating system.
+Elastic images are signed with [Cosign](https://docs.sigstore.dev/quickstart/quickstart-cosign/) which is part of the [Sigstore](https://www.sigstore.dev/) project. Cosign supports container signing, verification, and storage in an OCI registry. Install the appropriate Cosign application for your operating system.
 
 Run the following commands to verify the container image signature for {{ls}} v9.0.0-beta1:
 

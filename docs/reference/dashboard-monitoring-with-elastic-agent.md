@@ -64,7 +64,7 @@ Check out [Installing {{agent}}](docs-content://reference/ingestion-tools/fleet/
 
 1. Go to the {{kib}} home page, and click **Add integrations**.
 
-    :::{image} ../images/kibana-home.png
+    :::{image} images/kibana-home.png
     :alt: {{kib}} home page
     :class: screenshot
     :::
@@ -125,7 +125,7 @@ After you have confirmed enrollment and data is coming in,  click **View assets*
 
 For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for the technical preview metrics dashboards. These are populated with data only if you selected the **Metrics (Technical Preview)** checkbox.
 
-:::{image} ../images/integration-assets-dashboards.png
+:::{image} images/integration-assets-dashboards.png
 :alt: Integration assets
 :class: screenshot
 :::
@@ -137,7 +137,7 @@ A number of dashboards are included to view {{ls}} as a whole, and dashboards th
 
 From the list of assets, open the **[Metrics {{ls}}] {{ls}} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {{ls}} performance.
 
-:::{image} ../images/integration-dashboard-overview.png
+:::{image} images/integration-dashboard-overview.png
 :alt: The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {ls}
 :class: screenshot
 :::
