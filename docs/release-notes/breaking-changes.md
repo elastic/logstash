@@ -20,55 +20,6 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 
 == Breaking changes
 
-[[pipeline-buffer-type]]
-=== Pipeline buffer type changed to 'heap'
-
-
-
-Set `pipeline.buffer.type` to `direct` to continue using direct memory with {agent}, {beats}, TCP, and HTTP input plugins https://github.com/elastic/logstash/pull/16500[#16500]
-
-[[removed-params]]
-=== Removed deprecated params
-
-`http.*` params replaced by `api.*` are removed https://github.com/elastic/logstash/pull/16552[#16552]
-
-`event_api.tags.illegal` no longer exists.
-Instead, {ls} generates `_tagsparsefailure` in the event `tags` and the illegal value is written to the `_tags` field https://github.com/elastic/logstash/pull/16461[#16461]
-
-[[removed-modules]]
-=== Removed {ls} modules
-
-Removed netflow, fb_apache and azure https://github.com/elastic/logstash/pull/16514[#16514]
-
-Removed Arcsight module and the modules framework https://github.com/elastic/logstash/pull/16794[#16794]
-
-[[removed-ingest-converter]]
-Removed ingest-converter https://github.com/elastic/logstash/pull/16453[#16453]
-
-[[jdk-11-support-drop]]
-=== JDK 11 support drop
-
-Starting with {ls} 9.0, we no longer support Java 11 https://github.com/elastic/logstash/pull/16443[#16443]
-
-[[docker-base-image-change]]
-=== Docker base image change
-
-{ls} on Docker, Ubuntu base image changed to UBI https://github.com/elastic/logstash/pull/16599[#16599]
-
-[[allow-superuser]]
-=== {ls} does not run with superuser by default
-
-Starting with 9.0, set `allow_superuser` to `true` if you prefer running {ls} as a superuser https://github.com/elastic/logstash/pull/16558[#16558]
-
-[[allow-legacy-monitoring]]
-=== {ls} introduces new setting to allow legacy internal monitoring
-
-Starting from 9.0, set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring https://github.com/elastic/logstash/pull/16586[#16586]
-
-[[avoid-collision-on-json-fileds]]
-=== {ls} avoids JSON log lines collision
-
-`log.format.json.fix_duplicate_message_fields` config is enabled by default to avoid collision on `message` field in log lines when `log.format` is JSON https://github.com/elastic/logstash/pull/16578[#16578]
 ### Changes to SSL settings in {{ls}} plugins [ssl-settings-9.0]
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
 
@@ -247,6 +198,98 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 | ssl_verify | [`ssl_client_authentication`](logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_client_authentication) in `server` mode and [`ssl_verification_mode`](logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_verification_mode) in `client` mode |
 
 ::::
+
+
+### Pipeline Buffer type now 'heap` by default[[pipeline-buffer-type]]
+
+We've introduced a change in `9.0` to improve memory configuration when using certain {{ls}} plugins.
+Input plugins such as {agent}, {beats}, TCP, and HTTP allocate buffers in Java memory to read events from the network.
+We have changed the default allocation method from `direct` memory to `heap` memory to help simplify configuration, and to help facilitate debugging memory usage problems through the analysis of heap dumps.
+To re-enable the previous behavior {{ls}} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate memory buffers for plugins that use them.
+See [off-heap-buffers-allocation](/reference/jvm-settings.md#off-heap-buffers-allocation) for details
+
+For more information, check [#16500](https://github.com/elastic/logstash/pull/16500)
+
+### Removal of {{ls}} Modules [[removed-modules]]
+
+We have removed the modules framework from {{ls}} for 9.0, and we encourage users to use Elastic Integrations
+This includes the netflow, azure and arcsight modules, and the modules framework as a whole.
+
+For more information, check [#16514](https://github.com/elastic/logstash/pull/16514) and [#16794](https://github.com/elastic/logstash/pull/16794)
+
+
+### Removal of Deprecated configuration settings [[removed-params]]
+
+We have removed support for previously deprecated configuration settings:
+
+#### `http.*` prefixed settings for the {{ls}} API
+When configuring the {{ls}} API, settings prefixed by `http.*` have been replaced by the equivalent settings prefixed with `api.*`
+
+For information, check [#16552](https://github.com/elastic/logstash/pull/16552)
+
+#### `event_api.tags.illegal`
+
+Any events that include a field named tags will automatically rename that field _tags to avoid any clash
+with the reserved {{ls}} tags field. Instead, {{ls}} generates `_tagsparsefailure` in the event `tags` and the illegal value is written to the `_tags` field
+
+For more information, check [#16461](https://github.com/elastic/logstash/pull/16461)
+
+
+### Ingest Converter removed [[removed-ingest-converter]]
+
+The ingest converter, which was previously used to convert ingest pipelines to {{ls}} pipelines, has been removed.
+
+For more information, check [#16453](https://github.com/elastic/logstash/pull/16453)
+
+
+### Support for JDK11 dropped [[jdk-11-support-drop]]
+
+{{ls}} 9.0 will no longer run under JDK11, with JDK17 being the minimum version of the JDK required to run Logstash.
+For the best experience, we still recommend running {{ls}} using the bundled-jdk. See [Logstash JVM requirements](/reference/logstash/getting-started-with-logstash.md#[ls-jvm])
+for details.
+
+For more information, check [#16443](https://github.com/elastic/logstash/pull/16443)
+
+### Docker Base Image now UBI9 based [[docker-base-image-change]]
+
+{{ls}} on Docker, the base image has been changed from Ubuntu to UBI9. If you create a Docker image based on the
+{{ls}} image, and rely on it being Ubuntu based, you will need to change your derived image to take account of this
+change.
+
+For more information, check [#16599](https://github.com/elastic/logstash/pull/16599)
+
+### Cannot run as `superuser` by default [[allow-superuser]]
+
+We've changed the default behavior when running {{ls}} to prevent accidentally running {{ls}} as a superuser.
+Now if you try and run {{ls}} as a superuser, it will log an error and fail to start, ensuring that you cannot run Logstash
+with elevated privileges by accident.
+To re-enable the previous behavior, and allow {{ls}} to run with superuser privileges, {{ls}} provides an `allow_superuser`
+setting in [logstash.yml](/reference/logstash-settings-file.md)
+
+For more information, check [#16558](https://github.com/elastic/logstash/pull/16558)
+
+### New setting required to continue use of legacy internal monitoring feaature [[allow-legacy-monitoring]]
+
+Starting from 9.0, to continue using the deprecated internal collection method of {{ls}} monitoring, you will need to
+set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring.
+We encourage you to move to the latest, supported way to monitor Logstash, using agent-driven monitoring.
+
+For more information, check [#16586](https://github.com/elastic/logstash/pull/16586)
+
+
+### Avoiding JSON log lines collision [[avoid-collision-on-json-fields]]
+
+We've made a change to how we deal with duplicate `message` fields in `json` documents.
+Through certain code paths, when logging in `json`, for example when using the JSON codec, log events can be
+produced that include multiple instances of the  `message` field. While this is technically valid JSON, many
+clients do not parse this data correctly, and either crash or discard one of the fields. We recently introduced
+the option to fix duplicates, and for `9.0` onwards, this will be the default.
+To re-enable the previous behavior {{ls}} provides a `log.format.json.fix_duplicate_message_fields` setting in
+[logstash.yml](/reference/logstash-settings-file.md).
+See [Logging in json format can write duplicate message fields](docs-content://troubleshoot/ingest/logstash.md#logging-in-json-format-can-write-duplicate-message-fields-ts-pipeline-logging-json-duplicated-message-field)
+for more details about the issue.
+
+For more information, check [#16578](https://github.com/elastic/logstash/pull/16578)
 
 ### Enterprise_search integration plugin is deprecated [enterprise_search-deprecated-9.0]
 
