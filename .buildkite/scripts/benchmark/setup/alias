@@ -1,0 +1,6 @@
+POST /_aliases
+{
+  "actions": [
+    { "add": { "index": "benchmark_summary_v2", "alias": "benchmark_summary" } }
+  ]
+}

@@ -6,6 +6,8 @@
 <titleabbrev>ArcSight Module</titleabbrev>
 ++++
 
+deprecated[8.16.0]
+
 NOTE: The Logstash ArcSight module is an
 https://www.elastic.co/products/x-pack[{xpack}] feature under the Basic License
 and is therefore free to use. Please contact

@@ -71,7 +71,7 @@ module LogStash module Modules class LogStashConfig
       when String
         get_setting(LogStash::Setting::SettingNullableString.new(name, default.to_s))
       when Numeric
-        get_setting(LogStash::Setting::Numeric.new(name, default))
+        get_setting(LogStash::Setting::SettingNumeric.new(name, default))
       when true, false
         get_setting(LogStash::Setting::Boolean.new(name, default))
       else

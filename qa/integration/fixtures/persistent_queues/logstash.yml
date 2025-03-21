@@ -1,1 +1,2 @@
 queue.type: persisted
+queue.drain: true
