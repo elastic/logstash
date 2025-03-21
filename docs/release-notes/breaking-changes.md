@@ -18,8 +18,6 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 ## 9.0.0 [logstash-900-breaking-changes]
 **Release date:** April 2, 2025
 
-== Breaking changes
-
 ### Changes to SSL settings in {{ls}} plugins [ssl-settings-9.0]
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
 
@@ -200,7 +198,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-### Pipeline Buffer type now 'heap` by default[[pipeline-buffer-type]]
+### Pipeline buffer type now `heap` by default [pipeline-buffer-type]
 
 We've introduced a change in `9.0` to improve memory configuration when using certain {{ls}} plugins.
 Input plugins such as {agent}, {beats}, TCP, and HTTP allocate buffers in Java memory to read events from the network.
@@ -210,7 +208,7 @@ See [off-heap-buffers-allocation](/reference/jvm-settings.md#off-heap-buffers-al
 
 For more information, check [#16500](https://github.com/elastic/logstash/pull/16500)
 
-### Removal of {{ls}} Modules [[removed-modules]]
+### Removal of {{ls}} modules [removed-modules]
 
 We have removed the modules framework from {{ls}} for 9.0, and we encourage users to use Elastic Integrations
 This includes the netflow, azure and arcsight modules, and the modules framework as a whole.
@@ -218,7 +216,7 @@ This includes the netflow, azure and arcsight modules, and the modules framework
 For more information, check [#16514](https://github.com/elastic/logstash/pull/16514) and [#16794](https://github.com/elastic/logstash/pull/16794)
 
 
-### Removal of Deprecated configuration settings [[removed-params]]
+### Removal of deprecated configuration settings [removed-params]
 
 We have removed support for previously deprecated configuration settings:
 
@@ -235,14 +233,14 @@ with the reserved {{ls}} tags field. Instead, {{ls}} generates `_tagsparsefailur
 For more information, check [#16461](https://github.com/elastic/logstash/pull/16461)
 
 
-### Ingest Converter removed [[removed-ingest-converter]]
+### Ingest converter removed [removed-ingest-converter]
 
 The ingest converter, which was previously used to convert ingest pipelines to {{ls}} pipelines, has been removed.
 
 For more information, check [#16453](https://github.com/elastic/logstash/pull/16453)
 
 
-### Support for JDK11 dropped [[jdk-11-support-drop]]
+### Support for JDK11 dropped [jdk-11-support-drop]
 
 {{ls}} 9.0 will no longer run under JDK11, with JDK17 being the minimum version of the JDK required to run Logstash.
 For the best experience, we still recommend running {{ls}} using the bundled-jdk. See [Logstash JVM requirements](/reference/logstash/getting-started-with-logstash.md#[ls-jvm])
@@ -250,7 +248,7 @@ for details.
 
 For more information, check [#16443](https://github.com/elastic/logstash/pull/16443)
 
-### Docker Base Image now UBI9 based [[docker-base-image-change]]
+### Docker base image now UBI9 based [docker-base-image-change]
 
 {{ls}} on Docker, the base image has been changed from Ubuntu to UBI9. If you create a Docker image based on the
 {{ls}} image, and rely on it being Ubuntu based, you will need to change your derived image to take account of this
@@ -258,7 +256,7 @@ change.
 
 For more information, check [#16599](https://github.com/elastic/logstash/pull/16599)
 
-### Cannot run as `superuser` by default [[allow-superuser]]
+### Cannot run as `superuser` by default [allow-superuser]
 
 We've changed the default behavior when running {{ls}} to prevent accidentally running {{ls}} as a superuser.
 Now if you try and run {{ls}} as a superuser, it will log an error and fail to start, ensuring that you cannot run Logstash
@@ -268,7 +266,7 @@ setting in [logstash.yml](/reference/logstash-settings-file.md)
 
 For more information, check [#16558](https://github.com/elastic/logstash/pull/16558)
 
-### New setting required to continue use of legacy internal monitoring feaature [[allow-legacy-monitoring]]
+### New setting required to continue use of legacy internal monitoring feature [allow-legacy-monitoring]
 
 Starting from 9.0, to continue using the deprecated internal collection method of {{ls}} monitoring, you will need to
 set `xpack.monitoring.allow_legacy_collection` to `true` to explicitly permit legacy monitoring.
@@ -277,7 +275,7 @@ We encourage you to move to the latest, supported way to monitor Logstash, using
 For more information, check [#16586](https://github.com/elastic/logstash/pull/16586)
 
 
-### Avoiding JSON log lines collision [[avoid-collision-on-json-fields]]
+### Avoiding JSON log lines collision [avoid-collision-on-json-fields]
 
 We've made a change to how we deal with duplicate `message` fields in `json` documents.
 Through certain code paths, when logging in `json`, for example when using the JSON codec, log events can be
