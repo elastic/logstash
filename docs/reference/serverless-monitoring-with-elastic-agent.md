@@ -60,7 +60,7 @@ For more info, check out the [Elastic Observability](docs-content://solutions/ob
 
 From the list of assets, open the **[Metrics {{ls}}] {{ls}} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {{ls}} performance.
 
-:::{image} ../images/integration-dashboard-overview.png
+:::{image} images/integration-dashboard-overview.png
 :alt: The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {ls}
 :class: screenshot
 :::
