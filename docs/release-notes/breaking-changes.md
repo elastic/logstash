@@ -203,7 +203,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 We've introduced a change in `9.0` to improve memory configuration when using certain {{ls}} plugins.
 Input plugins such as {agent}, {beats}, TCP, and HTTP allocate buffers in Java memory to read events from the network.
 We have changed the default allocation method from `direct` memory to `heap` memory to help simplify configuration, and to help facilitate debugging memory usage problems through the analysis of heap dumps.
-To re-enable the previous behavior {{ls}} provides a `pipeline.buffer.type` setting in <<logstash-settings-file>> that lets you control where to allocate memory buffers for plugins that use them.
+To re-enable the previous behavior {{ls}} provides a `pipeline.buffer.type` setting in [logstash.yml](/reference/logstash-settings-file.md) that lets you control where to allocate memory buffers for plugins that use them.
 See [off-heap-buffers-allocation](/reference/jvm-settings.md#off-heap-buffers-allocation) for details
 
 For more information, check [#16500](https://github.com/elastic/logstash/pull/16500)
