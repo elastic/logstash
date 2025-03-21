@@ -28,11 +28,18 @@ import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
+import javax.management.Attribute;
+import javax.management.InstanceNotFoundException;
+import javax.management.ReflectionException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeTrue;
 import static org.logstash.RubyUtil.RUBY;
 
 @SuppressWarnings("unchecked")
@@ -115,27 +122,57 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
     }
 
     @Test
-    public void givenMaliciousInputExtractDoesntOverflow() {
+    public void givenTooLongInputExtractDoesntOverflow() {
+        long expectedNeedHeapMemory = 10L * GB;
+        assumeTrue("Skip the test because VM hasn't enough physical memory", hasEnoughPhysicalMemory(expectedNeedHeapMemory));
+
         assertEquals("Xmx must equals to what's defined in the Gradle's javaTests task",
-                12L * GB, Runtime.getRuntime().maxMemory());
+                expectedNeedHeapMemory, Runtime.getRuntime().maxMemory());
 
         // re-init the tokenizer with big sizeLimit
         initSUTWithSizeLimit((int) (2L * GB) - 3);
         // Integer.MAX_VALUE is 2 * GB
-        String bigFirstPiece = generateString("a", Integer.MAX_VALUE - 1024);
-        sut.extract(context, RubyUtil.RUBY.newString(bigFirstPiece));
+        RubyString bigFirstPiece = generateString("a", Integer.MAX_VALUE - 1024);
+        sut.extract(context, bigFirstPiece);
 
         // add another small fragment to trigger int overflow
         // sizeLimit is (2^32-1)-3 first segment length is (2^32-1) - 1024 second is 1024 +2
-        // so the combined length of first and second is > sizeLimit and should throw an expection
+        // so the combined length of first and second is > sizeLimit and should throw an exception
         // but because of overflow it's negative and happens to be < sizeLimit
         Exception thrownException = assertThrows(IllegalStateException.class, () -> {
-            sut.extract(context, RubyUtil.RUBY.newString(generateString("a", 1024 + 2)));
+            sut.extract(context, generateString("a", 1024 + 2));
         });
         assertThat(thrownException.getMessage(), containsString("input buffer full"));
     }
 
-    private String generateString(String fill, int size) {
-        return fill.repeat(size);
+    private RubyString generateString(String fill, int size) {
+        return RubyUtil.RUBY.newString(fill.repeat(size));
+    }
+
+    private boolean hasEnoughPhysicalMemory(long requiredPhysicalMemory) {
+        long physicalMemory;
+        try {
+            physicalMemory = readPhysicalMemorySize();
+        } catch (InstanceNotFoundException | ReflectionException e) {
+            System.out.println("Can't read attribute JMX OS bean");
+            return false;
+        } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+        System.out.println("Physical memory on the VM is: " + physicalMemory + " bytes");
+        return physicalMemory > requiredPhysicalMemory;
+    }
+
+    private long readPhysicalMemorySize() throws ReflectionException, InstanceNotFoundException {
+        OperatingSystemMXBean op = ManagementFactory.getOperatingSystemMXBean();
+
+        List<Attribute> attributes = ManagementFactory.getPlatformMBeanServer()
+                .getAttributes(op.getObjectName(), new String[]{"TotalPhysicalMemorySize"} ).asList();
+        if (attributes.isEmpty()) {
+            throw new IllegalStateException("Attribute TotalPhysicalMemorySize is not available from JMX OS bean");
+        }
+        Attribute a = attributes.get(0);
+        return (long) (Long) a.getValue();
     }
 }
