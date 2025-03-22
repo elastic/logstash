@@ -38,14 +38,19 @@ import static org.logstash.RubyUtil.RUBY;
 @SuppressWarnings("unchecked")
 public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
 
+    public static final int GB = 1024 * 1024 * 1024;
     private BufferedTokenizerExt sut;
     private ThreadContext context;
 
     @Before
     public void setUp() {
+        initSUTWithSizeLimit(10);
+    }
+
+    private void initSUTWithSizeLimit(int sizeLimit) {
         sut = new BufferedTokenizerExt(RubyUtil.RUBY, RubyUtil.BUFFERED_TOKENIZER);
         context = RUBY.getCurrentContext();
-        IRubyObject[] args = {RubyUtil.RUBY.newString("\n"), RubyUtil.RUBY.newFixnum(10)};
+        IRubyObject[] args = {RubyUtil.RUBY.newString("\n"), RubyUtil.RUBY.newFixnum(sizeLimit)};
         sut.init(context, args);
     }
 
@@ -107,5 +112,30 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
         // now should resemble processing on c and d
         RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("ccc\nddd\n"));
         assertEquals(List.of("ccccc", "ddd"), tokens);
+    }
+
+    @Test
+    public void givenMaliciousInputExtractDoesntOverflow() {
+        assertEquals("Xmx must equals to what's defined in the Gradle's javaTests task",
+                12L * GB, Runtime.getRuntime().maxMemory());
+
+        // re-init the tokenizer with big sizeLimit
+        initSUTWithSizeLimit((int) (2L * GB) - 3);
+        // Integer.MAX_VALUE is 2 * GB
+        String bigFirstPiece = generateString("a", Integer.MAX_VALUE - 1024);
+        sut.extract(context, RubyUtil.RUBY.newString(bigFirstPiece));
+
+        // add another small fragment to trigger int overflow
+        // sizeLimit is (2^32-1)-3 first segment length is (2^32-1) - 1024 second is 1024 +2
+        // so the combined length of first and second is > sizeLimit and should throw an expection
+        // but because of overflow it's negative and happens to be < sizeLimit
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> {
+            sut.extract(context, RubyUtil.RUBY.newString(generateString("a", 1024 + 2)));
+        });
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
+    }
+
+    private String generateString(String fill, int size) {
+        return fill.repeat(size);
     }
 }
