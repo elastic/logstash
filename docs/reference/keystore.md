@@ -136,7 +136,7 @@ bin/logstash-keystore add ES_USER ES_PWD
 When prompted, enter a value for each key.
 
 ::::{note}
-Key values are limited to ASCII characters. It includes digits, letters, and a few special symbols.
+Key values are limited to ASCII characters. It can only accept digits, letters and optional `.` (dots) and/or `_` (underscores) symbols included between or after.
 ::::
 
 

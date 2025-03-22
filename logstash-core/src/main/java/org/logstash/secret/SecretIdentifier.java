@@ -20,6 +20,10 @@
 
 package org.logstash.secret;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.util.Strings;
+
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -29,17 +33,22 @@ import java.util.regex.Pattern;
  */
 public class SecretIdentifier {
 
+    // aligns with ConfigVariableExpander substitution pattern
+    public final static Pattern KEY_PATTERN = Pattern.compile("[a-zA-Z_.][a-zA-Z0-9_.]*");
+
     private final static Pattern colonPattern = Pattern.compile(":");
     private final static String VERSION = "v1";
     private final static Pattern urnPattern = Pattern.compile("urn:logstash:secret:"+ VERSION + ":.*$");
     private final String key;
+
+    private static final Logger logger = LogManager.getLogger(SecretIdentifier.class);
 
     /**
      * Constructor
      *
      * @param key The unique part of the identifier. This is the key to reference the secret, and the key itself should not be sensitive. For example: {@code db.pass}
      */
-    public SecretIdentifier(String key) {
+    public SecretIdentifier(final String key) {
         this.key = validateWithTransform(key, "key");
     }
 
@@ -49,7 +58,7 @@ public class SecretIdentifier {
      * @param urn The {@link String} formatted identifier obtained originally from {@link SecretIdentifier#toExternalForm()}
      * @return The {@link SecretIdentifier} object used to identify secrets, null if not valid external form.
      */
-    public static SecretIdentifier fromExternalForm(String urn) {
+    public static SecretIdentifier fromExternalForm(final String urn) {
         if (urn == null || !urnPattern.matcher(urn).matches()) {
             throw new IllegalArgumentException("Invalid external form " + urn);
         }
@@ -64,8 +73,14 @@ public class SecretIdentifier {
      * @param partName The name of the part used for logging.
      * @return The validated and transformed part.
      */
-    private static String validateWithTransform(String key, String partName) {
-        KeyValidator.validateKey(key, partName);
+    private static String validateWithTransform(final String key, final String partName) {
+        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
+            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
+        }
+
+        if (!KEY_PATTERN.matcher(key).matches()) {
+            logger.warn(String.format("Invalid %s key appeared in keystore. Please remove it as it cannot be used in the pipelines", key));
+        }
         return key.toLowerCase(Locale.US);
     }
 
