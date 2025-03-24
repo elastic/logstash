@@ -21,13 +21,13 @@ module LogStash
       logger.debug("running before_bootstrap_checks")
       accumulator = Accumulator.new(self)
 
-      # naive security provider check: specific three in specific order
+      # naive security provider check: specific three in specific order before any others
       observed_security_providers = ::Java::java.security.Security.getProviders.map(&:name)
       expected_security_providers = %w(BCFIPS BCJSSE SUN)
-      if observed_security_providers == expected_security_providers
+      if observed_security_providers.first(3) == expected_security_providers
         accumulator.success "Java security providers are properly configured (observed `#{observed_security_providers}`)"
       else
-        accumulator.failure "Java security providers are misconfigured (expected `#{expected_security_providers}`, observed `#{observed_security_providers}`)"
+        accumulator.failure "Java security providers are misconfigured (expected `#{expected_security_providers}` to be first 3, observed `#{observed_security_providers}`)"
       end
 
       # naive secure-random provider check:
