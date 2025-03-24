@@ -31,7 +31,6 @@ toc:
       - file: upgrading-using-package-managers.md
       - file: upgrading-using-direct-download.md
       - file: upgrading-minor-versions.md
-      - file: upgrading-logstash-9-0.md
   - file: creating-logstash-pipeline.md
     children:
       - file: configuration-file-structure.md
