@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-4,Logstash 8.17.4>>
 * <<logstash-8-17-3,Logstash 8.17.3>>
 * <<logstash-8-17-2,Logstash 8.17.2>>
 * <<logstash-8-17-1,Logstash 8.17.1>>
@@ -79,6 +80,28 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-17-4]]
+=== Logstash 8.17.4 Release Notes
+
+[[notable-8-17-4]]
+==== Notable issues fixed
+
+* Fix pqcheck and pqrepair on Windows. https://github.com/elastic/logstash/pull/17210[#17210]
+* Avoid possible integer overflow in string tokenization. https://github.com/elastic/logstash/pull/17353[#17353]
+* Fixed an issue where the /_node/stats API displayed empty pipeline metrics when Logstash monitoring was configured to use legacy collectors. https://github.com/elastic/logstash/pull/17185[#17185]
+
+[[plugins-8-17-4]]
+==== Plugins
+
+*Syslog Input - 3.7.1*
+
+* Fix issue where the priority field was not being set correctly when grok failed https://github.com/logstash-plugins/logstash-input-syslog/pull/78[#76]
+
+*Jdbc Integration - 5.5.3*
+
+* [DOC] Rework inline comment to a callout in preparation for upcoming MD conversion https://github.com/logstash-plugins/logstash-integration-jdbc/pull/181[#181]
 
 
 [[logstash-8-17-3]]
