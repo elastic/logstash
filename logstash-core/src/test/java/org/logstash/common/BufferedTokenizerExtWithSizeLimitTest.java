@@ -19,6 +19,7 @@
 
 package org.logstash.common;
 
+import org.hamcrest.Matchers;
 import org.jruby.RubyArray;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
+import org.logstash.util.JavaVersion;
 
 import javax.management.Attribute;
 import javax.management.InstanceNotFoundException;
@@ -39,6 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 import static org.logstash.RubyUtil.RUBY;
 
@@ -123,6 +126,15 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
 
     @Test
     public void givenTooLongInputExtractDoesntOverflow() {
+        // This test has proven to go OOM on JDK 11 and JDK 17, also if physical memory is 16GB.
+        // JDK 21 successfully executes the test due to internal changes or efficiency of G1GC (the default GC).
+        // Tested also others GC on JDK 11 without any success:
+        // - ZGC
+        // - Parallel GC
+        // - CMS
+        // remove this code when the minimal JDK version for Logstash is JDK 21 or greater.
+
+        assumeThat("Expect at least JDK 21", JavaVersion.CURRENT, Matchers.greaterThanOrEqualTo(JavaVersion.JAVA_21));
         long expectedNeedHeapMemory = 10L * GB;
         assumeTrue("Skip the test because VM hasn't enough physical memory", hasEnoughPhysicalMemory(expectedNeedHeapMemory));
 
