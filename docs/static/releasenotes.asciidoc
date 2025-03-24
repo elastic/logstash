@@ -89,7 +89,7 @@ This section summarizes the changes in the following releases:
 
 * Fix pqcheck and pqrepair on Windows. https://github.com/elastic/logstash/pull/17210[#17210]
 * Avoid possible integer overflow in string tokenization. https://github.com/elastic/logstash/pull/17353[#17353]
-* Fixed an issue where the /_node/stats API displayed empty pipeline metrics when X-Pack monitoring was enabled. https://github.com/elastic/logstash/pull/17185[#17185]
+* Fixed an issue where the /_node/stats API displayed empty pipeline metrics when Logstash monitoring was configured to use legacy collectors. https://github.com/elastic/logstash/pull/17185[#17185]
 
 [[plugins-8-17-4]]
 ==== Plugins
