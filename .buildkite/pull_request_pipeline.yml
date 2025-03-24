@@ -158,11 +158,12 @@ steps:
       QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
       SHA="$(git rev-parse --short HEAD)"
       DOCKER_REPOSITORY=docker.elastic.co/logstash/logstash-observability-sre
+      echo $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION}-$${SHA}
       ./gradlew --stacktrace artifactDockerObservabilitySRE -PfedrampHighMode=true
-      docker tag $DOCKER_REPOSITORY:$QUALIFIED_VERSION $DOCKER_REPOSITORY:$QUALIFIED_VERSION-$SHA
-      docker push $DOCKER_REPOSITORY:$QUALIFIED_VERSION-$SHA
-      docker tag $DOCKER_REPOSITORY:$QUALIFIED_VERSION $DOCKER_REPOSITORY:$QUALIFIED_VERSION-latest
-      docker push $DOCKER_REPOSITORY:$QUALIFIED_VERSION-latest
+      docker tag $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION} $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION}-$${SHA}
+      docker push $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION}-$${SHA}
+      docker tag $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION} $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION}-latest
+      docker push $${DOCKER_REPOSITORY}:$${QUALIFIED_VERSION}-latest
       source .buildkite/scripts/dra/docker-env-teardown.sh
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-3"
