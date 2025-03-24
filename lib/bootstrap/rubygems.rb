@@ -50,11 +50,6 @@ module LogStash
       package = ::Gem::Package.new(file)
       package.extract_files(target_path)
 
-      # write gemspec stub, which is needed for:
-      # bundler: dependency resolution
-      # logstash: plugin metadata is required for extension hooks, and listing in the plugin manager
-      ::File::write(File.join(target_path, "#{package.spec.name}.gemspec"), package.spec.to_ruby)
-
       return [package, target_path]
     end
   end
