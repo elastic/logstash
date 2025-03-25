@@ -124,6 +124,7 @@ tasks.register("javaTests", Test) {
     exclude '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     exclude '/org/logstash/execution/ObservedExecutionTest.class'
 
+    // 10GB is needed by the BufferedTokenizerExtWithSizeLimitTest.givenTooLongInputExtractDoesntOverflow test
     maxHeapSize = "10g"
 
     jacoco {

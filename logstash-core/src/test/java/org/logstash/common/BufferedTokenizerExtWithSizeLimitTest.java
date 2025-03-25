@@ -136,6 +136,7 @@ public final class BufferedTokenizerExtWithSizeLimitTest extends RubyTestBase {
 
         assumeThat("Expect at least JDK 21", JavaVersion.CURRENT, Matchers.greaterThanOrEqualTo(JavaVersion.JAVA_21));
         long expectedNeedHeapMemory = 10L * GB;
+        // To understand the motivation of 10GB heap please read https://github.com/elastic/logstash/pull/17373#issuecomment-2750378212
         assumeTrue("Skip the test because VM hasn't enough physical memory", hasEnoughPhysicalMemory(expectedNeedHeapMemory));
 
         assertEquals("Xmx must equals to what's defined in the Gradle's javaTests task",
