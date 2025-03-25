@@ -6,9 +6,9 @@ mapped_pages:
 # Upgrading Logstash [upgrading-logstash]
 
 
-::::{admonition} Upgrade to {{ls}} 8.17 before upgrading to 9.0 
+::::{admonition} Upgrade to {{ls}} 8.18 before upgrading to 9.0 
 
-Upgrading to {{ls}} 8.17 gives you a head-start on new 9.0 features.
+Upgrading to {{ls}} 8.18 gives you a head-start on new 9.0 features.
 This step helps reduce risk and makes roll backs easier if you hit a snag.
 
 ::::
@@ -16,7 +16,7 @@ This step helps reduce risk and makes roll backs easier if you hit a snag.
 
 ## Before you upgrade {{ls}}
 
-* Upgrade {{ls}} to 8.17 for an easier upgrade to 9.0.
+* Upgrade {{ls}} to 8.18 for an easier upgrade to 9.0.
 * Check out the [breaking changes](/release-notes/breaking-changes.md) docs.
 * Read the [*Release Notes*](/release-notes/index.md).
 * If you’re upgrading other products in the stack, check out the [Elastic upgrade documentation](docs-content://deploy-manage/upgrade.md).
