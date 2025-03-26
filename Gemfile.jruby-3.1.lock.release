@@ -808,7 +808,7 @@ GEM
       rubocop-ast (>= 1.32.2, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 3.0)
-    rubocop-ast (1.32.3)
+    rubocop-ast (1.42.0)
       parser (>= 3.3.1.0)
     ruby-maven-libs (3.9.9)
     ruby-progressbar (1.13.0)
