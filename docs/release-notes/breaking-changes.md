@@ -29,7 +29,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 | ssl_peer_metadata | `ssl_peer_metadata` option of [`enrich`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-enrich) |
 | ssl_verify_mode | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_client_authentication) |
 | tls_min_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
-| tls_max_version | [`ssl_supported_protocols`](/refelogstash-docs-md://lsrence/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
+| tls_max_version | [`ssl_supported_protocols`](/logstash-docs-md://ls/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
 
 ::::
 
