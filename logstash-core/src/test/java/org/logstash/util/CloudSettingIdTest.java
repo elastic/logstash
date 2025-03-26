@@ -130,16 +130,16 @@ public class CloudSettingIdTest extends RubyTestBase {
     public void testWhenCloudIdContainsPortDescriptionForESAndKibana() {
         sut = new CloudSettingId("different-es-kb-port:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2OjkyNDMkYTRjMDYyMzBlNDhjOGZjZTdiZTg4YTA3NGEzYmIzZTA6OTI0NA==");
 
-        assertEquals("decodes the elasticsearch port corretly", "ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243", sut.getElasticsearchHost());
-        assertEquals("decodes the kibana port corretly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244", sut.getKibanaHost());
+        assertEquals("decodes the elasticsearch port correctly", "ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243", sut.getElasticsearchHost());
+        assertEquals("decodes the kibana port correctly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244", sut.getKibanaHost());
     }
 
     @Test
     public void testWhenCloudIdContainsCloudPort() {
         sut = new CloudSettingId("custom-port:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvOjkyNDMkYWMzMWViYjkwMjQxNzczMTU3MDQzYzM0ZmQyNmZkNDYkYTRjMDYyMzBlNDhjOGZjZTdiZTg4YTA3NGEzYmIzZTA=");
 
-        assertEquals("decodes the elasticsearch port corretly", "ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243", sut.getElasticsearchHost());
-        assertEquals("decodes the kibana port corretly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9243", sut.getKibanaHost());
+        assertEquals("decodes the elasticsearch port correctly", "ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:9243", sut.getElasticsearchHost());
+        assertEquals("decodes the kibana port correctly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9243", sut.getKibanaHost());
     }
 
     @Test
@@ -147,7 +147,7 @@ public class CloudSettingIdTest extends RubyTestBase {
         sut = new CloudSettingId("only-kb-set:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGFjMzFlYmI5MDI0MTc3MzE1NzA0M2MzNGZkMjZmZDQ2JGE0YzA2MjMwZTQ4YzhmY2U3YmU4OGEwNzRhM2JiM2UwOjkyNDQ=");
 
         assertEquals("defaults the elasticsearch port to 443", "ac31ebb90241773157043c34fd26fd46.us-central1.gcp.cloud.es.io:443", sut.getElasticsearchHost());
-        assertEquals("decodes the kibana port corretly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244", sut.getKibanaHost());
+        assertEquals("decodes the kibana port correctly", "a4c06230e48c8fce7be88a074a3bb3e0.us-central1.gcp.cloud.es.io:9244", sut.getKibanaHost());
     }
 
     @Test
