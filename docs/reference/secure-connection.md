@@ -7,7 +7,7 @@ mapped_pages:
 # Secure your connection to {{es}} [ls-security]
 
 
-The Logstash {{es}} [output](/reference/plugins-outputs-elasticsearch.md), [input](/reference/plugins-inputs-elasticsearch.md), and [filter](/reference/plugins-filters-elasticsearch.md) plugins,  as well as [monitoring](monitoring-logstash.md) and central management, support authentication and encryption over HTTPS.
+The Logstash {{es}} [output](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md), [input](/logstash-docs-md://lsr/plugins-inputs-elasticsearch.md), and [filter](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md) plugins,  as well as [monitoring](monitoring-logstash.md) and central management, support authentication and encryption over HTTPS.
 
 {{es}} clusters are secured by default (starting in 8.0). You need to configure authentication credentials for Logstash in order to establish communication. Logstash throws an exception and the processing pipeline is halted if authentication fails.
 
@@ -29,7 +29,7 @@ Security is enabled by default on the {{es}} cluster (starting in 8.0). You must
 
 {{es-serverless}} simplifies safe, secure communication between {{ls}} and {{es}}.
 
-Configure the [{{ls}} {{es}} output plugin](/reference/plugins-outputs-elasticsearch.md) to use [`cloud_id`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) and an [`api_key`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) to establish safe, secure communication between {{ls}} and {{es-serverless}}. No additional SSL configuration steps are needed.
+Configure the [{{ls}} {{es}} output plugin](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) and an [`api_key`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) to establish safe, secure communication between {{ls}} and {{es-serverless}}. No additional SSL configuration steps are needed.
 
 Configuration example:
 
@@ -43,7 +43,7 @@ For more details, check out [Grant access using API keys](#ls-api-keys).
 ::::{admonition} Security to hosted {{ess}} $$$hosted-ess$$$
 :class: note
 
-Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](/reference/plugins-outputs-elasticsearch.md) to use [`cloud_id`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {ess-leadin-short}
+Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {ess-leadin-short}
 
 Configuration example:
 
@@ -79,7 +79,7 @@ Save it to a location that Logstash can access, such as `config/certs` on the {{
 
 #### Configure the elasticsearch output [es-sec-plugin]
 
-Use the [`elasticsearch output`'s](/reference/plugins-outputs-elasticsearch.md) [`ssl_certificate_authorities` option](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_certificate_authorities) to point to the certificate’s location.
+Use the [`elasticsearch output`'s](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) [`ssl_certificate_authorities` option](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_certificate_authorities) to point to the certificate’s location.
 
 **Example**
 
@@ -300,7 +300,7 @@ For security reasons, we recommend using a unique API key per {{ls}} instance. Y
 
 You can create API keys using either the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) or the [Kibana UI](docs-content://deploy-manage/api-keys/elasticsearch-api-keys.md). This section walks you through creating an API key using the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key). The privileges needed are the same for either approach.
 
-Here is an example that shows how to create an API key for publishing to {{es}} using the [Elasticsearch output plugin](/reference/plugins-outputs-elasticsearch.md).
+Here is an example that shows how to create an API key for publishing to {{es}} using the [Elasticsearch output plugin](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md).
 
 ```console
 POST /_security/api_key
@@ -341,9 +341,9 @@ The return value should look similar to this:
 
 ##### Create an API key for publishing [ls-api-key-publish]
 
-You’re in luck! The example we used in the [Create an API key](#ls-create-api-key) section creates an API key for publishing to {{es}} using the [Elasticsearch output plugin](/reference/plugins-outputs-elasticsearch.md).
+You’re in luck! The example we used in the [Create an API key](#ls-create-api-key) section creates an API key for publishing to {{es}} using the [Elasticsearch output plugin](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md).
 
-Here’s an example using the API key in your [Elasticsearch output plugin](/reference/plugins-outputs-elasticsearch.md) configuration.
+Here’s an example using the API key in your [Elasticsearch output plugin](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) configuration.
 
 ```ruby
 output {
@@ -361,7 +361,7 @@ output {
 
 Creating an API key to use for reading data from {{es}} is similar to creating an API key for publishing described earlier. You can use the example in the [Create an API key](#ls-create-api-key) section, granting the appropriate privileges.
 
-Here’s an example using the API key in your [Elasticsearch inputs plugin](/reference/plugins-inputs-elasticsearch.md) configuration.
+Here’s an example using the API key in your [Elasticsearch inputs plugin](/logstash-docs-md://lsr/plugins-inputs-elasticsearch.md) configuration.
 
 ```ruby
 input {
@@ -379,7 +379,7 @@ input {
 
 Creating an API key to use for processing data from {{es}} is similar to creating an API key for publishing described earlier. You can use the example in the [Create an API key](#ls-create-api-key) section, granting the appropriate privileges.
 
-Here’s an example using the API key in your [Elasticsearch filter plugin](/reference/plugins-filters-elasticsearch.md) configuration.
+Here’s an example using the API key in your [Elasticsearch filter plugin](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md) configuration.
 
 ```ruby
 filter {

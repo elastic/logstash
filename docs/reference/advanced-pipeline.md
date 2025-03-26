@@ -13,14 +13,14 @@ To get started, go [here](https://download.elastic.co/demos/logstash/gettingstar
 
 ## Configuring Filebeat to Send Log Lines to Logstash [configuring-filebeat]
 
-Before you create the Logstash pipeline, you’ll configure Filebeat to send log lines to Logstash. The [Filebeat](https://github.com/elastic/beats/tree/main/filebeat) client is a lightweight, resource-friendly tool that collects logs from files on the server and forwards these logs to your Logstash instance for processing. Filebeat is designed for reliability and low latency. Filebeat has a light resource footprint on the host machine, and the [`Beats input`](/reference/plugins-inputs-beats.md) plugin minimizes the resource demands on the Logstash instance.
+Before you create the Logstash pipeline, you’ll configure Filebeat to send log lines to Logstash. The [Filebeat](https://github.com/elastic/beats/tree/main/filebeat) client is a lightweight, resource-friendly tool that collects logs from files on the server and forwards these logs to your Logstash instance for processing. Filebeat is designed for reliability and low latency. Filebeat has a light resource footprint on the host machine, and the [`Beats input`](/logstash-docs-md://lsr/plugins-inputs-beats.md) plugin minimizes the resource demands on the Logstash instance.
 
 ::::{note}
 In a typical use case, Filebeat runs on a separate machine from the machine running your Logstash instance. For the purposes of this tutorial, Logstash and Filebeat are running on the same machine.
 ::::
 
 
-The default Logstash installation includes the [`Beats input`](/reference/plugins-inputs-beats.md) plugin. The Beats input plugin enables Logstash to receive events from the Elastic Beats framework, which means that any Beat written to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
+The default Logstash installation includes the [`Beats input`](/logstash-docs-md://lsr/plugins-inputs-beats.md) plugin. The Beats input plugin enables Logstash to receive events from the Elastic Beats framework, which means that any Beat written to work with the Beats framework, such as Packetbeat and Metricbeat, can also send event data to Logstash.
 
 To install Filebeat on your data source machine, download the appropriate package from the Filebeat [product page](https://www.elastic.co/downloads/beats/filebeat). You can also refer to [Filebeat quick start](beats://reference/filebeat/filebeat-installation-configuration.md) for additional installation instructions.
 
@@ -163,7 +163,7 @@ If your pipeline is working correctly, you should see a series of events like th
 
 Now you have a working pipeline that reads log lines from Filebeat. However you’ll notice that the format of the log messages is not ideal. You want to parse the log messages to create specific, named fields from the logs. To do this, you’ll use the `grok` filter plugin.
 
-The [`grok`](/reference/plugins-filters-grok.md) filter plugin is one of several plugins that are available by default in Logstash. For details on how to manage Logstash plugins, see the [reference documentation](/reference/working-with-plugins.md) for the plugin manager.
+The [`grok`](/logstash-docs-md://lsr/plugins-filters-grok.md) filter plugin is one of several plugins that are available by default in Logstash. For details on how to manage Logstash plugins, see the [reference documentation](/reference/working-with-plugins.md) for the plugin manager.
 
 The `grok` filter plugin enables you to parse the unstructured log data into something structured and queryable.
 
@@ -305,7 +305,7 @@ Notice that the event includes the original message, but the log message is also
 
 ### Enhancing Your Data with the Geoip Filter Plugin [configuring-geoip-plugin]
 
-In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing data. As an example, the [`geoip`](/reference/plugins-filters-geoip.md) plugin looks up IP addresses, derives geographic location information from the addresses, and adds that location information to the logs.
+In addition to parsing log data for better searches, filter plugins can derive supplementary information from existing data. As an example, the [`geoip`](/logstash-docs-md://lsr/plugins-filters-geoip.md) plugin looks up IP addresses, derives geographic location information from the addresses, and adds that location information to the logs.
 
 Configure your Logstash instance to use the `geoip` filter plugin by adding the following lines to the `filter` section of the `first-pipeline.conf` file:
 

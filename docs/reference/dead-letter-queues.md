@@ -7,7 +7,7 @@ mapped_pages:
 
 The dead letter queue (DLQ) is designed as a place to temporarily write events that cannot be processed. The DLQ gives you flexibility to investigate problematic events without blocking the pipeline or losing the events. Your pipeline keeps flowing, and the immediate problem is averted. But those events still need to be addressed.
 
-You can [process events from the DLQ](#es-proc-dlq) with the [`dead_letter_queue` input plugin](/reference/plugins-inputs-dead_letter_queue.md) .
+You can [process events from the DLQ](#es-proc-dlq) with the [`dead_letter_queue` input plugin](/logstash-docs-md://lsr/plugins-inputs-dead_letter_queue.md) .
 
 Processing events does not delete items from the queue, and the DLQ sometimes needs attention. See [Track dead letter queue size](#dlq-size) and [Clear the dead letter queue](#dlq-clear) for more info.
 
@@ -16,13 +16,13 @@ Processing events does not delete items from the queue, and the DLQ sometimes ne
 By default, when Logstash encounters an event that it cannot process because the data contains a mapping error or some other issue, the Logstash pipeline either hangs or drops the unsuccessful event. In order to protect against data loss in this situation, you can [configure Logstash](#configuring-dlq) to write unsuccessful events to a dead letter queue instead of dropping them.
 
 ::::{note}
-The dead letter queue is currently supported only for the [{{es}} output](/reference/plugins-outputs-elasticsearch.md) and [conditional statements evaluation](/reference/event-dependent-configuration.md#conditionals). The dead letter queue is used for documents with response codes of 400 or 404, both of which indicate an event that cannot be retried. It’s also used when a conditional evaluation encounter an error.
+The dead letter queue is currently supported only for the [{{es}} output](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) and [conditional statements evaluation](/reference/event-dependent-configuration.md#conditionals). The dead letter queue is used for documents with response codes of 400 or 404, both of which indicate an event that cannot be retried. It’s also used when a conditional evaluation encounter an error.
 ::::
 
 
 Each event written to the dead letter queue includes the original event, metadata that describes the reason the event could not be processed, information about the plugin that wrote the event, and the timestamp when the event entered the dead letter queue.
 
-To process events in the dead letter queue, create a Logstash pipeline configuration that uses the [`dead_letter_queue` input plugin](/reference/plugins-inputs-dead_letter_queue.md) to read from the queue. See [Processing events in the dead letter queue](#processing-dlq-events) for more information.
+To process events in the dead letter queue, create a Logstash pipeline configuration that uses the [`dead_letter_queue` input plugin](/logstash-docs-md://lsr/plugins-inputs-dead_letter_queue.md) to read from the queue. See [Processing events in the dead letter queue](#processing-dlq-events) for more information.
 
 :::{image} images/dead_letter_queue.png
 :alt: Diagram showing pipeline reading from the dead letter queue
@@ -121,7 +121,7 @@ input {
 
 ## Processing events in the dead letter queue [processing-dlq-events]
 
-When you are ready to process events in the dead letter queue, you create a pipeline that uses the [`dead_letter_queue` input plugin](/reference/plugins-inputs-dead_letter_queue.md) to read from the dead letter queue. The pipeline configuration that you use depends, of course, on what you need to do. For example, if the dead letter queue contains events that resulted from a mapping error in Elasticsearch, you can create a pipeline that reads the "dead" events, removes the field that caused the mapping issue, and re-indexes the clean events into Elasticsearch.
+When you are ready to process events in the dead letter queue, you create a pipeline that uses the [`dead_letter_queue` input plugin](/logstash-docs-md://lsr/plugins-inputs-dead_letter_queue.md) to read from the dead letter queue. The pipeline configuration that you use depends, of course, on what you need to do. For example, if the dead letter queue contains events that resulted from a mapping error in Elasticsearch, you can create a pipeline that reads the "dead" events, removes the field that caused the mapping issue, and re-indexes the clean events into Elasticsearch.
 
 The following example shows a simple pipeline that reads events from the dead letter queue and writes the events, including metadata, to standard output:
 
@@ -151,7 +151,7 @@ For another example, see [Example: Processing data that has mapping errors](#dlq
 When the pipeline has finished processing all the events in the dead letter queue, it will continue to run and process new events as they stream into the queue. This means that you do not need to stop your production system to handle events in the dead letter queue.
 
 ::::{note}
-Events emitted from the [`dead_letter_queue` input plugin](/reference/plugins-inputs-dead_letter_queue.md) plugin will not be resubmitted to the dead letter queue if they cannot be processed correctly.
+Events emitted from the [`dead_letter_queue` input plugin](/logstash-docs-md://lsr/plugins-inputs-dead_letter_queue.md) plugin will not be resubmitted to the dead letter queue if they cannot be processed correctly.
 ::::
 
 
@@ -223,7 +223,7 @@ output {
 }
 ```
 
-1. The [`dead_letter_queue` input](/reference/plugins-inputs-dead_letter_queue.md) reads from the dead letter queue.
+1. The [`dead_letter_queue` input](/logstash-docs-md://lsr/plugins-inputs-dead_letter_queue.md) reads from the dead letter queue.
 2. The `mutate` filter removes the problem field called `location`.
 3. The clean event is sent to Elasticsearch, where it can be indexed because the mapping issue is resolved.
 

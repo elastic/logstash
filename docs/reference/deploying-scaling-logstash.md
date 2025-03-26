@@ -40,7 +40,7 @@ Beats and Logstash make ingest awesome. Together, they provide a comprehensive s
 
 ### Beats and Logstash [_beats_and_logstash]
 
-Beats run across thousands of edge host servers, collecting, tailing, and shipping logs to Logstash. Logstash serves as the centralized streaming engine for data unification and enrichment. The [Beats input plugin](/reference/plugins-inputs-beats.md) exposes a secure, acknowledgement-based endpoint for Beats to send data to Logstash.
+Beats run across thousands of edge host servers, collecting, tailing, and shipping logs to Logstash. Logstash serves as the centralized streaming engine for data unification and enrichment. The [Beats input plugin](/logstash-docs-md://lsr/plugins-inputs-beats.md) exposes a secure, acknowledgement-based endpoint for Beats to send data to Logstash.
 
 :::{image} images/deploy2.png
 :alt: deploy2
@@ -75,7 +75,7 @@ Make sure `queue.checkpoint.writes: 1` is set for at-least-once guarantees. For 
 
 ### Processing [_processing]
 
-Logstash will commonly extract fields with [grok](/reference/plugins-filters-grok.md) or [dissect](/reference/plugins-filters-dissect.md), augment [geographical](/reference/plugins-filters-geoip.md) info, and can further enrich events with [file](/reference/plugins-filters-translate.md), [database](/reference/plugins-filters-jdbc_streaming.md), or [Elasticsearch](/reference/plugins-filters-elasticsearch.md) lookup datasets. Be aware that processing complexity can affect overall throughput and CPU utilization. Make sure to check out the other [available filter plugins](/reference/filter-plugins.md).
+Logstash will commonly extract fields with [grok](/logstash-docs-md://lsr/plugins-filters-grok.md) or [dissect](/logstash-docs-md://lsr/plugins-filters-dissect.md), augment [geographical](/logstash-docs-md://lsr/plugins-filters-geoip.md) info, and can further enrich events with [file](/logstash-docs-md://lsr/plugins-filters-translate.md), [database](/logstash-docs-md://lsr/plugins-filters-jdbc_streaming.md), or [Elasticsearch](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md) lookup datasets. Be aware that processing complexity can affect overall throughput and CPU utilization. Make sure to check out the other [available filter plugins](/reference/filter-plugins.md).
 
 
 ### Secure Transport [_secure_transport]
@@ -104,7 +104,7 @@ Users may have other mechanisms of collecting logging data, and it’s easy to i
 
 ### TCP, UDP, and HTTP Protocols [_tcp_udp_and_http_protocols]
 
-The TCP, UDP, and HTTP protocols are common ways to feed data into Logstash. Logstash can expose endpoint listeners with the respective [TCP](/reference/plugins-inputs-tcp.md), [UDP](/reference/plugins-inputs-udp.md), and [HTTP](/reference/plugins-inputs-http.md) input plugins. The data sources enumerated below are typically ingested through one of these three protocols.
+The TCP, UDP, and HTTP protocols are common ways to feed data into Logstash. Logstash can expose endpoint listeners with the respective [TCP](/logstash-docs-md://lsr/plugins-inputs-tcp.md), [UDP](/logstash-docs-md://lsr/plugins-inputs-udp.md), and [HTTP](/logstash-docs-md://lsr/plugins-inputs-http.md) input plugins. The data sources enumerated below are typically ingested through one of these three protocols.
 
 ::::{note}
 The TCP and UDP protocols do not support application-level acknowledgements, so connectivity issues may result in data loss.
@@ -119,20 +119,20 @@ For high availability scenarios, a third-party hardware or software load balance
 Although Beats may already satisfy your data ingest use case, network and security datasets come in a variety of forms. Let’s touch on a few other ingestion points.
 
 * Network wire data - collect and analyze network traffic with [Packetbeat](https://www.elastic.co/products/beats/packetbeat).
-* Netflow v5/v9/v10 - Logstash understands data from Netflow/IPFIX exporters with the [Netflow codec](/reference/plugins-codecs-netflow.md).
-* Nmap - Logstash accepts and parses Nmap XML data with the [Nmap codec](/reference/plugins-codecs-nmap.md).
-* SNMP trap - Logstash has a native [SNMP trap input](/reference/plugins-inputs-snmptrap.md).
-* CEF - Logstash accepts and parses CEF data from systems like Arcsight SmartConnectors with the [CEF codec](/reference/plugins-codecs-cef.md).
+* Netflow v5/v9/v10 - Logstash understands data from Netflow/IPFIX exporters with the [Netflow codec](/logstash-docs-md://lsr/plugins-codecs-netflow.md).
+* Nmap - Logstash accepts and parses Nmap XML data with the [Nmap codec](/logstash-docs-md://lsr/plugins-codecs-nmap.md).
+* SNMP trap - Logstash has a native [SNMP trap input](/logstash-docs-md://lsr/plugins-inputs-snmptrap.md).
+* CEF - Logstash accepts and parses CEF data from systems like Arcsight SmartConnectors with the [CEF codec](/logstash-docs-md://lsr/plugins-codecs-cef.md).
 
 
 ### Centralized Syslog Servers [_centralized_syslog_servers]
 
-Existing syslog server technologies like rsyslog and syslog-ng generally send syslog over to Logstash TCP or UDP endpoints for extraction, processing, and persistence. If the data format conforms to RFC3164, it can be fed directly to the [Logstash syslog input](/reference/plugins-inputs-syslog.md).
+Existing syslog server technologies like rsyslog and syslog-ng generally send syslog over to Logstash TCP or UDP endpoints for extraction, processing, and persistence. If the data format conforms to RFC3164, it can be fed directly to the [Logstash syslog input](/logstash-docs-md://lsr/plugins-inputs-syslog.md).
 
 
 ### Infrastructure & Application Data and IoT [_infrastructure_application_data_and_iot]
 
-Infrastructure and application metrics can be collected with [Metricbeat](https://www.elastic.co/products/beats/metricbeat), but applications can also send webhooks to a Logstash HTTP input or have metrics polled from an HTTP endpoint with the [HTTP poller input plugin](/reference/plugins-inputs-http_poller.md).
+Infrastructure and application metrics can be collected with [Metricbeat](https://www.elastic.co/products/beats/metricbeat), but applications can also send webhooks to a Logstash HTTP input or have metrics polled from an HTTP endpoint with the [HTTP poller input plugin](/logstash-docs-md://lsr/plugins-inputs-http_poller.md).
 
 For applications that log with log4j2, it’s recommended to use the SocketAppender to send JSON to the Logstash TCP input. Alternatively, log4j2 can also log to a file for collection with FIlebeat. Usage of the log4j1 SocketAppender is not recommended.
 
@@ -149,7 +149,7 @@ For users who want to integrate data from existing Kafka deployments or require 
 :alt: deploy4
 :::
 
-The other TCP, UDP, and HTTP sources can persist to Kafka with Logstash as a conduit to achieve high availability in lieu of a load balancer. A group of Logstash nodes can then consume from topics with the [Kafka input](/reference/plugins-inputs-kafka.md) to further transform and enrich the data in transit.
+The other TCP, UDP, and HTTP sources can persist to Kafka with Logstash as a conduit to achieve high availability in lieu of a load balancer. A group of Logstash nodes can then consume from topics with the [Kafka input](/logstash-docs-md://lsr/plugins-inputs-kafka.md) to further transform and enrich the data in transit.
 
 
 ### Resiliency and Recovery [_resiliency_and_recovery]
@@ -161,5 +161,5 @@ If Kafka is configured to retain data for an extended period of time, data can b
 
 ### Other Messaging Queue Integrations [_other_messaging_queue_integrations]
 
-Although an additional queuing layer is not required, Logstash can consume from a myriad of other message queuing technologies like [RabbitMQ](/reference/plugins-inputs-rabbitmq.md) and [Redis](/reference/plugins-inputs-redis.md). It also supports ingestion from hosted queuing services like [Pub/Sub](/reference/plugins-inputs-google_pubsub.md), [Kinesis](/reference/plugins-inputs-kinesis.md), and [SQS](/reference/plugins-inputs-sqs.md).
+Although an additional queuing layer is not required, Logstash can consume from a myriad of other message queuing technologies like [RabbitMQ](/logstash-docs-md://lsr/plugins-inputs-rabbitmq.md) and [Redis](/logstash-docs-md://lsr/plugins-inputs-redis.md). It also supports ingestion from hosted queuing services like [Pub/Sub](/logstash-docs-md://lsr/plugins-inputs-google_pubsub.md), [Kinesis](/logstash-docs-md://lsr/plugins-inputs-kinesis.md), and [SQS](/logstash-docs-md://lsr/plugins-inputs-sqs.md).
 

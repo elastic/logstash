@@ -24,12 +24,12 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cipher_suites | [`ssl_cipher_suites`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-ssl_cipher_suites) |
-| ssl | [`ssl_enabled`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-ssl_enabled) |
-| ssl_peer_metadata | `ssl_peer_metadata` option of [`enrich`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-enrich) |
-| ssl_verify_mode | [`ssl_client_authentication`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-ssl_client_authentication) |
-| tls_min_version | [`ssl_supported_protocols`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
-| tls_max_version | [`ssl_supported_protocols`](/reference/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
+| cipher_suites | [`ssl_cipher_suites`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_cipher_suites) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_enabled) |
+| ssl_peer_metadata | `ssl_peer_metadata` option of [`enrich`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-enrich) |
+| ssl_verify_mode | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_client_authentication) |
+| tls_min_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
+| tls_max_version | [`ssl_supported_protocols`](/refelogstash-docs-md://lsrence/plugins-inputs-beats.md#plugins-inputs-beats-ssl_supported_protocols) |
 
 ::::
 
@@ -39,12 +39,12 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cipher_suites | [`ssl_cipher_suites`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_cipher_suites) |
-| ssl | [`ssl_enabled`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_enabled) |
-| ssl_peer_metadata | `ssl_peer_metadata` option of [`enrich`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-enrich) |
-| ssl_verify_mode | [`ssl_client_authentication`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_client_authentication) |
-| tls_min_version | [`ssl_supported_protocols`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_supported_protocols) |
-| tls_max_version | [`ssl_supported_protocols`](/reference/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_supported_protocols) |
+| cipher_suites | [`ssl_cipher_suites`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_cipher_suites) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_enabled) |
+| ssl_peer_metadata | `ssl_peer_metadata` option of [`enrich`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-enrich) |
+| ssl_verify_mode | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_client_authentication) |
+| tls_min_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_supported_protocols) |
+| tls_max_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-elastic_agent.md#plugins-inputs-elastic_agent-ssl_supported_protocols) |
 
 ::::
 
@@ -54,9 +54,9 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| ca_file | [`ssl_certificate_authorities`](/reference/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_certificate_authorities) |
-| ssl | [`ssl_enabled`](/reference/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_enabled) |
-| ssl_certificate_verification | [`ssl_verification_mode`](/reference/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_verification_mode) |
+| ca_file | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_certificate_authorities) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_enabled) |
+| ssl_certificate_verification | [`ssl_verification_mode`](/logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-ssl_verification_mode) |
 
 ::::
 
@@ -66,7 +66,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| ssl | [`ssl_enabled`](/reference/plugins-inputs-elastic_serverless_forwarder.md#plugins-inputs-elastic_serverless_forwarder-ssl_enabled) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-elastic_serverless_forwarder.md#plugins-inputs-elastic_serverless_forwarder-ssl_enabled) |
 
 ::::
 
@@ -76,14 +76,14 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cipher_suites | [`ssl_cipher_suites`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_cipher_suites) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_keystore_password) |
-| ssl | [`ssl_enabled`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_enabled) |
-| ssl_verify_mode | [`ssl_client_authentication`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_client_authentication) |
-| tls_max_version | [`ssl_supported_protocols`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_supported_protocols) |
-| tls_min_version | [`ssl_supported_protocols`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_supported_protocols) |
-| verify_mode | [`ssl_client_authentication`](/reference/plugins-inputs-http.md#plugins-inputs-http-ssl_client_authentication) |
+| cipher_suites | [`ssl_cipher_suites`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_cipher_suites) |
+| keystore | [`ssl_keystore_path`](/reflogstash-docs-md://lsrrence/plugins-inputs-http.md#plugins-inputs-http-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_keystore_password) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_enabled) |
+| ssl_verify_mode | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_client_authentication) |
+| tls_max_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_supported_protocols) |
+| tls_min_version | [`ssl_supported_protocols`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_supported_protocols) |
+| verify_mode | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-http.md#plugins-inputs-http-ssl_client_authentication) |
 
 ::::
 
@@ -93,15 +93,15 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cacert | [`ssl_certificate_authorities`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_certificate_authorities) |
-| client_cert | [`ssl_certificate`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_certificate) |
-| client_key | [`ssl_key`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_key) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_password) |
-| keystore_type | [`ssl_keystore_password`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_password) |
-| truststore | [`ssl_truststore_path`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_path) |
-| truststore_password | [`ssl_truststore_password`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_password) |
-| truststore_type | [`ssl_truststore_type`](/reference/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_type) |
+| cacert | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_certificate_authorities) |
+| client_cert | [`ssl_certificate`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_certificate) |
+| client_key | [`ssl_key`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_key) |
+| keystore | [`ssl_keystore_path`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_password) |
+| keystore_type | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_keystore_password) |
+| truststore | [`ssl_truststore_path`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_path) |
+| truststore_password | [`ssl_truststore_password`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_password) |
+| truststore_type | [`ssl_truststore_type`](/logstash-docs-md://lsr/plugins-inputs-http_poller.md#plugins-inputs-http_poller-ssl_truststore_type) |
 
 ::::
 
@@ -111,9 +111,9 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| ssl_cert | [`ssl_certificate`](/reference/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_certificate) |
-| ssl_enable | [`ssl_enabled`](/reference/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_enabled) |
-| ssl_verify | [`ssl_client_authentication`](/reference/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_client_authentication) in `server` mode and [`ssl_verification_mode`](/reference/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_verification_mode) in `client` mode |
+| ssl_cert | [`ssl_certificate`](/logstash-docs-md://lsr/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_certificate) |
+| ssl_enable | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_enabled) |
+| ssl_verify | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_client_authentication) in `server` mode and [`ssl_verification_mode`](/logstash-docs-md://lsr/plugins-inputs-tcp.md#plugins-inputs-tcp-ssl_verification_mode) in `client` mode |
 
 ::::
 
@@ -123,10 +123,10 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| ca_file | [`ssl_certificate_authorities`](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_certificate_authorities) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_keystore_password) |
-| ssl | [`ssl_enabled`](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_enabled) |
+| ca_file | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_certificate_authorities) |
+| keystore | [`ssl_keystore_path`](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_keystore_password) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-ssl_enabled) |
 
 ::::
 
@@ -136,15 +136,15 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cacert | [`ssl_certificate_authorities`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_certificate_authorities) |
-| client_cert | [`ssl_certificate`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_certificate) |
-| client_key | [`ssl_key`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_key) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_keystore_password) |
-| keystore_type | [`ssl_keystore_type`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_keystore_type) |
-| truststore | [`ssl_truststore_path`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_truststore_path) |
-| truststore_password | [`ssl_truststore_password`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_truststore_password) |
-| truststore_type | [`ssl_truststore_type`](/reference/plugins-filters-http.md#plugins-filters-http-ssl_truststore_type) |
+| cacert | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_certificate_authorities) |
+| client_cert | [`ssl_certificate`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_certificate) |
+| client_key | [`ssl_key`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_key) |
+| keystore | [`ssl_keystore_path`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_keystore_password) |
+| keystore_type | [`ssl_keystore_type`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_keystore_type) |
+| truststore | [`ssl_truststore_path`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_truststore_path) |
+| truststore_password | [`ssl_truststore_password`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_truststore_password) |
+| truststore_type | [`ssl_truststore_type`](/logstash-docs-md://lsr/plugins-filters-http.md#plugins-filters-http-ssl_truststore_type) |
 
 ::::
 
@@ -154,13 +154,13 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cacert | [`ssl_certificate_authorities`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_certificate_authorities) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_keystore_password) |
-| ssl | [`ssl_enabled`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_enabled) |
-| ssl_certificate_verification | [`ssl_verification_mode`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_verification_mode) |
-| truststore | [`ssl_truststore_path`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_truststore_path) |
-| truststore_password | [`ssl_truststore_password`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_truststore_password) |
+| cacert | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_certificate_authorities) |
+| keystore | [`ssl_keystore_path`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_keystore_password) |
+| ssl | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_enabled) |
+| ssl_certificate_verification | [`ssl_verification_mode`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_verification_mode) |
+| truststore | [`ssl_truststore_path`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_truststore_path) |
+| truststore_password | [`ssl_truststore_password`](/logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ssl_truststore_password) |
 
 ::::
 
@@ -170,15 +170,15 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| cacert | [`ssl_certificate_authorities`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_certificate_authorities) |
-| client_cert | [`ssl_certificate`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_certificate) |
-| client_key | [`ssl_key`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_key) |
-| keystore | [`ssl_keystore_path`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_path) |
-| keystore_password | [`ssl_keystore_password`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_password) |
-| keystore_type | [`ssl_keystore_password`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_password) |
-| truststore | [`ssl_truststore_path`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_path) |
-| truststore_password | [`ssl_truststore_password`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_password) |
-| truststore_type | [`ssl_truststore_type`](/reference/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_type) |
+| cacert | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_certificate_authorities) |
+| client_cert | [`ssl_certificate`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_certificate) |
+| client_key | [`ssl_key`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_key) |
+| keystore | [`ssl_keystore_path`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_path) |
+| keystore_password | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_password) |
+| keystore_type | [`ssl_keystore_password`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_keystore_password) |
+| truststore | [`ssl_truststore_path`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_path) |
+| truststore_password | [`ssl_truststore_password`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_password) |
+| truststore_type | [`ssl_truststore_type`](/logstash-docs-md://lsr/plugins-outputs-http.md#plugins-outputs-http-ssl_truststore_type) |
 
 ::::
 
@@ -188,10 +188,10 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 | Setting | Replaced by |
 | --- | --- |
-| ssl_cacert | [`ssl_certificate_authorities`](/reference/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_certificate_authorities) |
-| ssl_cert | [`ssl_certificate`](/reference/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_certificate) |
-| ssl_enable | [`ssl_enabled`](/reference/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_enabled) |
-| ssl_verify | [`ssl_client_authentication`](/reference/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_client_authentication) in `server` mode and [`ssl_verification_mode`](/reference/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_verification_mode) in `client` mode |
+| ssl_cacert | [`ssl_certificate_authorities`](/logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_certificate_authorities) |
+| ssl_cert | [`ssl_certificate`](/logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_certificate) |
+| ssl_enable | [`ssl_enabled`](/logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_enabled) |
+| ssl_verify | [`ssl_client_authentication`](/logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_client_authentication) in `server` mode and [`ssl_verification_mode`](/logstash-docs-md://lsr/plugins-outputs-tcp.md#plugins-outputs-tcp-ssl_verification_mode) in `client` mode |
 
 ::::
 
