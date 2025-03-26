@@ -18,6 +18,17 @@ gem "gems", "~> 1", :group => :build
 gem "octokit", "~> 4", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
+<<<<<<< HEAD
+=======
+# remove fileutils declaration when start using Ruby 3.2+, by default includes `fileutils-v1.7.0`
+# (https://git.ruby-lang.org/ruby.git/commit/?h=ruby_3_2&id=05caafb4731c796890027cafedaac59dc108a23a)
+# note that the reason to use 1.7.0 is due to https://github.com/logstash-plugins/logstash-integration-aws/issues/28
+gem "fileutils", "~> 1.7"
+
+gem "rubocop", :group => :development
+# rubocop-ast 1.43.0 carries a dep on `prism` which requires native c extensions
+gem 'rubocop-ast', '= 1.42.0', :group => :development
+>>>>>>> 6de59f2c0 (Pin rubocop-ast development gem due to new dep on prism (#17407))
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
