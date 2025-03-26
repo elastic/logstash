@@ -5,35 +5,47 @@ mapped_pages:
 
 # Upgrading Logstash [upgrading-logstash]
 
-::::{important}
-Before upgrading Logstash:
 
-* Consult the [breaking changes](/release-notes/breaking-changes.md) docs.
-* Read the [*Release Notes*](/release-notes/index.md).
-* Test upgrades in a development environment before upgrading your production cluster.
+::::{admonition} Upgrade to {{ls}} 8.18 before upgrading to 9.0 
 
-While upgrading Logstash:
-
-* If you use monitoring, you must re-use the data directory when you upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID and becomes a new node in the monitoring data.
+Upgrading to {{ls}} 8.18 gives you a head-start on new 9.0 features.
+This step helps reduce risk and makes roll backs easier if you hit a snag.
 
 ::::
 
 
-If you’re upgrading other products in the stack, also read the [Elastic Stack Installation and Upgrade Guide](docs-content://deploy-manage/index.md).
+## Before you upgrade {{ls}}
 
-See these topics for information about upgrading Logstash:
+* Upgrade {{ls}} to 8.18 for an easier upgrade to 9.0.
+* Check out the [breaking changes](/release-notes/breaking-changes.md) docs.
+* Read the [*Release Notes*](/release-notes/index.md).
+* If you’re upgrading other products in the stack, check out the [Elastic upgrade documentation](docs-content://deploy-manage/upgrade.md).
+
+## Upgrade tips and considerations
+
+* Test upgrades in a development environment before upgrading your production cluster.
+* If you use monitoring, re-use the data directory when you upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID and becomes a new node in the monitoring data. 
+* If you use the [elastic_integration filter](/reference/plugins-filters-elastic_integration.md) plugin in Logstash pipelines:
+    * Logstash and Elasticsearch must be on the same version.
+    * The recommended order for upgrading {{stack}} is ({es})-({ls})-({kib}) to ensure the best experience with {agent}-managed pipelines. 
+    Note that this is different from the typical {{stack}} upgrade order. 
+    See [when `elastic_integration` is in {{ls}} pipeline](#upgrading-when-elastic_integration-in-pipeline) section for details.
+
+
+## Ways to upgrade
 
 * [Upgrading using package managers](/reference/upgrading-using-package-managers.md)
 * [Upgrading using a direct download](/reference/upgrading-using-direct-download.md)
-* [Upgrading between minor versions](/reference/upgrading-minor-versions.md)
-* [Upgrading Logstash to 9.0](/reference/upgrading-logstash-9-0.md)
 
 
 ## When to upgrade [_when_to_upgrade]
 
-Fresh installations can and should start with the same version across the Elastic Stack.
+Fresh installations should start with the same version across the Elastic Stack.
 
-Elasticsearch 9.0 does not require Logstash 9.0. An Elasticsearch 9.0 cluster will happily receive data from earlier versions of Logstash via the default HTTP communication layer. This provides some flexibility to decide when to upgrade Logstash relative to an Elasticsearch upgrade. It may or may not be convenient for you to upgrade them together, and it is not required to be done at the same time as long as Elasticsearch is upgraded first. However, there are special plugin cases for example, if your pipeline includes [elastic_integration filter](/reference/plugins-filters-elastic_integration.md) plugin. See [when `elastic_integration` is in {{ls}} pipeline](#upgrading-when-elastic_integration-in-pipeline) section for details.
+Elasticsearch 9.0 does not require Logstash 9.0.
+An Elasticsearch 9.0 cluster can receive data from earlier versions of Logstash through the default HTTP communication layer.
+This provides some flexibility to decide when to upgrade Logstash relative to an Elasticsearch upgrade.
+It may or may not be convenient for you to upgrade them together, and it is not required to be done at the same time as long as Elasticsearch is upgraded first. However, there are special plugin cases for example, if your pipeline includes [elastic_integration filter](/reference/plugins-filters-elastic_integration.md) plugin. See [when `elastic_integration` is in {{ls}} pipeline](#upgrading-when-elastic_integration-in-pipeline) section for details.
 
 You should upgrade in a timely manner to get the performance improvements that come with Logstash 9.0, but do so in the way that makes the most sense for your environment.
 
