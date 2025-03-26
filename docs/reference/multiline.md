@@ -9,7 +9,7 @@ Several use cases generate events that span multiple lines of text. In order to 
 
 Multiline event processing is complex and relies on proper event ordering. The best way to guarantee ordered log processing is to implement the processing as early in the pipeline as possible.
 
-The [multiline](/reference/plugins-codecs-multiline.md) codec is the preferred tool for handling multiline events in the Logstash pipeline. The multiline codec merges lines from a single input using a simple set of rules.
+The [multiline](/logstash-docs-md://lsr/plugins-codecs-multiline.md) codec is the preferred tool for handling multiline events in the Logstash pipeline. The multiline codec merges lines from a single input using a simple set of rules.
 
 ::::{important}
 If you are using a Logstash input plugin that supports multiple hosts, such as the [beats](/logstash-docs-md://lsr/plugins-inputs-beats.md) input plugin, you should not use the [multiline](/logstash-docs-md://lsr/plugins-codecs-multiline.md) codec to handle multiline events. Doing so may result in the mixing of streams and corrupted event data. In this situation, you need to handle multiline events before sending the event data to Logstash.
