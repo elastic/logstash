@@ -34,11 +34,17 @@ import static org.logstash.common.BufferedTokenizerTest.toList;
 
 public final class BufferedTokenizerWithSizeLimitTest {
 
+    public static final int GB = 1024 * 1024 * 1024;
+
     private BufferedTokenizer sut;
 
     @Before
     public void setUp() {
-        sut = new BufferedTokenizer("\n", 10);
+        initSUTWithSizeLimit(10);
+    }
+
+    private void initSUTWithSizeLimit(int sizeLimit) {
+        sut = new BufferedTokenizer("\n", sizeLimit);
     }
 
     @Test
@@ -128,5 +134,30 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         // third token resumes
         assertEquals("ccc", tokensIterator.next());
+    }
+
+    @Test
+    public void givenTooLongInputExtractDoesntOverflow() {
+        assertEquals("Xmx must equals to what's defined in the Gradle's javaTests task",
+                12L * GB, Runtime.getRuntime().maxMemory());
+
+        // re-init the tokenizer with big sizeLimit
+        initSUTWithSizeLimit((int) ((2L * GB) - 3));
+        // Integer.MAX_VALUE is 2 * GB
+        String bigFirstPiece = generateString("a", Integer.MAX_VALUE - 1024);
+        sut.extract(bigFirstPiece);
+
+        // add another small fragment to trigger int overflow
+        // sizeLimit is (2^32-1)-3 first segment length is (2^32-1) - 1024 second is 1024 +2
+        // so the combined length of first and second is > sizeLimit and should throw an expection
+        // but because of overflow it's negative and happens to be < sizeLimit
+        Exception thrownException = assertThrows(IllegalStateException.class, () -> {
+            sut.extract(generateString("a", 1024 + 2)).iterator().next();
+        });
+        assertThat(thrownException.getMessage(), containsString("input buffer full"));
+    }
+
+    private String generateString(String fill, int size) {
+        return fill.repeat(size);
     }
 }
