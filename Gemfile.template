@@ -26,6 +26,8 @@ gem "stud", "~> 0.0.22", :group => :build
 gem "fileutils", "~> 1.7"
 
 gem "rubocop", :group => :development
+# rubocop-ast 1.43.0 carries a dep on `prism` which requires native c extensions
+gem 'rubocop-ast', '= 1.42.0', :group => :development
 gem "belzebuth", :group => :development
 gem "benchmark-ips", :group => :development
 gem "ci_reporter_rspec", "~> 1", :group => :development
