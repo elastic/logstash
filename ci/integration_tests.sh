@@ -19,24 +19,15 @@ if [[ $1 = "setup" ]]; then
  exit 0
 
 elif [[ $1 == "split" ]]; then
-    cd qa/integration
-    glob1=(specs/*spec.rb)
-    glob2=(specs/**/*spec.rb)
-    all_specs=("${glob1[@]}" "${glob2[@]}")
+  # Source shared function for splitting integration tests
+  source "$(dirname "${BASH_SOURCE[0]}")/partition-files.lib.sh"
 
-    specs0=${all_specs[@]::$((${#all_specs[@]} / 2 ))}
-    specs1=${all_specs[@]:$((${#all_specs[@]} / 2 ))}
-    cd ../..
-    if [[ $2 == 0 ]]; then
-       echo "Running the first half of integration specs: $specs0"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs0" --console=plain
-    elif [[ $2 == 1 ]]; then
-       echo "Running the second half of integration specs: $specs1"
-       ./gradlew runIntegrationTests -PrubyIntegrationSpecs="$specs1" --console=plain
-    else
-       echo "Error, must specify 0 or 1 after the split. For example ci/integration_tests.sh split 0"
-       exit 1
-    fi
+  index="${2:?index}"
+  count="${3:-2}"
+  specs=($(cd qa/integration; partition_files "${index}" "${count}" < <(find specs -name '*_spec.rb') ))
+
+  echo "Running integration tests partition[${index}] of ${count}: ${specs[*]}"
+  ./gradlew runIntegrationTests -PrubyIntegrationSpecs="${specs[*]}" --console=plain
 
 elif [[ !  -z  $@  ]]; then
     echo "Running integration tests 'rspec $@'"
