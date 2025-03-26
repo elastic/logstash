@@ -7,6 +7,7 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-17-2,Logstash 8.17.2>>
 * <<logstash-8-17-1,Logstash 8.17.1>>
 * <<logstash-8-17-0,Logstash 8.17.0>>
+* <<logstash-8-16-6,Logstash 8.16.6>>
 * <<logstash-8-16-5,Logstash 8.16.5>>
 * <<logstash-8-16-4,Logstash 8.16.4>>
 * <<logstash-8-16-3,Logstash 8.16.3>>
@@ -304,6 +305,26 @@ Other `json_lines` codec issues can be mitigated by:
 *Http_client Mixin - 7.5.0*
 
 * Adds new mixin configuration option `with_obsolete` to mark `ssl` options as obsolete https://github.com/logstash-plugins/logstash-mixin-http_client/pull/46[#46]
+
+[[logstash-8-16-6]]
+=== Logstash 8.16.6 Release Notes
+
+[[notable-8-16-6]]
+==== Notable issues fixed
+
+* Fix pqcheck and pqrepair on Windows. https://github.com/elastic/logstash/pull/17210[#17210]
+* Avoid possible integer overflow in string tokenization. https://github.com/elastic/logstash/pull/17353[#17353]
+
+[[plugins-8-16-6]]
+==== Plugins
+
+*Syslog Input - 3.7.1*
+
+* Fix issue where the priority field was not being set correctly when grok failed https://github.com/logstash-plugins/logstash-input-syslog/pull/78[#76]
+
+*Jdbc Integration - 5.5.3*
+
+* [DOC] Rework inline comment to a callout in preparation for upcoming MD conversion https://github.com/logstash-plugins/logstash-integration-jdbc/pull/181[#181]
 
 [[logstash-8-16-5]]
 === Logstash 8.16.5 Release Notes
