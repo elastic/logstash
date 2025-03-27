@@ -31,6 +31,7 @@ public class JavaVersion implements Comparable<JavaVersion> {
 
     public static final JavaVersion CURRENT = parse(System.getProperty("java.specification.version"));
     public static final JavaVersion JAVA_17 = parse("17");
+    public static final JavaVersion JAVA_21 = parse("21");
 
     private final List<Integer> version;
 
