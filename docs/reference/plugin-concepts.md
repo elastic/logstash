@@ -13,9 +13,9 @@ List-type URI parameters will automatically expand strings that contain multiple
 
 These plugins and options support this functionality:
 
-* [Elasticsearch input plugin - `hosts`](/reference/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-hosts)
-* [Elasticsearch output plugin - `hosts`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-hosts)
-* [Elasticsearch filter plugin - `hosts`](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-hosts)
+* [Elasticsearch input plugin - `hosts`](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-hosts)
+* [Elasticsearch output plugin - `hosts`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-hosts)
+* [Elasticsearch filter plugin - `hosts`](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-hosts)
 
 You can use this functionality to define an environment variable with multiple whitespace-delimited URIs and use it for the options above.
 

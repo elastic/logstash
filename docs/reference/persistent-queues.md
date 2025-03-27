@@ -334,7 +334,7 @@ queue.max_bytes: 8gb
 
 With these settings specified, Logstash buffers events on disk until the size of the queue reaches 8gb. When the queue is full of unACKed events, and the size limit has been reached, Logstash no longer accepts new events.
 
-Each input handles back pressure independently. For example, when the [beats](/reference/plugins-inputs-beats.md) input encounters back pressure, it no longer accepts new connections and waits until the persistent queue has space to accept more events. After the filter and output stages finish processing existing events in the queue and ACKs them, Logstash automatically starts accepting new events.
+Each input handles back pressure independently. For example, when the [beats](logstash-docs-md://lsr/plugins-inputs-beats.md) input encounters back pressure, it no longer accepts new connections and waits until the persistent queue has space to accept more events. After the filter and output stages finish processing existing events in the queue and ACKs them, Logstash automatically starts accepting new events.
 
 
 ### Controlling durability [durability-persistent-queues]

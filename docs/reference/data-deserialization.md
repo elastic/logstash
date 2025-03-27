@@ -7,7 +7,7 @@ mapped_pages:
 
 The plugins described in this section are useful for deserializing data into Logstash events.
 
-[avro codec](/reference/plugins-codecs-avro.md)
+[avro codec](logstash-docs-md://lsr/plugins-codecs-avro.md)
 :   Reads serialized Avro records as Logstash events. This plugin deserializes individual Avro records. It is not for reading Avro files. Avro files have a unique format that must be handled upon input.
 
     The following config deserializes input from Kafka:
@@ -26,7 +26,7 @@ The plugins described in this section are useful for deserializing data into Log
     ```
 
 
-[csv filter](/reference/plugins-filters-csv.md)
+[csv filter](logstash-docs-md://lsr/plugins-filters-csv.md)
 :   Parses comma-separated value data into individual fields. By default, the filter autogenerates field names (column1, column2, and so on), or you can specify a list of names. You can also change the column separator.
 
     The following config parses CSV data into the field names specified in the `columns` field:
@@ -41,7 +41,7 @@ The plugins described in this section are useful for deserializing data into Log
     ```
 
 
-[fluent codec](/reference/plugins-codecs-fluent.md)
+[fluent codec](logstash-docs-md://lsr/plugins-codecs-fluent.md)
 :   Reads the Fluentd `msgpack` schema.
 
     The following config decodes logs received from `fluent-logger-ruby`:
@@ -56,7 +56,7 @@ The plugins described in this section are useful for deserializing data into Log
     ```
 
 
-[json codec](/reference/plugins-codecs-json.md)
+[json codec](logstash-docs-md://lsr/plugins-codecs-json.md)
 :   Decodes (via inputs) and encodes (via outputs) JSON formatted content, creating one event per element in a JSON array.
 
     The following config decodes the JSON formatted content in a file:
@@ -70,7 +70,7 @@ The plugins described in this section are useful for deserializing data into Log
     ```
 
 
-[protobuf codec](/reference/plugins-codecs-protobuf.md)
+[protobuf codec](logstash-docs-md://lsr/plugins-codecs-protobuf.md)
 :   Reads protobuf encoded messages and converts them to Logstash events. Requires the protobuf definitions to be compiled as Ruby files. You can compile them by using the [ruby-protoc compiler](https://github.com/codekitchen/ruby-protocol-buffers).
 
     The following config decodes events from a Kafka stream:
@@ -89,7 +89,7 @@ The plugins described in this section are useful for deserializing data into Log
     ```
 
 
-[xml filter](/reference/plugins-filters-xml.md)
+[xml filter](logstash-docs-md://lsr/plugins-filters-xml.md)
 :   Parses XML into fields.
 
     The following config parses the whole XML document stored in the `message` field:

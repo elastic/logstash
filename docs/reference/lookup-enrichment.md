@@ -21,7 +21,7 @@ These plugins can help you enrich data with additional info, such as GeoIP and u
 ## Lookup plugins [lookup-plugins]
 
 $$$dns-def$$$dns filter
-:   The [dns filter plugin](/reference/plugins-filters-dns.md) performs a standard or reverse DNS lookup.
+:   The [dns filter plugin](logstash-docs-md://lsr/plugins-filters-dns.md) performs a standard or reverse DNS lookup.
 
     The following config performs a reverse lookup on the address in the `source_host` field and replaces it with the domain name:
 
@@ -36,7 +36,7 @@ $$$dns-def$$$dns filter
 
 
 $$$es-def$$$elasticsearch filter
-:   The [elasticsearch filter](/reference/plugins-filters-elasticsearch.md) copies fields from previous log events in Elasticsearch to current events.
+:   The [elasticsearch filter](logstash-docs-md://lsr/plugins-filters-elasticsearch.md) copies fields from previous log events in Elasticsearch to current events.
 
     The following config shows a complete example of how this filter might be used.  Whenever Logstash receives an "end" event, it uses this Elasticsearch filter to find the matching "start" event based on some operation identifier. Then it copies the `@timestamp` field from the "start" event into a new field on the "end" event.  Finally, using a combination of the date filter and the ruby filter, the code in the example calculates the time duration in hours between the two events.
 
@@ -59,7 +59,7 @@ $$$es-def$$$elasticsearch filter
 
 
 $$$geoip-def$$$geoip filter
-:   The [geoip filter](/reference/plugins-filters-geoip.md) adds geographical information about the location of IP addresses. For example:
+:   The [geoip filter](logstash-docs-md://lsr/plugins-filters-geoip.md) adds geographical information about the location of IP addresses. For example:
 
     ```json
     filter {
@@ -81,10 +81,10 @@ $$$geoip-def$$$geoip filter
 
 
 $$$http-def$$$http filter
-:   The [http filter](/reference/plugins-filters-http.md) integrates with external web services/REST APIs, and enables lookup enrichment against any HTTP service or endpoint. This plugin is well suited for many enrichment use cases, such as social APIs, sentiment APIs, security feed APIs, and business service APIs.
+:   The [http filter](logstash-docs-md://lsr/plugins-filters-http.md) integrates with external web services/REST APIs, and enables lookup enrichment against any HTTP service or endpoint. This plugin is well suited for many enrichment use cases, such as social APIs, sentiment APIs, security feed APIs, and business service APIs.
 
 $$$jdbc-static-def$$$jdbc_static filter
-:   The [jdbc_static filter](/reference/plugins-filters-jdbc_static.md) enriches events with data pre-loaded from a remote database.
+:   The [jdbc_static filter](logstash-docs-md://lsr/plugins-filters-jdbc_static.md) enriches events with data pre-loaded from a remote database.
 
     The following example fetches data from a remote database, caches it in a local database, and uses lookups to enrich events with data cached in the local database.
 
@@ -158,7 +158,7 @@ $$$jdbc-static-def$$$jdbc_static filter
 
 
 $$$jdbc-stream-def$$$jdbc_streaming filter
-:   The [jdbc_streaming filter](/reference/plugins-filters-jdbc_streaming.md) enriches events with database data.
+:   The [jdbc_streaming filter](logstash-docs-md://lsr/plugins-filters-jdbc_streaming.md) enriches events with database data.
 
     The following example executes a SQL query and stores the result set in a field called `country_details`:
 
@@ -179,10 +179,10 @@ $$$jdbc-stream-def$$$jdbc_streaming filter
 
 
 $$$memcached-def$$$memcached filter
-:   The [memcached filter](/reference/plugins-filters-memcached.md) enables key/value lookup enrichment against a Memcached object caching system. It supports both read (GET) and write (SET) operations. It is a notable addition for security analytics use cases.
+:   The [memcached filter](logstash-docs-md://lsr/plugins-filters-memcached.md) enables key/value lookup enrichment against a Memcached object caching system. It supports both read (GET) and write (SET) operations. It is a notable addition for security analytics use cases.
 
 $$$translate-def$$$translate filter
-:   The [translate filter](/reference/plugins-filters-translate.md) replaces field contents based on replacement values specified in a hash or file. Currently supports these file types: YAML, JSON, and CSV.
+:   The [translate filter](logstash-docs-md://lsr/plugins-filters-translate.md) replaces field contents based on replacement values specified in a hash or file. Currently supports these file types: YAML, JSON, and CSV.
 
     The following example takes the value of the `response_code` field, translates it to a description based on the values specified in the dictionary, and then removes the `response_code` field from the event:
 
@@ -204,7 +204,7 @@ $$$translate-def$$$translate filter
 
 
 $$$useragent-def$$$useragent filter
-:   The [useragent filter](/reference/plugins-filters-useragent.md) parses user agent strings into fields.
+:   The [useragent filter](logstash-docs-md://lsr/plugins-filters-useragent.md) parses user agent strings into fields.
 
     The following example takes the user agent string in the `agent` field, parses it into user agent fields, and adds the user agent fields to a new field called `user_agent`. It also removes the original `agent` field:
 

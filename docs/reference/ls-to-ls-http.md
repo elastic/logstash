@@ -5,7 +5,7 @@ mapped_pages:
 
 # Logstash-to-Logstash: HTTP output to HTTP input [ls-to-ls-http]
 
-HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for Logstash-to-Logstash communication. This approach relies on the use of [http output](/reference/plugins-outputs-http.md) to [http input](/reference/plugins-inputs-http.md) plugins.
+HTTP output to HTTP input is an alternative to the Lumberjack output to Beats input approach for Logstash-to-Logstash communication. This approach relies on the use of [http output](logstash-docs-md://lsr/plugins-outputs-http.md) to [http input](logstash-docs-md://lsr/plugins-inputs-http.md) plugins.
 
 ::::{note}
 {{ls}}-to-{{ls}} using HTTP input/output plugins is now being deprecated in favor of [Logstash-to-Logstash: Output to Input](/reference/ls-to-ls-native.md).

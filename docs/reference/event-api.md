@@ -92,7 +92,7 @@ event.set("[foo][bar][c]", [3, 4])
 
 ## Ruby Filter [_ruby_filter]
 
-The [Ruby Filter](/reference/plugins-filters-ruby.md) can be used to execute any ruby code and manipulate event data using the API described above. For example, using the new API:
+The [Ruby Filter](logstash-docs-md://lsr/plugins-filters-ruby.md) can be used to execute any ruby code and manipulate event data using the API described above. For example, using the new API:
 
 ```ruby
 filter {

@@ -12,7 +12,7 @@ With over 200 plugins in the Logstash plugin ecosystem, it’s sometimes challen
 * [Extracting Fields and Wrangling Data](/reference/field-extraction.md)
 * [Enriching Data with Lookups](/reference/lookup-enrichment.md)
 
-Also see [*Filter plugins*](/reference/filter-plugins.md) and [*Codec plugins*](/reference/codec-plugins.md) for the full list of available data processing plugins.
+Also see [*Filter plugins*](logstash-docs-md://lsr/filter-plugins.md) and [*Codec plugins*](logstash-docs-md://lsr/codec-plugins.md) for the full list of available data processing plugins.
 
 
 
