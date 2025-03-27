@@ -12,7 +12,7 @@ In this section, you create a Logstash pipeline that takes input from a Twitter 
 
 ## Reading from a Twitter Feed [twitter-configuration]
 
-To add a Twitter feed, you use the [`twitter`](/reference/plugins-inputs-twitter.md) input plugin. To configure the plugin, you need several pieces of information:
+To add a Twitter feed, you use the [`twitter`](logstash-docs-md://lsr/plugins-inputs-twitter.md) input plugin. To configure the plugin, you need several pieces of information:
 
 * A *consumer key*, which uniquely identifies your Twitter app.
 * A *consumer secret*, which serves as the password for your Twitter app.
@@ -20,7 +20,7 @@ To add a Twitter feed, you use the [`twitter`](/reference/plugins-inputs-twitter
 * An *oauth token*, which identifies the Twitter account using this app.
 * An *oauth token secret*, which serves as the password of the Twitter account.
 
-Visit [https://dev.twitter.com/apps](https://dev.twitter.com/apps) to set up a Twitter account and generate your consumer key and secret, as well as your access token and secret. See the docs for the [`twitter`](/reference/plugins-inputs-twitter.md) input plugin if you’re not sure how to generate these keys.
+Visit [https://dev.twitter.com/apps](https://dev.twitter.com/apps) to set up a Twitter account and generate your consumer key and secret, as well as your access token and secret. See the docs for the [`twitter`](logstash-docs-md://lsr/plugins-inputs-twitter.md) input plugin if you’re not sure how to generate these keys.
 
 Like you did earlier when you worked on [Parsing Logs with Logstash](/reference/advanced-pipeline.md), create a config file (called `second-pipeline.conf`) that contains the skeleton of a configuration pipeline. If you want, you can reuse the file you created earlier, but make sure you pass in the correct config file name when you run Logstash.
 
@@ -73,7 +73,7 @@ Configure your Logstash instance to use the Filebeat input plugin by adding the 
 
 ## Writing Logstash Data to a File [logstash-file-output]
 
-You can configure your Logstash pipeline to write data directly to a file with the [`file`](/reference/plugins-outputs-file.md) output plugin.
+You can configure your Logstash pipeline to write data directly to a file with the [`file`](logstash-docs-md://lsr/plugins-outputs-file.md) output plugin.
 
 Configure your Logstash instance to use the `file` output plugin by adding the following lines to the `output` section of the `second-pipeline.conf` file:
 

@@ -5,7 +5,7 @@ mapped_pages:
 
 # Sending data to Elastic Cloud (hosted Elasticsearch Service) [connecting-to-cloud]
 
-Our hosted {{ess}} on [Elastic Cloud](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the Elasticsearch output plugin to use [`cloud_id`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
+Our hosted {{ess}} on [Elastic Cloud](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
 
 Examples:
 
@@ -28,9 +28,9 @@ Cloud Auth is optional. Construct this value by following this format "<username
 
 The Elasticsearch input, output, and filter plugins support cloud_id and cloud_auth in their configurations.
 
-* [Elasticsearch input plugin](/reference/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-cloud_id)
-* [Elasticsearch filter plugin](/reference/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-cloud_id)
-* [Elasticsearch output plugin](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
+* [Elasticsearch input plugin](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-cloud_id)
+* [Elasticsearch filter plugin](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-cloud_id)
+* [Elasticsearch output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
 
 
 ## Sending {{ls}} management data to {{es}} Services [cloud-id-mgmt]

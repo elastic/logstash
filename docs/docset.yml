@@ -5,7 +5,7 @@ cross_links:
   - ecs
   - elasticsearch
   - integration-docs
-  - logstash-docs
+  - logstash-docs-md
   - search-ui
 toc:
   - toc: reference

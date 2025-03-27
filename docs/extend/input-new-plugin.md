@@ -443,7 +443,7 @@ With these both defined, the install process will search for the required jar fi
 
 ## Document your plugin [_document_your_plugin]
 
-Documentation is an important part of your plugin. All plugin documentation is rendered and placed in the [Logstash Reference](/reference/index.md) and the [Versioned plugin docs](logstash-docs://reference/integration-plugins.md).
+Documentation is an important part of your plugin. All plugin documentation is rendered and placed in the [Logstash Reference](/reference/index.md) and the [Versioned plugin docs](logstash-docs-md://vpr/integration-plugins.md).
 
 See [Document your plugin](/extend/plugin-doc.md) for tips and guidelines.
 

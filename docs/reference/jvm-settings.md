@@ -87,7 +87,7 @@ Performance should not be noticeably affected if you switch between `direct` and
 
 ### Memory sizing [memory-size-calculation]
 
-Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings. By default, a JVM’s off-heap direct memory limit is the same as the heap size. Check out [beats input memory usage](/reference/plugins-inputs-beats.md#plugins-inputs-beats-memory). Consider setting `-XX:MaxDirectMemorySize` to half of the heap size or any value that can accommodate the load you expect these plugins to handle.
+Total JVM memory allocation must be estimated and is controlled indirectly using Java heap and direct memory settings. By default, a JVM’s off-heap direct memory limit is the same as the heap size. Check out [beats input memory usage](logstash-docs-md://lsr/plugins-inputs-beats.md#plugins-inputs-beats-memory). Consider setting `-XX:MaxDirectMemorySize` to half of the heap size or any value that can accommodate the load you expect these plugins to handle.
 
 As you make your capacity calculations, keep in mind that the JVM can’t consume the total amount of the host’s memory available, as the Operating System and other processes will require memory too.
 
