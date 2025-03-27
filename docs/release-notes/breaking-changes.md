@@ -3,7 +3,8 @@ navigation_title: "Breaking changes"
 ---
 
 # Logstash breaking changes [logstash-breaking-changes]
-Breaking changes can impact your Elastic applications, potentially disrupting normal operations. Before you upgrade, carefully review the Logstash breaking changes and take the necessary steps to mitigate any issues. To learn how to upgrade, check [Upgrade](docs-content://deploy-manage/upgrade.md).
+Breaking changes can impact your Elastic applications, potentially disrupting normal operations. 
+Before you upgrade, carefully review the Logstash breaking changes and take the necessary steps to mitigate any issues. 
 
 % ## Next version [logstash-nextversion-breaking-changes]
 
