@@ -534,12 +534,10 @@ namespace "artifact" do
 
   task "prepare-observabilitySRE" do
     if ENV['SKIP_PREPARE'] != "1"
-      %w(
-        bootstrap
-        plugin:install-default
-        plugin:trim-for-observabilitySRE
-        artifact:clean-bundle-config
-      ).each {|task| Rake::Task[task].invoke }
+      Rake::Task['bootstrap'].invoke
+      Rake::Task['plugin:install-default'].invoke
+      Rake::Task['plugin:trim-for-observabilitySRE'].invoke
+      Rake::Task['artifact:clean-bundle-config'].invoke
     end
   end
 
