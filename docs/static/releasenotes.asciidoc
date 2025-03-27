@@ -85,6 +85,11 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-4]]
 === Logstash 8.17.4 Release Notes
 
+[[known-issues-8-17-4]]
+==== Known issues
+
+** The https://github.com/logstash-plugins/logstash-input-http_poller[http_poller input] plugin will terminate during pipeline startup due to an issue with an underlying library. Please upgrade to logstash-input-http_poller 5.6.1 using {ls}'s plugin manager with `bin/logstash-plugin update logstash-input-http_poller`.
+
 [[notable-8-17-4]]
 ==== Notable issues fixed
 
