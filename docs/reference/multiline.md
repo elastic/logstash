@@ -9,19 +9,19 @@ Several use cases generate events that span multiple lines of text. In order to 
 
 Multiline event processing is complex and relies on proper event ordering. The best way to guarantee ordered log processing is to implement the processing as early in the pipeline as possible.
 
-The [multiline](/reference/plugins-codecs-multiline.md) codec is the preferred tool for handling multiline events in the Logstash pipeline. The multiline codec merges lines from a single input using a simple set of rules.
+The [multiline](logstash-docs-md://lsr/plugins-codecs-multiline.md) codec is the preferred tool for handling multiline events in the Logstash pipeline. The multiline codec merges lines from a single input using a simple set of rules.
 
 ::::{important}
-If you are using a Logstash input plugin that supports multiple hosts, such as the [beats](/reference/plugins-inputs-beats.md) input plugin, you should not use the [multiline](/reference/plugins-codecs-multiline.md) codec to handle multiline events. Doing so may result in the mixing of streams and corrupted event data. In this situation, you need to handle multiline events before sending the event data to Logstash.
+If you are using a Logstash input plugin that supports multiple hosts, such as the [beats](logstash-docs-md://lsr/plugins-inputs-beats.md) input plugin, you should not use the [multiline](logstash-docs-md://lsr/plugins-codecs-multiline.md) codec to handle multiline events. Doing so may result in the mixing of streams and corrupted event data. In this situation, you need to handle multiline events before sending the event data to Logstash.
 ::::
 
 
 The most important aspects of configuring the multiline codec are the following:
 
-* The `pattern` option specifies a regular expression. Lines that match the specified regular expression are considered either continuations of a previous line or the start of a new multiline event. You can use [grok](/reference/plugins-filters-grok.md) regular expression templates with this configuration option.
+* The `pattern` option specifies a regular expression. Lines that match the specified regular expression are considered either continuations of a previous line or the start of a new multiline event. You can use [grok](logstash-docs-md://lsr/plugins-filters-grok.md) regular expression templates with this configuration option.
 * The `what` option takes two values: `previous` or `next`. The `previous` value specifies that lines that match the value in the `pattern` option are part of the previous line. The `next` value specifies that lines that match the value in the `pattern` option are part of the following line.* The `negate` option applies the multiline codec to lines that *do not* match the regular expression specified in the `pattern` option.
 
-See the full documentation for the [multiline](/reference/plugins-codecs-multiline.md) codec plugin for more information on configuration options.
+See the full documentation for the [multiline](logstash-docs-md://lsr/plugins-codecs-multiline.md) codec plugin for more information on configuration options.
 
 ## Examples of Multiline Codec Configuration [_examples_of_multiline_codec_configuration]
 

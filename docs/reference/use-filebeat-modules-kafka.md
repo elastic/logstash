@@ -7,7 +7,7 @@ mapped_pages:
 
 This section shows how to set up {{filebeat}} [modules](beats://reference/filebeat/filebeat-modules-overview.md) to work with {{ls}} when you are using Kafka in between {{filebeat}} and {{ls}} in your publishing pipeline. The main goal of this example is to show how to load ingest pipelines from {{filebeat}} and use them with {{ls}}.
 
-The examples in this section show simple configurations with topic names hard coded. For a full list of configuration options, see documentation about configuring the [Kafka input plugin](/reference/plugins-inputs-kafka.md). Also see [Configure the Kafka output](beats://reference/filebeat/kafka-output.md) in the *{{filebeat}} Reference*.
+The examples in this section show simple configurations with topic names hard coded. For a full list of configuration options, see documentation about configuring the [Kafka input plugin](logstash-docs-md://lsr/plugins-inputs-kafka.md). Also see [Configure the Kafka output](beats://reference/filebeat/kafka-output.md) in the *{{filebeat}} Reference*.
 
 ## Set up and run {{filebeat}} [_set_up_and_run_filebeat]
 

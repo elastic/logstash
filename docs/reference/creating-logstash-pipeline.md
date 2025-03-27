@@ -5,7 +5,7 @@ mapped_pages:
 
 # Creating a Logstash Pipeline [configuration]
 
-You can create a pipeline by stringing together plugins--[inputs](/reference/input-plugins.md), [outputs](/reference/output-plugins.md), [filters](/reference/filter-plugins.md), and sometimes [codecs](/reference/codec-plugins.md)--in order to process data. To build a Logstash pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
+You can create a pipeline by stringing together plugins--[inputs](logstash-docs-md://lsr/input-plugins.md), [outputs](logstash-docs-md://lsr/output-plugins.md), [filters](logstash-docs-md://lsr/filter-plugins.md), and sometimes [codecs](logstash-docs-md://lsr/codec-plugins.md)--in order to process data. To build a Logstash pipeline, create a config file to specify which plugins you want to use and the settings for each plugin.
 
 A very basic pipeline might contain only an input and an output. Most pipelines include at least one filter plugin because that’s where the "transform" part of the ETL (extract, transform, load) magic happens. You can reference event fields in a pipeline and use conditionals to process events when they meet certain criteria.
 

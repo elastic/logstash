@@ -29,7 +29,7 @@ Logstash can run the ingest pipeline component of your Elastic integration when 
 Adding the `filter-elastic_integration` plugin as the *first* filter plugin keeps the pipeline’s behavior as close as possible to the behavior you’d expect if the bytes were processed by the integration in {{es}}. The more you modify an event before calling the `elastic_integration` filter, the higher the risk that the modifications will have meaningful effect in how the event is transformed.
 
 ::::{admonition} How to
-Create a {{ls}} pipeline that uses the [elastic_agent input](/reference/plugins-inputs-elastic_agent.md) plugin, and the [elastic_integration filter](/reference/plugins-filters-elastic_integration.md) plugin as the *first* filter in your {{ls}} pipeline. You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. Add one or more output plugins to complete your pipeline.
+Create a {{ls}} pipeline that uses the [elastic_agent input](logstash-docs-md://lsr/plugins-inputs-elastic_agent.md) plugin, and the [elastic_integration filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md) plugin as the *first* filter in your {{ls}} pipeline. You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. Add one or more output plugins to complete your pipeline.
 
 ::::
 
@@ -79,9 +79,9 @@ output { <3>
 
 ### Using `filter-elastic_integration` with `output-elasticsearch` [es-tips]
 
-Elastic {{integrations}} are designed to work with [data streams](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) and [ECS-compatible](/reference/plugins-outputs-elasticsearch.md#_compatibility_with_the_elastic_common_schema_ecs) output. Be sure that these features are enabled in the [`output-elasticsearch`](/reference/plugins-outputs-elasticsearch.md) plugin.
+Elastic {{integrations}} are designed to work with [data streams](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) and [ECS-compatible](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#_compatibility_with_the_elastic_common_schema_ecs) output. Be sure that these features are enabled in the [`output-elasticsearch`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) plugin.
 
-* Set [`data-stream`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data_stream) to `true`.<br> (Check out [Data streams](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) for additional data streams settings.)
-* Set [`ecs-compatibility`](/reference/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ecs_compatibility) to `v1` or `v8`.
+* Set [`data-stream`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data_stream) to `true`.<br> (Check out [Data streams](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) for additional data streams settings.)
+* Set [`ecs-compatibility`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ecs_compatibility) to `v1` or `v8`.
 
-Check out the [`output-elasticsearch` plugin](/reference/plugins-outputs-elasticsearch.md) docs for additional settings.
+Check out the [`output-elasticsearch` plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) docs for additional settings.

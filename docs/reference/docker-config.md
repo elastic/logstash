@@ -19,7 +19,7 @@ docker run --rm -it -v ~/pipeline/:/usr/share/logstash/pipeline/ docker.elastic.
 
 Every file in the host directory `~/pipeline/` will then be parsed by Logstash as pipeline configuration.
 
-If you don’t provide configuration to Logstash, it will run with a minimal config that listens for messages from the [Beats input plugin](/reference/plugins-inputs-beats.md) and echoes any that are received to `stdout`. In this case, the startup logs will be similar to the following:
+If you don’t provide configuration to Logstash, it will run with a minimal config that listens for messages from the [Beats input plugin](logstash-docs-md://lsr/plugins-inputs-beats.md) and echoes any that are received to `stdout`. In this case, the startup logs will be similar to the following:
 
 ```text
 Sending Logstash logs to /usr/share/logstash/logs which is now configured via log4j2.properties.

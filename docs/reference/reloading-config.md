@@ -44,7 +44,7 @@ When Logstash detects a change in a config file, it stops the current pipeline b
 
 During automatic config reloading, the JVM is not restarted. The creating and swapping of pipelines all happens within the same process.
 
-Changes to [grok](/reference/plugins-filters-grok.md) pattern files are also reloaded, but only when a change in the config file triggers a reload (or the pipeline is restarted).
+Changes to [grok](logstash-docs-md://lsr/plugins-filters-grok.md) pattern files are also reloaded, but only when a change in the config file triggers a reload (or the pipeline is restarted).
 
 In general, Logstash is not watching or monitoring any configuration files used or referenced by inputs, filters or outputs.
 
@@ -53,6 +53,6 @@ In general, Logstash is not watching or monitoring any configuration files used 
 
 Input and output plugins usually interact with OS resources. In some circumstances those resources can’t be released without a restart. For this reason some plugins can’t be simply updated and this prevents pipeline reload.
 
-The [stdin input](/reference/plugins-inputs-stdin.md) plugin, for example, prevents reloading for these reasons.
+The [stdin input](logstash-docs-md://lsr/plugins-inputs-stdin.md) plugin, for example, prevents reloading for these reasons.
 
 

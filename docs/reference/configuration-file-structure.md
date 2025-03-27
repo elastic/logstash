@@ -50,7 +50,7 @@ input {
 
 In this example, two settings are configured for each of the file inputs: *port* and *tags*.
 
-The settings you can configure vary according to the plugin type. For information about each plugin, see [Input Plugins](/reference/input-plugins.md), [Output Plugins](/reference/output-plugins.md), [Filter Plugins](/reference/filter-plugins.md), and [Codec Plugins](/reference/codec-plugins.md).
+The settings you can configure vary according to the plugin type. For information about each plugin, see [Input Plugins](logstash-docs-md://lsr/input-plugins.md), [Output Plugins](logstash-docs-md://lsr/output-plugins.md), [Filter Plugins](logstash-docs-md://lsr/filter-plugins.md), and [Codec Plugins](logstash-docs-md://lsr/codec-plugins.md).
 
 
 ## Value types [plugin-value-types]
@@ -113,7 +113,7 @@ A codec is the name of Logstash codec used to represent the data. Codecs can be 
 
 Input codecs provide a convenient way to decode your data before it enters the input. Output codecs provide a convenient way to encode your data before it leaves the output. Using an input or output codec eliminates the need for a separate filter in your Logstash pipeline.
 
-A list of available codecs can be found at the [Codec Plugins](/reference/codec-plugins.md) page.
+A list of available codecs can be found at the [Codec Plugins](logstash-docs-md://lsr/codec-plugins.md) page.
 
 Example:
 
