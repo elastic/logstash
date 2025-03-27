@@ -207,8 +207,8 @@ If TLS encryption is enabled on an on premise {{es}} cluster, you need to config
 output {
   elasticsearch {
     ...
-    ssl => true
-    cacert => '/path/to/cert.pem' <1>
+    ssl_enabled => true
+    ssl_certificate_authorities => '/path/to/cert.pem' <1>
   }
 }
 ```
@@ -230,10 +230,10 @@ The `elasticsearch` output supports PKI authentication. To use an X.509 client-c
 output {
   elasticsearch {
     ...
-    keystore => /path/to/keystore.jks
-    keystore_password => realpassword
-    truststore =>  /path/to/truststore.jks <1>
-    truststore_password =>  realpassword
+    ssl_keystore_path => /path/to/keystore.jks
+    ssl_keystore_password => realpassword
+    ssl_truststore_path =>  /path/to/truststore.jks <1>
+    ssl_truststore_password =>  realpassword
   }
 }
 ```
