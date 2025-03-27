@@ -566,6 +566,7 @@ namespace "artifact" do
         bootstrap
         plugin:install-default
         plugin:trim-for-observabilitySRE
+        plugin:install-fips-validation-plugin
         artifact:clean-bundle-config
       ).each {|task| Rake::Task[task].invoke }
     end
