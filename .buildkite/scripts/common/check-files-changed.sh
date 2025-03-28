@@ -19,7 +19,7 @@ changed_files=$(git diff --name-only $previous_commit)
 if [[ -n "$changed_files" ]] && [[ -z "$(echo "$changed_files" | grep -vE "$1")" ]]; then
     echo "All files compared to the previous commit [$previous_commit] match the specified regex: [$1]"
     echo "Files changed:"
-    git diff --name-only HEAD^
+    git --no-pager diff --name-only HEAD^
   exit 0
 else
   exit 1
