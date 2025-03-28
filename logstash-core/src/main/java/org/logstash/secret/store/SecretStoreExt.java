@@ -31,16 +31,20 @@ public class SecretStoreExt {
 
     private static final SecretStoreFactory SECRET_STORE_FACTORY = SecretStoreFactory.fromEnvironment();
 
-    public static SecureConfig getConfig(String keystoreFile, String keystoreClassname) {
+    public static SecureConfig getConfig(final String keystoreFile, final String keystoreClassname) {
         return getSecureConfig(RubyUtil.RUBY.getENV(), keystoreFile, keystoreClassname);
     }
 
-    private static SecureConfig getSecureConfig(RubyHash env, String file, String classname) {
+    private static SecureConfig getSecureConfig(final RubyHash env, final String file, final String classname) {
         String keystorePass = (String) env.get("LOGSTASH_KEYSTORE_PASS");
         return getSecureConfig(file, keystorePass, classname);
     }
 
-    private static SecureConfig getSecureConfig(String keystoreFile, String keystorePass, String keystoreClassname) {
+    private static SecureConfig getSecureConfig(final String keystoreFile, final String keystorePass, final String keystoreClassname) {
+        if (keystoreFile == null || keystoreClassname == null) {
+            throw new IllegalArgumentException("`keystore.file` and `keystore.classname` cannot be null");
+        }
+
         SecureConfig sc = new SecureConfig();
         sc.add("keystore.file", keystoreFile.toCharArray());
         if (keystorePass != null) {
@@ -50,18 +54,18 @@ public class SecretStoreExt {
         return sc;
     }
 
-    public static boolean exists(String keystoreFile, String keystoreClassname) {
+    public static boolean exists(final String keystoreFile, final String keystoreClassname) {
         return SECRET_STORE_FACTORY.exists(getConfig(keystoreFile, keystoreClassname));
     }
 
-    public static SecretStore getIfExists(String keystoreFile, String keystoreClassname) {
+    public static SecretStore getIfExists(final String keystoreFile, final String keystoreClassname) {
         SecureConfig sc = getConfig(keystoreFile, keystoreClassname);
         return SECRET_STORE_FACTORY.exists(sc)
                 ? SECRET_STORE_FACTORY.load(sc)
                 : null;
     }
 
-    public static SecretIdentifier getStoreId(String id) {
+    public static SecretIdentifier getStoreId(final String id) {
         return new SecretIdentifier(id);
     }
 }

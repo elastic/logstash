@@ -281,7 +281,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
             }
         }
         boolean supportEscapes = getSetting(context, "config.support_escapes").isTrue();
-        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context), EnvironmentVariableProvider.defaultProvider())) {
+        try (ConfigVariableExpander cve = new ConfigVariableExpander(getSecretStore(context),
+                             EnvironmentVariableProvider.defaultProvider())) {
             lir = ConfigCompiler.configToPipelineIR(configParts, supportEscapes, cve);
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
@@ -842,15 +843,28 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     protected SecretStore getSecretStore(final ThreadContext context) {
-        String keystoreFile = hasSetting(context, "keystore.file")
-                ? getSetting(context, "keystore.file").asJavaString()
-                : null;
-        String keystoreClassname = hasSetting(context, "keystore.classname")
-                ? getSetting(context, "keystore.classname").asJavaString()
-                : null;
-        return (keystoreFile != null && keystoreClassname != null)
-                ? SecretStoreExt.getIfExists(keystoreFile, keystoreClassname)
-                : null;
+        final String keystoreFile = safelyGetSettingValueAsString(context, "keystore.file");
+        final String keystoreClassname = safelyGetSettingValueAsString(context, "keystore.classname");
+        if (keystoreFile == null && keystoreClassname == null) {
+            // explicitly set keystore and classname null
+            return null;
+        }
+
+        if (keystoreFile == null | keystoreClassname == null) {
+            throw new IllegalStateException("Setting `keystore.file` requires `keystore.classname`, or vice versa");
+        }
+        return SecretStoreExt.getIfExists(keystoreFile, keystoreClassname);
+    }
+
+    private String safelyGetSettingValueAsString(final ThreadContext context, final String settingName) {
+        final boolean hasKeystoreFileSetting = hasSetting(context, settingName);
+        if (hasKeystoreFileSetting) {
+            final IRubyObject keystoreFileSettingValue = getSetting(context, settingName);
+            if (!keystoreFileSettingValue.isNil()) {
+                return keystoreFileSettingValue.asJavaString();
+            }
+        }
+        return null;
     }
 
     private AbstractNamespacedMetricExt getDlqMetric(final ThreadContext context) {
