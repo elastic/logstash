@@ -9,7 +9,7 @@ mapped_pages:
 
 {{agent}} collects monitoring data from your {{ls}} instance and sends it directly to your monitoring cluster. With {{agent}} collection the monitoring agent remains active even if the {{ls}} instance does not.
 
-You can enroll {{agent}} in [{{fleet}}](docs-content://reference/ingestion-tools/fleet/install-fleet-managed-elastic-agent.md) for management from a central location, or you can run [{{agent}} standalone](docs-content://reference/ingestion-tools/fleet/install-standalone-elastic-agent.md).
+You can enroll {{agent}} in [{{fleet}}](docs-content://reference/fleet/install-fleet-managed-elastic-agent.md) for management from a central location, or you can run [{{agent}} standalone](docs-content://reference/fleet/install-standalone-elastic-agent.md).
 
 **Prerequisites**
 
@@ -65,7 +65,7 @@ When you have completed the prerequisites, install and configure {{agent}} to mo
 * [View assets](#view-assets)
 * [Monitor {{ls}} logs and metrics (Stack Monitoring)](#view-data-stack)
 
-Check out [Installing {{agent}}](docs-content://reference/ingestion-tools/fleet/install-elastic-agents.md) in the *Fleet and Elastic Agent Guide* for more info.
+Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-agents.md) in the *Fleet and Elastic Agent Guide* for more info.
 
 
 ### Add the {{agent}} {{ls}} integration [add-logstash-integration-ea]
