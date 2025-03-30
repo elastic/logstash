@@ -31,7 +31,7 @@ jobs:
       BACKPORT_LABEL: "backport-${{ inputs.branch }}"
     steps:
       - name: Fetch logstash-core team member list
-        uses: tspascoal/get-user-teams-membership@57e9f42acd78f4d0f496b3be4368fc5f62696662 #v3.0.0
+        uses: tspascoal/get-user-teams-membership@be5a33ad94796bc7c29a3b6dc172b9d2c91f9f35 #v3.0.0
         with: 
           username: ${{ github.actor }}
           organization: elastic
