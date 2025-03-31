@@ -118,6 +118,21 @@ def ship_observability_sre_image_steps(branch, workflow_type):
     export ARCH="x86_64"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/build-and-push-observability-sre.sh
+- label: ":docker: Create & Push ObservabilitySRE Multi-Arch Manifest / {branch}-{workflow_type.upper()}"
+  key: "logstash_create_observability_sre_manifest"
+  depends_on:
+    - "logstash_build_and_ship_observability_sre_aarch64"
+    - "logstash_build_and_ship_observability_sre_x86_64"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-prod
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-8"
+  command: |
+    export WORKFLOW_TYPE="{workflow_type}"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/multi-architecture-observability-sre.sh
 '''
     return step
 
