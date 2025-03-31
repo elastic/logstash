@@ -415,23 +415,26 @@ module LogStash
     java_import org.logstash.settings.Boolean
     java_import org.logstash.settings.SettingNumeric
 
-    class Integer < Coercible
-      def initialize(name, default = nil, strict = true)
-        super(name, ::Integer, default, strict)
-      end
+    java_import org.logstash.settings.SettingInteger
+    # Integer = org::logstash::settings::SettingInteger
 
-      def coerce(value)
-        return value unless value.is_a?(::String)
-
-        coerced_value = Integer(value) rescue nil
-
-        if coerced_value.nil?
-          raise ArgumentError.new("Failed to coerce value to Integer. Received #{value} (#{value.class})")
-        else
-          coerced_value
-        end
-      end
-    end
+    # class Integer < Coercible
+    #   def initialize(name, default = nil, strict = true)
+    #     super(name, ::Integer, default, strict)
+    #   end
+    #
+    #   def coerce(value)
+    #     return value unless value.is_a?(::String)
+    #
+    #     coerced_value = Integer(value) rescue nil
+    #
+    #     if coerced_value.nil?
+    #       raise ArgumentError.new("Failed to coerce value to Integer. Received #{value} (#{value.class})")
+    #     else
+    #       coerced_value
+    #     end
+    #   end
+    # end
 
     class PositiveInteger < Integer
       def initialize(name, default = nil, strict = true)
