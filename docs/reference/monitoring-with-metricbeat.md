@@ -87,7 +87,7 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
 
     Set the `hosts`, `username`, and `password` to authenticate with {{ls}}.
 
-    Removing `node` or `node_stats` from the `metricsets` may cause dashboards partially visualize metrics. Therefore, we recommend retaining both metricsets.
+    Removing `node` or `node_stats` from the `metricsets` may cause dashboards to partially visualize metrics. Therefore, we recommend retaining both metricsets.
 
     By default, the module collects {{ls}} monitoring data from `localhost:9600`.
 
