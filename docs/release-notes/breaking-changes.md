@@ -16,7 +16,6 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 % ::::
 
 ## 9.0.0 [logstash-900-breaking-changes]
-**Release date:** April 2, 2025
 
 ### Changes to SSL settings in {{ls}} plugins [ssl-settings-9.0]
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
@@ -258,7 +257,7 @@ You can change the value of the `allow_superuser` setting to `true` in [logstash
 ### New setting required to continue using legacy internal monitoring [allow-legacy-monitoring]
 
 To continue using deprecated internal collection to monitor {{ls}}, set `xpack.monitoring.allow_legacy_collection` to `true` in [logstash.yml](/reference/logstash-settings-file.md).
-We encourage you to move to [agent-driven monitoring](reference/monitoring-logstash-with-elastic-agent.md), the latest, supported way to monitor Logstash [#16586(https://github.com/elastic/logstash/pull/16586)
+We encourage you to move to [agent-driven monitoring](/reference/monitoring-logstash-with-elastic-agent.md), the latest, supported way to monitor Logstash [#16586](https://github.com/elastic/logstash/pull/16586)
 
 
 ### Avoiding JSON log lines collision [avoid-collision-on-json-fields]
