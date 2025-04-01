@@ -436,19 +436,21 @@ module LogStash
     #   end
     # end
 
-    class PositiveInteger < Integer
-      def initialize(name, default = nil, strict = true)
-        super(name, default, strict) do |v|
-          if v > 0
-            true
-          else
-            raise ArgumentError.new("Number must be bigger than 0. Received: #{v}")
-          end
-        end
-      end
-    end
+    java_import org.logstash.settings.SettingPositiveInteger
 
-    class Port < Integer
+    # class PositiveInteger < Integer
+    #   def initialize(name, default = nil, strict = true)
+    #     super(name, default, strict) do |v|
+    #       if v > 0
+    #         true
+    #       else
+    #         raise ArgumentError.new("Number must be bigger than 0. Received: #{v}")
+    #       end
+    #     end
+    #   end
+    # end
+    
+    class Port < SettingInteger
       VALID_PORT_RANGE = 1..65535
 
       def initialize(name, default = nil, strict = true)
