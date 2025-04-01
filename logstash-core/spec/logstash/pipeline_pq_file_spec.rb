@@ -103,6 +103,7 @@ describe LogStash::JavaPipeline do
   let(:collected_metric) { metric_store.get_with_path("stats/pipelines/") }
 
   before :each do
+    puts "DNADBG>> setup test - start"
     FileUtils.mkdir_p(this_queue_folder)
 
     pipeline_settings_obj.set("path.queue", this_queue_folder)
@@ -112,14 +113,21 @@ describe LogStash::JavaPipeline do
     allow(LogStash::Plugin).to receive(:lookup).with("filter", "dummyfilter").and_return(LogStash::Filters::DummyFilter)
     allow(LogStash::Plugin).to receive(:lookup).with("output", "pipelinepqfileoutput").and_return(PipelinePqFileOutput)
 
+    puts "DNADBG>> setup test - workers read"
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
-    pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
+    puts "DNADBG>> setup test - workers read 2"
+    pipeline_settings.each {|k, v|
+      puts "DNADBG>> setup test - workers read 2 before set #{k}"
+      pipeline_settings_obj.set(k, v)
+    }
+    puts "DNADBG>> setup test - workers read 3"
     pipeline_settings_obj.set("queue.page_capacity", page_capacity)
     pipeline_settings_obj.set("queue.max_bytes", max_bytes)
     pipeline_settings_obj.set("queue.drain", true)
     times.push(Time.now.to_f)
 
+    puts "DNADBG>> before start"
     subject.start
     sleep(0.1) until subject.ready?
 
