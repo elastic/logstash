@@ -13,6 +13,8 @@ example, if you are debugging issues with Elasticsearch Output, you can increase
 log levels just for that component. This approach reduces noise from
 excessive logging and helps you focus on the problem area.
 
+NOTE:  When debug logging is enabled in Logstash, sensitive information such as passwords may be logged in plain text. This is because debug logging is intended to provide detailed information about the system's operation, which can include configuration settings and other sensitive data. Enable debug logging only when necessary for troubleshooting specific issues. Once the issue is resolved, switch back to a less verbose logging level (such as INFO or WARN) to avoid exposing sensitive information. If you need to share logs with others (e.g., for support purposes), make sure to redact or remove any sensitive information, such as passwords, before sharing.
+
 You can configure logging using the `log4j2.properties` file or the Logstash API.
 
 * *`log4j2.properties` file.*  Changes made through the `log4j2.properties`
