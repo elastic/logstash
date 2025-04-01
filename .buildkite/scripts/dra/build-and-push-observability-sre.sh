@@ -15,21 +15,26 @@ echo "Building ObservabilitySRE container"
 
 echo "Pushing ObservabilitySRE container to Docker repository"
 docker_login
+
+# Get qualified version without SHA (this is what the gradle task will produce)
+export INCLUDE_SHA=""
 QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
-SHA="$(git rev-parse --short HEAD)"
+
+# Set environment variable to include SHA and get version with SHA
+export INCLUDE_SHA=1
+QUALIFIED_VERSION_WITH_SHA="$(.buildkite/scripts/common/qualified-version.sh)"
+
 REGISTRY_PATH=docker.elastic.co/logstash/logstash-observability-sre
 
-# Add architecture to the tags
-ARCH_TAG="${ARCH:-x86_64}"  # Default to x86_64 if ARCH is not set
+# Current architecture
+ARCH="${ARCH:-x86_64}"  # Default to x86_64 if ARCH is not set
+echo "Architecture: ${ARCH}"
 
-echo "Architecture: ${ARCH_TAG}"
-
-# Push a unique tag (version + SHA) for the current build WITH the architecture in the name
-# Ex: docker.elastic.co/logstash/logstash-observability-sre:8.19.0-SNAPSHOT-297226b1df-aarch64
-SHA_ARCH_TAG="${QUALIFIED_VERSION}-${SHA}-${ARCH_TAG}"
-echo "Tagging and pushing: ${REGISTRY_PATH}:${QUALIFIED_VERSION} as ${REGISTRY_PATH}:${SHA_ARCH_TAG}"
-docker tag ${REGISTRY_PATH}:${QUALIFIED_VERSION} ${REGISTRY_PATH}:${SHA_ARCH_TAG}
-docker push ${REGISTRY_PATH}:${SHA_ARCH_TAG}
+# Create the full tag with SHA and architecture
+FULL_TAG="${QUALIFIED_VERSION_WITH_SHA}-${ARCH}"
+echo "Tagging and pushing: ${REGISTRY_PATH}:${QUALIFIED_VERSION} as ${REGISTRY_PATH}:${FULL_TAG}"
+docker tag ${REGISTRY_PATH}:${QUALIFIED_VERSION} ${REGISTRY_PATH}:${FULL_TAG}
+docker push ${REGISTRY_PATH}:${FULL_TAG}
 
 # Teardown Docker environment
 source .buildkite/scripts/dra/docker-env-teardown.sh
