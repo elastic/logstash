@@ -227,10 +227,8 @@ Instead, {{ls}} generates `_tagsparsefailure` in the event `tags` and the illega
 
 ### Ingest converter removed [removed-ingest-converter]
 
-The ingest converter, which was previously used to convert ingest pipelines to {{ls}} pipelines, has been removed.
-
-For more information, check [#16453](https://github.com/elastic/logstash/pull/16453)
-
+The ingest converter, which was used to convert ingest pipelines to {{ls}} pipelines, has been removed. [#16453](https://github.com/elastic/logstash/pull/16453)
+The `logstash-filter-elastic_integration` plugin offers similar functionality, and can help you use [Logstash to extend Elastic integrations](/reference/ea-integrations.md).
 
 ### JDK11 not supported [jdk-11-support-drop]
 
@@ -241,11 +239,11 @@ for details. [#16443](https://github.com/elastic/logstash/pull/16443)
 
 ### Docker base image now UBI9 based [docker-base-image-change]
 
-{{ls}} on Docker, the base image has been changed from Ubuntu to UBI9. If you create a Docker image based on the
-{{ls}} image, and rely on it being Ubuntu based, you will need to change your derived image to take account of this
-change.
+The base image for {{ls}} on Docker has been changed from Ubuntu to UBI9.
+If you create a Docker image based on the {{ls}} image and rely on it being Ubuntu based, you need to change your derived image to take account of this change. 
+For example, if your derived docker image installs additional packages using a package manager, UBI9 uses `microdnf`, rather than `apt`.
+[#16599](https://github.com/elastic/logstash/pull/16599)
 
-For more information, check [#16599](https://github.com/elastic/logstash/pull/16599)
 
 ### Cannot run {{ls}} as `superuser` by default [disallow-superuser]
 
