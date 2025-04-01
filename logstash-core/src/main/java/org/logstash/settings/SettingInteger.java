@@ -1,5 +1,7 @@
 package org.logstash.settings;
 
+import java.util.function.Predicate;
+
 public class SettingInteger extends Coercible<Integer> {
 
     public SettingInteger(String name, Integer defaultValue) {
@@ -11,12 +13,21 @@ public class SettingInteger extends Coercible<Integer> {
         super(name, defaultValue, strict, noValidator());
     }
 
+    // Exposed to be redefined in subclasses
+    protected SettingInteger(String name, Integer defaultValue, boolean strict, Predicate<Integer> validator) {
+        super(name, defaultValue, strict, validator);
+    }
+
     @Override
     public Integer coerce(Object obj) {
         if (!(obj instanceof String)) {
             // it's an Integer and cast
             if (obj instanceof Integer) {
                 return (Integer) obj;
+            }
+            // JRuby bridge convert ints to Long
+            if (obj instanceof Long) {
+                return ((Long) obj).intValue();
             }
         } else {
             // try to parse string to int
