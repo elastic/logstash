@@ -47,6 +47,7 @@ For more info, check out the [Elastic Observability](docs-content://solutions/ob
 **Configure the integration to collect metrics**
 
 * Make sure that **Metrics (Elastic Agent)** is turned on (default), and **Metrics (Stack Monitoring)** is turned off.
+* Disabling some of the metrics from the settings may cause dashboards partially visualize metrics. Therefore, we recommend collecting all metricsets.
 * Set the {{ls}} URL to point to your {{ls}} instance.<br> By default, the integration collects {{ls}} monitoring metrics from `https://localhost:9600`. If that host and port number are not correct, update the `Logstash URL` setting. If you configured {{ls}} to use encrypted communications and/or a username and password, you must access it using HTTPS. Expand the **Advanced Settings** options, and fill in the appropriate values for your {{ls}} instance.
 
 
