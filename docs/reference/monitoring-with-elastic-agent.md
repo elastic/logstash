@@ -50,7 +50,7 @@ monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ::::{dropdown} Grant agent access to Elasticsearch (standalone agent only)
 :name: create-user-ea
 
-The following minimal permissions are required to send Logstash monitoring data to Elasticsearch:
+Minimal permissions required to send Logstash monitoring data to Elasticsearch:
 
 `monitor` cluster privilege
 `auto_configure` and `create_doc` index privileges on `logs-*` and `metrics-*` indices.
