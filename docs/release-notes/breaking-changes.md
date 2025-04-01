@@ -228,7 +228,7 @@ Instead, {{ls}} generates `_tagsparsefailure` in the event `tags` and the illega
 ### Ingest converter removed [removed-ingest-converter]
 
 The ingest converter, which was used to convert ingest pipelines to {{ls}} pipelines, has been removed. [#16453](https://github.com/elastic/logstash/pull/16453)
-The `logstash-filter-elastic_integration` plugin offers similar functionality, and can help you use [Logstash to extend Elastic integrations](/reference/ea-integrations.md).
+The `logstash-filter-elastic_integration` plugin offers similar functionality, and can help you use [Logstash to extend Elastic integrations](/reference/using-logstash-with-elastic-integrations.md).
 
 ### JDK11 not supported [jdk-11-support-drop]
 
