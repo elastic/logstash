@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 import os
 import sys
 import typing
+from functools import partial
 
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString
@@ -257,8 +258,8 @@ ci/unit_tests.sh ruby
             retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
-    def integration_test_parts(self, parts) -> list[JobRetValues]:
-        return list(map(lambda idx: integration_tests(self, idx+1, parts), range(parts))
+    def integration_test_parts(self, parts) -> list[partial[JobRetValues]]:
+        return [partial(self.integration_tests, part=idx+1, parts=parts) for idx in range(parts)]
 
     def integration_tests(self, part: int, parts: int) -> JobRetValues:
         step_name_human = f"Integration Tests - {part}/{parts}"
@@ -276,8 +277,8 @@ ci/integration_tests.sh split {part-1} {parts}
             retry=copy.deepcopy(ENABLED_RETRIES),
         )
 
-    def pq_integration_test_parts(self, parts) -> list[JobRetValues]:
-        return list(map(lambda idx: pq_integration_tests(self, idx+1, parts), range(parts))
+    def pq_integration_test_parts(self, parts) -> list[partial[JobRetValues]]:
+        return [partial(self.pq_integration_tests, part=idx+1, parts=parts) for idx in range(parts)]
 
     def pq_integration_tests(self, part: int, parts: int) -> JobRetValues:
         step_name_human = f"IT Persistent Queues - {part}/{parts}"
