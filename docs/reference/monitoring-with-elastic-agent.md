@@ -47,10 +47,15 @@ monitoring.cluster_uuid: PRODUCTION_ES_CLUSTER_UUID
 ::::
 
 
-::::{dropdown} Create a monitoring user (standalone agent only)
+::::{dropdown} Grant agent access to Elasticsearch (standalone agent only)
 :name: create-user-ea
 
-Create a user on the production cluster that has the `remote_monitoring_collector` [built-in role](elasticsearch://reference/elasticsearch/roles.md).
+Minimal permissions required to send Logstash monitoring data to Elasticsearch:
+
+* `monitor` cluster privilege
+* `auto_configure` and `create_doc` index privileges on `logs-*` and `metrics-*` indices.
+
+See [Grant standalone Elastic Agents access to Elasticsearch](docs-content://reference/fleet/grant-access-to-elasticsearch.md)
 
 ::::
 
