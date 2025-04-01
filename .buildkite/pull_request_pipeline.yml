@@ -18,8 +18,27 @@ steps:
       export JRUBY_OPTS="-J-Xmx1g"
       export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
       ci/license_check.sh -m 4G
-    # SKIP LICENCE CHECK FOR NOW WHILE WE FIGURE OUT DEPENDENCY VENDORING/PACKAGING
-    skip: "Skipping license check: TODO unskip once packaging is sorted out"
+
+steps:
+  - label: ":passport_control: License check - Fedramp High Mode"
+    key: "license-check-fedramp-high"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export JRUBY_OPTS="-J-Xmx1g"
+      export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e ORG_GRADLE_PROJECT_fedrampHighMode=true test-runner-image ci/license_check.sh -m 4G
 
   - label: ":rspec: Ruby unit tests"
     key: "ruby-unit-tests"
