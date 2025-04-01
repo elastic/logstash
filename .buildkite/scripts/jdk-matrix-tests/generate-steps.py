@@ -258,7 +258,7 @@ ci/unit_tests.sh ruby
         )
 
     def integration_test_parts(self, parts) -> list[JobRetValues]:
-        return list(map(lambda idx: integration_tests(self, idx+1, parts), range(parts))
+        return list(map(lambda idx: integration_tests(self, idx+1, parts), range(parts)))
 
     def integration_tests(self, part: int, parts: int) -> JobRetValues:
         step_name_human = f"Integration Tests - {part}/{parts}"
@@ -277,7 +277,7 @@ ci/integration_tests.sh split {part-1} {parts}
         )
 
     def pq_integration_test_parts(self, parts) -> list[JobRetValues]:
-        return list(map(lambda idx: pq_integration_tests(self, idx+1, parts), range(parts))
+        return list(map(lambda idx: pq_integration_tests(self, idx+1, parts), range(parts)))
 
     def pq_integration_tests(self, part: int, parts: int) -> JobRetValues:
         step_name_human = f"IT Persistent Queues - {part}/{parts}"
