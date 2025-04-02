@@ -87,7 +87,7 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 6. Configure the integration to collect metrics
 
-    * Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Technical Preview)** is turned off, if you want to collect metrics from your {{ls}} instance
+    * Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Elastic Agent)** is turned off, if you want to collect metrics from your {{ls}} instance.
     * Under **Metrics (Stack Monitoring)**, make sure the hosts setting points to your {{ls}} host URLs. By default, the integration collects {{ls}} monitoring metrics from `localhost:9600`. If that host and port number are not correct, update the `hosts` setting. If you configured {{ls}} to use encrypted communications, you must access it via HTTPS. For example, use a `hosts` setting like `https://localhost:9600`.
 
 7. Choose where to add the integration policy.<br> Click **New hosts** to add it to new agent policy or **Existing hosts** to add it to an existing agent policy.
@@ -131,7 +131,7 @@ It takes about a minute for {{agent}} to enroll in {{fleet}}, download the confi
 
 After you have confirmed enrollment and data is coming in,  click **View assets** to access dashboards related to the {{ls}} integration.
 
-For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for the technical preview metrics dashboards. These are populated with data only if you selected the **Metrics (Technical Preview)** checkbox.
+For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for metrics dashboards. These are populated with data only if you selected the **Metrics (Elastic Agent)** checkbox.
 
 :::{image} images/integration-assets-dashboards.png
 :alt: Integration assets
