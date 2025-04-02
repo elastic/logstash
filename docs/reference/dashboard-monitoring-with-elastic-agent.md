@@ -85,8 +85,8 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 6. Configure the integration to collect metrics.
 
-    * Make sure that **Metrics (Technical Preview)** is turned on, and **Metrics (Stack Monitoring)** is turned off.
-    * Under **Metrics (Technical Preview)**, make sure the {{ls}} URL setting points to your {{ls}} instance URLs.<br> By default, the integration collects {{ls}} monitoring metrics from `https://localhost:9600`. If that host and port number are not correct, update the `Logstash URL` setting. If you configured {{ls}} to use encrypted communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {{ls}} instance.
+    * Make sure that **Metrics (Elastic Agent)** is turned on (default), and **Metrics (Stack Monitoring)** is turned off.
+    * Under **Metrics (Elastic Agent)**, make sure the {{ls}} URL setting points to your {{ls}} instance URLs.<br> By default, the integration collects {{ls}} monitoring metrics from `https://localhost:9600`. If that host and port number are not correct, update the `Logstash URL` setting. If you configured {{ls}} to use encrypted communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {{ls}} instance.
 
 7. Click **Save and continue**.<br> This step takes a minute or two to complete. When it’s done, you’ll have an agent policy that contains a system integration policy for the configuration you just specified.
 8. In the popup, click **Add {{agent}} to your hosts** to open the **Add agent** flyout.
@@ -129,7 +129,7 @@ It takes about a minute for {{agent}} to enroll in {{fleet}}, download the confi
 
 After you have confirmed enrollment and data is coming in,  click **View assets** to access dashboards related to the {{ls}} integration.
 
-For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for the technical preview metrics dashboards. These are populated with data only if you selected the **Metrics (Technical Preview)** checkbox.
+For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for metrics dashboards. These are populated with data only if you selected the **Metrics (Elastic Agent)** checkbox.
 
 :::{image} images/integration-assets-dashboards.png
 :alt: Integration assets
