@@ -143,3 +143,4 @@ gem "logstash-output-udp", "~> 3.2", :require => false
 gem "logstash-output-webhdfs", "~> 3.1", :require => false
 
 gem "psych", "5.2.2"
+gem "cgi", "0.3.7" # Pins until a new jruby version with updated cgi is released
