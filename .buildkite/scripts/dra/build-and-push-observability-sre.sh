@@ -17,12 +17,10 @@ echo "Pushing ObservabilitySRE container to Docker repository"
 docker_login
 
 # Get qualified version without SHA (this is what the gradle task will produce)
-export INCLUDE_SHA=""
 QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
 
 # Set environment variable to include SHA and get version with SHA
-export INCLUDE_SHA=1
-QUALIFIED_VERSION_WITH_SHA="$(.buildkite/scripts/common/qualified-version.sh)"
+QUALIFIED_VERSION_WITH_SHA="$(INCLUDE_COMMIT_ID=1 .buildkite/scripts/common/qualified-version.sh)"
 
 REGISTRY_PATH=docker.elastic.co/logstash/logstash-observability-sre
 

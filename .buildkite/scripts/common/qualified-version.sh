@@ -18,7 +18,7 @@ export QUALIFIED_VERSION="$(
   printf '%s' "${VERSION_QUALIFIER:+-${VERSION_QUALIFIER}}"
 
   # Include git SHA if requested
-  if [[ -n "${INCLUDE_SHA:+x}" ]]; then
+  if [[ -n "${INCLUDE_COMMIT_ID:+x}" ]]; then
     printf '%s' "-$(git rev-parse --short HEAD)"
   fi
 
