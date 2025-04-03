@@ -41,6 +41,7 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.19.0-SNAPSHOT
+    user: root
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./certs:/usr/share/filebeat/certs
