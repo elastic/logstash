@@ -15,5 +15,4 @@ echo "Generating Filebeat certificate"
 openssl req -newkey rsa:3072 -nodes -keyout filebeat.key -out filebeat.csr -subj "/CN=filebeat" -sha256
 openssl x509 -req -in filebeat.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out filebeat.crt -days 365 -sha256
 
-chmod 600 *.key
-chmod 644 *.crt *.csr
+chmod 644 *.crt *.key
