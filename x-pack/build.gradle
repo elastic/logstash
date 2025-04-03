@@ -81,6 +81,12 @@ tasks.register("observabilitySREsmokeTests", Test) {
     dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
     inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
     doFirst {
+        // Generate the certificates first
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker/certs")
+            commandLine 'bash', './generate.sh'
+            ignoreExitValue = false
+        }
         def result = exec {
             workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
             commandLine 'docker-compose', 'up', '-d'
@@ -89,14 +95,7 @@ tasks.register("observabilitySREsmokeTests", Test) {
         if (result.exitValue != 0) {
             throw new GradleException("Docker compose failed to start")
         }
-
-        // Show initial logs
-        exec {
-            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'logs'
-        }
-
-        // Give containers time to start and show logs again
+        // Give containers time to start and show logs
         sleep(30000)
         exec {
             workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
@@ -111,5 +110,7 @@ tasks.register("observabilitySREsmokeTests", Test) {
             commandLine 'docker-compose', 'down', '-v'
             ignoreExitValue = true
         }
+        // Clean up the generated certificates
+        delete fileTree("distributions/internal/observabilitySRE/qa/smoke/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
     }
 }
