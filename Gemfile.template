@@ -46,3 +46,4 @@ gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "psych", "5.2.2"
+gem "cgi", "0.3.7" # Pins until a new jruby version with updated cgi is released
