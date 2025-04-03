@@ -85,7 +85,9 @@ Refer to [{{es}} cluster stats page](https://www.elastic.co/docs/api/doc/elastic
         xpack.enabled: true
     ```
 
-    Set the `hosts`, `username`, and `password` to authenticate with {{ls}}. For other module settings, it’s recommended that you accept the defaults.
+    Set the `hosts`, `username`, and `password` to authenticate with {{ls}}.
+
+    For the best experience with Stack Monitoring, we recommend collecting both `node` and `node_stats` metricsets. Turning off either of these will result in incomplete or missing visualizations.
 
     By default, the module collects {{ls}} monitoring data from `localhost:9600`.
 
