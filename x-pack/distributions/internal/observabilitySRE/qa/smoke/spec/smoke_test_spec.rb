@@ -77,7 +77,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should ingest logs from Filebeat" do
+    it "ingests logs from Filebeat" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -98,7 +98,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should apply JSON filter" do
+    it "applies JSON filter" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -123,7 +123,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should apply date filter" do
+    it "applies date filter" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -156,7 +156,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should tag old events" do
+    it "tags old events" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -179,7 +179,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should drop DEBUG logs" do
+    it "drops DEBUG logs" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -200,7 +200,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should add fingerprints to logs" do
+    it "addsfingerprints to logs" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
@@ -225,7 +225,7 @@ describe "Observability SRE smoke tests" do
       })
     end
     
-    it "should add environment field via mutate" do
+    it "adds environment field via mutate" do
       response = es_request("/logs-*/_search?pretty", query)
       data = JSON.parse(response.body)
       
