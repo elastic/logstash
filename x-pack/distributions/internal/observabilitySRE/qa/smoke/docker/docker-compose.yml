@@ -41,7 +41,8 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.19.0-SNAPSHOT
-    user: root
+    # Test runner mounts volume with non root user, do not require this file be root
+    entrypoint: "filebeat -e --strict.perms=false"
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
       - ./certs:/usr/share/filebeat/certs
