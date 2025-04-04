@@ -97,10 +97,6 @@ fieldReferenceLiteral
   ;
 ```
 
-NOTE: In Logstash 7.x and earlier, a quoted value (such as `["foo"]`) is considered a field reference and isn't treated as a single element array.
-This behavior might cause confusion in conditionals, such as `[message] in ["foo",
-"bar"]` compared to `[message] in ["foo"]`.
-We discourage using names with quotes, such as `"\"foo\""`, as this behavior might change in the future.
 
 #### Field Reference (Event APIs) [formal-grammar-field-reference]
 
