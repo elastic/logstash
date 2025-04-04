@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   # Files
   s.files = Dir::glob("lib/**/*.rb") |
             Dir::glob("*.gemspec") |
-            Dir.glob("VERSION")
+            Dir.glob("GEM_BUILD_VERSION")
 
   # Special flag to let us know this is actually a logstash plugin
   s.metadata = {

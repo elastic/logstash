@@ -124,7 +124,7 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
-  task "install-fips-validation-plugin" do |task, _|
+  task "build-fips-validation-plugin" do |task, _|
     puts("[plugin:install-fips-validation-plugin] installing fips_validation plugin")
 
     with_merged_env("GEM_BUILD_VERSION" => get_versions.fetch("logstash")) do
@@ -134,8 +134,21 @@ namespace "plugin" do
       # ensure fresh GEM_BUILD_VERSION comes from the env
       path.glob("GEM_BUILD_VERSION").each(&:unlink)
 
-      Rake::Task["plugin:install-local-core-gem"].invoke(name, path.to_s)
+      Rake::Task["plugin:build-local-core-gem"].invoke(name, path.to_s)
     end
+
+    task.reenable # Allow this task to be run again
+  end
+
+  task "install-fips-validation-plugin" => "build-fips-validation-plugin" do |task, _|
+    puts("[plugin:install-fips-validation-plugin] installing fips_validation plugin")
+
+    path = "build/gems"
+    name = "logstash-integration-fips_validation"
+    gems = Dir[File.join(path, "#{name}-*.gem")]
+    abort("ERROR: #{name} gem not found in #{path}") if gems.size != 1
+    puts("[plugin:install-fips-validation-plugin] Installing #{gems.first}")
+    install_plugins("--no-verify", gems.first)
 
     task.reenable # Allow this task to be run again
   end

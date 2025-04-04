@@ -565,8 +565,8 @@ namespace "artifact" do
       Rake::Task['bootstrap'].invoke
       Rake::Task['plugin:install-default'].invoke
       Rake::Task['plugin:install'].invoke('logstash-filter-age')
-      Rake::Task['plugin:install-fips-validation-plugin'].invoke
       Rake::Task['plugin:trim-for-observabilitySRE'].invoke
+      Rake::Task['plugin:install-fips-validation-plugin'].invoke
       Rake::Task['artifact:clean-bundle-config'].invoke
     end
   end

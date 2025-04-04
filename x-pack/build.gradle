@@ -6,6 +6,9 @@
 
 description = """Logstash X-Pack"""
 
+project.ext.LOGSTASH_CORE_PATH = "${projectDir}/../logstash-core"
+apply from: "../rubyUtils.gradle"
+
 repositories {
   mavenCentral()
 }
@@ -56,9 +59,16 @@ tasks.register("rubyIntegrationTests", Test) {
     jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
   }
   dependsOn (":copyEs")
+  dependsOn "buildFipsValidationGem"
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
   systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
+}
+
+tasks.register("buildFipsValidationGem") {
+  doLast {
+    rake(rootProject.projectDir, rootProject.buildDir, 'plugin:build-fips-validation-plugin')
+  }
 }
