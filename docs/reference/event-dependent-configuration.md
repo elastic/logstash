@@ -86,6 +86,11 @@ filter {
 
 ### Formal grammar [formal-grammar]
 
+Expand the section below if you want more details about formal grammar for field references.
+
+::::{dropdown} Deep Dive: Formal grammar for field references 
+:name: formal grammar
+
 #### Field Reference Literal [formal-grammar-field-reference-literal]
 
 A _Field Reference Literal_ is a sequence of one or more _Path Fragments_ that can be used directly in Logstash pipeline [conditionals](#conditionals)  without any additional quoting.
@@ -96,7 +101,6 @@ fieldReferenceLiteral
   : ( pathFragment )+
   ;
 ```
-
 
 #### Field Reference (Event APIs) [formal-grammar-field-reference]
 
@@ -177,7 +181,7 @@ embeddedFieldReference
 ```
 
 An _Embedded Field Reference_ is a _Field Reference_ that is itself wrapped in square brackets (`[` and `]`), and can be a component of a _Composite Field Reference_.
-
+::::
 
 ### Escape sequences [formal-grammar-escape-sequences]
 
