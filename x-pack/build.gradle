@@ -59,10 +59,13 @@ tasks.register("rubyIntegrationTests", Test) {
     jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
   }
   dependsOn (":copyEs")
+  dependsOn ":assemble"
   dependsOn "buildFipsValidationGem"
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${rootProject.projectDir}/Gemfile.lock")
+  inputs.files fileTree("${rootProject.projectDir}/logstash-core/lib")
   systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
 }

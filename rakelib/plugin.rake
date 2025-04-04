@@ -125,7 +125,7 @@ namespace "plugin" do
   end
 
   task "build-fips-validation-plugin" do |task, _|
-    puts("[plugin:install-fips-validation-plugin] installing fips_validation plugin")
+    puts("[plugin:build-fips-validation-plugin] installing fips_validation plugin")
 
     with_merged_env("GEM_BUILD_VERSION" => get_versions.fetch("logstash")) do
       name = "logstash-integration-fips_validation"
