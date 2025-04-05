@@ -7,6 +7,7 @@ xpack_modules = ["azure", "arcsight"]
 xpack_modules.each do |name|
   $LOAD_PATH << File.join(LogStash::XPACK_PATH, "modules", name, "lib")
 end
+
 require "logstash/plugins/registry"
 require "logstash/modules/util"
 require "monitoring/monitoring"
