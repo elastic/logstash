@@ -284,7 +284,7 @@ To re-enable the previous behavior, change the `log.format.json.fix_duplicate_me
 Check out [Logging in json format can write duplicate message fields](docs-content://troubleshoot/ingest/logstash.md) for more details about the issue. [#16578](https://github.com/elastic/logstash/pull/16578)
 ::::
 
-::::{dropdown} Enterprise_search integration plugin is deprecated
+::::{dropdown} Enterprise_search integration plugin is removed from default Logstash install
 :name: enterprise_search-deprecated-9.0
 
 We’ve removed the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins from the default {{ls}} install. 
