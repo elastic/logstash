@@ -1,18 +1,28 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/event-dependent-configuration.html
+  - https://www.elastic.co/guide/en/logstash/current/field-references-deepdive.html
 ---
 
 # Accessing event data and fields [event-dependent-configuration]
 
 A Logstash pipeline usually has three stages: inputs → filters → outputs. Inputs generate events, filters modify them, and outputs ship them elsewhere.
 
-All events have properties. For example, an Apache access log has properties like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST), client IP address, and so forth. Logstash calls these properties "fields".
+All events have properties.
+For example, an Apache access log has properties like status code (200, 404), request path ("/", "index.html"), HTTP verb (GET, POST), client IP address, and so forth.
+Logstash calls these properties "fields."
 
-Some configuration options in Logstash require the existence of fields in order to function. Because inputs generate events, there are no fields to evaluate within the input block—​they do not exist yet!
+Event and data field types:
+- [Field references](#logstash-config-field-references)
+- [Sprintf format](#sprintf)
+- [Conditionals](#conditionals)
+
 
 ::::{important}
-[Field references](#logstash-config-field-references), [sprintf format](#sprintf), and [conditionals](#conditionals) do not work in input blocks. These configuration options depend on events and fields, and therefore, work only within filter and output blocks.
+Some configuration options in Logstash require the existence of fields in order to function. Because inputs generate events, there are no fields to evaluate within the input block—​they do not exist yet!
+
+[Field references](#logstash-config-field-references), [sprintf format](#sprintf), and [conditionals](#conditionals) do not work in input blocks.
+These configuration options depend on events and fields, and therefore, work only within filter and output blocks.
 ::::
 
 
@@ -21,11 +31,12 @@ Some configuration options in Logstash require the existence of fields in order 
 
 When you need to refer to a field by name, you can use the Logstash [field reference syntax](https://www.elastic.co/guide/en/logstash/current/field-references-deepdive.html).
 
-The basic syntax to access a field is `[fieldname]`. If you are referring to a **top-level field**, you can omit the `[]` and simply use `fieldname`. To refer to a **nested field**, specify the full path to that field: `[top-level field][nested field]`.
+The basic syntax to access a field is `[fieldname]`.
+If you are referring to a **top-level field**, you can omit the `[]` and use `fieldname`. To refer to a **nested field**, specify the full path to that field: `[top-level field][nested field]`.
 
 For example, this event has five top-level fields (agent, ip, request, response, ua) and three nested fields (status, bytes, os).
 
-```js
+```
 {
   "agent": "Mozilla/5.0 (compatible; MSIE 9.0)",
   "ip": "192.168.24.44",
@@ -40,9 +51,146 @@ For example, this event has five top-level fields (agent, ip, request, response,
 }
 ```
 
-To reference the `os` field, specify `[ua][os]`. To reference a top-level field such as `request`, you can simply specify the field name.
+To reference the `os` field, specify `[ua][os]`. 
+To reference a top-level field such as `request`, specify the field name.
 
-For more detailed information, see [*Field References Deep Dive*](https://www.elastic.co/guide/en/logstash/current/field-references-deepdive.html).
+
+### Why use field references? [field-reference-deep-dive]
+
+You might find situations in which you need to refer to a field or collection of fields by name. 
+You can accomplish this goal using the Logstash field reference syntax.
+
+The syntax to access a field specifies the entire path to the field, with each fragment wrapped in square brackets.
+When a field name contains square brackets, the brackets must be properly [ escaped](#formal-grammar-escape-sequences).
+
+Field references can be expressed literally within [conditional statements](#conditionals) in your pipeline configurations,
+as string arguments to your pipeline plugins, or within sprintf statements that will be used by your pipeline plugins:
+
+```
+filter {
+  #  +----literal----+     +----literal----+
+  #  |               |     |               |
+  if [@metadata][date] and [@metadata][time] {
+    mutate {
+      add_field {
+        "[@metadata][timestamp]" => "%{[@metadata][date]} %{[@metadata][time]}"
+      # |                      |    |  |               |    |               | |
+      # +----string-argument---+    |  +--field-ref----+    +--field-ref----+ |
+      #                             +-------- sprintf format string ----------+
+      }
+    }
+  }
+}
+```
+
+
+### Formal grammar [formal-grammar]
+
+Expand the section below if you would like to explore the formal grammar.
+
+::::{dropdown} Deep Dive: Formal grammar for field references 
+:name: formal grammar
+
+#### Field Reference Literal [formal-grammar-field-reference-literal]
+
+A _Field Reference Literal_ is a sequence of one or more _Path Fragments_ that can be used directly in Logstash pipeline [conditionals](#conditionals)  without any additional quoting.
+Example: `[request]`, `[response][status]`).
+
+```
+fieldReferenceLiteral
+  : ( pathFragment )+
+  ;
+```
+
+#### Field Reference (Event APIs) [formal-grammar-field-reference]
+
+The Event API's methods for manipulating the fields of an event or using the sprintf syntax are more flexible than the pipeline grammar in what they accept as a Field Reference.
+Top-level fields can be referenced directly by their _Field Name_ without the square brackets, and there is some support for _Composite Field References_, simplifying use of programmatically-generated Field References.
+
+A _Field Reference_ for use with the Event API is therefore one of:
+
+ - a single _Field Reference Literal_; OR
+ - a single _Field Name_ (referencing a top-level field); OR
+ - a single _Composite Field Reference_.
+
+```
+eventApiFieldReference
+  : fieldReferenceLiteral
+  | fieldName
+  | compositeFieldReference
+  ;
+```
+
+#### Path Fragment [formal-grammar-path-fragment]
+
+A _Path Fragment_ is a _Field Name_ wrapped in square brackets, such as `[request]`).
+
+```
+pathFragment
+  : '[' fieldName ']'
+  ;
+```
+
+#### Field Name [formal-grammar-field-name]
+
+A _Field Name_ is a sequence of characters that are _not_ square brackets (`[` or `]`).
+
+```
+fieldName
+  : ( ~( '[' | ']' ) )+
+  ;
+```
+
+#### Composite Field Reference [formal-grammar-event-api-composite-field-reference]
+
+In some cases, you may need to programmatically _compose_ a Field Reference from one or more Field References,
+such as when manipulating fields in a plugin or when using the Ruby Filter plugin and the Event API.
+
+```
+    fieldReference = "[path][to][deep nested field]"
+    compositeFieldReference = "[@metadata][#{fieldReference}][size]"
+    # => "[@metadata][[path][to][deep nested field]][size]"
+```
+
+##### Canonical Representations of Composite Field References [canonical-representations]
+
+| Acceptable _composite field reference_ | Canonical _field reference_ representation | 
+| ------------- | ------------- |
+| `[[deep][nesting]][field]`           | `[deep][nesting][field]`
+| `[foo][[bar]][bingo]`                | `[foo][bar][bingo]`
+| `[[ok]]`                             | `[ok]`
+
+
+A _Composite Field Reference_ is a sequence of one or more _Path Fragments_ or _Embedded Field References_.
+
+```
+compositeFieldReference
+  : ( pathFragment | embeddedFieldReference )+
+  ;
+```
+
+_Composite Field References_ are supported by the Event API, but are _not_ supported as literals in the Pipeline Configuration.
+
+
+#### Embedded Field Reference [formal-grammar-event-api-embedded-field-reference]
+
+```
+embeddedFieldReference
+  : '[' fieldReference ']'
+  ;
+```
+
+An _Embedded Field Reference_ is a _Field Reference_ that is itself wrapped in square brackets (`[` and `]`), and can be a component of a _Composite Field Reference_.
+::::
+
+### Escape sequences [formal-grammar-escape-sequences]
+
+For {{ls}} to reference a field whose name contains a character that has special meaning in the field reference grammar, the character must be escaped.
+Logstash can be globally configured to use one of two field reference escape modes:
+
+ - `none` (default): no escape sequence processing is done. Fields containing literal square brackets cannot be referenced by the Event API.
+ - `percent`: URI-style percent encoding of UTF-8 bytes. The left square bracket (`[`) is expressed as `%5B`, and the right square bracket (`]`) is expressed as `%5D`.
+ - `ampersand`: HTML-style ampersand encoding (`&#` + decimal unicode codepoint + `;`). The left square bracket (`[`) is expressed as `&#91;`, and the right square bracket (`]`) is expressed as `&#93;`.
 
 
 ## sprintf format [sprintf]
@@ -63,7 +211,7 @@ Instead of specifying a field name inside the curly braces, use the `%{{FORMAT}}
 
 For example, if you want to use the file output to write logs based on the event’s UTC date and hour and the `type` field:
 
-```js
+```
 output {
   file {
     path => "/var/log/%{type}.%{{yyyy.MM.dd.HH}}"
@@ -72,14 +220,9 @@ output {
 ```
 
 ::::{note}
-The sprintf format continues to support [deprecated joda time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html) strings as well using the `%{+FORMAT}` syntax. These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
+* The sprintf format continues to support [deprecated joda time format](http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html) strings as well using the `%{+FORMAT}` syntax. These formats are not directly interchangeable, and we advise you to begin using the more modern Java Time format.
+* A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
 ::::
-
-
-::::{note}
-A Logstash timestamp represents an instant on the UTC-timeline, so using sprintf formatters will produce results that may not align with your machine-local timezone.
-::::
-
 
 You can generate a fresh timestamp by using `%{{TIME_NOW}}` syntax instead of relying on the value in `@timestamp`. This is particularly useful when you need to estimate the time span of each plugin.
 
@@ -195,7 +338,8 @@ output {
 }
 ```
 
-You can check for the existence of a specific field, but there’s currently no way to differentiate between a field that doesn’t exist versus a field that’s simply false. The expression `if [foo]` returns `false` when:
+You can check for the existence of a specific field, but there’s currently no way to differentiate between a field that doesn’t exist versus a field that’s simply false. 
+The expression `if [foo]` returns `false` when:
 
 * `[foo]` doesn’t exist in the event,
 * `[foo]` exists in the event, but is false, or
@@ -204,7 +348,9 @@ You can check for the existence of a specific field, but there’s currently no 
 For more complex examples, see [Using Conditionals](/reference/config-examples.md#using-conditionals).
 
 ::::{note}
-Sprintf date/time format in conditionals is not currently supported. A workaround using the `@metadata` field is available. See [sprintf date/time format in conditionals](#date-time) for more details and an example.
+Sprintf date/time format in conditionals is not currently supported. 
+A workaround using the `@metadata` field is available. 
+See [sprintf date/time format in conditionals](#date-time) for more details and an example.
 ::::
 
 
