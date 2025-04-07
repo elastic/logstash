@@ -103,6 +103,7 @@ This section summarizes the changes in the following releases:
 * Exposes the qualifier, like GA or RC, in cli and in the http api https://github.com/elastic/logstash/pull/16904[#16904].
 * Set Jackson stream read constraints defaults in code to avoid missed `jvm.options` updates during installation upgrade https://github.com/elastic/logstash/pull/16854[#16854].
 
+[[plugins-8.18.0]]
 ==== Plugins
 *Elasticsearch Filter - 3.17.1*
 
