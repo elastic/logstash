@@ -287,7 +287,7 @@ Check out [Logging in json format can write duplicate message fields](docs-conte
 ::::{dropdown} Enterprise_search integration plugin is deprecated
 :name: enterprise_search-deprecated-9.0
 
-We’ve deprecated the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins from the default {{ls}} install. 
+We’ve removed the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins from the default {{ls}} install. 
 These plugins will receive only security updates and critical fixes moving forward.
 
 We recommend using our native {{es}} tools for your Search use cases. For more details, please visit the [Search solution and use case documentation](docs-content://solutions/search.md).

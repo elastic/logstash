@@ -5,7 +5,8 @@ navigation_title: "Deprecations"
 # Logstash deprecations [logstash-deprecations]
 Over time, certain Elastic functionality becomes outdated and is replaced or removed. To help with the transition, Elastic deprecates functionality for a period before removal, giving you time to update your applications. 
 
-Review the deprecated functionality for Logstash. While deprecations have no immediate impact, we strongly encourage you update your implementation after you upgrade.
+Review the deprecated functionality for Logstash. 
+While deprecations have no immediate impact, we strongly encourage you update your implementation after you upgrade.
 
 % ## Next version [logstash-versionnext-deprecations]
 
@@ -25,4 +26,4 @@ Review the deprecated functionality for Logstash. While deprecations have no imm
 % **Action**<br> Steps for mitigating deprecation impact.
 % ::::
 
-None at this time.
+None at this time
