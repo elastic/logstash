@@ -85,10 +85,6 @@ This section summarizes the changes in the following releases:
 [[logstash-8-18-0]]
 === Logstash 8.18.0 Release Notes
 
-[[core-8-18-0]]
-==== Changes to Logstash core
-* Ensures that logstash-provided defaults for jackson deserialization are applied unless explicitly overridden https://github.com/elastic/logstash/pull/16854[#16854].
-
 [[dependencies-8.18.0]]
 ==== Updates to dependencies
 * Update JDK to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
