@@ -85,10 +85,6 @@ This section summarizes the changes in the following releases:
 [[logstash-8-18-0]]
 === Logstash 8.18.0 Release Notes
 
-[[dependencies-8.18.0]]
-==== Updates to dependencies
-* Update JDK to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
-
 [[notable-8.18.0]]
 ==== Performance improvements and notable issues fixed
 * Avoid possible integer overflow in string tokenization https://github.com/elastic/logstash/pull/17353[#17353].
@@ -98,6 +94,10 @@ This section summarizes the changes in the following releases:
 * Starting from es-output 12.0.2, a 404 response is treated as an error. Previously, central pipeline management considered 404 as an empty pipeline, not an error https://github.com/elastic/logstash/pull/17052[#17052].
 * Exposes the qualifier, like GA or RC, in cli and in the http api https://github.com/elastic/logstash/pull/16904[#16904].
 * Set Jackson stream read constraints defaults in code to avoid missed `jvm.options` updates during installation upgrade https://github.com/elastic/logstash/pull/16854[#16854].
+
+[[dependencies-8.18.0]]
+==== Updates to dependencies
+* Update JDK to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
 
 [[plugins-8.18.0]]
 ==== Plugins
