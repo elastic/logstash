@@ -25,11 +25,4 @@ Review the deprecated functionality for Logstash. While deprecations have no imm
 % **Action**<br> Steps for mitigating deprecation impact.
 % ::::
 
-::::{dropdown} Enterprise_search integration plugin is deprecated
-:name: enterprise_search-deprecated-9.0
-
-We’ve deprecated the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins. These plugins will receive only security updates and critical fixes moving forward.
-
-We recommend using our native {{es}} tools for your Search use cases. For more details, please visit the [Search solution and use case documentation](docs-content://solutions/search.md).
-::::
-
+None at this time.
