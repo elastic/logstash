@@ -86,7 +86,7 @@ filter {
 
 ### Formal grammar [formal-grammar]
 
-Expand the section below if you want more details about formal grammar for field references.
+Expand the section below if you would like to explore the formal grammar.
 
 ::::{dropdown} Deep Dive: Formal grammar for field references 
 :name: formal grammar
