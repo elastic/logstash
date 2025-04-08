@@ -85,6 +85,10 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 6. Configure the integration to collect metrics.
 
+    ::::{tip}
+    For the best experience with the {{ls}} dashboards, we recommend collecting all of the metrics. Turning off metrics will result in incomplete or missing visualizations.
+    ::::
+
     * Make sure that **Metrics (Elastic Agent)** is turned on (default), and **Metrics (Stack Monitoring)** is turned off.
     * Under **Metrics (Elastic Agent)**, make sure the {{ls}} URL setting points to your {{ls}} instance URLs.<br> By default, the integration collects {{ls}} monitoring metrics from `https://localhost:9600`. If that host and port number are not correct, update the `Logstash URL` setting. If you configured {{ls}} to use encrypted communications and/or a username and password, you must access it via HTTPS, and expand the **Advanced Settings** options, and fill in with the appropriate values for your {{ls}} instance.
 
