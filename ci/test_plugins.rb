@@ -216,7 +216,9 @@ PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-integration-snmp', :tier1, :integration),     
 
     # tier2
-    PluginDefinition.new('logstash-input-couchdb', :tier2, :input), 
+    # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
+    #PluginDefinition.new('logstash-input-couchdb_changes', :tier2, :input),  
+
     PluginDefinition.new('logstash-input-gelf', :tier2, :input), 
     PluginDefinition.new('logstash-input-graphite', :tier2, :input), 
     PluginDefinition.new('logstash-input-jms', :tier2, :input),          
