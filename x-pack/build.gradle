@@ -75,3 +75,42 @@ tasks.register("buildFipsValidationGem") {
     rake(rootProject.projectDir, rootProject.buildDir, 'plugin:build-fips-validation-plugin')
   }
 }
+tasks.register("observabilitySREsmokeTests", Test) {
+    description = "Run ObservabilitySRE smoke tests using docker-compose and RSpec"
+    // Need to have set up the ruby environment for rspec even through we are running in container
+    dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
+    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
+    doFirst {
+        // Generate the certificates first
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker/certs")
+            commandLine 'bash', './generate.sh'
+            ignoreExitValue = false
+        }
+        def result = exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
+            commandLine 'docker-compose', 'up', '-d'
+            ignoreExitValue = true
+        }
+        if (result.exitValue != 0) {
+            throw new GradleException("Docker compose failed to start")
+        }
+        // Give containers time to start and show logs
+        sleep(30000)
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
+            commandLine 'docker-compose', 'logs'
+        }
+    }
+    systemProperty 'logstash.root.dir', projectDir.parent
+    include '**/org/logstash/xpack/test/RSpecObservabilitySRETests.class'
+    doLast {
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
+            commandLine 'docker-compose', 'down', '-v'
+            ignoreExitValue = true
+        }
+        // Clean up the generated certificates
+        delete fileTree("distributions/internal/observabilitySRE/qa/smoke/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
+    }
+}
