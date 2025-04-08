@@ -86,6 +86,7 @@ GEM
     buftok (0.2.0)
     builder (3.3.0)
     cabin (0.9.0)
+    cgi (0.3.7-java)
     childprocess (4.1.0)
     ci_reporter (2.1.0)
       builder (>= 2.1.2)
@@ -115,15 +116,15 @@ GEM
     elastic-transport (8.4.0)
       faraday (< 3)
       multi_json
-    elasticsearch (8.17.1)
+    elasticsearch (8.17.2)
       elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.17.1)
-    elasticsearch-api (8.17.1)
+      elasticsearch-api (= 8.17.2)
+    elasticsearch-api (8.17.2)
       multi_json
     equalizer (0.0.11)
     et-orbi (1.2.11)
       tzinfo
-    faraday (2.12.2)
+    faraday (2.12.3)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -849,7 +850,7 @@ GEM
     tzinfo-data (1.2024.2)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.6.0)
-    uri (1.0.3)
+    uri (0.12.3)
     webhdfs (0.11.0)
       addressable
     webmock (3.24.0)
@@ -868,6 +869,7 @@ DEPENDENCIES
   belzebuth
   benchmark-ips
   bigdecimal (~> 3.1)
+  cgi (= 0.3.7)
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
   date (= 3.3.3)
@@ -996,6 +998,7 @@ DEPENDENCIES
   stud (~> 0.0.22)
   thwait
   treetop
+  uri (= 0.12.3)
   webmock (~> 3)
 
 BUNDLED WITH
