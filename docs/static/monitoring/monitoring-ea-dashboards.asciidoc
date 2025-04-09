@@ -71,6 +71,9 @@ details.
 * Under **Logs**, modify the log paths to match your {ls} environment.
 
 . Configure the integration to collect metrics.
++
+TIP: For the best experience with the {ls} dashboards, we recommend collecting all of the metrics. Turning off metrics will result in incomplete or missing visualizations.
+
 * Make sure that **Metrics (Elastic Agent)** is turned on (default), and **Metrics (Stack Monitoring)** is turned off.
 * Under **Metrics (Elastic Agent)**, make sure the {ls} URL setting
 points to your {ls} instance URLs. +
