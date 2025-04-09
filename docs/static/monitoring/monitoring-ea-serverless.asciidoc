@@ -42,7 +42,9 @@ For more info, check out the {serverless-docs}/observability/what-is-observabili
 
 **Configure the integration to collect metrics**
 
-* Make sure that  **Metrics (Stack Monitoring)** is OFF, and that **Metrics (Elastic Agent)** is ON.
+TIP: For the best experience with the Logstash dashboards, we recommend collecting all of the metrics. Turning off metrics will result in incomplete or missing visualizations.
+
+* Make sure that **Metrics (Elastic Agent)** is turned on (default), and **Metrics (Stack Monitoring)** is turned off.
 * Set the {ls} URL to point to your {ls} instance. +
 By default, the integration collects {ls}
 monitoring metrics from `https://localhost:9600`. If that host and port number are not
