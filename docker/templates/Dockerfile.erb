@@ -13,7 +13,7 @@
   <%   license = 'Elastic License' -%>
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%   base_image = 'docker.elastic.co/ubi9/ubi-minimal' -%>
+  <%   base_image = 'redhat/ubi9-minimal:latest' -%>
   <%   go_image = 'golang:1.23' -%>
   <%   package_manager = 'microdnf' -%>
 <% else -%>
@@ -24,41 +24,28 @@
 <%   locale = 'C.UTF-8' -%>
 
 # Build env2yaml
-FROM <%= go_image %> as builder-env2yaml
+FROM <%= go_image %> AS builder-env2yaml
 
-COPY env2yaml/env2yaml.go /tmp/go/src/env2yaml/env2yaml.go
-COPY env2yaml/go.mod      /tmp/go/src/env2yaml/go.mod
-COPY env2yaml/go.sum      /tmp/go/src/env2yaml/go.sum
+COPY env2yaml/env2yaml.go env2yaml/go.mod env2yaml/go.sum /tmp/go/src/env2yaml/
 
 WORKDIR /tmp/go/src/env2yaml
 
-RUN go build
+RUN go build -trimpath
 
 # Build main image
 # Minimal distributions do not ship with en language packs.
 FROM <%= base_image %>
 
-ENV ELASTIC_CONTAINER true
+ENV ELASTIC_CONTAINER=true
 ENV PATH=/usr/share/logstash/bin:$PATH
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
 WORKDIR /usr/share
 
-COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
-COPY config/pipelines.yml config/log4j2.properties config/log4j2.file.properties config/
-<% if image_flavor == 'oss' -%>
-COPY config/logstash-oss.yml config/logstash.yml
-<% else -%><%# 'full', 'wolfi' -%>
-COPY config/logstash-full.yml config/logstash.yml
-<% end -%>
-COPY pipeline/default.conf pipeline/logstash.conf
-COPY bin/docker-entrypoint /usr/local/bin/
-
 # Install packages
 RUN for iter in {1..10}; do \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
   <%= package_manager %> update -y && \
-  <%= package_manager %> upgrade -y && \
   <%= package_manager %> install -y procps findutils tar gzip && \
   <%= package_manager %> install -y openssl && \
   <%= package_manager %> install -y which shadow-utils && \
@@ -93,17 +80,23 @@ RUN addgroup -g 1000 logstash && \
   curl -Lo - <%= url_root %>/<%= tarball %> | \
   tar zxf - -C /usr/share && \
   mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
-  chown -R logstash:root /usr/share/logstash config/ pipeline/ && \
+  chown -R logstash:root /usr/share/logstash && \
   chmod -R g=u /usr/share/logstash && \
-  mv config/* /usr/share/logstash/config && \
-  mv pipeline /usr/share/logstash/pipeline && \
   mkdir /licenses && \
   mv /usr/share/logstash/NOTICE.TXT /licenses/NOTICE.TXT && \
   mv /usr/share/logstash/LICENSE.txt /licenses/LICENSE.txt && \
   find /usr/share/logstash -type d -exec chmod g+s {} \; && \
-  ln -s /usr/share/logstash /opt/logstash && \
-  chmod 0755 /usr/local/bin/docker-entrypoint && \
-  rmdir config
+  ln -s /usr/share/logstash /opt/logstash
+
+COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
+COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
+<% if image_flavor == 'oss' -%>
+COPY --chown=logstash:root config/logstash-oss.yml /usr/share/logstash/config/logstash.yml
+<% else -%><%# 'full', 'wolfi' -%>
+COPY --chown=logstash:root config/logstash-full.yml /usr/share/logstash/config/logstash.yml
+<% end -%>
+COPY --chown=logstash:root pipeline/default.conf /usr/share/logstash/pipeline/logstash.conf
+COPY --chmod=0755 bin/docker-entrypoint /usr/local/bin/
 
 WORKDIR /usr/share/logstash
 
