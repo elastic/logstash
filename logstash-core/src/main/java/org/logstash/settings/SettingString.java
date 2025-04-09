@@ -45,6 +45,9 @@ public class SettingString extends BaseSetting<String> {
 
     @Override
     public void validate(String input) throws IllegalArgumentException {
+        if (input == null) {
+            throw new IllegalArgumentException(String.format("Setting \"%s\" must be a String. Received:  (NilClass)", this.getName()));
+        }
         staticValidate(input, possibleStrings, this.getName());
     }
 
