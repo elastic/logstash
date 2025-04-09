@@ -79,7 +79,7 @@ public class SecretIdentifier {
         }
 
         if (!KEY_PATTERN.matcher(key).matches()) {
-            logger.warn(String.format("Invalid %s key appeared in keystore. Please remove it as it cannot be used in the pipelines", key));
+            logger.warn(String.format("Invalid `%s` key appeared in keystore. Please remove it as it cannot be used in the pipelines", key));
         }
         return key.toLowerCase(Locale.US);
     }
