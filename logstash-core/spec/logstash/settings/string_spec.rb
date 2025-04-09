@@ -34,5 +34,10 @@ describe LogStash::Setting::SettingString do
         expect(subject.value).to eq("a")
       end
     end
+    context "when a null value is given" do
+      it "raises an ArgumentError" do
+        expect { subject.set(nil) }.to raise_error(java.lang.IllegalArgumentException)
+      end
+    end
   end
 end
