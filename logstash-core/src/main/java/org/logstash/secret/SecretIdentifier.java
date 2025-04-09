@@ -23,6 +23,7 @@ package org.logstash.secret;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.util.Strings;
+import org.logstash.plugins.ConfigVariableExpander;
 
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -32,9 +33,6 @@ import java.util.regex.Pattern;
  * <p><em>Note - v1 is the version of the URN (not the key). This allows for passive changes to the URN for anything to the right of v1</em></p>
  */
 public class SecretIdentifier {
-
-    // aligns with ConfigVariableExpander substitution pattern
-    public final static Pattern KEY_PATTERN = Pattern.compile("[a-zA-Z_.][a-zA-Z0-9_.]*");
 
     private final static Pattern colonPattern = Pattern.compile(":");
     private final static String VERSION = "v1";
@@ -64,24 +62,6 @@ public class SecretIdentifier {
         }
         String[] parts = colonPattern.split(urn, 5);
         return new SecretIdentifier(validateWithTransform(parts[4], "key"));
-    }
-
-    /**
-     * Minor validation and downcases the parts
-     *
-     * @param key      The key, a part of the URN to validate.
-     * @param partName The name of the part used for logging.
-     * @return The validated and transformed part.
-     */
-    private static String validateWithTransform(final String key, final String partName) {
-        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
-            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
-        }
-
-        if (!KEY_PATTERN.matcher(key).matches()) {
-            logger.warn(String.format("Invalid `%s` key appeared in keystore. Please remove it as it cannot be used in the pipelines", key));
-        }
-        return key.toLowerCase(Locale.US);
     }
 
     @Override
@@ -130,5 +110,32 @@ public class SecretIdentifier {
     @Override
     public String toString() {
         return toExternalForm();
+    }
+
+    /**
+     * Validates the provided key against null, empty and {@link ConfigVariableExpander#KEY_PATTERN}
+     * @param key a key to be validated
+     * @param keyName a key name
+     */
+    private static void validateKey(final String key, final String keyName) {
+        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
+            throw new IllegalArgumentException(String.format("%s may not be null or empty", keyName));
+        }
+
+        if (!ConfigVariableExpander.KEY_PATTERN.matcher(key).matches()) {
+            logger.warn(String.format("Invalid secret key name `%s` provided.", key) + ConfigVariableExpander.KEY_PATTERN_DESCRIPTION);
+        }
+    }
+
+    /**
+     * Minor validation and downcases the parts
+     *
+     * @param key      The key, a part of the URN to validate.
+     * @param partName The name of the part used for logging.
+     * @return The validated and transformed part.
+     */
+    private static String validateWithTransform(final String key, final String partName) {
+        validateKey(key, partName);
+        return key.toLowerCase(Locale.US);
     }
 }

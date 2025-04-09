@@ -20,8 +20,12 @@
 
 package org.logstash.secret.cli;
 
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.*;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.SecureConfig;
 
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
@@ -258,12 +262,8 @@ public class SecretStoreCli {
                 if (secretStoreFactory.exists(config.clone())) {
                     final SecretStore secretStore = secretStoreFactory.load(config);
                     for (String argument : commandLine.getArguments()) {
-                        if (!SecretIdentifier.KEY_PATTERN.matcher(argument).matches()) {
-                            final String errorMessage = String.format(
-                                    "Invalid secret key %s provided. " +
-                                            "It can only accept digits, letters with optional `.` " +
-                                            "and/or `_` symbols included between or after.", argument);
-                            throw new IllegalArgumentException(errorMessage);
+                        if (!ConfigVariableExpander.KEY_PATTERN.matcher(argument).matches()) {
+                            throw new IllegalArgumentException(String.format("Invalid secret key name `%s` provided.", argument) + ConfigVariableExpander.KEY_PATTERN_DESCRIPTION);
                         }
                         final SecretIdentifier id = new SecretIdentifier(argument);
                         final byte[] existingValue = secretStore.retrieveSecret(id);
