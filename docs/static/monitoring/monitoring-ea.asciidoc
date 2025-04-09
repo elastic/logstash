@@ -81,7 +81,7 @@ details about it.
 to match your {ls} environment.
 
 . Configure the integration to collect metrics
-
++
 TIP: For the best experience with Stack Monitoring, we recommend collecting both `node` and `node_stats`. Turning off either of these will result in incomplete or missing visualizations.
 
 * Make sure that **Metrics (Stack Monitoring)** is turned on, and **Metrics (Elastic Agent)** is turned off, if you
