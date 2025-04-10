@@ -87,6 +87,7 @@ This section summarizes the changes in the following releases:
 
 [[notable-8.18.0]]
 ==== Performance improvements and notable issues fixed
+* Fixes an issue introduced in 8.16.4, 8.17.2 where null values were incorrectly accepted for non-nullable settings https://github.com/elastic/logstash/pull/17522[#17522].
 * Avoid possible integer overflow in string tokenization https://github.com/elastic/logstash/pull/17353[#17353].
 * Fixed an issue to execute pqcheck and pqrepair on Windows OS. Previously https://github.com/elastic/logstash/pull/16205[#16205] solved the problem with space character in the installation path but introduced another issue now solved by https://github.com/elastic/logstash/pull/17120[#17120]
 * Fixed an issue where the `/_node/stats` API displayed empty pipeline metrics when X-Pack monitoring was enabled https://github.com/elastic/logstash/pull/17185[#17185].
