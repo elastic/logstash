@@ -79,7 +79,7 @@ describe LogStash::PluginManager::OfflinePluginPackager do
     end
   end
 
-  context "when the plugins exist" do
+  context "when the plugins exist", :skip_fips do
     before :all do
       Paquet.ui = Paquet::SilentUI
     end

@@ -20,7 +20,7 @@ require "logstash/patches"
 require "flores/pki"
 require "logstash/json"
 
-describe "OpenSSL defaults" do
+describe "OpenSSL defaults", :skip_fips  do
   subject { OpenSSL::SSL::SSLContext.new }
 
   # OpenSSL::SSL::SSLContext#ciphers returns an array of
