@@ -163,7 +163,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi", "build_docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -252,6 +252,27 @@ namespace "artifact" do
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux")
     create_archive_pack(license_details, "arm64", "linux")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+  end
+
+  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
+  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    #with bundled JDKs
+    @bundles_jdk = true
+    exclude_paths = default_exclude_paths + %w(
+      bin/logstash-plugin
+      bin/logstash-plugin.bat
+      bin/logstash-keystore
+      bin/logstash-keystore.bat
+    )
+    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
+    %w(x86_64 arm64).each do |arch|
+      create_archive_pack(license_details, arch, "linux") do |dedicated_directory_tar|
+        # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
+        # copy additional files into the tarball
+        puts "HELLO(#{dedicated_directory_tar})"
+      end
+    end
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -353,6 +374,12 @@ namespace "artifact" do
     build_docker('oss')
   end
 
+  desc "Build observabilitySRE docker image"
+  task "docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata", "archives_docker_observabilitySRE"] do
+    puts("[docker_observabilitySRE] Building observabilitySRE docker image")
+    build_docker('observability-sre')
+  end
+
   desc "Build wolfi docker image"
   task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
     puts("[docker_wolfi] Building Wolfi docker image")
@@ -365,6 +392,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('wolfi')
+    build_dockerfile('observability-sre')
     build_dockerfile('ironbank')
   end
 
@@ -378,6 +406,19 @@ namespace "artifact" do
     desc "Build Oss Docker image from Dockerfile context files"
     task "docker" => ["archives_docker", "dockerfile_oss"]  do
       build_docker_from_dockerfiles('oss')
+    end
+  end
+
+  desc "Generate Dockerfile for observability-sre images"
+  task "dockerfile_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    puts("[dockerfiles] Building observability-sre Dockerfile")
+    build_dockerfile('observability-sre')
+  end
+
+  namespace "dockerfile_observabilitySRE" do
+    desc "Build ObservabilitySrE Docker image from Dockerfile context files"
+    task "docker" => ["archives_docker_observabilitySRE", "dockerfile_observabilitySRE"] do
+      build_docker_from_dockerfiles('observability-sre')
     end
   end
 
@@ -425,6 +466,7 @@ namespace "artifact" do
       Rake::Task["artifact:docker_wolfi"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_observabilitySRE"].invoke
     end
 
     Rake::Task["artifact:deb_oss"].invoke
@@ -442,6 +484,12 @@ namespace "artifact" do
     Rake::Task["artifact:docker_oss"].invoke
     Rake::Task["artifact:dockerfile_oss"].invoke
     Rake::Task["artifact:dockerfile_oss:docker"].invoke
+  end
+
+  task "build_docker_observabilitySRE" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_observabilitySRE"].invoke
+    Rake::Task["artifact:dockerfile_observabilitySRE"].invoke
+    Rake::Task["artifact:dockerfile_observabilitySRE:docker"].invoke
   end
 
   task "build_docker_wolfi" => [:generate_build_metadata] do
@@ -524,6 +572,17 @@ namespace "artifact" do
   task "prepare-oss" do
     if ENV['SKIP_PREPARE'] != "1"
       %w[bootstrap plugin:install-default plugin:remove-non-oss-plugins artifact:clean-bundle-config].each {|task| Rake::Task[task].invoke }
+    end
+  end
+
+  task "prepare-observabilitySRE" do
+    if ENV['SKIP_PREPARE'] != "1"
+      Rake::Task['bootstrap'].invoke
+      Rake::Task['plugin:install-default'].invoke
+      Rake::Task['plugin:install'].invoke('logstash-filter-age')
+      Rake::Task['plugin:trim-for-observabilitySRE'].invoke
+      Rake::Task['plugin:install-fips-validation-plugin'].invoke
+      Rake::Task['artifact:clean-bundle-config'].invoke
     end
   end
 

@@ -20,7 +20,7 @@ else
   endif
 endif
 
-IMAGE_FLAVORS ?= oss full wolfi
+IMAGE_FLAVORS ?= oss full wolfi observability-sre
 DEFAULT_IMAGE_FLAVOR ?= full
 
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
@@ -55,6 +55,15 @@ build-from-local-wolfi-artifacts: dockerfile
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
 	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-wolfi:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-wolfi data/logstash || \
+	  (docker kill $(HTTPD); false);
+	-docker kill $(HTTPD)
+
+build-from-local-observability-sre-artifacts: dockerfile
+	docker run --rm -d --name=$(HTTPD) \
+	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-observability-sre:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-observability-sre data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
@@ -113,7 +122,7 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 
-public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_ironbank
+public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_observability-sre public-dockerfiles_ironbank
 
 public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -121,7 +130,7 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
 		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
+		release="${RELEASE}" \
 		image_flavor="full" \
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-full" && \
@@ -142,7 +151,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
 		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
+		release="${RELEASE}" \
 		image_flavor="oss" \
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-oss" && \
@@ -163,7 +172,7 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
 		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
+		release="${RELEASE}" \
 		image_flavor="wolfi" \
 		local_artifacts="false" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
@@ -178,6 +187,27 @@ build-from-dockerfiles_wolfi: public-dockerfiles_wolfi
 	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-wolfi:$(VERSION_TAG) .
 
+public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(COPY_FILES)
+	../vendor/jruby/bin/jruby -S erb -T "-"\
+		created_date="${BUILD_DATE}" \
+		elastic_version="${ELASTIC_VERSION}" \
+		arch="${ARCHITECTURE}" \
+		version_tag="${VERSION_TAG}" \
+		release="${RELEASE}" \
+		image_flavor="observability-sre" \
+		local_artifacts="false" \
+		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-observability-sre" && \
+	cd $(ARTIFACTS_DIR)/docker && \
+	cp $(ARTIFACTS_DIR)/Dockerfile-observability-sre Dockerfile && \
+	tar -zcf ../logstash-observability-sre-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
+
+build-from-dockerfiles_observability-sre: public-dockerfiles_observability-sre
+	cd $(ARTIFACTS_DIR)/docker && \
+	mkdir -p dockerfile_build_observability-sre && cd dockerfile_build_observability-sre && \
+	tar -zxf ../../logstash-observability-sre-$(VERSION_TAG)-docker-build-context.tar.gz && \
+	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-observability-sre:$(VERSION_TAG) .
+
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
@@ -187,7 +217,7 @@ public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Iro
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
 		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
+		release="${RELEASE}" \
 		image_flavor="ironbank" \
 		local_artifacts="false" \
 		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
