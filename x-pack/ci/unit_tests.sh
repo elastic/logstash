@@ -17,8 +17,7 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
 fi
 
 # Option for running in fedramp high mode
-FEDRAMP_FLAG=""
-[ "$FEDRAMP_HIGH_MODE" == "true" ] && FEDRAMP_FLAG="-PfedrampHighMode=true"
+FEDRAMP_FLAG="${FEDRAMP_HIGH_MODE/#/-PfedrampHighMode=}"
 
 ./gradlew runXPackUnitTests $FEDRAMP_FLAG
 
