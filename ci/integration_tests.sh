@@ -11,8 +11,7 @@ export SPEC_OPTS="--order rand --format documentation"
 export CI=true
 
 # Option for running in fedramp high mode
-FEDRAMP_FLAG=""
-[ "$FEDRAMP_HIGH_MODE" == "true" ] && FEDRAMP_FLAG="-PfedrampHighMode=true"
+FEDRAMP_FLAG="${FEDRAMP_HIGH_MODE/#/-PfedrampHighMode=}"
 
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
