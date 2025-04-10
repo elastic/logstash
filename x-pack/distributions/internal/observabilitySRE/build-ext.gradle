@@ -1,0 +1,57 @@
+ext {
+    fedrampHighMode = Objects.requireNonNullElse(project.findProperty('fedrampHighMode'), false).toBoolean()
+}
+
+subprojects {
+    ext {
+        fedrampHighMode = rootProject.fedrampHighMode
+    }
+}
+
+allprojects {
+    afterEvaluate {
+        // Preserve fedrampHighMode option across subprocesses
+        if (rootProject.fedrampHighMode) {
+            tasks.withType(JavaExec).configureEach {
+                environment("ORG_GRADLE_PROJECT_fedrampHighMode", "true")
+            }
+
+            tasks.withType(Exec).configureEach {
+                environment("ORG_GRADLE_PROJECT_fedrampHighMode", "true")
+            }
+        }
+        tasks.withType(Test) {
+            if (rootProject.fedrampHighMode) {
+                logger.debug("configuring ${it} to run in FIPSMode ")
+                systemProperty "java.security.properties", System.getenv("JAVA_SECURITY_PROPERTIES")
+                systemProperty "javax.net.ssl.keyStore", "/etc/java/security/keystore.bcfks"
+                systemProperty "javax.net.ssl.keyStoreType", "BCFKS"
+                systemProperty "javax.net.ssl.keyStoreProvider", "BCFIPS"
+                systemProperty "javax.net.ssl.keyStorePassword", "changeit"
+                systemProperty "javax.net.ssl.trustStore", "/etc/java/security/cacerts.bcfks"
+                systemProperty "javax.net.ssl.trustStoreType", "BCFKS"
+                systemProperty "javax.net.ssl.trustStoreProvider", "BCFIPS"
+                systemProperty "javax.net.ssl.trustStorePassword", "changeit"
+                systemProperty "ssl.KeyManagerFactory.algorithm", "PKIX"
+                systemProperty "ssl.TrustManagerFactory.algorithm", "PKIX"
+                systemProperty "org.bouncycastle.fips.approved_only", "true"
+            }
+        }
+    }
+}
+
+project(':logstash-core') {
+    afterEvaluate {
+        if (rootProject.fedrampHighMode) {
+            logger.lifecycle("Adding BouncyCastle FIPS dependencies to logstash-core")
+            dependencies {
+                // Add FIPS dependencies to the runtimeOnly configuration
+                // This ensures they'll be included by the existing copyRuntimeLibs task
+                runtimeOnly "org.bouncycastle:bc-fips:2.0.0"
+                runtimeOnly "org.bouncycastle:bcpkix-fips:2.0.7"
+                runtimeOnly "org.bouncycastle:bctls-fips:2.0.19"
+                runtimeOnly "org.bouncycastle:bcutil-fips:2.0.3"
+            }
+        }
+    }
+}
