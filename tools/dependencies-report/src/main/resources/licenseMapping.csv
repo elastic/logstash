@@ -133,6 +133,10 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "org.apache.logging.log4j:log4j-core:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-jcl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
 "org.apache.logging.log4j:log4j-slf4j-impl:",https://logging.apache.org/log4j/2.x/index.html,Apache-2.0
+"org.bouncycastle:bc-fips:",https://www.bouncycastle.org,MIT
+"org.bouncycastle:bcpkix-fips:",https://www.bouncycastle.org,MIT
+"org.bouncycastle:bctls-fips:",https://www.bouncycastle.org,MIT
+"org.bouncycastle:bcutil-fips:",https://www.bouncycastle.org,MIT
 "org.codehaus.janino:commons-compiler:",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.janino:janino:",https://github.com/janino-compiler/janino,BSD-3-Clause
 "org.codehaus.mojo:animal-sniffer-annotations:",https://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/,MIT

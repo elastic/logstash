@@ -164,6 +164,14 @@ def logstash_with_empty_default(cmd, options = {}, default_settings = {})
   Belzebuth.run(cmd, {:directory => get_logstash_path }.merge(options.fetch(:belzebuth, { })))
 end
 
+def logstash_plugin(command, *args)
+  cmd = Shellwords.join(["bin/logstash-plugin", command, *args])
+  pwd = Pathname.new(get_logstash_path).cleanpath.to_s
+
+  puts "Running logstash plugin manager with `#{cmd}` in `#{pwd}`"
+  Belzebuth.run(cmd, directory: pwd, timeout: 60)
+end
+
 def verify_response!(cmd, response)
   unless response.successful?
     raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresponse: #{response}"

@@ -105,7 +105,7 @@ describe "CLI > logstash-plugin install" do
     end
   end
 
-  context "pack" do
+  context "pack", :skip_fips do
     context "when the command is run in the `$LOGSTASH_HOME`" do
       include_examples "install from a pack"
     end
@@ -128,7 +128,7 @@ describe "CLI > logstash-plugin install" do
       end
     end
 
-    context "install non bundle plugin" do
+    context "install non bundle plugin", :skip_fips do
       let(:plugin_name) { "logstash-input-github" }
       let(:install_command) { "bin/logstash-plugin install" }
 
@@ -163,7 +163,7 @@ describe "CLI > logstash-plugin install" do
     end
   end
 
-  context "rubygems hosted plugin" do
+  context "rubygems hosted plugin", :skip_fips do
     include_context "pluginmanager validation helpers"
     shared_context("install over existing") do
       before(:each) do
