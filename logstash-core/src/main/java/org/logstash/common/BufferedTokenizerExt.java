@@ -107,7 +107,7 @@ public class BufferedTokenizerExt extends RubyObject {
         }
 
         public boolean isEmpty() {
-            return origIterator.hasNext();
+            return !origIterator.hasNext();
         }
     }
 
