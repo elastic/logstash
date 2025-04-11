@@ -1,0 +1,22 @@
+name: Backport to active branches
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  backport:
+    # Only run if the PR was merged (not just closed) and has one of the backport labels
+    if: |
+      github.event.pull_request.merged == true && 
+      contains(toJSON(github.event.pull_request.labels.*.name), 'backport-active-')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: elastic/oblt-actions/github/backport-active@v1
