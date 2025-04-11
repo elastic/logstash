@@ -123,7 +123,7 @@ public class SecretIdentifier {
         }
 
         if (!ConfigVariableExpander.KEY_PATTERN.matcher(key).matches()) {
-            logger.warn(String.format("Invalid secret key name `%s` provided.", key) + ConfigVariableExpander.KEY_PATTERN_DESCRIPTION);
+            logger.warn(String.format("Invalid secret key name `%s` provided. %s", key, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION));
         }
     }
 

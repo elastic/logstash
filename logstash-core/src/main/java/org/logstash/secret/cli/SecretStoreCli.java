@@ -263,7 +263,7 @@ public class SecretStoreCli {
                     final SecretStore secretStore = secretStoreFactory.load(config);
                     for (String argument : commandLine.getArguments()) {
                         if (!ConfigVariableExpander.KEY_PATTERN.matcher(argument).matches()) {
-                            throw new IllegalArgumentException(String.format("Invalid secret key name `%s` provided.", argument) + ConfigVariableExpander.KEY_PATTERN_DESCRIPTION);
+                            throw new IllegalArgumentException(String.format("Invalid secret key name `%s` provided. %s", argument, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION);
                         }
                         final SecretIdentifier id = new SecretIdentifier(argument);
                         final byte[] existingValue = secretStore.retrieveSecret(id);
