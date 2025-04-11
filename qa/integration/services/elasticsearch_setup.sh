@@ -8,6 +8,8 @@ ES_HOME="$current_dir/../../../build/elasticsearch"
 
 start_es() {
   es_args=$@
+  mkdir -p /tmp/ls_integration/es-data
+  mkdir -p /tmp/ls_integration/es-logs
   JAVA_HOME= $ES_HOME/bin/elasticsearch -Expack.security.enabled=false -Epath.data=/tmp/ls_integration/es-data -Ediscovery.type=single-node -Epath.logs=/tmp/ls_integration/es-logs $es_args -p $ES_HOME/elasticsearch.pid > /tmp/elasticsearch.log 2>/dev/null &
   count=120
   echo "Waiting for elasticsearch to respond..."
