@@ -3,7 +3,7 @@ mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/contributing-to-logstash.html
 ---
 
-# Contributing to Logstash [contributing-to-logstash]
+# Contribute to Logstash [contributing-to-logstash]
 
 You can add your own input, codec, filter, or output plugins to Logstash.
 

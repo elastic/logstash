@@ -47,13 +47,79 @@ For testing purposes, you may still run Logstash from the command line, but you 
 
 ### APT [_apt]
 
-Version 9.0.0 of Logstash has not yet been released.
+Download and install the Public Signing Key:
+
+```
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elastic-keyring.gpg
+```
+
+You may need to install the `apt-transport-https` package on Debian before proceeding:
+
+```
+sudo apt-get install apt-transport-https
+```
+
+Save the repository definition to  /etc/apt/sources.list.d/elastic-{{major-version}}.list:
+
+```sh subs=true
+echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/{{major-version}}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{{major-version}}.list
+```
+
+::::{warning}
+Use the `echo` method described above to add the Logstash repository.
+Do not use `add-apt-repository` as it will add a `deb-src` entry as well, but we do not provide a source package. 
+If you have added the `deb-src` entry, you will see an error like the following:
+
+```
+    Unable to find expected entry 'main/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+```
+
+Just delete the `deb-src` entry from the `/etc/apt/sources.list` file and the
+installation should work as expected.
+::::
+
+Run `sudo apt-get update` and the repository is ready for use. You can install
+it with:
+
+```sh subs=true
+sudo apt-get update && sudo apt-get install logstash
+```
+
+Check out [Running Logstash](running-logstash.md) for details about managing Logstash as a system service.
 
 
 ### YUM [_yum]
 
-Version 9.0.0 of Logstash has not yet been released.
+Download and install the public signing key:
 
+```sh
+sudo rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+```
+
+Add the following in your `/etc/yum.repos.d/` directory
+in a file with a `.repo` suffix, for example `logstash.repo`
+
+```sh subs=true
+[logstash-{{major-version}}]
+name=Elastic repository for {{major-version}} packages
+baseurl=https://artifacts.elastic.co/packages/{{major-version}}/yum
+gpgcheck=1
+gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+enabled=1
+autorefresh=1
+type=rpm-md
+```
+And your repository is ready for use. You can install it with:
+
+```sh
+sudo yum install logstash
+```
+
+::::{warning}
+The repositories do not work with older rpm based distributions that still use RPM v3, like CentOS5.
+::::
+
+Check out [Running Logstash](running-logstash.md)  for managing Logstash as a system service.
 
 ### Docker [_docker]
 

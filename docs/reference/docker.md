@@ -13,19 +13,43 @@ These images are free to use under the Elastic license. They contain open source
 
 ## Pulling the image [_pulling_the_image]
 
-Obtaining Logstash for Docker is as simple as issuing a `docker pull` command against the Elastic Docker registry.
+Obtaining Logstash for Docker is as simple as issuing a `docker
+pull` command against the Elastic Docker registry.
 
-However, version 9.0.0 of Logstash has not yet been released, so no Docker image is currently available for this version.
+
+```sh subs=true
+docker pull {{docker-repo}}:{{stack-version}}
+```
+
+Alternatively, you can download other Docker images that contain only features
+available under the Apache 2.0 license. To download the images, go to 
+[www.docker.elastic.co](https://www.docker.elastic.co). 
 
 
 ## Verifying the image [_verifying_the_image]
 
-Although it’s optional, we highly recommend verifying the signatures included with your downloaded Docker images to ensure that the images are valid.
+Although it's optional, we highly recommend verifying the signatures included with your downloaded Docker images to ensure that the images are valid.
 
-Elastic images are signed with [Cosign](https://docs.sigstore.dev/quickstart/quickstart-cosign/) which is part of the [Sigstore](https://www.sigstore.dev/) project. Cosign supports container signing, verification, and storage in an OCI registry. Install the appropriate Cosign application for your operating system.
+Elastic images are signed with [Cosign](https://docs.sigstore.dev/cosign/) which is part of the [Sigstore](https://www.sigstore.dev/) project. 
+Cosign supports container signing, verification, and storage in an OCI registry. 
+Install the appropriate Cosign application for your operating system.
 
-Run the following commands to verify the container image signature for {{ls}} v9.0.0-beta1:
+Run the following commands to verify the container image signature for {{ls}} v{{stack-version}}:
 
-Version 9.0.0 of Logstash has not yet been released, so no Docker image is currently available for this version.
+```sh subs=true
+wget https://artifacts.elastic.co/cosign.pub <1>
+cosign verify --key cosign.pub {{docker-repo}}:{{stack-version}} <2>
+```
 
+1. Download the Elastic public key to verify container signature
+2. Verify the container against the Elastic public key
 
+The command prints the check results and the signature payload in JSON format, for example:
+
+```sh subs=true
+Verification for {{docker-repo}}:{{stack-version}} --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+```
