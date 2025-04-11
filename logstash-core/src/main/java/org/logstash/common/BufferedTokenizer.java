@@ -61,6 +61,7 @@ public class BufferedTokenizer {
     static class DataSplitter implements Iterator<String> {
         private final String separator;
         private int currentIdx = 0;
+        private int nextSeparatorIdx = -1;
         private final StringBuilder accumulator = new StringBuilder();
 
         DataSplitter(String separator) {
@@ -69,28 +70,37 @@ public class BufferedTokenizer {
 
         @Override
         public boolean hasNext() {
-            int nextIdx = accumulator.indexOf(separator, currentIdx);
-            if (nextIdx == -1) {
-                // not found next separator
-                cleanupAccumulator();
-                return false;
-            } else {
-                return true;
-            }
+            return matchNextSeparatorIdx();
         }
 
         @Override
         public String next() {
-            int nextIdx = accumulator.indexOf(separator, currentIdx);
-            if (nextIdx == -1) {
-                // not found next separator
-                cleanupAccumulator();
+            if (!matchNextSeparatorIdx()) {
                 throw new NoSuchElementException();
-            } else {
-                String token = accumulator.substring(currentIdx, nextIdx);
-                currentIdx = nextIdx + separator.length();
-                return token;
             }
+
+            String token = accumulator.substring(currentIdx, nextSeparatorIdx);
+            currentIdx = nextSeparatorIdx + separator.length();
+            nextSeparatorIdx = -1;
+            return token;
+        }
+
+        /**
+         * Used to retrieve the index of the next token just one time. It saves into the nextSeparatorIdx
+         * and return true if a next token is present.
+         * Updates internal state for tracking.
+         *
+         * @return true iff a next complete token is available.
+         */
+        private boolean matchNextSeparatorIdx() {
+            if (nextSeparatorIdx == -1) {
+                nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
+            }
+            // clean up accumulator if no next separator found
+            if (nextSeparatorIdx == -1 && currentIdx > 0) {
+                cleanupAccumulator();
+            }
+            return nextSeparatorIdx != -1;
         }
 
         private void cleanupAccumulator() {
