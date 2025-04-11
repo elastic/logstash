@@ -35,7 +35,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.UUID;
+import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -387,9 +387,21 @@ public class SecretStoreCliTest {
         assertTrue(Arrays.stream(expected).noneMatch(terminal.out::contains));
     }
 
+    private final static String KEY_FIRST_CHAR_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_.";
+    private final static String KEY_REST_CHARS = KEY_FIRST_CHAR_CANDIDATES.concat("01234567890");
     private String getRandomKeyName() {
-        final String[] uuidParts = UUID.randomUUID().toString().split("-");
-        return "r".concat(uuidParts[0]).concat("_").concat(uuidParts[1]);
+        final Random random = new Random();
+        final StringBuilder sb = new StringBuilder();
+
+        // add a random legal first-character
+        sb.append(KEY_FIRST_CHAR_CANDIDATES.charAt(random.nextInt(KEY_FIRST_CHAR_CANDIDATES.length())));
+
+        // add between 0 and 40 random legal rest-characters
+        final int more = 40;
+        random.ints(more, 0, KEY_REST_CHARS.length())
+                .mapToObj(KEY_REST_CHARS::charAt)
+                .forEach(sb::append);
+        return sb.toString().toLowerCase();
     }
 
     private void assertPrimaryHelped() {
