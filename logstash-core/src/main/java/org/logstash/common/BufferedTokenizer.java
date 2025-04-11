@@ -69,12 +69,12 @@ public class BufferedTokenizer {
         }
 
         @Override
-        public boolean hasNext() {
+        public synchronized boolean hasNext() {
             return matchNextSeparatorIdx();
         }
 
         @Override
-        public String next() {
+        public synchronized String next() {
             if (!matchNextSeparatorIdx()) {
                 throw new NoSuchElementException();
             }
@@ -113,11 +113,15 @@ public class BufferedTokenizer {
         }
 
         public String flush() {
-            return accumulator.substring(currentIdx);
+            final String flushed = accumulator.substring(currentIdx);
+            // empty the accumulator
+            accumulator.setLength(0);
+            currentIdx = 0;
+            return flushed;
         }
 
         @Override
-        public String toString() {
+        public synchronized String toString() {
             return "accumulator=" + accumulator + ", currentIdx=" + currentIdx;
         }
     }
