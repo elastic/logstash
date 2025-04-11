@@ -86,47 +86,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-5]]
 === Logstash 8.17.5 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.5
-
-* Update 8.17.4 release notes to note http_poller issue https://github.com/elastic/logstash/pull/17436[#17436]
-* Backport PR #17436 to 8.17: Update 8.17.4 release notes to note http_poller issue https://github.com/elastic/logstash/pull/17438[#17438]
-
-=== Logstash Commits between 8.17 and 8.17.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.4..8.17"
-
-30220bbbe - (HEAD -> 8.17, origin/8.17) [8.x][Docs] Add recommendations to collect all metrics for the best dashboard experience. (#17524) (#17543) (2 days ago) <mergify[bot]>
-c75b5a31e - Ensure elasticsearch logs and data dirs exist before startup (#17531) (#17535) (2 days ago) <mergify[bot]>
-cbb2a2e55 - setting: enforce non-nullable (restore 8.15.x behavior) (#17522) (#17528) (2 days ago) <mergify[bot]>
-11172f733 - Update patch plugin versions in gemfile lock (#17518) (3 days ago) <github-actions[bot]>
-cde578644 - Fix JDK matrix pipeline after configurable it split (#17461) (#17512) (3 days ago) <mergify[bot]>
-00cd8bc96 - [Backport 8.17] Update uri gem required by Logstash (#17495) (#17501) (4 days ago) <mergify[bot]>
-fb83a12ce - Remove technical preview from agent driven monitoring pages. (#17485) (#17497) (6 days ago) <mergify[bot]>
-035733831 - pin cgi to 0.3.7 (#17487) (#17490) (8 days ago) <mergify[bot]>
-83c0c6e55 - Fix persistent-queues.asciidoc PQ sizing multiplication factors (#17451) (#17470) (10 days ago) <mergify[bot]>
-855df9cea - Update releasenotes.asciidoc to warn of ES input and filter issues in 8.17.4 (#17453) (#17473) (10 days ago) <mergify[bot]>
-5708f749f - [Backport 8.17] Fix syntax in BK CI script (#17462) (#17465) (10 days ago) <mergify[bot]>
-63ea72db9 - Update patch plugin versions in gemfile lock (#17449) (11 days ago) <github-actions[bot]>
-b8d95864b - [Backport 8.17] Removed unused configHash computation that can be replaced by PipelineConfig.configHash() (#17336) (#17417) (11 days ago) <mergify[bot]>
-3402310b4 - (origin/mergify/bp/8.17/pr-17387) Update tls-encryption.asciidoc (#17387) (2 weeks ago) <Matt Johnson>
-d70feb2c8 - [8.17] Pin rubocop-ast development gem due to new dep on prism (backport #17407) (#17426) (2 weeks ago) <mergify[bot]>
-7286fe78d - Update 8.17.4 release notes to warn of http_poller issue (#17436) (#17438) (2 weeks ago) <github-actions[bot]>
-580c8152d - [Backport 8.17] Limit memory consumption in test on overflow (#17373) (#17413) (2 weeks ago) <mergify[bot]>
-0b24bebda - Replace Deprecated SSL Settings with their latest values (#17392) (#17399) (2 weeks ago) <mergify[bot]>
-9279a1561 - Bump 8.17.5 (#17395) (2 weeks ago) <Andrea Selva>
-26136d652 - Release notes for 8.17.4 (#17379) (3 weeks ago) <github-actions[bot]>
-f6736c414 - Release notes for 8.16.6 (backport #17378) (#17388) (3 weeks ago) <mergify[bot]>
-59c51d13c - [8.17] Surface failures from nested rake/shell tasks (backport #17310) (#17315) (3 weeks ago) <mergify[bot]>
-f679ecb37 - tests: make integration split quantity configurable (#17219) (#17369) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.4..8.17 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 3.17.0 -> 3.17.1
-logstash-input-elasticsearch: 4.21.1 -> 4.21.2
-logstash-input-http_poller: 5.6.0 -> 5.6.1
----------- GENERATED CONTENT ENDS HERE ------------
+* The `SettingString` setting is now correctly non-nullable and `SettingNullableString` is nullable. https://github.com/elastic/logstash/pull/17522[#17522]
 
 ==== Plugins
 
