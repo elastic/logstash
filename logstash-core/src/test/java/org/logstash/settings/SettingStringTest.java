@@ -20,31 +20,73 @@ package org.logstash.settings;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
-// Mirrored from logstash-core/spec/logstash/settings/string_spec.rb
+@RunWith(Enclosed.class)
 public class SettingStringTest {
 
-    private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
-    private SettingString sut;
+    public static class WithValueConstraintCase {
+        private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
+        private SettingString sut;
 
-    @Before
-    public void setUp() throws Exception {
-        sut = new SettingString("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
+        @Before
+        public void setUp() throws Exception {
+            sut = new SettingString("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
+        }
+
+        @Test
+        public void whenSetValueNotPresentInPossibleValuesThenThrowAHelpfulError() {
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+                sut.set("d");
+            });
+            assertThat(ex.getMessage(), containsString("Invalid value \"mytext: d\""));
+        }
+
+        @Test
+        public void whenSetConstrainedToValuePresentInPossibleValuesThenSetValue() {
+            sut.set("a");
+
+            assertEquals("a", sut.value());
+        }
+
+        @Test
+        public void whenSetConstrainedToNullThenThrowAHelpfulError() {
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+                sut.set(null);
+            });
+            assertThat(ex.getMessage(), containsString("Setting \"mytext\" must be a String"));
+        }
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void whenSetValueNotPresentInPossibleValuesThenThrowAnError() {
-        sut.set("d");
-    }
+    public static class WithoutValueConstraintCase {
+        private SettingString sut;
 
-    @Test
-    public void whenSetValuePresentInPossibleValuesThenSetValue() {
-        sut.set("a");
+        @Before
+        public void setUp() throws Exception {
+            sut = new SettingString("mytext", "foo", true);
+        }
 
-        assertEquals("a", sut.value());
+        @Test
+        public void whenSetUnconstrainedToNonNullValueThenSetValue() {
+            sut.set("a");
+
+            assertEquals("a", sut.value());
+        }
+
+        @Test
+        public void whenSetUnconstrainedToNullThenThrowAHelpfulError() {
+            IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+                sut.set(null);
+            });
+            assertThat(ex.getMessage(), containsString("Setting \"mytext\" must be a String"));
+        }
     }
 }
