@@ -26,7 +26,7 @@ jobs:
           intervalSeconds: 30
       - name: Add Docs Preview link in PR Comment
         if: steps.wait-for-status.outputs.state == 'success'
-        uses: thollander/actions-comment-pull-request@v1
+        uses: thollander/actions-comment-pull-request@v3
         with:
           message: |
             :page_with_curl: **DOCS PREVIEW** :sparkles: https://logstash_bk_${{ github.event.number }}.docs-preview.app.elstc.co/diff
