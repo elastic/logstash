@@ -25,8 +25,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class BufferedTokenizerTest {
 
@@ -82,5 +81,13 @@ public final class BufferedTokenizerTest {
 
         tokens = toList(sut.extract("\n\n\n"));
         assertEquals(List.of("", "", ""), tokens);
+    }
+
+    @Test
+    public void givenBufferWithTerminatedAndUnterminatedTokensWhenCheckingForEmptyThenReturnFalseIfUnterminatedTokenPartRemainInTheBuffer() {
+        List<String> tokens = toList(sut.extract("foo\nbar\nbaz"));
+        assertEquals(List.of("foo", "bar"), tokens);
+
+        assertFalse("Unterminated token makes the buffer to be considered non empty", sut.isEmpty());
     }
 }
