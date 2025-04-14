@@ -120,6 +120,11 @@ public class BufferedTokenizer {
             return flushed;
         }
 
+        // considered empty if caught up to the accumulator
+        public synchronized boolean isBufferEmpty() {
+            return currentIdx >= accumulator.length();
+        }
+
         @Override
         public synchronized String toString() {
             return "accumulator=" + accumulator + ", currentIdx=" + currentIdx;
@@ -171,6 +176,7 @@ public class BufferedTokenizer {
     }
 
     public boolean isEmpty() {
-        return !dataSplitter.hasNext();
+//        return !dataSplitter.hasNext();
+        return dataSplitter.isBufferEmpty();
     }
 }
