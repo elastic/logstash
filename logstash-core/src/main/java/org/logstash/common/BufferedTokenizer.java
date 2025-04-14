@@ -176,7 +176,6 @@ public class BufferedTokenizer {
     }
 
     public boolean isEmpty() {
-//        return !dataSplitter.hasNext();
         return dataSplitter.isBufferEmpty();
     }
 }
