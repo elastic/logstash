@@ -88,6 +88,7 @@ This section summarizes the changes in the following releases:
 
 * The `SettingString` setting is now correctly non-nullable and `SettingNullableString` is nullable. https://github.com/elastic/logstash/pull/17522[#17522]
 
+[[plugins-8-17-5]]
 ==== Plugins
 
 *Elasticsearch Filter - 3.17.1*
