@@ -19,7 +19,6 @@ steps:
       export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
       ci/license_check.sh -m 4G
 
-steps:
   - label: ":passport_control: License check - Fedramp High Mode"
     key: "license-check-fedramp-high"
     agents:
