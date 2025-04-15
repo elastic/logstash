@@ -47,3 +47,4 @@ gem "bigdecimal", "~> 3.1"
 
 gem "psych", "5.2.2"
 gem "uri", "0.12.3" # Pins until a new jruby version with updated uri is released
+gem "cgi", "0.3.7" # Pins until a new jruby version with updated cgi is released
