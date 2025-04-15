@@ -9,10 +9,8 @@ The pipeline viewer UI offers additional visibility into the behavior and perfor
 
 The pipeline viewer highlights CPU% and event latency in cases where the values are anomalous. This information helps you quickly identify processing that is disproportionately slow.
 
-:::{image} images/pipeline-tree.png
-:alt: Pipeline Viewer
-:class: screenshot
-:::
+% TO DO: Use `:class: screenshot`
+![Pipeline Viewer](images/pipeline-tree.png)
 
 
 ## Prerequisites [_prerequisites]
@@ -35,10 +33,8 @@ Each pipeline is identified by a pipeline ID (`main` by default). For each pipel
 
 Many elements in the tree are clickable. For example, you can click the plugin name to expand the detail view.
 
-:::{image} images/pipeline-input-detail.png
-:alt: Pipeline Input Detail
-:class: screenshot
-:::
+% TO DO: Use `:class: screenshot`
+![Pipeline Input Detail](images/pipeline-input-detail.png)
 
 Click the arrow beside a branch name to collapse or expand it.
 

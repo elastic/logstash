@@ -30,9 +30,7 @@ To manage Logstash pipelines in {{kib}}:
 
 1. Open {{kib}} in your browser and go to the Management tab. If you’ve set up configuration management correctly, you’ll see an area for managing Logstash.
 
-    :::{image} images/centralized_config.png
-    :alt: centralized config
-    :::
+    ![centralized config](images/centralized_config.png)
 
 2. Click the **Pipelines** link.
 3. To add a new pipeline, click **Create pipeline** and specify values.

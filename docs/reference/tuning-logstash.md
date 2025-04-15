@@ -61,13 +61,11 @@ If you plan to modify the default pipeline settings, take into account the follo
 
 When tuning Logstash you may have to adjust the heap size. You can use the [VisualVM](https://visualvm.github.io/) tool to profile the heap. The **Monitor** pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample **Monitor** panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
 
-:::{image} images/pipeline_overload.png
-:alt: pipeline overload
-:::
+% TO DO: Use `:class: screenshot`
+![pipeline overload](images/pipeline_overload.png)
 
-:::{image} images/pipeline_correct_load.png
-:alt: pipeline correct load
-:::
+% TO DO: Use `:class: screenshot`
+![pipeline correct load](images/pipeline_correct_load.png)
 
 In the first example we see that the CPU isn’t being used very efficiently. In fact, the JVM is often times having to stop the VM for “full GCs”. Full garbage collections are a common symptom of excessive memory pressure. This is visible in the spiky pattern on the CPU chart. In the more efficiently configured example, the GC graph pattern is more smooth, and the CPU is used in a more uniform manner. You can also see that there is ample headroom between the allocated heap size, and the maximum allowed, giving the JVM GC a lot of room to work with.
 
