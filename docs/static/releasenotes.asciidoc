@@ -3,11 +3,8 @@
 
 This section summarizes the changes in the following releases:
 
-<<<<<<< HEAD
 * <<logstash-8-18-0,Logstash 8.18.0>>
-=======
 * <<logstash-8-17-5,Logstash 8.17.5>>
->>>>>>> 16ee40ca (Release notes for 8.17.5 (#17550))
 * <<logstash-8-17-4,Logstash 8.17.4>>
 * <<logstash-8-17-3,Logstash 8.17.3>>
 * <<logstash-8-17-2,Logstash 8.17.2>>
