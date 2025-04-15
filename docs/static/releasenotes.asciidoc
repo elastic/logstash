@@ -4,6 +4,7 @@
 This section summarizes the changes in the following releases:
 
 * <<logstash-8-18-0,Logstash 8.18.0>>
+* <<logstash-8-17-5,Logstash 8.17.5>>
 * <<logstash-8-17-4,Logstash 8.17.4>>
 * <<logstash-8-17-3,Logstash 8.17.3>>
 * <<logstash-8-17-2,Logstash 8.17.2>>
@@ -136,6 +137,27 @@ This section summarizes the changes in the following releases:
 *Kafka Integration - 11.6.0*
 
 * Support additional `oauth` and `sasl` configuration options for configuring kafka client https://github.com/logstash-plugins/logstash-integration-kafka/pull/189[#189]
+
+[[logstash-8-17-5]]
+=== Logstash 8.17.5 Release Notes
+
+* The `SettingString` setting is now correctly non-nullable and `SettingNullableString` is nullable. https://github.com/elastic/logstash/pull/17522[#17522]
+
+[[plugins-8-17-5]]
+==== Plugins
+
+*Elasticsearch Filter - 3.17.1*
+
+* Add elastic-transport client support used in elasticsearch-ruby 8.x https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/193[#193]
+
+*Elasticsearch Input - 4.21.2*
+
+* Add elastic-transport client support used in elasticsearch-ruby 8.x https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/225[#225]
+
+*Http_poller Input - 5.6.1*
+
+* Fix issue with new 'uri' gem leading to runtime exception https://github.com/logstash-plugins/logstash-input-http_poller/pull/148[#148]
+
 
 [[logstash-8-17-4]]
 === Logstash 8.17.4 Release Notes
