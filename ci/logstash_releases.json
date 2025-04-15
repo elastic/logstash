@@ -9,7 +9,7 @@
     "8.previous": "8.17.6-SNAPSHOT",
     "8.current": "8.18.1-SNAPSHOT",
     "8.next": "8.19.0-SNAPSHOT",
-    "9.next": "9.0.0-SNAPSHOT",
+    "9.next": "9.0.1-SNAPSHOT",
     "main": "9.1.0-SNAPSHOT"
   }
 }
