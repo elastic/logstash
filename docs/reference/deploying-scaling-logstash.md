@@ -14,9 +14,7 @@ The goal of this document is to highlight the most common architecture patterns 
 
 For first time users, if you simply want to tail a log file to grasp the power of the Elastic Stack, we recommend trying [Filebeat Modules](beats://reference/filebeat/filebeat-modules-overview.md). Filebeat Modules enable you to quickly collect, parse, and index popular log types and view pre-built Kibana dashboards within minutes. [Metricbeat Modules](beats://reference/metricbeat/metricbeat-modules.md) provide a similar experience, but with metrics data. In this context, Beats will ship data directly to Elasticsearch where [Ingest Nodes](docs-content://manage-data/ingest/transform-enrich/ingest-pipelines.md) will process and index your data.
 
-:::{image} images/deploy1.png
-:alt: deploy1
-:::
+![deploy1](images/deploy1.png)
 
 
 ### Introducing Logstash [_introducing_logstash]
@@ -42,9 +40,7 @@ Beats and Logstash make ingest awesome. Together, they provide a comprehensive s
 
 Beats run across thousands of edge host servers, collecting, tailing, and shipping logs to Logstash. Logstash serves as the centralized streaming engine for data unification and enrichment. The [Beats input plugin](logstash-docs-md://lsr/plugins-inputs-beats.md) exposes a secure, acknowledgement-based endpoint for Beats to send data to Logstash.
 
-:::{image} images/deploy2.png
-:alt: deploy2
-:::
+![deploy2](images/deploy2.png)
 
 ::::{note}
 Enabling persistent queues is strongly recommended, and these architecture characteristics assume that they are enabled. We encourage you to review the [Persistent queues (PQ)](/reference/persistent-queues.md) documentation for feature benefits and more details on resiliency.
@@ -97,9 +93,7 @@ If external monitoring is preferred, there are [monitoring APIs](monitoring-logs
 
 Users may have other mechanisms of collecting logging data, and it’s easy to integrate and centralize them into the Elastic Stack. Let’s walk through a few scenarios:
 
-:::{image} images/deploy3.png
-:alt: deploy3
-:::
+![deploy3](images/deploy3.png)
 
 
 ### TCP, UDP, and HTTP Protocols [_tcp_udp_and_http_protocols]
@@ -145,9 +139,7 @@ If you are leveraging message queuing technologies as part of your existing infr
 
 For users who want to integrate data from existing Kafka deployments or require the underlying usage of ephemeral storage, Kafka can serve as a data hub where Beats can persist to and Logstash nodes can consume from.
 
-:::{image} images/deploy4.png
-:alt: deploy4
-:::
+![deploy4](images/deploy4.png)
 
 The other TCP, UDP, and HTTP sources can persist to Kafka with Logstash as a conduit to achieve high availability in lieu of a load balancer. A group of Logstash nodes can then consume from topics with the [Kafka input](logstash-docs-md://lsr/plugins-inputs-kafka.md) to further transform and enrich the data in transit.
 
