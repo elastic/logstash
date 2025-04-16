@@ -16,13 +16,8 @@ define MERGIFY_TMPL
       - label=$(BACKPORT_LABEL)
     actions:
       backport:
-        assignees:
-          - "{{ author }}"
         branches:
           - "$(BRANCH)"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 endef
 
 # Add mergify entry for the new backport label
