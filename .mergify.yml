@@ -39,7 +39,6 @@ pull_request_rules:
           To fixup this pull request, you need to add the backport labels for the needed
           branches, such as:
           * `backport-8./d` is the label to automatically backport to the `8./d` branch. `/d` is the digit.
-          * `backport-8.x` is the label to automatically backport to the `8.x` branch.
           * If no backport is necessary, please add the `backport-skip` label
 
   - name: remove backport-skip label
@@ -49,14 +48,6 @@ pull_request_rules:
       label:
         remove:
           - backport-skip
-
-  - name: remove backport-8.x label if backport-skip is present
-    conditions:
-      - label~=^backport-skip
-    actions:
-      label:
-        remove:
-          - backport-8.x
 
   - name: notify the backport has not been merged yet
     conditions:
@@ -69,21 +60,6 @@ pull_request_rules:
       comment:
         message: |
           This pull request has not been merged yet. Could you please review and merge it @{{ assignee | join(', @') }}? 🙏
-
-  - name: backport patches to 8.x branch
-    conditions:
-      - merged
-      - base=main
-      - label=backport-8.x
-    actions:
-      backport:
-        assignees:
-          - "{{ author }}"
-        branches:
-          - "8.x"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to 8.16 branch
     conditions:
@@ -129,6 +105,16 @@ pull_request_rules:
         labels:
           - "backport"
         title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to 8.19 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-8.19
+    actions:
+      backport:
+        branches:
+          - "8.19"
 
   - name: backport patches to 9.0 branch
     conditions:
