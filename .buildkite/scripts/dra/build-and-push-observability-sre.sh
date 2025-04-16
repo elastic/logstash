@@ -17,7 +17,12 @@ echo "Pushing ObservabilitySRE container to Docker repository"
 docker_login
 
 # Get qualified version without SHA (this is what the gradle task will produce)
+# Note that the gradle task always produces a version with -SNAPSHOT so if the
+# workflow type is staging we need to append -SNAPSHOT to the version.
 QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
+if [[ "${WORKFLOW_TYPE:-}" == "staging" && "${QUALIFIED_VERSION}" != *-SNAPSHOT ]]; then
+  QUALIFIED_VERSION="${QUALIFIED_VERSION}-SNAPSHOT"
+fi
 
 # Set environment variable to include SHA and get version with SHA
 QUALIFIED_VERSION_WITH_SHA="$(INCLUDE_COMMIT_ID=1 .buildkite/scripts/common/qualified-version.sh)"
