@@ -70,10 +70,8 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 1. Go to the {{kib}} home page, and click **Add integrations**.
 
-    :::{image} images/kibana-home.png
-    :alt: {{kib}} home page
-    :class: screenshot
-    :::
+    % TO DO: Use `:class: screenshot`
+    ![{{kib}} home page](images/kibana-home.png)
 
 2. In the query bar, search for **{{ls}}** and select the integration to see more details.
 3. Click **Add {{ls}}**.
@@ -135,10 +133,8 @@ After you have confirmed enrollment and data is coming in,  click **View assets*
 
 For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for metrics dashboards. These are populated with data only if you selected the **Metrics (Elastic Agent)** checkbox.
 
-:::{image} images/integration-assets-dashboards.png
-:alt: Integration assets
-:class: screenshot
-:::
+% TO DO: Use `:class: screenshot`
+![Integration assets](images/integration-assets-dashboards.png)
 
 A number of dashboards are included to view {{ls}} as a whole, and dashboards that allow you to drill-down into how {{ls}} is performing on a node, pipeline and plugin basis.
 
@@ -147,9 +143,7 @@ A number of dashboards are included to view {{ls}} as a whole, and dashboards th
 
 From the list of assets, open the **[Metrics {{ls}}] {{ls}} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {{ls}} performance.
 
-:::{image} images/integration-dashboard-overview.png
-:alt: The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {ls}
-:class: screenshot
-:::
+% TO DO: Use `:class: screenshot`
+![The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {ls}](images/integration-dashboard-overview.png)
 
 You can hover over any visualization to adjust its settings, or click the **Edit** button to make changes to the dashboard. To learn more, refer to [Dashboard and visualizations](docs-content://explore-analyze/dashboards.md).

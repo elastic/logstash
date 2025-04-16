@@ -77,10 +77,8 @@ Check out [Installing {{agent}}](docs-content://reference/fleet/install-elastic-
 
 1. Go to the {{kib}} home page, and click **Add integrations**.
 
-    :::{image} images/kibana-home.png
-    :alt: {{kib}} home page
-    :class: screenshot
-    :::
+    % TO DO: Use `:class: screenshot`
+    ![{{kib}} home page](images/kibana-home.png)
 
 2. In the query bar, search for **{{ls}}** and select the integration to see more details about it.
 3. Click **Add {{ls}}**.
@@ -142,10 +140,8 @@ After you have confirmed enrollment and data is coming in,  click **View assets*
 
 For traditional Stack Monitoring UI, the dashboards marked **[Logs {{ls}}]** are used to visualize the logs produced by your {{ls}} instances, with those marked **[Metrics {{ls}}]** for metrics dashboards. These are populated with data only if you selected the **Metrics (Elastic Agent)** checkbox.
 
-:::{image} images/integration-assets-dashboards.png
-:alt: Integration assets
-:class: screenshot
-:::
+% TO DO: Use `:class: screenshot`
+![Integration assets](images/integration-assets-dashboards.png)
 
 A number of dashboards are included to view {{ls}} as a whole, and dashboards that allow you to drill-down into how {{ls}} is performing on a node, pipeline and plugin basis.
 
