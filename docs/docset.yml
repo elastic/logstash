@@ -42,6 +42,5 @@ subs:
   dlm:   "data lifecycle management"
   dlm-init:   "DLM"
   major-version: "9.x"
-  major-minor-version: "9.0"
   stack-version: "9.0.0"
   docker-repo: "docker.elastic.co/logstash/logstash"
