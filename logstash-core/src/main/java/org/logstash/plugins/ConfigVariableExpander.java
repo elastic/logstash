@@ -35,11 +35,14 @@ import java.util.regex.Pattern;
  * */
 public class ConfigVariableExpander implements AutoCloseable {
 
-    private static String SUBSTITUTION_PLACEHOLDER_REGEX = "\\$\\{(?<name>[a-zA-Z_.][a-zA-Z0-9_.]*)(:(?<default>[^}]*))?}";
+    public static final Pattern KEY_PATTERN = Pattern.compile("[a-zA-Z_.][a-zA-Z0-9_.]*");
+    public static final String KEY_PATTERN_DESCRIPTION = "Key names are limited to ASCII letters (`a`-`z`, `A`-`Z`), numbers (`0`-`9`), " +
+            "underscores (`_`), and dots (`.`); they must be at least one character long and cannot begin with a number";
+    private static final String SUBSTITUTION_PLACEHOLDER_REGEX = "\\$\\{(?<name>" + KEY_PATTERN + ")(:(?<default>[^}]*))?}";
 
-    private Pattern substitutionPattern = Pattern.compile(SUBSTITUTION_PLACEHOLDER_REGEX);
-    private SecretStore secretStore;
-    private EnvironmentVariableProvider envVarProvider;
+    private static final Pattern substitutionPattern = Pattern.compile(SUBSTITUTION_PLACEHOLDER_REGEX);
+    private final SecretStore secretStore;
+    private final EnvironmentVariableProvider envVarProvider;
 
     /**
      * Creates a ConfigVariableExpander that doesn't lookup any secreted placeholder.
