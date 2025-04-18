@@ -166,7 +166,7 @@ This section summarizes the changes in the following releases:
 ==== Known issues
 
 ** The https://github.com/logstash-plugins/logstash-input-http_poller[http_poller input] plugin will terminate during pipeline startup due to an issue with an underlying library. Please upgrade to logstash-input-http_poller 5.6.1 using {ls}'s plugin manager with `bin/logstash-plugin update logstash-input-http_poller`.
-** The https://github.com/logstash-plugins/logstash-input-elasticsearch[elasticsearch input] and https://github.com/logstash-plugins/logstash-filter-elasticsearch[elasticsearch filter] plugins will terminate during pipeline startup due to an upgrade of the underlying elasticsearch ruby client from 7.x to 8.x. Please upgrade to logstash-input-elasticsearch 4.21.2 and logstash-filter-elasticsearch 3.17.1 using {ls}'s plugin manager with `bin/logstash-plugin update logstash-input-elasticsearch logstash-filter-elasticsearch` or downgrade to Logstash 8.17.3.
+** The https://github.com/logstash-plugins/logstash-input-elasticsearch[elasticsearch input] and https://github.com/logstash-plugins/logstash-filter-elasticsearch[elasticsearch filter] plugins will terminate during pipeline startup due to an upgrade of the underlying elasticsearch ruby client from 7.x to 8.x. Please upgrade to logstash-input-elasticsearch 4.21.2 and logstash-filter-elasticsearch 3.17.1 using {ls}'s plugin manager with `bin/logstash-plugin update logstash-input-elasticsearch logstash-filter-elasticsearch` or upgrade to Logstash 8.18.0.
 
 [[notable-8-17-4]]
 ==== Notable issues fixed
