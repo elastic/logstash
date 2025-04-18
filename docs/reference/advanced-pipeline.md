@@ -379,7 +379,7 @@ Notice that the event now contains geographic location information:
 Now that the web logs are broken down into specific fields, you’re ready to get your data into Elasticsearch.
 
 ::::{tip}
-{ess-leadin}
+{{ess-leadin}}
 ::::
 
 

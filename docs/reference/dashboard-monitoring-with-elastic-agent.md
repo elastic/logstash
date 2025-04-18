@@ -144,6 +144,6 @@ A number of dashboards are included to view {{ls}} as a whole, and dashboards th
 From the list of assets, open the **[Metrics {{ls}}] {{ls}} overview** dashboard to view overall performance. Then follow the navigation panel to further drill down into {{ls}} performance.
 
 % TO DO: Use `:class: screenshot`
-![The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {ls}](images/integration-dashboard-overview.png)
+![The {{ls}} Overview dashboard in {{kib}} with various metrics from your monitored {{ls}}](images/integration-dashboard-overview.png)
 
 You can hover over any visualization to adjust its settings, or click the **Edit** button to make changes to the dashboard. To learn more, refer to [Dashboard and visualizations](docs-content://explore-analyze/dashboards.md).

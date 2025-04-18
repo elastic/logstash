@@ -43,7 +43,7 @@ For more details, check out [Grant access using API keys](#ls-api-keys).
 ::::{admonition} Security to hosted {{ess}} $$$hosted-ess$$$
 :class: note
 
-Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {ess-leadin-short}
+Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {{ess-leadin-short}}
 
 Configuration example:
 
@@ -217,7 +217,7 @@ output {
 
 
 ::::{note}
-Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {ess-leadin-short}
+Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {{ess-leadin-short}}
 ::::
 
 
