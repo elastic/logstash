@@ -794,7 +794,7 @@ spec:
           env:
             PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
         Weekly JDK availability check (8.19):
-          branch: 8.19
+          branch: "8.19"
           cronline: 0 2 * * 1  # every Monday@2AM UTC
           message: Weekly trigger of JDK update availability pipeline per branch
           env:
