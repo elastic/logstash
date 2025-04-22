@@ -171,6 +171,10 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
+      # NOTE: The schedule for the DRA snapshot pipeline is defined in the trigger_pipelines.yml file
+      #       in the logstash-pipeline-scheduler component.
+      #       However, 7.17 is not included in the trigger_pipelines.yml file, so we need to define it here.
+      #       This is a workaround until 7.17 reaches EOL.
       schedules:
         Daily 7.17:
           branch: "7.17"
