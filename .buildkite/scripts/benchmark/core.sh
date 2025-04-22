@@ -131,6 +131,8 @@ start_logstash() {
   cp $CONFIG_PATH/logstash.yml $LS_CONFIG_PATH/logstash.yml
   cp $CONFIG_PATH/uuid $LS_CONFIG_PATH/uuid
 
+  remove_v9_config
+
   LS_JAVA_OPTS=${LS_JAVA_OPTS:--Xmx${XMX}g}
   docker run -d --name=ls --net=host --cpus=$CPU --memory=${MEM}g -e LS_JAVA_OPTS="$LS_JAVA_OPTS" \
     -e QTYPE="$QTYPE" -e WORKER="$WORKER" -e BATCH_SIZE="$BATCH_SIZE" \
@@ -140,6 +142,20 @@ start_logstash() {
     -v $LS_CONFIG_PATH/pipelines.yml:/usr/share/logstash/config/pipelines.yml:ro \
     -v $LS_CONFIG_PATH/uuid:/usr/share/logstash/data/uuid:ro \
     docker.elastic.co/logstash/logstash:$LS_VERSION
+}
+
+remove_v9_config() {
+  local config_path="$LS_CONFIG_PATH/logstash.yml"
+  local major_version=$(echo $LS_VERSION | cut -d. -f1)
+  if [ "$major_version" -lt 9 ]; then
+    echo "Remove v9 config 'xpack.monitoring.allow_legacy_collection' from logstash.yml"
+
+    if [[ "$(uname)" == "Darwin" ]]; then
+      sed -i '' '/xpack\.monitoring\.allow_legacy_collection/d' "$config_path"
+    else
+      sed -i '/xpack\.monitoring\.allow_legacy_collection/d' "$config_path"
+    fi
+  fi
 }
 
 start_filebeat() {
