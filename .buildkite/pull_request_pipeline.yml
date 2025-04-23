@@ -89,6 +89,7 @@ steps:
         - limit: 1
     command: |
       echo "TODO: build a custom image with ruby and retry (retry required for docker login)"
+      curl https://apt.puppet.com/DEB-GPG-KEY-future | gpg -o /etc/apt/trusted.gpg.d/puppet.gpg --dearmor
       sudo apt-get update
       sudo apt-get install -y ruby ruby-retriable
       which retry || echo "Installation failed"
