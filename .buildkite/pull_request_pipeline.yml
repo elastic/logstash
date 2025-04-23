@@ -99,7 +99,7 @@ steps:
       # source .buildkite/scripts/common/vm-agent.sh
       source .buildkite/scripts/dra/docker-env-setup.sh
 
-      docker_login
+      # docker_login
       docker pull docker.elastic.co/logstash/logstash-observability-sre:8.19.0-SNAPSHOT
       docker run docker.elastic.co/logstash/logstash-observability-sre:8.19.0-SNAPSHOT \
         logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
