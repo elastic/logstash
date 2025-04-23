@@ -15,7 +15,7 @@ source "$SCRIPT_PATH/core.sh"
 
 parse_stack_versions() {
   IFS=','
-  STACK_VERSIONS="${STACK_VERSIONS:-8.6.0,8.7.0,8.8.0,8.9.0,8.10.0,8.11.0,8.12.0,8.13.0,8.14.0,8.15.0}"
+  STACK_VERSIONS="${STACK_VERSIONS:-8.9.0,8.10.0,8.11.0,8.12.0,8.13.0,8.14.0,8.15.5,8.16.6,8.17.5,8.18.0,9.0.0}"
   read -ra STACK_VERSIONS <<< "$STACK_VERSIONS"
 }
 
