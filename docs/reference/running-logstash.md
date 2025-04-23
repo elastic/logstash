@@ -9,12 +9,11 @@ Logstash is not started automatically after installation. Starting and stopping 
 
 As systemd is now the de-facto init system, here are some common operating systems and versions that use it.  This list is intended to be informative, not exhaustive.
 
-|     |     |     |
-| --- | --- | --- |
-| Distribution | Service System |  |
-| Ubuntu 16.04 and newer | [systemd](#running-logstash-systemd) |  |
-| Debian 8 "jessie" and newer | [systemd](#running-logstash-systemd) |  |
-| CentOS (and RHEL) 7 and newer | [systemd](#running-logstash-systemd) |  |
+| Distribution | Service System |
+| --- | --- |
+| Ubuntu 16.04 and newer | [systemd](#running-logstash-systemd) |
+| Debian 8 "jessie" and newer | [systemd](#running-logstash-systemd) |
+| CentOS (and RHEL) 7 and newer | [systemd](#running-logstash-systemd) |
 
 ## Running Logstash by Using Systemd [running-logstash-systemd]
 
