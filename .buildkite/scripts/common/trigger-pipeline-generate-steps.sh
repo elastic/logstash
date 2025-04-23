@@ -87,7 +87,9 @@ fi
 # and remove any duplicates
 if [[ -n "${INCLUDE_NEW_BRANCHES:-}" ]]; then
   IFS="," read -ra NEW_BRANCHES <<< "$INCLUDE_NEW_BRANCHES"
-  BRANCHES=($(printf "%s\n" "${BRANCHES[@]}" "${NEW_BRANCHES[@]}" | sort -u))
+  array=()
+  while IFS='' read -r line; do array+=("$line"); done < <(printf "%s\n" "${BRANCHES[@]}" "${NEW_BRANCHES[@]}" | sort -u)
+  BRANCHES=("${array[@]}")
 fi
 
 install_yq
