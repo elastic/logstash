@@ -21,7 +21,7 @@ The examples in this section show simple configurations with topic names hard co
 
     A connection to {{es}} and {{kib}} is required for this one-time setup step because {{filebeat}} needs to create the index template in {{es}} and load the sample dashboards into {{kib}}. For more information about configuring the connection to {{es}}, see the Filebeat [quick start](beats://reference/filebeat/filebeat-installation-configuration.md).
 
-    After the template and dashboards are loaded, you’ll see the message `INFO {{kib}} dashboards successfully loaded. Loaded dashboards`.
+    After the template and dashboards are loaded, you’ll see the message _INFO {{kib}} dashboards successfully loaded. Loaded dashboards_.
 
 2. Run the `modules enable` command to enable the modules that you want to run. For example:
 

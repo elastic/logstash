@@ -24,7 +24,9 @@ Security is enabled by default on the {{es}} cluster (starting in 8.0). You must
 
 {{ess}} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
 
-::::{admonition} Security to {{serverless-full}} $$$serverless$$$
+$$$serverless$$$
+
+::::{admonition} Security to {{serverless-full}}
 :class: note
 
 {{es-serverless}} simplifies safe, secure communication between {{ls}} and {{es}}.
@@ -39,11 +41,12 @@ For more details, check out [Grant access using API keys](#ls-api-keys).
 
 ::::
 
+$$$hosted-ess$$$
 
-::::{admonition} Security to hosted {{ess}} $$$hosted-ess$$$
+::::{admonition} Security to hosted {{ess}}
 :class: note
 
-Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {ess-leadin-short}
+Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {{ess-leadin-short}}
 
 Configuration example:
 
@@ -217,7 +220,7 @@ output {
 
 
 ::::{note}
-Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {ess-leadin-short}
+Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {{ess-leadin-short}}
 ::::
 
 
