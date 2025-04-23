@@ -76,6 +76,29 @@ steps:
     artifact_paths:
       - "coverage/coverage.json"
 
+  - label: "Test: FIPS enabled test runner"
+    key: "observabilitySRE-acceptance-tests"
+    agents:
+      provider: aws
+      instanceType: "m6i.xlarge"
+      diskSizeGb: 60
+      instanceMaxAge: 1440
+      imagePrefix: "endpoint-ubuntu-2204-amd64-fips-tester"
+    retry:
+      automatic:
+        - limit: 1
+    command: |
+      echo "Setting up environment"
+      source .buildkite/scripts/common/vm-agent.sh
+      source .buildkite/scripts/dra/docker-env-setup.sh
+
+      docker_login
+      docker pull docker.elastic.co/logstash/logstash-observability-sre:8.19.0-SNAPSHOT
+      docker run docker.elastic.co/logstash/logstash-observability-sre:8.19.0-SNAPSHOT \
+        logstash -e 'input { generator { count => 3 } } output { stdout { codec => rubydebug } }'
+      # Teardown Docker environment
+      source .buildkite/scripts/dra/docker-env-teardown.sh
+
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
     agents:
