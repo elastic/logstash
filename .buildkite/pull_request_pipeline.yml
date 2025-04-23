@@ -88,8 +88,12 @@ steps:
       automatic:
         - limit: 1
     command: |
-      echo "Setting up environment"
-      source .buildkite/scripts/common/vm-agent.sh
+      echo "TODO: build a custom image with ruby and retry (retry required for docker login)"
+      sudo apt-get update
+      sudo apt-get install -y ruby ruby-retriable
+      which retry || echo "Installation failed"
+      echo "logging in to docker"
+      # source .buildkite/scripts/common/vm-agent.sh
       source .buildkite/scripts/dra/docker-env-setup.sh
 
       docker_login
