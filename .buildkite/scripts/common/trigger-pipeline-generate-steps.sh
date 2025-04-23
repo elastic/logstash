@@ -83,6 +83,13 @@ else
   done
 fi
 
+# if the user has set the optional $INCLUDE_NEW_BRANCHES variable, add those branches to the list
+# and remove any duplicates
+if [[ -n "${INCLUDE_NEW_BRANCHES:-}" ]]; then
+  IFS="," read -ra NEW_BRANCHES <<< "$INCLUDE_NEW_BRANCHES"
+  BRANCHES=($(printf "%s\n" "${BRANCHES[@]}" "${NEW_BRANCHES[@]}" | sort -u))
+fi
+
 install_yq
 
 echo 'steps:' >pipeline_steps.yaml
