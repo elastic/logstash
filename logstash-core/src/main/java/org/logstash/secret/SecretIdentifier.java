@@ -113,21 +113,6 @@ public class SecretIdentifier {
     }
 
     /**
-     * Validates the provided key against null, empty and {@link ConfigVariableExpander#KEY_PATTERN}
-     * @param key a key to be validated
-     * @param keyName a key name
-     */
-    private static void validateKey(final String key, final String keyName) {
-        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
-            throw new IllegalArgumentException(String.format("%s may not be null or empty", keyName));
-        }
-
-        if (!ConfigVariableExpander.KEY_PATTERN.matcher(key).matches()) {
-            logger.warn(String.format("Invalid secret key name `%s` provided. %s", key, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION));
-        }
-    }
-
-    /**
      * Minor validation and downcases the parts
      *
      * @param key      The key, a part of the URN to validate.
@@ -135,7 +120,13 @@ public class SecretIdentifier {
      * @return The validated and transformed part.
      */
     private static String validateWithTransform(final String key, final String partName) {
-        validateKey(key, partName);
+        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
+            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
+        }
+
+        if (!ConfigVariableExpander.KEY_PATTERN.matcher(key).matches()) {
+            logger.warn(String.format("Invalid secret key name `%s` provided. %s", key, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION));
+        }
         return key.toLowerCase(Locale.US);
     }
 }
