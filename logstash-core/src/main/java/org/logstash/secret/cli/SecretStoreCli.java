@@ -20,13 +20,23 @@
 
 package org.logstash.secret.cli;
 
+import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.SecretIdentifier;
-import org.logstash.secret.store.*;
+import org.logstash.secret.store.SecretStore;
+import org.logstash.secret.store.SecretStoreFactory;
+import org.logstash.secret.store.SecretStoreUtil;
+import org.logstash.secret.store.SecureConfig;
 
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.logstash.secret.store.SecretStoreFactory.LOGSTASH_MARKER;
@@ -178,7 +188,7 @@ public class SecretStoreCli {
         }
     }
 
-    public SecretStoreCli(Terminal terminal){
+    public SecretStoreCli(Terminal terminal) {
         this(terminal, SecretStoreFactory.fromEnvironment());
     }
 
@@ -189,9 +199,10 @@ public class SecretStoreCli {
 
     /**
      * Entry point to issue a command line command.
+     *
      * @param primaryCommand The string representation of a {@link SecretStoreCli.Command}, if the String does not map to a {@link SecretStoreCli.Command}, then it will show the help menu.
-     * @param config The configuration needed to work a secret store. May be null for help.
-     * @param allArguments This can be either identifiers for a secret, or a sub command like --help. May be null.
+     * @param config         The configuration needed to work a secret store. May be null for help.
+     * @param allArguments   This can be either identifiers for a secret, or a sub command like --help. May be null.
      */
     public void command(String primaryCommand, SecureConfig config, String... allArguments) {
         terminal.writeLine("");
@@ -212,7 +223,7 @@ public class SecretStoreCli {
         final CommandLine commandLine = commandParseResult.get();
         switch (commandLine.getCommand()) {
             case CREATE: {
-                if (commandLine.hasOption(CommandOptions.HELP)){
+                if (commandLine.hasOption(CommandOptions.HELP)) {
                     terminal.writeLine("Creates a new keystore. For example: 'bin/logstash-keystore create'");
                     return;
                 }
@@ -227,7 +238,7 @@ public class SecretStoreCli {
                 break;
             }
             case LIST: {
-                if (commandLine.hasOption(CommandOptions.HELP)){
+                if (commandLine.hasOption(CommandOptions.HELP)) {
                     terminal.writeLine("List all secret identifiers from the keystore. For example: " +
                             "`bin/logstash-keystore list`. Note - only the identifiers will be listed, not the secrets.");
                     return;
@@ -239,7 +250,7 @@ public class SecretStoreCli {
                 break;
             }
             case ADD: {
-                if (commandLine.hasOption(CommandOptions.HELP)){
+                if (commandLine.hasOption(CommandOptions.HELP)) {
                     terminal.writeLine("Add secrets to the keystore. For example: " +
                             "`bin/logstash-keystore add my-secret`, at the prompt enter your secret. You will use the identifier ${my-secret} in your Logstash configuration.");
                     return;
@@ -251,6 +262,9 @@ public class SecretStoreCli {
                 if (secretStoreFactory.exists(config.clone())) {
                     final SecretStore secretStore = secretStoreFactory.load(config);
                     for (String argument : commandLine.getArguments()) {
+                        if (!ConfigVariableExpander.KEY_PATTERN.matcher(argument).matches()) {
+                            throw new IllegalArgumentException(String.format("Invalid secret key name `%s` provided. %s", argument, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION));
+                        }
                         final SecretIdentifier id = new SecretIdentifier(argument);
                         final byte[] existingValue = secretStore.retrieveSecret(id);
                         if (existingValue != null) {
@@ -263,7 +277,7 @@ public class SecretStoreCli {
 
                         final String enterValueMessage = String.format("Enter value for %s: ", argument);
                         char[] secret = null;
-                        while(secret == null) {
+                        while (secret == null) {
                             terminal.write(enterValueMessage);
                             final char[] readSecret = terminal.readSecret();
 
@@ -288,7 +302,7 @@ public class SecretStoreCli {
                 break;
             }
             case REMOVE: {
-                if (commandLine.hasOption(CommandOptions.HELP)){
+                if (commandLine.hasOption(CommandOptions.HELP)) {
                     terminal.writeLine("Remove secrets from the keystore. For example: " +
                             "`bin/logstash-keystore remove my-secret`");
                     return;
@@ -314,7 +328,7 @@ public class SecretStoreCli {
         }
     }
 
-    private void printHelp(){
+    private void printHelp() {
         terminal.writeLine("Usage:");
         terminal.writeLine("--------");
         terminal.writeLine("bin/logstash-keystore [option] command [argument]");

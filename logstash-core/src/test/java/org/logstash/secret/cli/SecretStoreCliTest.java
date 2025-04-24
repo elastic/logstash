@@ -35,7 +35,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.UUID;
+import java.util.Random;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,8 +147,8 @@ public class SecretStoreCliTest {
         terminal.in.add(""); // sets the empty value
         terminal.in.add("value");
 
-        String id = UUID.randomUUID().toString();
-        cli.command("add", newStoreConfig.clone(), id);
+        final String keyName = getRandomKeyName();
+        cli.command("add", newStoreConfig.clone(), keyName);
         assertThat(terminal.out).containsIgnoringCase("ERROR: Value cannot be empty");
     }
 
@@ -159,7 +159,7 @@ public class SecretStoreCliTest {
         terminal.in.add("€€€€€"); // sets non-ascii value value
         terminal.in.add("value");
 
-        String id = UUID.randomUUID().toString();
+        final String id = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), id);
         assertThat(terminal.out).containsIgnoringCase("ERROR: Value must contain only ASCII characters");
     }
@@ -168,8 +168,8 @@ public class SecretStoreCliTest {
     public void testAdd() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
-        String id = UUID.randomUUID().toString();
+        terminal.in.add(getRandomKeyName()); // sets the value
+        final String id = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), id);
         terminal.reset();
 
@@ -197,11 +197,11 @@ public class SecretStoreCliTest {
     public void testAddMultipleKeys() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString());
-        terminal.in.add(UUID.randomUUID().toString());
+        terminal.in.add(getRandomKeyName());
+        terminal.in.add(getRandomKeyName());
 
-        final String keyOne = UUID.randomUUID().toString();
-        final String keyTwo = UUID.randomUUID().toString();
+        final String keyOne = getRandomKeyName();
+        final String keyTwo = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), keyOne, keyTwo);
         terminal.reset();
 
@@ -211,7 +211,7 @@ public class SecretStoreCliTest {
 
     @Test
     public void testAddWithoutCreatedKeystore() {
-        cli.command("add", newStoreConfig.clone(), UUID.randomUUID().toString());
+        cli.command("add", newStoreConfig.clone(), getRandomKeyName());
         assertThat(terminal.out).containsIgnoringCase("ERROR: Logstash keystore not found. Use 'create' command to create one.");
     }
 
@@ -219,10 +219,10 @@ public class SecretStoreCliTest {
     public void testAddWithStdinOption() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
+        terminal.in.add(getRandomKeyName()); // sets the value
+        terminal.in.add(getRandomKeyName()); // sets the value
 
-        String id = UUID.randomUUID().toString();
+        final String id = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), id, SecretStoreCli.CommandOptions.STDIN.getOption());
         terminal.reset();
 
@@ -235,8 +235,8 @@ public class SecretStoreCliTest {
     public void testRemove() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
-        String id = UUID.randomUUID().toString();
+        terminal.in.add(getRandomKeyName()); // sets the value
+        final String id = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), id);
         System.out.println(terminal.out);
         terminal.reset();
@@ -256,11 +256,11 @@ public class SecretStoreCliTest {
     public void testRemoveMultipleKeys() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString());
-        terminal.in.add(UUID.randomUUID().toString());
+        terminal.in.add(getRandomKeyName());
+        terminal.in.add(getRandomKeyName());
 
-        final String keyOne = UUID.randomUUID().toString();
-        final String keyTwo = UUID.randomUUID().toString();
+        final String keyOne = getRandomKeyName();
+        final String keyTwo = getRandomKeyName();
 
         cli.command("add", newStoreConfig.clone(), keyOne, keyTwo);
         terminal.reset();
@@ -281,8 +281,8 @@ public class SecretStoreCliTest {
     public void testRemoveMissing() {
         createKeyStore();
 
-        terminal.in.add(UUID.randomUUID().toString()); // sets the value
-        String id = UUID.randomUUID().toString();
+        terminal.in.add(getRandomKeyName()); // sets the value
+        final String id = getRandomKeyName();
         cli.command("add", newStoreConfig.clone(), id);
         System.out.println(terminal.out);
         terminal.reset();
@@ -318,7 +318,7 @@ public class SecretStoreCliTest {
         terminal.in.add("foo");
 
         final String invalidOption = "--invalid-option";
-        cli.command("add", newStoreConfig.clone(), UUID.randomUUID().toString(), invalidOption);
+        cli.command("add", newStoreConfig.clone(), getRandomKeyName(), invalidOption);
         assertThat(terminal.out).contains(String.format("Unrecognized option '%s' for command 'add'", invalidOption));
 
         terminal.reset();
@@ -385,6 +385,23 @@ public class SecretStoreCliTest {
 
     private void assertNotListed(String... expected) {
         assertTrue(Arrays.stream(expected).noneMatch(terminal.out::contains));
+    }
+
+    private final static String KEY_FIRST_CHAR_CANDIDATES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_.";
+    private final static String KEY_REST_CHARS = KEY_FIRST_CHAR_CANDIDATES.concat("01234567890");
+    private String getRandomKeyName() {
+        final Random random = new Random();
+        final StringBuilder sb = new StringBuilder();
+
+        // add a random legal first-character
+        sb.append(KEY_FIRST_CHAR_CANDIDATES.charAt(random.nextInt(KEY_FIRST_CHAR_CANDIDATES.length())));
+
+        // add between 0 and 40 random legal rest-characters
+        final int more = 40;
+        random.ints(more, 0, KEY_REST_CHARS.length())
+                .mapToObj(KEY_REST_CHARS::charAt)
+                .forEach(sb::append);
+        return sb.toString().toLowerCase();
     }
 
     private void assertPrimaryHelped() {
