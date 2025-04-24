@@ -51,7 +51,7 @@ end
 
 def wait_for_log_message(container, search_string, stream = :stdout)
   Stud.try(40.times, [NoMethodError, Docker::Error::ConflictError, RSpec::Expectations::ExpectationNotMetError, TypeError]) do
-    container_logs = @container.logs(stream => true)
+    container_logs = container.logs(stream => true)
     expect(container_logs.include?(search_string)).to be true
   end
 end
