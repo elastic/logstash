@@ -20,6 +20,11 @@
 
 package org.logstash.secret;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.util.Strings;
+import org.logstash.plugins.ConfigVariableExpander;
+
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -34,12 +39,14 @@ public class SecretIdentifier {
     private final static Pattern urnPattern = Pattern.compile("urn:logstash:secret:"+ VERSION + ":.*$");
     private final String key;
 
+    private static final Logger logger = LogManager.getLogger(SecretIdentifier.class);
+
     /**
      * Constructor
      *
      * @param key The unique part of the identifier. This is the key to reference the secret, and the key itself should not be sensitive. For example: {@code db.pass}
      */
-    public SecretIdentifier(String key) {
+    public SecretIdentifier(final String key) {
         this.key = validateWithTransform(key, "key");
     }
 
@@ -49,26 +56,12 @@ public class SecretIdentifier {
      * @param urn The {@link String} formatted identifier obtained originally from {@link SecretIdentifier#toExternalForm()}
      * @return The {@link SecretIdentifier} object used to identify secrets, null if not valid external form.
      */
-    public static SecretIdentifier fromExternalForm(String urn) {
+    public static SecretIdentifier fromExternalForm(final String urn) {
         if (urn == null || !urnPattern.matcher(urn).matches()) {
             throw new IllegalArgumentException("Invalid external form " + urn);
         }
         String[] parts = colonPattern.split(urn, 5);
         return new SecretIdentifier(validateWithTransform(parts[4], "key"));
-    }
-
-    /**
-     * Minor validation and downcases the parts
-     *
-     * @param part     The part of the URN to validate
-     * @param partName The name of the part used for logging.
-     * @return The validated and transformed part.
-     */
-    private static String validateWithTransform(String part, String partName) {
-        if (part == null || part.isEmpty()) {
-            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
-        }
-        return part.toLowerCase(Locale.US);
     }
 
     @Override
@@ -117,5 +110,23 @@ public class SecretIdentifier {
     @Override
     public String toString() {
         return toExternalForm();
+    }
+
+    /**
+     * Minor validation and downcases the parts
+     *
+     * @param key      The key, a part of the URN to validate.
+     * @param partName The name of the part used for logging.
+     * @return The validated and transformed part.
+     */
+    private static String validateWithTransform(final String key, final String partName) {
+        if (key == null || key.isEmpty() || Strings.isBlank(key)) {
+            throw new IllegalArgumentException(String.format("%s may not be null or empty", partName));
+        }
+
+        if (!ConfigVariableExpander.KEY_PATTERN.matcher(key).matches()) {
+            logger.warn(String.format("Invalid secret key name `%s` provided. %s", key, ConfigVariableExpander.KEY_PATTERN_DESCRIPTION));
+        }
+        return key.toLowerCase(Locale.US);
     }
 }
