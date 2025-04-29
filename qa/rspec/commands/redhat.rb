@@ -42,12 +42,21 @@ module ServiceTester
       end
     end
 
-    def install(package)
-      cmd = sudo_exec!("yum install -y  #{package}")
+    def install(package, retry_db_mismatch = true)
+      cmd = sudo_exec!("yum install -y #{package}")
       if cmd.exit_status != 0
+        if retry_db_mismatch && cmd.stderr.to_s.include?("DB_VERSION_MISMATCH")
+          # There appears to be a race condition where lockfiles are left behind by
+          # processes that are not properly terminated. This can cause the RPM database to
+          # be in an inconsistent state. The solution is to remove and rebuild. See
+          # https://github.com/elastic/endgame-create-iso/pull/33 for example in our CI
+          puts "DB_VERSION_MISMATCH detected, fixing RPM database"
+          sudo_exec!("rm -f /var/lib/rpm/__db*")
+          sudo_exec!("rpm --rebuilddb")
+          return install(package, false)
+        end
         raise InstallException.new(cmd.stderr.to_s)
       end
-
     end
 
     def uninstall(package)
