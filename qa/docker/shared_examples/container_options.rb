@@ -88,8 +88,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
       expect(output_plugins[0].dig('name')).to eql('elasticsearch')
 
       # check if logs contain the ES request with the resolved ${USER}
-      container_logs = @container.logs(stdout: true)
-      expect(container_logs.include?('https://kimchy:xxxxxx@es:9200')).to be true
+      wait_for_log_message(@container, 'https://kimchy:xxxxxx@es:9200')
     end
   end
 end
