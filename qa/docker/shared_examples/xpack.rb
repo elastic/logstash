@@ -48,14 +48,11 @@ shared_examples_for 'a container with xpack features' do |flavor|
         expect(settings['xpack.management.pipeline.id']).to eq("${XPACK_MANAGEMENT_PIPELINE_ID}")
         expect(settings['xpack.management.elasticsearch.hosts']).to eq("${XPACK_MANAGEMENT_ELASTICSEARCH_HOSTS}")
 
-        # get container logs
-        container_logs = container.logs(stdout: true)
-
         # check if logs contain node3 & node4 values actually resolved and used
-        expect(container_logs.include?('pipeline_id=>["*"]')).to be true
+        wait_for_log_message(container, 'pipeline_id=>["*"]', :stdout)
         # note that, we are not spinning up ES nodes, so values can be in errors or in pool update logs
-        expect(container_logs.include?('http://node3:9200')).to be true
-        expect(container_logs.include?('http://node4:9200')).to be true
+        wait_for_log_message(container, 'http://node3:9200', :stdout)
+        wait_for_log_message(container, 'http://node4:9200', :stdout)
       end
     end
   end
