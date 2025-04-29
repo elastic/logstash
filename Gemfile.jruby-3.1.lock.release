@@ -668,7 +668,7 @@ GEM
     logstash-output-stdout (3.1.4)
       logstash-codec-rubydebug
       logstash-core-plugin-api (>= 1.60.1, < 2.99)
-    logstash-output-tcp (6.2.1)
+    logstash-output-tcp (6.2.2)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-core (>= 8.1.0)
