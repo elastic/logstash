@@ -8,16 +8,16 @@ mapped_pages:
 ::::{admonition} macOS Gatekeeper warnings
 :class: important
 
-Apple’s rollout of stricter notarization requirements affected the notarization of the 9.0.0-beta1 {{ls}} artifacts. If macOS Catalina displays a dialog when you first run {{ls}} that interrupts it, you will need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which was extracted:
+Apple’s rollout of stricter notarization requirements affected the notarization of the {{version}} {{ls}} artifacts. If macOS Catalina displays a dialog when you first run {{ls}} that interrupts it, you will need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which was extracted:
 
 ```sh
 xattr -d -r com.apple.quarantine <archive-or-directory>
 ```
 
-For example, if the `.tar.gz` file was extracted to the default logstash-9.0.0-beta1 directory, the command is:
+For example, if the `.tar.gz` file was extracted to the default logstash-{{version}} directory, the command is:
 
-```sh
-xattr -d -r com.apple.quarantine logstash-9.0.0-beta1
+```sh subs=true
+xattr -d -r com.apple.quarantine logstash-{{version}}
 ```
 
 Alternatively, you can add a security override if a Gatekeeper popup appears by following the instructions in the *How to open an app that hasn’t been notarized or is from an unidentified developer* section of [Safely open apps on your Mac](https://support.apple.com/en-us/HT202491).
@@ -116,7 +116,11 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 
 
 **`--config.debug`**
-:   Show the fully compiled configuration as a debug log message (you must also have `--log.level=debug` enabled). WARNING: The log message will include any *password* options passed to plugin configs as plaintext, and may result in plaintext passwords appearing in your logs!
+:   Show the fully compiled configuration as a debug log message (you must also have `--log.level=debug` enabled).
+
+    :::{warning}
+    The log message will include any *password* options passed to plugin configs as plaintext, and may result in plaintext passwords appearing in your logs!
+    :::
 
 **`-i, --interactive SHELL`**
 :   Drop to shell instead of running as normal. Valid shells are "irb" and "pry".
@@ -128,7 +132,11 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 :   Check configuration for valid syntax and then exit. Note that grok patterns are not checked for correctness with this flag. Logstash can read multiple config files from a directory. If you combine this flag with `--log.level=debug`, Logstash will log the combined config file, annotating each config block with the source file it came from.
 
 **`-r, --config.reload.automatic`**
-:   Monitor configuration changes and reload whenever the configuration is changed. NOTE: Use SIGHUP to manually reload the config. The default is false.
+:   Monitor configuration changes and reload whenever the configuration is changed.
+
+    :::{note}
+    Use SIGHUP to manually reload the config. The default is false.
+    :::
 
 **`--config.reload.interval RELOAD_INTERVAL`**
 :   How frequently to poll the configuration location for changes. The default value is "3s". Note that the unit qualifier (`s`) is required.

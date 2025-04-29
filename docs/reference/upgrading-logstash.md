@@ -27,7 +27,7 @@ This step helps reduce risk and makes roll backs easier if you hit a snag.
 * If you use monitoring, re-use the data directory when you upgrade Logstash. Otherwise, the Logstash node is assigned a new persistent UUID and becomes a new node in the monitoring data.
 * If you use the [elastic_integration filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md) plugin in Logstash pipelines:
     * Logstash and Elasticsearch must be on the same version.
-    * The recommended order for upgrading {{stack}} is ({es})-({ls})-({kib}) to ensure the best experience with {agent}-managed pipelines.
+    * The recommended order for upgrading {{stack}} is {{es}}-{{ls}}-{{kib}} to ensure the best experience with {{agent}}-managed pipelines.
     Note that this is different from the typical {{stack}} upgrade order.
     See [when `elastic_integration` is in {{ls}} pipeline](#upgrading-when-elastic_integration-in-pipeline) section for details.
 

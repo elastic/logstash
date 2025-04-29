@@ -12,7 +12,7 @@ Examples:
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-{ess-leadin-short}
+{{ess-leadin-short}}
 
 ## Cloud ID [cloud-id]
 
