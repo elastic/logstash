@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# metricbeat monitoring is disabled. Serverless does not support stack monitoring.
 set -ex
 
 source ./$(dirname "$0")/common.sh
