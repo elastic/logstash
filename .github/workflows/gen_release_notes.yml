@@ -32,4 +32,11 @@ jobs:
     - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
     - run: git config --global user.name "logstashmachine"
     - name: Create Release Notes Draft
-      run:  ./tools/release/generate_release_notes.rb ${{ github.event.inputs.branch }} ${{ github.event.inputs.last_release }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [[ "${{ github.event.inputs.branch }}" =~ ^([0-8])\.[0-9]+$ ]]; then
+          echo "Using Asciidoc generator"
+          ./tools/release/generate_release_notes_asciidoc.rb ${{ github.event.inputs.branch }} "${{ github.event.inputs.last_release }}" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}"
+        else
+          echo "Using standard generator"
+          ./tools/release/generate_release_notes.rb ${{ github.event.inputs.branch }} "${{ github.event.inputs.last_release }}" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}"
+        fi
