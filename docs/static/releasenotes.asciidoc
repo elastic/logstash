@@ -94,6 +94,7 @@ No user-facing changes in Logstash.
 
 * Update JDK to 21.0.7+6 https://github.com/elastic/logstash/pull/17591[#17591]
 
+[[plugins-8.17.6]]
 ==== Plugins
 
 *Tcp Output - 6.2.2*
