@@ -21,6 +21,24 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.1 [logstash-901-release-notes]
+
+###  Features and enhancements [logstash-901-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.0.1
+
+=== Logstash Commits between 9.0 and 9.0.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.1..9.0"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.0.1..9.0 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-901-changes]
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
@@ -93,4 +111,3 @@ To check for security updates, go to [Security announcements for the Elastic sta
 **Tcp Output - 7.0.0**
 
 * Remove deprecated SSL settings [#58](https://github.com/logstash-plugins/logstash-output-tcp/pull/58)
-
