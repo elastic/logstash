@@ -45,15 +45,10 @@ coming_tag_index = release_notes.find_index {|line| line.match(/^## #{current_re
 coming_tag_index += 1 if coming_tag_index
 release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/\[logstash-\d+-release-notes\]$/) }
 
-<<<<<<< HEAD
-report << "[[logstash-#{current_release_dashes}]]" unless release_notes.any? { |line| line.match(/^\[\[logstash-#{current_release_dashes}/) }
-report << "=== Logstash #{current_release} Release Notes\n" unless release_notes.any? { |line| line.match(/^=== Logstash #{current_release}/)}
-=======
 unless coming_tag_index
   report << "## #{current_release} [logstash-#{current_release_no_dot}-release-notes]\n\n"
   report << "###  Features and enhancements [logstash-#{current_release_no_dot}-features-enhancements]\n"
 end
->>>>>>> dd01e5c8 ([chore] support markdown release notes generation (#17613))
 
 plugin_changes = {}
 
