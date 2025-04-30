@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-6,Logstash 8.17.6>>
 * <<logstash-8-17-5,Logstash 8.17.5>>
 * <<logstash-8-17-4,Logstash 8.17.4>>
 * <<logstash-8-17-3,Logstash 8.17.3>>
@@ -81,6 +82,40 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+
+[[logstash-8-17-6]]
+=== Logstash 8.17.6 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.17.6
+
+=== Logstash Commits between 8.17 and 8.17.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.5..8.17"
+
+d2fe1b137 - (HEAD -> 8.17, origin/8.17) Doc: Add non-standard header file (#17600) (#17610) (12 hours ago) <mergify[bot]>
+381c33a41 - Add helper method to wait for log message to be observed (#17589) (#17605) (14 hours ago) <mergify[bot]>
+4088e9a2d - Make redhat exhaustive test install command more robust (#17592) (#17601) (14 hours ago) <mergify[bot]>
+03939becb - bump lock file for 8.17 (#17598) (18 hours ago) <github-actions[bot]>
+59897d697 - upgrade jdk to 21.0.7+6 (#17591) (#17593) (2 days ago) <mergify[bot]>
+a20bf01f3 - [8.17] (backport #17351) Improve the key validation in secret identifier. (#17585) (6 days ago) <mergify[bot]>
+161738f77 - Update version to 8.17.6 (#17559) (2 weeks ago) <Cas Donoghue>
+16ee40ca3 - Release notes for 8.17.5 (#17550) (2 weeks ago) <github-actions[bot]>
+30220bbbe - [8.x][Docs] Add recommendations to collect all metrics for the best dashboard experience. (#17524) (#17543) (3 weeks ago) <mergify[bot]>
+c75b5a31e - Ensure elasticsearch logs and data dirs exist before startup (#17531) (#17535) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.17.5..8.17 *.release"
+Changed plugin versions:
+logstash-output-tcp: 6.2.1 -> 6.2.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Tcp Output - 6.2.2*
+
+* Invoke post_connection_check on connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
 
 
 [[logstash-8-17-5]]
