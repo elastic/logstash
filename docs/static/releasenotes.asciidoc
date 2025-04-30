@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-1,Logstash 8.18.1>>
 * <<logstash-8-18-0,Logstash 8.18.0>>
 * <<logstash-8-17-5,Logstash 8.17.5>>
 * <<logstash-8-17-4,Logstash 8.17.4>>
@@ -82,6 +83,50 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-1]]
+=== Logstash 8.18.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.1
+
+=== Logstash Commits between 8.18 and 8.18.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.0..8.18"
+
+1c0912daa - (HEAD -> 8.18, origin/8.18) Doc: Add non-standard header file (#17600) (#17609) (12 hours ago) <mergify[bot]>
+a58f30b1c - Add helper method to wait for log message to be observed (#17589) (#17606) (14 hours ago) <mergify[bot]>
+bc46a5e9f - Make redhat exhaustive test install command more robust (#17592) (#17602) (14 hours ago) <mergify[bot]>
+4f9dfc74d - bump lock file for 8.18 (#17597) (18 hours ago) <github-actions[bot]>
+b8a00f63c - upgrade jdk to 21.0.7+6 (#17591) (#17594) (2 days ago) <mergify[bot]>
+6e0c2dcad - [8.18] (backport #17351) Improve the key validation in secret identifier. (#17586) (6 days ago) <mergify[bot]>
+d8726a6df - [8.18] (backport #17570) Update releasenotes.asciidoc #17575 (12 days ago) <mergify[bot]>
+b89861a3e - [8.18] (backport #17550) Release notes for 8.17.5 (#17565) (2 weeks ago) <mergify[bot]>
+d6c18c924 - [8.18] Update uri gem required by Logstash (backport #17495) (#17500) (2 weeks ago) <mergify[bot]>
+b6db2cdc8 - pin cgi to 0.3.7 (#17487) (#17489) (2 weeks ago) <mergify[bot]>
+be44a964e - Removed unused configHash computation that can be replaced by PipelineConfig.configHash() (#17336) (#17416) (2 weeks ago) <mergify[bot]>
+da44686eb - Bump 8.18.1 dev cycle (#17505) (2 weeks ago) <Andrea Selva>
+76e1de2cd - Update release notes after non-nullable string setting fix was merged (#17545) (3 weeks ago) <Andrea Selva>
+49cb76f7f - [8.x][Docs] Add recommendations to collect all metrics for the best dashboard experience. (#17524) (#17544) (3 weeks ago) <mergify[bot]>
+acb8247d6 - Ensure elasticsearch logs and data dirs exist before startup (#17531) (#17534) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.0..8.18 *.release"
+Changed plugin versions:
+logstash-filter-xml: 4.3.0 -> 4.3.1
+logstash-output-tcp: 6.2.1 -> 6.2.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Xml Filter - 4.3.1*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
+
+*Tcp Output - 6.2.2*
+
+* Invoke post_connection_check on connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
+
 
 [[logstash-8-18-0]]
 === Logstash 8.18.0 Release Notes
