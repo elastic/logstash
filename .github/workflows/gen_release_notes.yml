@@ -6,11 +6,11 @@ on:
       branch:
         type: string
         required: true
-        default: "8.2"
+        default: "9.0"
       last_release:
         type: string
         required: true
-        default: "8.2.2"
+        default: "9.0.0"
 
 
 permissions:
@@ -35,10 +35,10 @@ jobs:
       run: |
         if [[ "${{ github.event.inputs.branch }}" =~ ^([0-8])\.[0-9]+$ ]]; then
           echo "Using Asciidoc generator"
-          SCRIPT="./tools/release/generate_release_notes_asciidoc.rb"
-        else
-          echo "Using standard generator"
           SCRIPT="./tools/release/generate_release_notes.rb"
+        else
+          echo "Using Markdown generator"
+          SCRIPT="./tools/release/generate_release_notes_md.rb"
         fi
         
         $SCRIPT "${{ github.event.inputs.branch }}" "${{ github.event.inputs.last_release }}" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}"
