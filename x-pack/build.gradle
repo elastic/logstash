@@ -75,6 +75,7 @@ tasks.register("buildFipsValidationGem") {
     rake(rootProject.projectDir, rootProject.buildDir, 'plugin:build-fips-validation-plugin')
   }
 }
+
 tasks.register("observabilitySREsmokeTests", Test) {
     description = "Run ObservabilitySRE smoke tests using docker-compose and RSpec"
     // Need to have set up the ruby environment for rspec even through we are running in container
@@ -113,4 +114,11 @@ tasks.register("observabilitySREsmokeTests", Test) {
         // Clean up the generated certificates
         delete fileTree("distributions/internal/observabilitySRE/qa/smoke/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
     }
+}
+
+tasks.register("observabilitySREacceptanceTests", Test) {
+    description = "Run ObservabilitySRE acceptance tests"
+    // Need to have set up the ruby environment for rspec even through we are running in container
+    dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
+    // TODO: hook in to rspec
 }
