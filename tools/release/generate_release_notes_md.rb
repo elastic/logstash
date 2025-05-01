@@ -47,7 +47,7 @@ release_notes_entry_index = coming_tag_index || release_notes.find_index {|line|
 
 unless coming_tag_index
   report << "## #{current_release} [logstash-#{current_release_no_dot}-release-notes]\n\n"
-  report << "###  Features and enhancements [logstash-#{current_release_no_dot}-features-enhancements]\n"
+  report << "### Features and enhancements [logstash-#{current_release_no_dot}-features-enhancements]\n"
 end
 
 plugin_changes = {}
