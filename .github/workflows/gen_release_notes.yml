@@ -6,11 +6,11 @@ on:
       branch:
         type: string
         required: true
-        default: "8.2"
+        default: "9.0"
       last_release:
         type: string
         required: true
-        default: "8.2.2"
+        default: "9.0.0"
 
 
 permissions:
@@ -32,4 +32,13 @@ jobs:
     - run: git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
     - run: git config --global user.name "logstashmachine"
     - name: Create Release Notes Draft
-      run:  ./tools/release/generate_release_notes.rb ${{ github.event.inputs.branch }} ${{ github.event.inputs.last_release }} ${{ github.actor }} ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [[ "${{ github.event.inputs.branch }}" =~ ^([0-8])\.[0-9]+$ ]]; then
+          echo "Using Asciidoc generator"
+          SCRIPT="./tools/release/generate_release_notes.rb"
+        else
+          echo "Using Markdown generator"
+          SCRIPT="./tools/release/generate_release_notes_md.rb"
+        fi
+        
+        $SCRIPT "${{ github.event.inputs.branch }}" "${{ github.event.inputs.last_release }}" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}"

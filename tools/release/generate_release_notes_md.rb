@@ -27,7 +27,7 @@ require 'yaml'
 require 'json'
 require 'net/http'
 
-RELEASE_NOTES_PATH = "docs/static/releasenotes.asciidoc"
+RELEASE_NOTES_PATH = "docs/release-notes/index.md"
 release_branch = ARGV[0]
 previous_release_tag = ARGV[1]
 user = ARGV[2]
@@ -37,19 +37,18 @@ report = []
 `git checkout #{release_branch}`
 
 current_release = YAML.load(IO.read("versions.yml"))["logstash"]
-current_release_dashes = current_release.tr(".", "-")
+current_release_no_dot = current_release.tr(".", "")
 
 release_notes = IO.read(RELEASE_NOTES_PATH).split("\n")
 
-current_release_heading = "* <<logstash-#{current_release_dashes},Logstash #{current_release}>>"
-release_notes.insert(5, current_release_heading) unless release_notes[5].eql?(current_release_heading)
-
-coming_tag_index = release_notes.find_index {|line| line.match(/^coming\[#{current_release}\]/) }
+coming_tag_index = release_notes.find_index {|line| line.match(/^## #{current_release} \[logstash-#{current_release_no_dot}-release-notes\]$/) }
 coming_tag_index += 1 if coming_tag_index
-release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/^\[\[logstash/) }
+release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/\[logstash-\d+-release-notes\]$/) }
 
-report << "[[logstash-#{current_release_dashes}]]" unless release_notes.any? { |line| line&.match(/^\[\[logstash-#{current_release_dashes}/) }
-report << "=== Logstash #{current_release} Release Notes\n" unless release_notes.any? { |line| line&.match(/^=== Logstash #{current_release}/)}
+unless coming_tag_index
+  report << "## #{current_release} [logstash-#{current_release_no_dot}-release-notes]\n\n"
+  report << "### Features and enhancements [logstash-#{current_release_no_dot}-features-enhancements]\n"
+end
 
 plugin_changes = {}
 
@@ -88,11 +87,11 @@ report << "Changed plugin versions:"
 plugin_changes.each {|p, v| report << "#{p}: #{v.first} -> #{v.last}" }
 report << "---------- GENERATED CONTENT ENDS HERE ------------\n"
 
-report << "==== Plugins\n"
+report << "### Plugins [logstash-plugin-#{current_release_no_dot}-changes]\n"
 
 plugin_changes.each do |plugin, versions|
   _, type, name = plugin.split("-")
-  header = "*#{name.capitalize} #{type.capitalize} - #{versions.last}*"
+  header = "**#{name.capitalize} #{type.capitalize} - #{versions.last}**"
   start_changelog_file = Tempfile.new(plugin + 'start')
   end_changelog_file = Tempfile.new(plugin + 'end')
   changelog = `curl https://raw.githubusercontent.com/logstash-plugins/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")
@@ -118,7 +117,7 @@ IO.write(RELEASE_NOTES_PATH, release_notes.join("\n"))
 puts "Creating commit.."
 branch_name = "update_release_notes_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
-`git commit docs/static/releasenotes.asciidoc -m "Update release notes for #{current_release}"`
+`git commit #{RELEASE_NOTES_PATH} -m "Update release notes for #{current_release}"`
 
 puts "Pushing commit.."
 `git remote set-url origin https://x-access-token:#{token}@github.com/elastic/logstash.git`
