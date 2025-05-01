@@ -48,13 +48,8 @@ coming_tag_index = release_notes.find_index {|line| line.match(/^coming\[#{curre
 coming_tag_index += 1 if coming_tag_index
 release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/^\[\[logstash/) }
 
-<<<<<<< HEAD
-report << "[[logstash-#{current_release_dashes}]]" unless release_notes.any? { |line| line.match(/^\[\[logstash-#{current_release_dashes}/) }
-report << "=== Logstash #{current_release} Release Notes\n" unless release_notes.any? { |line| line.match(/^=== Logstash #{current_release}/)}
-=======
 report << "[[logstash-#{current_release_dashes}]]" unless release_notes.any? { |line| line&.match(/^\[\[logstash-#{current_release_dashes}/) }
 report << "=== Logstash #{current_release} Release Notes\n" unless release_notes.any? { |line| line&.match(/^=== Logstash #{current_release}/)}
->>>>>>> 814c6cd5 ([chore] support markdown and asciidoc release notes (#17621))
 
 plugin_changes = {}
 
