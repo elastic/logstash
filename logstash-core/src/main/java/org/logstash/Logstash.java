@@ -46,25 +46,6 @@ import javax.annotation.Nullable;
  */
 public final class Logstash implements Runnable, AutoCloseable {
 
-    public static final String VERSION_FULL;
-    public static final String VERSION_MAJOR;
-    public static final String VERSION_MINOR;
-    public static final String VERSION_PATCH;
-
-    static {
-        final Properties properties = new Properties();
-        try {
-            properties.load(Logstash.class.getResourceAsStream("/version-info.properties"));
-            VERSION_FULL = properties.getProperty("logstash-core");
-            final String[] versions = VERSION_FULL.split("\\.");
-            VERSION_MAJOR = versions[0];
-            VERSION_MINOR = versions[1];
-            VERSION_PATCH = versions[2];
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private static final Logger LOGGER = LogManager.getLogger(Logstash.class);
 
     /**
