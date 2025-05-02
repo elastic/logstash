@@ -39,7 +39,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Elasticsearch Output - 12.0.3**
 
-* Demote connection log entry from WARN to INFO connection during register phase https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1211[#1211]
+* Change connection log entry from `WARN` to `INFO` when connecting during register phase [#1211](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1211)
 
 **Tcp Output - 7.0.1**
 
