@@ -1,0 +1,13 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /test-logs/*.log
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  ssl.enabled: true
+  ssl.certificate: "/usr/share/elasticsearch/config/certs/filebeat.crt"
+  ssl.key: "/usr/share/elasticsearch/config/certs/filebeat.key"
+  ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+

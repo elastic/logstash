@@ -120,5 +120,20 @@ tasks.register("observabilitySREacceptanceTests", Test) {
     description = "Run ObservabilitySRE acceptance tests"
     // Need to have set up the ruby environment for rspec even through we are running in container
     dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
-    // TODO: hook in to rspec
+
+    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
+    doFirst {
+        // Generate the certificates first
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/acceptance/docker/certs")
+            commandLine 'bash', './generate.sh'
+            ignoreExitValue = false
+        }
+    }
+    systemProperty 'logstash.root.dir', projectDir.parent
+    include '**/org/logstash/xpack/test/RSpecObservabilitySREAcceptanceTests.class'
+    doLast {
+        // Clean up the generated certificates
+        delete fileTree("distributions/internal/observabilitySRE/qa/acceptance/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
+    }
 }
