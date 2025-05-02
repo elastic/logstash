@@ -29,7 +29,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Updates to dependencies [logstash-901-dependencies]
 
-* Update JDK to 21.0.7+6 https://github.com/elastic/logstash/pull/17591[#17591]
+* Update JDK to 21.0.7+6 [#17591](https://github.com/elastic/logstash/pull/17591)
 
 ### Plugins [logstash-plugin-901-changes]
 
