@@ -101,7 +101,7 @@ plugin_changes.each do |plugin, versions|
     next if line.match(/^##/)
     line.gsub!(/^\+/, "")
     line.gsub!(/ #(?<number>\d+)\s*$/, " https://github.com/logstash-plugins/#{plugin}/issues/\\k<number>[#\\k<number>]")
-    line.gsub!(/\[#(?<number>\d+)\]\((?<url>[^)]*)\)/, "\\k<url>[#\\k<number>]")
+    line.gsub!(/\[#(?<number>\d+)\]\((?<url>[^)]*)\)/, "[#\\k<number>](\\k<url>)")
     line.gsub!(/^\s+-/, "*")
     report << line
   end
@@ -113,6 +113,11 @@ end
 release_notes.insert(release_notes_entry_index, report.join("\n").gsub(/\n{3,}/, "\n\n"))
 
 IO.write(RELEASE_NOTES_PATH, release_notes.join("\n"))
+
+if token.nil?
+  puts "No token provided, skipping commit and push"
+  exit
+end
 
 puts "Creating commit.."
 branch_name = "update_release_notes_#{Time.now.to_i}"
