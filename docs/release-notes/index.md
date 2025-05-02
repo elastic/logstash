@@ -43,7 +43,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Tcp Output - 7.0.1**
 
-* Call connection check after connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
+* Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
 
 ## 9.0.0 [logstash-900-release-notes]
