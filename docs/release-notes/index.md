@@ -35,7 +35,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Xml Filter - 4.3.1**
 
-* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
+* Update Nokogiri dependency version [#88](https://github.com/logstash-plugins/logstash-filter-xml/pull/88)
 
 **Elasticsearch Output - 12.0.3**
 
