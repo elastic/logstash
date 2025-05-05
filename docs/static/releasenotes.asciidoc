@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-1,Logstash 8.18.1>>
 * <<logstash-8-18-0,Logstash 8.18.0>>
 * <<logstash-8-17-5,Logstash 8.17.5>>
 * <<logstash-8-17-4,Logstash 8.17.4>>
@@ -82,6 +83,28 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-1]]
+=== Logstash 8.18.1 Release Notes
+
+* Enhanced keystore validation to prevent the creation of secrets that fail format parsing https://github.com/elastic/logstash/pull/17351[#17351]
+
+[[dependencies-8.18.1]]
+==== Updates to dependencies
+
+* Update JDK to 21.0.7+6 https://github.com/elastic/logstash/pull/17591[#17591]
+
+[[plugins-8.18.1]]
+==== Plugins
+
+*Xml Filter - 4.3.1*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
+
+*Tcp Output - 6.2.2*
+
+* Call connection check after connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
+
 
 [[logstash-8-18-0]]
 === Logstash 8.18.0 Release Notes
