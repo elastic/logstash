@@ -25,7 +25,7 @@ To build an offline plugin pack:
 
     where:
 
-    * `OUTPUT` specifies the zip file where the compressed plugin pack will be written. The default file is `/LOGSTASH_HOME/logstash-offline-plugins-9.0.0.zip`. If you are using 5.2.x and 5.3.0, this location should be a zip file whose contents will be overwritten.
+    * `OUTPUT` specifies the zip file where the compressed plugin pack will be written. The default file is _/LOGSTASH_HOME/logstash-offline-plugins-{{stack-version}}.zip_. If you are using 5.2.x and 5.3.0, this location should be a zip file whose contents will be overwritten.
     * `[PLUGINS]` specifies one or more plugins that you want to include in the pack.
     * `--overwrite` specifies if you want to override an existing file at the location
 
@@ -56,12 +56,12 @@ To install an offline plugin pack:
 1. Move the compressed bundle to the machine where you want to install the plugins.
 2. Run the `bin/logstash-plugin install` subcommand and pass in the file URI of the offline plugin pack.
 
-    ```sh
-    bin/logstash-plugin install file:///c:/path/to/logstash-offline-plugins-9.0.0.zip
+    ```sh subs=true
+    bin/logstash-plugin install file:///c:/path/to/logstash-offline-plugins-{{stack-version}}.zip
     ```
 
-    ```sh
-    bin/logstash-plugin install file:///path/to/logstash-offline-plugins-9.0.0.zip
+    ```sh subs=true
+    bin/logstash-plugin install file:///path/to/logstash-offline-plugins-{{stack-version}}.zip
     ```
 
     This command expects a file URI, so make sure you use forward slashes and specify the full path to the pack.

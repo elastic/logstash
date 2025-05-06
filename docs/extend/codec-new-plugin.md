@@ -491,10 +491,10 @@ You should test install your plugin into a clean installation of Logstash. Downl
 
 1. Untar and cd in to the directory:
 
-    ```sh
-    curl -O https://download.elastic.co/logstash/logstash/logstash-9.0.0.tar.gz
-    tar xzvf logstash-9.0.0.tar.gz
-    cd logstash-9.0.0
+    ```sh subs=true
+    curl -O https://download.elastic.co/logstash/logstash/logstash-{{stack-version}}.tar.gz
+    tar xzvf logstash-{{stack-version}}.tar.gz
+    cd logstash-{{stack-version}}
     ```
 
 2. Using the plugin tool, we can install the gem we just built.
