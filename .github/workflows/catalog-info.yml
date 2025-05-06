@@ -1,0 +1,21 @@
+---
+name: catalog-info
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'catalog-info.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: elastic/oblt-actions/elastic/validate-catalog@v1
+
