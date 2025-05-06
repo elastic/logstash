@@ -8,6 +8,9 @@ on:
     paths:
       - 'catalog-info.yaml'
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
