@@ -1,15 +1,15 @@
 {
   "releases": {
     "7.current": "7.17.28",
-    "8.previous": "8.17.5",
-    "8.current": "8.18.0"
+    "8.previous": "8.17.6",
+    "8.current": "8.18.1"
   },
   "snapshots": {
     "7.current": "7.17.29-SNAPSHOT",
-    "8.previous": "8.17.6-SNAPSHOT",
-    "8.current": "8.18.1-SNAPSHOT",
+    "8.previous": "8.17.7-SNAPSHOT",
+    "8.current": "8.18.2-SNAPSHOT",
     "8.next": "8.19.0-SNAPSHOT",
-    "9.next": "9.0.1-SNAPSHOT",
+    "9.next": "9.0.2-SNAPSHOT",
     "main": "9.1.0-SNAPSHOT"
   }
 }
