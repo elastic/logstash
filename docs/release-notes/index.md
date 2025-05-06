@@ -21,6 +21,31 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.1 [logstash-9.0.1-release-notes]
+
+### Features and enhancements [logstash-9.0.1-features-enhancements]
+
+* Enhanced keystore validation to prevent the creation of secrets in an invalid format [#17351](https://github.com/elastic/logstash/pull/17351)
+
+### Updates to dependencies [logstash-9.0.1-dependencies]
+
+* Update JDK to 21.0.7+6 [#17591](https://github.com/elastic/logstash/pull/17591)
+
+### Plugins [logstash-plugin-9.0.1-changes]
+
+**Xml Filter - 4.3.1**
+
+* Update Nokogiri dependency version [#88](https://github.com/logstash-plugins/logstash-filter-xml/pull/88)
+
+**Elasticsearch Output - 12.0.3**
+
+* Change connection log entry from `WARN` to `INFO` when connecting during register phase [#1211](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1211)
+
+**Tcp Output - 7.0.1**
+
+* Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
+
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
@@ -93,4 +118,3 @@ To check for security updates, go to [Security announcements for the Elastic sta
 **Tcp Output - 7.0.0**
 
 * Remove deprecated SSL settings [#58](https://github.com/logstash-plugins/logstash-output-tcp/pull/58)
-
