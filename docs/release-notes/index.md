@@ -24,7 +24,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 ## 9.0.1 [logstash-9.0.1-release-notes]
 
 ::::{important}
-The 9.0.1 release contains fixes for potential security vulnerabilities. See our [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for more details.
+The 9.0.1 release contains fixes for potential security vulnerabilities. 
+Check out the [security advisory](https://discuss.elastic.co/c/announcements/security-announcements/31) for details.
 ::::
 
 ### Features and enhancements [logstash-9.0.1-features-enhancements]
