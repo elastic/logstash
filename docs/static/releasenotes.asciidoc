@@ -89,10 +89,10 @@ This section summarizes the changes in the following releases:
 
 [IMPORTANT]
 ====
-The 8.17.6 release contains fixes for potential security vulnerabilities. See our https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for more details.
+The 8.17.6 release contains fixes for potential security vulnerabilities.
+Check out the https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for details.
 ====
 
-No user-facing changes in Logstash.
 
 [[dependencies-8.17.6]]
 ==== Updates to dependencies
