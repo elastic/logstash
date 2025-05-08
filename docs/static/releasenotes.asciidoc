@@ -90,7 +90,8 @@ This section summarizes the changes in the following releases:
 
 [IMPORTANT]
 ====
-The 8.18.1 release contains fixes for potential security vulnerabilities. See our https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for more details.
+The 8.18.1 release contains fixes for potential security vulnerabilities.
+Check out the https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for details.
 ====
 
 * Enhanced keystore validation to prevent the creation of secrets that fail format parsing https://github.com/elastic/logstash/pull/17351[#17351]
@@ -172,10 +173,8 @@ The 8.18.1 release contains fixes for potential security vulnerabilities. See ou
 
 [IMPORTANT]
 ====
-The 8.17.6 release contains fixes for potential security vulnerabilities. See our https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for more details.
-====
-
-No user-facing changes in Logstash.
+The 8.17.6 release contains fixes for potential security vulnerabilities.
+Check out the https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for details.
 
 [[dependencies-8.17.6]]
 ==== Updates to dependencies
