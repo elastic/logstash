@@ -87,6 +87,11 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-6]]
 === Logstash 8.17.6 Release Notes
 
+[IMPORTANT]
+====
+The 8.17.6 release contains fixes for potential security vulnerabilities. See our https://discuss.elastic.co/c/announcements/security-announcements/31[security advisory] for more details.
+====
+
 No user-facing changes in Logstash.
 
 [[dependencies-8.17.6]]
