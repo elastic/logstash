@@ -16,8 +16,6 @@ services:
       - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch.key
       - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch.crt
       - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt
-    entrypoint: ["/usr/local/bin/docker-entrypoint.sh"]
-    command: ["eswrapper"]
     ports:
       - "9200:9200"
     volumes:
