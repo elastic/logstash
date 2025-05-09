@@ -12,7 +12,10 @@ toc:
   - toc: release-notes
   - toc: extend
 subs:
-  version: "9.0.0"
+  # Do NOT change `stack-version` substitution key.
+  # This may eventually be replaced with a site-wide strategy.
+  # Refer to https://github.com/elastic/docs-builder/issues/737.
+  stack-version: "9.0.1"
   logstash-ref:   "https://www.elastic.co/guide/en/logstash/current"
   ecloud:   "Elastic Cloud"
   esf:   "Elastic Serverless Forwarder"
@@ -42,7 +45,6 @@ subs:
   ilm-init:   "ILM"
   dlm:   "data lifecycle management"
   dlm-init:   "DLM"
-  stack-version: "9.0.0"
   major-version: "9.x"
   docker-repo: "docker.elastic.co/logstash/logstash"
   ess-leadin-short:   "Our hosted Elasticsearch Service is available on AWS, GCP, and Azure, and you can try it for free at https://cloud.elastic.co/registration"
