@@ -94,6 +94,71 @@ describe LogStash::Runner do
     end
   end
 
+  context "arbitrary settings" do
+    shared_examples "arbitrary settings" do |option_formatter|
+      before(:each) do
+        # suppress noise
+        allow(LogStash::Config::Source::MultiLocal).to receive(:logger).and_return(double('logger').as_null_object)
+      end
+
+      [
+        {'node.name' => 'my-fancy-node-name'}, # single
+        {'api.enabled' => false}, # single
+        {'node.name' => 'my-fancy-node-name', 'api.enabled' => false}, # multiple
+      ].each do |settings|
+        command_line_args = settings.flat_map { |k,v| option_formatter.call(k,v) }
+
+        context "when specifying `#{command_line_args.join(' ')}`" do
+          before(:each) do
+            LogStash::Runner.new("").run(["--config.string=input{generator{count=>1}}", *command_line_args])
+          end
+
+          settings.each do |name, value|
+            it "overrides setting `#{name}` to `#{value}`" do
+              setting = LogStash::SETTINGS.get_setting(name)
+              expect(setting).to be_set
+              expect(setting.value).to eq value
+            end
+          end
+        end
+      end
+
+      {'banana' => "yellow"}.tap do |settings|
+        command_line_args = settings.flat_map { |k,v| option_formatter.call(k,v) }
+        context "when specifying unregistered `#{command_line_args.join(' ')}`" do
+          it "raises a helpful usage error about the unknown setting" do
+            expect do
+              LogStash::Runner.new("").run(["--config.string=input{generator{count=>1}}", *command_line_args])
+            end.to raise_error.with_message(/failed to apply setting `banana[:=]yellow`: unknown setting `banana`/)
+          end
+        end
+      end
+
+      {'api.enabled' => "yellow"}.tap do |settings|
+        command_line_args = settings.flat_map { |k,v| option_formatter.call(k,v) }
+        context "when specifying uncoercible `#{command_line_args.join(' ')}`" do
+          it "raises a helpful usage error about failed coercion" do
+            expect do
+              LogStash::Runner.new("").run(["--config.string=input{generator{count=>1}}", *command_line_args])
+            end.to raise_error.with_message(/failed to apply setting `api.enabled[:=]yellow`: Cannot coerce `yellow` to boolean/)
+          end
+        end
+      end
+    end
+
+    context "-Skey=value formatted options" do
+      include_examples "arbitrary settings", ->(setting_name, setting_value) { "-S#{setting_name}=#{setting_value}" }
+    end
+
+    context "--setting key:value formatted options" do
+      include_examples "arbitrary settings", ->(setting_name, setting_value) { ["--setting", "#{setting_name}:#{setting_value}"] }
+    end
+
+    context "--setting=key:value formatted options" do
+      include_examples "arbitrary settings", ->(setting_name, setting_value) { "--setting=#{setting_name}:#{setting_value}" }
+    end
+  end
+
   context "--pluginpath" do
     subject { LogStash::Runner.new("") }
     let(:valid_directory) { Stud::Temporary.directory }
