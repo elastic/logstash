@@ -13,7 +13,7 @@ You can take advantage of the extensive, built-in capabilities of Elastic {{inte
 [Elastic {{integrations}}](integration-docs://reference/index.md) provide quick, end-to-end solutions for:
 
 * ingesting data from a variety of data sources,
-* ensuring compliance with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)),
+* ensuring compliance with the [Elastic Common Schema (ECS)](ecs://reference/index.md),
 * getting the data into the {{stack}}, and
 * visualizing it with purpose-built dashboards.
 
