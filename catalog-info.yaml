@@ -555,18 +555,21 @@ spec:
           message: Daily trigger of Snapshot DRA Pipeline per branch
           env:
             PIPELINES_TO_TRIGGER: 'logstash-dra-snapshot-pipeline'
+            INCLUDE_NEW_BRANCHES: '7.17'
         Weekly JDK matrix:
           branch: main
           cronline: 0 1 * * 2
           message: Weekly trigger of JDK matrix pipelines per branch
           env:
             PIPELINES_TO_TRIGGER: 'logstash-linux-jdk-matrix-pipeline,logstash-windows-jdk-matrix-pipeline'
+            INCLUDE_NEW_BRANCHES: '7.17'
         AARCH64 Tests:
           branch: main
           cronline: 0 2 * * 1  # every Monday@2AM UTC
           message: Weekly trigger of AARCH64 pipeline per branch
           env:
             PIPELINES_TO_TRIGGER: 'logstash-aarch64-pipeline'
+            INCLUDE_NEW_BRANCHES: '7.17'
         Exhaustive Tests:
           branch: main
           cronline: 0 3 * * 1%2  # every other Wednesday@3AM UTC, see https://buildkite.com/docs/pipelines/scheduled-builds#schedule-intervals-crontab-time-syntax
@@ -574,6 +577,7 @@ spec:
           env:
             PIPELINES_TO_TRIGGER: 'logstash-exhaustive-tests-pipeline'
             EXCLUDE_BRANCHES: 'main'
+            INCLUDE_NEW_BRANCHES: '7.17'
       skip_intermediate_builds: true
       provider_settings:
         trigger_mode: none
