@@ -1,4 +1,6 @@
 project: 'Logstash'
+products:
+  - id: logstash
 cross_links:
   - beats
   - docs-content
