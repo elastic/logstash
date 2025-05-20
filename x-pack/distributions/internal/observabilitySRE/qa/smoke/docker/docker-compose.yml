@@ -2,7 +2,7 @@ version: '3'
 
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-fips:8.19.0-SNAPSHOT
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:8.19.0-SNAPSHOT
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
