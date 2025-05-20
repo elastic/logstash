@@ -15,6 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
+# BEGIN: eager-load interesting stdlib/default dependencies
+# We exclude from built artifacts the stdlib implementations of "default gems"
+# for which our bundle pins to a later version. Requiring them here ensures
+# that our build breaks if doing so excludes the ONLY implementation, which
+# would be possible if an updated JRuby includes a "default gem" that meets
+# the pin criteria.
+# SEE: https://github.com/elastic/logstash/pull/17659
+require 'cgi'
+require 'uri'
+# END: eager load
+
 require "logstash/environment"
 require "logstash/config/cpu_core_strategy"
 require "logstash/instrument/collector"
