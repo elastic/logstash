@@ -510,7 +510,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (7.0.2-java)
+    logstash-input-tcp (6.4.6-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -520,6 +520,7 @@ GEM
       logstash-core (>= 8.1.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
+      logstash-mixin-normalize_config_support (~> 1.0)
     logstash-input-twitter (4.1.1)
       http-form_data (~> 2)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
