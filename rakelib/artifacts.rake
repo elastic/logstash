@@ -105,9 +105,6 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
 
-<<<<<<< HEAD
-    @exclude_paths.freeze
-=======
     # remove this after JRuby includes cgi-0.3.7+
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/cgi-0.3.6-java.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/cgi{,.rb}'
@@ -125,8 +122,7 @@ namespace "artifact" do
     # remove jruby-openssl shipped with JRuby to prefer the one from the lockfile
     @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/jopenssl.jar'
 
-    @exclude_paths
->>>>>>> 06c877e6 (Fixes to the bundles gems and jars versions (#17659))
+    @exclude_paths.freeze
   end
 
   def oss_exclude_paths
