@@ -89,7 +89,7 @@ tasks.register("observabilitySREsmokeTests", Test) {
         }
         def result = exec {
             workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'up', '-d'
+            commandLine 'docker-compose', 'up', '--detach'
             ignoreExitValue = true
         }
         if (result.exitValue != 0) {
@@ -107,7 +107,7 @@ tasks.register("observabilitySREsmokeTests", Test) {
     doLast {
         exec {
             workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'down', '-v'
+            commandLine 'docker-compose', 'down', '--volumes'
             ignoreExitValue = true
         }
         // Clean up the generated certificates
