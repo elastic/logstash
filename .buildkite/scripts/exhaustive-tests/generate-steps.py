@@ -177,7 +177,7 @@ def fips_test_runner_step() -> dict[str, typing.Any]:
             "instanceType": "m6i.xlarge",
             "diskSizeGb": 60,
             "instanceMaxAge": 1440,
-            "imagePrefix": "logstash-ubuntu-2204-fips"
+            "imagePrefix": "platform-ingest-logstash-ubuntu-2204-fips"
         },
         "retry": {"automatic": [{"limit": 1}]},
         "command": LiteralScalarString("""#!/usr/bin/env bash
