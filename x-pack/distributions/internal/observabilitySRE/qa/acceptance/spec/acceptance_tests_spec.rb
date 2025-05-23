@@ -14,7 +14,7 @@ describe "ObservabilitySRE FIPS container" do
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
     request = body ? Net::HTTP::Post.new(uri.request_uri) : Net::HTTP::Get.new(uri.request_uri)
-    request.basic_auth(es_user, es_password)q
+    request.basic_auth(es_user, es_password)
     request["Content-Type"] = "application/json"
     request.body = body if body
 
@@ -59,14 +59,25 @@ describe "ObservabilitySRE FIPS container" do
     raise "System not ready after #{max_retries} seconds" unless ready
   end
 
+  def docker_compose_invoke(subcommand, env={})
+    env_str = env.map{ |k,v| "#{k.to_s.upcase}=#{Shellwords.escape(v)} "}.join
+    work_dir = Pathname.new("#{__dir__}/../docker").cleanpath
+    command = "#{env_str}docker-compose --project-directory=#{Shellwords.escape(work_dir)} #{subcommand}"
+    system(command) or fail "Failed to invoke Docker Compose with command `#{command}`"
+  end
+
+  def docker_compose_up(env={}) = docker_compose_invoke("up --detach", env)
+
+  def docker_compose_down(env={}) = docker_compose_invoke("down --volumes", env)
+
   context "when running with FIPS-compliant configuration" do
     before(:all) do
-      system("cd #{__dir__}/../docker && docker-compose up -d") or fail "Failed to start Docker Compose environment"
+      docker_compose_up
       wait_for_elasticsearch
     end
 
     after(:all) do
-      system("cd #{__dir__}/../docker && docker-compose down -v")
+      docker_compose_down
     end
 
     it "data flows from Logstash to Elasticsearch using FIPS-approved SSL" do
@@ -89,12 +100,12 @@ describe "ObservabilitySRE FIPS container" do
 
   context "when running with non-FIPS compliant configuration" do
     before(:all) do
-      system("cd #{__dir__}/../docker && LOGSTASH_PIPELINE=logstash-to-elasticsearch-weak.conf docker-compose up -d") or fail "Failed to start Docker Compose with weak SSL"
+      docker_compose_up({"LOGSTASH_PIPELINE" => "logstash-to-elasticsearch-weak.conf"})
       wait_for_elasticsearch
     end
 
     after(:all) do
-      system("cd #{__dir__}/../docker && docker-compose down -v")
+      docker_compose_down
     end
 
     it "prevents data flow when using TLSv1.1 which is not FIPS-compliant" do
