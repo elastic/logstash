@@ -21,6 +21,18 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.2 [logstash-9.0.2-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.2-changes]
+
+**Kafka Integration - 11.6.2**
+
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` [#192](https://github.com/logstash-plugins/logstash-integration-kafka/pull/192)
+* Expose the SASL client callback class setting to the Logstash configuration [#177](https://github.com/logstash-plugins/logstash-integration-kafka/pull/177)
+* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup [#178](https://github.com/logstash-plugins/logstash-integration-kafka/pull/178)
+
 ## 9.0.1 [logstash-9.0.1-release-notes]
 
 ::::{important}
