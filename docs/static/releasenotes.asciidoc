@@ -89,30 +89,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-18-2]]
 === Logstash 8.18.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.18.2
-
-=== Logstash Commits between 8.18 and 8.18.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.1..8.18"
-
-36602d0ea - (HEAD -> 8.18, origin/8.18) Update Grype GH action to v6 (#17666) (#17668) (2 days ago) <mergify[bot]>
-6f1de4382 - [8.18] Fixes to the bundles gems and jars versions (backport #17659) (#17662) (3 days ago) <mergify[bot]>
-e42cf9f63 - bump lock file for 8.18 (#17657) (3 days ago) <github-actions[bot]>
-be41189dc - update jruby-openssl (#17646) (2 weeks ago) <kaisecheng>
-7c8391aee - security advisory message added to 8.18.1 release notes (#17642) (2 weeks ago) <Edu González de la Herrán>
-1e99dd27e - [Doc] forward port 8.17.6 release note (#17634) (2 weeks ago) <kaisecheng>
-0d5d3cf40 - bump core 8.18.2 (#17629) (2 weeks ago) <kaisecheng>
-97f3b1067 - Release notes for 8.18.1 (#17612) (3 weeks ago) <github-actions[bot]>
-1c0912daa - Doc: Add non-standard header file (#17600) (#17609) (3 weeks ago) <mergify[bot]>
-a58f30b1c - Add helper method to wait for log message to be observed (#17589) (#17606) (3 weeks ago) <mergify[bot]>
-bc46a5e9f - Make redhat exhaustive test install command more robust (#17592) (#17602) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.18.1..8.18 *.release"
-Changed plugin versions:
-logstash-integration-kafka: 11.6.0 -> 11.6.1
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
