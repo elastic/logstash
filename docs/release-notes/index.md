@@ -51,6 +51,55 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
 
+## 9.0.2 [logstash-9.0.2-release-notes]
+
+### Features and enhancements [logstash-9.0.2-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.0.2
+
+=== Logstash Commits between 9.0 and 9.0.1
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.1..9.0"
+
+b1ce9e8f2 - (HEAD -> 9.0, origin/9.0) Update Grype GH action to v6 (#17666) (#17670) (2 days ago) <mergify[bot]>
+5aa2cf16b - update jruby-openssl to 0.15.4  (#17650) (#17671) (2 days ago) <mergify[bot]>
+6b9c30fdc - Updated to latest Kafka integration plugin in lockfile(#17665) (2 days ago) <Andrea Selva>
+0593458e0 - [9.0] Fixes to the bundles gems and jars versions (backport #17659) (#17664) (3 days ago) <mergify[bot]>
+04da5fcd4 - bump lock file for 9.0 (#17658) (3 days ago) <github-actions[bot]>
+0fc31322a - add products to docset.yml (#17654) (#17655) (4 days ago) <mergify[bot]>
+dcccfc419 - Doc: Fix link (#17649) (#17651) (2 weeks ago) <mergify[bot]>
+70fae591e - Fix typo in Logstash docs (#17645) (#17647) (2 weeks ago) <mergify[bot]>
+3e20c9bc9 - release notes 9.0.1 updated with security advisor (#17643) (#17644) (2 weeks ago) <mergify[bot]>
+468d45e0c - [chore] update ID format of release notes tool (#17636) (#17637) (2 weeks ago) <mergify[bot]>
+f6d5500e4 - setting: enforce non-nullable (restore 8.15.x behavior) (#17522) (#17530) (2 weeks ago) <mergify[bot]>
+b2850bf3d - [9.0] Update uri gem required by Logstash (backport #17495) (#17503) (2 weeks ago) <mergify[bot]>
+815cf66bf - Removed unused configHash computation that can be replaced by PipelineConfig.configHash() (#17336) (#17419) (2 weeks ago) <mergify[bot]>
+c03513a20 - bump core 9.0.2 (#17630) (2 weeks ago) <kaisecheng>
+d6f95fe08 - Update index.md (2 weeks ago) <kaisecheng>
+8b8253a9a - Release notes for 9.0.1 (#17620) (3 weeks ago) <github-actions[bot]>
+e6f8a73fc - [chore] fix release note url generation (#17624) (#17625) (3 weeks ago) <mergify[bot]>
+aa4afaa26 - [9.0] (backport #17621) [chore] support markdown and asciidoc release notes (#17622) (3 weeks ago) <mergify[bot]>
+dbe80b490 - [docs] Fix various syntax and rendering errors (#17580) (#17583) (3 weeks ago) <mergify[bot]>
+2db9b69c5 - Add helper method to wait for log message to be observed (#17589) (#17608) (3 weeks ago) <mergify[bot]>
+a2a2e45bc - Make redhat exhaustive test install command more robust (#17592) (#17604) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.0.1..9.0 *.release"
+Changed plugin versions:
+logstash-integration-kafka: 11.6.0 -> 11.6.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.0.2-changes]
+
+**Kafka Integration - 11.6.2**
+
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` [#192](https://github.com/logstash-plugins/logstash-integration-kafka/pull/192)   
+
+* Expose the SASL client callback class setting to the Logstash configuration [#177](https://github.com/logstash-plugins/logstash-integration-kafka/pull/177)
+* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup [#178](https://github.com/logstash-plugins/logstash-integration-kafka/pull/178)
+
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
