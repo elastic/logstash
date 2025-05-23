@@ -88,37 +88,13 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-7]]
 === Logstash 8.17.7 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.7
-
-=== Logstash Commits between 8.17 and 8.17.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.6..8.17"
-
-de62c1c02 - (HEAD -> 8.17, origin/8.17) Update Grype GH action to v6 (#17666) (#17667) (2 days ago) <mergify[bot]>
-a97079138 - update jruby-openssl (#17648) (2 days ago) <kaisecheng>
-b4599823d - Fixes to the bundles gems and jars versions (#17659) (#17661) (3 days ago) <mergify[bot]>
-619b26105 - bump lock file for 8.17 (#17656) (3 days ago) <github-actions[bot]>
-1b5120ec2 - security advisory message added to 8.17.6 release notes (#17641) (2 weeks ago) <Edu González de la Herrán>
-8597ff2d0 - bump core 8.17.7 (#17628) (2 weeks ago) <kaisecheng>
-e55dbe080 - Release notes for 8.17.6 (#17611) (3 weeks ago) <github-actions[bot]>
-d2fe1b137 - Doc: Add non-standard header file (#17600) (#17610) (3 weeks ago) <mergify[bot]>
-381c33a41 - Add helper method to wait for log message to be observed (#17589) (#17605) (3 weeks ago) <mergify[bot]>
-4088e9a2d - Make redhat exhaustive test install command more robust (#17592) (#17601) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.6..8.17 *.release"
-Changed plugin versions:
-logstash-filter-xml: 4.2.1 -> 4.3.1
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
 *Xml Filter - 4.3.1*
 
 * Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
-
-* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/87[#87]
 
 
 [[logstash-8-17-6]]
