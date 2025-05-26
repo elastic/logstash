@@ -22,13 +22,12 @@ Use the {{ls}} [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-ela
 * Use **API keys** to access {{serverless-full}} from {{ls}}. Any user-based security settings in your [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) configuration are ignored and may cause errors.
 
   ::::{important}
-  When configuring {{ls}}, you must provide the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key-1). Note that base64 encoded API keys are not supported in this configuration.
+  When configuring {{ls}}, you must provide the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key). Note that base64 encoded API keys are not supported in this configuration.
 
   If you create the API key on the {{serverless-full}} UI, make sure you select **Logstash** from the dropdown to copy the API key in the correct `id:api_key` format.
 
   :::{image} images/logstash_api_key_format.png
   :alt: API key format dropdown set to {{ls}}:
-  :width: 200 px
   :screenshot:
   :::
 
@@ -38,7 +37,7 @@ Use the {{ls}} [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-ela
 
 * **{{ls}} monitoring** is available through the [{{ls}} Integration](https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md) in [Elastic Observability](https://docs.elastic.co/serverless/observability/what-is-observability-serverless) on {{serverless-full}}.
 
-::::{admonition} Known issue for {{ls}} to {{serverless-full}}
+::::{admonition} Known issue for {{ls}} to {{es-serverless}}
 The logstash-output-elasticsearch `hosts` setting on {{serverless-short}} defaults to port 9200. Set the value to port 443 instead.
 
 ::::
