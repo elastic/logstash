@@ -15,6 +15,8 @@ Examples:
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
+Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) or the [Get API key information API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-api-key).
+
 {{ess-leadin-short}}
 
 ## Cloud ID [cloud-id]

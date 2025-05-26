@@ -60,12 +60,12 @@ output { <3>
   if [@metadata][tenant] == "tenant01" {
     elasticsearch {
       cloud_id => "<cloud id>"
-      api_key => "<api key>"
+      api_key => "<api key>" <4>
     }
   } else if [@metadata][tenant] == "tenant02" {
     elasticsearch {
       cloud_id => "<cloud id>"
-      api_key => "<api key>"
+      api_key => "<api key>" <4>
     }
   }
 }
@@ -74,6 +74,7 @@ output { <3>
 1. Use `filter-elastic_integration` as the first filter in your pipeline
 2. You can use additional filters as long as they follow `filter-elastic_integration`
 3. Sample config to output data to multiple destinations
+4. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) or the [Get API key information API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-api-key)
 
 
 
