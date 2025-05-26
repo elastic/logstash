@@ -374,7 +374,7 @@ input {
 }
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))s
+1. The format is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key-1).
 
 
 
@@ -392,7 +392,7 @@ filter {
 }
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key-1).
 
 
 
@@ -442,7 +442,7 @@ Now you can use this API key in your logstash.yml configuration file:
 xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key-1).
 
 
 
@@ -486,7 +486,7 @@ Now you can use this API key in your logstash.yml configuration file:
 xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key-1).
 
 
 

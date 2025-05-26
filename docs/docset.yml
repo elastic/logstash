@@ -17,6 +17,7 @@ subs:
   version: "9.0.0"
   logstash-ref:   "https://www.elastic.co/guide/en/logstash/current"
   ecloud:   "Elastic Cloud"
+  ech:   "Elastic Cloud Hosted"
   esf:   "Elastic Serverless Forwarder"
   ess:   "Elasticsearch Service"
   serverless-full:   "Elastic Cloud Serverless"
