@@ -296,18 +296,15 @@ Tips for creating API keys:
 * {{ls}} can send both collected data and monitoring information to {{es}}. If you are sending both to the same cluster, you can use the same API key. For different clusters, you need an API key per cluster.
 * A single cluster can share a key for ingestion and monitoring purposes.
 * A production cluster and a monitoring cluster require separate keys.
-* When you create an API key for Logstash on the UI, make sure you select **Logstash** from the dropdown to copy the API key in the correct `id:api_key` format. Base64 encoded API keys are not supported in the {{ls}} configuration.
+* When you create an API key for Logstash on the UI of your deployment, once the key is generated, make sure you select **Logstash** from the dropdown to copy the API key in the correct `id:api_key` format. Note that base64 encoded API keys are not supported in the {{ls}} configuration.
+  
+  Depending on the deployment, the UI for creating API keys and the API key format dropdown may look slightly different.
 
-:::{image} images/logstash_api_key_format.png
-:alt: API key format dropdown set to {{ls}}:
-:screenshot:
-:width: 500px
-:::
-
-::::{admonition}
-Depending on the deployment, the Create API key UI and the API key format dropdown may look slightly differently.
-
-::::
+  :::{image} images/logstash_api_key_format.png
+  :alt: API key format dropdown set to {{ls}}:
+  :screenshot:
+  :width: 400px
+  :::
 
 ::::{note}
 For security reasons, we recommend using a unique API key per {{ls}} instance. You can create as many API keys per user as necessary.
