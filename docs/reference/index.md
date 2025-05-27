@@ -20,10 +20,8 @@ Logstash accelerates your insights by harnessing a greater volume and variety of
 You'll use the {{ls}} [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to send {{ls}} data to {{serverless-full}}. Note the following differences between {{es-serverless}} and both {{ech}} and self-managed {{es}}:
 
 * Use **API keys** to access {{serverless-full}} from {{ls}}. Any user-based security settings in your [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) configuration are ignored and may cause errors.
-
 * {{serverless-full}} uses **data streams** and [{{dlm}} ({{dlm-init}})](docs-content://manage-data/lifecycle/data-stream.md) instead of {{ilm}} ({{ilm-init}}). Any {{ilm-init}} settings in your [{{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) configuration are ignored and may cause errors.
-
-* **{{ls}} monitoring** is available through the [{{ls}} Integration](https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md) in [Elastic Observability](https://docs.elastic.co/serverless/observability/what-is-observability-serverless) on {{serverless-full}}.
+* **{{ls}} monitoring** is available through the [{{ls}} Integration](https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md) in [Elastic Observability](docs-content://solutions/observability.md) on {{serverless-full}}.
 
 ::::{admonition} Known issue for {{ls}} to {{es-serverless}}
 The logstash-output-elasticsearch `hosts` setting on {{serverless-short}} defaults to port 9200. Set the value to port 443 instead.
@@ -32,7 +30,7 @@ The logstash-output-elasticsearch `hosts` setting on {{serverless-short}} defaul
 
 ### API key format for {{ls}}
 
-When configuring {{ls}} for {{serverless-full}}, you must provide the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key). Note that base64 encoded API keys are not supported in this configuration.
+When configuring {{ls}} for {{serverless-full}}, you must provide the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key) or the [Get API key information API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-api-key).
 
 If you create the API key on the {{serverless-full}} UI, make sure you select **Logstash** from the dropdown to copy the API key in the correct `id:api_key` format.
 
@@ -41,3 +39,8 @@ If you create the API key on the {{serverless-full}} UI, make sure you select **
 :screenshot:
 :width: 500px
 :::
+
+::::{note}
+Base64 encoded API keys are not supported in the {{ls}} configuration.
+
+::::
