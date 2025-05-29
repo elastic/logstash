@@ -118,9 +118,8 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/jopenssl.jar'
 
     @exclude_paths.freeze
-=======
+
     @exclude_paths
->>>>>>> 43cc574c (partially revert 17659 to re-establish CI plugin testing (#17686))
   end
 
   def oss_exclude_paths
