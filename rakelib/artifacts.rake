@@ -103,22 +103,9 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
 
-    # remove this after JRuby includes cgi-0.3.7+
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/cgi-0.3.6-java.gemspec'
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/cgi{,.rb}'
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/cgi/**/*'
-
     # remove this after JRuby includes net-imap-0.2.4+
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
-
-    # remove this after JRuby includes uri-0.12.3+
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/uri-0.12.2.gemspec'
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/uri{,.rb}'
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/uri/**/*'
-
-    # remove jruby-openssl shipped with JRuby to prefer the one from the lockfile
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/jopenssl.jar'
 
     @exclude_paths
   end
