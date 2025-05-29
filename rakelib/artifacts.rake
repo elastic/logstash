@@ -109,7 +109,6 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
 
-<<<<<<< HEAD
     # remove this after JRuby includes uri-0.12.3+
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/default/uri-0.12.2.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/uri{,.rb}'
