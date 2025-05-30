@@ -126,4 +126,32 @@ describe "ObservabilitySRE FIPS container" do
         expect(logs).to include("org.bouncycastle")
       end
   end
+
+  context "When running in a FIPS compliant configuration" do
+    before(:all) do
+      docker_compose_up({"LOGSTASH_PIPELINE" => "filebeat-to-ls-to-es.conf"})
+      wait_for_elasticsearch
+    end
+  
+    after(:all) do
+      docker_compose_down
+    end
+  
+    it "data flows from Filebeat through Logstash to Elasticsearch" do
+      # Wait for index to appear, indicating data is flowing
+      wait_until(timeout: 30, message: "Index filebeat-test not found") do
+        response = es_request("/_cat/indices?v")
+        response.code == "200" && response.body.include?("filebeat-test")
+      end
+      # Wait until specific data from filebeat/logstash mutate filters are observed
+      query = { query: { match_all: {} } }.to_json
+      result = nil
+      wait_until(timeout: 30, message: "Index filebeat-test not found") do
+        response = es_request("/filebeat-test-*/_search", query)
+        result = JSON.parse(response.body)
+        response.code == "200" && result["hits"]["total"]["value"] > 0
+      end
+      expect(result["hits"]["hits"].first["_source"]["tags"]).to include("filebeat")
+    end
+  end
 end

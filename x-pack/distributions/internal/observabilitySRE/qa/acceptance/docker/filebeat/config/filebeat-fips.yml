@@ -2,12 +2,19 @@ filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - /test-logs/*.log
+    - /data/logs/sample_logs.txt
 
 output.logstash:
   hosts: ["logstash:5044"]
   ssl.enabled: true
-  ssl.certificate: "/usr/share/elasticsearch/config/certs/filebeat.crt"
-  ssl.key: "/usr/share/elasticsearch/config/certs/filebeat.key"
-  ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+  ssl.certificate: "/usr/share/filebeat/certs/filebeat.crt"
+  ssl.key: "/usr/share/filebeat/certs/filebeat.key"
+  ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca.crt"]
+  ssl.verification_mode: "certificate"
 
+# Add debugging
+logging.level: debug
+logging.to_stderr: true
+
+# Keep registry in the anonymous volume to avoid host pollution
+path.data: /tmp/filebeat_data
