@@ -42,7 +42,7 @@ module LogStash
       # ensure Bouncycastle is configured and ready
       begin
         if Java::org.bouncycastle.crypto.CryptoServicesRegistrar.isInApprovedOnlyMode
-          accumulator.success "Bouncycastle Crytpo is in `approved-only` mode"
+          accumulator.success "Bouncycastle Crypto is in `approved-only` mode"
         else
           accumulator.failure "Bouncycastle Crypto is not in 'approved-only' mode"
         end
