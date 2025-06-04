@@ -374,7 +374,7 @@ Notice that the event now contains geographic location information:
 ```
 
 
-### Indexing Your Data into Elasticsearch [indexing-parsed-data-into-elasticsearch]
+### Indexing your data into Elasticsearch [indexing-parsed-data-into-elasticsearch]
 
 Now that the web logs are broken down into specific fields, you’re ready to get your data into Elasticsearch.
 
