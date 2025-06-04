@@ -13,8 +13,8 @@ It is essential to place your pipeline configuration where it can be found by Lo
 
 In this example we use a bind-mounted volume to provide the configuration via the `docker run` command:
 
-```sh
-docker run --rm -it -v ~/pipeline/:/usr/share/logstash/pipeline/ docker.elastic.co/logstash/logstash:9.0.0
+```sh subs=true
+docker run --rm -it -v ~/pipeline/:/usr/share/logstash/pipeline/ docker.elastic.co/logstash/logstash:{{stack-version}}
 ```
 
 Every file in the host directory `~/pipeline/` will then be parsed by Logstash as pipeline configuration.
@@ -43,14 +43,14 @@ Settings files can also be provided through bind-mounts. Logstash expects to fin
 
 It’s possible to provide an entire directory containing all needed files:
 
-```sh
-docker run --rm -it -v ~/settings/:/usr/share/logstash/config/ docker.elastic.co/logstash/logstash:9.0.0
+```sh subs=true
+docker run --rm -it -v ~/settings/:/usr/share/logstash/config/ docker.elastic.co/logstash/logstash:{{stack-version}}
 ```
 
 Alternatively, a single file can be mounted:
 
-```sh
-docker run --rm -it -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml docker.elastic.co/logstash/logstash:9.0.0
+```sh subs=true
+docker run --rm -it -v ~/settings/logstash.yml:/usr/share/logstash/config/logstash.yml docker.elastic.co/logstash/logstash:{{stack-version}}
 ```
 
 ::::{note}
@@ -63,8 +63,8 @@ Bind-mounted configuration files will retain the same permissions and ownership 
 
 Bind-mounted configuration is not the only option, naturally. If you prefer the *Immutable Infrastructure* approach, you can prepare a custom image containing your configuration by using a `Dockerfile` like this one:
 
-```dockerfile
-FROM docker.elastic.co/logstash/logstash:9.0.0
+```dockerfile subs=true
+FROM docker.elastic.co/logstash/logstash:{{stack-version}}
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 COPY pipeline/ /usr/share/logstash/pipeline/
 COPY config/ /usr/share/logstash/config/
