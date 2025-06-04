@@ -53,6 +53,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "drb:",https://github.com/ruby/drb,BSD-2-Clause
 "e2mmap:",https://github.com/ruby/thwait,BSD-2-Clause
 "edn:",https://github.com/relevance/edn-ruby,MIT
+"elastic-transport:",https://github.com/elastic/elastic-transport-ruby,Apache-2.0
 "elasticsearch-api:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch-transport:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
 "elasticsearch:",https://github.com/elastic/elasticsearch-ruby,Apache-2.0
