@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - '\d+.\d+'
   pull_request_target: ~
   merge_group: ~
 
