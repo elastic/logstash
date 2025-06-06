@@ -168,6 +168,26 @@ ci/docker_acceptance_tests.sh {flavor}"""),
 
     return steps
 
+def fips_test_runner_step() -> dict[str, typing.Any]:
+    step = {
+        "label": "Observability SRE Acceptance Tests",
+        "key": "observabilitySRE-acceptance-tests",
+        "agents": {
+            "provider": "aws",
+            "instanceType": "m6i.xlarge",
+            "diskSizeGb": 60,
+            "instanceMaxAge": 1440,
+            "imagePrefix": "platform-ingest-logstash-ubuntu-2204-fips"
+        },
+        "retry": {"automatic": [{"limit": 1}]},
+        "command": LiteralScalarString("""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+./gradlew observabilitySREacceptanceTests --stacktrace
+"""),
+    }
+    return step
+
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
     WINDOWS_OS_ENV_VAR_OVERRIDE = os.getenv("WINDOWS_OS")
@@ -213,6 +233,13 @@ if __name__ == "__main__":
             "key": "acceptance-docker",
             "depends_on": ["testing-phase"],
             "steps": acceptance_docker_steps(),
+    })
+
+    structure["steps"].append({
+        "group": "Observability SRE Acceptance Tests",
+        "key": "acceptance-observability-sre",
+        "depends_on": ["testing-phase"],
+        "steps": [fips_test_runner_step()],
     })
 
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
