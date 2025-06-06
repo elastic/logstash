@@ -181,6 +181,8 @@ def fips_test_runner_step() -> dict[str, typing.Any]:
         },
         "retry": {"automatic": [{"limit": 1}]},
         "command": LiteralScalarString("""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
 ./gradlew observabilitySREacceptanceTests --stacktrace
 """),
     }
