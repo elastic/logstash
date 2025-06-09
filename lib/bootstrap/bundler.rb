@@ -42,36 +42,8 @@ module LogStash
           @definition = nil
         end
       end
-
-      # This patch makes rubygems fetch directly from the remote servers
-      # the dependencies he need and might not have downloaded in a local
-      # repository. This basically enabled the offline feature to work as
-      # we remove the gems from the vendor directory before packaging.
-      ::Bundler::Source::Rubygems.module_exec do
-        def cached_built_in_gem(spec, local: false)
-          remote_spec = remote_specs.search(spec).first
-          if remote_spec
-            cached_path = fetch_gem(remote_spec)
-            spec.remote = remote_spec.remote
-          else
-            ::Bundler.ui.warn "#{spec.full_name} is built in to Ruby, and can't be cached because your Gemfile doesn't have any sources that contain it."
-          end
-          cached_path
-        end
-
-        def cache(spec, custom_path = nil)
-          #cached_path = Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec)
-          cached_path = cached_built_in_gem(spec)
-          raise GemNotFound, "Missing gem file '#{spec.file_name}'." unless cached_path
-          return if ::File.dirname(cached_path) == ::Bundler.app_cache.to_s
-          ::Bundler.ui.info "  * #{File.basename(cached_path)}"
-          ::FileUtils.cp(cached_path, ::Bundler.app_cache(custom_path))
-        rescue Errno::EACCES => e
-          ::Bundler.ui.debug(e)
-          raise InstallError, e.message
-        end
-      end
     end
+
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
@@ -132,7 +104,6 @@ module LogStash
 
       require "bundler"
       require "bundler/cli"
-      require_relative './patches/gems'
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
@@ -222,7 +193,7 @@ module LogStash
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
       end
       output
     end
