@@ -42,6 +42,16 @@ module LogStash
           @definition = nil
         end
       end
+
+      # This patch makes rubygems fetch directly from the remote servers
+      # the dependencies he need and might not have downloaded in a local
+      # repository. This basically enabled the offline feature to work as
+      # we remove the gems from the vendor directory before packaging.
+      ::Bundler::Source::Rubygems.module_exec do
+        def cached_gem(spec)
+          cached_built_in_gem(spec)
+        end
+      end
     end
 
 
