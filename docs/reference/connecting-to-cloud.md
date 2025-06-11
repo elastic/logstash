@@ -3,11 +3,14 @@ mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/connecting-to-cloud.html
 ---
 
-# Sending data to Elastic Cloud (hosted Elasticsearch Service) [connecting-to-cloud]
+# Sending data to {{ech}} [connecting-to-cloud]
 
-Our hosted {{ess}} on [Elastic Cloud](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
+[{{ech}}](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}.
+When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
 
 Examples:
+
+
 
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
