@@ -749,7 +749,7 @@ Notice for: aws-eventstream-1.4.0
    limitations under the License.
 
 ==========
-Notice for: aws-partitions-1.1111.0
+Notice for: aws-partitions-1.1116.0
 ----------
 
 
@@ -1370,7 +1370,7 @@ Notice for: aws-sdk-cloudwatch-1.116.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-core-3.225.0
+Notice for: aws-sdk-core-3.225.2
 ----------
 
 
@@ -1577,7 +1577,7 @@ Notice for: aws-sdk-core-3.225.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-kms-1.102.0
+Notice for: aws-sdk-kms-1.105.0
 ----------
 
 
@@ -1991,7 +1991,7 @@ Notice for: aws-sdk-resourcegroups-1.83.0
    limitations under the License.
 
 ==========
-Notice for: aws-sdk-s3-1.189.0
+Notice for: aws-sdk-s3-1.189.1
 ----------
 
 
@@ -2612,7 +2612,7 @@ Notice for: aws-sdk-sqs-1.96.0
    limitations under the License.
 
 ==========
-Notice for: aws-sigv4-1.12.0
+Notice for: aws-sigv4-1.12.1
 ----------
 
 
@@ -11080,7 +11080,7 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
-Notice for: org.jruby:jruby-core-9.4.12.1
+Notice for: org.jruby:jruby-core-9.4.13.0
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -12902,7 +12902,7 @@ additional liability.
 END OF TERMS AND CONDITIONS
 
 ==========
-Notice for: stringio-3.1.2
+Notice for: stringio-3.1.5
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
