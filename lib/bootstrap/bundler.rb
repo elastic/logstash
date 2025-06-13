@@ -42,17 +42,8 @@ module LogStash
           @definition = nil
         end
       end
-
-      # This patch makes rubygems fetch directly from the remote servers
-      # the dependencies he need and might not have downloaded in a local
-      # repository. This basically enabled the offline feature to work as
-      # we remove the gems from the vendor directory before packaging.
-      ::Bundler::Source::Rubygems.module_exec do
-        def cached_gem(spec)
-          cached_built_in_gem(spec)
-        end
-      end
     end
+
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
@@ -165,7 +156,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::VersionConflict => e
+          rescue ::Bundler::SolveFailure => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
@@ -202,7 +193,7 @@ module LogStash
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
       end
       output
     end
