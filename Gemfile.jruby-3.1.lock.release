@@ -840,7 +840,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
-    uri (0.12.4)
+    uri (1.0.3)
     webhdfs (0.11.0)
       addressable
     webmock (3.25.1)
@@ -987,7 +987,6 @@ DEPENDENCIES
   stud (~> 0.0.22)
   thwait
   treetop
-  uri (~> 0.12.3)
   webmock (~> 3)
 
 BUNDLED WITH
