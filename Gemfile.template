@@ -11,6 +11,7 @@ gem "rake", "~> 13", require: false
 gem "ruby-progressbar", "~> 1", require: false
 gem "ruby-maven-libs", "~> 3", ">= 3.9.6.1"
 gem "logstash-output-elasticsearch", ">= 11.14.0"
+gem "logstash-integration-kafka", ">= 11.6.3"
 gem "polyglot", require: false
 gem "treetop", require: false
 gem "minitar", "~> 1", :group => :build
