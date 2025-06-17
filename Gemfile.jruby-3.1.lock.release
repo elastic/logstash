@@ -961,7 +961,7 @@ DEPENDENCIES
   logstash-integration-aws
   logstash-integration-elastic_enterprise_search
   logstash-integration-jdbc
-  logstash-integration-kafka (>= 11.6.3)
+  logstash-integration-kafka
   logstash-integration-logstash
   logstash-integration-rabbitmq
   logstash-integration-snmp
