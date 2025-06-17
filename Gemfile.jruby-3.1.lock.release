@@ -17,6 +17,7 @@ PATH
       i18n (~> 1)
       jar-dependencies (= 0.4.1)
       jrjackson (= 0.4.20)
+      jruby-openssl (~> 0.15.4)
       manticore (~> 0.6)
       minitar (~> 1)
       pry (~> 0.12)
@@ -126,7 +127,7 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.0)
+    faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
     ffi (1.17.2-java)
     filesize (0.2.0)
@@ -557,7 +558,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.6.2-java)
+    logstash-integration-kafka (11.6.3-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -738,7 +739,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
-    rack (3.1.15)
+    rack (3.1.16)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -753,19 +754,19 @@ GEM
     redis (4.8.1)
     regexp_parser (2.10.0)
     rexml (3.4.1)
-    rspec (3.13.0)
+    rspec (3.13.1)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.3)
+    rspec-core (3.13.4)
       rspec-support (~> 3.13.0)
-    rspec-expectations (3.13.4)
+    rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.4)
+    rspec-mocks (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.3)
+    rspec-support (3.13.4)
     rspec-wait (1.0.1)
       rspec (>= 3.4)
     rubocop (1.74.0)
@@ -858,7 +859,7 @@ DEPENDENCIES
   belzebuth
   benchmark-ips
   bigdecimal (~> 3.1)
-  cgi (= 0.3.7)
+  cgi (~> 0.3.7)
   childprocess (~> 4)
   ci_reporter_rspec (~> 1)
   date (= 3.3.3)
