@@ -20,7 +20,6 @@ package org.logstash.common;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.function.IntPredicate;
 
 public class BufferedTokenizer {
 
@@ -77,7 +76,7 @@ public class BufferedTokenizer {
 
             String token = accumulator.substring(currentIdx, nextSeparatorIdx);
             currentIdx = nextSeparatorIdx + separator.length();
-            if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
+            if (sizeLimit != Integer.MIN_VALUE && token.length() > sizeLimit) {
                 throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit);
             }
             nextSeparatorIdx = -1;
@@ -102,6 +101,15 @@ public class BufferedTokenizer {
                 // doesn't contain any separator
                 if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
                     dropNextPartialFragments = true;
+                }
+            } else {
+                if (currentIdx > 0) {
+                    nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
+                } else {
+                    // nextSeparatorIdx is -1
+                    if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
+                        dropNextPartialFragments = true;
+                    }
                 }
             }
             return nextSeparatorIdx != -1;
