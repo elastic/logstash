@@ -89,37 +89,19 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-8]]
 === Logstash 8.17.8 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.8
-
-=== Logstash Commits between 8.17 and 8.17.7
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.7..8.17"
-
-36b45b684 - (HEAD -> 8.17, origin/8.17) bump lock file for 8.17 (#17707) (20 hours ago) <github-actions[bot]>
-b7cbc1bc2 - Bump 8.17.8 for next dev cycle (#17679) (2 weeks ago) <Andrea Selva>
-ee592a1e6 - partially revert 17659 to re-establish CI plugin testing (#17686) (#17690) (3 weeks ago) <mergify[bot]>
-bce879af4 - Release notes for 8.17.7 (#17674) (3 weeks ago) <github-actions[bot]>
-de62c1c02 - Update Grype GH action to v6 (#17666) (#17667) (4 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.7..8.17 *.release"
-Changed plugin versions:
-logstash-integration-kafka: 11.5.4 -> 11.6.3
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
 *Kafka Integration - 11.6.3*
 
-* Update kafka client to 3.9.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193]
-
-* Docs: fixed setting type reference for `sasl_iam_jar_paths` https://github.com/logstash-plugins/logstash-integration-kafka/pull/192[#192]   
+* Support additional `oauth` and `sasl` configuration options for configuring kafka client https://github.com/logstash-plugins/logstash-integration-kafka/pull/189[#189]
 
 * Expose the SASL client callback class setting to the Logstash configuration https://github.com/logstash-plugins/logstash-integration-kafka/pull/177[#177]
+
 * Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup https://github.com/logstash-plugins/logstash-integration-kafka/pull/178[#178]
 
-* Support additional `oauth` and `sasl` configuration options for configuring kafka client https://github.com/logstash-plugins/logstash-integration-kafka/pull/189[#189]
+* Update kafka client to `3.9.1` https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193]
 
 
 [[logstash-8-17-7]]
