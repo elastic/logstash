@@ -92,24 +92,7 @@ This section summarizes the changes in the following releases:
 [[logstash-7-17-29]]
 === Logstash 7.17.29 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v7.17.29
-
-=== Logstash Commits between 7.17 and 7.17.28
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v7.17.28..7.17"
-
-4dd7c059b - (HEAD -> 7.17, origin/7.17) Ensure elasticsearch logs and data dirs exist before startup (#17531) (#17538) (10 weeks ago) <mergify[bot]>
-70b99246d - Shareable function for partitioning integration tests (#17223) (#17304) (3 months ago) <mergify[bot]>
-7bc0194f1 - bump version to 7.17.29 (#17149) (4 months ago) <João Duarte>
-da3a59c5c - Release notes for 7.17.28 (#17112) (4 months ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v7.17.28..7.17 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-==== Plugins
+No user-facing changes in Logstash.
 
 [[logstash-7-17-28]]
 === Logstash 7.17.28 Release Notes
