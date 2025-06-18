@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
 * <<logstash-8-18-1,Logstash 8.18.1>>
 * <<logstash-8-18-0,Logstash 8.18.0>>
@@ -86,6 +87,38 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-3]]
+=== Logstash 8.18.3 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.3
+
+=== Logstash Commits between 8.18 and 8.18.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.2..8.18"
+
+c9275efe1 - (HEAD -> 8.18, origin/8.18) Update patch plugin versions in gemfile lock (#17708) (22 hours ago) <github-actions[bot]>
+eba02c2d0 - [8.18] (backport #17674) Release notes for 8.17.7 (#17697) (2 weeks ago) <mergify[bot]>
+c76bd69f1 - Bump 8.18.3 for next dev cycle (#17681) (3 weeks ago) <Andrea Selva>
+c9933b45b - partially revert 17659 to re-establish CI plugin testing (#17686) (#17691) (3 weeks ago) <mergify[bot]>
+b1723b62c - Release notes for 8.18.2 (#17675) (3 weeks ago) <github-actions[bot]>
+36602d0ea - Update Grype GH action to v6 (#17666) (#17668) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.2..8.18 *.release"
+Changed plugin versions:
+logstash-integration-kafka: 11.6.1 -> 11.6.3
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Kafka Integration - 11.6.3*
+
+* Update kafka client to 3.9.1 and transitive dependencies https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193]
+
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` https://github.com/logstash-plugins/logstash-integration-kafka/pull/192[#192]   
+
 
 [[logstash-8-18-2]]
 === Logstash 8.18.2 Release Notes
