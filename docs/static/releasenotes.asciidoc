@@ -103,6 +103,7 @@ No user-facing changes in Logstash core.
 
 * Update kafka client to `3.9.1` https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193]
 
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` [#192](https://github.com/logstash-plugins/logstash-integration-kafka/pull/192)
 
 [[logstash-8-17-7]]
 === Logstash 8.17.7 Release Notes
