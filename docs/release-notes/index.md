@@ -21,6 +21,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.3 [logstash-9.0.3-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.3-changes]
+
+**Kafka Integration - 11.6.3**
+
+* Update kafka client to `3.9.1` [#193](https://github.com/logstash-plugins/logstash-integration-kafka/pull/193)
+
 ## 9.0.2 [logstash-9.0.2-release-notes]
 
 No user-facing changes in Logstash core.
@@ -61,36 +71,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-
-## 9.0.3 [logstash-9.0.3-release-notes]
-
-### Features and enhancements [logstash-9.0.3-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.0.3
-
-=== Logstash Commits between 9.0 and 9.0.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.2..9.0"
-
-01b7a2d93 - (HEAD -> 9.0, origin/9.0) bump lock file for 9.0 (#17709) (21 hours ago) <github-actions[bot]>
-2b8e75bc3 - Doc: Add docs-build.yml for 9.0 (#17705) (7 days ago) <Karen Metts>
-365712143 - Bump 9.0.3 for next dev cycle (#17683) (2 weeks ago) <Andrea Selva>
-7b09261a1 - partially revert 17659 to re-establish CI plugin testing (#17686) (#17693) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.0.2..9.0 *.release"
-Changed plugin versions:
-logstash-integration-kafka: 11.6.2 -> 11.6.3
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.0.3-changes]
-
-**Kafka Integration - 11.6.3**
-
-* Update kafka client to 3.9.1 and transitive dependencies [#193](https://github.com/logstash-plugins/logstash-integration-kafka/pull/193)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
