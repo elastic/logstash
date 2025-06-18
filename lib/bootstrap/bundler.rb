@@ -43,16 +43,23 @@ module LogStash
         end
       end
 
-      # This patch makes rubygems fetch directly from the remote servers
-      # the dependencies he need and might not have downloaded in a local
-      # repository. This basically enabled the offline feature to work as
-      # we remove the gems from the vendor directory before packaging.
+      # # TODO: Update patch description
+      # # original https://github.com/rubygems/rubygems/blob/3c7c4ff2d8f0b4ab8c48f4ea2d1623210b1de0c1/bundler/lib/bundler/source/rubygems.rb#L214-L223
       ::Bundler::Source::Rubygems.module_exec do
-        def cached_gem(spec)
-          cached_built_in_gem(spec)
+        def cache(spec, custom_path = nil)
+          cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec)
+          # Dont waste resources caching, just return
+          return unless cached_path
+          return if File.dirname(cached_path) == ::Bundler.app_cache.to_s
+          ::Bundler.ui.info "  * #{File.basename(cached_path)}"
+          FileUtils.cp(cached_path, ::Bundler.app_cache(custom_path))
+        rescue Errno::EACCES => e
+          ::Bundler.ui.debug(e)
+          raise InstallError, e.message
         end
       end
     end
+
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
@@ -165,7 +172,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::VersionConflict => e
+          rescue ::Bundler::SolveFailure => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
@@ -202,7 +209,7 @@ module LogStash
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
       end
       output
     end
