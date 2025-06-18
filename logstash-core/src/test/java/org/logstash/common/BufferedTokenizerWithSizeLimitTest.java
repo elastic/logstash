@@ -150,11 +150,11 @@ public final class BufferedTokenizerWithSizeLimitTest {
 
         Iterable<String> tokensIterable = sut.extract("\nbbb\n");
         Iterator<String> tokensIterator = tokensIterable.iterator();
-        // send a token delimiter and check an error is raised
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            tokensIterator.next();
-        });
-        assertThat(exception.getMessage(), containsString("input buffer full"));
+        // send a token delimiter and check is empty followed by 3 b's
+        String emptyToken = tokensIterator.next();
+        assertTrue(emptyToken.isEmpty());
+        String validToken = tokensIterator.next();
+        assertEquals("bbb", validToken);
     }
 
     private static String generate(int length, String fillChar) {
