@@ -45,25 +45,17 @@ module LogStash
 
       # # TODO: Update patch description
       # # original https://github.com/rubygems/rubygems/blob/3c7c4ff2d8f0b4ab8c48f4ea2d1623210b1de0c1/bundler/lib/bundler/source/rubygems.rb#L214-L223
-      # ::Bundler::Source::Rubygems.module_exec do
-      #   def cache(spec, custom_path = nil)
-      #     cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec) || cached_built_in_gem(spec)
-      #     raise GemNotFound, "Missing gem file '#{spec.file_name}'." unless cached_path
-      #     return if File.dirname(cached_path) == ::Bundler.app_cache.to_s
-      #     ::Bundler.ui.info "  * #{File.basename(cached_path)}"
-      #     FileUtils.cp(cached_path, ::Bundler.app_cache(custom_path))
-      #   rescue Errno::EACCES => e
-      #     ::Bundler.ui.debug(e)
-      #     raise InstallError, e.message
-      #   end
-      # end
-      ::Bundler::Runtime.module_exec do
-        alias_method :cache_original, :cache
-
-        def cache(custom_path = nil, local = false)
-          cache_original(custom_path, local)
-        rescue ::Bundler::GemNotFound => e
-          ::Bundler.ui.warn "Could not cache gem: #{e.message}"
+      ::Bundler::Source::Rubygems.module_exec do
+        def cache(spec, custom_path = nil)
+          cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec)
+          # Dont waste resources caching, just return
+          return unless cached_path
+          return if File.dirname(cached_path) == ::Bundler.app_cache.to_s
+          ::Bundler.ui.info "  * #{File.basename(cached_path)}"
+          FileUtils.cp(cached_path, ::Bundler.app_cache(custom_path))
+        rescue Errno::EACCES => e
+          ::Bundler.ui.debug(e)
+          raise InstallError, e.message
         end
       end
     end
