@@ -91,11 +91,7 @@ public class BufferedTokenizer {
          * @return true iff a next complete token is available.
          */
         private boolean matchNextSeparatorIdx() {
-            if (nextSeparatorIdx == -1) {
-                nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
-            } else {
-                nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
-            }
+            nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
 
             // clean up accumulator if no next separator found
             if (nextSeparatorIdx == -1 && currentIdx > 0) {
