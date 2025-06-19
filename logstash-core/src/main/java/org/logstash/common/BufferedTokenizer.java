@@ -93,14 +93,15 @@ public class BufferedTokenizer {
         private boolean matchNextSeparatorIdx() {
             if (nextSeparatorIdx == -1) {
                 nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
-            }
-            // clean up accumulator if no next separator found
-            if (nextSeparatorIdx == -1 && currentIdx > 0) {
-                cleanupAccumulator();
             } else {
                 if (currentIdx > 0) {
                     nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
                 }
+            }
+
+            // clean up accumulator if no next separator found
+            if (nextSeparatorIdx == -1 && currentIdx > 0) {
+                cleanupAccumulator();
             }
             return nextSeparatorIdx != -1;
         }
