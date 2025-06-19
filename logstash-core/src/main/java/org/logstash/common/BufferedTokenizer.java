@@ -94,9 +94,7 @@ public class BufferedTokenizer {
             if (nextSeparatorIdx == -1) {
                 nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
             } else {
-                if (currentIdx > 0) {
-                    nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
-                }
+                nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
             }
 
             // clean up accumulator if no next separator found
