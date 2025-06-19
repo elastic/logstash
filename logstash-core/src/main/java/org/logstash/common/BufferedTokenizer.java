@@ -46,6 +46,7 @@ public class BufferedTokenizer {
         private final StringBuilder accumulator = new StringBuilder();
         private boolean dropNextPartialFragments = false;
         private final int sizeLimit;
+        private int lastFragmentSize = 0;
 
         DataSplitter(String separator) {
             this.separator = separator;
@@ -76,7 +77,7 @@ public class BufferedTokenizer {
 
             String token = accumulator.substring(currentIdx, nextSeparatorIdx);
             currentIdx = nextSeparatorIdx + separator.length();
-            if (sizeLimit != Integer.MIN_VALUE && token.length() > sizeLimit) {
+            if (isSizeLimitSet() && token.length() > sizeLimit) {
                 throw new IllegalStateException("input buffer full, consumed token which exceeded the sizeLimit " + sizeLimit);
             }
             nextSeparatorIdx = -1;
@@ -121,11 +122,26 @@ public class BufferedTokenizer {
         }
 
         public void append(String data) {
-            if (!data.contains(separator) && dropNextPartialFragments) {
-                return;
+            if (isSizeLimitSet()) {
+                if (!data.contains(separator) && lastFragmentSize > sizeLimit) {
+                    // stop accumulating if last fragments already reached the sizeLimit
+                    return;
+                }
+//            dropNextPartialFragments = false;
+
+                // we know that data contains at least one separator or that we haven't yet reached the first separator instance, update lastFragmentSize
+                int lastSeparatorIdx = data.lastIndexOf(separator);
+                if (lastSeparatorIdx == -1) {
+                    lastFragmentSize += data.length();
+                } else {
+                    lastFragmentSize = data.length() - (lastSeparatorIdx + separator.length());
+                }
             }
-            dropNextPartialFragments = false;
             accumulator.append(data);
+        }
+
+        private boolean isSizeLimitSet() {
+            return sizeLimit != Integer.MIN_VALUE;
         }
 
         public String flush() {
