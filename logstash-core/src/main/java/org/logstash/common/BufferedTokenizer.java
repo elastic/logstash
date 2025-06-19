@@ -44,7 +44,6 @@ public class BufferedTokenizer {
         private int currentIdx = 0;
         private int nextSeparatorIdx = -1;
         private final StringBuilder accumulator = new StringBuilder();
-        private boolean dropNextPartialFragments = false;
         private final int sizeLimit;
         private int lastFragmentSize = 0;
 
@@ -98,19 +97,9 @@ public class BufferedTokenizer {
             // clean up accumulator if no next separator found
             if (nextSeparatorIdx == -1 && currentIdx > 0) {
                 cleanupAccumulator();
-                // if it has a remaining bigger than the admitted size, then it start drop other next fragments that
-                // doesn't contain any separator
-                if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
-                    dropNextPartialFragments = true;
-                }
             } else {
                 if (currentIdx > 0) {
                     nextSeparatorIdx = accumulator.indexOf(separator, currentIdx);
-                } else {
-                    // nextSeparatorIdx is -1
-                    if (sizeLimit != Integer.MIN_VALUE && accumulator.length() > sizeLimit) {
-                        dropNextPartialFragments = true;
-                    }
                 }
             }
             return nextSeparatorIdx != -1;
@@ -127,7 +116,6 @@ public class BufferedTokenizer {
                     // stop accumulating if last fragments already reached the sizeLimit
                     return;
                 }
-//            dropNextPartialFragments = false;
 
                 // we know that data contains at least one separator or that we haven't yet reached the first separator instance, update lastFragmentSize
                 int lastSeparatorIdx = data.lastIndexOf(separator);
