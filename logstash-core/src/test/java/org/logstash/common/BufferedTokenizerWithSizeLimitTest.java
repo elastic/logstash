@@ -142,9 +142,6 @@ public final class BufferedTokenizerWithSizeLimitTest {
         final String neverEndingData = generate(8, "a");
         for (int i = 0; i < 10; i++) {
             sut.extract(neverEndingData);
-//            // iterator has to be engaged
-//            boolean hasNext = sut.extract(neverEndingData).iterator().hasNext();
-//            assertFalse(hasNext);
         }
 
         // with the second fragment passed to extract it overrun the sizeLimit, the tokenizer
