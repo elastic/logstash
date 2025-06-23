@@ -44,7 +44,7 @@ shared_examples "logstash install" do |logstash|
           it "successfully install the plugin" do
             command = logstash.run_sudo_command_in_path("bin/logstash-plugin install #{gem_tmp_path}")
             expect(command).to install_successfully
-            expect(logstash).to have_installed?("logstash-filter-dns")
+            expect(logstash).to have_installed?("logstash-filter-qatest")
             expect(logstash).not_to be_running
             with_running_logstash_service(logstash) do
               expect(logstash).to be_running
