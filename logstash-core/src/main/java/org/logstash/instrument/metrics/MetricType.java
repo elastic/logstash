@@ -69,6 +69,11 @@ public enum MetricType {
     GAUGE_RUBYTIMESTAMP("gauge/rubytimestamp"),
 
     /**
+     * A gauge backed by a {@link java.util.List} type.
+     */
+    GAUGE_LIST("gauge/list"),
+
+    /**
      * A flow-rate {@link FlowMetric}, instantiated with one or more backing {@link Metric}{@code <Number>}.
      */
     FLOW_RATE("flow/rate"),
