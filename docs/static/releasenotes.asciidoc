@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
 * <<logstash-8-18-1,Logstash 8.18.1>>
 * <<logstash-8-18-0,Logstash 8.18.0>>
@@ -85,6 +86,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-3]]
+=== Logstash 8.18.3 Release Notes
+
+No user-facing changes in Logstash core.
+
+[[plugins-8-18-3]]
+==== Plugins
+
+*Kafka Integration - 11.6.3*
+
+* Update kafka client to `3.9.1` https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193] 
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` https://github.com/logstash-plugins/logstash-integration-kafka/pull/192[#192]
 
 [[logstash-8-18-2]]
 === Logstash 8.18.2 Release Notes
