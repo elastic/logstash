@@ -22,6 +22,21 @@ function save_docker_tarballs {
     done
 }
 
+# normalized $ARCH should be either "amd64" or "arm64"
+function normalize_arch {
+    case "$ARCH" in
+        x86_64|amd64)
+            ARCH="amd64"
+            ;;
+        aarch64|arm64)
+            ARCH="arm64"
+            ;;
+        *)
+            error "Unsupported architecture: $ARCH"
+            ;;
+    esac
+}
+
 # Since we are using the system jruby, we need to make sure our jvm process
 # uses at least 1g of memory, If we don't do this we can get OOM issues when
 # installing gems. See https://github.com/elastic/logstash/issues/5179
