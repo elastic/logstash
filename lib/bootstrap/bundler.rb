@@ -46,6 +46,18 @@ module LogStash
       # # TODO: Update patch description
       # # original https://github.com/rubygems/rubygems/blob/3c7c4ff2d8f0b4ab8c48f4ea2d1623210b1de0c1/bundler/lib/bundler/source/rubygems.rb#L214-L223
       ::Bundler::Source::Rubygems.module_exec do
+        def fetch_gem_if_possible(spec, previous_spec = nil)
+          begin
+            if spec.remote
+              fetch_gem(spec, previous_spec)
+            else
+              cached_gem(spec)
+            end
+          rescue => e
+            cached_builtin_gem(spec)
+          end
+        end
+
         def cache(spec, custom_path = nil)
           cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec) || cached_built_in_gem(spec)
           raise GemNotFound, "Missing gem file '#{spec.file_name}'." unless cached_path
