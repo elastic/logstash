@@ -93,6 +93,7 @@ This section summarizes the changes in the following releases:
 
 No user-facing changes in Logstash core.
 
+[[plugins-8-18-3]]
 ==== Plugins
 
 *Kafka Integration - 11.6.3*
