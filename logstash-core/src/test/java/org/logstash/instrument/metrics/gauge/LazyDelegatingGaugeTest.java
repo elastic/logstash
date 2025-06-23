@@ -20,14 +20,16 @@
 
 package org.logstash.instrument.metrics.gauge;
 
-import java.net.URI;
-import java.util.Collections;
 import org.jruby.RubyHash;
 import org.junit.Test;
 import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.instrument.metrics.MetricType;
+
+import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -90,6 +92,11 @@ public class LazyDelegatingGaugeTest {
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.get()).isNull();
         assertThat(gauge.getType()).isNull();
+
+        //List
+        gauge = new LazyDelegatingGauge("bar", List.of("one", "two"));
+        assertThat(gauge.getValue().toString()).isEqualTo("[one, two]");
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LIST);
 
         assertThat(gauge.getName()).isNotEmpty();
     }
@@ -169,6 +176,13 @@ public class LazyDelegatingGaugeTest {
         gauge.set(null);
         assertThat(gauge.getValue()).isNull();
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_TEXT);
+        
+        // List
+        gauge = new LazyDelegatingGauge("bar");
+        gauge.set(List.of(1,2));
+        assertThat(gauge.getValue().toString()).isEqualTo("[1, 2]");
+        assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LIST);
+
     }
 
 }

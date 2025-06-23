@@ -27,6 +27,7 @@ import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.MetricType;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -117,6 +118,8 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
                 lazyMetric = new RubyHashGauge(key, (RubyHash) value);
             } else if (value instanceof RubyTimestamp) {
                 lazyMetric = new RubyTimeStampGauge(key, (RubyTimestamp) value);
+            } else if (value instanceof List<?>) {
+                lazyMetric = new ListGauge(key, (List<?>) value);
             } else {
                 LOGGER.warn("A gauge metric of an unknown type ({}) has been created for key: {}. This may result in invalid serialization.  It is recommended to " +
                         "log an issue to the responsible developer/development team.", value.getClass().getCanonicalName(), key);
