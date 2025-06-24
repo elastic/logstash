@@ -33,18 +33,12 @@ shared_examples "logstash install" do |logstash|
     context "with a direct internet connection" do
       context "when the plugin exist" do
         context "from a local `.GEM` file" do
-          let(:gem_name) { "logstash-filter-qatest-0.1.1.gem" }
-          let(:gem_tmp_path) { "/tmp/#{gem_name}" }
-          before(:each) do
-            logstash.download("https://rubygems.org/gems/#{gem_name}", gem_tmp_path)
-          end
-
-          after(:each) { logstash.delete_file(gem_tmp_path) }
+          let(:gem_path) { File.expand_path("../../../../fixtures/logstash-filter-acceptance_test-0.1.1.gem", __dir__) }
 
           it "successfully install the plugin" do
-            command = logstash.run_sudo_command_in_path("bin/logstash-plugin install #{gem_tmp_path}")
+            command = logstash.run_sudo_command_in_path("bin/logstash-plugin install #{gem_path}")
             expect(command).to install_successfully
-            expect(logstash).to have_installed?("logstash-filter-dns")
+            expect(logstash).to have_installed?("logstash-filter-acceptance_test")
             expect(logstash).not_to be_running
             with_running_logstash_service(logstash) do
               expect(logstash).to be_running
