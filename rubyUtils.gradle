@@ -219,7 +219,7 @@ versionMap = gradle.ext.versions
 
 String jRubyURL
 String jRubyVersion
-String jRubySha1
+String jRubySha256
 Boolean doChecksum
 
 if (versionMap["jruby-runtime-override"]) {
@@ -228,7 +228,7 @@ if (versionMap["jruby-runtime-override"]) {
     doChecksum = false
 } else {
     jRubyVersion = versionMap["jruby"]["version"]
-    jRubySha1 = versionMap["jruby"]["sha1"]
+    jRubySha256 = versionMap["jruby"]["sha256"]
     jRubyURL = "https://repo1.maven.org/maven2/org/jruby/jruby-dist/${jRubyVersion}/jruby-dist-${jRubyVersion}-bin.tar.gz"
     doChecksum = true
 }
@@ -251,12 +251,12 @@ downloadJRuby.onlyIf { customJRubyDir == "" }
 
 tasks.register("verifyFile", Verify) {
     dependsOn downloadJRuby
-    description "Verify the SHA1 of the download JRuby artifact"
+    description "Verify the SHA256 of the download JRuby artifact"
     inputs.file(jrubyTarPath)
     outputs.file(jrubyTarPath)
     src new File(jrubyTarPath)
-    algorithm 'SHA-1'
-    checksum jRubySha1
+    algorithm 'SHA-256'
+    checksum jRubySha256
 }
 
 verifyFile.onlyIf { customJRubyDir == "" }
