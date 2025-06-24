@@ -43,8 +43,15 @@ module LogStash
         end
       end
 
-      # # TODO: Update patch description
-      # # original https://github.com/rubygems/rubygems/blob/3c7c4ff2d8f0b4ab8c48f4ea2d1623210b1de0c1/bundler/lib/bundler/source/rubygems.rb#L214-L223
+      # When preparing offline packs or generally when installing gems, bundler wants to have `.gem` files 
+      # cached. We ship a default set of gems that inclue all of the unpacked code. During dependency
+      # resolution bundler still wants to ensure`.gem` files exist. This patch updates two paths in bundler where 
+      # it natively it would *fail* when a `.gem` file is not found. Instead of failing we force the cache to be
+      # updated with a `.gem` file. This preserves the original patch behavior. There is still an open question of
+      # *how* to potentially update the files we vendor or the way we set up bundler to avoid carrying this patch. 
+      # As of JRuby 9.4.13.0 rubygems (bundler) is at 3.6.3. There have been some releases and changes in bundler code
+      # since then but it does not seem to have changed the way it handles gem files. Obviously carrying a patch like this
+      # carries a maintenance burden so prioritizing a packaging solution may be 
       ::Bundler::Source::Rubygems.module_exec do
         def fetch_gem_if_possible(spec, previous_spec = nil)
           path = if spec.remote
@@ -52,11 +59,16 @@ module LogStash
           else
             cached_gem(spec)
           end
+          # BEGIN-PATCH: inject built-in gems
           path || cached_built_in_gem(spec)
+          # END-PATCH
         end
 
         def cache(spec, custom_path = nil)
-          cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec) || cached_built_in_gem(spec)
+          cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec)
+          # BEGIN-PATCH: inject built-in gems
+          cached_path ||= cached_built_in_gem(spec)
+          # END-PATCH
           raise GemNotFound, "Missing gem file '#{spec.file_name}'." unless cached_path
           return if File.dirname(cached_path) == ::Bundler.app_cache.to_s
           ::Bundler.ui.info "  * #{File.basename(cached_path)}"
