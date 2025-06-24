@@ -47,15 +47,12 @@ module LogStash
       # # original https://github.com/rubygems/rubygems/blob/3c7c4ff2d8f0b4ab8c48f4ea2d1623210b1de0c1/bundler/lib/bundler/source/rubygems.rb#L214-L223
       ::Bundler::Source::Rubygems.module_exec do
         def fetch_gem_if_possible(spec, previous_spec = nil)
-          begin
-            if spec.remote
-              fetch_gem(spec, previous_spec)
-            else
-              cached_gem(spec)
-            end
-          rescue => e
-            cached_builtin_gem(spec)
+          path = if spec.remote
+            fetch_gem(spec, previous_spec)
+          else
+            cached_gem(spec)
           end
+          path || cached_built_in_gem(spec)
         end
 
         def cache(spec, custom_path = nil)
