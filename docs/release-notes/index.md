@@ -21,6 +21,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.3 [logstash-9.0.3-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.3-changes]
+
+**Kafka Integration - 11.6.3**
+
+* Update kafka client to `3.9.1` [#193](https://github.com/logstash-plugins/logstash-integration-kafka/pull/193)
+
 ## 9.0.2 [logstash-9.0.2-release-notes]
 
 No user-facing changes in Logstash core.
@@ -61,7 +71,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
