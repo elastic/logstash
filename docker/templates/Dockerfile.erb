@@ -159,9 +159,12 @@ RUN addgroup -g 1000 logstash && \
   --shell "/sbin/nologin" \
   --no-create-home \
   logstash
-<% else -%>
+<% elsif %w(full oss).include?(image_flavor)  -%>
 RUN userdel -r ubuntu && groupadd --gid 1000 logstash && \
   useradd --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
+<% else -%>
+RUN groupadd --gid 1000 logstash && \
+  adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
 <% end -%>
 
 # Add Logstash itself.
