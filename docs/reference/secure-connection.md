@@ -37,8 +37,6 @@ Configuration example:
 
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
-
 For more details, check out [Grant access using API keys](#ls-api-keys).
 
 ::::
@@ -55,12 +53,9 @@ Configuration example:
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
-
-For more details, check out [Grant access using API keys](#ls-api-keys) or [Sending data to Elastic Cloud (hosted Elasticsearch Service)](/reference/connecting-to-cloud.md).
+For more details, check out [Grant access using API keys](#ls-api-keys) or [Sending data to {{ech}}](/reference/connecting-to-cloud.md).
 
 ::::
-
 
 
 ### Secure communication with an on-premise {{es}} cluster [es-security-onprem]
@@ -296,7 +291,8 @@ Tips for creating API keys:
 * {{ls}} can send both collected data and monitoring information to {{es}}. If you are sending both to the same cluster, you can use the same API key. For different clusters, you need an API key per cluster.
 * A single cluster can share a key for ingestion and monitoring purposes.
 * A production cluster and a monitoring cluster require separate keys.
-* When you create an API key for Logstash on the UI of your deployment, once the API key is generated, make sure you select **Logstash** from the dropdown to copy the API key in the correct `id:api_key` format. Note that base64 encoded API keys are not supported in the {{ls}} configuration.
+* When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
+  This option formats the API key in the correct `id:api_key` format required by {{ls}}.
 
   :::{image} images/logstash_api_key_format.png
   :alt: API key format dropdown set to {{ls}}:
@@ -304,11 +300,10 @@ Tips for creating API keys:
   :width: 400px
   :::
 
-  Depending on the deployment, the UI for creating API keys and the API key format dropdown may be slightly different.
+  The UI for API keys may look different depending on the deployment type.
 
 ::::{note}
 For security reasons, we recommend using a unique API key per {{ls}} instance. You can create as many API keys per user as necessary.
-
 ::::
 
 

@@ -21,7 +21,7 @@ Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-out
 
 ## Cloud ID [cloud-id]
 
-{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label you should prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
+{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
 
 
 ## Cloud Auth [cloud-auth]
