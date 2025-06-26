@@ -160,8 +160,8 @@ RUN addgroup -g 1000 logstash && \
   --no-create-home \
   logstash
 <% else -%>
-RUN groupadd --gid 1000 logstash && \
-  adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
+RUN userdel -r ubuntu && groupadd --gid 1000 logstash && \
+  useradd --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
 <% end -%>
 
 # Add Logstash itself.
