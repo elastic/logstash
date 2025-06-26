@@ -11,7 +11,7 @@ function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
     local images="logstash logstash-oss"
-    if [ "${arch}" != "aarch64" ]; then
+    if [ "${arch}" != "arm64" ]; then
         # No logstash-ubi8 for AARCH64
         images="logstash logstash-oss logstash-ubi8"
     fi
