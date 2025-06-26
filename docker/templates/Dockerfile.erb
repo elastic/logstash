@@ -99,7 +99,7 @@ RUN for iter in {1..10}; do \
 
 # Provide a non-root user to run the process.
 RUN <% if image_flavor == 'full' || image_flavor == 'oss' %> userdel -r ubuntu && <% end %> groupadd --gid 1000 logstash && \
-    adduser --uid 1000 --gid 1000 \
+    useradd --uid 1000 --gid 1000 \
     <% if image_flavor != 'ironbank' %>--home <% else %>--home-dir <% end %>/usr/share/logstash --no-create-home \
     logstash
 
