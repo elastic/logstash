@@ -60,6 +60,9 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
+# standardize $ARCH for image name
+normalize_arch
+
 info "Saving tar.gz for docker images"
 save_docker_tarballs "${ARCH}" "${STACK_VERSION}"
 
@@ -69,7 +72,7 @@ for file in build/logstash-*; do shasum $file;done
 info "Uploading DRA artifacts in buildkite's artifact store ..."
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the build_packages.sh
 images="logstash logstash-oss"
-if [ "$ARCH" != "aarch64" ]; then
+if [ "$ARCH" != "arm64" ]; then
     # No logstash-ubi8 for AARCH64
     images="logstash logstash-oss logstash-ubi8"
 fi
@@ -79,7 +82,7 @@ done
 
 # Upload 'docker-build-context.tar.gz' files only when build x86_64, otherwise they will be
 # overwritten when building aarch64 (or viceversa).
-if [ "$ARCH" != "aarch64" ]; then
+if [ "$ARCH" != "arm64" ]; then
     for image in logstash logstash-oss logstash-ubi8 logstash-ironbank; do
         buildkite-agent artifact upload "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz"
     done
