@@ -105,7 +105,7 @@ RUN dnf -y upgrade && \
     # Minimal distributions do not ship with en language packs.
     <%   locale = 'C.UTF-8' -%>
   <% else -%>
-    <%   base_image = 'ubuntu:20.04' -%>
+    <%   base_image = 'ubuntu:24.04' -%>
     <%   package_manager = 'apt-get' -%>
     <%   locale = 'en_US.UTF-8' -%>
     <%   arch_command = 'dpkg --print-architecture' -%>
@@ -159,6 +159,9 @@ RUN addgroup -g 1000 logstash && \
   --shell "/sbin/nologin" \
   --no-create-home \
   logstash
+<% elsif %w(full oss).include?(image_flavor)  -%>
+RUN userdel -r ubuntu && groupadd --gid 1000 logstash && \
+  useradd --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash
 <% else -%>
 RUN groupadd --gid 1000 logstash && \
   adduser --uid 1000 --gid 1000 --home /usr/share/logstash --no-create-home logstash

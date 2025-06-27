@@ -29,6 +29,6 @@ rake artifact:docker
 rake artifact:docker_oss
 ```
 
-This image is built on [Ubuntu 20.04][ubuntu-20.04].
+This image is built on [Ubuntu 24.04][ubuntu-24.04].
 
-[ubuntu-20.04]: https://hub.docker.com/_/ubuntu/
+[ubuntu-24.04]: https://hub.docker.com/_/ubuntu/
