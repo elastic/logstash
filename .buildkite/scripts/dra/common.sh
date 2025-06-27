@@ -11,7 +11,7 @@ function save_docker_tarballs {
     local arch="${1:?architecture required}"
     local version="${2:?stack-version required}"
     local images="logstash logstash-oss"
-    if [ "${arch}" != "aarch64" ]; then
+    if [ "${arch}" != "arm64" ]; then
         # No logstash-ubi8 for AARCH64
         images="logstash logstash-oss logstash-ubi8"
     fi
@@ -24,6 +24,22 @@ function save_docker_tarballs {
         # NOTE: if docker save exited with non-zero the error log already exited the script
         gzip "build/${tar_file}"
     done
+}
+
+
+# normalized $ARCH should be either "amd64" or "arm64"
+function normalize_arch {
+    case "$ARCH" in
+        x86_64|amd64)
+            ARCH="amd64"
+            ;;
+        aarch64|arm64)
+            ARCH="arm64"
+            ;;
+        *)
+            error "Unsupported architecture: $ARCH"
+            ;;
+    esac
 }
 
 # Since we are using the system jruby, we need to make sure our jvm process
