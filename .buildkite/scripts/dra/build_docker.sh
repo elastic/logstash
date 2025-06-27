@@ -29,6 +29,9 @@ rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
 info "Build complete, setting STACK_VERSION to $STACK_VERSION."
 
+# standardize $ARCH for image name
+normalize_arch
+
 info "Saving tar.gz for docker images"
 save_docker_tarballs "${ARCH}" "${STACK_VERSION}"
 
@@ -44,7 +47,7 @@ done
 
 # Upload 'docker-build-context.tar.gz' files only when build x86_64, otherwise they will be
 # overwritten when building aarch64 (or viceversa).
-if [ "$ARCH" != "aarch64" ]; then
+if [ "$ARCH" != "arm64" ]; then
     for image in logstash logstash-oss logstash-wolfi logstash-ironbank; do
         buildkite-agent artifact upload "build/${image}-${STACK_VERSION}-docker-build-context.tar.gz"
     done
