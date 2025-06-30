@@ -25,7 +25,7 @@ This section includes these topics:
 * Java 17 
 * Java 21 (default).
 
-Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or an open-source distribution, such as [OpenJDK](http://openjdk.java.net/). See the [Elastic Support Matrix](https://www.elastic.co/support/matrix#matrix_jvm) for the official word on supported versions across releases.
+Use the [official Oracle distribution](http://www.oracle.com/technetwork/java/javase/downloads/index.html) or an open-source distribution, such as [OpenJDK](http://openjdk.java.net/). The [Elastic Support Matrix](https://www.elastic.co/support/matrix#matrix_jvm) is the official word on supported versions across releases.
 
 ::::{admonition} Bundled JDK
 :class: note
