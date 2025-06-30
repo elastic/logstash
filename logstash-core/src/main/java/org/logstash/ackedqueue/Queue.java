@@ -30,11 +30,13 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.FileLockFactory;
@@ -63,6 +65,9 @@ public final class Queue implements Closeable {
     protected final List<Page> unreadTailPages;
 
     protected volatile long unreadCount;
+
+    // the readDemand is a record of the currently-waiting-reader's demand and expiry
+    private volatile ReadDemand readDemand;
 
     private final CheckpointIO checkpointIO;
     private final int pageCapacity;
@@ -428,6 +433,10 @@ public final class Queue implements Closeable {
                 throw new QueueRuntimeException(QueueExceptionMessages.BIGGER_DATA_THAN_PAGE_SIZE);
             }
 
+            // since a reader's batch cannot span multiple pages,
+            // we flag a force-flush when changing the head page.
+            boolean needsForceFlush = false;
+
             // create a new head page if the current does not have sufficient space left for data to be written
             if (!this.headPage.hasSpace(data.length)) {
 
@@ -446,13 +455,14 @@ public final class Queue implements Closeable {
 
                 // create new head page
                 newCheckpointedHeadpage(newHeadPageNum);
+                needsForceFlush = true;
             }
 
             long seqNum = this.seqNum += 1;
             this.headPage.write(data, seqNum, this.checkpointMaxWrites);
             this.unreadCount++;
 
-            notEmpty.signal();
+            maybeSignalReadDemand(needsForceFlush);
 
             // now check if we reached a queue full state and block here until it is not full
             // for the next write or the queue was closed.
@@ -647,7 +657,7 @@ public final class Queue implements Closeable {
                 boolean elapsed;
                 // a head page is fully read but can be written to so let's wait for more data
                 try {
-                    elapsed = !notEmpty.await(timeout, TimeUnit.MILLISECONDS);
+                    elapsed = !awaitReadDemand(timeout, left);
                 } catch (InterruptedException e) {
                     // set back the interrupted flag
                     Thread.currentThread().interrupt();
@@ -915,6 +925,41 @@ public final class Queue implements Closeable {
 
         private Batch deserialize() {
             return new Batch(elements, firstSeqNum, Queue.this);
+        }
+    }
+
+    private boolean awaitReadDemand(final long timeoutMillis, final int elementsNeeded) throws InterruptedException {
+        assert this.lock.isHeldByCurrentThread();
+
+        final long deadlineMillis = Math.addExact(System.currentTimeMillis(), timeoutMillis);
+        this.readDemand = new ReadDemand(deadlineMillis, elementsNeeded);
+
+        boolean unElapsed = this.notEmpty.awaitUntil(new Date(deadlineMillis));
+        this.readDemand = null;
+        return unElapsed;
+    }
+
+    private void maybeSignalReadDemand(boolean forceSignal) {
+        assert this.lock.isHeldByCurrentThread();
+
+        // if we're not forcing, and if the current read demand has
+        // neither been met nor expired, this method becomes a no-op.
+        if (!forceSignal && Objects.nonNull(readDemand)) {
+            if (unreadCount < readDemand.elementsNeeded && System.currentTimeMillis() < readDemand.deadlineMillis) {
+                return;
+            }
+        }
+
+        this.notEmpty.signal();
+    }
+
+    private static class ReadDemand {
+        final long deadlineMillis;
+        final int elementsNeeded;
+
+        ReadDemand(long deadlineMillis, int elementsNeeded) {
+            this.deadlineMillis = deadlineMillis;
+            this.elementsNeeded = elementsNeeded;
         }
     }
 }
