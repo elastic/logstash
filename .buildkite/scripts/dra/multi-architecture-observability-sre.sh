@@ -12,8 +12,8 @@ QUALIFIED_VERSION="$(INCLUDE_COMMIT_ID=1 .buildkite/scripts/common/qualified-ver
 REGISTRY_PATH=docker.elastic.co/logstash/logstash-observability-sre
 
 # Architecture-specific tags (created by the build steps)
-X86_64_TAG="${QUALIFIED_VERSION}-x86_64"
-AARCH64_TAG="${QUALIFIED_VERSION}-aarch64"
+X86_64_TAG="${QUALIFIED_VERSION}-amd64"
+AARCH64_TAG="${QUALIFIED_VERSION}-arm64"
 
 # Target manifest tags - already has SHA from QUALIFIED_VERSION
 VERSION_MANIFEST_TAG="${QUALIFIED_VERSION}"
