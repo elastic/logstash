@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.management.HotSpotDiagnosticMXBean;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
+import org.openjdk.jol.info.ClassLayout;
+import org.openjdk.jol.info.GraphLayout;
 
 import javax.management.MBeanServer;
 import java.io.IOException;
@@ -39,12 +41,12 @@ public final class EventSizeCalculationTest extends RubyTestBase {
 
     @Test
     public void compareDeeplyNestedEventSizeComputation() throws Exception {
-//        final Event e = createTestEvent();
+//        final Event e = createTestEvent(10, 5, MEDIUM_FILLING_STRING);
 
 //        ClassLayout classLayout = ClassLayout.parseInstance(e);
 //        System.out.println("Calculated object size: " + classLayout.instanceSize() + " bytes, CBOR size: " + cborSerialized.length);
 //        System.out.println(ClassLayout.parseInstance(e).toPrintable());
-//        long roughBytesEstimatedSize = eventWithSize.size;
+//        long roughBytesEstimatedSize = e.size;
 //        System.out.println("System -Djol.magicFieldOffset: " + System.getProperty("jol.magicFieldOffset"));
 //        System.out.println("System -Djdk.attach.allowAttachSelf: " + System.getProperty("jdk.attach.allowAttachSelf"));
 //        System.setProperty("jol.magicFieldOffset", "true");
@@ -60,6 +62,8 @@ public final class EventSizeCalculationTest extends RubyTestBase {
 //        ClassLayout classLayout = ClassLayout.parseInstance(event).instanceSize();
 //        String footprint = GraphLayout.parseInstance(event).toFootprint();
 //        System.out.println(footprint);
+//        long jolSize = GraphLayout.parseInstance(event).totalSize();
+//        System.out.println("JOL size: " + jolSize);
 //        System.out.println(GraphLayout.parseInstance(event).toPrintable());
         reportSizes(event);
 
@@ -72,13 +76,19 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         event = createNestedEvent(10, 5, LONG_FILLING_STRING);
         captureHeapDump("event_with_long_string.hprof");
         reportSizes(event);
+
+        System.out.println("Long string filling no ddep nesting");
+        event = createNestedEvent(10, 1, LONG_FILLING_STRING);
+        captureHeapDump("event_with_long_string_no_deep.hprof");
+        reportSizes(event);
     }
 
     private static void reportSizes(Event e) throws JsonProcessingException {
         byte[] cborSerialized = e.serialize();
         long roughBytesEstimatedSize = e.estimateMemory();
+        long jolSize = GraphLayout.parseInstance(e).totalSize();
 
-        System.out.println("Calculated object size: " + roughBytesEstimatedSize + " bytes, CBOR size: " + cborSerialized.length);
+        System.out.println("Calculated object size: " + roughBytesEstimatedSize + " bytes, CBOR size: " + cborSerialized.length + " JOL size: " + jolSize);
     }
 
     private Event createTestEvent() {

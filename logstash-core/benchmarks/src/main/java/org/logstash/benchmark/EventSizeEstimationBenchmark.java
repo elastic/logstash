@@ -7,6 +7,7 @@ import org.logstash.RubyUtil;
 import org.logstash.Timestamp;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
+import org.openjdk.jol.info.GraphLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +54,12 @@ public class EventSizeEstimationBenchmark {
     }
 
     @Benchmark
+    public final void jolMemoryEstimate(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(mediumEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
     public final void deepConvertedMapNavigation_longValues_2KB(Blackhole blackhole) {
         long size = longEvent.estimateMemory();
         blackhole.consume(size);
@@ -64,18 +71,28 @@ public class EventSizeEstimationBenchmark {
         blackhole.consume(cborSerialized);
     }
 
-//    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    @Benchmark
+    public final void jolMemoryEstimate_longValues_2KB(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(longEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
     @Benchmark
     public final void deepConvertedMapNavigation_longValues_2KB_noDeepNesting(Blackhole blackhole) {
         long size = longEvent_1_nestingLevel.estimateMemory();
         blackhole.consume(size);
     }
 
-//    @OutputTimeUnit(TimeUnit.MILLISECONDS)
     @Benchmark
     public final void cborSerializationEstimate_longValues_2KB_noDeepNesting(Blackhole blackhole) throws JsonProcessingException {
         byte[] cborSerialized = longEvent_1_nestingLevel.serialize();
         blackhole.consume(cborSerialized);
+    }
+
+    @Benchmark
+    public final void jolMemoryEstimate_longValues_2KB_noDeepNesting(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(longEvent_1_nestingLevel).totalSize();
+        blackhole.consume(jolSize);
     }
 
     private static Event createNestedEvent(int elementsPerLayer, int layer, String fillingString) {
