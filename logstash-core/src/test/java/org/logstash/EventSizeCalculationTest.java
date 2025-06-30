@@ -104,7 +104,7 @@ public final class EventSizeCalculationTest extends RubyTestBase {
     }
 
 
-    private Event createNestedEvent(int elementsPerLayer, int layer, String fillingString) {
+    private static Event createNestedEvent(int elementsPerLayer, int layer, String fillingString) {
         double totalElements = Math.pow(elementsPerLayer, layer);
         System.out.println("Total elements: " + totalElements);
 

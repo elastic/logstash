@@ -86,7 +86,7 @@ tasks.register("jmh", JavaExec) {
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
+            "-XX:+HeapDumpOnOutOfMemoryError", "-Xms8g", "-Xmx8g",
             shadowJar.archiveFile.get().asFile,
             include
     ]
