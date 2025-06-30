@@ -47,7 +47,7 @@ fi
 # See https://github.com/elastic/infra/blob/master/cd/release/release-manager/project-configs/8.5/logstash.gradle
 # for more details.
 # TODO filter it out when uploading artifacts instead
-rm -f build/logstash-ubi8-${STACK_VERSION}-docker-image-aarch64.tar.gz
+rm -f build/logstash-ubi8-${STACK_VERSION}-docker-image-arm64.tar.gz
 
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done

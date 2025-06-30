@@ -55,7 +55,7 @@ for file in build/logstash-*; do shasum $file;done
 info "Uploading DRA artifacts in buildkite's artifact store ..."
 # Note the deb, rpm tar.gz AARCH64 files generated has already been loaded by the build_packages.sh
 images="logstash logstash-oss logstash-wolfi"
-if [ "$ARCH" != "aarch64" ]; then
+if [ "$ARCH" != "arm64" ]; then
     # No logstash-ubi8 for AARCH64
     images="logstash logstash-oss logstash-wolfi logstash-ubi8"
 fi
