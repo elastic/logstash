@@ -19,7 +19,6 @@
 
 package org.logstash.common;
 
-import org.jruby.RubyArray;
 import org.jruby.RubyEncoding;
 import org.jruby.RubyString;
 import org.jruby.runtime.ThreadContext;
@@ -29,6 +28,7 @@ import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -49,44 +49,54 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
         sut.init(context, args);
     }
 
+    private static List<String> toList(Iterable<RubyString> it) {
+        List<String> l = new ArrayList<>();
+        it.forEach(e -> l.add(e.toString()));
+        return l;
+    }
+
+    private static List<String> toList(IRubyObject it) {
+        return toList(it.toJava(Iterable.class));
+    }
+
     @Test
     public void shouldTokenizeASingleToken() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\n"));
+        List<String> tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("foo\n")));
 
         assertEquals(List.of("foo"), tokens);
     }
 
     @Test
     public void shouldMergeMultipleToken() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo"));
+        List<String> tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("foo")));
         assertTrue(tokens.isEmpty());
 
-        tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("bar\n"));
+        tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("bar\n")));
         assertEquals(List.of("foobar"), tokens);
     }
 
     @Test
     public void shouldTokenizeMultipleToken() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar\n"));
+        List<String> tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("foo\nbar\n")));
 
         assertEquals(List.of("foo", "bar"), tokens);
     }
 
     @Test
     public void shouldIgnoreEmptyPayload() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString(""));
+        List<String> tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("")));
         assertTrue(tokens.isEmpty());
 
-        tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("foo\nbar"));
+        tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("foo\nbar")));
         assertEquals(List.of("foo"), tokens);
     }
 
     @Test
     public void shouldTokenizeEmptyPayloadWithNewline() {
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n"));
+        List<String> tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("\n")));
         assertEquals(List.of(""), tokens);
 
-        tokens = (RubyArray<RubyString>) sut.extract(context, RubyUtil.RUBY.newString("\n\n\n"));
+        tokens = toList(sut.extract(context, RubyUtil.RUBY.newString("\n\n\n")));
         assertEquals(List.of("", "", ""), tokens);
     }
 
@@ -94,10 +104,10 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
     public void shouldNotChangeEncodingOfTokensAfterPartitioning() {
         RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
         IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
+        Iterable<RubyString> tokens = sut.extract(context, rubyInput).toJava(Iterable.class);
 
         // read the first token, the £ string
-        IRubyObject firstToken = tokens.shift(context);
+        RubyString firstToken = tokens.iterator().next();
         assertEquals("£", firstToken.toString());
 
         // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
@@ -112,13 +122,13 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
         sut.extract(context, rubyInput);
         IRubyObject capitalAInLatin1 = RubyString.newString(RUBY, new byte[]{(byte) 0x41})
                 .force_encoding(context, RUBY.newString("ISO8859-1"));
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, capitalAInLatin1);
-        assertTrue(tokens.isEmpty());
+        List<String> tokensJava = toList(sut.extract(context, capitalAInLatin1));
+        assertTrue(tokensJava.isEmpty());
 
-        tokens = (RubyArray<RubyString>)sut.extract(context, RubyString.newString(RUBY, new byte[]{(byte) 0x0A}));
+        Iterable<RubyString> tokens = sut.extract(context, RubyString.newString(RUBY, new byte[]{(byte) 0x0A})).toJava(Iterable.class);
 
         // read the first token, the £ string
-        IRubyObject firstToken = tokens.shift(context);
+        RubyString firstToken = tokens.iterator().next();
         assertEquals("£A", firstToken.toString());
 
         // verify encoding "ISO8859-1" is preserved in the Java to Ruby String conversion
@@ -130,10 +140,10 @@ public final class BufferedTokenizerExtTest extends RubyTestBase {
     public void shouldNotChangeEncodingOfTokensAfterPartitioningWhenRetrieveLastFlushedToken() {
         RubyString rubyString = RubyString.newString(RUBY, new byte[]{(byte) 0xA3, 0x0A, 0x41}); // £ character, newline, A
         IRubyObject rubyInput = rubyString.force_encoding(context, RUBY.newString("ISO8859-1"));
-        RubyArray<RubyString> tokens = (RubyArray<RubyString>)sut.extract(context, rubyInput);
+        Iterable<RubyString> tokens = sut.extract(context, rubyInput).toJava(Iterable.class);
 
         // read the first token, the £ string
-        IRubyObject firstToken = tokens.shift(context);
+        RubyString firstToken = tokens.iterator().next();
         assertEquals("£", firstToken.toString());
 
         // flush and check that the remaining A is still encoded in ISO8859-1
