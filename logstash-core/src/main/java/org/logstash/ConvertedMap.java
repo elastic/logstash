@@ -176,25 +176,25 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return 1;
         }
         if (o instanceof Byte) {
-            return Byte.SIZE;
+            return Byte.SIZE / Byte.SIZE;
         }
         if (o instanceof Short) {
-            return Short.SIZE;
+            return Short.SIZE / Byte.SIZE;
         }
         if (o instanceof Integer) {
-            return Integer.SIZE;
+            return Integer.SIZE / Byte.SIZE;
         }
         if (o instanceof Long) {
-            return Long.SIZE;
+            return Long.SIZE / Byte.SIZE;
         }
         if (o instanceof Float) {
-            return Float.SIZE;
+            return Float.SIZE / Byte.SIZE;
         }
         if (o instanceof Double) {
-            return Double.SIZE;
+            return Double.SIZE / Byte.SIZE;
         }
         if (o instanceof Character) {
-            return Character.SIZE;
+            return Character.SIZE / Byte.SIZE;
         }
         if (o instanceof String) {
             return ((String) o).getBytes().length;
@@ -202,7 +202,6 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof RubyString) {
             return ((RubyString) o).getBytes().length;
         }
-
 
         if (o instanceof Collection) {
             Collection c = (Collection) o;
@@ -247,6 +246,13 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             RubyBigDecimal rbd = (RubyBigDecimal) o;
             // wraps a Java BigDecimal so we can return the size of that:
             return estimateMemory(rbd.getValue());
+        }
+        if (o instanceof RubyFixnum) {
+            // like an int value
+            return Integer.SIZE / Byte.SIZE;
+        }
+        if (o instanceof RubyBoolean) {
+            return Byte.SIZE / Byte.SIZE;
         }
 
         // TODO primitive type arrays?

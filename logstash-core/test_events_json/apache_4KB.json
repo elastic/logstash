@@ -1,0 +1,28 @@
+{
+  "clientip": "192.168.1.10",
+  "ident": "-",
+  "auth": "johndoe",
+  "timestamp": "01/Jul/2025:16:00:30 +0000",
+  "verb": "POST",
+  "request": "/search?q=cloud+logging+apache+performance+testing+scalability+logstash+json+structure+format+parsing+headers+configuration+best+practices+with+multiple+parameters+and+longer+queries+including+extra+complex+options+for+stress+testing+logstash+parsing+with+many+fields+and+large+data&lang=en&limit=200&page=5&sort=asc&filter=active&country=us&user_id=123456&session_id=abcdef1234567890abcdef1234567890abcdef&tracking_id=track-0987654321abcdef0987654321abcdef&extra_param_1=value1&extra_param_2=value2&extra_param_3=value3&extra_param_4=value4&extra_param_5=value5&extra_param_6=value6&extra_param_7=value7&extra_param_8=value8&extra_param_9=value9&extra_param_10=value10&extra_param_11=value11&extra_param_12=value12",
+  "httpversion": "1.1",
+  "response": "200",
+  "bytes": "3456",
+  "referrer": "https://www.example.com/ref?q=logtest&session=123456&trackid=track-9876543210abcdef9876543210abcdef",
+  "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "headers": {
+    "X-Forwarded-For": "203.0.113.42, 198.51.100.15, 192.0.2.123",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Request-ID": "req-abcdef1234567890abcdef1234567890",
+    "X-Frame-Options": "DENY",
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff",
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
+  },
+  "message": "192.168.1.10 - johndoe [01/Jul/2025:16:00:30 +0000] \"POST /search?q=cloud+logging+apache+performance+testing+scalability+logstash+json+structure+format+parsing+headers+configuration+best+practices+with+multiple+parameters+and+longer+queries+including+extra+complex+options+for+stress+testing+logstash+parsing+with+many+fields+and+large+data&lang=en&limit=200&page=5&sort=asc&filter=active&country=us&user_id=123456&session_id=abcdef1234567890abcdef1234567890abcdef&tracking_id=track-0987654321abcdef0987654321abcdef&extra_param_1=value1&extra_param_2=value2&extra_param_3=value3&extra_param_4=value4&extra_param_5=value5&extra_param_6=value6&extra_param_7=value7&extra_param_8=value8&extra_param_9=value9&extra_param_10=value10&extra_param_11=value11&extra_param_12=value12 HTTP/1.1\" 200 3456 \"https://www.example.com/ref?q=logtest&session=123456&trackid=track-9876543210abcdef9876543210abcdef\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\" \"X-Forwarded-For: 203.0.113.42, 198.51.100.15, 192.0.2.123; Referrer-Policy: strict-origin-when-cross-origin; X-Request-ID: req-abcdef1234567890abcdef1234567890; X-Frame-Options: DENY; Content-Type: application/json; X-Content-Type-Options: nosniff; Cache-Control: no-cache, no-store, must-revalidate; Pragma: no-cache; Expires: 0\"",
+  "logsource": "apache_access",
+  "event_type": "access",
+  "@timestamp": "2025-07-01T16:00:30Z"
+}

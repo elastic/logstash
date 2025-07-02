@@ -1,0 +1,97 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDACKCEVSQ6C2EXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/SecurityAdmin",
+        "accountId": "123456789012",
+        "userName": "SecurityAdmin"
+      },
+      "eventTime": "2025-07-01T14:22:59Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "ModifyInstanceAttribute",
+      "awsRegion": "us-west-1",
+      "sourceIPAddress": "203.0.113.25",
+      "userAgent": "aws-sdk-java/1.12.500 Linux/5.10",
+      "requestParameters": {
+        "instanceId": "i-02468ace13579bdf0",
+        "attribute": "instanceType",
+        "value": "t3.large",
+        "blockDeviceMappings": [
+          {
+            "deviceName": "/dev/xvda",
+            "ebs": {
+              "deleteOnTermination": true,
+              "volumeId": "vol-0123456789abcdef0"
+            }
+          },
+          {
+            "deviceName": "/dev/xvdb",
+            "ebs": {
+              "deleteOnTermination": false,
+              "volumeId": "vol-fedcba9876543210"
+            }
+          }
+        ],
+        "disableApiTermination": {
+          "value": false
+        }
+      },
+      "responseElements": {
+        "return": true,
+        "status": "Attribute modification successful"
+      },
+      "requestID": "b4f362e7-3e94-40b5-a9fd-b9a8efbc5555",
+      "eventID": "cdba9876-5432-10fe-9abc-d1234567890a",
+      "readOnly": false,
+      "resources": [
+        {
+          "ARN": "arn:aws:ec2:us-west-1:123456789012:instance/i-02468ace13579bdf0",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Instance"
+        },
+        {
+          "ARN": "arn:aws:ec2:us-west-1:123456789012:volume/vol-0123456789abcdef0",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Volume"
+        },
+        {
+          "ARN": "arn:aws:ec2:us-west-1:123456789012:volume/vol-fedcba9876543210",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Volume"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES256-GCM-SHA384",
+        "clientProvidedHostHeader": "ec2.amazonaws.com"
+      },
+      "additionalEventData": {
+        "LoginTo": "Console",
+        "MobileVersion": "No",
+        "MFAUsed": "Yes",
+        "sessionCredentialFromConsole": "true",
+        "instanceProfileUsed": "arn:aws:iam::123456789012:instance-profile/WebServerRole",
+        "vpcId": "vpc-0a1b2c3d",
+        "subnetId": "subnet-1234abcd",
+        "platform": "Linux/UNIX",
+        "availabilityZone": "us-west-1a",
+        "isViaAWSService": false,
+        "networkInterfaceId": "eni-0abc123def456gh78"
+      },
+      "serviceEventDetails": {
+        "eventContext": {
+          "executionEnvironment": "AWS Internal API",
+          "targetService": "ec2.amazonaws.com",
+          "apiVersion": "2016-11-15"
+        }
+      }
+    }
+  ]
+}

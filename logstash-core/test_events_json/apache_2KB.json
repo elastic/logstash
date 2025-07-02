@@ -1,0 +1,25 @@
+{
+  "clientip": "192.168.1.10",
+  "ident": "-",
+  "auth": "johndoe",
+  "timestamp": "01/Jul/2025:15:45:20 +0000",
+  "verb": "POST",
+  "request": "/search?q=cloud+logging+apache+performance+testing+scalability+logstash+json+structure+format+parsing+headers+configuration+best+practices+with+multiple+parameters+and+longer+queries&lang=en&limit=100&page=10&sort=asc&filter=active&country=us&user_id=123456&session_id=abcdef1234567890abcdef1234567890abcdef&tracking_id=track-0987654321abcdef0987654321abcdef&extra_param_1=value1&extra_param_2=value2&extra_param_3=value3&extra_param_4=value4&extra_param_5=value5",
+  "httpversion": "1.1",
+  "response": "200",
+  "bytes": "2345",
+  "referrer": "https://www.example.com/ref?q=logtest&session=123456&trackid=track-9876543210abcdef9876543210abcdef",
+  "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "headers": {
+    "X-Forwarded-For": "203.0.113.42, 198.51.100.15",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Request-ID": "req-abcdef1234567890abcdef1234567890",
+    "X-Frame-Options": "DENY",
+    "Content-Type": "application/json",
+    "X-Content-Type-Options": "nosniff"
+  },
+  "message": "192.168.1.10 - johndoe [01/Jul/2025:15:45:20 +0000] \"POST /search?q=cloud+logging+apache+performance+testing+scalability+logstash+json+structure+format+parsing+headers+configuration+best+practices+with+multiple+parameters+and+longer+queries&lang=en&limit=100&page=10&sort=asc&filter=active&country=us&user_id=123456&session_id=abcdef1234567890abcdef1234567890abcdef&tracking_id=track-0987654321abcdef0987654321abcdef&extra_param_1=value1&extra_param_2=value2&extra_param_3=value3&extra_param_4=value4&extra_param_5=value5 HTTP/1.1\" 200 2345 \"https://www.example.com/ref?q=logtest&session=123456&trackid=track-9876543210abcdef9876543210abcdef\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\" \"X-Forwarded-For: 203.0.113.42, 198.51.100.15; Referrer-Policy: strict-origin-when-cross-origin; X-Request-ID: req-abcdef1234567890abcdef1234567890; X-Frame-Options: DENY; Content-Type: application/json; X-Content-Type-Options: nosniff\"",
+  "logsource": "apache_access",
+  "event_type": "access",
+  "@timestamp": "2025-07-01T15:45:20Z"
+}

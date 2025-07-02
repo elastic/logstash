@@ -1,0 +1,57 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDACKCEVSQ6C2EXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/DevUser",
+        "accountId": "123456789012",
+        "userName": "DevUser"
+      },
+      "eventTime": "2025-07-01T12:00:00Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "StartInstances",
+      "awsRegion": "us-west-2",
+      "sourceIPAddress": "192.0.2.10",
+      "userAgent": "aws-cli/2.11.4",
+      "requestParameters": {
+        "instancesSet": {
+          "items": [
+            { "instanceId": "i-0abcdef1234567890" }
+          ]
+        }
+      },
+      "responseElements": {
+        "startingInstances": [
+          {
+            "instanceId": "i-0abcdef1234567890",
+            "currentState": {
+              "code": 0,
+              "name": "pending"
+            },
+            "previousState": {
+              "code": 80,
+              "name": "stopped"
+            }
+          }
+        ]
+      },
+      "requestID": "a1b2c3d4-e5f6-7890-1234-56789abcdef0",
+      "eventID": "11111111-2222-3333-4444-555555555555",
+      "readOnly": false,
+      "resources": [
+        {
+          "ARN": "arn:aws:ec2:us-west-2:123456789012:instance/i-0abcdef1234567890",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Instance"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012",
+      "sharedEventID": "66666666-7777-8888-9999-000000000000",
+      "eventCategory": "Management"
+    }
+  ]
+}

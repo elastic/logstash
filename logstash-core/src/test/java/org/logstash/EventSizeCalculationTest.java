@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.management.HotSpotDiagnosticMXBean;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
-import org.openjdk.jol.info.ClassLayout;
 import org.openjdk.jol.info.GraphLayout;
 
 import javax.management.MBeanServer;
@@ -12,6 +11,11 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,18 +43,103 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         }
     }
 
+    private final static class SizeReport {
+        final long raw;
+        final long mapEstimated;
+        final long cbor;
+        final long jol;
+
+        private SizeReport(long raw, long mapEstimated, long cbor, long jol) {
+            this.raw = raw;
+            this.mapEstimated = mapEstimated;
+            this.cbor = cbor;
+            this.jol = jol;
+        }
+    }
+
+    @Test
+    public void compareAlmostRealisticEventSizeComputation() throws Exception {
+        Map<String, SizeReport> reports = new HashMap<>();
+        EventAndSize es = createTestEvent(Paths.get("test_events_json/apache_1KB.json"));
+        captureHeapDump("event_with_apache1KB.hprof");
+        reports.put("apache 1KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/apache_2KB.json"));
+        captureHeapDump("event_with_apache2KB.hprof");
+        reports.put("apache 2KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/apache_4KB.json"));
+        captureHeapDump("event_with_apache4KB.hprof");
+        reports.put("apache 4KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudTrail_1KB.json"));
+        captureHeapDump("event_with_cloudTrail1KB.hprof");
+        reports.put("cloudTrail 1KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudTrail_2KB.json"));
+        captureHeapDump("event_with_cloudTrail2KB.hprof");
+        reports.put("cloudTrail 2KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudTrail_4KB.json"));
+        captureHeapDump("event_with_cloudTrail4KB.hprof");
+        reports.put("cloudTrail 4KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_1KB.json"));
+        captureHeapDump("event_with_snmp1KB.hprof");
+        reports.put("snmp 1KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_2KB.json"));
+        captureHeapDump("event_with_snmp2KB.hprof");
+        reports.put("snmp 2KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_4KB.json"));
+        captureHeapDump("event_with_snmp4KB.hprof");
+        reports.put("snmp 4KB", reportSizes(es));
+
+        printReport(reports);
+    }
+
+    private void printReport(Map<String, SizeReport> reports) {
+        System.out.println("| testName |  raw | map navigation |  cbor  | jol (retained)|");
+        System.out.println("|----------|------|----------------|--------|---------------|");
+        reports.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
+            String testName = entry.getKey();
+            SizeReport report = entry.getValue();
+            String estimatedDelta = gainLossAgainstRawSize(report, report.mapEstimated);
+            String cborDelta = gainLossAgainstRawSize(report, report.cbor);
+
+            System.out.println("|" + testName + "|" + report.raw + "|" + report.mapEstimated + "(" + estimatedDelta + ")|" + report.cbor + "(" + cborDelta + ")|" + report.jol + "|");
+        });
+    }
+
+    private static String gainLossAgainstRawSize(SizeReport report, long value) {
+        double estimatedDelta = (double)(value - report.raw) / report.raw;
+        BigDecimal bd = new BigDecimal(estimatedDelta * 100)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        return bd.toPlainString() + "%";
+    }
+
+    private static SizeReport reportSizes(EventAndSize es) throws JsonProcessingException {
+        byte[] cborSerialized = es.event.serialize();
+        long roughBytesEstimatedSize = es.event.estimateMemory();
+        long jolSize = GraphLayout.parseInstance(es.event).totalSize();
+        return new SizeReport(es.size, roughBytesEstimatedSize, cborSerialized.length, jolSize);
+    }
+
+    @SuppressWarnings("unchecked")
+    private EventAndSize createTestEvent(Path jsonEventTemplateFile) throws IOException {
+        byte[] content = Files.readAllBytes(jsonEventTemplateFile);
+        String jsonContent = new String(content, StandardCharsets.UTF_8);
+        Map<String, Object> jsonEvent = ObjectMappers.JSON_MAPPER.readValue(jsonContent, Map.class);
+        Event event = new Event(jsonEvent);
+        event.setField("timestamp", new Timestamp());
+
+        return new EventAndSize(event, content.length);
+    }
+
     @Test
     public void compareDeeplyNestedEventSizeComputation() throws Exception {
-//        final Event e = createTestEvent(10, 5, MEDIUM_FILLING_STRING);
-
-//        ClassLayout classLayout = ClassLayout.parseInstance(e);
-//        System.out.println("Calculated object size: " + classLayout.instanceSize() + " bytes, CBOR size: " + cborSerialized.length);
-//        System.out.println(ClassLayout.parseInstance(e).toPrintable());
-//        long roughBytesEstimatedSize = e.size;
-//        System.out.println("System -Djol.magicFieldOffset: " + System.getProperty("jol.magicFieldOffset"));
-//        System.out.println("System -Djdk.attach.allowAttachSelf: " + System.getProperty("jdk.attach.allowAttachSelf"));
-//        System.setProperty("jol.magicFieldOffset", "true");
-
         long maxHeapBytes = Runtime.getRuntime().maxMemory();
         long maxHeapMB = maxHeapBytes / (1024 * 1024);
 
@@ -59,12 +148,6 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         System.out.println("Short string filling");
         Event event = createNestedEvent(10, 5, SHORT_FILLING_STRING);
         captureHeapDump("event_with_short_string.hprof");
-//        ClassLayout classLayout = ClassLayout.parseInstance(event).instanceSize();
-//        String footprint = GraphLayout.parseInstance(event).toFootprint();
-//        System.out.println(footprint);
-//        long jolSize = GraphLayout.parseInstance(event).totalSize();
-//        System.out.println("JOL size: " + jolSize);
-//        System.out.println(GraphLayout.parseInstance(event).toPrintable());
         reportSizes(event);
 
         System.out.println("Medium string filling");
@@ -141,7 +224,6 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         }
         return map;
     }
-
 
     private void captureHeapDump(String dumpPath) throws IOException {
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
