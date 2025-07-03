@@ -20,27 +20,37 @@ require "spec_helper"
 describe  FileWatch::BufferedTokenizer  do
   subject { FileWatch::BufferedTokenizer.new }
 
+
+  # A matcher that ensures the result of BufferedTokenizer#extract "quacks like" an expected ruby Array in two respects:
+  #  - #empty? -> boolean: true indicates that the _next_ Enumerable#each will emit zero items.
+  #  - #entries -> Array: the ordered entries
+  def emit_exactly(expected_array)
+    # note: order matters; Iterator#each and the methods that delegate to it consume the iterator
+    have_attributes(:empty? => expected_array.empty?,
+                    :entries => expected_array.entries) # consumes iterator, must be done last
+  end
+
   it "should tokenize a single token" do
-    expect(subject.extract("foo\n")).to eq(["foo"])
+    expect(subject.extract("foo\n")).to emit_exactly(["foo"])
   end
 
   it "should merge multiple token" do
-    expect(subject.extract("foo")).to eq([])
-    expect(subject.extract("bar\n")).to eq(["foobar"])
+    expect(subject.extract("foo")).to emit_exactly([])
+    expect(subject.extract("bar\n")).to emit_exactly(["foobar"])
   end
 
   it "should tokenize multiple token" do
-    expect(subject.extract("foo\nbar\n")).to eq(["foo", "bar"])
+    expect(subject.extract("foo\nbar\n")).to emit_exactly(["foo", "bar"])
   end
 
   it "should ignore empty payload" do
-    expect(subject.extract("")).to eq([])
-    expect(subject.extract("foo\nbar")).to eq(["foo"])
+    expect(subject.extract("")).to emit_exactly([])
+    expect(subject.extract("foo\nbar")).to emit_exactly(["foo"])
   end
 
   it "should tokenize empty payload with newline" do
-    expect(subject.extract("\n")).to eq([""])
-    expect(subject.extract("\n\n\n")).to eq(["", "", ""])
+    expect(subject.extract("\n")).to emit_exactly([""])
+    expect(subject.extract("\n\n\n")).to emit_exactly(["", "", ""])
   end
 
   describe 'flush' do
@@ -83,12 +93,12 @@ describe  FileWatch::BufferedTokenizer  do
     let(:delimiter) { "||" }
 
     it "should tokenize multiple token" do
-      expect(subject.extract("foo||b|r||")).to eq(["foo", "b|r"])
+      expect(subject.extract("foo||b|r||")).to emit_exactly(["foo", "b|r"])
     end
 
     it "should ignore empty payload" do
-      expect(subject.extract("")).to eq([])
-      expect(subject.extract("foo||bar")).to eq(["foo"])
+      expect(subject.extract("")).to emit_exactly([])
+      expect(subject.extract("foo||bar")).to emit_exactly(["foo"])
     end
   end
 end
