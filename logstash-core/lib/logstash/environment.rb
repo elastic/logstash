@@ -47,8 +47,8 @@ module LogStash
            Setting::Boolean.new("metric.collect", true),
             Setting::SettingString.new("pipeline.id", "main"),
            Setting::Boolean.new("pipeline.system", false),
-   Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
-   Setting::PositiveInteger.new("pipeline.batch.size", 125),
+   Setting::SettingPositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
+   Setting::SettingPositiveInteger.new("pipeline.batch.size", 125),
            Setting::SettingNumeric.new("pipeline.batch.delay", 50), # in milliseconds
            Setting::Boolean.new("pipeline.unsafe_shutdown", false),
            Setting::Boolean.new("pipeline.reloadable", true),
