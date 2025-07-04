@@ -68,10 +68,6 @@
 #   # Default is 1024, 0 for unlimited
 #   queue.checkpoint.writes: 1024
 #
-#   # If using queue.type: persisted, the interval in milliseconds when a checkpoint is forced on the head page
-#   # Default is 1000, 0 for no periodic checkpoint.
-#   queue.checkpoint.interval: 1000
-#
 #   # Enable Dead Letter Queueing for this pipeline.
 #   dead_letter_queue.enable: false
 #

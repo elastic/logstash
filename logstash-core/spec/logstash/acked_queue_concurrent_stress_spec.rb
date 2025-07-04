@@ -29,7 +29,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue) do
-      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, queue_checkpoint_interval, false, queue_capacity)
+      described_class.new(path, page_capacity, 0, queue_checkpoint_acks, queue_checkpoint_writes, false, queue_capacity)
     end
 
     let(:writer_threads) do
@@ -138,7 +138,6 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     let(:queue_capacity_multiplier) { 128 }
     let(:queue_checkpoint_acks) { 1024 }
     let(:queue_checkpoint_writes) { 1024 }
-    let(:queue_checkpoint_interval) { 1000 }
     let(:batch_size) { 500 }
     let(:batch_wait) { 1000 }
     let(:expected_count) { 60000 }
@@ -180,12 +179,12 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
       end
 
       context "> larger checkpoint interval <" do
-        let(:queue_checkpoint_interval) { 3000 }
+        
         it_behaves_like "a well behaved queue"
       end
 
       context "> smaller checkpoint interval <" do
-        let(:queue_checkpoint_interval) { 500 }
+        
         it_behaves_like "a well behaved queue"
       end
 
@@ -256,12 +255,12 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
       end
 
       context "> larger checkpoint interval <" do
-        let(:queue_checkpoint_interval) { 3000 }
+        
         it_behaves_like "a well behaved queue"
       end
 
       context "> smaller checkpoint interval <" do
-        let(:queue_checkpoint_interval) { 500 }
+        
         it_behaves_like "a well behaved queue"
       end
 

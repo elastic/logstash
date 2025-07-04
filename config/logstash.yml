@@ -223,10 +223,6 @@
 #
 # queue.checkpoint.writes: 1024
 #
-# If using queue.type: persisted, the interval in milliseconds when a checkpoint is forced on the head page
-# Default is 1000, 0 for no periodic checkpoint.
-#
-# queue.checkpoint.interval: 1000
 #
 # ------------ Dead-Letter Queue Settings --------------
 # Flag to turn on dead-letter queue.
