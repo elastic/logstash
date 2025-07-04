@@ -72,17 +72,41 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         captureHeapDump("event_with_apache4KB.hprof");
         reports.put("apache 4KB", reportSizes(es));
 
-        es = createTestEvent(Paths.get("test_events_json/cloudTrail_1KB.json"));
+        es = createTestEvent(Paths.get("test_events_json/apache_16KB.json"));
+        captureHeapDump("event_with_apache16KB.hprof");
+        reports.put("apache 16KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/apache_32KB.json"));
+        captureHeapDump("event_with_apache32KB.hprof");
+        reports.put("apache 32KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/apache_128KB.json"));
+        captureHeapDump("event_with_apache128KB.hprof");
+        reports.put("apache 128KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_1KB.json"));
         captureHeapDump("event_with_cloudTrail1KB.hprof");
         reports.put("cloudTrail 1KB", reportSizes(es));
 
-        es = createTestEvent(Paths.get("test_events_json/cloudTrail_2KB.json"));
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_2KB.json"));
         captureHeapDump("event_with_cloudTrail2KB.hprof");
         reports.put("cloudTrail 2KB", reportSizes(es));
 
-        es = createTestEvent(Paths.get("test_events_json/cloudTrail_4KB.json"));
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_4KB.json"));
         captureHeapDump("event_with_cloudTrail4KB.hprof");
         reports.put("cloudTrail 4KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_16KB.json"));
+        captureHeapDump("event_with_cloudTrail16KB.hprof");
+        reports.put("cloudTrail 16KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_32KB.json"));
+        captureHeapDump("event_with_cloudTrail32KB.hprof");
+        reports.put("cloudTrail 32KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/cloudtrail_128KB.json"));
+        captureHeapDump("event_with_cloudTrail128KB.hprof");
+        reports.put("cloudTrail 128KB", reportSizes(es));
 
         es = createTestEvent(Paths.get("test_events_json/snmp_1KB.json"));
         captureHeapDump("event_with_snmp1KB.hprof");
@@ -95,6 +119,18 @@ public final class EventSizeCalculationTest extends RubyTestBase {
         es = createTestEvent(Paths.get("test_events_json/snmp_4KB.json"));
         captureHeapDump("event_with_snmp4KB.hprof");
         reports.put("snmp 4KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_16KB.json"));
+        captureHeapDump("event_with_snmp16KB.hprof");
+        reports.put("snmp 16KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_32KB.json"));
+        captureHeapDump("event_with_snmp32KB.hprof");
+        reports.put("snmp 32KB", reportSizes(es));
+
+        es = createTestEvent(Paths.get("test_events_json/snmp_128KB.json"));
+        captureHeapDump("event_with_snmp128KB.hprof");
+        reports.put("snmp 128KB", reportSizes(es));
 
         printReport(reports);
     }
