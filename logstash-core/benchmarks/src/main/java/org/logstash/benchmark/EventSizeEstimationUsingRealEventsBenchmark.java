@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit;
 * */
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 10, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(Scope.Thread)
+@State(Scope.Benchmark)
 public class EventSizeEstimationUsingRealEventsBenchmark {
 
     private Event apache1KBEvent;

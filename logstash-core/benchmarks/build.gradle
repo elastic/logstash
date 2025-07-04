@@ -89,6 +89,25 @@ tasks.register("jmh", JavaExec) {
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
             "-Djol.magicFieldOffset=true",
             "-XX:+HeapDumpOnOutOfMemoryError", "-Xms8g", "-Xmx8g",
+
+            "-Djruby.compile.invokedynamic=true",
+            "-XX:+HeapDumpOnOutOfMemoryError",
+            "-Djava.security.egd=file:/dev/urandom",
+            "-Dlog4j2.isThreadContextMapInheritable=true",
+            "-Djruby.regexp.interruptible=true",
+            "-Djdk.io.File.enableADS=true",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            "--add-opens=java.base/java.security=ALL-UNNAMED",
+            "--add-opens=java.base/java.io=ALL-UNNAMED",
+            "--add-opens=java.base/java.nio.channels=ALL-UNNAMED",
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+            "--add-opens=java.management/sun.management=ALL-UNNAMED",
+            "-Dio.netty.allocator.maxOrder=11",
+
             shadowJar.archiveFile.get().asFile,
             include
     ]
