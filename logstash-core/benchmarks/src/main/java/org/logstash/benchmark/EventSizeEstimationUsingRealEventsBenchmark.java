@@ -37,20 +37,38 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
     private Event snmp1KBEvent;
     private Event snmp2KBEvent;
     private Event snmp4KBEvent;
+    private Event apache16KBEvent;
+    private Event apache32KBEvent;
+    private Event apache128KBEvent;
+    private Event cloudTrail16KBEvent;
+    private Event cloudTrail32KBEvent;
+    private Event cloudTrail128KBEvent;
+    private Event snmp16KBEvent;
+    private Event snmp32KBEvent;
+    private Event snmp128KBEvent;
 
     @Setup(Level.Invocation)
     public void setUp() throws IOException {
         apache1KBEvent = createTestEvent(Paths.get("../test_events_json/apache_1KB.json"));
         apache2KBEvent = createTestEvent(Paths.get("../test_events_json/apache_2KB.json"));
         apache4KBEvent = createTestEvent(Paths.get("../test_events_json/apache_4KB.json"));
+        apache16KBEvent = createTestEvent(Paths.get("../test_events_json/apache_16KB.json"));
+        apache32KBEvent = createTestEvent(Paths.get("../test_events_json/apache_32KB.json"));
+        apache128KBEvent = createTestEvent(Paths.get("../test_events_json/apache_128KB.json"));
 
         cloudTrail1KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_1KB.json"));
         cloudTrail2KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_2KB.json"));
         cloudTrail4KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_4KB.json"));
+        cloudTrail16KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_16KB.json"));
+        cloudTrail32KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_32KB.json"));
+        cloudTrail128KBEvent = createTestEvent(Paths.get("../test_events_json/cloudtrail_128KB.json"));
 
         snmp1KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_1KB.json"));
         snmp2KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_2KB.json"));
         snmp4KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_4KB.json"));
+        snmp16KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_16KB.json"));
+        snmp32KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_32KB.json"));
+        snmp128KBEvent = createTestEvent(Paths.get("../test_events_json/snmp_128KB.json"));
     }
 
     @SuppressWarnings("unchecked")
@@ -122,6 +140,63 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
     }
 
     @Benchmark
+    public final void apache16KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = apache16KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void apache16KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = apache16KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void apache16KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(apache16KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void apache32KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = apache32KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void apache32KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = apache32KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void apache32KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(apache32KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void apache128KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = apache128KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void apache128KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = apache128KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void apache128KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(apache128KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
     public final void cloudTrail1KBConvertedMapNavigation(Blackhole blackhole) {
         long size = cloudTrail1KBEvent.estimateMemory();
         blackhole.consume(size);
@@ -175,6 +250,63 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
     @Benchmark
     public final void cloudTrail4KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
         long jolSize = GraphLayout.parseInstance(cloudTrail4KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void cloudTrail16KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = cloudTrail16KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void cloudTrail16KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = cloudTrail16KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void cloudTrail16KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(cloudTrail16KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void cloudTrail32KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = cloudTrail32KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void cloudTrail32KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = cloudTrail32KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void cloudTrail32KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(cloudTrail32KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void cloudTrail128KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = cloudTrail128KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void cloudTrail128KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = cloudTrail128KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void cloudTrail128KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(cloudTrail128KBEvent).totalSize();
         blackhole.consume(jolSize);
     }
     
@@ -232,6 +364,63 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
     @Benchmark
     public final void snmp4KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
         long jolSize = GraphLayout.parseInstance(snmp4KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void snmp16KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = snmp16KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void snmp16KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = snmp16KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void snmp16KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(snmp16KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void snmp32KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = snmp32KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void snmp32KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = snmp32KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void snmp32KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(snmp32KBEvent).totalSize();
+        blackhole.consume(jolSize);
+    }
+
+    @Benchmark
+    public final void snmp128KBConvertedMapNavigation(Blackhole blackhole) {
+        long size = snmp128KBEvent.estimateMemory();
+        blackhole.consume(size);
+    }
+
+    @Benchmark
+    public final void snmp128KBCborSerialization(Blackhole blackhole) throws JsonProcessingException {
+        byte[] cborSerialized = snmp128KBEvent.serialize();
+        blackhole.consume(cborSerialized);
+    }
+
+    @OutputTimeUnit(TimeUnit.SECONDS)
+    @Benchmark
+    public final void snmp128KBJOLEstimation(Blackhole blackhole) throws JsonProcessingException {
+        long jolSize = GraphLayout.parseInstance(snmp128KBEvent).totalSize();
         blackhole.consume(jolSize);
     }
 }
