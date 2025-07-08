@@ -304,7 +304,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (8.17.1-java)
+    logstash-filter-elastic_integration (8.17.2-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (3.17.1)
@@ -712,7 +712,7 @@ GEM
     naught (1.1.0)
     net-http (0.6.0)
       uri
-    net-imap (0.5.8)
+    net-imap (0.5.9)
       date
       net-protocol
     net-pop (0.1.2)
@@ -772,7 +772,7 @@ GEM
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.4)
+    rspec-core (3.13.5)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
@@ -781,7 +781,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.4)
-    rspec-wait (1.0.1)
+    rspec-wait (1.0.2)
       rspec (>= 3.4)
     rubocop (1.74.0)
       json (~> 2.3)
