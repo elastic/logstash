@@ -36,14 +36,11 @@ public class JacksonDeserializeBenchmark {
     private String apache128KBContent;
     private Event apache1KBEvent;
 
-    @Setup(Level.Invocation)
+    @Setup(Level.Trial)
     @SuppressWarnings("unchecked")
     public void setUp() throws IOException {
         apache1KBContent = createTestEvent(Paths.get("../test_events_json/apache_1KB.json"));
         apache1KBEvent = new Event(ObjectMappers.JSON_MAPPER.readValue(apache1KBContent, Map.class));
-//        Map<String, Object> jsonEvent = ObjectMappers.JSON_MAPPER.readValue(apache1KBContent, Map.class);
-//        apache1KBEvent = new Event(jsonEvent);
-//        apache1KBEvent.setField("timestamp", new Timestamp());
 
         apache2KBContent = createTestEvent(Paths.get("../test_events_json/apache_2KB.json"));
         apache4KBContent = createTestEvent(Paths.get("../test_events_json/apache_4KB.json"));
@@ -76,6 +73,14 @@ public class JacksonDeserializeBenchmark {
         Map<String, Object> jsonEvent = ObjectMappers.JSON_MAPPER.readValue(apache1KBContent, Map.class);
         Event event = new Event(jsonEvent);
         event.estimateMemory();
+        blackhole.consume(event);
+    }
+
+    @Benchmark
+    @SuppressWarnings("unchecked")
+    public final void apache1KBDecodeAndCreateEvent(Blackhole blackhole) throws JsonProcessingException {
+        Map<String, Object> jsonEvent = ObjectMappers.JSON_MAPPER.readValue(apache1KBContent, Map.class);
+        Event event = new Event(jsonEvent);
         blackhole.consume(event);
     }
 

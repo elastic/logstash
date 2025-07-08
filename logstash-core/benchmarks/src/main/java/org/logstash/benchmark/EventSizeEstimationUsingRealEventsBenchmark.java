@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 * */
 
 @Warmup(iterations = 3, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 10, time = 1000, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 10, time = 3, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -47,7 +47,7 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
     private Event snmp32KBEvent;
     private Event snmp128KBEvent;
 
-    @Setup(Level.Invocation)
+    @Setup(Level.Trial)
     public void setUp() throws IOException {
         apache1KBEvent = createTestEvent(Paths.get("../test_events_json/apache_1KB.json"));
         apache2KBEvent = createTestEvent(Paths.get("../test_events_json/apache_2KB.json"));
@@ -309,7 +309,7 @@ public class EventSizeEstimationUsingRealEventsBenchmark {
         long jolSize = GraphLayout.parseInstance(cloudTrail128KBEvent).totalSize();
         blackhole.consume(jolSize);
     }
-    
+
     @Benchmark
     public final void snmp1KBConvertedMapNavigation(Blackhole blackhole) {
         long size = snmp1KBEvent.estimateMemory();
