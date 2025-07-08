@@ -183,7 +183,7 @@ def fips_test_runner_step() -> dict[str, typing.Any]:
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
-./gradlew observabilitySREacceptanceTests --stacktrace
+./ci/observabilitySREacceptance_tests.sh
 """),
     }
     return step
