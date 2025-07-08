@@ -67,7 +67,8 @@ public final class Queue implements Closeable {
     protected volatile long unreadCount;
 
     // the readDemand is a record of the currently-waiting-reader's demand and expiry
-    private volatile ReadDemand readDemand;
+    // it *MUST ONLY* be accessed when `lock.isHeldByCurrentThread() == true`
+    private ReadDemand readDemand;
 
     private final CheckpointIO checkpointIO;
     private final int pageCapacity;
