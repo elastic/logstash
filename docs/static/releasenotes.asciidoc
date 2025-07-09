@@ -90,32 +90,22 @@ This section summarizes the changes in the following releases:
 [[logstash-8-17-9]]
 === Logstash 8.17.9 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.17.9
+[[notable-8-17-9]]
+==== Notable issues fixed
 
-=== Logstash Commits between 8.17 and 8.17.8
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline communication. https://github.com/elastic/logstash/pull/17721[#17721]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.17.8..8.17"
+[[featured-8-17-9]]
+==== New features and enhancements
 
-78e976b40 - (HEAD -> 8.17, origin/8.17) bump lock file for 8.17 (#17779) (26 hours ago) <github-actions[bot]>
-133101764 - [8.19] Standardize image artifacts name (#17757) (#17761) (9 days ago) <mergify[bot]>
-87dde3a1f - Upgrade OSS and Full docker image to Ubuntu 24.04 (#17743) (#17750) (9 days ago) <mergify[bot]>
-2f8a19960 - [8.17] (backport #17727) Standardize image artifact name (#17752) (12 days ago) <mergify[bot]>
-ed990ad58 - Bump to 8.17.9 version  (#17714) (2 weeks ago) <Edmo Vamerlatti Costa>
-83da95200 - Release notes for 8.17.8 (#17711) (2 weeks ago) <github-actions[bot]>
-1a876e235 - Added support for GAUGE_LIST metric type (#17721) (#17723) (2 weeks ago) <mergify[bot]>
+Logstash OSS and Full docker images are now based on Ubuntu 24.04.
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.17.8..8.17 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 8.17.1 -> 8.17.2
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-17-9]]
 ==== Plugins
 
 *Elastic_integration Filter - 8.17.2*
 
-404: Not Found
+* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. https://github.com/elastic/logstash-filter-elastic_integration/pull/317[#317]
 
 [[logstash-8-17-8]]
 === Logstash 8.17.8 Release Notes
