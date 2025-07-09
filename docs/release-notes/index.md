@@ -72,6 +72,45 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.0.4 [logstash-9.0.4-release-notes]
+
+### Features and enhancements [logstash-9.0.4-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.0.4
+
+=== Logstash Commits between 9.0 and 9.0.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.3..9.0"
+
+f84463f11 - (HEAD -> 9.0, origin/9.0) Update patch plugin versions in gemfile lock (#17780) (26 hours ago) <github-actions[bot]>
+6f8c5ff1e - Fix allow_superuser comment (#17775) (#17776) (30 hours ago) <mergify[bot]>
+72ff7d9e2 - Doc: Update getting started file to test publishing (#17762) (#17763) (9 days ago) <mergify[bot]>
+d7e487af5 - Standardize image artifact name (#17727) (#17755) (12 days ago) <mergify[bot]>
+75a3b7c4e - Doc: Add clarification about API key format for Logstash (#17688) (#17748) (12 days ago) <mergify[bot]>
+3f88bbf2c - Doc: Update cloud terminology (#17653) (#17733) (2 weeks ago) <mergify[bot]>
+b7b06c8de - Bump to 9.0.4 version (#17716) (2 weeks ago) <Edmo Vamerlatti Costa>
+eb82024d4 - Release notes for 9.0.3 (#17713) (2 weeks ago) <github-actions[bot]>
+1b4a175a6 - Added support for GAUGE_LIST metric type (#17721) (#17726) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.0.3..9.0 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.0.0 -> 9.0.1
+logstash-output-elasticsearch: 12.0.3 -> 12.0.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.0.4-changes]
+
+**Elastic_integration Filter - 9.0.1**
+
+404: Not Found
+
+**Elasticsearch Output - 12.0.4**
+
+* [DOC] Update Cloud terminology [#1212](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1212)
+
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
