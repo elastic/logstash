@@ -25,7 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Fixes [logstash-9.0.4-fixes]
 
-* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline communication. [#17721](https://github.com/elastic/logstash/pull/17721)
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. [#17721](https://github.com/elastic/logstash/pull/17721)
 
 ### Plugins [logstash-plugin-9.0.4-changes]
 
