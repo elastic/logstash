@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
 * <<logstash-8-18-1,Logstash 8.18.1>>
@@ -88,6 +89,37 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-4]]
+=== Logstash 8.18.4 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.4
+
+=== Logstash Commits between 8.18 and 8.18.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.3..8.18"
+
+8a9719ef6 - (HEAD -> 8.18, origin/8.18) Update patch plugin versions in gemfile lock (#17778) (26 hours ago) <github-actions[bot]>
+d081bad64 - [8.19] Standardize image artifacts name (#17757) (#17760) (9 days ago) <mergify[bot]>
+e02c24e3b - Upgrade OSS and Full docker image to Ubuntu 24.04 (#17743) (#17751) (9 days ago) <mergify[bot]>
+7b1aab59e - [8.18] (backport #17727) Standardize image artifact name (#17753) (12 days ago) <mergify[bot]>
+be38e2a43 - Release notes for 8.17.8 (#17711) (#17728) (2 weeks ago) <mergify[bot]>
+923363d39 - Bump to 8.18.4 version (#17715) (2 weeks ago) <Edmo Vamerlatti Costa>
+8e9201110 - Release notes for 8.18.3 (#17712) (2 weeks ago) <github-actions[bot]>
+95e1d3de1 - Added support for GAUGE_LIST metric type (#17721) (#17724) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.3..8.18 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.17.1 -> 8.17.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.17.2*
+
+404: Not Found
 
 [[logstash-8-18-3]]
 === Logstash 8.18.3 Release Notes
