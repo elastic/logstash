@@ -93,7 +93,7 @@ This section summarizes the changes in the following releases:
 [[notable-8-17-9]]
 ==== Notable issues fixed
 
-* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline communication. https://github.com/elastic/logstash/pull/17721[#17721]
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. https://github.com/elastic/logstash/pull/17721[#17721]
 
 [[featured-8-17-9]]
 ==== New features and enhancements
