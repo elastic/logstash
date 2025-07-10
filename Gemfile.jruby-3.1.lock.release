@@ -43,7 +43,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1120.0)
+    aws-partitions (1.1126.0)
     aws-sdk-cloudfront (1.119.0)
       aws-sdk-core (~> 3, >= 3.225.0)
       aws-sigv4 (~> 1.5)
@@ -57,13 +57,13 @@ GEM
       base64
       jmespath (~> 1, >= 1.6.1)
       logger
-    aws-sdk-kms (1.105.0)
+    aws-sdk-kms (1.106.0)
       aws-sdk-core (~> 3, >= 3.225.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-resourcegroups (1.83.0)
       aws-sdk-core (~> 3, >= 3.225.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.191.0)
+    aws-sdk-s3 (1.192.0)
       aws-sdk-core (~> 3, >= 3.225.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -121,7 +121,7 @@ GEM
     equalizer (0.0.11)
     et-orbi (1.2.11)
       tzinfo
-    faraday (2.13.1)
+    faraday (2.13.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -298,7 +298,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (9.0.1-java)
+    logstash-filter-elastic_integration (9.1.0-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (4.2.0)
@@ -614,7 +614,7 @@ GEM
     logstash-output-csv (3.0.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-output-file
-    logstash-output-elasticsearch (12.0.3-java)
+    logstash-output-elasticsearch (12.0.5-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
@@ -792,7 +792,7 @@ GEM
       faraday (>= 0.17.3, < 3)
     semantic_logger (3.4.1)
       concurrent-ruby (~> 1.0)
-    sequel (5.93.0)
+    sequel (5.94.0)
       bigdecimal
     simple_oauth (0.3.1)
     simplecov (0.22.0)
@@ -817,7 +817,7 @@ GEM
     thread_safe (0.3.6-java)
     thwait (0.2.0)
       e2mmap
-    tilt (2.6.0)
+    tilt (2.6.1)
     timeout (0.4.3)
     treetop (1.6.14)
       polyglot (~> 0.3)
