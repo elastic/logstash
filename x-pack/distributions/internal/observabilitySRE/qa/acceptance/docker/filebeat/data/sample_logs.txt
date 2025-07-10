@@ -1,0 +1,1 @@
+TEST-LOG: FIPS filebeat test message

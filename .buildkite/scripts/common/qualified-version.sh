@@ -17,6 +17,11 @@ export QUALIFIED_VERSION="$(
   # e.g: 8.0.0-alpha1
   printf '%s' "${VERSION_QUALIFIER:+-${VERSION_QUALIFIER}}"
 
+  # Include git SHA if requested
+  if [[ -n "${INCLUDE_COMMIT_ID:+x}" ]]; then
+    printf '%s' "-$(git rev-parse --short HEAD)"
+  fi
+
   # add the SNAPSHOT tag unless WORKFLOW_TYPE=="staging" or RELEASE=="1"
   if [[ ! ( "${WORKFLOW_TYPE:-}" == "staging" || "${RELEASE:+$RELEASE}" == "1" ) ]]; then
     printf '%s' "-SNAPSHOT"

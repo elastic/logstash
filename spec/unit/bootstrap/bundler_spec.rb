@@ -124,7 +124,7 @@ describe LogStash::Bundler do
       end
     end
 
-    context "when updating" do
+    context "when updating", :skip_fips do
       let(:options) { { :update => 'logstash-input-stdin' } }
 
       context 'with a specific plugin' do
