@@ -50,7 +50,7 @@ RUN \
   <%= package_manager %> install -y which shadow-utils && \
   <%= package_manager %> clean all
 <% else -%><%# 'wolfi' -%>
-  <%= package_manager %> add --no-cache curl bash openssl && \
+  <%= package_manager %> add --no-cache curl bash openssl
 <% end -%>
 
 # Provide a non-root user to run the process
