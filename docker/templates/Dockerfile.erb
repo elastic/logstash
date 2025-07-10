@@ -6,10 +6,10 @@
   <%   url_root = 'http://localhost:8000' -%>
 <% end -%>
 <% if image_flavor == 'oss' -%>
-  <%   tarball = "logstash-oss-#{elastic_version}-linux-#{arch}.tar.gz" -%>
+  <%   tarball = "logstash-oss-#{elastic_version}-linux-${arch}.tar.gz" -%>
   <%   license = 'Apache 2.0' -%>
 <% else -%>
-  <%   tarball = "logstash-#{elastic_version}-linux-#{arch}.tar.gz" -%>
+  <%   tarball = "logstash-#{elastic_version}-linux-${arch}.tar.gz" -%>
   <%   license = 'Elastic License' -%>
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
@@ -43,21 +43,15 @@ ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 WORKDIR /usr/share
 
 # Install packages
-RUN for iter in {1..10}; do \
+RUN \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%= package_manager %> update -y && \
   <%= package_manager %> install -y procps findutils tar gzip && \
   <%= package_manager %> install -y openssl && \
   <%= package_manager %> install -y which shadow-utils && \
-  <%= package_manager %> clean all && \
 <% else -%><%# 'wolfi' -%>
   <%= package_manager %> add --no-cache curl bash openssl && \
 <% end -%>
-  exit_code=0 && break || \
-  exit_code=$? && echo "packaging error: retry $iter in 10s" && \
-  <%= package_manager %> clean all && sleep 10; \
-  done; \
-  (exit $exit_code)
+  <%= package_manager %> clean all
 
 # Provide a non-root user to run the process
 # Add Logstash itself and set permissions
@@ -77,8 +71,10 @@ RUN addgroup -g 1000 logstash && \
   --no-create-home \
   logstash && \
 <% end -%>
-  curl -Lo - <%= url_root %>/<%= tarball %> | \
-  tar zxf - -C /usr/share && \
+  arch="$(rpm --query --queryformat='%{ARCH}' rpm)" && \
+  curl -f -Lo logstash.tar.gz <%= url_root %>/<%= tarball %> && \
+  tar -zxf logstash.tar.gz -C /usr/share && \
+  rm logstash.tar.gz && \
   mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
   chown -R logstash:root /usr/share/logstash && \
   chmod -R g=u /usr/share/logstash && \
