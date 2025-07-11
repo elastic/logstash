@@ -9,9 +9,6 @@ updates:
       interval: "weekly"
       day: "sunday"
       time: "22:00"
-    reviewers:
-      - "elastic/observablt-ci"
-      - "elastic/observablt-ci-contractors"
     groups:
       github-actions:
         patterns:
