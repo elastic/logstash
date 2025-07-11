@@ -43,3 +43,4 @@ gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "cgi", "~> 0.3.7" # Pins until a new jruby version with updated cgi is released
+gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
