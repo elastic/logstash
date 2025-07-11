@@ -74,7 +74,9 @@ RUN addgroup -g 1000 logstash && \
   --no-create-home \
   logstash && \
 <% end -%>
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
   arch="$(rpm --query --queryformat='%{ARCH}' rpm)" && \
+<% end -%>
   curl -f -Lo logstash.tar.gz <%= url_root %>/<%= tarball %> && \
   tar -zxf logstash.tar.gz -C /usr/share && \
   rm logstash.tar.gz && \
