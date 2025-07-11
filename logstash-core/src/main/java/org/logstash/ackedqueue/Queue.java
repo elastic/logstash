@@ -945,7 +945,7 @@ public final class Queue implements Closeable {
         // if we're not forcing, and if the current read demand has
         // neither been met nor expired, this method becomes a no-op.
         if (!forceSignal && Objects.nonNull(readDemand)) {
-            if (!readDemand.isSatisfiable(unreadCount)) {
+            if (readDemand.isDeferrable(unreadCount)) {
                 return;
             }
         }
@@ -962,8 +962,8 @@ public final class Queue implements Closeable {
             this.elementsNeeded = elementsNeeded;
         }
 
-        boolean isSatisfiable(long available) {
-            return available >= elementsNeeded || System.currentTimeMillis() >= deadlineMillis;
+        boolean isDeferrable(long elementsAvailable) {
+            return elementsAvailable < elementsNeeded && System.currentTimeMillis() < deadlineMillis;
         }
 
         static ReadDemand fromExpectedTimeout(long timeoutMillis, int elementsNeeded) {
