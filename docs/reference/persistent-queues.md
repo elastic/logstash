@@ -82,9 +82,6 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
     To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is written. Keep in mind that disk writes have a resource cost. Setting this value to `1` ensures maximum durability, but can severely impact performance. See [Controlling durability](#durability-persistent-queues) to better understand the trade-offs.
 
 
-`queue.checkpoint.interval`
-:   Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is `1000`. Set to `0` to eliminate periodic checkpoints.
-
 
 ## Configuration notes [pq-config-notes]
 
