@@ -270,8 +270,8 @@ class LogStash::Runner < Clamp::StrictCommand
       configure_pipeline_buffer_type
     end
 
-    logger.warn "The setting `queue.checkpoint.interval` is no longer supported and should be removed from both " +
-          "logstash.yml and pipeline.yml." if @settings.set?("queue.checkpoint.interval")
+    deprecation_logger.deprecated "The setting `queue.checkpoint.interval` has no effect and will be removed from both " +
+          "logstash.yml and pipeline.yml in a future release." if @settings.set?("queue.checkpoint.interval")
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg
