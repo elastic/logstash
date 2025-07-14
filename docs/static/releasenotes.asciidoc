@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-17-9,Logstash 8.17.9>>
 * <<logstash-8-17-8,Logstash 8.17.8>>
 * <<logstash-8-17-7,Logstash 8.17.7>>
 * <<logstash-8-17-6,Logstash 8.17.6>>
@@ -85,6 +86,27 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
+
+[[logstash-8-17-9]]
+=== Logstash 8.17.9 Release Notes
+
+[[notable-8-17-9]]
+==== Notable issues fixed
+
+* Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events. https://github.com/elastic/logstash/pull/17788[#17788]
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. https://github.com/elastic/logstash/pull/17721[#17721]
+
+[[featured-8-17-9]]
+==== New features and enhancements
+
+Logstash OSS and Full docker images are now based on Ubuntu 24.04.
+
+[[plugins-8-17-9]]
+==== Plugins
+
+*Elastic_integration Filter - 8.17.2*
+
+* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. https://github.com/elastic/logstash-filter-elastic_integration/pull/317[#317]
 
 [[logstash-8-17-8]]
 === Logstash 8.17.8 Release Notes
