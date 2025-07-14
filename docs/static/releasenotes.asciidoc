@@ -93,7 +93,7 @@ This section summarizes the changes in the following releases:
 [[notable-8-17-9]]
 ==== Notable issues fixed
 
-* Significantly improves write speeds to the persistent queue when a pipeline's workers are caught up with already-written events [#17788](https://github.com/elastic/logstash/pull/17788)
+* Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events. https://github.com/elastic/logstash/pull/17788[#17788]
 * Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. https://github.com/elastic/logstash/pull/17721[#17721]
 
 [[featured-8-17-9]]
