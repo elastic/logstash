@@ -66,7 +66,7 @@ module LogStash
       "pipeline.ordered",
       "pipeline.ecs_compatibility",
       "queue.checkpoint.acks",
-      "queue.checkpoint.interval",
+      "queue.checkpoint.interval", # remove it for #17155
       "queue.checkpoint.writes",
       "queue.checkpoint.retry",
       "queue.drain",
