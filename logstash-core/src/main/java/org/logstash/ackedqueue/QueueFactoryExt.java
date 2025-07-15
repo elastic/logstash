@@ -88,7 +88,6 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_EVENTS),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_WRITES),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_ACKS),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_INTERVAL),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_RETRY),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_BYTES)
                     }
