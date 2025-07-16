@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-0,Logstash 8.19.0>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
 * <<logstash-8-18-1,Logstash 8.18.1>>
@@ -86,6 +87,54 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-0]]
+=== Logstash 8.19.0 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.0
+
+* upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16932[#16932]
+* Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/16968[#16968]
+* Backport PR #16932 to 8.x: upgrade jdk to 21.0.6+7 https://github.com/elastic/logstash/pull/16987[#16987]
+* Use centralized version qualifier https://github.com/elastic/logstash/pull/16995[#16995]
+* Backport PR #16995 to 8.x: Use centralized version qualifier https://github.com/elastic/logstash/pull/17003[#17003]
+* Backport PR #16968 to 8.x: Fix BufferedTokenizer to properly resume after a buffer full condition respecting the encoding of the input string https://github.com/elastic/logstash/pull/17019[#17019]
+* plugins: improve `remove` command to support multiple plugins https://github.com/elastic/logstash/pull/17030[#17030]
+* Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17032[#17032]
+* move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17050[#17050]
+* Backport PR #17032 to 8.x: Don't honor VERSION_QUALIFIER if set but empty https://github.com/elastic/logstash/pull/17068[#17068]
+* Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17081[#17081]
+* qa: use clean expansion of LS tarball per fixture instance https://github.com/elastic/logstash/pull/17082[#17082]
+* Backport PR #17081 to 8.x: Allow capturing heap dumps in DRA BK jobs https://github.com/elastic/logstash/pull/17085[#17085]
+* Backport PR #17082 to 8.x: qa: use clean expansion of LS tarball per fixture instance https://github.com/elastic/logstash/pull/17094[#17094]
+* Backport PR #17050 to 8.x: move Batch deserialization out of the lock https://github.com/elastic/logstash/pull/17110[#17110]
+* spec: improve ls2ls spec https://github.com/elastic/logstash/pull/17114[#17114]
+* Backport PR #17114 to 8.x: spec: improve ls2ls spec https://github.com/elastic/logstash/pull/17116[#17116]
+* Backport PR #17030 to 8.x: plugins: improve `remove` command to support multiple plugins https://github.com/elastic/logstash/pull/17121[#17121]
+* plugin manager: add --no-expand flag for list command https://github.com/elastic/logstash/pull/17124[#17124]
+* entrypoint: avoid polluting stdout https://github.com/elastic/logstash/pull/17125[#17125]
+* Backport PR #171226 to 8.x: Fix acceptance test assertions for updated plugin remove https://github.com/elastic/logstash/pull/17131[#17131]
+* Backport PR #171222 to 8.x: Fix acceptance test assertions for updated plugin remove https://github.com/elastic/logstash/pull/17132[#17132]
+* Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17133[#17133]
+* Backport PR #17125 to 8.x: entrypoint: avoid polluting stdout https://github.com/elastic/logstash/pull/17136[#17136]
+* Update container acceptance tests with stdout/stderr changes https://github.com/elastic/logstash/pull/17138[#17138]
+* Backport PR #17138 to 8.x: Update container acceptance tests with stdout/stderr changes https://github.com/elastic/logstash/pull/17140[#17140]
+* Backport PR #17133 to 8.x: Add Windows 2025 to CI https://github.com/elastic/logstash/pull/17143[#17143]
+* Backport PR #17124 to 8.x: plugin manager: add --no-expand flag for list command https://github.com/elastic/logstash/pull/17170[#17170]
+* qa: don't bypass plugin manger tests on linux https://github.com/elastic/logstash/pull/17171[#17171]
+* Backport PR #17171 to 8.x: qa: don't bypass plugin manger tests on linux https://github.com/elastic/logstash/pull/17173[#17173]
+
+=== Logstash Commits between 8.19 and 8.18.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.4..8.19"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.4..8.19 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-18-3]]
 === Logstash 8.18.3 Release Notes
