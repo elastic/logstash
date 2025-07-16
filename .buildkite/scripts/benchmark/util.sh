@@ -23,6 +23,7 @@ arch() {
             ;;
         *)
             echo "Unsupported architecture: $(uname -m)"
+            exit 1
             ;;
     esac
   else
