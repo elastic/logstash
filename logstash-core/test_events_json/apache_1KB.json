@@ -1,0 +1,22 @@
+{
+  "clientip": "192.168.1.10",
+  "ident": "-",
+  "auth": "johndoe",
+  "timestamp": "01/Jul/2025:15:22:10 +0000",
+  "verb": "GET",
+  "request": "/search?q=cloud+logging+apache&lang=en&limit=50&page=2&sort=desc&filter=active&country=us&user_id=123456&session_id=abcdef1234567890abcdef1234567890abcdef&tracking_id=track-0987654321abcdef0987654321abcdef",
+  "httpversion": "1.1",
+  "response": "200",
+  "bytes": "1234",
+  "referrer": "https://www.example.com/ref?q=logtest",
+  "agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "headers": {
+    "X-Forwarded-For": "203.0.113.42",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Request-ID": "req-abcdef1234567890abcdef1234567890"
+  },
+  "message": "192.168.1.10 - johndoe [01/Jul/2025:15:22:10 +0000] \"GET /search?... HTTP/1.1\" 200 1234 ...",
+  "logsource": "apache_access",
+  "event_type": "access",
+  "@timestamp": "2025-07-01T15:22:10Z"
+}
