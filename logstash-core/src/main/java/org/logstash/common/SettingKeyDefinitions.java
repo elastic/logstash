@@ -40,8 +40,6 @@ public class SettingKeyDefinitions {
 
     public static final String QUEUE_CHECKPOINT_ACKS = "queue.checkpoint.acks";
 
-    public static final String QUEUE_CHECKPOINT_INTERVAL = "queue.checkpoint.interval";
-
     public static final String QUEUE_CHECKPOINT_RETRY = "queue.checkpoint.retry";
 
     public static final String QUEUE_MAX_BYTES = "queue.max_bytes";

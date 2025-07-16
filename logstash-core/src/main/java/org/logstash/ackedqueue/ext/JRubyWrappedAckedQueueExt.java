@@ -51,13 +51,13 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(optional = 8)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 8, 0);
+        args = Arity.scanArgs(context.runtime, args, 7, 0);
         int capacity = RubyFixnum.num2int(args[1]);
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        boolean checkpointRetry = !((RubyBoolean) args[6]).isFalse();
-        long queueMaxBytes = RubyFixnum.num2long(args[7]);
+        boolean checkpointRetry = !((RubyBoolean) args[5]).isFalse();
+        long queueMaxBytes = RubyFixnum.num2long(args[6]);
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
                 checkpointMaxWrites, checkpointMaxAcks, checkpointRetry, queueMaxBytes);
