@@ -1,6 +1,36 @@
 #!/usr/bin/env bash
 
-arch() { uname -m | sed -e "s|amd|x86_|" -e "s|arm|aarch|"; }
+arch() {
+  # standardize docker name starting from Logstash 7.17.30, 8.17.9, 8.18.4 and 9.0.4
+  local major=$(echo "$LS_VERSION" | cut -d. -f1)
+  local minor=$(echo "$LS_VERSION" | cut -d. -f2)
+  local patch=$(echo "$LS_VERSION" | cut -d. -f3 | cut -d- -f1)
+
+  if [[ ( "$major" -eq 7 && "$minor" -eq 17 && "$patch" -ge 30 ) || \
+    ( "$major" -eq 8 && "$minor" -eq 17 && "$patch" -ge 9 ) || \
+    ( "$major" -eq 8 && "$minor" -eq 18 && "$patch" -ge 4 ) || \
+    ( "$major" -eq 8 && "$minor" -ge 19 ) || \
+    ( "$major" -eq 9 && "$minor" -eq 0 && "$patch" -ge 4 ) || \
+    ( "$major" -eq 9 && "$minor" -ge 1 ) || \
+    ( "$major" -ge 10 ) ]]; then
+
+    case $(uname -m) in
+        x86_64|amd64)
+            echo "amd64"
+            ;;
+        aarch64|arm64)
+            echo "arm64"
+            ;;
+        *)
+            echo "Unsupported architecture: $(uname -m)"
+            exit 1
+            ;;
+    esac
+  else
+    # old versions docker name use x86_64 or aarch prefix
+    uname -m | sed -e "s|amd|x86_|" -e "s|arm|aarch|"
+  fi
+}
 
 # return the min value
 # usage: 
