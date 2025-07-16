@@ -45,7 +45,7 @@ namespace "plugin" do
       # https://github.com/elastic/logstash/pull/17125
       next false if line.match?(/^Using (system java|bundled JDK|LS_JAVA_HOME defined java)/)
 
-      next false if line.match?(/^pass JVM parameters via LS_JAVA_OPTS/)
+      next false if line.match?(/pass JVM parameters via LS_JAVA_OPTS/)
       
       # post-execution filtration is needed until 8.19 and 9.1
       # when list --[no-]expand flag is supported, use it instead
