@@ -17,4 +17,7 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
   export LS_JAVA_HOME="$BUILD_JAVA_HOME"
 fi
 
-./gradlew runXPackIntegrationTests
+# Option for running in fedramp high mode
+FEDRAMP_FLAG="${FEDRAMP_HIGH_MODE/#/-PfedrampHighMode=}"
+
+./gradlew runXPackIntegrationTests $FEDRAMP_FLAG

@@ -20,7 +20,7 @@ require_relative "../../framework/settings"
 require_relative "../../services/logstash_service"
 require_relative "../../framework/helpers"
 
-describe "CLI > logstash-plugin prepare-offline-pack" do
+describe "CLI > logstash-plugin prepare-offline-pack", :skip_fips do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash_plugin = @fixture.get_service("logstash").plugin_cli
