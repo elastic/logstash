@@ -118,7 +118,7 @@ RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config
 RUN find /usr/share/logstash -name *.jar | grep lib
 
 # Update certs installed from java-cacerts package
-RUN ln -sf /etc/ssl/certs/java/cacerts /usr/share/logstash/jdk/lib/security/cacerts
+RUN ln -sfn /etc/ssl/certs/java/cacerts /usr/share/logstash/jdk/lib/security/cacerts
 
 # Convert JKS to BCFKS for truststore
 RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \

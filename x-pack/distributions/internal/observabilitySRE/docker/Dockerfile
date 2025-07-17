@@ -45,7 +45,8 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 RUN ./gradlew clean bootstrap assemble installDefaultGems -PfedrampHighMode=true
 
 # Update certs installed from java-cacerts package
-RUN ln -sf /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts
+RUN ln -sfn /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts
+
 # Convert JKS to BCFKS for truststore
 RUN keytool -importkeystore \
     -srckeystore $JAVA_HOME/lib/security/cacerts \
