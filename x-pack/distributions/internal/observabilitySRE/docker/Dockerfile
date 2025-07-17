@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     curl \
     make \
     gcc \
+    java-cacerts \
     glibc-dev \
     openssl
 
