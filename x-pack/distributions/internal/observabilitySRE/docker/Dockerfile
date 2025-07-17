@@ -6,14 +6,13 @@ FROM docker.elastic.co/wolfi/chainguard-base-fips:latest
 RUN addgroup -g 1002 logstash && \
     adduser -S -h /home/logstash -s /bin/bash -u 1002 -G logstash logstash
 
-# Install OpenJDK 21
+# Install 
 RUN apk add --no-cache \
     openjdk-21 \
     bash \
     git \
     curl \
     make \
-    # CODEREVIEW: I think make, gcc and glibc-dev are all in build-base package if we want that
     gcc \
     glibc-dev \
     openssl
@@ -44,21 +43,12 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 # Initial build using JKS truststore
 RUN ./gradlew clean bootstrap assemble installDefaultGems -PfedrampHighMode=true
 
-# Convert JKS to BCFKS for truststore and keystore
+# Update certs installed from java-cacerts package
+RUN ln -sf /etc/ssl/certs/java/cacerts $JAVA_HOME/lib/security/cacerts
+# Convert JKS to BCFKS for truststore
 RUN keytool -importkeystore \
     -srckeystore $JAVA_HOME/lib/security/cacerts \
     -destkeystore /etc/java/security/cacerts.bcfks \
-    -srcstoretype jks \
-    -deststoretype bcfks \
-    -providerpath /logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
-    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
-    -deststorepass changeit \
-    -srcstorepass changeit \
-    -noprompt
-
-RUN keytool -importkeystore \
-    -srckeystore $JAVA_HOME/lib/security/cacerts \
-    -destkeystore /etc/java/security/keystore.bcfks \
     -srcstoretype jks \
     -deststoretype bcfks \
     -providerpath /logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
@@ -73,10 +63,6 @@ ENV LS_JAVA_OPTS="\
     # Enable debug logging for ensuring BCFIPS is being used if needed
     # -Djava.security.debug=ssl,provider,certpath \
     -Djava.security.properties=${JAVA_SECURITY_PROPERTIES} \
-    -Djavax.net.ssl.keyStore=/etc/java/security/keystore.bcfks \
-    -Djavax.net.ssl.keyStoreType=BCFKS \
-    -Djavax.net.ssl.keyStoreProvider=BCFIPS \
-    -Djavax.net.ssl.keyStorePassword=changeit \
     -Djavax.net.ssl.trustStore=/etc/java/security/cacerts.bcfks \
     -Djavax.net.ssl.trustStoreType=BCFKS \
     -Djavax.net.ssl.trustStoreProvider=BCFIPS \
