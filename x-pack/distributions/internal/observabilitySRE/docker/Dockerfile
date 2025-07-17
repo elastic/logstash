@@ -24,9 +24,8 @@ RUN mkdir -p /etc/java/security && \
     chown -R logstash:logstash /home/logstash/.gradle && \
     chown -R logstash:logstash /etc/java/security
 
-# Copy JVM configuration files: TODO manage these consistently
+# Copy JVM configuration files:
 COPY --chown=logstash:logstash x-pack/distributions/internal/observabilitySRE/config/security/java.security /etc/java/security/
-COPY --chown=logstash:logstash x-pack/distributions/internal/observabilitySRE/config/security/java.policy /etc/java/security/
 
 # Create and set ownership of working directory
 WORKDIR /logstash

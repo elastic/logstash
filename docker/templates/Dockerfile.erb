@@ -112,7 +112,6 @@ RUN mkdir -p /usr/share/logstash/config/security
 
 # Copy JVM security configuration files from the unpacked tarball
 RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
-    cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.policy /usr/share/logstash/config/security/ && \
     chown --recursive logstash:root /usr/share/logstash/config/security/
 
 # list the classes provided by the fips BC
@@ -144,7 +143,6 @@ RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
 # Set Java security properties through LS_JAVA_OPTS
 ENV LS_JAVA_OPTS="\
     -Djava.security.properties=/usr/share/logstash/config/security/java.security \
-    -Djava.security.policy=/usr/share/logstash/config/security/java.policy \
     -Djavax.net.ssl.keyStore=/usr/share/logstash/config/security/keystore.bcfks \
     -Djavax.net.ssl.keyStoreType=BCFKS \
     -Djavax.net.ssl.keyStoreProvider=BCFIPS \

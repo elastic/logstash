@@ -9,12 +9,6 @@ securerandom.drbg.config=
 
 login.configuration.provider=sun.security.provider.ConfigFile
 
-policy.provider=sun.security.provider.PolicyFile
-policy.url.1=file:/etc/java/security/java.policy
-policy.expandProperties=true
-policy.allowSystemProperty=true
-policy.ignoreIdentityScope=false
-
 keystore.type=bcfks
 keystore.type.compat=true
 
