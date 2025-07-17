@@ -60,7 +60,7 @@ RUN \
   <%= package_manager %> install -y which shadow-utils && \
   <%= package_manager %> clean all
 <% else -%><%# 'wolfi', 'observability-sre' -%>
-  <%= package_manager %> add --no-cache curl bash openssl
+  <%= package_manager %> add --no-cache java-cacerts curl bash openssl
 <% end -%>
 
 # Provide a non-root user to run the process
@@ -112,13 +112,15 @@ RUN mkdir -p /usr/share/logstash/config/security
 
 # Copy JVM security configuration files from the unpacked tarball
 RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
-    cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.policy /usr/share/logstash/config/security/ && \
     chown --recursive logstash:root /usr/share/logstash/config/security/
 
 # list the classes provided by the fips BC
 RUN find /usr/share/logstash -name *.jar | grep lib
 
-# Convert JKS to BCFKS for truststore and keystore
+# Update certs installed from java-cacerts package
+RUN ln -sf /etc/ssl/certs/java/cacerts /usr/share/logstash/jdk/lib/security/cacerts
+
+# Convert JKS to BCFKS for truststore
 RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
     -srckeystore /usr/share/logstash/jdk/lib/security/cacerts \
     -destkeystore /usr/share/logstash/config/security/cacerts.bcfks \
@@ -130,25 +132,9 @@ RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
     -srcstorepass changeit \
     -noprompt
 
-RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
-    -srckeystore /usr/share/logstash/jdk/lib/security/cacerts \
-    -destkeystore /usr/share/logstash/config/security/keystore.bcfks \
-    -srcstoretype jks \
-    -deststoretype bcfks \
-    -providerpath /usr/share/logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
-    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
-    -deststorepass changeit \
-    -srcstorepass changeit \
-    -noprompt
-
 # Set Java security properties through LS_JAVA_OPTS
 ENV LS_JAVA_OPTS="\
     -Djava.security.properties=/usr/share/logstash/config/security/java.security \
-    -Djava.security.policy=/usr/share/logstash/config/security/java.policy \
-    -Djavax.net.ssl.keyStore=/usr/share/logstash/config/security/keystore.bcfks \
-    -Djavax.net.ssl.keyStoreType=BCFKS \
-    -Djavax.net.ssl.keyStoreProvider=BCFIPS \
-    -Djavax.net.ssl.keyStorePassword=changeit \
     -Djavax.net.ssl.trustStore=/usr/share/logstash/config/security/cacerts.bcfks \
     -Djavax.net.ssl.trustStoreType=BCFKS \
     -Djavax.net.ssl.trustStoreProvider=BCFIPS \
