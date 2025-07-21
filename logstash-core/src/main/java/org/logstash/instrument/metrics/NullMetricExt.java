@@ -95,6 +95,14 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
     }
 
     @Override
+    protected IRubyObject getHistogram(final ThreadContext context,
+                                       final IRubyObject namespace,
+                                       final IRubyObject key) {
+        MetricExt.validateKey(context, null, key);
+        return context.nil;
+    }
+
+    @Override
     protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject duration) {
         MetricExt.validateKey(context, null, key);

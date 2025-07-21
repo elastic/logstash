@@ -53,6 +53,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
         return getTimer(context, key);
     }
 
+    @JRubyMethod
+    public IRubyObject histogram(final ThreadContext context, final IRubyObject key) {
+        return getHistogram(context, key);
+    }
+
     @JRubyMethod(required = 1, optional = 1)
     public IRubyObject increment(final ThreadContext context, final IRubyObject[] args) {
         return doIncrement(context, args);
@@ -94,6 +99,8 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject getCounter(ThreadContext context, IRubyObject key);
 
     protected abstract IRubyObject getTimer(ThreadContext context, IRubyObject key);
+
+    protected abstract IRubyObject getHistogram(ThreadContext context, IRubyObject key);
 
     protected abstract IRubyObject doTime(ThreadContext context, IRubyObject key, Block block);
 

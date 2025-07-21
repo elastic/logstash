@@ -91,6 +91,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    protected IRubyObject getHistogram(ThreadContext context, IRubyObject key) {
+        return this.metric.getHistogram(context, namespaceName, key);
+    }
+
+    @Override
     protected IRubyObject doIncrement(final ThreadContext context, final IRubyObject[] args) {
         return context.nil;
     }

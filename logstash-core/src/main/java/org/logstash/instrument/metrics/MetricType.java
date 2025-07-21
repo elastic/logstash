@@ -77,6 +77,11 @@ public enum MetricType {
      * A flow-rate {@link FlowMetric}, instantiated with one or more backing {@link Metric}{@code <Number>}.
      */
     FLOW_RATE("flow/rate"),
+
+    /**
+     * A histogram metric to record values and obtain percentiles measurements.
+     * */
+    HISTOGRAM_LONG("histogram/long"),
     ;
 
     private final String type;

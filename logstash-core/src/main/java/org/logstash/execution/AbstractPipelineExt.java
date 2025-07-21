@@ -92,6 +92,7 @@ import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UpScaledMetric;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -286,6 +287,12 @@ public class AbstractPipelineExt extends RubyBasicObject {
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
+
+
+        // init histogram sample
+        final RubySymbol[] eventsNamespace = buildNamespace(EVENTS_KEY);
+        initOrGetHistogramMetric(context, eventsNamespace, BATCH_SIZE_KEY);
+
         return this;
     }
 
@@ -638,6 +645,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("timer")});
         return retrievedMetric.toJava(TimerMetric.class);
+    }
+
+    private HistogramMetric initOrGetHistogramMetric(final ThreadContext context,
+                                                    final RubySymbol[] subPipelineNamespacePath,
+                                                    final RubySymbol metricName) {
+        final IRubyObject collector = this.metric.collector(context);
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+
+        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("histogram")});
+        return retrievedMetric.toJava(HistogramMetric.class);
     }
 
     private Optional<NumberGauge> initOrGetNumberGaugeMetric(final ThreadContext context,

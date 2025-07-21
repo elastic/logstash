@@ -29,6 +29,7 @@ module LogStash module Instrument
       when :gauge   then return org.logstash.instrument.metrics.gauge.LazyDelegatingGauge.new(key.to_s)
       when :uptime  then return org.logstash.instrument.metrics.UptimeMetric.new(key.to_s)
       when :timer   then return org.logstash.instrument.metrics.timer.TimerMetric::create(key.to_s)
+      when :histogram then return org.logstash.instrument.metrics.histogram.HistogramMetric.new(key.to_s)
       else fail NameError, "Unknown Metric Type `#{type}`"
       end
     end

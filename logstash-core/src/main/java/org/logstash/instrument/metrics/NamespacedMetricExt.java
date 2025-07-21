@@ -85,6 +85,11 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    protected IRubyObject getHistogram(ThreadContext context, IRubyObject key) {
+        return metric.histogram(context, namespaceName, key);
+    }
+
+    @Override
     protected IRubyObject doIncrement(final ThreadContext context, final IRubyObject[] args) {
         if (args.length == 1) {
             return metric.increment(context, namespaceName, args[0]);

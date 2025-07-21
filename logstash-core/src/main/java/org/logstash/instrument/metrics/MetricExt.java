@@ -54,6 +54,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     private static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
     private static final RubySymbol TIMER = RubyUtil.RUBY.newSymbol("timer");
+    private static final RubySymbol HISTOGRAM = RubyUtil.RUBY.newSymbol("histogram");
     private static final RubySymbol SET = RubyUtil.RUBY.newSymbol("set");
     private static final RubySymbol GET = RubyUtil.RUBY.newSymbol("get");
 
@@ -151,6 +152,16 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         return collector.callMethod(context,
                 "get", new IRubyObject[]{normalizeNamespace(namespace), key, TIMER}
                 );
+    }
+
+    @Override
+    protected IRubyObject getHistogram(final ThreadContext context,
+                                       final IRubyObject namespace,
+                                       final IRubyObject key) {
+        MetricExt.validateKey(context, null, key);
+        return collector.callMethod(context,
+                "get", new IRubyObject[]{normalizeNamespace(namespace), key, HISTOGRAM}
+        );
     }
 
     @Override
