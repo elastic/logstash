@@ -22,8 +22,6 @@ package org.logstash.execution;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.context.Context;
-import io.opentelemetry.context.Scope;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -228,40 +226,37 @@ public class AbstractPipelineExt extends RubyBasicObject {
         initialize(context, args[0], args[1], args[2]);
 
         Span span = tracer.spanBuilder("pipeline.initialize")
-                .setParent(Context.root())
                 .setAttribute("pipeline.id", pipelineId().asJavaString())
                 .startSpan();
 
-        try (Scope scope = span.makeCurrent()) {
-            lirExecution = new CompiledPipeline(
-                    lir,
-                    new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
-                            lir,
-                            new PluginMetricsFactoryExt(
-                                    context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
-                            ).initialize(context, pipelineId(), metric()),
-                            new ExecutionContextFactoryExt(
-                                    context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
-                            ).initialize(context, args[3], this, dlqWriter(context)),
-                            RubyUtil.FILTER_DELEGATOR_CLASS
-                    ),
-                    getSecretStore(context),
-                    new LogErrorEvaluationListener()
+        lirExecution = new CompiledPipeline(
+                lir,
+                new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
+                        lir,
+                        new PluginMetricsFactoryExt(
+                                context.runtime, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS
+                        ).initialize(context, pipelineId(), metric()),
+                        new ExecutionContextFactoryExt(
+                                context.runtime, RubyUtil.EXECUTION_CONTEXT_FACTORY_CLASS
+                        ).initialize(context, args[3], this, dlqWriter(context)),
+                        RubyUtil.FILTER_DELEGATOR_CLASS
+                ),
+                getSecretStore(context),
+                new LogErrorEvaluationListener()
+        );
+        inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
+        filters = RubyArray.newArray(context.runtime, lirExecution.filters());
+        outputs = RubyArray.newArray(context.runtime, lirExecution.outputs());
+        if (getSetting(context, "config.debug").isTrue() && LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                    "Compiled pipeline code for pipeline {} : {}", pipelineId(),
+                    lir.getGraph().toString()
             );
-            inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
-            filters = RubyArray.newArray(context.runtime, lirExecution.filters());
-            outputs = RubyArray.newArray(context.runtime, lirExecution.outputs());
-            if (getSetting(context, "config.debug").isTrue() && LOGGER.isDebugEnabled()) {
-                LOGGER.debug(
-                        "Compiled pipeline code for pipeline {} : {}", pipelineId(),
-                        lir.getGraph().toString()
-                );
-            }
-            return this;
-        } finally {
-            span.end();
         }
 
+        span.end();
+
+        return this;
     }
 
     @JRubyMethod
