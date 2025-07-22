@@ -21,6 +21,23 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.4 [logstash-9.0.4-release-notes]
+
+### Fixes [logstash-9.0.4-fixes]
+
+* Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events [#17791](https://github.com/elastic/logstash/pull/17791)
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. [#17721](https://github.com/elastic/logstash/pull/17721)
+
+### Plugins [logstash-plugin-9.0.4-changes]
+
+**Elastic_integration Filter - 9.0.1**
+
+* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. [#320](https://github.com/elastic/logstash-filter-elastic_integration/pull/320)
+
+**Elasticsearch Output - 12.0.4**
+
+* Docs: update Cloud terminology [#1212](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1212)
+
 ## 9.0.3 [logstash-9.0.3-release-notes]
 
 No user-facing changes in Logstash core.
