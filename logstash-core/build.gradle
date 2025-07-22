@@ -266,4 +266,22 @@ dependencies {
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+
+//    // OTel manual instrumentation dependencies
+//    implementation platform('io.opentelemetry:opentelemetry-bom:1.25.0')
+//    implementation platform('io.opentelemetry:opentelemetry-bom-alpha:1.25.0-alpha')
+//
+//    // OpenTelemetry core dependencies (versions managed by BOM)
+//    implementation 'io.opentelemetry:opentelemetry-api'
+//    implementation 'io.opentelemetry:opentelemetry-sdk'
+//    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+//    implementation 'io.opentelemetry:opentelemetry-semconv'
+//    implementation 'io.opentelemetry:opentelemetry-exporter-otlp-logs'
+//
+//    // Instrumentation dependencies with explicit versions
+//    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:1.25.1-alpha'
+//    implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-mdc-1.0:1.25.1-alpha'
+
+    // OTel auto
+    implementation 'io.opentelemetry:opentelemetry-api:1.25.0'
 }
