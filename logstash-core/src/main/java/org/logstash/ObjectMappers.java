@@ -116,6 +116,7 @@ public final class ObjectMappers {
 
     public static final ObjectMapper CBOR_MAPPER = new ObjectMapper(
         new CBORFactory().configure(CBORGenerator.Feature.WRITE_MINIMAL_INTS, false)
+                         .configure(CBORGenerator.Feature.STRINGREF, true)
     ).registerModules(RUBY_SERIALIZERS, CBOR_DESERIALIZERS)
             .activateDefaultTyping(TYPE_VALIDATOR, ObjectMapper.DefaultTyping.NON_FINAL);
 
