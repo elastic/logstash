@@ -26,16 +26,9 @@ describe LogStash::QueueFactory do
       LogStash::Setting::SettingString.new("queue.type", "memory", true, ["persisted", "memory"]),
       LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
       LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),
-<<<<<<< HEAD
       LogStash::Setting::Numeric.new("queue.max_events", 0),
       LogStash::Setting::Numeric.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::Numeric.new("queue.checkpoint.writes", 1024),
-      LogStash::Setting::Numeric.new("queue.checkpoint.interval", 1000),
-=======
-      LogStash::Setting::SettingNumeric.new("queue.max_events", 0),
-      LogStash::Setting::SettingNumeric.new("queue.checkpoint.acks", 1024),
-      LogStash::Setting::SettingNumeric.new("queue.checkpoint.writes", 1024),
->>>>>>> 521af3bd (Obsolete PQ setting queue.checkpoint.interval  (#17759))
       LogStash::Setting::Boolean.new("queue.checkpoint.retry", false),
       LogStash::Setting::SettingString.new("pipeline.id", pipeline_id),
       LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
