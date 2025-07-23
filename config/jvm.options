@@ -82,7 +82,7 @@
 #-Dlogstash.jackson.stream-read-constraints.max-nesting-depth=1000
 
 # OTel
--javaagent:/path/to/opentelemetry-javaagent.jar
+-javaagent:/Users/andrea/workspace/onweek_otel_tracing_ls/elastic-otel-javaagent-1.4.1.jar
 #-Dotel.service.name=logstash-otel
 #-Dotel.metrics.exporter=otlp
 #-Dotel.logs.exporter=otlp

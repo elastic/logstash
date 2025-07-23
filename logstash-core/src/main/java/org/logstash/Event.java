@@ -22,6 +22,7 @@ package org.logstash;
 
 import co.elastic.logstash.api.EventFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.opentelemetry.api.trace.Span;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
@@ -71,6 +72,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final FieldReference TAGS_FAILURE_FIELD = FieldReference.from(TAGS_FAILURE);
 
     private static final Logger logger = LogManager.getLogger(Event.class);
+    private transient Span span;
 
     public Event()
     {
@@ -549,6 +551,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             return new Event();
         }
         return fromSerializableMap(data);
+    }
+
+    public void associateSpan(Span span) {
+        this.span = span;
+    }
+
+    public void endSpan() {
+        if (span == null) {
+            return;
+        }
+        span.end();
     }
 
     public static class InvalidTagsTypeException extends RuntimeException {
