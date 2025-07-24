@@ -12,6 +12,7 @@ public class OTelUtil {
     // Create a tracer for this class/service
     public static final Tracer tracer = openTelemetry.getTracer("Logstash");
     public static final String METADATA_OTEL_CONTEXT = "otel_context";
+    public static final String METADATA_OTEL_FULLCONTEXT = "otel_full_context";
 
     public static Span newSpan(String name) {
         return tracer.spanBuilder(name)

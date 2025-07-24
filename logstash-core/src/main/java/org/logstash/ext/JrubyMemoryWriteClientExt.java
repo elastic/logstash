@@ -74,18 +74,26 @@ public final class JrubyMemoryWriteClientExt extends JRubyAbstractQueueWriteClie
 
     @SuppressWarnings("try")
     private static void propagateOtelContextInEvent(Event carrierEvent) {
-        Span span = tracer.spanBuilder("pipeline.queue")
-                // TODO
+        Span span = tracer.spanBuilder("pipeline.total").startSpan();
+        try (Scope unused = span.makeCurrent()) {
+            Span queueSpan = tracer.spanBuilder("pipeline.queue")
+                    // TODO
 //                .setAttribute(AttributeKey.stringKey("pipeline.id"), "abracadabra")
-                .startSpan();
+                    .startSpan();
+            propagateContextIntoEvent(carrierEvent, OTelUtil.METADATA_OTEL_FULLCONTEXT, Context.current());
 
-        try (Scope ignored = span.makeCurrent()) {
-            Map<String, String> otemContextMap = new HashMap<>();
-            carrierEvent.getMetadata().put(OTelUtil.METADATA_OTEL_CONTEXT, otemContextMap);
-            ContextPropagators propagators = OTelUtil.openTelemetry.getPropagators();
-            propagators.getTextMapPropagator().inject(Context.current(), carrierEvent,
-                    (javaEvent, key, value) -> otemContextMap.put(key, value));
+            try (Scope ignored = queueSpan.makeCurrent()) {
+                propagateContextIntoEvent(carrierEvent, OTelUtil.METADATA_OTEL_CONTEXT, Context.current());
+            }
         }
+    }
+
+    private static void propagateContextIntoEvent(Event carrierEvent, String targetEventField, Context context) {
+        Map<String, String> otemContextMap = new HashMap<>();
+        carrierEvent.getMetadata().put(targetEventField, otemContextMap);
+        ContextPropagators propagators = OTelUtil.openTelemetry.getPropagators();
+        propagators.getTextMapPropagator().inject(context, carrierEvent,
+                (javaEvent, key, value) -> otemContextMap.put(key, value));
     }
 
     @Override

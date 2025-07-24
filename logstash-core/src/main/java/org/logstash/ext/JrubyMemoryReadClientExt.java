@@ -58,8 +58,16 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
     private static final long serialVersionUID = 1L;
 
-    @SuppressWarnings("unchecked")
-    public static final TextMapGetter<Event> JAVA_EVENT_CARRIER_GETTER = new TextMapGetter<>() {
+    public static final TextMapGetter<Event> JAVA_EVENT_CARRIER_GETTER = new JavaEventGetter(OTelUtil.METADATA_OTEL_CONTEXT);
+    public static final TextMapGetter<Event> JAVA_EVENT_CARRIER_GLOBAL_GETTER = new JavaEventGetter(OTelUtil.METADATA_OTEL_FULLCONTEXT);
+
+    private static class JavaEventGetter implements TextMapGetter<Event> {
+
+        private final String contextFieldName;
+
+        public JavaEventGetter(String contextFieldName) {
+            this.contextFieldName = contextFieldName;
+        }
 
         @Override
         public Iterable<String> keys(Event event) {
@@ -67,9 +75,10 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
             return otelContextMap.keySet();
         }
 
+        @SuppressWarnings("unchecked")
         private Map<String, String> retrieveContextMapFromMetadata(Event event) {
             // TODO handle error cases, like no meta, no otel_context map, type conversion etc
-            return (Map<String, String>) event.getMetadata().get(OTelUtil.METADATA_OTEL_CONTEXT);
+            return (Map<String, String>) event.getMetadata().get(contextFieldName);
         }
 
         @Nullable
@@ -137,14 +146,22 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
             // Extract and store the propagated span's SpanContext and other available concerns
             // in the specified Context.
-            Context context = textMapPropagator.extract(Context.current(), javaEvent, JAVA_EVENT_CARRIER_GETTER);
+            Context globalContext = textMapPropagator.extract(Context.current(), javaEvent, JAVA_EVENT_CARRIER_GLOBAL_GETTER);
+            Context queueContext = textMapPropagator.extract(Context.current(), javaEvent, JAVA_EVENT_CARRIER_GETTER);
 
-            Span span = tracer.spanBuilder("pipeline.queue")
-                    .setParent(context)
+            Span globalSpan = tracer.spanBuilder("pipeline.total")
+                    .setParent(globalContext)
+                    .setSpanKind(SpanKind.SERVER).startSpan();
+            globalSpan.makeCurrent();
+
+            Span queueSpan = tracer.spanBuilder("pipeline.queue")
+//                    .setParent(queueContext)
                     .setSpanKind(SpanKind.SERVER).startSpan();
 
-            span.makeCurrent();
-            span.end();
+            queueSpan.makeCurrent();
+            queueSpan.end();
+
+            javaEvent.associateSpan(globalSpan, "global");
         }
     }
 }

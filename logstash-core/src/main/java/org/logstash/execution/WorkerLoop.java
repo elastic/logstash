@@ -29,6 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.OTelUtil;
 import org.logstash.config.ir.CompiledPipeline;
+import org.logstash.ext.JrubyEventExtLibrary;
 
 /**
  * Pipeline execution worker, it's responsible to execute filters and output plugins for each {@link QueueBatch} that
@@ -115,6 +116,9 @@ public final class WorkerLoop implements Runnable {
         boolean isNackBatch = false;
         try {
             execution.compute(batch, flush, shutdown);
+            for (JrubyEventExtLibrary.RubyEvent e : batch.events()) {
+                e.getEvent().endSpan("global");
+            }
         } catch (Exception ex) {
             if (ex instanceof AbortedBatchException) {
                 isNackBatch = true;
