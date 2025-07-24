@@ -72,7 +72,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
     private static final FieldReference TAGS_FAILURE_FIELD = FieldReference.from(TAGS_FAILURE);
 
     private static final Logger logger = LogManager.getLogger(Event.class);
-    private transient Span span;
+    private transient Map<String, Span> contextualSpans = new HashMap<>();
 
     public Event()
     {
@@ -553,15 +553,20 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
         return fromSerializableMap(data);
     }
 
-    public void associateSpan(Span span) {
-        this.span = span;
+    public void associateSpan(Span span, String contextName) {
+        this.contextualSpans.put(contextName, span);
     }
 
-    public void endSpan() {
+    public void endSpan(String contextName) {
+        Span span = spanForContext(contextName);
         if (span == null) {
             return;
         }
         span.end();
+    }
+
+    public Span spanForContext(String contextName) {
+        return this.contextualSpans.get(contextName);
     }
 
     public static class InvalidTagsTypeException extends RuntimeException {
