@@ -100,11 +100,19 @@ This section summarizes the changes in the following releases:
 * Improve plugins remove command to support multiple plugins https://github.com/elastic/logstash/pull/17030[#17030]
 * Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events. https://github.com/elastic/logstash/pull/17789[#17789]
 * Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. https://github.com/elastic/logstash/pull/17721[#17721]
+* Enhanced keystore validation to prevent the creation of secrets that fail format parsing https://github.com/elastic/logstash/pull/17351[#17351]
 
 [[featured-8-19-0]]
 ==== New features and enhancements
 
+===== ES|QL Support in Elasticsearch Input (Technical Preview)
+Support for using ES|QL queries in the {logstash-ref}/plugins-inputs-elasticsearch.html[Elasticsearch input] to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
 Logstash OSS and Full docker images are now based on Ubuntu 24.04.
+
+[[dependencies-8.19.0]]
+==== Updates to dependencies
+
+* Update JDK to 21.0.7+6 https://github.com/elastic/logstash/pull/17591[#17591]
 
 [[plugins-8-19-0]]
 ==== Plugins
@@ -129,6 +137,21 @@ Logstash OSS and Full docker images are now based on Ubuntu 24.04.
 *Elastic Integration Filter - 8.19.0*
 
 * Introduces `proxy` config to support proxy URI to connect to Elasticsearch. https://github.com/elastic/logstash-filter-elastic_integration/pull/317[#317]
+
+*Kafka Integration - 11.6.3*
+
+* Update kafka client to `3.9.1` https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193] 
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` https://github.com/logstash-plugins/logstash-integration-kafka/pull/192[#192]
+* Expose the SASL client callback class setting to the Logstash configuration https://github.com/logstash-plugins/logstash-integration-kafka/pull/177[#177]
+* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup https://github.com/logstash-plugins/logstash-integration-kafka/pull/178[#178]
+
+*Xml Filter - 4.3.1*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
+
+*Tcp Output - 6.2.2*
+
+* Call connection check after connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
 
 [[logstash-8-18-4]]
 === Logstash 8.18.4 Release Notes
