@@ -21,6 +21,44 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.0 [logstash-9.1.0-release-notes]
+
+### Features and enhancements [logstash-9.1.0-features-enhancements]
+
+* Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events [#17791](https://github.com/elastic/logstash/pull/17791)
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. [#17721](https://github.com/elastic/logstash/pull/17721)
+* Improve plugins remove command to support multiple plugins [#17030](https://github.com/elastic/logstash/pull/17030)
+* Dropped  the persistent queue setting `queue.checkpoint.interval`[#17759](https://github.com/elastic/logstash/pull/17759)
+* Logstash now ships with JRuby 9.4.13.0 to leveragle latest features and improvements in the 9.4 series [#17696](https://github.com/elastic/logstash/pull/17696)
+
+### Plugins [logstash-plugin-9.1.0-changes]
+
+**Elastic Integration Filter - 9.1.0**
+
+* Introduces `proxy` param to support proxy [#316](https://github.com/elastic/logstash-filter-elastic_integration/pull/316)
+* Embeds Ingest Node components from Elasticsearch 9.1
+
+**Elasticsearch Filter - 4.2.0**
+
+* Add `target` configuration option to store the result into it [#196](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/196)
+
+**Elasticsearch Input - 5.2.0**
+
+* Add "cursor"-like index tracking [#205](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205)
+* ES|QL support [#233](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/233)
+
+**Elasticsearch Output - 12.0.5**
+
+* No user facing changes
+
+**JDBC Integration - 5.6.0**
+
+* Support other rufus scheduling options in JDBC Input [#183](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/183)
+
+**JMS Input - 3.3.0**
+
+* Added support for decoding multiple events from text or binary messages when using a codec that produces multiple events [#56](https://github.com/logstash-plugins/logstash-input-jms/pull/56)
+
 ## 9.0.4 [logstash-9.0.4-release-notes]
 
 ### Fixes [logstash-9.0.4-fixes]
@@ -88,24 +126,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.1.0 [logstash-9.1.0-release-notes]
-
-### Features and enhancements [logstash-9.1.0-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.0
-
-=== Logstash Commits between 9.1 and 9.0.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.4..9.1"
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.0.4..9.1 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.1.0-changes]
 
 ## 9.0.0 [logstash-900-release-notes]
 
