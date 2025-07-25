@@ -30,6 +30,15 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Improve plugins remove command to support multiple plugins [#17030](https://github.com/elastic/logstash/pull/17030)
 * Dropped  the persistent queue setting `queue.checkpoint.interval`[#17759](https://github.com/elastic/logstash/pull/17759)
 * Logstash now ships with JRuby 9.4.13.0 to leveragle latest features and improvements in the 9.4 series [#17696](https://github.com/elastic/logstash/pull/17696)
+* Enhanced keystore validation to prevent the creation of secrets in an invalid format [#17351](https://github.com/elastic/logstash/pull/17351)
+
+##### ES|QL Support in Elasticsearch Input (Technical Preview)
+
+Support for using ES|QL queries in the [Elasticsearch input](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-elasticsearch.html) to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. Logstash OSS and Full docker images are now based on Ubuntu 24.04.
+
+### Updates to dependencies [logstash-9.1.0-dependencies]
+
+* Update JDK to 21.0.7+6 [#17591](https://github.com/elastic/logstash/pull/17591)
 
 ### Plugins [logstash-plugin-9.1.0-changes]
 
@@ -37,6 +46,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Introduces `proxy` param to support proxy [#316](https://github.com/elastic/logstash-filter-elastic_integration/pull/316)
 * Embeds Ingest Node components from Elasticsearch 9.1
+* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. [#320](https://github.com/elastic/logstash-filter-elastic_integration/pull/320)
 
 **Elasticsearch Filter - 4.2.0**
 
@@ -50,6 +60,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 **Elasticsearch Output - 12.0.5**
 
 * No user facing changes
+* Docs: update Cloud terminology [#1212](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1212)
+* Change connection log entry from `WARN` to `INFO` when connecting during register phase [#1211](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1211)
 
 **JDBC Integration - 5.6.0**
 
@@ -58,6 +70,21 @@ To check for security updates, go to [Security announcements for the Elastic sta
 **JMS Input - 3.3.0**
 
 * Added support for decoding multiple events from text or binary messages when using a codec that produces multiple events [#56](https://github.com/logstash-plugins/logstash-input-jms/pull/56)
+
+**Kafka Integration - 11.6.3**
+
+* Update kafka client to `3.9.1` [#193](https://github.com/logstash-plugins/logstash-integration-kafka/pull/193)
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` [#192](https://github.com/logstash-plugins/logstash-integration-kafka/pull/192)
+* Expose the SASL client callback class setting to the Logstash configuration [#177](https://github.com/logstash-plugins/logstash-integration-kafka/pull/177)
+* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup [#178](https://github.com/logstash-plugins/logstash-integration-kafka/pull/178)
+
+**Xml Filter - 4.3.1**
+
+* Update Nokogiri dependency version [#88](https://github.com/logstash-plugins/logstash-filter-xml/pull/88)
+
+**Tcp Output - 7.0.1**
+
+* Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
 ## 9.0.4 [logstash-9.0.4-release-notes]
 
