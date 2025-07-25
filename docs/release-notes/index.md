@@ -28,7 +28,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events [#17791](https://github.com/elastic/logstash/pull/17791)
 * Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. [#17721](https://github.com/elastic/logstash/pull/17721)
 * Improve plugins remove command to support multiple plugins [#17030](https://github.com/elastic/logstash/pull/17030)
-* Dropped  the persistent queue setting `queue.checkpoint.interval`[#17759](https://github.com/elastic/logstash/pull/17759)
+* Deprecated the persistent queue setting `queue.checkpoint.interval`[#17759](https://github.com/elastic/logstash/pull/17759), which was found to have no effect. This will be removed in a future Logstash release.
 * Logstash now ships with JRuby 9.4.13.0 to leveragle latest features and improvements in the 9.4 series [#17696](https://github.com/elastic/logstash/pull/17696)
 * Enhanced keystore validation to prevent the creation of secrets in an invalid format [#17351](https://github.com/elastic/logstash/pull/17351)
 
@@ -46,7 +46,6 @@ Support for using ES|QL queries in the [Elasticsearch input](https://www.elastic
 
 * Introduces `proxy` param to support proxy [#316](https://github.com/elastic/logstash-filter-elastic_integration/pull/316)
 * Embeds Ingest Node components from Elasticsearch 9.1
-* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. [#320](https://github.com/elastic/logstash-filter-elastic_integration/pull/320)
 
 **Elasticsearch Filter - 4.2.0**
 
