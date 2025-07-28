@@ -28,8 +28,8 @@ module LogStash module Instrument
     # @raise [NameError] If the class is not found
     def self.create(type, namespaces, key)
       case type
-      when :counter then return LogStash::Instrument::MetricType::Counter.new(namespaces, key)
-      when :gauge   then return LogStash::Instrument::MetricType::Gauge.new(namespaces, key)
+      when :counter then return org.logstash.instrument.metrics.counter.LongCounter.new(key.to_s)
+      when :gauge   then return org.logstash.instrument.metrics.gauge.LazyDelegatingGauge.new(key.to_s)
       when :uptime  then return org.logstash.instrument.metrics.UptimeMetric.new(key.to_s)
       when :timer   then return org.logstash.instrument.metrics.timer.TimerMetric::create(key.to_s)
       else fail NameError, "Unknown Metric Type `#{type}`"
