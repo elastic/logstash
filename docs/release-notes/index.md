@@ -37,6 +37,9 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * [Support](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235) for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
 * Logstash OSS and Full docker images are now based on Ubuntu 24.04.
 
+#### Field Tracking Support in Elasticsearch Input (Technical Preview)
+
+The Elasticsearch Input now provides [support](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205) for field value tracking, persisted to disk on each `search_after` page. This is useful to track new data being written to an index or series of indices.
 ### Updates to dependencies [logstash-9.1.0-dependencies]
 
 * Update JDK to 21.0.7+6 [#17591](https://github.com/elastic/logstash/pull/17591)
