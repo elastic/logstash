@@ -2,7 +2,7 @@
 == Release Notes
 
 This section summarizes the changes in the following releases:
-
+* <<logstash-8-19-0,Logstash 8.19.0>>
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
@@ -90,6 +90,73 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-0]]
+=== Logstash 8.19.0 Release Notes
+
+[[notable-8-19-0]]
+==== Notable issues fixed
+
+* Improve plugins remove command to support multiple plugins https://github.com/elastic/logstash/pull/17030[#17030]
+* Significantly improves write speeds to the persistent queue (PQ) when a pipeline's workers are caught up with already-written events. https://github.com/elastic/logstash/pull/17789[#17789]
+* Eliminated log warning about unknown gauge metric type when using pipeline-to-pipeline. https://github.com/elastic/logstash/pull/17721[#17721]
+* Enhanced keystore validation to prevent the creation of secrets that fail format parsing https://github.com/elastic/logstash/pull/17351[#17351]
+
+[[featured-8-19-0]]
+==== New features and enhancements
+
+===== ES|QL Support in Elasticsearch Input (Technical Preview)
+* https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235[Support] for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
+
+===== Field Tracking Support in Elasticsearch Input (Technical Preview)
+* The {es} Input now provides https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205[support] for field value tracking, persisted to disk on each `search_after` page. This is useful to track new data being written to an index or series of indices.
+
+===== Updated Ubuntu base image
+* Logstash OSS and Full docker images are now based on Ubuntu 24.04.
+
+[[dependencies-8.19.0]]
+==== Updates to dependencies
+
+* Update JDK to 21.0.7+6 https://github.com/elastic/logstash/pull/17591[#17591]
+
+[[plugins-8-19-0]]
+==== Plugins
+
+*Elasticsearch Filter - 3.18.0*
+
+* Add `target` configuration option to store the result into it https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/197[#197]
+
+*Elasticsearch Input - 4.23.0*
+
+* ES|QL support https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235[#235]
+* Add "cursor"-like index tracking https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205[#205]
+
+*JMS Input - 3.3.0*
+
+* Added support for decoding multiple events from text or binary messages when using a codec that produces multiple events https://github.com/logstash-plugins/logstash-input-jms/pull/56[#56]
+
+*JDBC Integration - 5.6.0*
+
+* Support other rufus scheduling options in JDBC Input https://github.com/logstash-plugins/logstash-integration-jdbc/pull/183[#183]
+
+*Elastic Integration Filter - 8.19.0*
+
+* Introduces `proxy` config to support proxy URI to connect to Elasticsearch. https://github.com/elastic/logstash-filter-elastic_integration/pull/317[#317]
+
+*Kafka Integration - 11.6.3*
+
+* Update kafka client to `3.9.1` https://github.com/logstash-plugins/logstash-integration-kafka/pull/193[#193] 
+* Docs: fixed setting type reference for `sasl_iam_jar_paths` https://github.com/logstash-plugins/logstash-integration-kafka/pull/192[#192]
+* Expose the SASL client callback class setting to the Logstash configuration https://github.com/logstash-plugins/logstash-integration-kafka/pull/177[#177]
+* Adds a mechanism to load AWS IAM authentication as SASL client libraries at startup https://github.com/logstash-plugins/logstash-integration-kafka/pull/178[#178]
+
+*Xml Filter - 4.3.1*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/88[#88]
+
+*Tcp Output - 6.2.2*
+
+* Call connection check after connect https://github.com/logstash-plugins/logstash-output-tcp/pull/61[#61]
 
 [[logstash-8-18-4]]
 === Logstash 8.18.4 Release Notes
