@@ -27,5 +27,4 @@ Note these differences between {{es-serverless}} and both {{ech}} and self-manag
 **Known issue for Logstash to Elasticsearch Serverless.**
 The logstash-output-elasticsearch `hosts` setting defaults to port :9200.
 Set the value to port :443 instead.
-
 ::::
