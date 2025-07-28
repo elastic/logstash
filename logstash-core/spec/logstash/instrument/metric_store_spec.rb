@@ -20,7 +20,7 @@ require "logstash/instrument/metric_store"
 describe LogStash::Instrument::MetricStore do
   let(:namespaces) { [:root, :pipelines, :pipeline_01] }
   let(:key) { :events_in }
-  let(:counter) { LogStash::Instrument::MetricType::Counter.new(namespaces, key) }
+  let(:counter) { org.logstash.instrument.metrics.counter.LongCounter.new(key.to_s) }
 
   context "when the metric object doesn't exist" do
     it "store the object" do
@@ -33,7 +33,7 @@ describe LogStash::Instrument::MetricStore do
   end
 
   context "when the metric object exist in the namespace"  do
-    let(:new_counter) { LogStash::Instrument::MetricType::Counter.new(namespaces, key) }
+    let(:new_counter) { org.logstash.instrument.metrics.counter.LongCounter.new(key.to_s) }
 
     it "return the object" do
       subject.fetch_or_store(namespaces, key, counter)
@@ -53,18 +53,18 @@ describe LogStash::Instrument::MetricStore do
   context "retrieving events" do
     let(:metric_events) {
       [
-        [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out],
+        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out],
       ]
     }
 
     before :each do
       # Lets add a few metrics in the store before trying to find them
-      metric_events.each do |namespaces, metric_key, action|
-        metric = subject.fetch_or_store(namespaces, metric_key, LogStash::Instrument::MetricType::Counter.new(namespaces, metric_key))
-        metric.execute(action)
+      metric_events.each do |namespaces, metric_key|
+        metric = subject.fetch_or_store(namespaces, metric_key, org.logstash.instrument.metrics.counter.LongCounter.new(metric_key.to_s))
+        metric.increment
       end
     end
 
@@ -96,7 +96,7 @@ describe LogStash::Instrument::MetricStore do
 
         it "allow to retrieve a specific metrics" do
           metrics = subject.get(:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch", :event_in)
-          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Counter)))))))))
+          expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(org.logstash.instrument.metrics.counter.LongCounter)))))))))
         end
 
         context "with filtered keys" do
@@ -142,7 +142,7 @@ describe LogStash::Instrument::MetricStore do
 
           it "allow to retrieve a specific metrics" do
             metrics = subject.get_with_path("node/sashimi/pipelines/pipeline01/plugins/logstash-output-elasticsearch/event_in")
-            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(LogStash::Instrument::MetricType::Counter)))))))))
+            expect(metrics).to match(a_hash_including(:node => a_hash_including(:sashimi => a_hash_including(:pipelines => a_hash_including(:pipeline01 => a_hash_including(:plugins => a_hash_including(:"logstash-output-elasticsearch" => a_hash_including(:event_in => be_kind_of(org.logstash.instrument.metrics.counter.LongCounter)))))))))
           end
 
           context "with filtered keys" do
@@ -260,18 +260,18 @@ describe LogStash::Instrument::MetricStore do
   describe "#prune" do
     let(:metric_events) {
       [
-        [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out, :increment],
-        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out, :increment],
+        [[:node, :sashimi, :pipelines, :pipeline01, :plugins, :"logstash-output-elasticsearch"], :event_in],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_in],
+        [[:node, :sashimi, :pipelines, :pipeline01], :processed_events_out],
+        [[:node, :sashimi, :pipelines, :pipeline02], :processed_events_out],
       ]
     }
 
     before :each do
       # Lets add a few metrics in the store before trying to find them
-      metric_events.each do |namespaces, metric_key, action|
-        metric = subject.fetch_or_store(namespaces, metric_key, LogStash::Instrument::MetricType::Counter.new(namespaces, metric_key))
-        metric.execute(action)
+      metric_events.each do |namespaces, metric_key|
+        metric = subject.fetch_or_store(namespaces, metric_key, org.logstash.instrument.metrics.counter.LongCounter.new(metric_key.to_s))
+        metric.increment
       end
     end
 
