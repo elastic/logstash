@@ -34,7 +34,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ##### ES|QL Support in Elasticsearch Input (Technical Preview)
 
-* Support for using ES|QL queries in the [Elasticsearch input](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-elasticsearch.html) to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
+* [Support](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235) for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
 * Logstash OSS and Full docker images are now based on Ubuntu 24.04.
 
 ### Updates to dependencies [logstash-9.1.0-dependencies]
