@@ -59,7 +59,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Elasticsearch Output - 12.0.5**
 
-* No user facing changes
 * Docs: update Cloud terminology [#1212](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1212)
 * Change connection log entry from `WARN` to `INFO` when connecting during register phase [#1211](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1211)
 
