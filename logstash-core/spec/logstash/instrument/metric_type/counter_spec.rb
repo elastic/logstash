@@ -18,10 +18,10 @@
 require "logstash/json"
 require "spec_helper"
 
-describe LogStash::Instrument::MetricType::Counter do
+describe org.logstash.instrument.metrics.counter.LongCounter do
   let(:key) { :mykey }
 
-  subject { org.logstash.instrument.metrics.counter.LongCounter.new(key.to_s) }
+  subject { described_class.new(key.to_s) }
 
   describe "#increment" do
     it "increment the counter" do

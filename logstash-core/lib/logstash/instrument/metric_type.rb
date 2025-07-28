@@ -15,8 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/instrument/metric_type/gauge"
-
 module LogStash module Instrument
   module MetricType
     # Use the string to generate a concrete class for this metrics

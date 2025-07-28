@@ -18,14 +18,14 @@
 require "logstash/json"
 require "spec_helper"
 
-describe LogStash::Instrument::MetricType::Gauge do
+describe org.logstash.instrument.metrics.gauge.LazyDelegatingGauge do
   let(:key) { :mykey }
   let(:value) { "hello" }
 
-  subject { org.logstash.instrument.metrics.gauge.LazyDelegatingGauge.new(key.to_s) }
+  subject { described_class.new(key.to_s) }
 
   before :each do
-    subject.execute(:set, value)
+    subject.set(value)
   end
 
   describe "#execute" do
