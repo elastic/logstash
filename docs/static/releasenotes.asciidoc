@@ -106,11 +106,14 @@ This section summarizes the changes in the following releases:
 ==== New features and enhancements
 
 ===== ES|QL Support in Elasticsearch Input (Technical Preview)
-* https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235 [Support] for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
-* Logstash OSS and Full docker images are now based on Ubuntu 24.04.
-===== Field Tracking Support in Elasticsearch Input (Technical Preview)
+* https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235[Support] for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
 
-The Elasticsearch Input now provides https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205[support] for field value tracking, persisted to disk on each `search_after` page. This is useful to track new data being written to an index or series of indices.
+===== Field Tracking Support in Elasticsearch Input (Technical Preview)
+* The {es} Input now provides https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/205[support] for field value tracking, persisted to disk on each `search_after` page. This is useful to track new data being written to an index or series of indices.
+
+===== Updated Ubuntu base image
+* Logstash OSS and Full docker images are now based on Ubuntu 24.04.
+
 [[dependencies-8.19.0]]
 ==== Updates to dependencies
 
