@@ -106,7 +106,7 @@ This section summarizes the changes in the following releases:
 ==== New features and enhancements
 
 ===== ES|QL Support in Elasticsearch Input (Technical Preview)
-* Support for using ES|QL queries in the {logstash-ref}/plugins-inputs-elasticsearch.html[Elasticsearch input] to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
+* [Support](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/235) for using ES|QL queries in the Elasticsearch input to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
 * Logstash OSS and Full docker images are now based on Ubuntu 24.04.
 
 [[dependencies-8.19.0]]
