@@ -55,7 +55,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "clamp", "~> 1", ">= 1.3.3" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
