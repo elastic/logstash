@@ -83,7 +83,6 @@ def ship_observability_sre_image_steps(branch, workflow_type):
     step = f'''
 - label: ":package: Build & Ship aarch64 ObservabilitySRE container / {branch}-{workflow_type.upper()}"
   key: "logstash_build_and_ship_observability_sre_aarch64"
-  soft_fail: true
   depends_on: logstash_publish_dra
   agents:
     provider: aws
@@ -100,7 +99,6 @@ def ship_observability_sre_image_steps(branch, workflow_type):
     .buildkite/scripts/dra/build-and-push-observability-sre.sh
 - label: ":package: Build & Ship x86_64 ObservabilitySRE container / {branch}-{workflow_type.upper()}"
   key: "logstash_build_and_ship_observability_sre_x86_64"
-  soft_fail: true
   depends_on: logstash_publish_dra
   agents:
     provider: gcp
