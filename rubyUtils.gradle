@@ -23,15 +23,13 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
         classpath "de.undercouch:gradle-download-task:4.0.4"
-        classpath "org.jruby:jruby-core:9.4.9.0"
+        classpath "org.jruby:jruby-core:${gradle.ext.versions.jruby.version}"
     }
 }
 
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
-import org.yaml.snakeyaml.Yaml
 
 
 import org.jruby.Ruby
@@ -217,7 +215,7 @@ Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block
 //===============================================================================
 
 def versionsPath = project.hasProperty("LOGSTASH_CORE_PATH") ? LOGSTASH_CORE_PATH + "/../versions.yml" : "${projectDir}/versions.yml"
-versionMap = (Map) (new Yaml()).load(new File("${versionsPath}").text)
+versionMap = gradle.ext.versions
 
 String jRubyURL
 String jRubyVersion

@@ -17,10 +17,7 @@
  * under the License.
  */
 
-import org.yaml.snakeyaml.Yaml
-
-// fetch version from Logstash's main versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+def versionMap = gradle.ext.versions
 
 description = """Logstash Dependency Reporting Utility"""
 version = versionMap['logstash-core']
@@ -36,7 +33,6 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
     classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
