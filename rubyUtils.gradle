@@ -24,11 +24,7 @@ buildscript {
     }
     dependencies {
         classpath "de.undercouch:gradle-download-task:4.0.4"
-<<<<<<< HEAD
-        classpath "org.jruby:jruby-core:9.4.9.0"
-=======
         classpath "org.jruby:jruby-core:${gradle.ext.versions.jruby.version}"
->>>>>>> b430599c (make sure versions.yml is only read once into gradle.ext (#17865))
     }
 }
 
