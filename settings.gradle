@@ -14,3 +14,18 @@ if (!oss) {
   include ':logstash-xpack'
   project(':logstash-xpack').projectDir = new File('./x-pack')
 }
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "org.yaml:snakeyaml:2.2"
+  }
+}
+
+// load versions of jdk and jruby asap so we can use them anywhere else in the scripts
+import org.yaml.snakeyaml.Yaml
+def versionsFile = file("$rootDir/versions.yml")
+gradle.ext.versions = new Yaml().load(versionsFile.text)
