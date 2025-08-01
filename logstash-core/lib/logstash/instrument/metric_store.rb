@@ -24,8 +24,10 @@ module LogStash module Instrument
   # saved in a retrievable way, this is a wrapper around multiples ConcurrentHashMap
   # acting as a tree like structure.
   class MetricStore
-    class NamespacesExpectedError < StandardError; end
-    class MetricNotFound < StandardError; end
+    # class NamespacesExpectedError < StandardError; end
+    # class MetricNotFound < StandardError; end
+    java_import org.logstash.instrument.metrics.MetricStore::MetricNotFound
+    java_import org.logstash.instrument.metrics.MetricStore::NamespacesExpectedError
 
     KEY_PATH_SEPARATOR = "/".freeze
 
@@ -47,6 +49,9 @@ module LogStash module Instrument
       # in the structured hash or when we query it for search or to make
       # the result available in the API.
       @structured_lookup_mutex = Mutex.new
+
+      @java_store = org.logstash.instrument.metrics.MetricStore.new
+      @use_java_impl = true
     end
 
     # This method use the namespace and key to search the corresponding value of
@@ -66,6 +71,8 @@ module LogStash module Instrument
     #                         to the provided default_value_generator block will be stored.
     #   @return [Metric] the value as it exists in the tree after this operation
     def fetch_or_store(namespaces, key, default_value = nil)
+      return @java_store.fetch_or_store(namespaces.map(&:to_s), key.to_s, block_given? ? yield(key) : default_value) if @use_java_impl
+
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
       # This give us a `o(1)` access, which is faster than searching through the structured
       # data store (Which is a `o(n)` operation where `n` is the number of element in the namespace and
@@ -104,6 +111,9 @@ module LogStash module Instrument
     # @param [Array] The path where values should be located
     # @return [Hash]
     def get_with_path(path)
+      return remap_keys_to_sym(@java_store.get_with_path(path)) if @use_java_impl
+      # return @java_store.get_with_path(java.util.ArrayList.new(path.map(&:to_s))) if @use_java_impl
+
       get(*key_paths(path))
     end
 
@@ -112,6 +122,9 @@ module LogStash module Instrument
     # @param [Array<Symbol>]
     # @return [Hash]
     def get(*key_paths)
+      #TODO ? remap key strings to key symbols or the Java get method should work with RubySymbol-s?
+      return remap_keys_to_sym(@java_store.get(java.util.ArrayList.new(key_paths.map(&:to_s)))) if @use_java_impl
+
       # Normalize the symbols access
       key_paths.map(&:to_sym)
       new_hash = Hash.new
@@ -123,6 +136,33 @@ module LogStash module Instrument
       new_hash
     end
 
+    def remap_keys_to_sym(map)
+      translated_map = {}
+      map.each do |key, value|
+        if value.is_a?(Hash)
+          translated_map[key.to_sym] = remap_keys_to_sym(value)
+        else
+          translated_map[key.to_sym] = value
+        end
+        #map.delete(key)
+      end
+      translated_map
+    end
+    private :remap_keys_to_sym
+
+    def remap_nested_to_string(list)
+      result = java.util.ArrayList.new(list.size)
+      list.each do |v|
+        if v.is_a?(Array)
+          result << remap_nested_to_string(v)
+        else
+          result << v.to_s
+        end
+      end
+      result
+    end
+    private :remap_nested_to_string
+
     # Retrieve values like `get`, but don't return them fully nested.
     # This means that if you call `get_shallow(:foo, :bar)` the result will not
     # be nested inside of `{:foo {:bar => values}`.
@@ -130,6 +170,8 @@ module LogStash module Instrument
     # @param [Array<Symbol>]
     # @return [Hash]
     def get_shallow(*key_paths)
+      return remap_keys_to_sym(@java_store.get_shallow(key_paths.map(&:to_s))) if @use_java_impl
+
       key_paths.reduce(get(*key_paths)) {|acc, p| acc[p]}
     end
 
@@ -154,6 +196,8 @@ module LogStash module Instrument
     #                 }
     # }
     def extract_metrics(path, *keys)
+      return remap_keys_to_sym(@java_store.extract_metrics(java.util.ArrayList.new(path.map(&:to_s)), remap_nested_to_string(keys))) if @use_java_impl
+
       keys.reduce({}) do |acc, k|
         # Simplify 1-length keys
         k = k.first if k.is_a?(Array) && k.size == 1
@@ -187,6 +231,10 @@ module LogStash module Instrument
     end
 
     def has_metric?(*path)
+      if @use_java_impl
+        return @java_store.has_metric?(java.util.ArrayList.new(path.map(&:to_s)))
+      end
+
       @fast_lookup[path]
     end
 
@@ -196,6 +244,22 @@ module LogStash module Instrument
     # @param path [String] The search path for metrics
     # @param [Array] The metric for the specific path
     def each(path = nil, &block)
+      if @use_java_impl
+        if path.nil?
+          if block_given?
+            return @java_store.each(&block)
+          else
+            return @java_store.each
+          end
+        else
+          if block_given?
+            return @java_store.each(path, &block)
+          else
+            return @java_store.each(path)
+          end
+        end
+      end
+
       metrics = if path.nil?
         get_all
       else
@@ -207,6 +271,8 @@ module LogStash module Instrument
     alias_method :all, :each
 
     def prune(path)
+      return @java_store.prune(path) if @use_java_impl
+
       key_paths = key_paths(path).map(&:to_sym)
       @structured_lookup_mutex.synchronize do
         keys_to_delete = @fast_lookup.keys.select {|namespace| (key_paths - namespace[0..-2]).empty? }
@@ -216,6 +282,8 @@ module LogStash module Instrument
     end
 
     def size
+      return @java_store.size if @use_java_impl
+
       @fast_lookup.size
     end
 
