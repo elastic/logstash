@@ -107,12 +107,8 @@ COPY --chown=logstash:root pipeline/default.conf /usr/share/logstash/pipeline/lo
 COPY --chmod=0755 bin/docker-entrypoint /usr/local/bin/
 
 <% if image_flavor == 'observability-sre' -%>
-<<<<<<< HEAD
-# Add FIPS configuration for observability-sre image flavor
-=======
 <%# Add FIPS configuration for observability-sre image flavor %>
 
->>>>>>> 79fac1fe (Make sure FIPS comments belong in the platform-sre Dockerfile (#17875))
 RUN mkdir -p /usr/share/logstash/config/security
 
 # Copy JVM security configuration files from the unpacked tarball
