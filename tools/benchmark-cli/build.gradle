@@ -16,10 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's main versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+def versionMap = gradle.ext.versions
 
 description = """Logstash End to End Benchmarking Utility"""
 version = versionMap['logstash-core']
@@ -36,7 +34,6 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath group: 'org.yaml', name: 'snakeyaml', version: "${snakeYamlVersion}"
     classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
