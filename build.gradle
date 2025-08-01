@@ -19,7 +19,6 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.2'
         shadowGradlePluginVersion = '8.1.1'
     }
 
@@ -28,9 +27,6 @@ buildscript {
         maven {
             url 'https://plugins.gradle.org/m2/'
         }
-    }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
     }
 }
 
@@ -44,7 +40,6 @@ apply from: "${projectDir}/x-pack/distributions/internal/observabilitySRE/build-
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
-import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
@@ -710,10 +705,10 @@ class JDKDetails {
     final String unpackedJdkName
     private String arch
 
-    JDKDetails(versionYml, osName, jdkArch) {
-        revision = versionYml.bundled_jdk.revision
-        build = versionYml.bundled_jdk.build
-        vendor = versionYml.bundled_jdk.vendor
+    JDKDetails(bundledJdk, osName, jdkArch) {
+        revision = bundledJdk.revision
+        build = bundledJdk.build
+        vendor = bundledJdk.vendor
         major = revision.split('\\.').first() as int
         this.osName = osName
 
@@ -829,9 +824,9 @@ tasks.register("downloadJdk", Download) {
     project.ext.set("versionFound", true)
     String osName = selectOsType()
 
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
     String jdkArch = selectArch()
-    def jdkDetails = new JDKDetails(versionYml, osName, jdkArch)
+
+    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
 
     description "Download JDK ${jdkDetails.major}, OS: ${osName}"
 
@@ -860,10 +855,8 @@ tasks.register("downloadJdk", Download) {
 }
 
 tasks.register("checkNewJdkVersion") {
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
-
     // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
+    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
     // throws Gradle exception if local and remote doesn't match
     jdkDetails.checkLocalVersionMatchingLatest()
 }
