@@ -184,8 +184,8 @@ WORKDIR /usr/share/logstash
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
 
-# Add FIPS configuration for observability-sre image flavor
 <% if image_flavor == 'observability-sre' -%>
+<%# Add FIPS configuration for observability-sre image flavor %>
 
 RUN mkdir -p /usr/share/logstash/config/security
 
