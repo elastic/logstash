@@ -19,12 +19,6 @@
 
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    }
 }
 
 plugins {
@@ -50,10 +44,7 @@ jacoco {
 }
 
 
-import org.yaml.snakeyaml.Yaml
-
-// fetch version from Logstash's main versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
+def versionMap = gradle.ext.versions
 
 description = """Logstash Core Java"""
 
