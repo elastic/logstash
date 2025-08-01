@@ -33,7 +33,6 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
     classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
