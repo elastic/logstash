@@ -60,6 +60,13 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
         return getTimer(context, namespace, key);
     }
 
+    @JRubyMethod
+    public IRubyObject histogram(final ThreadContext context,
+                                 final IRubyObject namespace,
+                                 final IRubyObject key) {
+        return getHistogram(context, namespace, key);
+    }
+
     @JRubyMethod(name = "report_time")
     public IRubyObject reportTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject duration) {
@@ -82,6 +89,8 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
         IRubyObject key, IRubyObject value);
 
     protected abstract IRubyObject getTimer(ThreadContext context, IRubyObject namespace, IRubyObject key);
+
+    protected abstract IRubyObject getHistogram(ThreadContext context, IRubyObject namespace, IRubyObject key);
 
     protected abstract IRubyObject doReportTime(ThreadContext context, IRubyObject namespace,
         IRubyObject key, IRubyObject duration);
