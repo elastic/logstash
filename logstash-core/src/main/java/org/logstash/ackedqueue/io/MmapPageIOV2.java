@@ -116,7 +116,6 @@ public final class MmapPageIOV2 implements PageIO {
             String.format("seqNum=%d is > maxSeqNum=%d", seqNum, maxSeqNum());
 
         List<byte[]> elements = new ArrayList<>();
-        final LongVector seqNums = new LongVector(limit);
 
         int offset = this.offsetMap.get((int) (seqNum - this.minSeqNum));
 
@@ -138,14 +137,13 @@ public final class MmapPageIOV2 implements PageIO {
             }
 
             elements.add(readBytes);
-            seqNums.add(readSeqNum);
 
             if (seqNum + i >= maxSeqNum()) {
                 break;
             }
         }
 
-        return new SequencedList<>(elements, seqNums);
+        return new SequencedList<>(elements, seqNum);
     }
 
     // recover will overwrite/update/set this object minSeqNum, capacity and elementCount attributes
@@ -236,7 +234,6 @@ public final class MmapPageIOV2 implements PageIO {
         if (this.buffer != null) {
             this.buffer.force();
             BUFFER_CLEANER.clean(buffer);
-
         }
         this.buffer = null;
     }

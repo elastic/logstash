@@ -64,7 +64,7 @@ class PageFactory {
 
             // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
             if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
-                p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+                p.ackedSeqNums.set(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
             }
 
             return p;
@@ -97,7 +97,7 @@ class PageFactory {
         try {
             // this page ackedSeqNums bitset is a new empty bitset, if we have some acked elements, set them in the bitset
             if (checkpoint.getFirstUnackedSeqNum() > checkpoint.getMinSeqNum()) {
-                p.ackedSeqNums.flip(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
+                p.ackedSeqNums.set(0, (int) (checkpoint.getFirstUnackedSeqNum() - checkpoint.getMinSeqNum()));
             }
 
             return p;
