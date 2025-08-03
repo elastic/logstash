@@ -1,0 +1,33 @@
+{
+  "host": "192.168.0.100",
+  "community": "public",
+  "version": "2c",
+  "enterprise_oid": "1.3.6.1.4.1.8072.2.3.0.1",
+  "agent_address": "192.168.0.100",
+  "generic_trap_type": 6,
+  "specific_trap_type": 1,
+  "uptime": "12345678",
+  "trap_oid": "1.3.6.1.6.3.1.1.5.1",
+  "varbinds": [
+    { "oid": "1.3.6.1.2.1.1.1.0", "value": "Linux Device - Kernel 5.10.0-23-amd64 - Uptime 23 days" },
+    { "oid": "1.3.6.1.2.1.1.5.0", "value": "Edge-Router-01" },
+    { "oid": "1.3.6.1.2.1.1.6.0", "value": "Datacenter A - Rack 2 - Position 4" },
+    { "oid": "1.3.6.1.2.1.2.2.1.2.1", "value": "eth0" },
+    { "oid": "1.3.6.1.2.1.2.2.1.8.1", "value": "up" },
+    { "oid": "1.3.6.1.2.1.2.2.1.10.1", "value": "123456789" },
+    { "oid": "1.3.6.1.2.1.2.2.1.16.1", "value": "987654321" },
+    { "oid": "1.3.6.1.4.1.9.2.1.56.0", "value": "CPU Utilization: 67%" },
+    { "oid": "1.3.6.1.4.1.9.2.1.58.0", "value": "Memory Usage: 78%" },
+    { "oid": "1.3.6.1.4.1.9.2.1.59.0", "value": "Temperature: 45C" },
+    { "oid": "1.3.6.1.4.1.9.2.1.60.0", "value": "Power Supply: OK" },
+    { "oid": "1.3.6.1.4.1.9.2.1.61.0", "value": "Fan Speed: 3200 RPM" },
+    { "oid": "1.3.6.1.4.1.9.2.1.62.0", "value": "Disk Health: GOOD" },
+    { "oid": "1.3.6.1.4.1.9.2.1.63.0", "value": "RAID Status: Optimal" },
+    { "oid": "1.3.6.1.4.1.9.2.1.64.0", "value": "Voltage: 12.1V" },
+    { "oid": "1.3.6.1.4.1.9.2.1.65.0", "value": "Battery: Charging" },
+    { "oid": "1.3.6.1.4.1.9.2.1.66.0", "value": "Syslog Level: WARN" },
+    { "oid": "1.3.6.1.4.1.9.2.1.67.0", "value": "SNMP Trap Count: 3421" },
+    { "oid": "1.3.6.1.4.1.9.2.1.68.0", "value": "Last Config Change: 2025-06-30T14:22:01Z" },
+    { "oid": "1.3.6.1.4.1.9.2.1.69.0", "value": "Firmware Version: 3.1.7" }
+  ]
+}

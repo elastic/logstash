@@ -55,6 +55,7 @@ dependencies {
   annotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
   implementation 'com.google.guava:guava:33.1.0-jre'
   implementation 'commons-io:commons-io:2.16.1'
+  implementation 'org.openjdk.jol:jol-core:0.17'
   runtimeOnly 'joda-time:joda-time:2.8.2'
   api "org.jruby:jruby-core:$jrubyVersion"
 }
@@ -82,7 +83,27 @@ tasks.register("jmh", JavaExec) {
   doFirst {
     args = [
             "-Djava.io.tmpdir=${buildDir.absolutePath}",
-            "-XX:+HeapDumpOnOutOfMemoryError", "-Xms2g", "-Xmx2g",
+            "-Djol.magicFieldOffset=true",
+            "-XX:+HeapDumpOnOutOfMemoryError", "-Xms8g", "-Xmx8g",
+
+            "-Djruby.compile.invokedynamic=true",
+            "-XX:+HeapDumpOnOutOfMemoryError",
+            "-Djava.security.egd=file:/dev/urandom",
+            "-Dlog4j2.isThreadContextMapInheritable=true",
+            "-Djruby.regexp.interruptible=true",
+            "-Djdk.io.File.enableADS=true",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            "--add-opens=java.base/java.security=ALL-UNNAMED",
+            "--add-opens=java.base/java.io=ALL-UNNAMED",
+            "--add-opens=java.base/java.nio.channels=ALL-UNNAMED",
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+            "--add-opens=java.management/sun.management=ALL-UNNAMED",
+            "-Dio.netty.allocator.maxOrder=11",
+
             shadowJar.archiveFile.get().asFile,
             include
     ]
