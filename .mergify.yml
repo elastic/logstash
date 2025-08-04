@@ -125,10 +125,10 @@ pull_request_rules:
     conditions:
       - merged
       - label=docs
-      - files~=^docs/ 
-      - head~=^\d+\.
+      - files~=^docs/
+      - base~=^\d+\.
     actions:
       backport:
         branches:
           - main
-        title: "[{{ destination_branch }}](forwardport #{{ number }}) {{ title }}"
+        title: "[{{ destination_branch }}] (forwardport #{{ number }}) {{ title }}"
