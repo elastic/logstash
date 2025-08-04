@@ -86,6 +86,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "gems:",https://github.com/rubygems/gems,MIT
 "gene_pool:",https://github.com/bpardee/gene_pool,MIT
 "getoptlong:",https://github.com/ruby/getoptlong,BSD-2-Clause
+"org.hdrhistogram:HdrHistogram:",https://github.com/HdrHistogram/HdrHistogram,BSD-2-Clause
 "hitimes:",https://github.com/copiousfreetime/hitimes,ISC
 "http-cookie:",https://github.com/sparklemotion/http-cookie,MIT
 "http-form_data:",https://github.com/httprb/form_data,MIT
