@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 * <<logstash-8-19-0,Logstash 8.19.0>>
+* <<logstash-8-19-1,Logstash 8.19.1>>
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
@@ -90,6 +91,70 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-1]]
+=== Logstash 8.19.1 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.1
+
+=== Logstash Commits between 8.19 and 8.19.0
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.0..8.19"
+
+749cae77e - (HEAD -> 8.19, origin/8.19) Log *what* components trigger a grype scan (#17905) (#17911) (19 hours ago) <mergify[bot]>
+67c3abd16 - Update patch plugin versions in gemfile lock (#17907) (24 hours ago) <github-actions[bot]>
+e52d48db3 - [8.19] (backport #17865) make sure versions.yml is only read once into gradle.ext (#17899) (29 hours ago) <mergify[bot]>
+3a88fb448 - Update patch plugin versions in gemfile lock (#17903) (4 days ago) <github-actions[bot]>
+79fac1feb - Make sure FIPS comments belong in the platform-sre Dockerfile (#17875) (4 days ago) <João Duarte>
+0f502c81d - [8.19] (backport #17879) Update monkey patch for clamp to 1.3.3 (#17882) (5 days ago) <mergify[bot]>
+6504f98c7 - [8.19] (backport #17839) Standardization of FIPS Java config with ES (#17878) (5 days ago) <mergify[bot]>
+ad3441f01 - Fail pipeline when observabilitySRE fails to build (#17872) (#17877) (5 days ago) <mergify[bot]>
+9ccee6a60 - Bump core to 8.19.1 (#17866) (7 days ago) <Cas Donoghue>
+7c49f47af - Update patch plugin versions in gemfile lock (#17870) (7 days ago) <github-actions[bot]>
+e40566c01 - Release notes for 8.19.0 (#17823) (8 days ago) <github-actions[bot]>
+bcd2dac0e - [8.19] (backport #17782) Release notes for 8.17.9 (#17848) (2 weeks ago) <mergify[bot]>
+dd26df6ad - Release notes for 8.18.4 (#17783) (#17846) (2 weeks ago) <mergify[bot]>
+98f0c730f - update commons-lang3 lib (#17812) (#17815) (3 weeks ago) <mergify[bot]>
+92265da85 - [CI] fix benchmark docker name (#17827) (#17835) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.0..8.19 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.19.0 -> 8.19.1
+logstash-filter-translate: 3.4.2 -> 3.4.3
+logstash-filter-xml: 4.3.1 -> 4.3.2
+logstash-input-azure_event_hubs: 1.5.1 -> 1.5.2
+logstash-integration-snmp: 4.0.6 -> 4.0.7
+logstash-output-elasticsearch: 11.22.12 -> 11.22.13
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.19.1*
+
+404: Not Found
+
+*Translate Filter - 3.4.3*
+
+* Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected https://github.com/logstash-plugins/logstash-filter-translate/pull/104[#104]
+
+*Xml Filter - 4.3.2*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/89[#89]
+
+*Azure_event_hubs Input - 1.5.2*
+
+* Updated JWT dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101[#101]
+
+*Snmp Integration - 4.0.7*
+
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value https://github.com/logstash-plugins/logstash-integration-snmp/pull/75[#75]
+
+*Elasticsearch Output - 11.22.13*
+
+* Add headers reporting uncompressed size and doc count for bulk requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217[#1217]
+
 
 [[logstash-8-19-0]]
 === Logstash 8.19.0 Release Notes
