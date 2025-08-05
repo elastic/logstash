@@ -21,6 +21,38 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.1 [logstash-9.1.1-release-notes]
+
+### Features and enhancements [logstash-9.1.1-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.1-changes]
+
+**Elastic_integration Filter - 9.1.1**
+
+* Add terminate processor support [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
+
+**Translate Filter - 3.4.3**
+
+* Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+
+**Xml Filter - 4.3.2**
+
+* Update Nokogiri dependency version [#89](https://github.com/logstash-plugins/logstash-filter-xml/pull/89)
+
+**Azure_event_hubs Input - 1.5.2**
+
+* Updated JWT dependency [#101](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101)
+
+**Snmp Integration - 4.0.7**
+
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value [#75](https://github.com/logstash-plugins/logstash-integration-snmp/pull/75)
+
+**Elasticsearch Output - 12.0.6**
+
+* Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
+
 ## 9.1.0 [logstash-9.1.0-release-notes]
 
 ### Features and enhancements [logstash-9.1.0-features-enhancements]
@@ -155,65 +187,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.1.1 [logstash-9.1.1-release-notes]
-
-### Features and enhancements [logstash-9.1.1-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.1
-
-=== Logstash Commits between 9.1 and 9.1.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.0..9.1"
-
-3f518aad9 - (HEAD -> 9.1, origin/9.1) Log *what* components trigger a grype scan (#17905) (#17913) (17 hours ago) <mergify[bot]>
-73b2db05b - Update patch plugin versions in gemfile lock (#17908) (23 hours ago) <github-actions[bot]>
-66e0a351f - make sure versions.yml is only read once into gradle.ext (#17865) (#17901) (27 hours ago) <mergify[bot]>
-ef021264c - [9.1] (backport #17879) Update monkey patch for clamp to 1.3.3 (#17884) (5 days ago) <mergify[bot]>
-004f40d44 - Bump core to 9.1.1 (#17867) (7 days ago) <Cas Donoghue>
-0e9d22ef2 - Update patch plugin versions in gemfile lock (#17871) (7 days ago) <github-actions[bot]>
-df3808ec3 - Run tests with jruby 9.4.13.0 (#17798) (#17829) (7 days ago) <mergify[bot]>
-f63da8a19 - Release notes for 9.1.0 (#17822) (8 days ago) <github-actions[bot]>
-32e426061 - use centrally maintained version variables (#17857) (#17860) (8 days ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.0..9.1 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.1.0 -> 9.1.1
-logstash-filter-translate: 3.4.2 -> 3.4.3
-logstash-filter-xml: 4.3.1 -> 4.3.2
-logstash-input-azure_event_hubs: 1.5.1 -> 1.5.2
-logstash-integration-snmp: 4.0.6 -> 4.0.7
-logstash-output-elasticsearch: 12.0.5 -> 12.0.6
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.1.1-changes]
-
-**Elastic_integration Filter - 9.1.1**
-
-404: Not Found
-
-**Translate Filter - 3.4.3**
-
-* Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
-
-**Xml Filter - 4.3.2**
-
-* Update Nokogiri dependency version [#89](https://github.com/logstash-plugins/logstash-filter-xml/pull/89)
-
-**Azure_event_hubs Input - 1.5.2**
-
-* Updated JWT dependency [#101](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101)
-
-**Snmp Integration - 4.0.7**
-
-* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value [#75](https://github.com/logstash-plugins/logstash-integration-snmp/pull/75)
-
-**Elasticsearch Output - 12.0.6**
-
-* Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
