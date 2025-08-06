@@ -15,19 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/instrument/metric_type/gauge"
 require "logstash/json"
 require "spec_helper"
 
-describe LogStash::Instrument::MetricType::Gauge do
-  let(:namespaces) { [:root, :pipelines, :pipeline_01] }
+describe org.logstash.instrument.metrics.gauge.LazyDelegatingGauge do
   let(:key) { :mykey }
   let(:value) { "hello" }
 
-  subject { described_class.new(namespaces, key) }
+  subject { described_class.new(key.to_s) }
 
   before :each do
-    subject.execute(:set, value)
+    subject.set(value)
   end
 
   describe "#execute" do
