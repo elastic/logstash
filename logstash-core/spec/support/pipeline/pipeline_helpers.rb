@@ -73,6 +73,14 @@ module PipelineHelpers
     end
 
     describe "\"#{name}\"" do
+      let(:collector) {LogStash::Instrument::Collector.new}
+      let(:metric) { LogStash::Instrument::Metric.new(collector).namespace(:null) }
+      # let(:histogram) { LogStash::Instrument::MetricType.create(:histogram, "namespace", "queue_histo") }
+      # let(:namespaced_metric) {
+      #   mock_metric = double("mock_metric")
+      #   allow(mock_metric).to receive(:get).and_return(histogram)
+      # }
+
       let(:pipeline) do
         settings.set_value("queue.drain", true)
         LogStash::JavaPipeline.new(
@@ -82,7 +90,7 @@ module PipelineHelpers
               "config_string", "config_string",
               "input { spec_sampler_input {} }\n" + config + "\noutput { spec_sampler_output {} }"
             ), settings
-          )
+          ), metric
         )
       end
       let(:event) do
