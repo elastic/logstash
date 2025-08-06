@@ -39,7 +39,7 @@ public class MetricTypeTest {
      * just duplicates the code, but should cause a developer to think twice if they are changing the public contract.
      */
     @Test
-    public void ensurePassivity(){
+    public void ensurePassivity() {
         Map<MetricType, String> nameMap = new HashMap<>(EnumSet.allOf(MetricType.class).size());
         nameMap.put(MetricType.COUNTER_LONG, "counter/long");
         nameMap.put(MetricType.COUNTER_DECIMAL, "counter/decimal");
@@ -51,6 +51,7 @@ public class MetricTypeTest {
         nameMap.put(MetricType.GAUGE_UNKNOWN, "gauge/unknown");
         nameMap.put(MetricType.GAUGE_RUBYHASH, "gauge/rubyhash");
         nameMap.put(MetricType.GAUGE_RUBYTIMESTAMP, "gauge/rubytimestamp");
+        nameMap.put(MetricType.HISTOGRAM_LONG, "histogram/long");
         nameMap.put(MetricType.FLOW_RATE, "flow/rate");
 
         //ensure we are testing all of the enumerations
