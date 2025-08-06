@@ -651,6 +651,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
                                                     final RubySymbol[] subPipelineNamespacePath,
                                                     final RubySymbol metricName) {
         final IRubyObject collector = this.metric.collector(context);
+        if (collector.isNil()) {
+            return null;
+        }
         final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("histogram")});
