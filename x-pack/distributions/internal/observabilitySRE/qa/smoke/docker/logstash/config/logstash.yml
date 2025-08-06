@@ -1,0 +1,6 @@
+api.http.host: "0.0.0.0"
+xpack.monitoring.enabled: false
+
+pipeline.ordered: false
+pipeline.workers: 2
+pipeline.buffer.type: heap

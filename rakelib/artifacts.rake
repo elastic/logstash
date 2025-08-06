@@ -103,7 +103,11 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
 
-    @exclude_paths
+    # remove this after JRuby includes net-imap-0.2.4+
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
+    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
+
+    @exclude_paths.freeze
   end
 
   def oss_exclude_paths
@@ -159,7 +163,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi"]
+  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi", "build_docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -185,25 +189,25 @@ namespace "artifact" do
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
-  def create_archive_pack(license_details, arch, *oses)
+  def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
     oses.each do |os_name|
       puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}, arch: #{arch}")
-      create_single_archive_pack(os_name, arch, license_details)
+      create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
     end
   end
 
-  def create_single_archive_pack(os_name, arch, license_details)
+  def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
     safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
     if arch == 'arm64'
       arch = 'aarch64'
     end
     case os_name
     when "linux"
-      build_tar(*license_details, platform: "-linux-#{arch}")
+      build_tar(*license_details, platform: "-linux-#{arch}", &tar_interceptor)
     when "windows"
       build_zip(*license_details, platform: "-windows-#{arch}")
     when "darwin"
-      build_tar(*license_details, platform: "-darwin-#{arch}")
+      build_tar(*license_details, platform: "-darwin-#{arch}", &tar_interceptor)
     end
     safe_system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
@@ -248,6 +252,27 @@ namespace "artifact" do
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, "x86_64", "linux")
     create_archive_pack(license_details, "arm64", "linux")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+  end
+
+  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
+  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    #with bundled JDKs
+    @bundles_jdk = true
+    exclude_paths = default_exclude_paths + %w(
+      bin/logstash-plugin
+      bin/logstash-plugin.bat
+      bin/logstash-keystore
+      bin/logstash-keystore.bat
+    )
+    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
+    %w(x86_64 arm64).each do |arch|
+      create_archive_pack(license_details, arch, "linux") do |dedicated_directory_tar|
+        # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
+        # copy additional files into the tarball
+        puts "HELLO(#{dedicated_directory_tar})"
+      end
+    end
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -349,6 +374,12 @@ namespace "artifact" do
     build_docker('oss')
   end
 
+  desc "Build observabilitySRE docker image"
+  task "docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata", "archives_docker_observabilitySRE"] do
+    puts("[docker_observabilitySRE] Building observabilitySRE docker image")
+    build_docker('observability-sre')
+  end
+
   desc "Build wolfi docker image"
   task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
     puts("[docker_wolfi] Building Wolfi docker image")
@@ -361,6 +392,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('wolfi')
+    build_dockerfile('observability-sre')
     build_dockerfile('ironbank')
   end
 
@@ -374,6 +406,19 @@ namespace "artifact" do
     desc "Build Oss Docker image from Dockerfile context files"
     task "docker" => ["archives_docker", "dockerfile_oss"]  do
       build_docker_from_dockerfiles('oss')
+    end
+  end
+
+  desc "Generate Dockerfile for observability-sre images"
+  task "dockerfile_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    puts("[dockerfiles] Building observability-sre Dockerfile")
+    build_dockerfile('observability-sre')
+  end
+
+  namespace "dockerfile_observabilitySRE" do
+    desc "Build ObservabilitySrE Docker image from Dockerfile context files"
+    task "docker" => ["archives_docker_observabilitySRE", "dockerfile_observabilitySRE"] do
+      build_docker_from_dockerfiles('observability-sre')
     end
   end
 
@@ -421,6 +466,7 @@ namespace "artifact" do
       Rake::Task["artifact:docker_wolfi"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_observabilitySRE"].invoke
     end
 
     Rake::Task["artifact:deb_oss"].invoke
@@ -438,6 +484,12 @@ namespace "artifact" do
     Rake::Task["artifact:docker_oss"].invoke
     Rake::Task["artifact:dockerfile_oss"].invoke
     Rake::Task["artifact:dockerfile_oss:docker"].invoke
+  end
+
+  task "build_docker_observabilitySRE" => [:generate_build_metadata] do
+    Rake::Task["artifact:docker_observabilitySRE"].invoke
+    Rake::Task["artifact:dockerfile_observabilitySRE"].invoke
+    Rake::Task["artifact:dockerfile_observabilitySRE:docker"].invoke
   end
 
   task "build_docker_wolfi" => [:generate_build_metadata] do
@@ -523,6 +575,17 @@ namespace "artifact" do
     end
   end
 
+  task "prepare-observabilitySRE" do
+    if ENV['SKIP_PREPARE'] != "1"
+      Rake::Task['bootstrap'].invoke
+      Rake::Task['plugin:install-default'].invoke
+      Rake::Task['plugin:install'].invoke('logstash-filter-age')
+      Rake::Task['plugin:trim-for-observabilitySRE'].invoke
+      Rake::Task['plugin:install-fips-validation-plugin'].invoke
+      Rake::Task['artifact:clean-bundle-config'].invoke
+    end
+  end
+
   def ensure_logstash_version_constant_defined
     # we do not want this file required when rake (ruby) parses this file
     # only when there is a task executing, not at the very top of this file
@@ -531,7 +594,7 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(license, tar_suffix = nil, exclude_paths = default_exclude_paths, platform: '')
+  def build_tar(license, tar_suffix = nil, exclude_paths = default_exclude_paths, platform: '', &tar_interceptor)
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
@@ -545,36 +608,80 @@ namespace "artifact" do
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     Minitar::Writer.open(gz) do |tar|
+      dedicated_directory_tarball = DedicatedDirectoryTarball.new(tar, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}")
       files(exclude_paths).each do |path|
-        write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
+        dedicated_directory_tarball.write(path)
       end
 
       source_license_path = "licenses/#{license}.txt"
       fail("Missing source license: #{source_license_path}") unless File.exist?(source_license_path)
-      write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
+      dedicated_directory_tarball.write(source_license_path, "LICENSE.txt")
 
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
-      path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
-      write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
+      dedicated_directory_tarball.write(BUILD_METADATA_FILE.path, metadata_file_path_in_tar)
+
+      # yield to the tar interceptor if we have one
+      yield(dedicated_directory_tarball) if block_given?
     end
     gz.close
   end
 
-  def write_to_tar(tar, path, path_in_tar)
-    stat = File.lstat(path)
-    if stat.directory?
-      tar.mkdir(path_in_tar, :mode => stat.mode)
-    elsif stat.symlink?
-      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
-    else
-      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
-        File.open(path, 'rb') do |fd|
-          chunk = nil
-          size = 0
-          size += io.write(chunk) while chunk = fd.read(16384)
-          if stat.size != size
-            raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+  ##
+  # A `DedicatedDirectoryTarball` writes everything into a dedicated
+  # directory that is known at init-time (e.g., NOT a tarbomb). All paths are
+  class DedicatedDirectoryTarball
+    def initialize(minitar_writer, dedicated_directory)
+      @minitar_writer = minitar_writer
+      @dedicated_directory = Pathname.new(dedicated_directory)
+    end
+
+    ##
+    # Write the contents of the file, directory, or symlink in `source_path` to
+    # the `destination_path` inside the tarball's dedicated directory.
+    # @param source_path [String]: the path to the file to copy, relative to PWD
+    # @param destination_path [String]: the path, relative to the tarball's dedicated directory, to
+    #                                   write to (default: `source_path`)
+    # @return [void]
+    def write(source_path, destination_path=source_path)
+      write_to_tar(@minitar_writer, source_path, expand(destination_path))
+
+      nil
+    end
+
+    def to_s
+      "#<#{self.class.name}:#{@dedicated_directory}>"
+    end
+
+    private
+
+    ##
+    # Expands the given `destination_path` relative to the dedicated directory,
+    # ensuring that the result is inside the dedicated directory
+    # @param destination_path [String]
+    # @return [String]
+    def expand(destination_path)
+      expanded_destination_path = @dedicated_directory / destination_path
+      fail("illegal destination path `#{destination_path}`") unless expanded_destination_path.descend.peek == @dedicated_directory
+
+      expanded_destination_path.to_s
+    end
+
+    def write_to_tar(tar, path, path_in_tar)
+      stat = File.lstat(path)
+      if stat.directory?
+        tar.mkdir(path_in_tar, :mode => stat.mode)
+      elsif stat.symlink?
+        tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
+      else
+        tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
+          File.open(path, 'rb') do |fd|
+            chunk = nil
+            size = 0
+            size += io.write(chunk) while chunk = fd.read(16384)
+            if stat.size != size
+              raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+            end
           end
         end
       end

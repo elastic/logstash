@@ -13,7 +13,7 @@ You can take advantage of the extensive, built-in capabilities of Elastic {{inte
 [Elastic {{integrations}}](integration-docs://reference/index.md) provide quick, end-to-end solutions for:
 
 * ingesting data from a variety of data sources,
-* ensuring compliance with the [Elastic Common Schema (ECS)][Elastic Common Schema (ECS)](ecs://reference/index.md)),
+* ensuring compliance with the [Elastic Common Schema (ECS)](ecs://reference/index.md),
 * getting the data into the {{stack}}, and
 * visualizing it with purpose-built dashboards.
 
@@ -82,6 +82,6 @@ output { <3>
 Elastic {{integrations}} are designed to work with [data streams](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) and [ECS-compatible](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#_compatibility_with_the_elastic_common_schema_ecs) output. Be sure that these features are enabled in the [`output-elasticsearch`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) plugin.
 
 * Set [`data-stream`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data_stream) to `true`.<br> (Check out [Data streams](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-data-streams) for additional data streams settings.)
-* Set [`ecs-compatibility`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ecs_compatibility) to `v1` or `v8`.
+* Set [`ecs_compatibility`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-ecs_compatibility) to `v1` or `v8`.
 
 Check out the [`output-elasticsearch` plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) docs for additional settings.

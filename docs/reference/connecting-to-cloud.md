@@ -3,20 +3,25 @@ mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/connecting-to-cloud.html
 ---
 
-# Sending data to Elastic Cloud (hosted Elasticsearch Service) [connecting-to-cloud]
+# Sending data to {{ech}} [connecting-to-cloud]
 
-Our hosted {{ess}} on [Elastic Cloud](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
+[{{ech}}](https://cloud.elastic.co/) simplifies safe, secure communication between {{ls}} and {{es}}.
+When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
 
 Examples:
+
+
 
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-{ess-leadin-short}
+Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
+
+{{ess-leadin-short}}
 
 ## Cloud ID [cloud-id]
 
-{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label you should prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>"
+{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
 
 
 ## Cloud Auth [cloud-auth]

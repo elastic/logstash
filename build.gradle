@@ -19,7 +19,6 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.2'
         shadowGradlePluginVersion = '8.1.1'
     }
 
@@ -29,9 +28,6 @@ buildscript {
             url 'https://plugins.gradle.org/m2/'
         }
     }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    }
 }
 
 plugins {
@@ -39,10 +35,11 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+apply from: "${projectDir}/x-pack/distributions/internal/observabilitySRE/build-ext.gradle"
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
-import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
@@ -319,6 +316,34 @@ tasks.register("compileGrammar") {
     dependsOn bootstrap
     doLast {
         rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
+tasks.register("artifactDockerObservabilitySRE") {
+    dependsOn bootstrap
+    inputs.files fileTree("${projectDir}/rakelib")
+    inputs.files fileTree("${projectDir}/bin")
+    inputs.files fileTree("${projectDir}/config")
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+    inputs.files fileTree("${projectDir}/logstash-core/lib")
+    inputs.files fileTree("${projectDir}/logstash-core/src")
+    inputs.files fileTree("${projectDir}/x-pack")
+    outputs.files fileTree("${buildDir}") {
+        include "Dockerfile-observability-sre"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-linux-*.tar.gz"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-docker-build-context.tar.gz"
+        include "plugin_aliases_hashed.yml"
+        include "jdk-*-linux-*.tar.gz"
+    }
+    doFirst {
+        if (!fedrampHighMode) {
+            logger.error("NOT in Fedramp High mode. Aborting.")
+            throw new GradleException("cannot build docker artifact for observabilitySRE without `-PfedrampHighMode=true`")
+        }
+    }
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
     }
 }
 
@@ -680,10 +705,10 @@ class JDKDetails {
     final String unpackedJdkName
     private String arch
 
-    JDKDetails(versionYml, osName, jdkArch) {
-        revision = versionYml.bundled_jdk.revision
-        build = versionYml.bundled_jdk.build
-        vendor = versionYml.bundled_jdk.vendor
+    JDKDetails(bundledJdk, osName, jdkArch) {
+        revision = bundledJdk.revision
+        build = bundledJdk.build
+        vendor = bundledJdk.vendor
         major = revision.split('\\.').first() as int
         this.osName = osName
 
@@ -799,9 +824,9 @@ tasks.register("downloadJdk", Download) {
     project.ext.set("versionFound", true)
     String osName = selectOsType()
 
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
     String jdkArch = selectArch()
-    def jdkDetails = new JDKDetails(versionYml, osName, jdkArch)
+
+    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
 
     description "Download JDK ${jdkDetails.major}, OS: ${osName}"
 
@@ -830,10 +855,8 @@ tasks.register("downloadJdk", Download) {
 }
 
 tasks.register("checkNewJdkVersion") {
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
-
     // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
+    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
     // throws Gradle exception if local and remote doesn't match
     jdkDetails.checkLocalVersionMatchingLatest()
 }

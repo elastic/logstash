@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+
+# metricbeat monitoring is disabled. Serverless does not support stack monitoring.
 set -ex
 
 source ./$(dirname "$0")/common.sh
@@ -13,7 +15,7 @@ get_cpu_arch() {
   fi
 }
 
-export INDEX_NAME=".monitoring-logstash-8-mb"
+export INDEX_NAME=".monitoring-logstash-9-mb"
 export OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 export ARCH=$(get_cpu_arch)
 export BEATS_VERSION=$(curl -s "https://api.github.com/repos/elastic/beats/tags" | jq -r '.[0].name' | cut -c 2-)

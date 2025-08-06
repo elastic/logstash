@@ -62,8 +62,8 @@ describe LogStash::Instrument::Collector do
     let(:key) { :my_key }
 
     {
-      counter: LogStash::Instrument::MetricType::Counter,
-      gauge:   LogStash::Instrument::MetricType::Gauge,
+      counter: org.logstash.instrument.metrics.counter.LongCounter,
+      gauge:   org.logstash.instrument.metrics.gauge.LazyDelegatingGauge,
       uptime:  org.logstash.instrument.metrics.UptimeMetric,
       timer:   org.logstash.instrument.metrics.timer.TimerMetric,
     }.each do |type, type_specific_implementation|

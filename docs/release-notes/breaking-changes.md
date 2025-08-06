@@ -3,8 +3,8 @@ navigation_title: "Breaking changes"
 ---
 
 # Logstash breaking changes [logstash-breaking-changes]
-Breaking changes can impact your Elastic applications, potentially disrupting normal operations. 
-Before you upgrade, carefully review the Logstash breaking changes and take the necessary steps to mitigate any issues. 
+Breaking changes can impact your Elastic applications, potentially disrupting normal operations.
+Before you upgrade, carefully review the Logstash breaking changes and take the necessary steps to mitigate any issues.
 
 % ## Next version [logstash-nextversion-breaking-changes]
 
@@ -23,7 +23,7 @@ Before you upgrade, carefully review the Logstash breaking changes and take the 
 
 We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replaced them with updated settings. If your plugin configuration contains any of these obsolete options, the plugin may fail to start.
 
-::::{dropdown} `logstash-input-beats`
+::::{dropdown} logstash-input-beats
 :name: input-beats-ssl-9.0
 
 | Setting | Replaced by |
@@ -37,7 +37,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 
 ::::
 
-::::{dropdown} `logstash-input-elastic_agent`
+::::{dropdown} logstash-input-elastic_agent
 :name: input-elastic_agent-ssl-9.0
 
 | Setting | Replaced by |
@@ -52,7 +52,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-input-elasticsearch`
+::::{dropdown} logstash-input-elasticsearch
 :name: input-elasticsearch-ssl-9.0
 
 | Setting | Replaced by |
@@ -64,7 +64,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-input-elastic_serverless_forwarder`
+::::{dropdown} logstash-input-elastic_serverless_forwarder
 :name: input-elastic_serverless_forwarder-ssl-9.0
 
 | Setting | Replaced by |
@@ -74,7 +74,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-input-http`
+::::{dropdown} logstash-input-http
 :name: input-http-ssl-9.0
 
 | Setting | Replaced by |
@@ -91,7 +91,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-input-http_poller`
+::::{dropdown} logstash-input-http_poller
 :name: input-http_poller-ssl-9.0
 
 | Setting | Replaced by |
@@ -109,7 +109,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-input-tcp`
+::::{dropdown} logstash-input-tcp
 :name: input-tcp-ssl-9.0
 
 | Setting | Replaced by |
@@ -121,7 +121,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-filter-elasticsearch`
+::::{dropdown} logstash-filter-elasticsearch
 :name: filter-elasticsearch-ssl-9.0
 
 | Setting | Replaced by |
@@ -134,7 +134,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-filter-http`
+::::{dropdown} logstash-filter-http
 :name: filter-http-ssl-9.0
 
 | Setting | Replaced by |
@@ -152,7 +152,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-output-elasticsearch`
+::::{dropdown} logstash-output-elasticsearch
 :name: output-elasticsearch-ssl-9.0
 
 | Setting | Replaced by |
@@ -168,7 +168,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-output-http`
+::::{dropdown} logstash-output-http
 :name: output-http-ssl-9.0
 
 | Setting | Replaced by |
@@ -186,7 +186,7 @@ We’ve removed deprecated SSL settings in some {{ls}} plugins, and have replace
 ::::
 
 
-::::{dropdown} `logstash-output-tcp`
+::::{dropdown} logstash-output-tcp
 :name: output-tcp-ssl-9.0
 
 | Setting | Replaced by |
@@ -208,7 +208,7 @@ If you need to re-enable the previous behavior, change the `pipeline.buffer.type
 Check out [off-heap-buffers-allocation](/reference/jvm-settings.md#off-heap-buffers-allocation) for details. [#16500](https://github.com/elastic/logstash/pull/16500)
 ::::
 
-::::{dropdown} {{ls}} modules removed 
+::::{dropdown} {{ls}} modules removed
 :name: removed-modules
 
 We have removed the {{ls}} modules framework, and encourage users to try Elastic Integrations
@@ -216,7 +216,7 @@ This includes the netflow, azure and arcsight modules, and the modules framework
 ::::
 
 
-::::{dropdown} Deprecated configuration settings removed 
+::::{dropdown} Deprecated configuration settings removed
 :name:removed-params
 
 We have removed support for previously deprecated configuration settings:
@@ -225,11 +225,11 @@ We have removed support for previously deprecated configuration settings:
 
 - **`event_api.tags.illegal`**
 Any events that include field named tags automatically rename the field _tags to avoid any clash
-with the reserved {{ls}} tags field. 
+with the reserved {{ls}} tags field.
 Instead, {{ls}} generates `_tagsparsefailure` in the event `tags` and the illegal value is written to the `_tags` field. [#16461](https://github.com/elastic/logstash/pull/16461)
 ::::
 
-::::{dropdown} Ingest converter removed 
+::::{dropdown} Ingest converter removed
 :name: removed-ingest-converter
 
 The ingest converter, which was used to convert ingest pipelines to {{ls}} pipelines, has been removed. [#16453](https://github.com/elastic/logstash/pull/16453)
@@ -241,7 +241,7 @@ The `logstash-filter-elastic_integration` plugin offers similar functionality, a
 :name: jdk-11-support-drop
 
 JDK17 is the minimum version of the JDK required to run Logstash.
-For the best experience, we still recommend running {{ls}} using the bundled-jdk. 
+For the best experience, we still recommend running {{ls}} using the bundled-jdk.
 See [Logstash JVM requirements](/reference/getting-started-with-logstash.md#ls-jvm)
 for details. [#16443](https://github.com/elastic/logstash/pull/16443)
 ::::
@@ -250,7 +250,7 @@ for details. [#16443](https://github.com/elastic/logstash/pull/16443)
 :name: docker-base-image-change
 
 The base image for {{ls}} on Docker has been changed from Ubuntu to UBI9.
-If you create a Docker image based on the {{ls}} image and rely on it being Ubuntu based, you need to change your derived image to take account of this change. 
+If you create a Docker image based on the {{ls}} image and rely on it being Ubuntu based, you need to change your derived image to take account of this change.
 For example, if your derived docker image installs additional packages using a package manager, UBI9 uses `microdnf`, rather than `apt`.
 [#16599](https://github.com/elastic/logstash/pull/16599)
 ::::
@@ -287,7 +287,7 @@ Check out [Logging in json format can write duplicate message fields](docs-conte
 ::::{dropdown} Enterprise_search integration plugin is removed from default Logstash install
 :name: enterprise_search-deprecated-9.0
 
-We’ve removed the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins from the default {{ls}} install. 
+We’ve removed the {{ls}} Enterprise_search integration plugin, and its component App Search and Workplace Search plugins from the default {{ls}} install.
 These plugins will receive only security updates and critical fixes moving forward.
 
 We recommend using our native {{es}} tools for your Search use cases. For more details, please visit the [Search solution and use case documentation](docs-content://solutions/search.md).

@@ -1,0 +1,18 @@
+---
+name: github-commands-comment
+
+on:
+  pull_request_target:
+    types:
+      - opened
+
+permissions:
+  contents: read
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: elastic/oblt-actions/elastic/github-commands@v1

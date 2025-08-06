@@ -24,7 +24,9 @@ Security is enabled by default on the {{es}} cluster (starting in 8.0). You must
 
 {{ess}} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
 
-::::{admonition} Security to {{serverless-full}} $$$serverless$$$
+$$$serverless$$$
+
+::::{admonition} Security to {{serverless-full}}
 :class: note
 
 {{es-serverless}} simplifies safe, secure communication between {{ls}} and {{es}}.
@@ -39,21 +41,21 @@ For more details, check out [Grant access using API keys](#ls-api-keys).
 
 ::::
 
+$$$hosted-ess$$$
 
-::::{admonition} Security to hosted {{ess}} $$$hosted-ess$$$
+::::{admonition} Security to hosted {{ess}}
 :class: note
 
-Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {ess-leadin-short}
+Our hosted {{ess}} on Elastic Cloud simplifies safe, secure communication between {{ls}} and {{es}}. When you configure the [{{ls}} {{es}} output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md) to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) with either the [`cloud_auth` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_auth) or the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration steps are needed. {{ess-leadin-short}}
 
 Configuration example:
 
 * `output {elasticsearch { cloud_id => "<cloud id>" cloud_auth => "<cloud auth>" } }`
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-For more details, check out [Grant access using API keys](#ls-api-keys) or [Sending data to Elastic Cloud (hosted Elasticsearch Service)](/reference/connecting-to-cloud.md).
+For more details, check out [Grant access using API keys](#ls-api-keys) or [Sending data to {{ech}}](/reference/connecting-to-cloud.md).
 
 ::::
-
 
 
 ### Secure communication with an on-premise {{es}} cluster [es-security-onprem]
@@ -217,7 +219,7 @@ output {
 
 
 ::::{note}
-Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {ess-leadin-short}
+Hosted {{ess}} simplifies security. This configuration step is not necessary for hosted Elasticsearch Service on Elastic Cloud. {{ess-leadin-short}}
 ::::
 
 
@@ -289,11 +291,20 @@ Tips for creating API keys:
 * {{ls}} can send both collected data and monitoring information to {{es}}. If you are sending both to the same cluster, you can use the same API key. For different clusters, you need an API key per cluster.
 * A single cluster can share a key for ingestion and monitoring purposes.
 * A production cluster and a monitoring cluster require separate keys.
+* When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
+  This option formats the API key in the correct `id:api_key` format required by {{ls}}.
+
+  :::{image} images/logstash_api_key_format.png
+  :alt: API key format dropdown set to {{ls}}:
+  :screenshot:
+  :width: 400px
+  :::
+
+  The UI for API keys may look different depending on the deployment type.
 
 ::::{note}
 For security reasons, we recommend using a unique API key per {{ls}} instance. You can create as many API keys per user as necessary.
 ::::
-
 
 
 #### Create an API key [ls-create-api-key]
@@ -353,7 +364,7 @@ output {
 }
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key)
 
 
 
@@ -371,7 +382,7 @@ input {
 }
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))s
+1. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key)
 
 
 
@@ -389,7 +400,7 @@ filter {
 }
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key)
 
 
 
@@ -439,7 +450,7 @@ Now you can use this API key in your logstash.yml configuration file:
 xpack.monitoring.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key)
 
 
 
@@ -483,7 +494,7 @@ Now you can use this API key in your logstash.yml configuration file:
 xpack.management.elasticsearch.api_key: TiNAGG4BaaMdaH1tRfuU:KnR6yE41RrSowb0kQ0HWoA <1>
 ```
 
-1. Format is `id:api_key` (as returned by [Create API key](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key))
+1. The format of the value is `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key)
 
 
 

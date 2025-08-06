@@ -47,6 +47,7 @@ public class MetricTypeTest {
         nameMap.put(MetricType.GAUGE_TEXT, "gauge/text");
         nameMap.put(MetricType.GAUGE_BOOLEAN, "gauge/boolean");
         nameMap.put(MetricType.GAUGE_NUMBER, "gauge/number");
+        nameMap.put(MetricType.GAUGE_LIST, "gauge/list");
         nameMap.put(MetricType.GAUGE_UNKNOWN, "gauge/unknown");
         nameMap.put(MetricType.GAUGE_RUBYHASH, "gauge/rubyhash");
         nameMap.put(MetricType.GAUGE_RUBYTIMESTAMP, "gauge/rubytimestamp");

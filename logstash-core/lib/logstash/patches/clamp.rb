@@ -119,8 +119,9 @@ module Clamp
       # --long.flag.name=false => sets flag to false
       def extract_value(switch, arguments)
         if flag? && (arguments.first.nil? || arguments.first.match("^-"))
-          flag_value(switch)
+          flag_set?(switch)
         else
+          raise ArgumentError, Clamp.message(:no_value_provided) if arguments.empty?
           arguments.shift
         end
       end

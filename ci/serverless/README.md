@@ -7,7 +7,7 @@ The test cases against serverless Elasticsearch cover the following scenarios
 - DLQ
 - central pipeline management
 - Kibana API for pipeline management (CPM)
-- Metricbeat monitoring
+- ~~Metricbeat monitoring~~
 - ~~Logstash legacy monitoring~~
 
 ### Setup testing endpoint

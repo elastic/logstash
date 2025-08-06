@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - '\d+.\d+'
   pull_request_target: ~
   merge_group: ~
 
@@ -16,4 +17,4 @@ jobs:
       deployments: write
       id-token: write
       contents: read
-      pull-requests: read
+      pull-requests: write
