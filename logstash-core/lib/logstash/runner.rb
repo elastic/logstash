@@ -211,6 +211,13 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "path.settings",
     :default => LogStash::SETTINGS.get_default("path.settings")
 
+  # API: PRIVATE (subject to change without notice)
+  option(['--setting', '-S'], "KEY=VALUE",
+         "individual setting",
+         :attribute_name => "SETTINGS_PASSTHROUGH",
+         :multivalued => true,
+         :hidden => true)
+
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
