@@ -4,14 +4,14 @@
     "8.previous": "8.18.4",
     "8.current": "8.19.0",
     "9.previous": "9.0.4",
-    "9.current": "9.1.0"
+    "9.current": "9.1.1"
   },
   "snapshots": {
     "7.current": "7.17.30-SNAPSHOT",
     "8.previous": "8.18.5-SNAPSHOT",
     "8.current": "8.19.1-SNAPSHOT",
     "9.previous": "9.0.5-SNAPSHOT",
-    "9.current": "9.1.1-SNAPSHOT",
+    "9.current": "9.1.2-SNAPSHOT",
     "main": "9.2.0-SNAPSHOT"
   }
 }
