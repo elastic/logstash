@@ -693,7 +693,7 @@ GEM
     multipart-post (2.4.1)
     murmurhash3 (0.1.6-java)
     mustache (0.99.8)
-    mustermann (3.0.3)
+    mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
     naught (1.1.0)
     net-http (0.6.0)
@@ -735,7 +735,7 @@ GEM
       date
       jar-dependencies (>= 0.1.7)
     public_suffix (5.1.1)
-    puma (6.6.0-java)
+    puma (6.6.1-java)
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
