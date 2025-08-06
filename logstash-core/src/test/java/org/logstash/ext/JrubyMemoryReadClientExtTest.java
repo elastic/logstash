@@ -28,6 +28,8 @@ import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.RubyTestBase;
 import org.logstash.execution.QueueBatch;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MockNamespacedMetric;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,11 +42,14 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
     @Test
     @SuppressWarnings("deprecation")
     public void testInflightBatchesTracking() throws InterruptedException, IOException {
-        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue =
-            new ArrayBlockingQueue<>(10);
-        final JrubyMemoryReadClientExt client =
-            JrubyMemoryReadClientExt.create(queue, 5, 50);
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50);
+
         final ThreadContext context = client.getRuntime().getCurrentContext();
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));
