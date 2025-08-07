@@ -75,11 +75,6 @@ module PipelineHelpers
     describe "\"#{name}\"" do
       let(:collector) {LogStash::Instrument::Collector.new}
       let(:metric) { LogStash::Instrument::Metric.new(collector).namespace(:null) }
-      # let(:histogram) { LogStash::Instrument::MetricType.create(:histogram, "namespace", "queue_histo") }
-      # let(:namespaced_metric) {
-      #   mock_metric = double("mock_metric")
-      #   allow(mock_metric).to receive(:get).and_return(histogram)
-      # }
 
       let(:pipeline) do
         settings.set_value("queue.drain", true)

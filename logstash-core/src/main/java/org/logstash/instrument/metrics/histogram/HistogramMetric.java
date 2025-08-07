@@ -29,15 +29,14 @@ public class HistogramMetric extends AbstractMetric<HistogramSnapshot> {
     }
 
     public static HistogramMetric fromRubyBase(AbstractNamespacedMetricExt metric, RubySymbol key) {
-            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
-            final IRubyObject histogram = metric.histogram(context, key);
-            final HistogramMetric javaTimer;
-            if (HistogramMetric.class.isAssignableFrom(histogram.getJavaClass())) {
-                javaTimer = histogram.toJava(HistogramMetric.class);
-            } else {
-                throw new IllegalArgumentException("Metric " + key + " is not a histogram");
-            }
-            return javaTimer;
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final IRubyObject histogram = metric.histogram(context, key);
+        if (!HistogramMetric.class.isAssignableFrom(histogram.getJavaClass())) {
+            // create dummy histogram
+            return new HistogramMetric("dummy_histogram");
+        }
+
+        return histogram.toJava(HistogramMetric.class);
     }
 
     @Override
