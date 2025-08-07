@@ -2,11 +2,15 @@ package org.logstash.instrument.metrics.histogram;
 
 import org.HdrHistogram.Histogram;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * Class to expose percentiles retrieved from an HdrHistogram.
  * */
-public final class HistogramSnapshot {
+public final class HistogramSnapshot implements Serializable {
 
+    private static final long serialVersionUID = 4711735381843512566L;
     private final long percentile75;
     private final long percentile90;
 
@@ -30,4 +34,8 @@ public final class HistogramSnapshot {
                 ", percentile90=" + percentile90 +
                 '}';
     }
+//
+//    public Map<String, Object> asMap() {
+//        return null;
+//    }
 }

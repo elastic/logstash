@@ -49,6 +49,7 @@ import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.instrument.metrics.histogram.HistogramSnapshot;
 
 public final class Valuefier {
 
@@ -201,6 +202,7 @@ public final class Valuefier {
                         RubyUtil.RUBY, new Timestamp(((ZonedDateTime) input).toInstant())
                 )
         );
+        converters.put(HistogramSnapshot.class, IDENTITY);
         return converters;
     }
 
