@@ -22,6 +22,12 @@ public class CompressionCodecTest {
     public static final byte[] DEFLATE_BALANCED_BYTES = deflate(RAW_BYTES, Deflater.DEFAULT_COMPRESSION);
     public static final byte[] DEFLATE_SIZE_BYTES = deflate(RAW_BYTES, Deflater.BEST_COMPRESSION);
 
+    private final CompressionCodec codecDisabled = CompressionCodec.fromConfigValue("disabled");
+    private final CompressionCodec codecNone = CompressionCodec.fromConfigValue("none");
+    private final CompressionCodec codecSpeed = CompressionCodec.fromConfigValue("speed");
+    private final CompressionCodec codecBalanced = CompressionCodec.fromConfigValue("balanced");
+    private final CompressionCodec codecSize = CompressionCodec.fromConfigValue("size");
+
     @Test
     public void testDisabledCompressionCodecDecodes() throws Exception {
         final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled");
@@ -38,6 +44,132 @@ public class CompressionCodecTest {
         final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled");
         // ensure true pass-through when compression is disabled
         assertThat(compressionCodec.encode(RAW_BYTES), is(equalTo(RAW_BYTES)));
+    }
+
+    @Test
+    public void testDisabledCompressionCodecLogging() throws Exception {
+        final Logger mockLogger = Mockito.mock(Logger.class);
+        CompressionCodec.fromConfigValue("disabled", mockLogger);
+        Mockito.verify(mockLogger).warn(argThat(stringContainsInOrder("compression support", "disabled")));
+    }
+
+    @Test
+    public void testNoneCompressionCodecDecodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none");
+        assertDecodesRaw(compressionCodec);
+        assertDecodesDeflateAnyLevel(compressionCodec);
+        assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
+    }
+
+    @Test
+    public void testNoneCompressionCodecEncodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none");
+        assertThat(compressionCodec.encode(RAW_BYTES), is(equalTo(RAW_BYTES)));
+    }
+
+    @Test
+    public void testNoneCompressionCodecLogging() throws Exception {
+        final Logger mockLogger = Mockito.mock(Logger.class);
+        CompressionCodec.fromConfigValue("none", mockLogger);
+        Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "read-only")));
+    }
+
+    @Test
+    public void testSpeedCompressionCodecDecodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed");
+        assertDecodesRaw(compressionCodec);
+        assertDecodesDeflateAnyLevel(compressionCodec);
+        assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
+    }
+
+    @Test
+    public void testSpeedCompressionCodecEncodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed");
+        assertEncodesSmallerRoundTrip(compressionCodec);
+    }
+
+    @Test
+    public void testSpeedCompressionCodecLogging() throws Exception {
+        final Logger mockLogger = Mockito.mock(Logger.class);
+        CompressionCodec.fromConfigValue("speed", mockLogger);
+        Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "speed")));
+    }
+
+    @Test
+    public void testBalancedCompressionCodecDecodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced");
+        assertDecodesRaw(compressionCodec);
+        assertDecodesDeflateAnyLevel(compressionCodec);
+        assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
+    }
+
+    @Test
+    public void testBalancedCompressionCodecEncodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced");
+        assertEncodesSmallerRoundTrip(compressionCodec);
+    }
+
+    @Test
+    public void testBalancedCompressionCodecLogging() throws Exception {
+        final Logger mockLogger = Mockito.mock(Logger.class);
+        CompressionCodec.fromConfigValue("balanced", mockLogger);
+        Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "balanced")));
+    }
+
+    @Test
+    public void testSizeCompressionCodecDecodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size");
+        assertDecodesRaw(compressionCodec);
+        assertDecodesDeflateAnyLevel(compressionCodec);
+        assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
+    }
+
+    @Test
+    public void testSizeCompressionCodecEncodes() throws Exception {
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size");
+        assertEncodesSmallerRoundTrip(compressionCodec);
+    }
+
+    @Test
+    public void testSizeCompressionCodecLogging() throws Exception {
+        final Logger mockLogger = Mockito.mock(Logger.class);
+        CompressionCodec.fromConfigValue("size", mockLogger);
+        Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "size")));
+    }
+
+    void assertDecodesRaw(final CompressionCodec codec) {
+        assertThat(codec.decode(RAW_BYTES), is(equalTo(RAW_BYTES)));
+    }
+
+    void assertDecodesDeflateAnyLevel(final CompressionCodec codec) {
+        final Set<Integer> levels = Set.of(
+                Deflater.DEFAULT_COMPRESSION,
+                Deflater.NO_COMPRESSION,
+                Deflater.BEST_SPEED,
+                2, 3, 4, 5, 6, 7, 8,
+                Deflater.BEST_COMPRESSION);
+
+        for (int level : levels) {
+            final byte[] deflated = deflate(RAW_BYTES, level);
+            assertThat(String.format("deflate level %s", level), codec.decode(deflated), is(equalTo(RAW_BYTES)));
+        }
+    }
+
+    void assertDecodesOutputOfAllKnownCompressionCodecs(final CompressionCodec codec) {
+        assertThat(codec.decode(codecDisabled.encode(RAW_BYTES)), is(equalTo(RAW_BYTES)));
+        assertThat(codec.decode(codecNone.encode(RAW_BYTES)), is(equalTo(RAW_BYTES)));
+        assertThat(codec.decode(codecSpeed.encode(RAW_BYTES)), is(equalTo(RAW_BYTES)));
+        assertThat(codec.decode(codecBalanced.encode(RAW_BYTES)), is(equalTo(RAW_BYTES)));
+        assertThat(codec.decode(codecSize.encode(RAW_BYTES)), is(equalTo(RAW_BYTES)));
+    }
+
+    void assertEncodesSmallerRoundTrip(final CompressionCodec codec) {
+        final byte[] input = RAW_BYTES;
+
+        final byte[] encoded = codec.encode(input);
+        assertThat("encoded is smaller", encoded.length, is(lessThan(input.length)));
+        assertThat("shaped like deflate", AbstractDeflateAwareCompressionCodec.isDeflate(encoded), is(true));
+        assertThat("round trip decode", codec.decode(encoded), is(equalTo(input)));
     }
 
     public static byte[] deflate(byte[] input, int level) {

@@ -91,6 +91,7 @@ module LogStash
            Setting::SettingNumeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
            Setting::SettingNumeric.new("queue.checkpoint.interval", 1000), # remove it for #17155
            Setting::Boolean.new("queue.checkpoint.retry", true),
+     Setting::SettingString.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
            Setting::Boolean.new("dead_letter_queue.enable", false),
              Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
            Setting::SettingNumeric.new("dead_letter_queue.flush_interval", 5000),
