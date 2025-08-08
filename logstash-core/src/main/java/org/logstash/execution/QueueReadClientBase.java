@@ -34,6 +34,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -60,6 +61,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricOut;
     private transient LongCounter pipelineMetricFiltered;
     private transient TimerMetric pipelineMetricTime;
+    private transient HistogramMetric pipelineMetricBatch;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -90,6 +92,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
             pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
             pipelineMetricTime = TimerMetric.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricBatch = HistogramMetric.fromRubyBase(namespacedMetric, MetricKeys.BATCH_SIZE_KEY);
         }
         return this;
     }
@@ -193,6 +196,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
+        pipelineMetricBatch.update(batch.filteredSize());
     }
 
     @Override
