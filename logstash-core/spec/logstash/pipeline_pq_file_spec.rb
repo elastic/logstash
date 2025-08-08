@@ -114,6 +114,7 @@ describe LogStash::JavaPipeline do
 
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
+    pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
     pipeline_settings_obj.set("queue.page_capacity", page_capacity)
     pipeline_settings_obj.set("queue.max_bytes", max_bytes)
     pipeline_settings_obj.set("queue.drain", true)
