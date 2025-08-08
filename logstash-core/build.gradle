@@ -239,6 +239,7 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.github.luben:zstd-jni:1.5.7-4"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'

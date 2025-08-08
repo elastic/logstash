@@ -84,6 +84,12 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
 `queue.checkpoint.interval` {applies_to}`stack: deprecated 9.1`
 :   Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is `1000`. Set to `0` to eliminate periodic checkpoints.
 
+`queue.compression` {applies_to}`stack: ga 9.2`
+:   Sets the event compression goal for use with the persisted queue. Default is `none`. Acceptable values include:
+    * `speed`: optimize for fastest compression operation
+    * `size`: optimize for smallest possible size on disk, spending more CPU
+    * `balanced`: a balance between the `speed` and `size` settings
+
 ## Configuration notes [pq-config-notes]
 
 Every situation and environment is different, and the "ideal" configuration varies. If you optimize for performance, you may increase your risk of losing data. If you optimize for data protection, you may impact performance.
