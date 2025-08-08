@@ -42,6 +42,7 @@ apply from: "rubyUtils.gradle"
 
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
+import java.util.regex.Pattern
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
@@ -748,23 +749,6 @@ class JDKDetails {
         return createElasticCatalogDownloadUrl()
     }
 
-    // throws an error iff local version in versions.yml doesn't match the latest from JVM catalog.
-    void checkLocalVersionMatchingLatest() {
-        // retrieve the metadata from remote
-        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
-        def catalogMetadataUrl = URI.create(url).toURL()
-        def catalogConnection = catalogMetadataUrl.openConnection()
-        catalogConnection.requestMethod = 'GET'
-        assert catalogConnection.responseCode == 200
-
-        def metadataRetrieved = catalogConnection.content.text
-        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-
-        if (catalogMetadata.version != revision || catalogMetadata.revision != build) {
-            throw new GradleException("Found new jdk version. Please update version.yml to ${catalogMetadata.version} build ${catalogMetadata.revision}")
-        }
-    }
-
     private String createElasticCatalogDownloadUrl() {
         // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
 
@@ -874,11 +858,31 @@ tasks.register("downloadJdk", Download) {
     }
 }
 
-tasks.register("checkNewJdkVersion") {
-    // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
-    // throws Gradle exception if local and remote doesn't match
-    jdkDetails.checkLocalVersionMatchingLatest()
+tasks.register("updateJdkVersion") {
+    description = "Update JDK version in versions.yml to match latest from JVM catalog"
+    doLast {
+        def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
+        // Get latest version from catalog (same API call as checkLocalVersionMatchingLatest)
+        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${jdkDetails.major}_linux"
+        def catalogConnection = URI.create(url).toURL().openConnection()
+        catalogConnection.requestMethod = 'GET'
+        assert catalogConnection.responseCode == 200
+
+        def catalogMetadata = new JsonSlurper().parseText(catalogConnection.content.text)
+
+        if (catalogMetadata.version == jdkDetails.revision && catalogMetadata.revision == jdkDetails.build) {
+            println "JDK version is already up to date: ${jdkDetails.revision} build ${jdkDetails.build}"
+            return
+        }
+
+        println "Updating JDK from ${jdkDetails.revision} build ${jdkDetails.build} to ${catalogMetadata.version} build ${catalogMetadata.revision}"
+
+        // Simple line-based replacement preserving format
+        def versionsFile = file("${projectDir}/versions.yml")
+        versionsFile.text = versionsFile.text
+            .replaceAll(/(?m)^(\s*revision:\s*)${Pattern.quote(jdkDetails.revision)}$/, "\$1${catalogMetadata.version}")
+            .replaceAll(/(?m)^(\s*build:\s*)${jdkDetails.build}$/, "\$1${catalogMetadata.revision}")
+    }
 }
 
 tasks.register("deleteLocalJdk", Delete) {
