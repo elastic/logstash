@@ -416,39 +416,8 @@ module LogStash
     java_import org.logstash.settings.SettingNumeric
 
     java_import org.logstash.settings.SettingInteger
-    # Integer = org::logstash::settings::SettingInteger
-
-    # class Integer < Coercible
-    #   def initialize(name, default = nil, strict = true)
-    #     super(name, ::Integer, default, strict)
-    #   end
-    #
-    #   def coerce(value)
-    #     return value unless value.is_a?(::String)
-    #
-    #     coerced_value = Integer(value) rescue nil
-    #
-    #     if coerced_value.nil?
-    #       raise ArgumentError.new("Failed to coerce value to Integer. Received #{value} (#{value.class})")
-    #     else
-    #       coerced_value
-    #     end
-    #   end
-    # end
 
     java_import org.logstash.settings.SettingPositiveInteger
-
-    # class PositiveInteger < Integer
-    #   def initialize(name, default = nil, strict = true)
-    #     super(name, default, strict) do |v|
-    #       if v > 0
-    #         true
-    #       else
-    #         raise ArgumentError.new("Number must be bigger than 0. Received: #{v}")
-    #       end
-    #     end
-    #   end
-    # end
     
     class Port < SettingInteger
       VALID_PORT_RANGE = 1..65535
