@@ -34,8 +34,4 @@ public final class HistogramSnapshot implements Serializable {
                 ", percentile90=" + percentile90 +
                 '}';
     }
-//
-//    public Map<String, Object> asMap() {
-//        return null;
-//    }
 }
