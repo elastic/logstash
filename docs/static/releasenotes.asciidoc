@@ -97,26 +97,13 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-2]]
 === Logstash 8.19.2 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.2
+==== New features and enhancements
 
-=== Logstash Commits between 8.19 and 8.19.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.1..8.19"
-
-8093fab7d - (HEAD -> 8.19, origin/8.19) [8.19] (backport #17924) Move logstash release information to `.ci` (#17940) (3 days ago) <mergify[bot]>
-803402b9e - pipeline logging: add cause chain when logging (#16677) (#17933) (3 days ago) <mergify[bot]>
-df54b8e49 - 8.19 release notes rendering fix (#17929) (4 days ago) <Edu González de la Herrán>
-3efe75e76 - Bump dev cycle 8.19.2 (#17919) (4 days ago) <Andrea Selva>
-53ed55816 - Release notes for 8.19.1 (#17915) (5 days ago) <github-actions[bot]>
-749cae77e - Log *what* components trigger a grype scan (#17905) (#17911) (7 days ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.1..8.19 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+* Improves logging while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. https://github.com/elastic/logstash/pull/17933[#17933]
 
 ==== Plugins
+
+No change to the vendored plugins in this release.
 
 [[logstash-8-19-1]]
 === Logstash 8.19.1 Release Notes
