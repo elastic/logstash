@@ -99,11 +99,11 @@ This section summarizes the changes in the following releases:
 
 ==== New features and enhancements
 
-* Improves logging while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. https://github.com/elastic/logstash/pull/17933[#17933]
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. https://github.com/elastic/logstash/pull/17933[#17933]
 
 ==== Plugins
 
-No change to the vendored plugins in this release.
+No change to the plugins in this release.
 
 [[logstash-8-19-1]]
 === Logstash 8.19.1 Release Notes
