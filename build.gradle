@@ -167,6 +167,7 @@ tasks.register("configureArtifactInfo") {
     dependsOn configureArchitecture
     description = "Set the url to download stack artifacts for select stack version"
 
+    def projectRef = project
     doLast {
         def splitVersion = version.split('\\.')
         int major = splitVersion[0].toInteger()
@@ -189,7 +190,7 @@ tasks.register("configureArtifactInfo") {
             }
         }
 
-        project.ext.set("artifactApiVersion", qualifiedVersion)
+        projectRef.ext.set("artifactApiVersion", qualifiedVersion)
     }
 }
 
@@ -454,24 +455,25 @@ tasks.register("downloadFilebeat", Download) {
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
     doFirst {
-        String beatsVersion = project.ext.get("artifactApiVersion")
-        String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
-        project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        projectRef.ext.set("unpackedFilebeatName", downloadedFilebeatName)
 
         def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-        project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-        project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+        projectRef.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
 
-        src project.ext.filebeatSnapshotUrl
-        dest new File(project.ext.filebeatDownloadLocation)
+        src projectRef.ext.filebeatSnapshotUrl
+        dest new File(projectRef.ext.filebeatDownloadLocation)
     }
 
     onlyIfNewer true
     retries 3
 
     doLast {
-        System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.filebeatDownloadLocation}"
     }
 }
 
@@ -498,9 +500,10 @@ tasks.register("checkEsSHA") {
 
     description = "Download ES version remote's fingerprint file"
 
+    def projectRef = project
     doLast {
-        String esVersion = project.ext.get("artifactApiVersion")
-        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
         String remoteSHA
 
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
@@ -536,25 +539,26 @@ tasks.register("downloadEs", Download) {
     description = "Download ES Snapshot for current branch version: ${version}"
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
     doFirst {
-        String esVersion = project.ext.get("artifactApiVersion")
-        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
 
-        project.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
+        projectRef.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
 
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-        project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
-        project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+        projectRef.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
 
-        src project.ext.elasticsearchSnapshotURL
-        dest new File(project.ext.elasticsearchDownloadLocation)
+        src projectRef.ext.elasticsearchSnapshotURL
+        dest new File(projectRef.ext.elasticsearchDownloadLocation)
     }
 
     onlyIfNewer true
     retries 3
 
     doLast {
-        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.elasticsearchDownloadLocation}"
     }
 }
 
