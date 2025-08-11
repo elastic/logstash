@@ -213,7 +213,7 @@ public class SettingsImpl implements Settings {
 
         @Override
         public Settings build() {
-            return new SettingsImpl(this);
+            return Settings.ensureValid(new SettingsImpl(this));
         }
 
         private Builder mutate(final Consumer<MutableBuilder> mutator) {
