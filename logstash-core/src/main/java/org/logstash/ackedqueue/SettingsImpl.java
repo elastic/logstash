@@ -20,6 +20,8 @@
 
 package org.logstash.ackedqueue;
 
+import java.util.function.Consumer;
+
 /**
  * Persistent queue settings implementation.
  * */
@@ -34,27 +36,22 @@ public class SettingsImpl implements Settings {
     private boolean checkpointRetry;
 
     public static Builder builder(final Settings settings) {
-        return new BuilderImpl(settings.getDirPath(), settings.getElementClass(), settings.getCapacity(),
-            settings.getQueueMaxBytes(), settings.getMaxUnread(), settings.getCheckpointMaxAcks(),
-            settings.getCheckpointMaxWrites(), settings.getCheckpointRetry()
-        );
+        return new BuilderImpl(settings);
     }
 
     public static Builder fileSettingsBuilder(final String dirForFiles) {
         return new BuilderImpl(dirForFiles);
     }
 
-    private SettingsImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
-        final int capacity, final long queueMaxBytes, final int maxUnread,
-        final int checkpointMaxAcks, final int checkpointMaxWrites, boolean checkpointRetry) {
-        this.dirForFiles = dirForFiles;
-        this.elementClass = elementClass;
-        this.capacity = capacity;
-        this.queueMaxBytes = queueMaxBytes;
-        this.maxUnread = maxUnread;
-        this.checkpointMaxAcks = checkpointMaxAcks;
-        this.checkpointMaxWrites = checkpointMaxWrites;
-        this.checkpointRetry = checkpointRetry;
+    private SettingsImpl(final BuilderImpl builder) {
+        this.dirForFiles = builder.dirForFiles;
+        this.elementClass = builder.elementClass;
+        this.capacity = builder.capacity;
+        this.queueMaxBytes = builder.queueMaxBytes;
+        this.maxUnread = builder.maxUnread;
+        this.checkpointMaxAcks = builder.checkpointMaxAcks;
+        this.checkpointMaxWrites = builder.checkpointMaxWrites;
+        this.checkpointRetry = builder.checkpointRetry;
     }
 
     @Override
@@ -147,88 +144,101 @@ public class SettingsImpl implements Settings {
         private final boolean checkpointRetry;
 
         private BuilderImpl(final String dirForFiles) {
-            this(dirForFiles, null, DEFAULT_CAPACITY, DEFAULT_MAX_QUEUE_BYTES,
-                DEFAULT_MAX_UNREAD, DEFAULT_CHECKPOINT_MAX_ACKS, DEFAULT_CHECKPOINT_MAX_WRITES, false
-            );
+            this.dirForFiles = dirForFiles;
+            this.elementClass = null;
+            this.capacity = DEFAULT_CAPACITY;
+            this.queueMaxBytes = DEFAULT_MAX_QUEUE_BYTES;
+            this.maxUnread = DEFAULT_MAX_UNREAD;
+            this.checkpointMaxAcks = DEFAULT_CHECKPOINT_MAX_ACKS;
+            this.checkpointMaxWrites = DEFAULT_CHECKPOINT_MAX_WRITES;
+            this.checkpointRetry = false;
         }
 
-        private BuilderImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
-            final int capacity, final long queueMaxBytes, final int maxUnread,
-            final int checkpointMaxAcks, final int checkpointMaxWrites, final boolean checkpointRetry) {
-            this.dirForFiles = dirForFiles;
-            this.elementClass = elementClass;
-            this.capacity = capacity;
-            this.queueMaxBytes = queueMaxBytes;
-            this.maxUnread = maxUnread;
-            this.checkpointMaxAcks = checkpointMaxAcks;
-            this.checkpointMaxWrites = checkpointMaxWrites;
-            this.checkpointRetry = checkpointRetry;
+        private BuilderImpl(final Settings settings) {
+            this.dirForFiles = settings.getDirPath();
+            this.elementClass = settings.getElementClass();
+            this.capacity = settings.getCapacity();
+            this.queueMaxBytes = settings.getQueueMaxBytes();
+            this.maxUnread = settings.getMaxUnread();
+            this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
+            this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
+            this.checkpointRetry = settings.getCheckpointRetry();
+        }
+
+        private BuilderImpl(final MutableBuilder mutableBuilder) {
+            this.dirForFiles = mutableBuilder.dirForFiles;
+            this.elementClass = mutableBuilder.elementClass;
+            this.capacity = mutableBuilder.capacity;
+            this.queueMaxBytes = mutableBuilder.queueMaxBytes;
+            this.maxUnread = mutableBuilder.maxUnread;
+            this.checkpointMaxAcks = mutableBuilder.checkpointMaxAcks;
+            this.checkpointMaxWrites = mutableBuilder.checkpointMaxWrites;
+            this.checkpointRetry = mutableBuilder.checkpointRetry;
         }
 
         @Override
         public Builder elementClass(final Class<? extends Queueable> elementClass) {
-            return new BuilderImpl(
-                this.dirForFiles, elementClass, this.capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.elementClass = elementClass);
         }
 
         @Override
         public Builder capacity(final int capacity) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.capacity = capacity);
         }
 
         @Override
         public Builder queueMaxBytes(final long size) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, this.capacity, size, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.queueMaxBytes = size);
         }
 
         @Override
         public Builder maxUnread(final int maxUnread) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass,
-                this.capacity, this.queueMaxBytes, maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.maxUnread = maxUnread);
         }
 
         @Override
         public Builder checkpointMaxAcks(final int checkpointMaxAcks) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass,
-                this.capacity, this.queueMaxBytes, this.maxUnread, checkpointMaxAcks,
-                this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.checkpointMaxAcks = checkpointMaxAcks);
         }
 
         @Override
         public Builder checkpointMaxWrites(final int checkpointMaxWrites) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, this.checkpointRetry
-            );
+            return mutate(mutable -> mutable.checkpointMaxWrites = checkpointMaxWrites);
         }
 
         @Override
         public Builder checkpointRetry(final boolean checkpointRetry) {
-            return new BuilderImpl(
-                    this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                    this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, checkpointRetry
-            );
+            return mutate(mutable -> mutable.checkpointRetry = checkpointRetry);
         }
 
         @Override
         public Settings build() {
-            return new SettingsImpl(
-                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                this.maxUnread, this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return new SettingsImpl(this);
+        }
+
+        private Builder mutate(final Consumer<MutableBuilder> mutator) {
+            final MutableBuilder mutableBuilder = new MutableBuilder();
+            mutator.accept(mutableBuilder);
+            return mutableBuilder.toBuilder();
+        }
+
+        /**
+         * A {@link MutableBuilder} is an internal detail of the <em>immutable</em> {@link BuilderImpl}
+         * that allows its private {@link BuilderImpl#mutate} to work with a temporary mutable copy.
+         */
+        private class MutableBuilder {
+            protected String dirForFiles = BuilderImpl.this.dirForFiles;
+            protected Class<? extends Queueable> elementClass = BuilderImpl.this.elementClass;
+            protected int capacity = BuilderImpl.this.capacity;
+            protected long queueMaxBytes = BuilderImpl.this.queueMaxBytes;
+            protected int maxUnread = BuilderImpl.this.maxUnread;
+            protected int checkpointMaxAcks = BuilderImpl.this.checkpointMaxAcks;
+            protected int checkpointMaxWrites = BuilderImpl.this.checkpointMaxWrites;
+            protected boolean checkpointRetry = BuilderImpl.this.checkpointRetry;
+
+            Builder toBuilder() {
+                return new BuilderImpl(this);
+            }
         }
     }
 }
