@@ -52,7 +52,6 @@ No user-facing changes in Logstash core.
 **Elasticsearch Output - 12.0.6**
 
 * Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
-
 * [DOC] Fix link to Logstash DLQ docs [#1214](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1214)
 
 ## 9.0.4 [logstash-9.0.4-release-notes]
