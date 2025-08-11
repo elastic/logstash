@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.1.1 [logstash-9.1.1-release-notes]
 
 ### Features and enhancements [logstash-9.1.1-features-enhancements]
@@ -36,6 +37,23 @@ No user-facing changes in Logstash core.
 **Translate Filter - 3.4.3**
 
 * Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+=======
+## 9.0.5 [logstash-9.0.5-release-notes]
+
+### Features and enhancements [logstash-9.0.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.5-changes]
+
+**Elastic_integration Filter - 9.0.2**
+
+* Adds support for missing `terminate` processor [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
+
+**Translate Filter - 3.4.3**
+
+* FIX: Reduces memory consumption when configured with a YAML dictionary file by allowing YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+>>>>>>> 81354e98 (Release notes for 9.0.5 (#17951))
 
 **Xml Filter - 4.3.2**
 
@@ -52,6 +70,7 @@ No user-facing changes in Logstash core.
 **Elasticsearch Output - 12.0.6**
 
 * Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
+<<<<<<< HEAD
 
 ## 9.1.0 [logstash-9.1.0-release-notes]
 
@@ -119,6 +138,9 @@ The Elasticsearch Input now provides [support](https://github.com/logstash-plugi
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
+=======
+* [DOC] Fix link to Logstash DLQ docs [#1214](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1214)
+>>>>>>> 81354e98 (Release notes for 9.0.5 (#17951))
 
 ## 9.0.4 [logstash-9.0.4-release-notes]
 
