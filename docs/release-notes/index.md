@@ -89,6 +89,76 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.0.5 [logstash-9.0.5-release-notes]
+
+### Features and enhancements [logstash-9.0.5-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.0.5
+
+=== Logstash Commits between 9.0 and 9.0.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.4..9.0"
+
+3d76fd13b - (HEAD -> 9.0, origin/9.0) [9.0] (backport #17924) Move logstash release information to `.ci` (#17941) (3 days ago) <mergify[bot]>
+fd83a3429 - pipeline logging: add cause chain when logging (#16677) (#17934) (3 days ago) <mergify[bot]>
+5d0f2fba3 - Update creating-logstash-pipeline.md (#17926) (#17928) (4 days ago) <mergify[bot]>
+e5fda57ec - Update patch plugin versions in gemfile lock (#17918) (5 days ago) <github-actions[bot]>
+1af2cb818 - Log *what* components trigger a grype scan (#17905) (#17912) (7 days ago) <mergify[bot]>
+97f18d586 - [9.0] (backport #17865) make sure versions.yml is only read once into gradle.ext (#17900) (7 days ago) <mergify[bot]>
+9c0dda93d - [9.0] (backport #17879) Update monkey patch for clamp to 1.3.3 (#17883) (11 days ago) <mergify[bot]>
+ffa1e8b7a - whitespace edit for testing the docs build (#17862) (2 weeks ago) <Colleen McGinnis>
+7e4cf92dc - use centrally maintained version variables (#17857) (#17859) (2 weeks ago) <mergify[bot]>
+c25084fb9 - docs-builder: add `pull-requests: write` permission to docs-build workflow (#17720) (#17863) (2 weeks ago) <mergify[bot]>
+04bd3fc8e - Update logstash-api.yaml (#17851) (3 weeks ago) <Lisa Cawley>
+7e17fb8eb - [9.0] (backport #17759) Obsolete PQ setting queue.checkpoint.interval  (#17824) (3 weeks ago) <mergify[bot]>
+62c24ba8a - [CI] fix benchmark docker name (#17827) (#17836) (3 weeks ago) <mergify[bot]>
+b7d04cc90 - [9.0] (backport #17812) update commons-lang3 lib (#17816) (3 weeks ago) <mergify[bot]>
+f32063466 - bump core to 9.0.5 (#17843) (3 weeks ago) <kaisecheng>
+258a0491e - [CI] Remove UBI docker acceptance test (#17828) (#17831) (4 weeks ago) <mergify[bot]>
+5a8bfa0fc - Release notes for 9.0.4 (#17784) (4 weeks ago) <github-actions[bot]>
+11b2c1a37 - update ubi9 ironbank base image to 9.6 (#17802) (#17806) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.0.4..9.0 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.0.1 -> 9.0.2
+logstash-filter-translate: 3.4.2 -> 3.4.3
+logstash-filter-xml: 4.3.1 -> 4.3.2
+logstash-input-azure_event_hubs: 1.5.1 -> 1.5.2
+logstash-integration-snmp: 4.0.6 -> 4.0.7
+logstash-output-elasticsearch: 12.0.4 -> 12.0.6
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.0.5-changes]
+
+**Elastic_integration Filter - 9.0.2**
+
+404: Not Found
+
+**Translate Filter - 3.4.3**
+
+* Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+
+**Xml Filter - 4.3.2**
+
+* Update Nokogiri dependency version [#89](https://github.com/logstash-plugins/logstash-filter-xml/pull/89)
+
+**Azure_event_hubs Input - 1.5.2**
+
+* Updated JWT dependency [#101](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101)
+
+**Snmp Integration - 4.0.7**
+
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value [#75](https://github.com/logstash-plugins/logstash-integration-snmp/pull/75)
+
+**Elasticsearch Output - 12.0.6**
+
+* Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
+
+* [DOC] Fix link to Logstash DLQ docs [#1214](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1214)
+
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
