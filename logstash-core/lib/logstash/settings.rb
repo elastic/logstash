@@ -418,55 +418,62 @@ module LogStash
     java_import org.logstash.settings.SettingInteger
 
     java_import org.logstash.settings.SettingPositiveInteger
-    
-    class Port < SettingInteger
-      VALID_PORT_RANGE = 1..65535
 
-      def initialize(name, default = nil, strict = true)
-        super(name, default, strict) { |value| valid?(value) }
-      end
+    # java_import org.logstash.settings.SettingPort
+    Port = org::logstash::settings::SettingPort
 
-      def valid?(port)
-        VALID_PORT_RANGE.cover?(port)
-      end
-    end
+    # class Port < SettingInteger
+    #   VALID_PORT_RANGE = 1..65535
+    #
+    #   def initialize(name, default = nil, strict = true)
+    #     super(name, default, strict) { |value| valid?(value) }
+    #   end
+    #
+    #   def valid?(port)
+    #     VALID_PORT_RANGE.cover?(port)
+    #   end
+    # end
 
-    class PortRange < Coercible
-      PORT_SEPARATOR = "-"
+    # java_import org.logstash.settings.SettingPortRange
+    PortRange = org::logstash::settings::SettingPortRange
 
-      def initialize(name, default = nil, strict = true)
-        super(name, ::Range, default, strict = true) { |value| valid?(value) }
-      end
-
-      def valid?(range)
-        Port::VALID_PORT_RANGE.first <= range.first && Port::VALID_PORT_RANGE.last >= range.last
-      end
-
-      def coerce(value)
-        case value
-        when ::Range
-          value
-        when ::Integer
-          value..value
-        when ::String
-          first, last = value.split(PORT_SEPARATOR)
-          last = first if last.nil?
-          begin
-            (Integer(first))..(Integer(last))
-          rescue ArgumentError # Trap and reraise a more human error
-            raise ArgumentError.new("Could not coerce #{value} into a port range")
-          end
-        else
-          raise ArgumentError.new("Could not coerce #{value} into a port range")
-        end
-      end
-
-      def validate(value)
-        unless valid?(value)
-          raise ArgumentError.new("Invalid value \"#{name}: #{value}\", valid options are within the range of #{Port::VALID_PORT_RANGE.first}-#{Port::VALID_PORT_RANGE.last}")
-        end
-      end
-    end
+    # class PortRange < Coercible
+    #   PORT_SEPARATOR = "-"
+    #   VALID_PORT_RANGE = 1..65535
+    #
+    #   def initialize(name, default = nil, strict = true)
+    #     super(name, ::Range, default, strict = true) { |value| valid?(value) }
+    #   end
+    #
+    #   def valid?(range)
+    #     VALID_PORT_RANGE.first <= range.first && VALID_PORT_RANGE.last >= range.last
+    #   end
+    #
+    #   def coerce(value)
+    #     case value
+    #     when ::Range
+    #       value
+    #     when ::Integer
+    #       value..value
+    #     when ::String
+    #       first, last = value.split(PORT_SEPARATOR)
+    #       last = first if last.nil?
+    #       begin
+    #         (Integer(first))..(Integer(last))
+    #       rescue ArgumentError # Trap and reraise a more human error
+    #         raise ArgumentError.new("Could not coerce #{value} into a port range")
+    #       end
+    #     else
+    #       raise ArgumentError.new("Could not coerce #{value} into a port range")
+    #     end
+    #   end
+    #
+    #   def validate(value)
+    #     unless valid?(value)
+    #       raise ArgumentError.new("Invalid value \"#{name}: #{value}\", valid options are within the range of #{Port::VALID_PORT_RANGE.first}-#{Port::VALID_PORT_RANGE.last}")
+    #     end
+    #   end
+    # end
 
     class Validator < Setting
       def initialize(name, default = nil, strict = true, validator_class = nil)
