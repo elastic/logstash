@@ -31,11 +31,14 @@ import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.SettingKeyDefinitions;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+
+import static org.logstash.common.SettingKeyDefinitions.*;
 
 /**
  * Persistent queue factory JRuby extension.
@@ -69,10 +72,8 @@ public final class QueueFactoryExt extends RubyBasicObject {
         final IRubyObject settings) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
         if (PERSISTED_TYPE.equals(type)) {
-            final Path queuePath = Paths.get(
-                getSetting(context, settings, SettingKeyDefinitions.PATH_QUEUE).asJavaString(),
-                getSetting(context, settings, SettingKeyDefinitions.PIPELINE_ID).asJavaString()
-            );
+            final Settings queueSettings = extractQueueSettings(settings);
+            final Path queuePath = Paths.get(queueSettings.getDirPath());
 
             // Files.createDirectories raises a FileAlreadyExistsException
             // if pipeline queue path is a symlink, so worth checking against Files.exists
@@ -80,18 +81,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 Files.createDirectories(queuePath);
             }
 
-            return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS)
-                .initialize(
-                    context, new IRubyObject[]{
-                        context.runtime.newString(queuePath.toString()),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_PAGE_CAPACITY),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_EVENTS),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_WRITES),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_ACKS),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_RETRY),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_BYTES)
-                    }
-                );
+            return JRubyWrappedAckedQueueExt.create(context, queueSettings);
         } else if (MEMORY_TYPE.equals(type)) {
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
@@ -117,5 +107,22 @@ public final class QueueFactoryExt extends RubyBasicObject {
     private static IRubyObject getSetting(final ThreadContext context, final IRubyObject settings,
         final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
+    }
+
+    private static Settings extractQueueSettings(final IRubyObject settings) {
+        final ThreadContext context = settings.getRuntime().getCurrentContext();
+        final Path queuePath = Paths.get(
+                getSetting(context, settings, PATH_QUEUE).asJavaString(),
+                getSetting(context, settings, PIPELINE_ID).asJavaString()
+        );
+        return SettingsImpl.fileSettingsBuilder(queuePath.toString())
+                .elementClass(Event.class)
+                .capacity(getSetting(context, settings, QUEUE_PAGE_CAPACITY).toJava(Integer.class))
+                .maxUnread(getSetting(context, settings, QUEUE_MAX_EVENTS).toJava(Integer.class))
+                .checkpointMaxWrites(getSetting(context, settings, QUEUE_CHECKPOINT_WRITES).toJava(Integer.class))
+                .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
+                .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
+                .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
+                .build();
     }
 }
