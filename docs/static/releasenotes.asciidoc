@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-5,Logstash 8.18.5>>
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
@@ -90,6 +91,64 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-5]]
+=== Logstash 8.18.5 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.5
+
+=== Logstash Commits between 8.18 and 8.18.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.4..8.18"
+
+928e03527 - (HEAD -> 8.18, origin/8.18) [8.18] (backport #17924) Move logstash release information to `.ci` (#17939) (3 days ago) <mergify[bot]>
+2a611d24c - Update patch plugin versions in gemfile lock (#17917) (5 days ago) <github-actions[bot]>
+f676cb23f - Log *what* components trigger a grype scan (#17905) (#17910) (7 days ago) <mergify[bot]>
+086f8c860 - Update patch plugin versions in gemfile lock (#17902) (10 days ago) <github-actions[bot]>
+385a780c1 - [8.18] (backport #17879) Update monkey patch for clamp to 1.3.3 (#17881) (11 days ago) <mergify[bot]>
+3bc005088 - [8.18] (backport #17782) Release notes for 8.17.9 (#17847) (3 weeks ago) <mergify[bot]>
+973e1d334 - [CI] fix benchmark docker name (#17827) (#17834) (3 weeks ago) <mergify[bot]>
+ba6b3b16c - [8.18] (backport #17812) update commons-lang3 lib (#17814) (3 weeks ago) <mergify[bot]>
+e7dc9b446 - bump core to 8.18.5 (#17842) (3 weeks ago) <kaisecheng>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.4..8.18 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 8.17.2 -> 8.17.3
+logstash-filter-translate: 3.4.2 -> 3.4.3
+logstash-filter-xml: 4.3.1 -> 4.3.2
+logstash-input-azure_event_hubs: 1.5.1 -> 1.5.2
+logstash-integration-snmp: 4.0.6 -> 4.0.7
+logstash-output-elasticsearch: 11.22.12 -> 11.22.13
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Elastic_integration Filter - 8.17.3*
+
+404: Not Found
+
+*Translate Filter - 3.4.3*
+
+* Allow YamlFile's Psych::Parser and Visitor instances to be garbage collected https://github.com/logstash-plugins/logstash-filter-translate/pull/104[#104]
+
+*Xml Filter - 4.3.2*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/89[#89]
+
+*Azure_event_hubs Input - 1.5.2*
+
+* Updated JWT dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101[#101]
+
+*Snmp Integration - 4.0.7*
+
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value https://github.com/logstash-plugins/logstash-integration-snmp/pull/75[#75]
+
+*Elasticsearch Output - 11.22.13*
+
+* Add headers reporting uncompressed size and doc count for bulk requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217[#1217]
+
 
 [[logstash-8-18-4]]
 === Logstash 8.18.4 Release Notes
