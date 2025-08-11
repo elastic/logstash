@@ -21,6 +21,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.2 [logstash-9.1.2-release-notes]
+
+### Features and enhancements [logstash-9.1.2-features-enhancements]
+
+* Improves logging while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17935](https://github.com/elastic/logstash/pull/17935)
+
+### Plugins [logstash-plugin-9.1.2-changes]
+
+No change to the vendored plugins in this release.
+
 ## 9.1.1 [logstash-9.1.1-release-notes]
 
 ### Features and enhancements [logstash-9.1.1-features-enhancements]
@@ -187,31 +197,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.1.2 [logstash-9.1.2-release-notes]
-
-### Features and enhancements [logstash-9.1.2-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.2
-
-=== Logstash Commits between 9.1 and 9.1.1
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.1..9.1"
-
-274b4787e - (HEAD -> 9.1, origin/9.1) [9.1] (backport #17924) Move logstash release information to `.ci` (#17942) (3 days ago) <mergify[bot]>
-bb23ce972 - pipeline logging: add cause chain when logging (#16677) (#17935) (3 days ago) <mergify[bot]>
-ea8c9871d - Bump dev cycle 9.1.2 (#17921) (4 days ago) <Andrea Selva>
-fc24c0afc - Update creating-logstash-pipeline.md (#17926) (4 days ago) <Fabrizio Ferri-Benedetti>
-c1b589d72 - Release notes for 9.1.1 (#17914) (5 days ago) <github-actions[bot]>
-3f518aad9 - Log *what* components trigger a grype scan (#17905) (#17913) (7 days ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.1..9.1 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.1.2-changes]
 
 ## 9.0.0 [logstash-900-release-notes]
 
