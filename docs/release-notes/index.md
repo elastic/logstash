@@ -25,11 +25,11 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.1.2-features-enhancements]
 
-* Improves logging while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17935](https://github.com/elastic/logstash/pull/17935)
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17935](https://github.com/elastic/logstash/pull/17935)
 
 ### Plugins [logstash-plugin-9.1.2-changes]
 
-No change to the vendored plugins in this release.
+No change to the plugins in this release.
 
 ## 9.1.1 [logstash-9.1.1-release-notes]
 
