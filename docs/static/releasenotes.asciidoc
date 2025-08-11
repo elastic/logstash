@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-5,Logstash 8.18.5>>
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
@@ -90,6 +91,40 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-5]]
+=== Logstash 8.18.5 Release Notes
+
+
+No user-facing changes in Logstash core.
+
+
+==== Plugins
+
+*Elastic_integration Filter - 8.17.3*
+
+* Adds support for missing `terminate` processor https://github.com/elastic/logstash-filter-elastic_integration/pull/345[#345]
+
+*Translate Filter - 3.4.3*
+
+* FIX: Reduces memory consumption when configured with a YAML dictionary file by allowing YamlFile's Psych::Parser and Visitor instances to be garbage collected https://github.com/logstash-plugins/logstash-filter-translate/pull/104[#104]
+
+*Xml Filter - 4.3.2*
+
+* Update Nokogiri dependency version https://github.com/logstash-plugins/logstash-filter-xml/pull/89[#89]
+
+*Azure_event_hubs Input - 1.5.2*
+
+* Updated JWT dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101[#101]
+
+*Snmp Integration - 4.0.7*
+
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value https://github.com/logstash-plugins/logstash-integration-snmp/pull/75[#75]
+
+*Elasticsearch Output - 11.22.13*
+
+* Add headers reporting uncompressed size and doc count for bulk requests https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217[#1217]
+
 
 [[logstash-8-18-4]]
 === Logstash 8.18.4 Release Notes
