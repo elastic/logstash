@@ -115,6 +115,15 @@ RUN mkdir -p /usr/share/logstash/config/security
 RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
     chown --recursive logstash:root /usr/share/logstash/config/security/
 
+# Copy additional JVM options and append to existing jvm.options
+RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/fips-jvm.options /tmp/fips-jvm.options && \
+    chown logstash:root /tmp/fips-jvm.options
+# echos are for ensuring that the file ends with a newline
+RUN echo "" >> /usr/share/logstash/config/jvm.options && \
+    echo "" >> /usr/share/logstash/config/jvm.options && \
+    cat /tmp/fips-jvm.options >> /usr/share/logstash/config/jvm.options && \
+    rm /tmp/fips-jvm.options
+
 # list the classes provided by the fips BC
 RUN find /usr/share/logstash -name *.jar | grep lib
 
