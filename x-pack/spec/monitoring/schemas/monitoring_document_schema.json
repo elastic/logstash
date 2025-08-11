@@ -16,7 +16,15 @@
         "filtered": { "type": "number" },
         "in": { "type": "number" },
         "duration_in_millis": { "type": "number" },
-        "out": { "type": "number" }
+        "out": { "type": "number" },
+        "batch_size": {
+          "type": "object",
+          "require": ["75Percentile", "90Percentile"],
+          "properties": {
+            "75Percentile": { "type": "number" },
+            "90Percentile": { "type": "number" }
+          }
+        }
       }
     }
   },
