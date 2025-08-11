@@ -99,11 +99,11 @@ No user-facing changes in Logstash core.
 
 *Elastic_integration Filter - 8.17.3*
 
-* Adds support for missing `terminate` processor [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
+* Adds support for missing `terminate` processor https://github.com/elastic/logstash-filter-elastic_integration/pull/345[#345]
 
 *Translate Filter - 3.4.3*
 
-* FIX: Reduces memory consumption when configured with a YAML dictionary file by allowing YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+* FIX: Reduces memory consumption when configured with a YAML dictionary file by allowing YamlFile's Psych::Parser and Visitor instances to be garbage collected https://github.com/logstash-plugins/logstash-filter-translate/pull/104[#104]
 
 *Xml Filter - 4.3.2*
 
