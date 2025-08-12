@@ -21,6 +21,14 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.2 [logstash-9.1.2-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.2-changes]
+
+No change to the plugins in this release.
+
 ## 9.1.1 [logstash-9.1.1-release-notes]
 
 ### Features and enhancements [logstash-9.1.1-features-enhancements]
