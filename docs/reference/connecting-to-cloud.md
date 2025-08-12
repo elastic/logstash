@@ -38,7 +38,7 @@ The Elasticsearch input, output, and filter plugins support cloud_id and cloud_a
 * [Elasticsearch output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
 
 
-## Sending {{ls}} management data to {{es}} Services [cloud-id-mgmt]
+## Sending {{ls}} management data to {{ech}} [cloud-id-mgmt]
 
 These settings in the `logstash.yml` config file can help you get set up to send management data to Elastic Cloud:
 
