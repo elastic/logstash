@@ -1,6 +1,5 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.util.CleanerThreadLocal;
 import org.logstash.util.SetOnceReference;
 
 import java.io.ByteArrayOutputStream;
@@ -15,12 +14,10 @@ import java.util.zip.Inflater;
  */
 class DeflateEnabledCompressionCodec extends AbstractDeflateAwareCompressionCodec implements CompressionCodec {
 
-    private final CleanerThreadLocal<BufferedDeflater> bufferedDeflaterThreadLocal;
+    private final ThreadLocal<BufferedDeflater> bufferedDeflaterThreadLocal;
 
     DeflateEnabledCompressionCodec(final int level) {
-        this.bufferedDeflaterThreadLocal = CleanerThreadLocal
-                .withInitial(() -> new BufferedDeflater(level))
-                .withCleanAction(BufferedDeflater::release, GLOBAL_CLEANER);
+        this.bufferedDeflaterThreadLocal = ThreadLocal.withInitial(() -> new BufferedDeflater(level));
     }
 
     @Override

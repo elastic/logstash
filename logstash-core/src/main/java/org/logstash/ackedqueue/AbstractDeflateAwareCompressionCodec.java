@@ -1,11 +1,9 @@
 package org.logstash.ackedqueue;
 
-import org.logstash.util.CleanerThreadLocal;
 import org.logstash.util.SetOnceReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.ref.Cleaner;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -18,14 +16,10 @@ abstract class AbstractDeflateAwareCompressionCodec implements CompressionCodec 
 
     static final int BAOS_SHAREABLE_THRESHOLD_BYTES = 4096;
 
-    static final Cleaner GLOBAL_CLEANER = Cleaner.create();
-
-    private final CleanerThreadLocal<BufferedInflater> bufferedInflaterThreadLocal;
+    private final ThreadLocal<BufferedInflater> bufferedInflaterThreadLocal;
 
     public AbstractDeflateAwareCompressionCodec() {
-        this.bufferedInflaterThreadLocal = CleanerThreadLocal
-                .withInitial(BufferedInflater::new)
-                .withCleanAction(BufferedInflater::release, GLOBAL_CLEANER);
+        this.bufferedInflaterThreadLocal = ThreadLocal.withInitial(BufferedInflater::new);
     }
 
     @Override
