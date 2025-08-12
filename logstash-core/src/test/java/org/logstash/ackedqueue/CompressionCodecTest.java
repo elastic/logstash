@@ -4,12 +4,14 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.zip.Deflater;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Matchers.argThat;
 
 public class CompressionCodecTest {
@@ -135,6 +137,69 @@ public class CompressionCodecTest {
         final Logger mockLogger = Mockito.mock(Logger.class);
         CompressionCodec.fromConfigValue("size", mockLogger);
         Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "size")));
+    }
+
+    @Test(timeout=1000)
+    public void testCompressionCodecDecodeTailTruncated() throws Exception {
+        final byte[] truncatedInput = copyWithTruncatedTail(DEFLATE_BALANCED_BYTES.bytes(), 32);
+
+        final RuntimeException thrownException = assertThrows(RuntimeException.class, () -> codecNone.decode(truncatedInput));
+        assertThat(thrownException.getMessage(), containsString("IOException while decoding"));
+        final Throwable rootCause = extractRootCause(thrownException);
+        assertThat(rootCause.getMessage(), anyOf(containsString("prematurely reached end"), containsString("incorrect data check")));
+    }
+
+    byte[] copyWithTruncatedTail(final byte[] input, final int tailSize) {
+        int startIndex = (input.length < tailSize) ? 0 : input.length - tailSize;
+
+        final byte[] result = Arrays.copyOf(input, input.length);
+        Arrays.fill(result, startIndex, result.length, (byte) 0);
+
+        return result;
+    }
+
+    @Test(timeout=1000)
+    public void testCompressionCodecDecodeTailScrambled() throws Exception {
+        final byte[] scrambledInput = copyWithScrambledTail(DEFLATE_BALANCED_BYTES.bytes(), 32);
+
+        final RuntimeException thrownException = assertThrows(RuntimeException.class, () -> codecNone.decode(scrambledInput));
+        assertThat(thrownException.getMessage(), containsString("IOException while decoding"));
+        final Throwable rootCause = extractRootCause(thrownException);
+        assertThat(rootCause.getMessage(), anyOf(containsString("prematurely reached end"), containsString("incorrect data check")));
+    }
+
+    byte[] copyWithScrambledTail(final byte[] input, final int tailSize) {
+        final SecureRandom secureRandom = new SecureRandom();
+        int startIndex = (input.length < tailSize) ? 0 : input.length - tailSize;
+
+        byte[] randomBytes = new byte[input.length - startIndex];
+        secureRandom.nextBytes(randomBytes);
+
+        final byte[] result = Arrays.copyOf(input, input.length);
+        System.arraycopy(randomBytes, 0, result, startIndex, randomBytes.length);
+
+        return result;
+    }
+
+    @Test(timeout=1000)
+    public void testCompressionDecodeTailNullPadded() throws Exception {
+        final byte[] nullPaddedInput = copyWithNullPaddedTail(DEFLATE_BALANCED_BYTES.bytes(), 32);
+
+        assertThat(codecNone.decode(nullPaddedInput), is(equalTo(RAW_BYTES.bytes())));
+    }
+
+    byte[] copyWithNullPaddedTail(final byte[] input, final int tailSize) {
+        return Arrays.copyOf(input, Math.addExact(input.length, tailSize));
+    }
+
+    Throwable extractRootCause(final Throwable throwable) {
+        Throwable current;
+        Throwable cause = throwable;
+        do {
+            current = cause;
+            cause = current.getCause();
+        } while (cause != null && cause != current);
+        return current;
     }
 
     void assertDecodesRaw(final CompressionCodec codec) {

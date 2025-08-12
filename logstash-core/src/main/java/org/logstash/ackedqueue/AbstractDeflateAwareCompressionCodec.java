@@ -101,7 +101,7 @@ abstract class AbstractDeflateAwareCompressionCodec implements CompressionCodec 
                         int count = inflater.inflate(intermediateBuffer);
                         baos.write(intermediateBuffer, 0, count);
                     } catch (DataFormatException e) {
-                        throw new RuntimeException("Failed to decode", e);
+                        throw new IOException("Failed to decode", e);
                     }
                 } while (!inflater.finished());
 
