@@ -91,9 +91,10 @@ public class CleanerThreadLocalTest {
     }
 
     private void bruteForceGC() throws Exception {
+        // technically just a hint to the JVM,
+        // so we hint many times.
         for (int i = 0; i < 100; i++) {
             System.gc();
-            Thread.sleep(10);
         }
     }
 
