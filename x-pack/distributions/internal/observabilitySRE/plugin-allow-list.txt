@@ -9,6 +9,7 @@ logstash-filter-fingerprint
 logstash-filter-grok
 logstash-filter-json
 logstash-filter-mutate
+logstash-filter-prune
 logstash-input-beats
 logstash-input-generator
 logstash-input-pipeline
