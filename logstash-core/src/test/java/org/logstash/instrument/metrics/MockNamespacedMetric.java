@@ -52,7 +52,6 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
     protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
         Objects.requireNonNull(key);
         requireRubySymbol(key, "key");
-//        return RubyUtil.toRubyObject(TimerMetric.create("test_timer"));
         return RubyUtil.toRubyObject(TimerMetric.create(key.asJavaString()));
     }
 
@@ -60,8 +59,6 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
     protected IRubyObject getHistogram(ThreadContext context, IRubyObject key) {
         Objects.requireNonNull(key);
         requireRubySymbol(key, "key");
-
-//        HistogramMetric metric = new HistogramMetric("test_batch_metric");
         return RubyUtil.toRubyObject(new HistogramMetric(key.asJavaString()));
     }
 
