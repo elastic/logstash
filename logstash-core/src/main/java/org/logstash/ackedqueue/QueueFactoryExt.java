@@ -68,6 +68,10 @@ public final class QueueFactoryExt extends RubyBasicObject {
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
+
+        final String histogramFlag = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
+                .asJavaString();
+
         if (PERSISTED_TYPE.equals(type)) {
             final Path queuePath = Paths.get(
                 getSetting(context, settings, SettingKeyDefinitions.PATH_QUEUE).asJavaString(),
@@ -93,15 +97,14 @@ public final class QueueFactoryExt extends RubyBasicObject {
                     }
                 );
         } else if (MEMORY_TYPE.equals(type)) {
+            final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
+                    .convertToInteger().getIntValue();
+            final int workers = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
+                    .convertToInteger().getIntValue();
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
+                context, context.runtime.newFixnum(batchSize * workers), context.runtime.newString(histogramFlag)
             );
         } else {
             throw context.runtime.newRaiseException(

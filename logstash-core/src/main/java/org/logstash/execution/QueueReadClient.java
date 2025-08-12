@@ -35,9 +35,9 @@ public interface QueueReadClient {
     void addFilteredMetrics(int filteredSize);
     void closeBatch(QueueBatch batch) throws IOException;
 
-    public <V, E extends Exception> V executeWithTimers(final TimerMetric.ExceptionalSupplier<V,E> supplier) throws E;
+    <V, E extends Exception> V executeWithTimers(final TimerMetric.ExceptionalSupplier<V,E> supplier) throws E;
 
-    public <E extends Exception> void executeWithTimers(final TimerMetric.ExceptionalRunnable<E> runnable) throws E;
+    <E extends Exception> void executeWithTimers(final TimerMetric.ExceptionalRunnable<E> runnable) throws E;
 
     boolean isEmpty();
 }
