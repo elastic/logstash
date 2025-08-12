@@ -1,0 +1,9 @@
+# FIPS config to be appended to /usr/share/logstash/config/jvm.options
+-Djava.security.properties=/usr/share/logstash/config/security/java.security
+-Djavax.net.ssl.trustStore=/usr/share/logstash/config/security/cacerts.bcfks
+-Djavax.net.ssl.trustStoreType=BCFKS
+-Djavax.net.ssl.trustStoreProvider=BCFIPS
+-Djavax.net.ssl.trustStorePassword=changeit
+-Dssl.KeyManagerFactory.algorithm=PKIX
+-Dssl.TrustManagerFactory.algorithm=PKIX
+-Dorg.bouncycastle.fips.approved_only=true

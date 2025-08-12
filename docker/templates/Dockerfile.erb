@@ -193,6 +193,16 @@ RUN mkdir -p /usr/share/logstash/config/security
 RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
     chown --recursive logstash:root /usr/share/logstash/config/security/
 
+# Copy additional JVM options and append to existing jvm.options
+RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/fips-jvm.options /tmp/fips-jvm.options && \
+    chown logstash:root /tmp/fips-jvm.options
+# echos are for ensuring that the file ends with a newline
+RUN ( \
+      echo ""; echo ""; \
+      cat /tmp/fips-jvm.options \
+    ) >> /usr/share/logstash/config/jvm.options && \
+    rm /tmp/fips-jvm.options
+
 # list the classes provided by the fips BC
 RUN find /usr/share/logstash -name *.jar | grep lib
 
@@ -210,17 +220,6 @@ RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
     -deststorepass changeit \
     -srcstorepass changeit \
     -noprompt
-
-# Set Java security properties through LS_JAVA_OPTS
-ENV LS_JAVA_OPTS="\
-    -Djava.security.properties=/usr/share/logstash/config/security/java.security \
-    -Djavax.net.ssl.trustStore=/usr/share/logstash/config/security/cacerts.bcfks \
-    -Djavax.net.ssl.trustStoreType=BCFKS \
-    -Djavax.net.ssl.trustStoreProvider=BCFIPS \
-    -Djavax.net.ssl.trustStorePassword=changeit \
-    -Dssl.KeyManagerFactory.algorithm=PKIX \
-    -Dssl.TrustManagerFactory.algorithm=PKIX \
-    -Dorg.bouncycastle.fips.approved_only=true"
 <% end -%>
 
 # Provide a minimal configuration, so that simple invocations will provide
