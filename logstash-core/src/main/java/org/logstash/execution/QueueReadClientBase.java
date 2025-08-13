@@ -48,6 +48,18 @@ import java.util.concurrent.TimeUnit;
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 
+    public enum BatchSizeSamplingType {
+        NONE, FULL;
+
+        public static BatchSizeSamplingType decode(String type) {
+            return switch (type) {
+                case "false" -> NONE;
+                case "true" -> FULL;
+                default -> throw new IllegalArgumentException("Invalid batch size type: " + type);
+            };
+        }
+    }
+
     private static final long serialVersionUID = 1L;
 
     protected int batchSize = 125;
@@ -62,6 +74,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricFiltered;
     private transient TimerMetric pipelineMetricTime;
     private transient HistogramMetric pipelineMetricBatch;
+    protected BatchSizeSamplingType batchSizeSamplingType = BatchSizeSamplingType.FULL;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -196,7 +209,9 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
-        pipelineMetricBatch.update(batch.filteredSize());
+        if (batchSizeSamplingType == BatchSizeSamplingType.FULL) {
+            pipelineMetricBatch.update(batch.filteredSize());
+        }
     }
 
     @Override
