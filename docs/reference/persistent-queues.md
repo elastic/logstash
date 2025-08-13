@@ -81,6 +81,11 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
 
     To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is written. Keep in mind that disk writes have a resource cost. Setting this value to `1` ensures maximum durability, but can severely impact performance. See [Controlling durability](#durability-persistent-queues) to better understand the trade-offs.
 
+`queue.compression`
+:   Sets the event compression goal for use with the persisted queue. Default is `none`. Acceptable values include:
+    * `speed`: optimize for fastest compression operation
+    * `size`: optimize for smallest size on disk, spending more CPU
+    * `balanced`: a balance between the `speed` and `size` settings
 
 
 ## Configuration notes [pq-config-notes]
