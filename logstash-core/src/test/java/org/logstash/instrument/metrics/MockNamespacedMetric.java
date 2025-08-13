@@ -13,15 +13,19 @@ import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Trivial implementation of AbstractNamespacedMetricExt where each abstract creation
- * metric is implemented by instantiating a newly fresh metric object.
+ * metric is implemented by pooling metric instances by name.
  * */
 @SuppressWarnings({"rawtypes", "serializable"})
 public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
 
     private static final long serialVersionUID = -6507123659910450215L;
+
+    private transient final ConcurrentMap<String, Metric> metrics = new ConcurrentHashMap<>();
 
     public static MockNamespacedMetric create() {
         return new MockNamespacedMetric(RubyUtil.RUBY, RubyUtil.NAMESPACED_METRIC_CLASS);
@@ -45,21 +49,21 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
     protected IRubyObject getCounter(ThreadContext context, IRubyObject key) {
         Objects.requireNonNull(key);
         requireRubySymbol(key, "key");
-        return RubyUtil.toRubyObject(new LongCounter(key.asJavaString()));
+        return RubyUtil.toRubyObject(metrics.computeIfAbsent(key.asJavaString(), LongCounter::new));
     }
 
     @Override
     protected IRubyObject getTimer(ThreadContext context, IRubyObject key) {
         Objects.requireNonNull(key);
         requireRubySymbol(key, "key");
-        return RubyUtil.toRubyObject(TimerMetric.create(key.asJavaString()));
+        return RubyUtil.toRubyObject(metrics.computeIfAbsent(key.asJavaString(), TimerMetric::create));
     }
 
     @Override
     protected IRubyObject getHistogram(ThreadContext context, IRubyObject key) {
         Objects.requireNonNull(key);
         requireRubySymbol(key, "key");
-        return RubyUtil.toRubyObject(new HistogramMetric(key.asJavaString()));
+        return RubyUtil.toRubyObject(metrics.computeIfAbsent(key.asJavaString(), HistogramMetric::new));
     }
 
     @Override
