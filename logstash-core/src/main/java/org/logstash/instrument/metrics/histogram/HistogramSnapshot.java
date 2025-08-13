@@ -1,5 +1,6 @@
 package org.logstash.instrument.metrics.histogram;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.HdrHistogram.Histogram;
 
 import java.io.Serializable;
@@ -19,10 +20,12 @@ public final class HistogramSnapshot implements Serializable {
         percentile90 = hdrHistogram.getValueAtPercentile(90);
     }
 
+    @JsonProperty("p75")
     public double get75Percentile() {
         return percentile75;
     }
 
+    @JsonProperty("p90")
     public double get90Percentile() {
         return percentile90;
     }

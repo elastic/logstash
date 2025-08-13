@@ -93,7 +93,7 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
 
     @Override
     protected AbstractNamespacedMetricExt createNamespaced(ThreadContext context, IRubyObject name) {
-        return null;
+        return this;
     }
 
     @Override

@@ -40,6 +40,7 @@ import org.logstash.instrument.metrics.histogram.HistogramSnapshot;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
 
 /**
  * Tests for {@link JrubyMemoryReadClientExt}.
@@ -80,7 +81,8 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final QueueBatch batch = client.readBatch();
         assertEquals(1, batch.filteredSize());
 
-        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric, MetricKeys.BATCH_SIZE_KEY);
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric.namespace(context, BATCH_KEY), MetricKeys.BATCH_EVENT_COUNT_KEY);
         HistogramSnapshot metricSnapshot = histogram.getValue();
         assertEquals(1.0, metricSnapshot.get75Percentile(), 0.0001);
         assertEquals(1.0, metricSnapshot.get90Percentile(), 0.0001);
@@ -100,7 +102,8 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final QueueBatch batch = client.readBatch();
         assertEquals(1, batch.filteredSize());
 
-        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric, MetricKeys.BATCH_SIZE_KEY);
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric.namespace(context, BATCH_KEY), MetricKeys.BATCH_EVENT_COUNT_KEY);
         HistogramSnapshot metricSnapshot = histogram.getValue();
         assertEquals(0.0, metricSnapshot.get75Percentile(), 0.0001);
         assertEquals(0.0, metricSnapshot.get90Percentile(), 0.0001);

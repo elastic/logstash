@@ -290,8 +290,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
 
         // init histogram sample
-        final RubySymbol[] eventsNamespace = buildNamespace(EVENTS_KEY);
-        initOrGetHistogramMetric(context, eventsNamespace, BATCH_SIZE_KEY);
+        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY);
+        initOrGetHistogramMetric(context, batchNamespace, BATCH_EVENT_COUNT_KEY);
 
         return this;
     }
@@ -324,8 +324,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     new IRubyObject[]{
                             STATS_KEY,
                             PIPELINES_KEY,
-                            pipelineId.convertToString().intern(),
-                            EVENTS_KEY
+                            pipelineId.convertToString().intern()/*,
+                            EVENTS_KEY*/
                     }
                 )
             )

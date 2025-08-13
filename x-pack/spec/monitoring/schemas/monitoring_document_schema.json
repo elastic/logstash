@@ -9,6 +9,18 @@
         "successes": { "type": "number" }
       }
     },
+    "batch": {
+      "type": "object",
+      "properties": {
+        "event_count": {
+          "type": "object",
+          "require": ["p75", "p90"],
+          "properties": {
+            "p75": { "type": "number" },
+            "p90": { "type": "number" }
+          }
+        }
+    },
     "events": {
       "type": "object",
       "required": ["filtered", "in", "duration_in_millis", "out"],
@@ -16,15 +28,7 @@
         "filtered": { "type": "number" },
         "in": { "type": "number" },
         "duration_in_millis": { "type": "number" },
-        "out": { "type": "number" },
-        "batch_size": {
-          "type": "object",
-          "require": ["75Percentile", "90Percentile"],
-          "properties": {
-            "75Percentile": { "type": "number" },
-            "90Percentile": { "type": "number" }
-          }
-        }
+        "out": { "type": "number" }
       }
     }
   },

@@ -42,6 +42,9 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
+import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
+
 /**
  * Common code shared by Persistent and In-Memory queues clients implementation
  * */
@@ -101,11 +104,14 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @JRubyMethod(name = "set_pipeline_metric")
     public IRubyObject setPipelineMetric(final IRubyObject metric) {
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        AbstractNamespacedMetricExt eventsNamespace = namespacedMetric.namespace(context, EVENTS_KEY);
+        AbstractNamespacedMetricExt batchNamespace = namespacedMetric.namespace(context, BATCH_KEY);
         synchronized(namespacedMetric.getMetric()) {
-            pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
-            pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            pipelineMetricTime = TimerMetric.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
-            pipelineMetricBatch = HistogramMetric.fromRubyBase(namespacedMetric, MetricKeys.BATCH_SIZE_KEY);
+            pipelineMetricOut = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.OUT_KEY);
+            pipelineMetricFiltered = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.FILTERED_KEY);
+            pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricBatch = HistogramMetric.fromRubyBase(batchNamespace, MetricKeys.BATCH_EVENT_COUNT_KEY);
         }
         return this;
     }
