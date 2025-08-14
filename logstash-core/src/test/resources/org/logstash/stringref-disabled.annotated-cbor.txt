@@ -1,0 +1,94 @@
+9f                                                               # array(*)
+   71                                                            #   text(17)
+      6a6176612e7574696c2e486173684d6170                         #     "java.util.HashMap"
+   bf                                                            #   map(*)
+      64                                                         #     text(4)
+         44415441                                                #       "DATA"
+      9f                                                         #     array(*)
+         78 19                                                   #       text(25)
+            6f72672e6c6f6773746173682e436f6e                     #         "org.logstash.Con"
+            7665727465644d6170                                   #         "vertedMap"
+         bf                                                      #       map(*)
+            64                                                   #         text(4)
+               686f7374                                          #           "host"
+            9f                                                   #         array(*)
+               78 19                                             #           text(25)
+                  6f72672e6c6f6773746173682e436f6e               #             "org.logstash.Con"
+                  7665727465644d6170                             #             "vertedMap"
+               bf                                                #           map(*)
+                  68                                             #             text(8)
+                     686f73746e616d65                            #               "hostname"
+                  9f                                             #             array(*)
+                     74                                          #               text(20)
+                        6f72672e6a727562792e52756279537472696e67 #                 "org.jruby.RubyString"
+                     67                                          #               text(7)
+                        70657268617073                           #                 "perhaps"
+                     ff                                          #               break
+                  ff                                             #             break
+               ff                                                #           break
+            65                                                   #         text(5)
+               6576656e74                                        #           "event"
+            9f                                                   #         array(*)
+               78 19                                             #           text(25)
+                  6f72672e6c6f6773746173682e436f6e               #             "org.logstash.Con"
+                  7665727465644d6170                             #             "vertedMap"
+               bf                                                #           map(*)
+                  68                                             #             text(8)
+                     6f726967696e616c                            #               "original"
+                  9f                                             #             array(*)
+                     74                                          #               text(20)
+                        6f72672e6a727562792e52756279537472696e67 #                 "org.jruby.RubyString"
+                     78 32                                       #               text(50)
+                        7b2274657374223a22737472696e6772         #                 "{\"test\":\"stringr"
+                        6566222c22657874656e73696f6e223a         #                 "ef\",\"extension\":"
+                        7b22656e61626c6564223a747275657d         #                 "{\"enabled\":true}"
+                        7d0a                                     #                 "}\n"
+                     ff                                          #               break
+                  ff                                             #             break
+               ff                                                #           break
+            68                                                   #         text(8)
+               4076657273696f6e                                  #           "@version"
+            61                                                   #         text(1)
+               31                                                #           "1"
+            69                                                   #         text(9)
+               657874656e73696f6e                                #           "extension"
+            9f                                                   #         array(*)
+               78 19                                             #           text(25)
+                  6f72672e6c6f6773746173682e436f6e               #             "org.logstash.Con"
+                  7665727465644d6170                             #             "vertedMap"
+               bf                                                #           map(*)
+                  67                                             #             text(7)
+                     656e61626c6564                              #               "enabled"
+                  f5                                             #             true, simple(21)
+                  ff                                             #             break
+               ff                                                #           break
+            6a                                                   #         text(10)
+               4074696d657374616d70                              #           "@timestamp"
+            9f                                                   #         array(*)
+               76                                                #           text(22)
+                  6f72672e6c6f6773746173682e54696d657374616d70   #             "org.logstash.Timestamp"
+               78 1b                                             #           text(27)
+                  323032352d30372d32385431363a3432               #             "2025-07-28T16:42"
+                  3a32342e3432313434365a                         #             ":24.421446Z"
+               ff                                                #           break
+            64                                                   #         text(4)
+               74657374                                          #           "test"
+            9f                                                   #         array(*)
+               74                                                #           text(20)
+                  6f72672e6a727562792e52756279537472696e67       #             "org.jruby.RubyString"
+               69                                                #           text(9)
+                  737472696e67726566                             #             "stringref"
+               ff                                                #           break
+            ff                                                   #         break
+         ff                                                      #       break
+      64                                                         #     text(4)
+         4d455441                                                #       "META"
+      9f                                                         #     array(*)
+         78 19                                                   #       text(25)
+            6f72672e6c6f6773746173682e436f6e                     #         "org.logstash.Con"
+            7665727465644d6170                                   #         "vertedMap"
+         bf                                                      #       map(*)
+            ff                                                   #         break
+         ff                                                      #       break
+      ff                                                         #     break
+   ff                                                            #   break
