@@ -211,14 +211,5 @@ if __name__ == "__main__":
             "steps": acceptance_docker_steps(),
     })
 
-<<<<<<< HEAD
-=======
-    structure["steps"].append({
-        "group": "Observability SRE Acceptance Tests",
-        "key": "acceptance-observability-sre",
-        "steps": [fips_test_runner_step()],
-    })
-
->>>>>>> 332355d6 (Start all exhastive tests in parallel (#17978))
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
     YAML().dump(structure, sys.stdout)
