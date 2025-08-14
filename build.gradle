@@ -448,15 +448,11 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat", Download) {
-    dependsOn  configureArtifactInfo
-    description = "Download Filebeat Snapshot for current branch version: ${version}"
-
-    project.ext.set("versionFound", true)
-    inputs.file("${projectDir}/versions.yml")
+tasks.register("prepareFilebeatDownload") {
+    dependsOn configureArtifactInfo
 
     def projectRef = project
-    doFirst {
+    doLast {
         String beatsVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
         projectRef.ext.set("unpackedFilebeatName", downloadedFilebeatName)
@@ -464,10 +460,21 @@ tasks.register("downloadFilebeat", Download) {
         def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
         projectRef.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
         projectRef.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-        src projectRef.ext.filebeatSnapshotUrl
-        dest new File(projectRef.ext.filebeatDownloadLocation)
     }
+}
+
+tasks.register("downloadFilebeat", Download) {
+    dependsOn prepareFilebeatDownload
+    description = "Download Filebeat Snapshot for current branch version: ${version}"
+
+    project.ext.set("versionFound", true)
+    inputs.file("${projectDir}/versions.yml")
+
+    def projectRef = project
+
+    // Use lazy configuration to get values after prepareFilebeatDownload runs
+    src { projectRef.ext.filebeatSnapshotUrl }
+    dest { new File(projectRef.ext.filebeatDownloadLocation) }
 
     onlyIfNewer true
     retries 3
