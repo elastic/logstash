@@ -136,7 +136,10 @@ bin/logstash-keystore add ES_USER ES_PWD
 When prompted, enter a value for each key.
 
 ::::{note}
-Key values are limited to ASCII letters (`a`-`z`, `A`-`Z`), numbers (`0`-`9`), underscores (`_`), and dots (`.`); they must be at least one character long and cannot begin with a number.
+Key values are limited to:
+
+* {applies_to}`stack: ga 9.0.1` ASCII letters (`a`-`z`, `A`-`Z`), numbers (`0`-`9`), underscores (`_`), and dots (`.`). Key values must be at least one character long and cannot begin with a number.
+* {applies_to}`stack: ga 9.0.0` ASCII characters including digits, letters, and a few special symbols.
 ::::
 
 
