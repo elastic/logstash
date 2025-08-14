@@ -182,7 +182,7 @@ if __name__ == "__main__":
     structure = {"steps": []}
 
     structure["steps"].append({
-        "group": "Testing Phase",
+        "group": "Pull request suite",
         "key": "testing-phase",
         **testing_phase_steps(),
     })
@@ -190,30 +190,35 @@ if __name__ == "__main__":
     structure["steps"].append({
             "group": "Compatibility / Linux",
             "key": "compatibility-linux",
-            "depends_on": "testing-phase",
             "steps": compat_linux_steps,
     })
 
     structure["steps"].append({
             "group": "Compatibility / Windows",
             "key": "compatibility-windows",
-            "depends_on": "testing-phase",
             "steps": [compat_windows_step(imagesuffix=windows_test_os)],
     })
 
     structure["steps"].append({
             "group": "Acceptance / Packaging",
             "key": "acceptance-packaging",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_linux_steps(),
     })
 
     structure["steps"].append({
             "group": "Acceptance / Docker",
             "key": "acceptance-docker",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_docker_steps(),
     })
 
+<<<<<<< HEAD
+=======
+    structure["steps"].append({
+        "group": "Observability SRE Acceptance Tests",
+        "key": "acceptance-observability-sre",
+        "steps": [fips_test_runner_step()],
+    })
+
+>>>>>>> 332355d6 (Start all exhastive tests in parallel (#17978))
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
     YAML().dump(structure, sys.stdout)
