@@ -77,6 +77,8 @@ def main():
                             scenario_executor.on(scenario_name, expectations)
                         except Exception as e:
                             print(e)
+                            print("-------------- Logstash logs --------------")
+                            print(process.stdout.readline)
                             has_failed_scenario = True
                         bootstrap.stop_logstash(process)
 

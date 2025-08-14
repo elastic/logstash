@@ -102,7 +102,7 @@ class Bootstrap:
             if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash stopped.")
                 return None
-            # shudown watcher keep running, we should be good with considering time spent
+            # shutdown watcher keep running, we should be good with considering time spent
             if time.time() - start_time > 60:
                 print(f"Logstash didn't stop in 1min, sending SIGTERM signal.")
                 process.kill()
