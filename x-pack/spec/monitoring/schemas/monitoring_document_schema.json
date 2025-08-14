@@ -14,12 +14,20 @@
       "properties": {
         "event_count": {
           "type": "object",
-          "require": ["p75", "p90"],
+          "require": [
+            "p75",
+            "p90"
+          ],
           "properties": {
-            "p75": { "type": "number" },
-            "p90": { "type": "number" }
+            "p75": {
+              "type": "number"
+            },
+            "p90": {
+              "type": "number"
+            }
           }
         }
+      }
     },
     "events": {
       "type": "object",
