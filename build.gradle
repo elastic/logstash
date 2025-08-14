@@ -533,14 +533,11 @@ tasks.register("checkEsSHA") {
     }
 }
 
-tasks.register("downloadEs", Download) {
-    dependsOn  = [configureArtifactInfo, checkEsSHA]
-
-    description = "Download ES Snapshot for current branch version: ${version}"
-    inputs.file("${projectDir}/versions.yml")
+tasks.register("prepareEsDownload") {
+    dependsOn configureArtifactInfo
 
     def projectRef = project
-    doFirst {
+    doLast {
         String esVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
 
@@ -549,12 +546,22 @@ tasks.register("downloadEs", Download) {
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
         projectRef.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
         projectRef.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-
-        src projectRef.ext.elasticsearchSnapshotURL
-        dest new File(projectRef.ext.elasticsearchDownloadLocation)
     }
+}
+
+tasks.register("downloadEs", Download) {
+    dependsOn  = [prepareEsDownload, checkEsSHA]
+
+    description = "Download ES Snapshot for current branch version: ${version}"
+    inputs.file("${projectDir}/versions.yml")
+
+    def projectRef = project
+
+    src { projectRef.ext.elasticsearchSnapshotURL }
+    dest { new File(projectRef.ext.elasticsearchDownloadLocation) }
 
     onlyIfNewer true
+    overwrite false
     retries 3
 
     doLast {
