@@ -40,7 +40,7 @@ test {
 }
 
 tasks.register("copyProductionLog4jConfiguration", Copy) {
-  description "Copy the production log4j config to be tested in QA (qa/integration/fixtures/logs_rollover)"
+  description = "Copy the production log4j config to be tested in QA (qa/integration/fixtures/logs_rollover)"
 
   from "${projectDir}/../../config/log4j2.properties"
   into "${projectDir}/fixtures/logs_rollover/"
@@ -76,6 +76,8 @@ tasks.register("integrationTests", Test) {
   if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
     jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
   }
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   dependsOn copyProductionLog4jConfiguration
   dependsOn preparePluginTestFixtures
 
