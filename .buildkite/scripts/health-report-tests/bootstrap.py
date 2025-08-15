@@ -84,7 +84,9 @@ class Bootstrap:
         for stdout_line in iter(process.stdout.readline, ""):
             print(stdout_line.strip())
             # we don't wait for Logstash fully start as we also test slow pipeline start scenarios
-            if "Pipeline started" in stdout_line:
+            if full_start_required is False and "Starting pipeline" in stdout_line:
+                break
+            if full_start_required is True and "Pipeline started" in stdout_line:
                 break
             if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash couldn't spin up.")
