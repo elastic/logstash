@@ -88,9 +88,9 @@ class Bootstrap:
                 break
             if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash couldn't spin up.")
-                print(logs)
+                # print(logs)
                 return None
-
+        print(logs)
         print(f"Logstash is running with PID: {process.pid}.")
         return process
 
