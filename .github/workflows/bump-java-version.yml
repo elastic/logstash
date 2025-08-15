@@ -1,0 +1,19 @@
+name: Update JDK Version [STUB]
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  update_jdk_version:
+    name: Update JDK Version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stub step
+        run: |
+          echo "Stub to iterate via PR"
+      
