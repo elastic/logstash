@@ -78,7 +78,8 @@ def main():
                         except Exception as e:
                             print(e)
                             print("-------------- Logstash logs --------------")
-                            print(process.stdout.readline)
+                            for stdout_line in iter(process.stdout.readline, ""):
+                                print(f"STDOUT: {stdout_line.strip()}")
                             has_failed_scenario = True
                         bootstrap.stop_logstash(process)
 
