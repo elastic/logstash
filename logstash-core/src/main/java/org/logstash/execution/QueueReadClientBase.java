@@ -34,6 +34,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
@@ -41,11 +42,26 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
+import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
+
 /**
  * Common code shared by Persistent and In-Memory queues clients implementation
  * */
 @JRubyClass(name = "QueueReadClientBase")
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
+
+    public enum BatchSizeSamplingType {
+        NONE, FULL;
+
+        public static BatchSizeSamplingType decode(String type) {
+            return switch (type) {
+                case "false" -> NONE;
+                case "true" -> FULL;
+                default -> throw new IllegalArgumentException("Invalid batch size type: " + type);
+            };
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -60,6 +76,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricOut;
     private transient LongCounter pipelineMetricFiltered;
     private transient TimerMetric pipelineMetricTime;
+    private transient HistogramMetric pipelineMetricBatch;
+    protected BatchSizeSamplingType batchSizeSamplingType = BatchSizeSamplingType.FULL;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -86,10 +104,14 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @JRubyMethod(name = "set_pipeline_metric")
     public IRubyObject setPipelineMetric(final IRubyObject metric) {
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        AbstractNamespacedMetricExt eventsNamespace = namespacedMetric.namespace(context, EVENTS_KEY);
+        AbstractNamespacedMetricExt batchNamespace = namespacedMetric.namespace(context, BATCH_KEY);
         synchronized(namespacedMetric.getMetric()) {
-            pipelineMetricOut = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.OUT_KEY);
-            pipelineMetricFiltered = LongCounter.fromRubyBase(namespacedMetric, MetricKeys.FILTERED_KEY);
-            pipelineMetricTime = TimerMetric.fromRubyBase(namespacedMetric, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricOut = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.OUT_KEY);
+            pipelineMetricFiltered = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.FILTERED_KEY);
+            pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
+            pipelineMetricBatch = HistogramMetric.fromRubyBase(batchNamespace, MetricKeys.BATCH_EVENT_COUNT_KEY);
         }
         return this;
     }
@@ -193,6 +215,9 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
+        if (batchSizeSamplingType == BatchSizeSamplingType.FULL) {
+            pipelineMetricBatch.update(batch.filteredSize());
+        }
     }
 
     @Override

@@ -26,11 +26,21 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.RubyHash;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
+import org.logstash.Event;
 import org.logstash.RubyTestBase;
+import org.logstash.RubyUtil;
 import org.logstash.execution.QueueBatch;
+import org.logstash.execution.QueueReadClientBase.BatchSizeSamplingType;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.MockNamespacedMetric;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
+import org.logstash.instrument.metrics.histogram.HistogramSnapshot;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
 
 /**
  * Tests for {@link JrubyMemoryReadClientExt}.
@@ -40,11 +50,14 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
     @Test
     @SuppressWarnings("deprecation")
     public void testInflightBatchesTracking() throws InterruptedException, IOException {
-        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue =
-            new ArrayBlockingQueue<>(10);
-        final JrubyMemoryReadClientExt client =
-            JrubyMemoryReadClientExt.create(queue, 5, 50);
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, BatchSizeSamplingType.NONE);
+
         final ThreadContext context = client.getRuntime().getCurrentContext();
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));
@@ -52,5 +65,47 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         assertThat(inflight.get(Thread.currentThread().getId()), is(batch));
         client.closeBatch(batch);
         assertThat(client.rubyGetInflightBatches(context).size(), is(0));
+    }
+
+    @Test
+    public void givenNonEmptyQueueAndEnabledBatchSizeMetricThenHistogramContainsData() throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        queue.add(testEvent);
+
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, BatchSizeSamplingType.FULL);
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(1, batch.filteredSize());
+
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric.namespace(context, BATCH_KEY), MetricKeys.BATCH_EVENT_COUNT_KEY);
+        HistogramSnapshot metricSnapshot = histogram.getValue();
+        assertEquals(1.0, metricSnapshot.get75Percentile(), 0.0001);
+        assertEquals(1.0, metricSnapshot.get90Percentile(), 0.0001);
+    }
+
+    @Test
+    public void givenNonEmptyQueueAndDisabledBatchSizeMetricThenHistogramIsNotPopulated() throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        queue.add(testEvent);
+
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, BatchSizeSamplingType.NONE);
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(1, batch.filteredSize());
+
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        HistogramMetric histogram = HistogramMetric.fromRubyBase(metric.namespace(context, BATCH_KEY), MetricKeys.BATCH_EVENT_COUNT_KEY);
+        HistogramSnapshot metricSnapshot = histogram.getValue();
+        assertEquals(0.0, metricSnapshot.get75Percentile(), 0.0001);
+        assertEquals(0.0, metricSnapshot.get90Percentile(), 0.0001);
     }
 }
