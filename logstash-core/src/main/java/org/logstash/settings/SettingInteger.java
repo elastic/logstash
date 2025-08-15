@@ -32,7 +32,7 @@ public class SettingInteger extends Coercible<Integer> {
         } else {
             // try to parse string to int
             try {
-                return Integer.parseInt(obj.toString());
+                return Integer.parseInt(obj.toString().trim());
             } catch (NumberFormatException e) {
                 // ugly flow control
             }
