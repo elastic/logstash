@@ -28,7 +28,7 @@ class BootstrapContextManager:
             raise ValueError(f"Could not find logstash-integration-failure_injector plugin.")
 
         self.bootstrap.install_plugin(matching_files[0])
-        print(f"logstash-integration-failure_injector successfully installed.")
+        print("logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
@@ -79,9 +79,6 @@ def main():
                             print(e)
                             has_failed_scenario = True
                         bootstrap.stop_logstash(process)
-                        print("-------------- Logstash logs --------------")
-                        for stdout_line in iter(process.stdout.readline, ""):
-                            print(f"STDOUT: {stdout_line.strip()}")
 
         if has_failed_scenario:
             # intentionally fail due to visibility
