@@ -105,7 +105,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Test
     public void testRemovesOlderSegmentsWhenWriteOnReopenedDLQContainingExpiredSegments() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
 
         final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
@@ -160,7 +160,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Test
     public void testRemovesOlderSegmentsWhenWritesIntoDLQContainingExpiredSegments() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
 
         long startTime = fakeClock.instant().toEpochMilli();
         int messageSize = 0;
@@ -203,7 +203,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Test
     public void testRemoveMultipleOldestSegmentsWhenRetainedAgeIsExceeded() throws IOException {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
 
         long startTime = fakeClock.instant().toEpochMilli();
         int messageSize = 0;
