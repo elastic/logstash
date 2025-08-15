@@ -77,11 +77,11 @@ def main():
                             scenario_executor.on(scenario_name, expectations)
                         except Exception as e:
                             print(e)
-                            print("-------------- Logstash logs --------------")
-                            for stdout_line in iter(process.stdout.readline, ""):
-                                print(f"STDOUT: {stdout_line.strip()}")
                             has_failed_scenario = True
                         bootstrap.stop_logstash(process)
+                        print("-------------- Logstash logs --------------")
+                        for stdout_line in iter(process.stdout.readline, ""):
+                            print(f"STDOUT: {stdout_line.strip()}")
 
         if has_failed_scenario:
             # intentionally fail due to visibility
