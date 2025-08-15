@@ -159,6 +159,7 @@ steps:
       source .buildkite/scripts/common/vm-agent.sh
       QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
       # Build the image locally with the gradle task
+      export ARCH="x86_64"
       ./gradlew --stacktrace artifactDockerObservabilitySRE -PfedrampHighMode=true
       # Ensure it can at least start logstash
       docker run docker.elastic.co/logstash/logstash-observability-sre:$${QUALIFIED_VERSION} \
