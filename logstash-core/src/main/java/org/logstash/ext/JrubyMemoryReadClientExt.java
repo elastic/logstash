@@ -20,16 +20,33 @@
 
 package org.logstash.ext;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
+import org.logstash.Event;
+import org.logstash.OTelUtil;
 import org.logstash.RubyUtil;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClientBase;
+
+import javax.annotation.Nullable;
+
+import static org.logstash.OTelUtil.tracer;
 
 /**
  * JRuby extension to provide an implementation of queue client for InMemory queue
@@ -37,7 +54,40 @@ import org.logstash.execution.QueueReadClientBase;
 @JRubyClass(name = "MemoryReadClient", parent = "QueueReadClientBase")
 public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
+    private static final Logger LOGGER = LogManager.getLogger(JrubyMemoryReadClientExt.class);
+
     private static final long serialVersionUID = 1L;
+
+    public static final TextMapGetter<Event> JAVA_EVENT_CARRIER_GETTER = new JavaEventGetter(OTelUtil.METADATA_OTEL_CONTEXT);
+    public static final TextMapGetter<Event> JAVA_EVENT_CARRIER_GLOBAL_GETTER = new JavaEventGetter(OTelUtil.METADATA_OTEL_FULLCONTEXT);
+
+    private static class JavaEventGetter implements TextMapGetter<Event> {
+
+        private final String contextFieldName;
+
+        public JavaEventGetter(String contextFieldName) {
+            this.contextFieldName = contextFieldName;
+        }
+
+        @Override
+        public Iterable<String> keys(Event event) {
+            Map<String, String> otelContextMap = retrieveContextMapFromMetadata(event);
+            return otelContextMap.keySet();
+        }
+
+        @SuppressWarnings("unchecked")
+        private Map<String, String> retrieveContextMapFromMetadata(Event event) {
+            // TODO handle error cases, like no meta, no otel_context map, type conversion etc
+            return (Map<String, String>) event.getMetadata().get(contextFieldName);
+        }
+
+        @Nullable
+        @Override
+        public String get(@Nullable Event event, String s) {
+            Map<String, String> otelContextMap = retrieveContextMapFromMetadata(event);
+            return otelContextMap.get(s);
+        }
+    };
 
     @SuppressWarnings({"rawtypes", "serial"}) private BlockingQueue queue;
 
@@ -81,7 +131,37 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
     @SuppressWarnings("unchecked")
     public QueueBatch readBatch() throws InterruptedException {
         final MemoryReadBatch batch = MemoryReadBatch.create(LsQueueUtils.drain(queue, batchSize, waitForNanos));
+        recordQueueSpans(batch);
         startMetrics(batch);
         return batch;
+    }
+
+    private void recordQueueSpans(MemoryReadBatch batch) {
+        for (JrubyEventExtLibrary.RubyEvent e : batch.events()) {
+            Event javaEvent = e.getEvent();
+
+            // deserialize the otel context map from event carrier
+            ContextPropagators propagators = OTelUtil.openTelemetry.getPropagators();
+            TextMapPropagator textMapPropagator = propagators.getTextMapPropagator();
+
+            // Extract and store the propagated span's SpanContext and other available concerns
+            // in the specified Context.
+            Context globalContext = textMapPropagator.extract(Context.current(), javaEvent, JAVA_EVENT_CARRIER_GLOBAL_GETTER);
+            Context queueContext = textMapPropagator.extract(Context.current(), javaEvent, JAVA_EVENT_CARRIER_GETTER);
+
+            Span globalSpan = tracer.spanBuilder("pipeline.total")
+                    .setParent(globalContext)
+                    .setSpanKind(SpanKind.SERVER).startSpan();
+            globalSpan.makeCurrent();
+
+            Span queueSpan = tracer.spanBuilder("pipeline.queue")
+//                    .setParent(queueContext)
+                    .setSpanKind(SpanKind.SERVER).startSpan();
+
+            queueSpan.makeCurrent();
+            queueSpan.end();
+
+            javaEvent.associateSpan(globalSpan, "global");
+        }
     }
 }

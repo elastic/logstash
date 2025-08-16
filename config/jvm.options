@@ -80,3 +80,16 @@
 # Sets the maximum nesting depth. The depth is a count of objects and arrays that have not
 # been closed, `{` and `[` respectively.
 #-Dlogstash.jackson.stream-read-constraints.max-nesting-depth=1000
+
+# OTel
+-javaagent:/Users/andrea/workspace/onweek_otel_tracing_ls/elastic-otel-javaagent-1.4.1.jar
+#-Dotel.service.name=logstash-otel
+#-Dotel.metrics.exporter=otlp
+#-Dotel.logs.exporter=otlp
+#-Dotel.traces.exporter=otlp
+#-Dotel.resource.attributes=service.version=1.0,deployment.environment=production
+#-Dotel.exporter.otlp.endpoint=
+#-Dotel.exporter.otlp.headers=Authorization=Bearer%20
+
+#-Dotel.javaagent.logging=application
+#-Dotel.javaagent.debug=true
