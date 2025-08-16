@@ -45,6 +45,13 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger, agent
+
+    Util::with_logging_thread_context('pipeline.id' => pipeline_id) do
+      finish_initialization
+    end
+  end
+
+  def finish_initialization
     open_queue
 
     @worker_threads = []
@@ -126,9 +133,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def start
     # Since we start lets assume that the metric namespace is cleared
     # this is useful in the context of pipeline reloading
-    collect_stats
-    collect_dlq_stats
-    initialize_flow_metrics
+    Util::with_logging_thread_context("pipeline.id" => pipeline_id) do
+      collect_stats
+      collect_dlq_stats
+      initialize_flow_metrics
+    end
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
