@@ -27,19 +27,34 @@ info:
     label: Feedback
     url: https://github.com/elastic/docs-content/issues/new?assignees=&labels=feedback%2Ccommunity&projects=&template=api-feedback.yaml&title=%5BFeedback%5D%3A+
 servers:
-  - url: /
+  - url: "{scheme}://{address}:{port}"
+    variables:
+      scheme:
+        default: http
+        enum:
+          - http
+          - https
+      address:
+        default: localhost
+        description: the hostname or ip address of your logstash instance
+      port:
+        default: 9600
+        description: the port on which your Logstash API is running
 security:
   - {}           # Allows requests without authentication
   - BasicAuth: [] # Allows requests with Basic Authentication
 tags:
   - name: health
     x-displayName: Health report
-    # description:
+    description: |
+      A report of the health of the Logstash process and its pipelines
     # externalDocs:
     #   description:
     #   url:
   - name: hot threads
     x-displayName: Hot threads
+    description: |
+      Information about the threads that are considered "hot" and consuming significant resources.
     # description:
     # externalDocs:
     #   description:
@@ -185,8 +200,10 @@ paths:
                     properties:
                       pipelines:
                         type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/NodeInfoPipeline'
+                        patternProperties:
+                          "^(?<pipeline_name>.+)$":
+                            $ref: '#/components/schemas/NodeInfoPipeline'
+                        additionalProperties: false
               example:
                 pipelines:
                   aggregation-pipeline:
@@ -232,8 +249,10 @@ paths:
                     properties:
                       pipelines:
                         type: object
-                        additionalProperties:
-                          $ref: '#/components/schemas/NodeInfoPipeline'
+                        patternProperties:
+                          "^(?<pipeline_name>.+)$":
+                            $ref: '#/components/schemas/NodeInfoPipeline'
+                        additionalProperties: false
               example:
                 pipelines:
                   aggregation-pipeline:
@@ -882,6 +901,8 @@ paths:
                       workers: 4
                       batch_size: 125
                       batch_delay: 50
+                    hash: 09a35286efbb04cb7349b2f5767faabd549fc34d0e1512ce1942a60a590f24fc
+                    ephemeral_id: a34fb011-8a9b-42b1-b10e-69f6f8054c18
                   heartbeat-ruby-stdout:
                     events:
                       queue_push_duration_in_millis: 159
@@ -1421,6 +1442,8 @@ paths:
 #                  - $ref: '#/components/schemas/Common'
 #                  - $ref: '#/components/schemas/PipelineSettings'
                   - type: object
+                    required:
+                      - hot_threads
                     properties:
                       hot_threads:
                         type: object
@@ -1433,6 +1456,11 @@ paths:
                             type: array
                             items:
                               $ref: '#/components/schemas/Thread'
+                        required:
+                          - time
+                          - busiest_threads
+                          - threads
+                        additionalProperties: false
               examples:
                 nodeHotThreadsExample1:
                   value:
@@ -1501,6 +1529,9 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/Common'
                   - type: object
+                    required:
+                      - symptom
+                      - indicators
                     properties:
                       symptom:
                         type: string
@@ -1511,6 +1542,10 @@ paths:
                         properties:
                           pipelines:
                             type: object
+                            required:
+                              - status
+                              - symptom
+                              - indicators
                             properties:
                               status:
                                 $ref: '#/components/schemas/Status'
@@ -1518,86 +1553,109 @@ paths:
                                 type: string
                               indicators:
                                 type: object
-                                additionalProperties:
-                                  description: "pipeline name"
-                                  type: object
-                                  properties:
-                                    status:
-                                      $ref: '#/components/schemas/Status'
-                                    symptom:
-                                      type: string
-                                      description: "A message providing information about the current health status."
-                                      example: "The pipeline is healthy"
-                                    details:
-                                      type: object
-                                      description: "An object that contains additional information about the indicator that has led to the current health status result."
-                                      properties:
-                                        status:
-                                          type: object
-                                          properties:
-                                            state:
-                                              type: string
-                                              enum:
-                                                - LOADING
-                                                - RUNNING
-                                                - FINISHED
-                                                - TERMINATED
-                                        flow:
-                                          type: object
-                                          properties:
-                                            worker_utilization:
-                                              $ref: '#/components/schemas/FlowWindows'
-                                    impacts:
-                                      type: array
-                                      description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
-                                      items:
+                                patternProperties:
+                                  "^(?<pipeline_name>.+)$":
+                                    description: |
+                                      An indicator for the individual named pipeline
+                                    type: object
+                                    required:
+                                      - status
+                                      - symptom
+                                    properties:
+                                      status:
+                                        $ref: '#/components/schemas/Status'
+                                      symptom:
+                                        type: string
+                                        description: "A message providing information about the current health status."
+                                        example: "The pipeline is healthy"
+                                      details:
                                         type: object
+                                        description: "An object that contains additional information about the indicator that has led to the current health status result."
                                         properties:
-                                          id:
-                                            type: string
-                                            description: |
-                                              A unique identifier that may appear associated with a known impacts or issue.
-                                              This ID follows a structured format that helps identify the specific problem.
-                                            example: "logstash:health:pipeline:flow:impact:blocked_processing"
-                                          severity:
-                                            type: integer
-                                            minimum: 1
-                                            maximum: 10
-                                            description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
-                                          description:
-                                            type: string
-                                            description: "A description of the impact on Logstash."
-                                          impact_areas:
-                                            type: array
-                                            description: "The areas of Logstash affected by the health status. Possible values are:"
-                                            example: ["pipeline_execution"]
-                                            items:
+                                          status:
+                                            type: object
+                                            properties:
+                                              state:
+                                                type: string
+                                                enum:
+                                                  - LOADING
+                                                  - RUNNING
+                                                  - FINISHED
+                                                  - TERMINATED
+                                          flow:
+                                            type: object
+                                            properties:
+                                              worker_utilization:
+                                                $ref: '#/components/schemas/FlowWindows'
+                                      impacts:
+                                        type: array
+                                        description: "If a non-healthy status is returned, indicators may include a list of impacts that this health status will have on Logstash."
+                                        items:
+                                          type: object
+                                          required:
+                                            - severity
+                                            - description
+                                          properties:
+                                            id:
                                               type: string
-                                    diagnosis:
-                                      type: array
-                                      items:
-                                        type: object
-                                        properties:
-                                          id:
-                                            type: string
-                                            description: |
-                                              A unique identifier that may appear associated with a known diagnosis or issue.
-                                              This ID follows a structured format that helps identify the specific problem.
-                                            example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
-                                          cause:
-                                            type: string
-                                            description: "A description of a root cause of this health problem."
-                                          action:
-                                            type: string
-                                            description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
-                                          help_url:
-                                            type: string
-                                            format: uri
-                                            description: "A link to the troubleshooting guide that will fix the health problem."
+                                              description: |
+                                                A unique identifier that may appear associated with a known impacts or issue.
+                                                This ID follows a structured format that helps identify the specific problem.
+                                              example: "logstash:health:pipeline:flow:impact:blocked_processing"
+                                            severity:
+                                              type: integer
+                                              minimum: 1
+                                              maximum: 10
+                                              description: "How important this impact is to the functionality of Logstash. A value of 1 is the highest severity, with larger values indicating lower severity."
+                                            description:
+                                              type: string
+                                              description: "A description of the impact on Logstash."
+                                            impact_areas:
+                                              type: array
+                                              description: "The areas of Logstash affected by the health status. Possible values are:"
+                                              example: ["pipeline_execution"]
+                                              items:
+                                                type: string
+                                      diagnosis:
+                                        type: array
+                                        items:
+                                          type: object
+                                          required:
+                                            - cause
+                                            - action
+                                            - help_url
+                                          properties:
+                                            id:
+                                              type: string
+                                              description: |
+                                                A unique identifier that may appear associated with a known diagnosis or issue.
+                                                This ID follows a structured format that helps identify the specific problem.
+                                              example: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
+                                            cause:
+                                              type: string
+                                              description: "A description of a root cause of this health problem."
+                                            action:
+                                              type: string
+                                              description: "A brief description of the steps that should be taken to remediate the problem. A more detailed step-by-step guide to remediate the problem is provided by the `help_url` field."
+                                            help_url:
+                                              type: string
+                                              format: uri
+                                              description: "A link to the troubleshooting guide that will fix the health problem."
+                                additionalProperties: false
+                        required:
+                          - pipelines
               examples:
                 normalTerminatedCase:
                   description: "The pipeline has finished without errors or interruptions."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
+                    status: "yellow"
                     symptom: "1 indicator is concerning (`pipelines`)"
                     indicators:
                       pipelines:
@@ -1610,14 +1668,24 @@ paths:
                             diagnosis:
                               - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
                                 action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-status.html#finished"
                             impacts:
-                              - impact_areas: ["pipeline_execution"]
+                              - description: "pipeline has finished running"
+                                severity: 10
+                                impact_areas: ["pipeline_execution"]
                             details:
                               status:
                                 state: "FINISHED"
                 abnormalTerminatedCase:
                   description: "The pipeline is terminated with errors."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1631,8 +1699,10 @@ paths:
                             diagnosis:
                               - cause: "pipeline is not running, likely because it has encountered an error"
                                 action: "view logs to determine the cause of abnormal pipeline shutdown"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-status.html#terminated"
                             impacts:
                               - description: "the pipeline is not currently processing"
+                                severity: 1
                                 impact_areas: [ "pipeline_execution" ]
                             details:
                               status:
@@ -1640,6 +1710,13 @@ paths:
                 backpressureCase:
                   description: "A pipeline is blocked by slow downstream processing."
                   value:
+                    host: "0.0.0.0"
+                    version: "9.0.0"
+                    snapshot: false
+                    http_address: "0.0.0.0:9600"
+                    id: "908aa01c-4e96-4872-8980-736e0536373a"
+                    name: "node.name"
+                    ephemeral_id: "33bee016-b884-4a41-b79e-7e3991ed3711"
                     status: "red"
                     symptom: "1 indicator is unhealthy (`pipelines`)"
                     indicators:
@@ -1654,6 +1731,7 @@ paths:
                               - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:5m-blocked"
                                 cause: "pipeline workers have been completely blocked for at least five minutes"
                                 action: "address bottleneck or add resources"
+                                help_url: "https://www.elastic.co/guide/en/logstash/9.0/health-report-pipeline-flow-worker-utilization.html#blocked-5m"
                             impacts:
                               - id: "logstash:health:pipeline:flow:impact:blocked_processing"
                                 severity: 1
@@ -1682,6 +1760,15 @@ components:
   schemas:
     Common:
       type: object
+      required:
+        - host
+        - version
+        - http_address
+        - id
+        - name
+        - ephemeral_id
+        - snapshot
+        - status
       properties:
         host:
           type: string
@@ -1709,6 +1796,8 @@ components:
 
     PipelineSettings:
       type: object
+      required:
+        - pipeline
       properties:
         pipeline:
           type: object
@@ -1719,6 +1808,7 @@ components:
               type: integer
             batch_delay:
               type: integer
+          additionalProperties: false
 
     NodeInfoPipeline:
       type: object
@@ -1735,6 +1825,7 @@ components:
           type: integer
         dead_letter_queue_enabled:
           type: boolean
+      additionalProperties: false
 
     Status:
       type: string
@@ -1748,61 +1839,42 @@ components:
         - `red`: Logstash is experiencing an outage or certain features are unavailable for use.
       enum:
         - green
-        - red
         - unknown
         - yellow
+        - red
 
-    FlowWindows:
-      type: object
+    FlowValue:
       description: |
         When the rate for a given flow metric window is infinite, it is presented as a string.
         This occurs when the numerator metric has changed during the window without a change in the rate’s denominator metric.
+      oneOf:
+        - type: number
+          format: double
+        - type: string
+          enum: ["Infinity", "-Infinity"]
+    FlowWindows:
+      type: object
       properties:
         current:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
           description: "The most recent ~10s."
+          oneOf:
+            - $ref: "#/components/schemas/FlowValue"
         last_1_minute:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_5_minutes:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_15_minutes:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_1_hour:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         last_24_hours:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
+          $ref: "#/components/schemas/FlowValue"
         lifetime:
-          oneOf:
-            - type: number
-              format: double
-            - type: string
-              enum: ["Infinity"]
           description: "The lifetime of the relevant pipeline or process."
-    FlowStatsPart1:
+          oneOf:
+            - $ref: "#/components/schemas/FlowValue"
+      additionalProperties: false
+    FlowStatsCommon:
       type: object
       properties:
         input_throughput:
@@ -1838,7 +1910,13 @@ components:
             A process is also considered "saturated" when its top-level worker_concurrency flow metric approaches the cumulative pipeline.workers across all pipelines, and similarly can be addressed by tuning the individual pipelines that are saturated.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
-    FlowStatsPart2:
+      required:
+        - input_throughput
+        - filter_throughput
+        - output_throughput
+        - queue_backpressure
+        - worker_concurrency
+    FlowStatsWorker:
       type: object
       properties:
         worker_utilization:
@@ -1850,7 +1928,9 @@ components:
             A pipeline is considered "starved" when `worker_utilization` approaches 0, because it indicates that none of its workers are being kept busy. This is typically an indication that the inputs are not receiving or retrieving enough volume to keep the pipeline workers busy. Tuning a starved pipeline to have fewer workers can help it to consume less memory and CPU, freeing up resources for other pipelines.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
-    FlowStatsPart3:
+      required:
+        - worker_utilization
+    FlowStatsPersistedQueue:
       type: object
       properties:
         queue_persisted_growth_bytes:
@@ -1865,35 +1945,42 @@ components:
             This metric is expressed in events-per-second, and is the rate of change of the number of unacknowledged events in the queue, relative to wall-clock time (`queue.events_count` / second). A positive number indicates that the queue’s event-count is growing, and a negative number indicates that the queue is shrinking.
           allOf: # need to use allOf to keep the description
             - $ref: "#/components/schemas/FlowWindows"
+      required:
+        - queue_persisted_growth_bytes
+        - queue_persisted_growth_events
     PipelineMQFlowStats:
       type: object
       allOf:
-        - $ref: "#/components/schemas/FlowStatsPart1"
-        - $ref: "#/components/schemas/FlowStatsPart2"
+        - $ref: "#/components/schemas/FlowStatsCommon"
+        - $ref: "#/components/schemas/FlowStatsWorker"
     PipelinePQFlowStats:
       type: object
       allOf:
-        - $ref: "#/components/schemas/FlowStatsPart1"
-        - $ref: "#/components/schemas/FlowStatsPart2"
-        - $ref: "#/components/schemas/FlowStatsPart3"
+        - $ref: "#/components/schemas/FlowStatsCommon"
+        - $ref: "#/components/schemas/FlowStatsWorker"
+        - $ref: "#/components/schemas/FlowStatsPersistedQueue"
     PipelineFlowStats:
       type: object
       description: |
         Each pipeline’s entry in the API response includes a number of pipeline-scoped [flow rates](https://www.elastic.co/guide/en/logstash/current/node-stats-api.html#flow-stats) such as `input_throughput`, `worker_concurrency`, and `queue_backpressure` to provide visibility into the flow of events through the pipeline.
         
         When configured with a [persistent queue](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html, the pipeline’s flow will include additional rates to provide visibility into the health of the pipeline’s persistent queue:
+      required:
+        - flow
       properties:
         flow:
           type: object
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/PipelineMQFlowStats" # For memory queue
             - $ref: "#/components/schemas/PipelinePQFlowStats" # For persisted queue
 
     NodeStatsFlow:
       type: object
+      required:
+        - flow
       properties:
         flow:
-          $ref: "#/components/schemas/FlowStatsPart1"
+          $ref: "#/components/schemas/FlowStatsCommon"
 
     Thread:
       type: object
@@ -1914,6 +2001,8 @@ components:
 
     EventsStats:
       type: object
+      required:
+        - events
       properties:
         events:
           type: object
@@ -1933,9 +2022,12 @@ components:
             queue_push_duration_in_millis:
               type: integer
               format: int64
+          additionalProperties: false
 
     JVMStats:
       type: object
+      required:
+        - jvm
       properties:
         jvm:
           type: object
@@ -2031,6 +2123,8 @@ components:
 
     OSStats:
       type: object
+      required:
+        - os
       properties:
         os:
           type: object
@@ -2046,6 +2140,8 @@ components:
 
     ProcessStats:
       type: object
+      required:
+        - process
       properties:
         process:
           type: object
@@ -2107,6 +2203,11 @@ components:
           format: int64
     InputPluginStats:
       type: object
+      required:
+        - id
+        - name
+        - flow
+        - events
       properties:
         id:
           type: string
@@ -2116,6 +2217,7 @@ components:
           $ref: "#/components/schemas/ThroughputStats"
         events:
           $ref: "#/components/schemas/InputPluginEventsStats"
+      additionalProperties: false
     FilterOutputPluginEventsStats:
       type: object
       properties:
@@ -2130,6 +2232,11 @@ components:
           format: int64
     FilterOutputPluginStats:
       type: object
+      required:
+        - id
+        - name
+        - flow
+        - events
       properties:
         id:
           type: string
@@ -2139,8 +2246,14 @@ components:
           $ref: "#/components/schemas/WorkerStats"
         events:
           $ref: "#/components/schemas/FilterOutputPluginEventsStats"
+      additionalProperties:
+        propertyNames:
+          pattern: "^[a-z][a-z0-9_]*$"
     CodecPluginStats:
       type: object
+      required:
+        - id
+        - name
       properties:
         id:
           type: string
@@ -2165,53 +2278,68 @@ components:
 
     PipelinesStats:
       type: object
+      required:
+        - pipelines
       properties:
         pipelines:
           type: object
           description: |
             A map where each key is a user-defined pipeline name, and the value contains the metrics for that pipeline.
-          additionalProperties:
-            description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
-            type: object
-            allOf:
-              - $ref: "#/components/schemas/EventsStats"
-              - $ref: "#/components/schemas/PipelineFlowStats"
-              - type: object
-                properties:
-                  plugins:
-                    type: object
-                    properties:
-                      inputs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/InputPluginStats"
-                      codecs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CodecPluginStats"
-                      filters:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/FilterOutputPluginStats"
-                      outputs:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/FilterOutputPluginStats"
-              - $ref: "#/components/schemas/PipelineReloadStats"
-              - $ref: "#/components/schemas/PipelineQueueStats"
-              - $ref: "#/components/schemas/PipelineSettings"
-              - type: object
-                properties:
-                  hash:
-                    type: string
-                    description: "A unique hash identifier."
-                  ephemeral_id:
-                    type: string
-                    format: uuid
-                    description: "A temporary unique identifier for the instance."
+          patternProperties:
+            "^(?<pipeline_name>.+)$":
+              description: "Metrics of each plugin in the pipeline, flow statistics, event statistics and queue statistics."
+              type: object
+              allOf:
+                - $ref: "#/components/schemas/EventsStats"
+                - $ref: "#/components/schemas/PipelineFlowStats"
+                - type: object
+                  required:
+                    - plugins
+                  properties:
+                    plugins:
+                      type: object
+                      required:
+                        - inputs
+                        - outputs
+                      properties:
+                        inputs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/InputPluginStats"
+                        codecs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/CodecPluginStats"
+                        filters:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/FilterOutputPluginStats"
+                        outputs:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/FilterOutputPluginStats"
+                      additionalProperties: false
+                - $ref: "#/components/schemas/PipelineReloadStats"
+                - $ref: "#/components/schemas/PipelineQueueStats"
+                - $ref: "#/components/schemas/PipelineSettings"
+                - type: object
+                  required:
+                    - hash
+                    - ephemeral_id
+                  properties:
+                    hash:
+                      type: string
+                      description: "A unique hash identifier."
+                    ephemeral_id:
+                      type: string
+                      format: uuid
+                      description: "A temporary unique identifier for the instance."
+          additionalProperties: false
 
     PipelineReloadStats:
       type: object
+      required:
+        - reloads
       properties:
         reloads:
           type: object
@@ -2236,6 +2364,8 @@ components:
 
     ReloadStats:
       type: object
+      required:
+        - reloads
       properties:
         reloads:
           type: object
@@ -2246,77 +2376,85 @@ components:
             failures:
               type: integer
               format: int64
-
+    PipelineQueueStatsMemory:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - memory
+        events_count:
+          type: integer
+          format: int64
+        queue_size_in_bytes:
+          type: integer
+          format: int64
+        max_queue_size_in_bytes:
+          type: integer
+          format: int64
+    PipelineQueueStatsPersisted:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - persisted
+        capacity:
+          type: object
+          properties:
+            max_unread_events:
+              type: integer
+              format: int64
+            page_capacity_in_bytes:
+              type: integer
+              format: int64
+            max_queue_size_in_bytes:
+              type: integer
+              format: int64
+            queue_size_in_bytes:
+              type: integer
+              format: int64
+        data:
+          type: object
+          properties:
+            path:
+              type: string
+            free_space_in_bytes:
+              type: integer
+              format: int64
+            storage_type:
+              type: string
+        events:
+          type: integer
+          format: int64
+        events_count:
+          type: integer
+          format: int64
+        queue_size_in_bytes:
+          type: integer
+          format: int64
+        max_queue_size_in_bytes:
+          type: integer
+          format: int64
     PipelineQueueStats:
       type: object
+      required:
+        - queue
       properties:
         queue:
           type: object
           oneOf:
-            - type: object
-              description: "The metrics of persisted queue."
-              properties:
-                type:
-                  type: string
-                  enum:
-                    - persisted
-                capacity:
-                  type: object
-                  properties:
-                    max_unread_events:
-                      type: integer
-                      format: int64
-                    page_capacity_in_bytes:
-                      type: integer
-                      format: int64
-                    max_queue_size_in_bytes:
-                      type: integer
-                      format: int64
-                    queue_size_in_bytes:
-                      type: integer
-                      format: int64
-                data:
-                  type: object
-                  properties:
-                    path:
-                      type: string
-                    free_space_in_bytes:
-                      type: integer
-                      format: int64
-                    storage_type:
-                      type: string
-                events:
-                  type: integer
-                  format: int64
-                events_count:
-                  type: integer
-                  format: int64
-                queue_size_in_bytes:
-                  type: integer
-                  format: int64
-                max_queue_size_in_bytes:
-                  type: integer
-                  format: int64
-            - type: object
-              description: "The metrics of memory queue."
-              properties:
-                type:
-                  type: string
-                  enum:
-                    - memory
-                events_count:
-                  type: integer
-                  format: int64
-                queue_size_in_bytes:
-                  type: integer
-                  format: int64
-                max_queue_size_in_bytes:
-                  type: integer
-                  format: int64
+            - $ref: "#/components/schemas/PipelineQueueStatsMemory"
+            - $ref: "#/components/schemas/PipelineQueueStatsPersisted"
           discriminator:
             propertyName: type
+            mapping:
+              memory: "#/components/schemas/PipelineQueueStatsMemory"
+              persisted: "#/components/schemas/PipelineQueueStatsPersisted"
     QueueStats:
       type: object
+      required:
+        - queue
       properties:
         queue:
           type: object
