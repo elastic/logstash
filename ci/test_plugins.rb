@@ -151,6 +151,7 @@ end
 PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-input-azure_event_hubs', :tier1, :input),
     PluginDefinition.new('logstash-input-beats', :tier1, :input),
+    PluginDefinition.new('logstash-input-dead_letter_queue', :tier1, :input),
     PluginDefinition.new('logstash-input-elasticsearch', :tier1, :input),
     PluginDefinition.new('logstash-input-file', :tier1, :input),
     PluginDefinition.new('logstash-input-generator', :tier1, :input),
@@ -160,6 +161,7 @@ PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-input-redis', :tier1, :input),
     PluginDefinition.new('logstash-input-stdin', :tier1, :input),
     PluginDefinition.new('logstash-input-syslog', :tier1, :input),
+    PluginDefinition.new('logstash-input-tcp', :tier1, :input),
     PluginDefinition.new('logstash-input-udp', :tier1, :input),
     PluginDefinition.new('logstash-codec-avro', :tier1, :codec),
     PluginDefinition.new('logstash-codec-cef', :tier1, :codec),
@@ -206,20 +208,20 @@ PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-output-stdout', :tier1, :output), 
     PluginDefinition.new('logstash-output-tcp', :tier1, :output), 
     PluginDefinition.new('logstash-output-udp', :tier1, :output),
+    PluginDefinition.new('logstash-integration-aws', :tier1, :integration),
     PluginDefinition.new('logstash-integration-jdbc', :tier1, :integration),
     PluginDefinition.new('logstash-integration-kafka', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-logstash', :tier1, :integration),
     PluginDefinition.new('logstash-integration-rabbitmq', :tier1, :integration),
-    PluginDefinition.new('logstash-integration-elastic_enterprise_search', :tier1, :integration),
-    PluginDefinition.new('logstash-integration-aws', :tier1, :integration),
+    PluginDefinition.new('logstash-integration-snmp', :tier1, :integration),     
+
     # tier2
     # Removed because of https://github.com/logstash-plugins/logstash-input-couchdb_changes/issues/51
-    #PluginDefinition.new('logstash-input-couchdb_changes', :tier2, :input),
-    PluginDefinition.new('logstash-input-gelf', :tier2, :input),     
+    #PluginDefinition.new('logstash-input-couchdb_changes', :tier2, :input),  
+
+    PluginDefinition.new('logstash-input-gelf', :tier2, :input), 
     PluginDefinition.new('logstash-input-graphite', :tier2, :input), 
-    PluginDefinition.new('logstash-input-jms', :tier2, :input),      
-    PluginDefinition.new('logstash-input-snmp', :tier2, :input),     
-    PluginDefinition.new('logstash-input-sqs', :tier2, :input),      
-    PluginDefinition.new('logstash-input-twitter', :tier2, :input),   
+    PluginDefinition.new('logstash-input-jms', :tier2, :input),          
     PluginDefinition.new('logstash-codec-collectd', :tier2, :codec),
     PluginDefinition.new('logstash-codec-dots', :tier2, :codec),
     PluginDefinition.new('logstash-codec-fluent', :tier2, :codec),
@@ -231,8 +233,6 @@ PLUGIN_DEFINITIONS = [
     PluginDefinition.new('logstash-filter-throttle', :tier2, :filter), 
     PluginDefinition.new('logstash-output-csv', :tier2, :output),
     PluginDefinition.new('logstash-output-graphite', :tier2, :output),
-    # unsupported
-    PluginDefinition.new('logstash-input-rss', :unsupported, :input),
 ]
 
 def validate_options!(options)
