@@ -1,24 +1,14 @@
-version: '3'
-
 services:
   elasticsearch:
-    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:8.19.0-SNAPSHOT
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-8.19.0-SNAPSHOT}
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch.key
-      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch.crt
-      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt
-      - xpack.security.transport.ssl.enabled=true
-      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch.key
-      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch.crt
-      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca.crt
     ports:
       - "9200:9200"
     volumes:
+      - ./elasticsearch/config/${ELASTICSEARCH_CONFIG:-elasticsearch-fips.yml}:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./certs:/usr/share/elasticsearch/config/certs
     networks:
       - smoketest
@@ -40,12 +30,22 @@ services:
       - smoketest
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:8.19.0-SNAPSHOT
-    # Test runner mounts volume with non root user, do not require this file be root
-    entrypoint: "filebeat -e --strict.perms=false"
+    # The filebeat shipped with the elasticsearch-fips container is built for FIPS support
+    # There is no stand alone distribution. This uses the shipped version for testing. 
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${FILEBEAT_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    container_name: fips_test_filebeat
+    working_dir: /usr/share/filebeat
+    entrypoint: ["/bin/bash", "-c"]
+    # Start Filebeat with /tmp for data (always writable)
+    command:
+      - |
+        exec /opt/filebeat/filebeat -e \
+          --strict.perms=false \
+          -c /usr/share/filebeat/filebeat.yml \
+          --path.data /tmp/filebeat_data
     volumes:
       - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./certs:/usr/share/filebeat/certs
+      - ./certs:/usr/share/filebeat/certs:ro
       - ./test-logs:/test-logs:ro
     depends_on:
       - logstash

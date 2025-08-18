@@ -77,8 +77,8 @@ tasks.register("buildFipsValidationGem") {
 }
 
 tasks.register("observabilitySREsmokeTests", Test) {
-    description = "Run ObservabilitySRE smoke tests using docker-compose and RSpec"
-    // Need to have set up the ruby environment for rspec even through we are running in container
+    description = "Run ObservabilitySRE smoke tests using RSpec with docker-compose orchestration"
+    // Need to have set up the ruby environment for rspec
     dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
     inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
     doFirst {
@@ -88,40 +88,20 @@ tasks.register("observabilitySREsmokeTests", Test) {
             commandLine 'bash', './generate.sh'
             ignoreExitValue = false
         }
-        def result = exec {
-            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'up', '--detach'
-            ignoreExitValue = true
-        }
-        if (result.exitValue != 0) {
-            throw new GradleException("Docker compose failed to start")
-        }
-        // Give containers time to start and show logs
-        sleep(30000)
-        exec {
-            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'logs'
-        }
     }
     systemProperty 'logstash.root.dir', projectDir.parent
     include '**/org/logstash/xpack/test/RSpecObservabilitySRETests.class'
     doLast {
-        exec {
-            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker")
-            commandLine 'docker-compose', 'down', '--volumes'
-            ignoreExitValue = true
-        }
         // Clean up the generated certificates
         delete fileTree("distributions/internal/observabilitySRE/qa/smoke/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
     }
 }
 
 tasks.register("observabilitySREacceptanceTests", Test) {
-    description = "Run ObservabilitySRE acceptance tests"
-    // Need to have set up the ruby environment for rspec even through we are running in container
+    description = "Run ObservabilitySRE acceptance tests using RSpec with docker-compose orchestration"
+    // Need to have set up the ruby environment for rspec
     dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
-
-    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
+    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/acceptance")
     doFirst {
         // Generate the certificates first
         exec {
