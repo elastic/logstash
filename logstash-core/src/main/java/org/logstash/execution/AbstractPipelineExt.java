@@ -317,8 +317,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     new IRubyObject[]{
                             STATS_KEY,
                             PIPELINES_KEY,
-                            pipelineId.convertToString().intern(),
-                            EVENTS_KEY
+                            pipelineId.convertToString().intern()
                     }
                 )
             )

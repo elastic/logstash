@@ -26,11 +26,19 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.RubyHash;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
+import org.logstash.Event;
 import org.logstash.RubyTestBase;
+import org.logstash.RubyUtil;
 import org.logstash.execution.QueueBatch;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.MockNamespacedMetric;
+import org.logstash.instrument.metrics.counter.LongCounter;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_COUNT;
 
 /**
  * Tests for {@link JrubyMemoryReadClientExt}.
@@ -45,6 +53,8 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final JrubyMemoryReadClientExt client =
             JrubyMemoryReadClientExt.create(queue, 5, 50);
         final ThreadContext context = client.getRuntime().getCurrentContext();
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
         final QueueBatch batch = client.readBatch();
         final RubyHash inflight = client.rubyGetInflightBatches(context);
         assertThat(inflight.size(), is(1));
@@ -52,5 +62,24 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         assertThat(inflight.get(Thread.currentThread().getId()), is(batch));
         client.closeBatch(batch);
         assertThat(client.rubyGetInflightBatches(context).size(), is(0));
+    }
+
+    @Test
+    public void givenNonEmptyQueueWhenBatchIsReadThenBatchCounterMetricIsUpdated() throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        queue.add(testEvent);
+
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50);
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(1, batch.filteredSize());
+
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        LongCounter batchCounter = LongCounter.fromRubyBase(metric.namespace(context, MetricKeys.BATCH_KEY), MetricKeys.BATCH_COUNT);
+        assertEquals(1L, batchCounter.getValue().longValue());
     }
 }
