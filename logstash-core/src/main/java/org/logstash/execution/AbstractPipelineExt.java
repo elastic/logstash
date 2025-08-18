@@ -286,7 +286,17 @@ public class AbstractPipelineExt extends RubyBasicObject {
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
+
+//        initBatchMetrics(context);
+
         return this;
+    }
+
+    private void initBatchMetrics(ThreadContext context) {
+        if (metric.collector(context).isNil()) {
+            return;
+        }
+        final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
     }
 
     /**
@@ -583,6 +593,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric utilizationFlow = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, utilizationFlow);
         storeMetric(context, flowNamespace, utilizationFlow);
+
+
+        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+        final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
+        final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, eventsInCounter, batchCounter);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
+        storeMetric(context, batchNamespace, documentsPerBatch);
 
         initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
         initializePluginFlowMetrics(context, uptimeMetric);
