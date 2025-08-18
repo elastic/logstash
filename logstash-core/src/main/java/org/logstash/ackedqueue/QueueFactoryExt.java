@@ -83,15 +83,15 @@ public final class QueueFactoryExt extends RubyBasicObject {
 
             return JRubyWrappedAckedQueueExt.create(context, queueSettings);
         } else if (MEMORY_TYPE.equals(type)) {
+            final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
+                    .convertToInteger().getIntValue();
+            final int workers = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
+                    .convertToInteger().getIntValue();
+            int queueSize = batchSize * workers;
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
+                context, context.runtime.newFixnum(queueSize)
             );
         } else {
             throw context.runtime.newRaiseException(

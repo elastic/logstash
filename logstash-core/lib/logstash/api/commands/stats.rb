@@ -174,6 +174,7 @@ module LogStash
 
           def report(stats, extended_stats = nil, opts = {})
             ret = {
+              :batch => stats[:batch],
               :events => stats[:events],
               :flow => stats[:flow],
               :plugins => {
