@@ -179,22 +179,22 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return Byte.SIZE / Byte.SIZE;
         }
         if (o instanceof Short) {
-            return Short.SIZE / Byte.SIZE;
+            return Short.BYTES;
         }
         if (o instanceof Integer) {
-            return Integer.SIZE / Byte.SIZE;
+            return Integer.BYTES;
         }
         if (o instanceof Long) {
-            return Long.SIZE / Byte.SIZE;
+            return Long.BYTES;
         }
         if (o instanceof Float) {
-            return Float.SIZE / Byte.SIZE;
+            return Float.BYTES;
         }
         if (o instanceof Double) {
-            return Double.SIZE / Byte.SIZE;
+            return Double.BYTES;
         }
         if (o instanceof Character) {
-            return Character.SIZE / Byte.SIZE;
+            return Character.BYTES;
         }
         if (o instanceof String) {
             return ((String) o).getBytes().length;
@@ -229,14 +229,14 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         }
         if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
             // wraps an java.time.Instant which is made of long and int
-            return 8 + 4;
+            return Long.BYTES + Integer.BYTES;
         }
         if (o instanceof BigInteger) {
             return ((BigInteger) o).toByteArray().length;
         }
         if (o instanceof BigDecimal) {
             // BigInteger has 4 fields, one reference 2 ints (scale and precision) and a long.
-            return 8 + 2 * 4 + 8;
+            return 8 + 2 * Integer.BYTES + Long.BYTES;
         }
         if (o instanceof RubyBignum) {
             RubyBignum rbn = (RubyBignum) o;
@@ -249,7 +249,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         }
         if (o instanceof RubyFixnum) {
             // like an int value
-            return Integer.SIZE / Byte.SIZE;
+            return Integer.BYTES;
         }
         if (o instanceof RubyBoolean) {
             return Byte.SIZE / Byte.SIZE;
