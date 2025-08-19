@@ -21,14 +21,23 @@
 package org.logstash;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jruby.RubyBignum;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ext.JrubyTimestampExtLibrary;
 
 /**
  * <p>This class is an internal API and behaves very different from a standard {@link Map}.</p>
@@ -41,7 +50,7 @@ import org.jruby.runtime.builtin.IRubyObject;
  * intern pool to ensure identity match of equivalent strings.
  * For performance, we keep a global cache of strings that have been interned for use with {@link ConvertedMap},
  * and encourage interning through {@link ConvertedMap#internStringForUseAsKey(String)} to avoid
- * the performance pentalty of the global string intern pool.
+ * the performance penalty of the global string intern pool.
  */
 public final class ConvertedMap extends IdentityHashMap<String, Object> {
 
@@ -156,5 +165,103 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
      */
     private static String convertKey(final RubyString key) {
         return internStringForUseAsKey(key.asJavaString());
+    }
+
+    public long estimateMemory() {
+        return values().stream()
+                .map(this::estimateMemory)
+                .mapToLong(Long::longValue)
+                .sum();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private long estimateMemory(Object o) {
+        if (o instanceof Boolean) {
+            return 1;
+        }
+        if (o instanceof Byte) {
+            return Byte.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Short) {
+            return Short.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Integer) {
+            return Integer.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Long) {
+            return Long.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Float) {
+            return Float.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Double) {
+            return Double.SIZE / Byte.SIZE;
+        }
+        if (o instanceof Character) {
+            return Character.SIZE / Byte.SIZE;
+        }
+        if (o instanceof String) {
+            return ((String) o).getBytes().length;
+        }
+        if (o instanceof RubyString) {
+            return ((RubyString) o).getBytes().length;
+        }
+
+        if (o instanceof Collection) {
+            Collection c = (Collection) o;
+            long memory = 0L;
+            for (Object v : c) {
+                memory += estimateMemory(v);
+            }
+            return memory;
+        }
+
+        if (o instanceof ConvertedMap) {
+            ConvertedMap c = (ConvertedMap) o;
+            return c.estimateMemory();
+        }
+
+        if (o instanceof Map) {
+            // this case shouldn't happen because all Map are converted to ConvertedMap
+            Map<String, Object> m = (Map<String, Object>) o;
+            long memory = 0L;
+            for (Map.Entry e : m.entrySet()) {
+                memory += estimateMemory(e.getKey());
+                memory += estimateMemory(e.getValue());
+            }
+            return memory;
+        }
+        if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+            // wraps an java.time.Instant which is made of long and int
+            return 8 + 4;
+        }
+        if (o instanceof BigInteger) {
+            return ((BigInteger) o).toByteArray().length;
+        }
+        if (o instanceof BigDecimal) {
+            // BigInteger has 4 fields, one reference 2 ints (scale and precision) and a long.
+            return 8 + 2 * 4 + 8;
+        }
+        if (o instanceof RubyBignum) {
+            RubyBignum rbn = (RubyBignum) o;
+            return ((RubyFixnum) rbn.size()).getLongValue();
+        }
+        if (o instanceof RubyBigDecimal) {
+            RubyBigDecimal rbd = (RubyBigDecimal) o;
+            // wraps a Java BigDecimal so we can return the size of that:
+            return estimateMemory(rbd.getValue());
+        }
+        if (o instanceof RubyFixnum) {
+            // like an int value
+            return Integer.SIZE / Byte.SIZE;
+        }
+        if (o instanceof RubyBoolean) {
+            return Byte.SIZE / Byte.SIZE;
+        }
+
+        // TODO primitive type arrays?
+        // TODO object arrays?
+
+        throw new RuntimeException("Unsupported type: " + o.getClass());
     }
 }

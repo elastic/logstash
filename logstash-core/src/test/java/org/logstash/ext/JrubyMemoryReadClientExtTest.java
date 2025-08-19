@@ -82,4 +82,24 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         LongCounter batchCounter = LongCounter.fromRubyBase(metric.namespace(context, MetricKeys.BATCH_KEY), MetricKeys.BATCH_COUNT);
         assertEquals(1L, batchCounter.getValue().longValue());
     }
+
+    @Test
+    public void givenNonEmptyQueueWhenBatchIsReadThenBatchByteSizeMetricIsUpdated() throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final long expectedBatchByteSize = testEvent.getEvent().estimateMemory();
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        queue.add(testEvent);
+
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50);
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(1, batch.filteredSize());
+
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        LongCounter batchByteSizeCounter = LongCounter.fromRubyBase(metric.namespace(context, MetricKeys.BATCH_KEY), MetricKeys.BATCH_TOTAL_BYTES);
+        assertEquals(expectedBatchByteSize, batchByteSizeCounter.getValue().longValue());
+    }
 }
