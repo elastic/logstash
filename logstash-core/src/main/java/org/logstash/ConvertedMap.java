@@ -29,11 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jruby.RubyBignum;
-import org.jruby.RubyBoolean;
-import org.jruby.RubyFixnum;
-import org.jruby.RubyHash;
-import org.jruby.RubyString;
+import org.jruby.*;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -258,10 +254,13 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof RubyBoolean) {
             return Byte.SIZE / Byte.SIZE;
         }
+        if (o instanceof RubyNil) {
+            return 8 + Integer.BYTES; // object reference, one int
+        }
 
         // TODO primitive type arrays?
         // TODO object arrays?
 
-        throw new RuntimeException("Unsupported type: " + o.getClass());
+        throw new RuntimeException("Unsupported type in estimating memory size of event: " + o.getClass());
     }
 }
