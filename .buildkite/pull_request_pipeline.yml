@@ -157,9 +157,6 @@ steps:
     command: |
       set -euo pipefail
       source .buildkite/scripts/common/vm-agent.sh
-      # TODO: unpin ES/FILEBEAT versions once elasticsearch fips image is ready for main
-      export ELASTICSEARCH_IMAGE_VERSION=8.19.3-SNAPSHOT
-      export FILEBEAT_IMAGE_VERSION=8.19.3-SNAPSHOT
       ./ci/observabilitySREsmoke_tests.sh
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-3"
