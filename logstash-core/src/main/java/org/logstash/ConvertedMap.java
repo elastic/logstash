@@ -257,6 +257,12 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         if (o instanceof RubyNil) {
             return 8 + Integer.BYTES; // object reference, one int
         }
+        if (o instanceof RubySymbol) {
+            return estimateMemory(((RubySymbol) o).asJavaString());
+        }
+        if (o instanceof RubyFloat) {
+            return Double.BYTES;
+        }
 
         // TODO primitive type arrays?
         // TODO object arrays?
