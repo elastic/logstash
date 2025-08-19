@@ -183,6 +183,9 @@ def fips_test_runner_step() -> dict[str, typing.Any]:
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
+# TODO: unpin ES/FILEBEAT versions once elasticsearch fips image is ready for main
+export ELASTICSEARCH_IMAGE_VERSION=8.19.3-SNAPSHOT
+export FILEBEAT_IMAGE_VERSION=8.19.3-SNAPSHOT
 ./ci/observabilitySREacceptance_tests.sh
 """),
     }
