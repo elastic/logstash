@@ -1,0 +1,85 @@
+{
+  "Records": [
+    {
+      "eventVersion": "1.08",
+      "userIdentity": {
+        "type": "IAMUser",
+        "principalId": "AIDACKCEVSQ6C2EXAMPLE",
+        "arn": "arn:aws:iam::123456789012:user/AdminUser",
+        "accountId": "123456789012",
+        "userName": "AdminUser"
+      },
+      "eventTime": "2025-07-01T12:45:00Z",
+      "eventSource": "ec2.amazonaws.com",
+      "eventName": "TerminateInstances",
+      "awsRegion": "us-east-1",
+      "sourceIPAddress": "198.51.100.15",
+      "userAgent": "aws-cli/2.11.4",
+      "requestParameters": {
+        "instancesSet": {
+          "items": [
+            { "instanceId": "i-0aa1bb2cc3dd4ee5f" },
+            { "instanceId": "i-09876fedcba54321" }
+          ]
+        },
+        "force": true
+      },
+      "responseElements": {
+        "terminatingInstances": [
+          {
+            "instanceId": "i-0aa1bb2cc3dd4ee5f",
+            "currentState": {
+              "code": 32,
+              "name": "shutting-down"
+            },
+            "previousState": {
+              "code": 16,
+              "name": "running"
+            }
+          },
+          {
+            "instanceId": "i-09876fedcba54321",
+            "currentState": {
+              "code": 32,
+              "name": "shutting-down"
+            },
+            "previousState": {
+              "code": 16,
+              "name": "running"
+            }
+          }
+        ]
+      },
+      "requestID": "d9e8f7a6-b5c4-4321-a0ef-0987654321ba",
+      "eventID": "abcdef01-2345-6789-abcd-ef0123456789",
+      "readOnly": false,
+      "resources": [
+        {
+          "ARN": "arn:aws:ec2:us-east-1:123456789012:instance/i-0aa1bb2cc3dd4ee5f",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Instance"
+        },
+        {
+          "ARN": "arn:aws:ec2:us-east-1:123456789012:instance/i-09876fedcba54321",
+          "accountId": "123456789012",
+          "type": "AWS::EC2::Instance"
+        }
+      ],
+      "eventType": "AwsApiCall",
+      "managementEvent": true,
+      "recipientAccountId": "123456789012",
+      "sharedEventID": "123e4567-e89b-12d3-a456-426614174000",
+      "eventCategory": "Management",
+      "tlsDetails": {
+        "tlsVersion": "TLSv1.2",
+        "cipherSuite": "ECDHE-RSA-AES128-GCM-SHA256",
+        "clientProvidedHostHeader": "ec2.amazonaws.com"
+      },
+      "additionalEventData": {
+        "LoginTo": "Console",
+        "MobileVersion": "No",
+        "MFAUsed": "Yes"
+      }
+    }
+  ]
+}

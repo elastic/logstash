@@ -136,9 +136,11 @@ javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
     dependsOn compileTestJava
+    maxHeapSize = "8g"
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.root.dir', projectDir.parent
+    systemProperty 'jol.magicFieldOffset', true
     include '/org/logstash/RSpecTests.class'
     include '/org/logstash/config/ir/ConfigCompilerTest.class'
     include '/org/logstash/config/ir/CompiledPipelineTest.class'
@@ -150,6 +152,7 @@ tasks.register("rubyTests", Test) {
     include '/org/logstash/plugins/CounterMetricImplTest.class'
     include '/org/logstash/plugins/factory/PluginFactoryExtTest.class'
     include '/org/logstash/execution/ObservedExecutionTest.class'
+    include '/org/logstash/EventSizeCalculationTest.class'
 }
 
 test {
@@ -253,6 +256,7 @@ dependencies {
     testImplementation 'org.elasticsearch:securemock:1.2'
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.openjdk.jol:jol-core:0.17'
 
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'

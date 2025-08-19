@@ -567,4 +567,16 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             return path.stream().collect(Collectors.joining("][", "[", "]"));
         }
     }
+
+    /**
+     * @return a byte size estimation of the event, based on the payloads carried by nested data structures,
+     * without considering the space needed by the JVM to represent the object itself.
+     *
+     * */
+    public long estimateMemory() {
+        long total = 0;
+        total += data.estimateMemory();
+        total += metadata.estimateMemory();
+        return total;
+    }
 }
