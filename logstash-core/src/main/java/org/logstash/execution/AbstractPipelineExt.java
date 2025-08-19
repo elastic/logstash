@@ -287,16 +287,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             throw new IllegalArgumentException(iirex);
         }
 
-//        initBatchMetrics(context);
-
         return this;
-    }
-
-    private void initBatchMetrics(ThreadContext context) {
-        if (metric.collector(context).isNil()) {
-            return;
-        }
-        final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
     }
 
     /**
