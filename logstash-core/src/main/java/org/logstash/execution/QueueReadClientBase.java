@@ -32,6 +32,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.timer.TimerMetric;
@@ -43,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.logstash.instrument.metrics.MetricKeys.BATCH_COUNT;
 import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_TOTAL_BYTES;
 import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 /**
@@ -65,6 +67,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricFiltered;
     private transient TimerMetric pipelineMetricTime;
     private transient LongCounter pipelineMetricBatchCount;
+    private transient LongCounter pipelineMetricBatchByteSize;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -99,6 +102,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             pipelineMetricFiltered = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.FILTERED_KEY);
             pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
             pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
+            pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
         }
         return this;
     }
@@ -203,6 +207,15 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
         pipelineMetricBatchCount.increment();
+        updateBatchSizeMetric(batch);
+    }
+
+    private void updateBatchSizeMetric(QueueBatch batch) {
+        long totalSize = 0L;
+        for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
+            totalSize += rubyEvent.getEvent().estimateMemory();
+        }
+        pipelineMetricBatchByteSize.increment(totalSize);
     }
 
     @Override

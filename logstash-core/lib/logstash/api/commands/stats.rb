@@ -179,6 +179,11 @@ module LogStash
                   # average return a FlowMetric which and we need to invoke getValue to obtain the map with metric details.
                   :lifetime => stats[:batch][:event_count][:average].value["lifetime"]
                 }
+              },
+              :byte_size => {
+                :average => {
+                  :lifetime => stats[:batch][:byte_size][:average].value["lifetime"]
+                }
               }
             }
           end
