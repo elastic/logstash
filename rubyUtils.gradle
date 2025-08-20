@@ -239,7 +239,7 @@ def customJRubyVersion = customJRubyDir == "" ? "" : Files.readAllLines(Paths.ge
 def customJRubyTar = customJRubyDir == "" ? "" : (customJRubyDir + "/maven/jruby-dist/target/jruby-dist-${customJRubyVersion}-bin.tar.gz")
 
 tasks.register("downloadJRuby", Download) {
-    description "Download JRuby artifact from this specific URL: ${jRubyURL}"
+    description = "Download JRuby artifact from this specific URL: ${jRubyURL}"
     src jRubyURL
     onlyIfNewer true
     inputs.file(versionsPath)
@@ -251,7 +251,7 @@ downloadJRuby.onlyIf { customJRubyDir == "" }
 
 tasks.register("verifyFile", Verify) {
     dependsOn downloadJRuby
-    description "Verify the SHA256 of the download JRuby artifact"
+    description = "Verify the SHA256 of the download JRuby artifact"
     inputs.file(jrubyTarPath)
     outputs.file(jrubyTarPath)
     src new File(jrubyTarPath)
@@ -263,7 +263,7 @@ verifyFile.onlyIf { customJRubyDir == "" }
 verifyFile.onlyIf { doChecksum }
 
 tasks.register("buildCustomJRuby", Exec) {
-    description "Build tar.gz and .jar artifacts from JRuby source directory"
+    description = "Build tar.gz and .jar artifacts from JRuby source directory"
     workingDir (customJRubyDir == "" ? "./" : customJRubyDir)
     commandLine './mvnw', 'clean', 'install', '-Pdist', '-Pcomplete'
     standardOutput = new ByteArrayOutputStream()
@@ -277,7 +277,7 @@ buildCustomJRuby.onlyIf { customJRubyDir != "" }
 
 tasks.register("installCustomJRuby", Copy) {
     dependsOn buildCustomJRuby
-    description "Install custom built JRuby in the vendor directory"
+    description = "Install custom built JRuby in the vendor directory"
     inputs.file(customJRubyTar)
     outputs.dir("${projectDir}/vendor/jruby")
     from tarTree(customJRubyTar == "" ? jrubyTarPath : customJRubyTar)
@@ -292,7 +292,7 @@ installCustomJRuby.onlyIf { customJRubyDir != "" }
 
 tasks.register("downloadAndInstallJRuby", Copy) {
     dependsOn=[verifyFile, installCustomJRuby]
-    description "Install JRuby in the vendor directory"
+    description = "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
     outputs.dir("${projectDir}/vendor/jruby")
     from tarTree(downloadJRuby.dest)

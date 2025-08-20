@@ -25,7 +25,7 @@ buildscript {
     repositories {
         mavenCentral()
         maven {
-            url 'https://plugins.gradle.org/m2/'
+            url = 'https://plugins.gradle.org/m2/'
         }
     }
 }
@@ -103,16 +103,16 @@ allprojects {
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
-      showExceptions true
-      exceptionFormat "full"
-      showCauses true
-      showStackTraces true
-      enableAssertions false
+      showExceptions = true
+      exceptionFormat = "full"
+      showCauses = true
+      showStackTraces = true
+      enableAssertions = false
 
       // set options for log level DEBUG and INFO
       debug {
         events "started", "passed", "skipped", "failed", "standardOut", "standardError"
-        exceptionFormat "full"
+        exceptionFormat = "full"
       }
       info.events = debug.events
       info.exceptionFormat = debug.exceptionFormat
@@ -133,7 +133,7 @@ subprojects {
     repositories {
         mavenCentral()
         maven {
-            url 'https://plugins.gradle.org/m2/'
+            url = 'https://plugins.gradle.org/m2/'
         }
     }
 
@@ -165,8 +165,9 @@ tasks.register("configureArchitecture") {
 
 tasks.register("configureArtifactInfo") {
     dependsOn configureArchitecture
-    description "Set the url to download stack artifacts for select stack version"
+    description = "Set the url to download stack artifacts for select stack version"
 
+    def projectRef = project
     doLast {
         def splitVersion = version.split('\\.')
         int major = splitVersion[0].toInteger()
@@ -189,28 +190,28 @@ tasks.register("configureArtifactInfo") {
             }
         }
 
-        project.ext.set("artifactApiVersion", qualifiedVersion)
+        projectRef.ext.set("artifactApiVersion", qualifiedVersion)
     }
 }
 
 tasks.register("markAliasDefinitions", SignAliasDefinitions) {
-    description "Create an hashes aliases file from original aliases yml definition"
+    description = "Create an hashes aliases file from original aliases yml definition"
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
-    description "Create an hashes aliases file for testing aliases yml definition"
+    description = "Create an hashes aliases file for testing aliases yml definition"
     stage SignAliasDefinitions.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
 tasks.register("copyPluginAlias", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn = [copyPluginAlias_ruby, copyPluginAlias_java]
 }
 
 tasks.register("copyPluginAlias_ruby", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
@@ -222,7 +223,7 @@ tasks.register("copyPluginAlias_ruby", Copy) {
 }
 
 tasks.register("copyPluginAlias_java", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
@@ -234,12 +235,12 @@ tasks.register("copyPluginAlias_java", Copy) {
 }
 
 tasks.register("copyPluginTestAlias") {
-    description "Copy the marked test plugin_aliases.yml file to destination folders"
+    description = "Copy the marked test plugin_aliases.yml file to destination folders"
     dependsOn = [copyPluginTestAlias_ruby, copyPluginTestAlias_java]
 }
 
 tasks.register("copyPluginTestAlias_ruby", Copy) {
-    description "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
+    description = "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file(markTestAliasDefinitions.hashedFile)
@@ -251,7 +252,7 @@ tasks.register("copyPluginTestAlias_ruby", Copy) {
 }
 
 tasks.register("copyPluginTestAlias_java", Copy) {
-    description "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
+    description = "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
@@ -447,30 +448,39 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat") {
-    dependsOn  configureArtifactInfo
-    description "Download Filebeat Snapshot for current branch version: ${version}"
+tasks.register("prepareFilebeatDownload") {
+    dependsOn configureArtifactInfo
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        projectRef.ext.set("unpackedFilebeatName", downloadedFilebeatName)
+
+        def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
+        projectRef.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+    }
+}
+
+tasks.register("downloadFilebeat", Download) {
+    dependsOn prepareFilebeatDownload
+    description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    // Use lazy configuration to get values after prepareFilebeatDownload runs
+    src { projectRef.ext.filebeatSnapshotUrl }
+    dest { new File(projectRef.ext.filebeatDownloadLocation) }
+
+    onlyIfNewer true
+    retries 3
+
     doLast {
-        download {
-            String beatsVersion = project.ext.get("artifactApiVersion")
-            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
-            project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
-
-            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-            src project.ext.filebeatSnapshotUrl
-            onlyIfNewer true
-
-            dest new File(project.ext.filebeatDownloadLocation)
-            retries 3
-        }
-        System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.filebeatDownloadLocation}"
     }
 }
 
@@ -495,11 +505,12 @@ tasks.register("copyFilebeat") {
 tasks.register("checkEsSHA") {
     dependsOn  configureArtifactInfo
 
-    description "Download ES version remote's fingerprint file"
+    description = "Download ES version remote's fingerprint file"
 
+    def projectRef = project
     doLast {
-        String esVersion = project.ext.get("artifactApiVersion")
-        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
         String remoteSHA
 
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
@@ -529,30 +540,39 @@ tasks.register("checkEsSHA") {
     }
 }
 
-tasks.register("downloadEs") {
-    dependsOn  = [configureArtifactInfo, checkEsSHA]
+tasks.register("prepareEsDownload") {
+    dependsOn configureArtifactInfo
 
-    description "Download ES Snapshot for current branch version: ${version}"
+    def projectRef = project
+    doLast {
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
+
+        projectRef.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
+
+        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+        projectRef.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+    }
+}
+
+tasks.register("downloadEs", Download) {
+    dependsOn  = [prepareEsDownload, checkEsSHA]
+
+    description = "Download ES Snapshot for current branch version: ${version}"
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    src { projectRef.ext.elasticsearchSnapshotURL }
+    dest { new File(projectRef.ext.elasticsearchDownloadLocation) }
+
+    onlyIfNewer true
+    overwrite false
+    retries 3
+
     doLast {
-        download {
-            String esVersion = project.ext.get("artifactApiVersion")
-            String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
-
-            project.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
-
-            def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-            project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-
-            src project.ext.elasticsearchSnapshotURL
-            onlyIfNewer true
-            retries 3
-            dest new File(project.ext.elasticsearchDownloadLocation)
-        }
-
-        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.elasticsearchDownloadLocation}"
     }
 }
 
@@ -609,7 +629,7 @@ tasks.register("generateLicenseReport", JavaExec) {
     String noticePath = "NOTICE.txt"
 
     classpath = project.files([jarFile])
-    main = "org.logstash.dependencies.Main"
+    mainClass = "org.logstash.dependencies.Main"
     args licenseReportInputCSV,
       project.getBuildDir().toString() + "/licenseReportFolders.txt",
       licenseReportOutputCSV, noticePath
@@ -828,7 +848,7 @@ tasks.register("downloadJdk", Download) {
 
     def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
 
-    description "Download JDK ${jdkDetails.major}, OS: ${osName}"
+    description = "Download JDK ${jdkDetails.major}, OS: ${osName}"
 
     // find url of build artifact
     String artifactApiUrl = jdkDetails.createDownloadUrl()
