@@ -32,6 +32,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -54,6 +55,7 @@ import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 
     private static final long serialVersionUID = 1L;
+    private final QueueFactoryExt.BatchMetricType batchMetricType;
 
     protected int batchSize = 125;
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
@@ -70,7 +72,13 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricBatchByteSize;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
+        this(runtime, metaClass, QueueFactoryExt.BatchMetricType.NONE);
+    }
+
+    protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass,
+                                  final QueueFactoryExt.BatchMetricType batchMetricType) {
         super(runtime, metaClass);
+        this.batchMetricType = batchMetricType;
     }
 
     @JRubyMethod(name = "inflight_batches")

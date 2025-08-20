@@ -34,6 +34,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
                           .checkpointMaxAcks(queue_checkpoint_acks)
                           .checkpointMaxWrites(queue_checkpoint_writes)
                           .queueMaxBytes(queue_capacity)
+                          .batchMetricMode(LogStash::QueueFactory::BatchMetricType.NONE)
                           .build
     end
 

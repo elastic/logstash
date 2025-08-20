@@ -113,7 +113,7 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024) }
+    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024, "none") }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -133,6 +133,7 @@ describe LogStash::WrappedWriteClient do
          .checkpointMaxAcks(1024)
          .checkpointMaxWrites(1024)
          .queueMaxBytes(4096)
+         .batchMetricMode(LogStash::QueueFactory::BatchMetricType.NONE)
          .build
     end
 

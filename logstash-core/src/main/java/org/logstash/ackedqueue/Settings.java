@@ -44,6 +44,8 @@ public interface Settings {
 
     boolean getCheckpointRetry();
 
+    QueueFactoryExt.BatchMetricType batchMetricMode();
+
     /**
      * Validate and return the settings, or throw descriptive {@link QueueRuntimeException}
      * @param settings the settings to validate
@@ -91,5 +93,6 @@ public interface Settings {
 
         Settings build();
 
+        Builder batchMetricMode(QueueFactoryExt.BatchMetricType batchMetricType);
     }
 }

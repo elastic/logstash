@@ -32,6 +32,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -48,6 +49,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
+    private QueueFactoryExt.BatchMetricType batchMetricType;
 
     @JRubyMethod(required=1)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
@@ -60,7 +62,9 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings.getClass().getName(),
                             settings));
         }
-        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
+        Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
+        this.queue = JRubyAckedQueueExt.create(javaSettings);
+        this.batchMetricType = javaSettings.batchMetricMode();
         this.queue.open();
 
         return this;
@@ -111,7 +115,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected QueueReadClientBase getReadClient() {
-        return JrubyAckedReadClientExt.create(queue);
+        return JrubyAckedReadClientExt.create(queue, batchMetricType);
     }
 
     @Override
