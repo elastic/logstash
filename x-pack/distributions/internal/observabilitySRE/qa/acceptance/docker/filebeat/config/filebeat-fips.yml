@@ -1,8 +1,9 @@
 filebeat.inputs:
-- type: log
+- type: filestream
   enabled: true
   paths:
     - /data/logs/sample_logs.txt
+  id: test-logs-input
 
 output.logstash:
   hosts: ["logstash:5044"]

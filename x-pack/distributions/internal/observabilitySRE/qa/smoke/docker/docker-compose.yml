@@ -3,7 +3,7 @@ services:
     image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-8.19.0-SNAPSHOT}
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - "ES_JAVA_OPTS=-Djava.security.properties=/usr/share/elasticsearch/config/fips_java.security"
       - ELASTIC_PASSWORD=changeme
     ports:
       - "9200:9200"

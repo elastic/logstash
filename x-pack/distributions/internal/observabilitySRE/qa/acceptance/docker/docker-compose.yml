@@ -23,7 +23,7 @@ services:
       - ./certs:/usr/share/elasticsearch/config/certs
     environment:
       - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - "ES_JAVA_OPTS=-Djava.security.properties=/usr/share/elasticsearch/config/fips_java.security"
       - ELASTIC_PASSWORD=changeme
     networks:
       - elastic
