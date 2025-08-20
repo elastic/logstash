@@ -1,6 +1,6 @@
 services:
   elasticsearch:
-    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-9.2.0-SNAPSHOT}
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=changeme
@@ -33,7 +33,7 @@ services:
   filebeat:
     # The filebeat shipped with the elasticsearch-fips container is built for FIPS support
     # There is no stand alone distribution. This uses the shipped version for testing. 
-    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${FILEBEAT_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${FILEBEAT_IMAGE_VERSION:-9.2.0-SNAPSHOT}
     container_name: fips_test_filebeat
     working_dir: /usr/share/filebeat
     entrypoint: ["/bin/bash", "-c"]

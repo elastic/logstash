@@ -54,6 +54,7 @@ module SharedHelpers
                   puts "Found #{count_data["count"]} documents in #{index_pattern} index"
                 else
                   puts "Waiting for documents in #{index_pattern} index..."
+                  puts "ES response: #{count_data.inspect}"
                 end
               end
             else
@@ -78,6 +79,7 @@ module SharedHelpers
   def docker_compose_invoke(subcommand, env = {}, work_dir)
     env_str = env.map{ |k,v| "#{k.to_s.upcase}=#{Shellwords.escape(v)} "}.join
     command = "#{env_str}docker-compose --project-directory=#{Shellwords.escape(work_dir)} #{subcommand}"
+    puts "Invoking Docker Compose with command: #{command}"
     system(command) or fail "Failed to invoke Docker Compose with command `#{command}`"
   end
 
