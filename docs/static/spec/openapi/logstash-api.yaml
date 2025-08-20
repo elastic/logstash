@@ -134,6 +134,9 @@ paths:
                     - "G1 Young Generation"
                     - "G1 Concurrent GC"
                     - "G1 Old Generation"
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/os:
     get:
@@ -161,6 +164,9 @@ paths:
                   arch: "aarch64"
                   version: "15.3.1"
                   available_processors: 12
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/pipelines:
     get:
@@ -203,6 +209,9 @@ paths:
                     config_reload_automatic: false
                     config_reload_interval: 3
                     dead_letter_queue_enabled: false
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/pipelines/{pipeline_name}:
     get:
@@ -243,6 +252,9 @@ paths:
                     config_reload_automatic: false
                     config_reload_interval: 3
                     dead_letter_queue_enabled: false
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/plugins:
     get:
@@ -291,6 +303,9 @@ paths:
                         version: 3.0.2
                       - name: logstash-coded-edn
                         version: 3.0.2
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats:
     get:
@@ -504,6 +519,9 @@ paths:
                 os: { }
                 queue:
                   events_count: 0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/events:
     get:
@@ -531,6 +549,9 @@ paths:
                   filtered: 56
                   out: 56
                   queue_push_duration_in_millis: 2
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/flow:
     get:
@@ -586,6 +607,9 @@ paths:
                     last_5_minutes: 0.000246
                     last_15_minutes: 0.0002941
                     lifetime: 0.000242
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/geoip_download_manager:
     get:
@@ -630,7 +654,9 @@ paths:
                             description: "The last download status."
                             type: string
                             enum: [ "succeeded", "failed", "updating" ]
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/stats/jvm:
     get:
       summary: Get JVM statistics
@@ -690,7 +716,9 @@ paths:
                         collection_count: 0
                         collection_time_in_millis: 0
                   uptime_in_millis: 2512572
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/stats/os:
     get:
       summary: Get Cgroup statistics
@@ -759,6 +787,9 @@ paths:
                         number_of_elapsed_periods: 4157
                         number_of_times_throttled: 460
                         time_throttled_nanos: 581617440755
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/pipelines:
     get:
@@ -1029,6 +1060,9 @@ paths:
                       batch_delay: 50
                     hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
                     ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/pipelines/{pipeline_name}:
     get:
@@ -1317,9 +1351,9 @@ paths:
                           batch_delay: 50
                         hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
                         ephemeral_id: c91bff2b-c92b-45ac-8c74-04783f6cc1dd
-
-
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/process:
     get:
@@ -1352,7 +1386,9 @@ paths:
                     percent: 0
                     load_average:
                       1m: 6.06201171875
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/reloads:
     get:
@@ -1377,6 +1413,9 @@ paths:
                 reloads:
                   successes: 0
                   failures: 0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/hot_threads:
     get:
       summary: Get hot threads
@@ -1464,6 +1503,9 @@ paths:
                             - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
                             - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
                             - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_health_report:
     get:
@@ -1666,6 +1708,10 @@ paths:
                                 worker_utilization:
                                   last_1_minute: 100.0
                                   last_5_minutes: 100.0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
+
 components:
   parameters:
     pretty:
