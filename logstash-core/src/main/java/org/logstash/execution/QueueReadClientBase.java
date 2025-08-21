@@ -225,7 +225,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             boolean updateMetric = true;
             if (batchMetricType == QueueFactoryExt.BatchMetricType.MINIMAL) {
                 // 1% chance to update metric
-                updateMetric = random.nextInt(100) < 2;
+                updateMetric = random.nextInt(100) < 1;
             }
 
             if (updateMetric) {
