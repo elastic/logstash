@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import static org.logstash.instrument.metrics.MetricKeys.BATCH_COUNT;
 import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
 import static org.logstash.instrument.metrics.MetricKeys.BATCH_TOTAL_BYTES;
+import static org.logstash.instrument.metrics.MetricKeys.BATCH_TOTAL_EVENTS;
 import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 /**
@@ -71,6 +72,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient TimerMetric pipelineMetricTime;
     private transient LongCounter pipelineMetricBatchCount;
     private transient LongCounter pipelineMetricBatchByteSize;
+    private transient LongCounter pipelineMetricBatchTotalEvents;
     private final SecureRandom random = new SecureRandom();
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
@@ -113,6 +115,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
             if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
                 pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
+                pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
                 pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
             }
         }
@@ -227,6 +230,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
 
             if (updateMetric) {
                 pipelineMetricBatchCount.increment();
+                pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
                 updateBatchSizeMetric(batch);
             }
         }
