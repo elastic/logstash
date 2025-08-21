@@ -40,6 +40,7 @@ import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -70,6 +71,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient TimerMetric pipelineMetricTime;
     private transient LongCounter pipelineMetricBatchCount;
     private transient LongCounter pipelineMetricBatchByteSize;
+    private final SecureRandom random = new SecureRandom();
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         this(runtime, metaClass, QueueFactoryExt.BatchMetricType.NONE);
@@ -109,8 +111,10 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             pipelineMetricOut = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.OUT_KEY);
             pipelineMetricFiltered = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.FILTERED_KEY);
             pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
-            pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
-            pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
+            if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
+                pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
+                pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
+            }
         }
         return this;
     }
@@ -214,8 +218,18 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
-        pipelineMetricBatchCount.increment();
-        updateBatchSizeMetric(batch);
+        if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
+            boolean updateMetric = true;
+            if (batchMetricType == QueueFactoryExt.BatchMetricType.MINIMAL) {
+                // 1% chance to update metric
+                updateMetric = random.nextInt(100) < 2;
+            }
+
+            if (updateMetric) {
+                pipelineMetricBatchCount.increment();
+                updateBatchSizeMetric(batch);
+            }
+        }
     }
 
     private void updateBatchSizeMetric(QueueBatch batch) {
