@@ -22,7 +22,13 @@ namespace "artifact" do
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"].to_s.strip.empty? ? nil : ENV["VERSION_QUALIFIER"]
   LOCAL_ARTIFACTS = ENV["LOCAL_ARTIFACTS"] || "true"
   PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
-
+  # Normalize ARCH environment variable to either x86_64 or arm64, defaulting to arm64
+  ARCH = case ENV["ARCH"]
+         when "x86_64"
+           "x86_64"
+         else
+           "arm64" # default for aarch64, arm64, or any other value (including nil)
+         end
   ## TODO: Install new service files
   def package_files
     res = [
@@ -170,9 +176,11 @@ namespace "artifact" do
     #with bundled JDKs
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
-
+    if ARCH == "x86_64"
+      create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    else
+      create_archive_pack(license_details, "arm64", "linux", "darwin")
+    end
     #without JDK
     safe_system("./gradlew bootstrap") #force the build of Logstash jars
     @bundles_jdk = false
@@ -184,8 +192,7 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-    create_archive_pack(license_details, "x86_64", "linux")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, ARCH, "linux")
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -235,8 +242,11 @@ namespace "artifact" do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    if ARCH == "x86_64"
+      create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    else
+      create_archive_pack(license_details, "arm64", "linux", "darwin")
+    end
 
     #without JDK
     @bundles_jdk = false
@@ -250,8 +260,7 @@ namespace "artifact" do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-    create_archive_pack(license_details, "x86_64", "linux")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, ARCH, "linux")
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -266,12 +275,10 @@ namespace "artifact" do
       bin/logstash-keystore.bat
     )
     license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
-    %w(x86_64 arm64).each do |arch|
-      create_archive_pack(license_details, arch, "linux") do |dedicated_directory_tar|
-        # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
-        # copy additional files into the tarball
-        puts "HELLO(#{dedicated_directory_tar})"
-      end
+    create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
+      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
+      # copy additional files into the tarball
+      puts "HELLO(#{dedicated_directory_tar})"
     end
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
@@ -280,11 +287,8 @@ namespace "artifact" do
   task "rpm" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:rpm] building rpm package x86_64")
-    package_with_jdk("centos", "x86_64")
-
-    puts("[artifact:rpm] building rpm package arm64")
-    package_with_jdk("centos", "arm64")
+    puts("[artifact:rpm] building rpm package #{ARCH}")
+    package_with_jdk("centos", ARCH)
 
     #without JDKs
     @bundles_jdk = false
@@ -296,11 +300,8 @@ namespace "artifact" do
   task "rpm_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:rpm] building rpm OSS package x86_64")
-    package_with_jdk("centos", "x86_64", :oss)
-
-    puts("[artifact:rpm] building rpm OSS package arm64")
-    package_with_jdk("centos", "arm64", :oss)
+    puts("[artifact:rpm] building rpm OSS package #{ARCH}")
+    package_with_jdk("centos", ARCH, :oss)
 
     #without JDKs
     @bundles_jdk = false
@@ -312,11 +313,8 @@ namespace "artifact" do
   task "deb" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:deb] building deb package for x86_64")
-    package_with_jdk("ubuntu", "x86_64")
-
-    puts("[artifact:deb] building deb package for OS: linux arm64")
-    package_with_jdk("ubuntu", "arm64")
+    puts("[artifact:deb] building deb package for #{ARCH}")
+    package_with_jdk("ubuntu", ARCH)
 
     #without JDKs
     @bundles_jdk = false
@@ -328,11 +326,8 @@ namespace "artifact" do
   task "deb_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:deb_oss] building deb OSS package x86_64")
-    package_with_jdk("ubuntu", "x86_64", :oss)
-
-    puts("[artifact:deb_oss] building deb OSS package arm64")
-    package_with_jdk("ubuntu", "arm64", :oss)
+    puts("[artifact:deb_oss] building deb OSS package #{ARCH}")
+    package_with_jdk("ubuntu", ARCH, :oss)
 
     #without JDKs
     @bundles_jdk = false
