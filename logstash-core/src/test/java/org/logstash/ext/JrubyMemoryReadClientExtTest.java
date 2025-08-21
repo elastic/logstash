@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.logstash.Event;
 import org.logstash.RubyTestBase;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.QueueBatch;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
@@ -69,7 +70,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
         queue.add(testEvent);
 
-        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50);
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, QueueFactoryExt.BatchMetricType.FULL);
 
         AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
         client.setPipelineMetric(metric);
@@ -83,13 +84,32 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
     }
 
     @Test
+    public void givenNonEmptyQueueWhenBatchIsReadAndMetricIsDisabledThenBatchCounterMetricIsNotUpdated() throws InterruptedException {
+        final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
+        final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
+        queue.add(testEvent);
+
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, QueueFactoryExt.BatchMetricType.NONE);
+
+        AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(1, batch.filteredSize());
+
+        ThreadContext context = metric.getRuntime().getCurrentContext();
+        LongCounter batchCounter = LongCounter.fromRubyBase(metric.namespace(context, MetricKeys.BATCH_KEY), MetricKeys.BATCH_COUNT);
+        assertEquals(0L, batchCounter.getValue().longValue());
+    }
+
+    @Test
     public void givenNonEmptyQueueWhenBatchIsReadThenBatchByteSizeMetricIsUpdated() throws InterruptedException {
         final JrubyEventExtLibrary.RubyEvent testEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, new Event());
         final long expectedBatchByteSize = testEvent.getEvent().estimateMemory();
         final BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue = new ArrayBlockingQueue<>(10);
         queue.add(testEvent);
 
-        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50);
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50, QueueFactoryExt.BatchMetricType.FULL);
 
         AbstractNamespacedMetricExt metric = MockNamespacedMetric.create();
         client.setPipelineMetric(metric);

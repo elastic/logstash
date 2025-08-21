@@ -191,7 +191,7 @@ module LogStash
 
           def report(stats, extended_stats = nil, opts = {})
             ret = {
-              :batch => refine_batch_metrics(stats),
+              # :batch => refine_batch_metrics(stats),
               :events => stats[:events],
               :flow => stats[:flow],
               :plugins => {
@@ -208,6 +208,9 @@ module LogStash
                 :batch_delay => stats.dig(:config, :batch_delay),
               }
             }
+            if stats.include?(:batch)
+              ret[:batch] = refine_batch_metrics(stats)
+            end
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
             # if extended_stats were provided, enrich the return value
