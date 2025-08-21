@@ -588,8 +588,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
         // Batch average byte size and count metrics
         if (isBatchMetricsEnabled(context)) {
             final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+            final LongCounter batchEventsInCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_EVENTS);
             final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
-            final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, eventsInCounter, batchCounter);
+            final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, batchEventsInCounter, batchCounter);
             this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
             storeMetric(context, batchNamespace, documentsPerBatch);
 
