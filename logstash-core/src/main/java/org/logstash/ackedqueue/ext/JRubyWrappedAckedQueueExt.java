@@ -22,7 +22,10 @@ package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
 
-import org.jruby.*;
+import org.jruby.Ruby;
+import org.jruby.RubyBoolean;
+import org.jruby.RubyClass;
+import org.jruby.RubyFixnum;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Arity;
