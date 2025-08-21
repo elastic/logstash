@@ -286,7 +286,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
         } catch (InvalidIRException iirex) {
             throw new IllegalArgumentException(iirex);
         }
-
         return this;
     }
 
