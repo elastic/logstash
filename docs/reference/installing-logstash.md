@@ -8,7 +8,7 @@ mapped_pages:
 
 ## Installing from a Downloaded Binary [installing-binary]
 
-The {{ls}} binaries are available from [https://www.elastic.co/downloads](https://www.elastic.co/downloads/logstash). Download the Logstash installation file for your host environment—​TAR.GZ, DEB, ZIP, or RPM.
+The {{ls}} binaries are available from [https://www.elastic.co/downloads](https://www.elastic.co/downloads/logstash). Download the Logstash installation file for your host environment—TAR.GZ, DEB, ZIP, or RPM.
 
 Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
 

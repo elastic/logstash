@@ -5,7 +5,7 @@ mapped_pages:
 
 # Event API [event-api]
 
-This section is targeted for plugin developers and users of Logstash’s Ruby filter. Below we document recent changes (starting with version 5.0) in the way users have been accessing Logstash’s event based data in custom plugins and in the Ruby filter. Note that [Accessing event data and fields](/reference/event-dependent-configuration.md) data flow in Logstash’s config files — using [Field references](/reference/event-dependent-configuration.md#logstash-config-field-references) — is not affected by this change, and will continue to use existing syntax.
+This section is targeted for plugin developers and users of Logstash’s Ruby filter. Below we document recent changes (starting with version 5.0) in the way users have been accessing Logstash’s event based data in custom plugins and in the Ruby filter. Note that [Accessing event data and fields](/reference/event-dependent-configuration.md) data flow in Logstash’s config files — using [Field references](/reference/event-dependent-configuration.md#logstash-config-field-references) — is not affected by this change, and will continue to use existing syntax.
 
 
 ## Event Object [_event_object]
