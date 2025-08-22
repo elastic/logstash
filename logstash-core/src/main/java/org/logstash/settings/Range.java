@@ -1,9 +1,8 @@
 package org.logstash.settings;
 
-import org.jruby.RubyRange;
-import org.jruby.runtime.ThreadContext;
+import java.util.function.BiConsumer;
 
-public class Range<T extends Comparable<? super T>> {
+public class Range<T extends Integer> {
 
     private final T first;
     private final T last;
@@ -25,8 +24,20 @@ public class Range<T extends Comparable<? super T>> {
         return last;
     }
 
-//    public static Range<T> fromRubyRange(RubyRange r) {
-//        ThreadContext context = r.getRuntime().getCurrentContext();
-//        r.last(context);
-//    }
+    // TODO cover with tests
+    public void eachWithIndex(BiConsumer<Integer, Integer> consumer) {
+        // In case of a single value range, we should still yield once
+        if (first.intValue() == last.intValue()) {
+            consumer.accept(first.intValue(), 0);
+            return;
+        }
+        int index = 0;
+        for (int value = first.intValue(); first.intValue() < last.intValue(); value++) {
+            consumer.accept(value, index++);
+        }
+    }
+
+    public int count() {
+        return last.intValue() - first.intValue() + 1;
+    }
 }

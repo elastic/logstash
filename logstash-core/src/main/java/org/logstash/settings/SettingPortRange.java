@@ -16,6 +16,7 @@ public class SettingPortRange extends Coercible<Range<Integer>> {
         return VALID_PORT_RANGE.contains(range);
     }
 
+    // TODO cover with tests
     @Override
     public Range<Integer> coerce(Object obj) {
         if (obj instanceof Range) {
@@ -25,6 +26,11 @@ public class SettingPortRange extends Coercible<Range<Integer>> {
         if (obj instanceof Integer) {
             Integer val = (Integer) obj;
             return new Range<>(val, val);
+        }
+
+        if (obj instanceof Long) {
+            Long val = (Long) obj;
+            return new Range<>(val.intValue(), val.intValue());
         }
 
         if (obj instanceof String) {
@@ -42,10 +48,10 @@ public class SettingPortRange extends Coercible<Range<Integer>> {
                 int last = Integer.parseInt(lastStr);
                 return new Range<>(first, last);
             } catch(NumberFormatException e) {
-                throw new IllegalArgumentException("Could not coerce " + obj + " into a port range");
+                throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
             }
         }
-        throw new IllegalArgumentException("Could not coerce " + obj + " into a port range");
+        throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
     }
 
     @Override
