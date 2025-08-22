@@ -33,8 +33,8 @@ module LogStash
     end
   end
 
-  def as_java_range(r)
-    org::logstash::settings::Range.new(r.first, r.last)
+  def self.as_java_range(r)
+    org::logstash::settings::Range.new(r.first.to_java(java.lang.Integer), r.last.to_java(java.lang.Integer))
   end
 
   [
