@@ -810,6 +810,7 @@ paths:
             - stats for each configured filter or output stage
             - info about config reload successes and failures (when [config reload](https://www.elastic.co/guide/en/logstash/current/reloading-config.html) is enabled)
             - info about the persistent queue (when [persistent queues](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html) are enabled)
+            - info about batch structure, in term of events count and memory size (when setting [pipeline.batch.metrics](https://www.elastic.co/docs/reference/logstash/logstash-settings-file.html) is enabled).
 
           content:
             application/json:
@@ -821,6 +822,13 @@ paths:
               example:
                 pipelines:
                   beats-es:
+                    batch:
+                      event_count:
+                        average:
+                          lifetime: 115
+                      byte_size:
+                        average:
+                          lifetime: 14820
                     events:
                       duration_in_millis: 365495
                       in: 216610
@@ -1095,6 +1103,13 @@ paths:
                   value:
                     pipelines:
                       heartbeat-ruby-stdout:
+                        batch:
+                          event_count:
+                            average:
+                              lifetime: 115
+                          byte_size:
+                            average:
+                              lifetime: 14820
                         events:
                           queue_push_duration_in_millis: 159
                           in: 45
