@@ -251,7 +251,7 @@ public class DeadLetterQueueWriterTest {
     @Test
     public void testRemoveOldestSegmentWhenRetainedSizeIsExceededAndDropOlderModeIsEnabled() throws IOException {
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
         long startTime = System.currentTimeMillis();
 
         int messageSize = 0;
@@ -488,7 +488,7 @@ public class DeadLetterQueueWriterTest {
     @Test
     public void testDropEventCountCorrectlyNotEnqueuedEvents() throws IOException, InterruptedException {
         Event blockAlmostFullEvent = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        int serializationHeader = 286;
+        int serializationHeader = 265;
         int notEnoughHeaderSpace = 5;
         blockAlmostFullEvent.setField("message", DeadLetterQueueReaderTest.generateMessageContent(BLOCK_SIZE - serializationHeader - RECORD_HEADER_SIZE + notEnoughHeaderSpace));
 
@@ -501,7 +501,7 @@ public class DeadLetterQueueWriterTest {
             // enqueue a record with size smaller than BLOCK_SIZE
             DLQEntry entry = new DLQEntry(blockAlmostFullEvent, "", "", "00001", DeadLetterQueueReaderTest.constantSerializationLengthTimestamp(System.currentTimeMillis()));
             assertEquals("Serialized plus header must not leave enough space for another record header ",
-                    entry.serialize().length, BLOCK_SIZE - RECORD_HEADER_SIZE - notEnoughHeaderSpace);
+                    BLOCK_SIZE - RECORD_HEADER_SIZE - notEnoughHeaderSpace, entry.serialize().length);
             writeManager.writeEntry(entry);
 
             // enqueue a record bigger than BLOCK_SIZE
@@ -512,7 +512,7 @@ public class DeadLetterQueueWriterTest {
 
         // fill the queue to push out the segment with the 2 previous events
         Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32479));
+        event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
                 .newBuilder(dir, 10 * MB, 20 * MB, Duration.ofSeconds(1))
                 .storageType(QueueStorageType.DROP_NEWER)
