@@ -1748,11 +1748,9 @@ components:
           type: string
           description: A unique identifier for the ephemeral session of the Logstash instance.
         snapshot:
-          type: boolean
-          nullable: true
+          type: [boolean, 'null']
         status:
           $ref: '#/components/schemas/Status'
-
     PipelineSettings:
       type: object
       properties:
@@ -2263,19 +2261,16 @@ components:
           type: object
           properties:
             last_error:
-              type: string
-              nullable: true
+              type: [ string, 'null']
             successes:
               type: integer
               format: int64
             last_success_timestamp:
-              type: string
+              type: [ string, 'null']
               format: date-time
-              nullable: true
             last_failure_timestamp:
-              type: string
+              type: [ string, 'null']
               format: date-time
-              nullable: true
             failures:
               type: integer
               format: int64
