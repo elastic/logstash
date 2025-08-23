@@ -257,4 +257,7 @@ dependencies {
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+
+    // OTel dependencies
+    implementation 'io.opentelemetry:opentelemetry-api:1.25.0'
 }

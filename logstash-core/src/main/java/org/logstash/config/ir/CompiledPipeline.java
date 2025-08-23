@@ -19,9 +19,15 @@
 
 package org.logstash.config.ir;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.Event;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.common.EnvironmentVariableProvider;
@@ -57,6 +63,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.logstash.OTelUtil.tracer;
 import static org.logstash.config.ir.compiler.Utils.copyNonCancelledEvents;
 
 /**
@@ -67,6 +74,8 @@ import static org.logstash.config.ir.compiler.Utils.copyNonCancelledEvents;
  * {@code filter}, {@code output} or an {@code if} condition.
  */
 public final class CompiledPipeline {
+
+    private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
@@ -168,6 +177,7 @@ public final class CompiledPipeline {
      * @return CompiledPipeline.CompiledExecution the compiled pipeline
      */
     public CompiledPipeline.CompiledExecution buildExecution(boolean orderedExecution) {
+        LOGGER.info("Pipeline executes in {} mode", orderedExecution ? "ordered" : "unordered");
         return orderedExecution
             ? new CompiledPipeline.CompiledOrderedExecution()
             : new CompiledPipeline.CompiledUnorderedExecution();
@@ -320,25 +330,35 @@ public final class CompiledPipeline {
 
         @Override
         public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
-           return compute(batch.events(), flush, shutdown);
+            startWorkerSpans(batch.events());
+            int result = compute(batch.events(), flush, shutdown);
+            stopWorkerSpans(batch.events());
+            return result;
         }
 
+        @SuppressWarnings({"unchecked"})
         @Override
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             if (!batch.isEmpty()) {
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
+                final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+                final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
+                    startSpans(filterBatch, "pipeline.filters");
                     _compute(filterBatch, outputBatch, flush, shutdown);
+                    stopSpans(filterBatch, "pipeline.filters");
                 }
+                startSpans(outputBatch, "pipeline.outputs");
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                stopSpans(outputBatch, "pipeline.outputs");
                 return outputBatch.size();
             } else if (flush || shutdown) {
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+                final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
+                startSpans(outputBatch, "pipeline.outputs");
                 compiledOutputs.compute(outputBatch, flush, shutdown);
+                stopSpans(outputBatch, "pipeline.outputs");
                 return outputBatch.size();
             }
             return 0;
@@ -351,6 +371,22 @@ public final class CompiledPipeline {
         }
     }
 
+    private void stopWorkerSpans(Collection<RubyEvent> events) {
+        for (RubyEvent event : events) {
+            Event javaEvent = event.getEvent();
+            javaEvent.endSpan("worker");
+        }
+    }
+
+    private void startWorkerSpans(Collection<RubyEvent> events) {
+        for (RubyEvent event : events) {
+            Event javaEvent = event.getEvent();
+            Span span = tracer.spanBuilder("worker")
+                    .startSpan();
+            javaEvent.associateSpan(span, "worker");
+        }
+    }
+
     public final class CompiledUnorderedExecution extends CompiledExecution {
 
         @Override
@@ -358,14 +394,22 @@ public final class CompiledPipeline {
             return compute(batch.events(), flush, shutdown);
         }
 
+        @SuppressWarnings({"unchecked"})
         @Override
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            startWorkerSpans(batch);
+
+            startSpans(batch, "pipeline.filters");
             // we know for now this comes from batch.collection() which returns a LinkedHashSet
             final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
+            stopSpans(batch, "pipeline.filters");
+            final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
+            startSpans(outputBatch, "pipeline.outputs");
             compiledOutputs.compute(outputBatch, flush, shutdown);
+            stopSpans(batch, "pipeline.outputs");
+            stopWorkerSpans(batch);
             return outputBatch.size();
         }
     }
@@ -575,6 +619,27 @@ public final class CompiledPipeline {
                     }
                 }
             ).collect(Collectors.toList());
+        }
+    }
+
+    private static void stopSpans(Collection<RubyEvent> batch, String pipelinePhase) {
+        for (RubyEvent event : batch) {
+            Event javaEvent = event.getEvent();
+            javaEvent.endSpan(pipelinePhase);
+        }
+    }
+
+    @SuppressWarnings("try")
+    private static void startSpans(Collection<RubyEvent> batch, String pipelinePhase) {
+        for (RubyEvent event : batch) {
+            Event javaEvent = event.getEvent();
+            Span workerSpan = javaEvent.spanForContext("worker");
+            try (Scope scope = workerSpan.makeCurrent()) {
+                Span span = tracer.spanBuilder(pipelinePhase)
+                        .setParent(Context.current())
+                        .startSpan();
+                javaEvent.associateSpan(span, pipelinePhase);
+            }
         }
     }
 }
