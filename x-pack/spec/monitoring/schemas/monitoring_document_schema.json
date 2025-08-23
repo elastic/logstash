@@ -9,6 +9,26 @@
         "successes": { "type": "number" }
       }
     },
+    "batch": {
+      "type": "object",
+      "properties": {
+        "event_count": {
+          "type": "object",
+          "require": [
+            "p75",
+            "p90"
+          ],
+          "properties": {
+            "p75": {
+              "type": "number"
+            },
+            "p90": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
     "events": {
       "type": "object",
       "required": ["filtered", "in", "duration_in_millis", "out"],
