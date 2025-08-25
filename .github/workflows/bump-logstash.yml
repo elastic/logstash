@@ -1,0 +1,118 @@
+---
+name: Bump Logstash Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      logstash_version:
+        description: 'Logstash version'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create updatecli configuration
+        run: |
+          cat > updatecli.yml << 'EOF'
+          name: Update versions.yml
+          
+          sources:
+            logstash_version:
+              kind: shell
+              spec:
+                command: echo "${{ github.event.inputs.logstash_version }}"
+          
+          targets:
+            update_logstash_version:
+              name: Update logstash version in versions.yml
+              kind: yaml
+              spec:
+                file: versions.yml
+                key: $.logstash
+              sourceid: logstash_version
+            
+            update_logstash_core_version:
+              name: Update logstash-core version in versions.yml
+              kind: yaml
+              spec:
+                file: versions.yml
+                key: $.logstash-core
+              sourceid: logstash_version
+          
+          ---
+          name: Update lock file
+          
+          sources:
+            logstash_version:
+              kind: shell
+              spec:
+                command: echo "${{ github.event.inputs.logstash_version }}"
+          
+          conditions:
+            check_lockfile_exists:
+              name: Check if lockfile exists
+              kind: shell
+              disablesourceinput: true
+              spec:
+                command: test -f Gemfile.jruby-3.1.lock.release
+          
+          targets:
+            update_gemfile_lock_dependency:
+              name: Update logstash-core dependency
+              kind: file
+              spec:
+                file: Gemfile.jruby-3.1.lock.release
+                matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
+                replacepattern: 'logstash-core (= ${{ github.event.inputs.logstash_version }}'
+              sourceid: logstash_version
+            
+            update_gemfile_lock_spec:
+              name: Update logstash-core spec
+              kind: file
+              spec:
+                file: Gemfile.jruby-3.1.lock.release
+                matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
+                replacepattern: 'logstash-core (${{ github.event.inputs.logstash_version }}-java)'
+              sourceid: logstash_version
+          EOF
+
+      - name: Run updatecli
+        uses: updatecli/updatecli-action@v2
+        with:
+          command: apply
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
+          git config --global user.name "logstashmachine"
+
+      - name: Create branch and commit changes
+        run: |
+          echo "T=$(date +%s)" >> $GITHUB_ENV
+          echo "BRANCH=bump-logstash-${{ github.event.inputs.logstash_version }}-${T}" >> $GITHUB_ENV
+          git checkout -b $BRANCH
+          git add .
+          git status
+          if [[ -z $(git status --porcelain) ]]; then echo "No changes. We're done."; exit 0; fi
+          git commit -m "Bump loggstash version: ${{ github.event.inputs.logstash_version }}" -a
+          git push origin $BRANCH
+
+      - name: Create Pull Request
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -X POST \
+               -d "{
+                 \"title\": \"Bump logstash version: ${{ github.event.inputs.logstash_version }}\",
+                 \"head\": \"${BRANCH}\",
+                 \"base\": \"${{ github.ref_name }}\",
+                 \"body\": \"Automated update of logstash versions to ${{ github.event.inputs.logstash_version }}\"
+               }" \
+               https://api.github.com/repos/${{ github.repository }}/pulls
