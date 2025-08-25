@@ -122,6 +122,33 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.0.6 [logstash-9.0.6-release-notes]
+
+### Features and enhancements [logstash-9.0.6-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.0.6
+
+=== Logstash Commits between 9.0 and 9.0.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.5..9.0"
+
+c90f08599 - (HEAD -> 9.0, origin/9.0) Update patch plugin versions in gemfile lock (#18003) (6 days ago) <github-actions[bot]>
+c025d9455 - [9.0] (backport #17978) Start all exhastive tests in parallel (#17985) (11 days ago) <mergify[bot]>
+eab85924e - version: bump to 9.0.6 (#17968) (13 days ago) <Rye Biesemeyer>
+7ee0b3704 - Replace reference to Elasticsearch Services with Elastic Cloud Hosted (#17946) (#17962) (13 days ago) <mergify[bot]>
+81354e98c - Release notes for 9.0.5 (#17951) (2 weeks ago) <Rye Biesemeyer>
+3d76fd13b - [9.0] (backport #17924) Move logstash release information to `.ci` (#17941) (2 weeks ago) <mergify[bot]>
+fd83a3429 - pipeline logging: add cause chain when logging (#16677) (#17934) (2 weeks ago) <mergify[bot]>
+5d0f2fba3 - Update creating-logstash-pipeline.md (#17926) (#17928) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.0.5..9.0 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.0.6-changes]
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
