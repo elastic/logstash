@@ -145,7 +145,7 @@ GEM
       pleaserun (~> 0.0.29)
       rexml
       stud
-    fugit (1.11.1)
+    fugit (1.11.2)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
     gelfd2 (0.4.1)
@@ -781,7 +781,7 @@ GEM
     rspec-mocks (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.4)
+    rspec-support (3.13.5)
     rspec-wait (1.0.2)
       rspec (>= 3.4)
     rubocop (1.74.0)
