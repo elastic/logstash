@@ -1,4 +1,4 @@
-name: Update JDK Version [STUB]
+name: Stub GH action for devoping new workflows [STUB]
 on:
   workflow_dispatch:
   pull_request:
