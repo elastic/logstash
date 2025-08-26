@@ -159,8 +159,8 @@ steps:
       source .buildkite/scripts/common/vm-agent.sh
       ./ci/observabilitySREsmoke_tests.sh
 
-  - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-4"
-    key: "integration-tests-fips-part-1-of-4"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-6"
+    key: "integration-tests-fips-part-1-of-6"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
@@ -174,10 +174,10 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 0 4
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 0 6
 
-  - label: ":lab_coat: Integration Tests - FIPS mode / part 2-of-4"
-    key: "integration-tests-fips-part-2-of-4"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 2-of-6"
+    key: "integration-tests-fips-part-2-of-6"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
@@ -191,10 +191,10 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 1 4
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 1 6
 
-  - label: ":lab_coat: Integration Tests - FIPS mode / part 3-of-4"
-    key: "integration-tests-fips-part-3-of-4"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 3-of-6"
+    key: "integration-tests-fips-part-3-of-6"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
@@ -208,10 +208,10 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split  2 4
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 2 6
 
-  - label: ":lab_coat: Integration Tests - FIPS mode / part 4-of-4"
-    key: "integration-tests-fips-part-4-of-4"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 4-of-6"
+    key: "integration-tests-fips-part-4-of-6"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
@@ -225,10 +225,44 @@ steps:
       set -euo pipefail
 
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
-      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split  3 4
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 3 6
 
-  - label: ":lab_coat: Integration Tests / part 1-of-4"
-    key: "integration-tests-part-1-of-3"
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 5-of-6"
+    key: "integration-tests-fips-part-5-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 6-of-6"
+    key: "integration-tests-fips-part-6-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 5 6
+
+  - label: ":lab_coat: Integration Tests / part 1-of-6"
+    key: "integration-tests-part-1-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -243,10 +277,10 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 0 4
+      ci/integration_tests.sh split 0 6
 
-  - label: ":lab_coat: Integration Tests / part 2-of-4"
-    key: "integration-tests-part-2-of-4"
+  - label: ":lab_coat: Integration Tests / part 2-of-6"
+    key: "integration-tests-part-2-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -261,10 +295,10 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 1 4
+      ci/integration_tests.sh split 1 6
 
-  - label: ":lab_coat: Integration Tests / part 3-of-4"
-    key: "integration-tests-part-3-of-4"
+  - label: ":lab_coat: Integration Tests / part 3-of-6"
+    key: "integration-tests-part-3-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -279,10 +313,10 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 2 4
+      ci/integration_tests.sh split 2 6
 
-  - label: ":lab_coat: Integration Tests / part 4-of-4"
-    key: "integration-tests-part-4-of-4"
+  - label: ":lab_coat: Integration Tests / part 4-of-6"
+    key: "integration-tests-part-4-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -297,10 +331,46 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 3 4
+      ci/integration_tests.sh split 3 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 1-of-4"
-    key: "integration-tests-qa-part-1-of-4"
+  - label: ":lab_coat: Integration Tests / part 5-of-6"
+    key: "integration-tests-part-5-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: Integration Tests / part 6-of-6"
+    key: "integration-tests-part-6-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/integration_tests.sh split 5 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 1-of-6"
+    key: "integration-tests-qa-part-1-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -316,10 +386,10 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 0 4
+      ci/integration_tests.sh split 0 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 2-of-4"
-    key: "integration-tests-qa-part-2-of-4"
+  - label: ":lab_coat: IT Persistent Queues / part 2-of-6"
+    key: "integration-tests-qa-part-2-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -335,10 +405,10 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 1 4
+      ci/integration_tests.sh split 1 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 3-of-4"
-    key: "integration-tests-qa-part-3-of-4"
+  - label: ":lab_coat: IT Persistent Queues / part 3-of-6"
+    key: "integration-tests-qa-part-3-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -354,10 +424,10 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 2 4
+      ci/integration_tests.sh split 2 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 4-of-4"
-    key: "integration-tests-qa-part-4-of-4"
+  - label: ":lab_coat: IT Persistent Queues / part 4-of-6"
+    key: "integration-tests-qa-part-4-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -373,7 +443,45 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 3 4
+      ci/integration_tests.sh split 3 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 5-of-6"
+    key: "integration-tests-qa-part-5-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as non root (logstash) user. UID is hardcoded in image.
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 6-of-6"
+    key: "integration-tests-qa-part-6-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as non root (logstash) user. UID is hardcoded in image.
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 5 6
 
   - label: ":lab_coat: x-pack unit tests"
     key: "x-pack-unit-tests"
