@@ -21,7 +21,23 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.1.2 [logstash-9.1.2-release-notes]
+=======
+## 9.0.6 [logstash-9.0.6-release-notes]
+
+### Features and enhancements [logstash-9.0.6-features-enhancements]
+
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17934](https://github.com/elastic/logstash/pull/17934)
+
+### Plugins [logstash-plugin-9.0.6-changes]
+
+No change to the plugins in this release.
+
+## 9.0.5 [logstash-9.0.5-release-notes]
+
+### Features and enhancements [logstash-9.0.5-features-enhancements]
+>>>>>>> 39316b10 (Release notes for 9.0.6 (#18028))
 
 No user-facing changes in Logstash core.
 
