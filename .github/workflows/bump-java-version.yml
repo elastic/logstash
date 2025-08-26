@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  update_jdk_version:
-    name: Update JDK Version
+  stub_job_name:
+    name: Stub Job
     runs-on: ubuntu-latest
     steps:
       - name: Stub step
