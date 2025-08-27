@@ -17,6 +17,9 @@ jobs:
   update-version:
     runs-on: ubuntu-latest
     steps:
+      - name: Install updatecli
+        uses: updatecli/updatecli-action@v2
+
       - uses: actions/checkout@v4
 
       - name: Create updatecli configuration
@@ -85,9 +88,7 @@ jobs:
           EOF
 
       - name: Run updatecli
-        uses: updatecli/updatecli-action@v2
-        with:
-          command: apply
+        run: updatecli apply --config updatecli.yml
 
       - name: Configure Git
         run: |
@@ -102,7 +103,7 @@ jobs:
       - name: Create branch and commit changes
         run: |
           git checkout -b $BRANCH
-          git add .
+          git add -u
           git status
           if [[ -z $(git status --porcelain) ]]; then echo "No changes. We're done."; exit 0; fi
           git commit -m "Bump loggstash version: ${{ github.event.inputs.logstash_version }}" -a
