@@ -553,10 +553,8 @@ steps:
       docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
       docker run -e FEDRAMP_HIGH_MODE=true test-runner-image x-pack/ci/integration_tests.sh
 
-  - wait: ~
-    continue_on_failure: true
-
   - label: "🏁 Annotate JUnit results"
+    depends_on: "java-unit-tests"
     # the plugin requires docker run, hence the use of a VM
     agents:
       provider: gcp
