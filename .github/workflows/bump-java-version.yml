@@ -1,0 +1,19 @@
+name: Stub GH action for devoping new workflows [STUB]
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  stub_job_name:
+    name: Stub Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stub step
+        run: |
+          echo "Stub to iterate via PR"
+      
