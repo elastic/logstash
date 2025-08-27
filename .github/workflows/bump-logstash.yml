@@ -94,10 +94,13 @@ jobs:
           git config --global user.email "43502315+logstashmachine@users.noreply.github.com"
           git config --global user.name "logstashmachine"
 
+      - name: Set branch name
+        run: |
+          T=$(date +%s)
+          echo "BRANCH=bump-logstash-${{ github.event.inputs.logstash_version }}-${T}" >> $GITHUB_ENV
+
       - name: Create branch and commit changes
         run: |
-          echo "T=$(date +%s)" >> $GITHUB_ENV
-          echo "BRANCH=bump-logstash-${{ github.event.inputs.logstash_version }}-${T}" >> $GITHUB_ENV
           git checkout -b $BRANCH
           git add .
           git status
