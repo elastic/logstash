@@ -98,33 +98,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-3]]
 === Logstash 8.19.3 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.3
+[[notable-8-19-3]]
+==== Notable issues fixed
 
-=== Logstash Commits between 8.19 and 8.19.2
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.2..8.19"
-
-aa50a4669 - (HEAD -> 8.19, origin/8.19) Add stub workflow file to iterate on (#17993) (#18044) (3 minutes ago) <mergify[bot]>
-457517398 - Update patch plugin versions in gemfile lock (#18025) (2 days ago) <github-actions[bot]>
-68e56c121 - Update 8.19 observabilitySRE testing based on using 9.2 stack (#18014) (6 days ago) <Cas Donoghue>
-119574343 - Harmonize observability sre acceptance (#17781) (9 days ago) <Cas Donoghue>
-b6b11230d - Start all exhastive tests in parallel (#17978) (#17984) (13 days ago) <mergify[bot]>
-f8273efe1 - Bump logstash version to 8.19.3 (#17955) (2 weeks ago) <Cas Donoghue>
-134e97d1b - Add fips config to jvm.options for observabilitySRE (#17958) (#17971) (2 weeks ago) <mergify[bot]>
-00f1b03eb - Remove release note (#17965) (2 weeks ago) <Cas Donoghue>
-9e642339c - Include the prune filter for observabilitySRE image (#17957) (#17967) (2 weeks ago) <mergify[bot]>
-1933ef62c - Release notes for 8.19.2 (#17954) (2 weeks ago) <github-actions[bot]>
-8093fab7d - [8.19] (backport #17924) Move logstash release information to `.ci` (#17940) (3 weeks ago) <mergify[bot]>
-803402b9e - pipeline logging: add cause chain when logging (#16677) (#17933) (3 weeks ago) <mergify[bot]>
-df54b8e49 - 8.19 release notes rendering fix (#17929) (3 weeks ago) <Edu González de la Herrán>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.2..8.19 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. https://github.com/elastic/logstash/pull/17933[#17933]
 
 ==== Plugins
+
+No change to the plugins in this release.
 
 [[logstash-8-19-2]]
 === Logstash 8.19.2 Release Notes
