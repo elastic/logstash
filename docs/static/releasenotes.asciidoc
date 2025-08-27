@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-6,Logstash 8.18.6>>
 * <<logstash-8-18-5,Logstash 8.18.5>>
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
@@ -91,6 +92,23 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-6]]
+=== Logstash 8.18.6 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.6
+
+=== Logstash Commits between 8.18 and 8.18.6
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.6..8.18"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.6..8.18 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-18-5]]
 === Logstash 8.18.5 Release Notes
