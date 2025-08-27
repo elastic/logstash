@@ -1,0 +1,60 @@
+name: Update versions.yml
+
+sources:
+  logstash_version:
+    kind: shell
+    spec:
+      command: echo "999.99.9"
+
+targets:
+  update_logstash_version:
+    name: Update logstash version in versions.yml
+    kind: yaml
+    spec:
+      file: versions.yml
+      key: $.logstash
+    sourceid: logstash_version
+  
+  update_logstash_core_version:
+    name: Update logstash-core version in versions.yml
+    kind: yaml
+    spec:
+      file: versions.yml
+      key: $.logstash-core
+    sourceid: logstash_version
+
+---
+name: Update lock file
+
+sources:
+  logstash_version:
+    kind: shell
+    spec:
+      command: echo "999.99.9"
+
+conditions:
+  check_lockfile_exists:
+    name: Check if lockfile exists
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: test -f Gemfile.jruby-3.1.lock.release
+
+targets:
+  update_gemfile_lock_dependency:
+    name: Update logstash-core dependency
+    kind: file
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
+      replacepattern: 'logstash-core (= 999.99.9'
+    sourceid: logstash_version
+  
+  update_gemfile_lock_spec:
+    name: Update logstash-core spec
+    kind: file
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
+      replacepattern: 'logstash-core (999.99.9-java)'
+    sourceid: logstash_version
