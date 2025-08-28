@@ -155,6 +155,7 @@ steps:
     command: |
       set -euo pipefail
       source .buildkite/scripts/common/vm-agent.sh
+      export ARCH="x86_64"
       ./ci/observabilitySREsmoke_tests.sh
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-6"
