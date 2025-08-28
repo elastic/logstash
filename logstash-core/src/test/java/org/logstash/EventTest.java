@@ -27,13 +27,16 @@ import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +45,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -141,6 +145,24 @@ public final class EventTest extends RubyTestBase {
         final Event deserialized = Event.deserialize(e.serialize());
         assertEquals(bi, deserialized.getField("bi"));
         assertEquals(bd, deserialized.getField("bd"));
+    }
+
+    @Test
+    public void deserializeStringrefExtensionEnabled() throws Exception {
+        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-enabled.annotated-cbor.txt");
+        Event event = Event.deserialize(stringrefCBOR);
+        event.getField("[event][original]");
+        assertEquals("stringref", event.getField("test"));
+        assertEquals(true, event.getField("[extension][enabled]"));
+    }
+
+    @Test
+    public void deserializeStringrefExtensionDisabled() throws Exception {
+        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-disabled.annotated-cbor.txt");
+        Event event = Event.deserialize(stringrefCBOR);
+        event.getField("[event][original]");
+        assertEquals("stringref", event.getField("test"));
+        assertEquals(true, event.getField("[extension][enabled]"));
     }
 
     @Test
@@ -564,5 +586,20 @@ public final class EventTest extends RubyTestBase {
 
         assertNull(event.getField(Event.TAGS_FAILURE));
         assertEquals(event.getField("[tags]"), List.of("foo", "bar"));
+    }
+
+    static byte[] loadAnnotatedCBORFixture(String name) throws IOException {
+        try (InputStream resourceAsStream = EventTest.class.getResourceAsStream(name)) {
+            assertNotNull(resourceAsStream);
+
+            String annotated = new String(resourceAsStream.readAllBytes(), StandardCharsets.UTF_8);
+            // annotated CBOR: strip #-initiated line comments, then strip whitespace to get hex
+            String hexBytes = annotated.replaceAll("#.*(\\n|$)", "").replaceAll("\\s", "");
+
+            // result should be even number of hex digits
+            assert hexBytes.matches("(?i:[0-9a-f]{2})*");
+
+            return HexFormat.of().parseHex(hexBytes);
+        }
     }
 }
