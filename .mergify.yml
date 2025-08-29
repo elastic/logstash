@@ -120,3 +120,15 @@ pull_request_rules:
       backport:
         branches:
           - "9.1"
+
+  - name: forwardport docs changes to main
+    conditions:
+      - merged
+      - label=docs
+      - files~=^docs/
+      - base~=^\d+\.
+    actions:
+      backport:
+        branches:
+          - main
+        title: "[{{ destination_branch }}] (forwardport #{{ number }}) {{ title }}"
