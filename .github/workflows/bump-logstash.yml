@@ -1,4 +1,6 @@
-name: Stub GH action for devoping new workflows [STUB]
+---
+name: Bump Logstash Version
+
 on:
   workflow_dispatch:
     inputs:
@@ -6,12 +8,10 @@ on:
         description: 'Logstash version'
         required: true
         type: string
-  pull_request:
-    types: [reopened]
 
 permissions:
-  pull-requests: write
   contents: write
+  pull-requests: write
 
 jobs:
   update-version:
