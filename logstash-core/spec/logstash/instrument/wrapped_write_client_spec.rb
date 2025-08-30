@@ -113,7 +113,7 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024) }
+    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024, "none") }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -125,7 +125,7 @@ describe LogStash::WrappedWriteClient do
 
   context "WrappedAckedQueue" do
     let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::WrappedAckedQueue.new(path, 1024, 10, 1024, 1024, false, 4096) }
+    let(:queue) { LogStash::WrappedAckedQueue.new(path, 1024, 10, 1024, 1024, false, 4096, "none") }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
