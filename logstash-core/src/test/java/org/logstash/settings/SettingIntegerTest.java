@@ -41,6 +41,11 @@ public class SettingIntegerTest {
         assertEquals(Integer.valueOf(100), sut.coerce(100L));
     }
 
+    @Test
+    public void givenWhitespaceStringWithIntegerCoerceCastIntoInteger() {
+        assertEquals(Integer.valueOf(100), sut.coerce(" 100 "));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void givenDoubleInstanceThenCoerceThrowsException() {
         sut.coerce(1.1);

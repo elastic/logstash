@@ -52,6 +52,7 @@ class Bootstrap:
         return release_version
 
     def install_plugin(self, plugin_path: str) -> None:
+        print("Installing logstash-integration-failure_injector plugin")
         util.run_or_raise_error(
             ["bin/logstash-plugin", "install", plugin_path],
             f"Failed to install {plugin_path}")
@@ -71,16 +72,17 @@ class Bootstrap:
         # --config.reload.automatic is to make instance active
         # it is helpful when testing crash pipeline cases
         config_path = os.getcwd() + "/.buildkite/scripts/health-report-tests/config"
-        process = subprocess.Popen(["bin/logstash", "--config.reload.automatic", "--path.settings", config_path,
-                                    "-w 1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=False)
+        process = subprocess.Popen(["bin/logstash", "--config.reload.automatic", "--path.settings", config_path],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=False)
         if process.poll() is not None:
             print(f"Logstash failed to run, check the the config and logs, then rerun.")
             return None
 
+        print(f"Logstash started running with PID: {process.pid}.")
+
         # Read stdout and stderr in real-time
-        logs = []
         for stdout_line in iter(process.stdout.readline, ""):
-            logs.append(stdout_line.strip())
+            print(stdout_line.strip())
             # we don't wait for Logstash fully start as we also test slow pipeline start scenarios
             if full_start_required is False and "Starting pipeline" in stdout_line:
                 break
@@ -88,10 +90,7 @@ class Bootstrap:
                 break
             if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash couldn't spin up.")
-                print(logs)
                 return None
-
-        print(f"Logstash is running with PID: {process.pid}.")
         return process
 
     def stop_logstash(self, process: subprocess.Popen):
@@ -102,7 +101,7 @@ class Bootstrap:
             if "Logstash shut down" in stdout_line or "Logstash stopped" in stdout_line:
                 print(f"Logstash stopped.")
                 return None
-            # shudown watcher keep running, we should be good with considering time spent
+            # shutdown watcher keep running, we should be good with considering time spent
             if time.time() - start_time > 60:
                 print(f"Logstash didn't stop in 1min, sending SIGTERM signal.")
                 process.kill()

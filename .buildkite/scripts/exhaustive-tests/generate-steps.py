@@ -183,7 +183,7 @@ def fips_test_runner_step() -> dict[str, typing.Any]:
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
-./gradlew observabilitySREacceptanceTests --stacktrace
+./ci/observabilitySREacceptance_tests.sh
 """),
     }
     return step
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     structure = {"steps": []}
 
     structure["steps"].append({
-        "group": "Testing Phase",
+        "group": "Pull request suite",
         "key": "testing-phase",
         **testing_phase_steps(),
     })
@@ -210,35 +210,30 @@ if __name__ == "__main__":
     structure["steps"].append({
             "group": "Compatibility / Linux",
             "key": "compatibility-linux",
-            "depends_on": "testing-phase",
             "steps": compat_linux_steps,
     })
 
     structure["steps"].append({
             "group": "Compatibility / Windows",
             "key": "compatibility-windows",
-            "depends_on": "testing-phase",
             "steps": [compat_windows_step(imagesuffix=windows_test_os)],
     })
 
     structure["steps"].append({
             "group": "Acceptance / Packaging",
             "key": "acceptance-packaging",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_linux_steps(),
     })
 
     structure["steps"].append({
             "group": "Acceptance / Docker",
             "key": "acceptance-docker",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_docker_steps(),
     })
 
     structure["steps"].append({
         "group": "Observability SRE Acceptance Tests",
         "key": "acceptance-observability-sre",
-        "depends_on": ["testing-phase"],
         "steps": [fips_test_runner_step()],
     })
 

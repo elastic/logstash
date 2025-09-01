@@ -37,7 +37,7 @@ For more information about the available filters, see [Filter Plugins](logstash-
 
 Outputs are the final phase of the Logstash pipeline. An event can pass through multiple outputs, but once all output processing is complete, the event has finished its execution. Some commonly used outputs include:
 
-* **elasticsearch**: send event data to Elasticsearch. If you’re planning to save your data in an efficient, convenient, and easily queryable format…​ Elasticsearch is the way to go. Period. Yes, we’re biased :)
+* **elasticsearch**: send event data to Elasticsearch. If you’re planning to save your data in an efficient, convenient, and easily queryable format… Elasticsearch is the way to go. Period. Yes, we’re biased :)
 * **file**: write event data to a file on disk.
 * **graphite**: send event data to graphite, a popular open source tool for storing and graphing metrics. [http://graphite.readthedocs.io/en/latest/](http://graphite.readthedocs.io/en/latest/)
 * **statsd**: send event data to statsd, a service that "listens for statistics, like counters and timers, sent over UDP and sends aggregates to one or more pluggable backend services". If you’re already using statsd, this could be useful for you!
