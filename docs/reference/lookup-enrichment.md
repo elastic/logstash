@@ -71,12 +71,14 @@ $$$geoip-def$$$geoip filter
 
     After the geoip filter is applied, the event will be enriched with geoip fields. For example:
 
-    ```json
-    filter {
-      geoip {
-        source => "clientip"
-      }
-    }
+/ Update "after" example
+
+    ```json 
+    filter { 
+      geoip { 
+        source => "clientip" 
+      } 
+    } 
     ```
 
 
