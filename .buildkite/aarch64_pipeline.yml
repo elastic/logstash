@@ -133,7 +133,7 @@ steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
         command:
           set -euo pipefail
-          
+          export ARCH="aarch64"
           source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
         retry:
           automatic:
