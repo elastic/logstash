@@ -163,6 +163,7 @@ def acceptance_docker_steps()-> list[typing.Any]:
             "command": LiteralScalarString(f"""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
+export ARCH="x86_64"
 ci/docker_acceptance_tests.sh {flavor}"""),
             "retry": {"automatic": [{"limit": 3}]},
         })
