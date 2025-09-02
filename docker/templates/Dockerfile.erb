@@ -19,13 +19,6 @@
   <%   base_image = 'redhat/ubi9-minimal:latest' -%>
   <%   go_image = 'golang:1.25' -%>
   <%   package_manager = 'microdnf' -%>
-<<<<<<< HEAD
-=======
-<% elsif image_flavor == 'observability-sre' -%>
-  <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
-  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
-  <%   package_manager = 'apk' -%>
->>>>>>> 398a66cb (upgrade golang to 1.25 (#18083))
 <% else -%>
   <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
   <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
