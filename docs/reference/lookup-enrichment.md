@@ -65,17 +65,26 @@ $$$geoip-def$$$geoip filter
     filter {
       geoip {
         source => "clientip"
+        target => "[source]"
       }
     }
     ```
 
     After the geoip filter is applied, the event will be enriched with geoip fields. For example:
 
-    ```json
-    filter {
-      geoip {
-        source => "clientip"
-      }
+    ```json 
+    "source" => {
+      "geo" => {
+        "country_name" => "France",
+        "country_iso_code" => "FR",
+        "continent_code" => "EU",
+        "location" => {
+          "lon" => 2.3387,
+          "lat" => 48.8582
+        },
+        "timezone" => "Europe/Paris"
+      },
+      "ip" => "82.67.74.30"
     }
     ```
 
