@@ -561,12 +561,14 @@ namespace "artifact" do
 
   def write_to_tar(tar, path, path_in_tar)
     stat = File.lstat(path)
+    # in the off-chance that mtime returns nil we don't want nil to be interpreted as epoch, so fall back to Time.now
+    mtime = (stat.mtime || Time.now).to_i
     if stat.directory?
-      tar.mkdir(path_in_tar, :mode => stat.mode)
+      tar.mkdir(path_in_tar, :mode => stat.mode, :mtime => mtime)
     elsif stat.symlink?
-      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
+      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode, :mtime => mtime)
     else
-      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
+      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size, :mtime => mtime) do |io|
         File.open(path, 'rb') do |fd|
           chunk = nil
           size = 0
