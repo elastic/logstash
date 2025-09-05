@@ -33,11 +33,15 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
+=======
+import java.util.stream.Collectors;
+>>>>>>> 6a51c82e (test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18124))
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
@@ -149,7 +153,7 @@ public final class EventTest extends RubyTestBase {
 
     @Test
     public void deserializeStringrefExtensionEnabled() throws Exception {
-        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-enabled.annotated-cbor.txt");
+        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-enabled.annotated-cbor.asc");
         Event event = Event.deserialize(stringrefCBOR);
         event.getField("[event][original]");
         assertEquals("stringref", event.getField("test"));
@@ -158,7 +162,7 @@ public final class EventTest extends RubyTestBase {
 
     @Test
     public void deserializeStringrefExtensionDisabled() throws Exception {
-        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-disabled.annotated-cbor.txt");
+        byte[] stringrefCBOR = loadAnnotatedCBORFixture("stringref-disabled.annotated-cbor.asc");
         Event event = Event.deserialize(stringrefCBOR);
         event.getField("[event][original]");
         assertEquals("stringref", event.getField("test"));
@@ -627,9 +631,13 @@ public final class EventTest extends RubyTestBase {
         try (InputStream resourceAsStream = EventTest.class.getResourceAsStream(name)) {
             assertNotNull(resourceAsStream);
 
-            String annotated = new String(resourceAsStream.readAllBytes(), StandardCharsets.UTF_8);
-            // annotated CBOR: strip #-initiated line comments, then strip whitespace to get hex
-            String hexBytes = annotated.replaceAll("#.*(\\n|$)", "").replaceAll("\\s", "");
+            final String annotatedFixture = new String(resourceAsStream.readAllBytes(), StandardCharsets.US_ASCII);
+            final String hexBytes = annotatedFixture.lines()
+                    // strip #-prefixed annotations
+                    .map(line -> line.split("#", 2)[0])
+                    // strip all remaining whitespace
+                    .map(line -> line.replaceAll("\\s", ""))
+                    .collect(Collectors.joining());
 
             // result should be even number of hex digits
             assert hexBytes.matches("(?i:[0-9a-f]{2})*");
