@@ -42,5 +42,8 @@ gem "murmurhash3", "= 0.1.6" # Pins until version 0.1.7-java is released
 gem "date", "= 3.3.3"
 gem "thwait"
 gem "bigdecimal", "~> 3.1"
+<<<<<<< HEAD
 gem "cgi", "~> 0.3.7" # Pins until a new jruby version with updated cgi is released
+=======
+>>>>>>> fe4a735c (Update JRuby version to 9.4.14.0 (#18080))
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
