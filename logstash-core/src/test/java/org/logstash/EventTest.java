@@ -33,15 +33,12 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
+import java.util.stream.Collectors;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
 import org.jruby.RubyTime;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.junit.Test;
-=======
-import java.util.stream.Collectors;
->>>>>>> 6a51c82e (test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18124))
 
 import static net.javacrumbs.jsonunit.JsonAssert.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.is;
