@@ -27,6 +27,14 @@ actions:
         ### What
         Update logstash version
 
+conditions:
+  lockfile_exists:
+    name: Check if lockfile exists
+    kind: file
+    disablesourceinput: true
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+
 targets:
   update_logstash_version:
     name: Update logstash version in versions.yml
@@ -54,14 +62,6 @@ targets:
       file: Gemfile.jruby-3.1.lock.release
       matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
       replacepattern: 'logstash-core (= {{ requiredEnv "LOGSTASH_VERSION" }}'
-      forcecreate: false
-    conditions:
-      check_lockfile_exists:
-        name: Check if lockfile exists
-        kind: shell
-        disablesourceinput: true
-        spec:
-          command: test -f Gemfile.jruby-3.1.lock.release
   
   update_gemfile_lock_spec:
     name: Update logstash-core spec in lockfile
@@ -71,11 +71,3 @@ targets:
       file: Gemfile.jruby-3.1.lock.release
       matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
       replacepattern: 'logstash-core ({{ requiredEnv "LOGSTASH_VERSION" }}-java)'
-      forcecreate: false
-    conditions:
-      check_lockfile_exists:
-        name: Check if lockfile exists
-        kind: shell
-        disablesourceinput: true
-        spec:
-          command: test -f Gemfile.jruby-3.1.lock.release
