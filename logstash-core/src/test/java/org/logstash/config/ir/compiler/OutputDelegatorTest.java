@@ -187,7 +187,9 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
             outputDelegator.doClose(RUBY.getCurrentContext());
             assertEquals(1, instance.getCloseCallCount());
 
-            outputDelegator.multiReceive(RUBY.newArray(0));
+            RubyArray outputDelegatorEvents = RUBY.newArray(1);
+            outputDelegatorEvents.add(0, new Event());
+            outputDelegator.multiReceive(outputDelegatorEvents);
             assertEquals(1, instance.getMultiReceiveCallCount());
         }
 
