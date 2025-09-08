@@ -1,6 +1,9 @@
-name: Stub GH action for devoping new workflows [STUB]
+
+name: DOES THIS WORK?
+
 on:
   workflow_dispatch:
+    inputs:
       logstash_version:
         description: 'Logstash version'
         required: true
