@@ -49,10 +49,12 @@ targets:
   update_gemfile_lock_dependency:
     name: Update logstash-core dependency in lockfile
     kind: file
+    disablesourceinput: true
     spec:
       file: Gemfile.jruby-3.1.lock.release
       matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
       replacepattern: 'logstash-core (= {{ requiredEnv "LOGSTASH_VERSION" }}'
+      forcecreate: false
     conditions:
       check_lockfile_exists:
         name: Check if lockfile exists
@@ -64,10 +66,12 @@ targets:
   update_gemfile_lock_spec:
     name: Update logstash-core spec in lockfile
     kind: file
+    disablesourceinput: true
     spec:
       file: Gemfile.jruby-3.1.lock.release
       matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
       replacepattern: 'logstash-core ({{ requiredEnv "LOGSTASH_VERSION" }}-java)'
+      forcecreate: false
     conditions:
       check_lockfile_exists:
         name: Check if lockfile exists
