@@ -1,0 +1,9 @@
+scm:
+  enabled: true
+  owner: elastic
+  repository: logstash
+  commitusingapi: true
+  # begin updatecli-compose policy values
+  user: 'github-actions[bot]'
+  email: '41898282+github-actions[bot]@users.noreply.github.com'
+  # end updatecli-compose policy values

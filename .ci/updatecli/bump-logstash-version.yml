@@ -1,0 +1,75 @@
+---
+name: Update logstash version
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      branch: '{{ requiredEnv "BRANCH_NAME" }}'
+      commitusingapi: true
+      force: false
+
+actions:
+  default:
+    title: 'Bump logstash version {{ requiredEnv "LOGSTASH_VERSION" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      automerge: false
+      labels:
+      - automation
+      description: |-
+        ### What
+        Update logstash version
+
+conditions:
+  check_lockfile_exists:
+    name: Check if lockfile exists
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: test -f Gemfile.jruby-3.1.lock.release
+
+targets:
+  update_logstash_version:
+    name: Update logstash version in versions.yml
+    kind: yaml
+    disablesourceinput: true
+    spec:
+      file: versions.yml
+      key: $.logstash
+      value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
+  
+  update_logstash_core_version:
+    name: Update logstash-core version in versions.yml
+    kind: yaml
+    disablesourceinput: true
+    spec:
+      file: versions.yml
+      key: $.logstash-core
+      value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
+
+  update_gemfile_lock_dependency:
+    name: Update logstash-core dependency in lockfile
+    kind: file
+    conditions:
+      - check_lockfile_exists
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
+      replacepattern: 'logstash-core (= {{ requiredEnv "LOGSTASH_VERSION" }}'
+  
+  update_gemfile_lock_spec:
+    name: Update logstash-core spec in lockfile
+    kind: file
+    conditions:
+      - check_lockfile_exists
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
+      replacepattern: 'logstash-core ({{ requiredEnv "LOGSTASH_VERSION" }}-java)'
