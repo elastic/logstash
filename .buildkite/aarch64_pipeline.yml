@@ -127,14 +127,15 @@ steps:
             - limit: 3
 
   - group: "Acceptance Phase"
-    depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
-        command:
+        command: |
           set -euo pipefail
+
+          source .buildkite/scripts/common/vm-agent.sh
           export ARCH="aarch64"
-          source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
+          ci/docker_acceptance_tests.sh {{matrix}}
         retry:
           automatic:
             - limit: 3
