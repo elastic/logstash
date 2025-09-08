@@ -116,6 +116,9 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
     public IRubyObject multiReceive(final IRubyObject events) {
         @SuppressWarnings("rawtypes")
         final RubyArray batch = (RubyArray) events;
+        if (batch.isEmpty()) {
+            return this;
+        }
         final int count = batch.size();
         eventMetricIn.increment((long) count);
         eventMetricTime.time(() -> doOutput(batch));

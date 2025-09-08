@@ -129,6 +129,9 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public RubyArray multiFilter(final IRubyObject input) {
         RubyArray batch = (RubyArray) input;
+        if (batch.isEmpty()) {
+            return batch;
+        }
         eventMetricIn.increment((long) batch.size());
         final RubyArray result = eventMetricTime.time(() -> doMultiFilter(batch));
         int count = 0;

@@ -35,6 +35,10 @@ public class WorkerObserver {
     }
 
     <E extends Exception> int observeExecutionComputation(final QueueBatch batch, final co.elastic.logstash.api.TimerMetric.ExceptionalSupplier<Integer,E> supplier) throws E {
+        if (batch.filteredSize() == 0 && supplier.get() == 0) {
+            return 0;
+        }
+
         return executeWithTimers(() -> {
             final int outputCount = supplier.get();
             final int filteredCount = batch.filteredSize();
