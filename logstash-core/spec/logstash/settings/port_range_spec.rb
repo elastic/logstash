@@ -27,12 +27,12 @@ describe LogStash::Setting::PortRange do
     end
 
     it "returns a range" do
-      expect(subject.value).to eq(9000..9000)
+      expect(subject.value).to eq(::LogStash.as_java_range(9000..9000))
     end
 
     it "can update the range" do
       subject.set(10000)
-      expect(subject.value).to eq(10000..10000)
+      expect(subject.value).to eq(::LogStash.as_java_range(10000..10000))
     end
   end
 
@@ -48,12 +48,12 @@ describe LogStash::Setting::PortRange do
     end
 
     it "returns a range" do
-      expect(subject.value).to eq(9000..10000)
+      expect(subject.value).to eq(::LogStash.as_java_range(9000..10000))
     end
 
     it "can update the range" do
       subject.set("500-1000")
-      expect(subject.value).to eq(500..1000)
+      expect(subject.value).to eq(::LogStash.as_java_range(500..1000))
     end
   end
 
@@ -82,23 +82,23 @@ describe LogStash::Setting::PortRange do
   end
 
   context "When value is a range" do
-    subject { LogStash::Setting::PortRange.new("mynewtest", 9000..10000) }
+    subject { LogStash::Setting::PortRange.new("mynewtest", ::LogStash.as_java_range(9000..10000)) }
 
     it "accepts a ruby range as the default value" do
       expect { subject }.not_to raise_error
     end
 
     it "can update the range" do
-      subject.set(500..1000)
-      expect(subject.value).to eq(500..1000)
+      subject.set(::LogStash.as_java_range(500..1000))
+      expect(subject.value).to eq(::LogStash.as_java_range(500..1000))
     end
 
     it "refuses when then upper port is out of range" do
-      expect { LogStash::Setting::PortRange.new("mynewtest", 9000..1000000) }.to raise_error
+      expect { LogStash::Setting::PortRange.new("mynewtest", ::LogStash.as_java_range(9000..1000000)) }.to raise_error
     end
 
     it "raise an exception on when port are out of range" do
-      expect { LogStash::Setting::PortRange.new("mynewtest", -1000..1000) }.to raise_error
+      expect { LogStash::Setting::PortRange.new("mynewtest", ::LogStash.as_java_range(-1000..1000)) }.to raise_error
     end
   end
 end

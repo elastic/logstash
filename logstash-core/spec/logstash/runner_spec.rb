@@ -321,7 +321,7 @@ describe LogStash::Runner do
         it "creates an Agent whose `api.http.port` uses the default value" do
           expect(LogStash::Agent).to receive(:new) do |settings|
             expect(settings.set?("api.http.port")).to be_falsey
-            expect(settings.get("api.http.port")).to eq(9600..9700)
+            expect(settings.get("api.http.port")).to eq(::LogStash.as_java_range(9600..9700))
           end
 
           subject.run("bin/logstash", args)
@@ -335,7 +335,7 @@ describe LogStash::Runner do
           it "creates an Agent whose `api.http.port` is an appropriate single-element range" do
             expect(LogStash::Agent).to receive(:new) do |settings|
               expect(settings.set?("api.http.port")).to be(true)
-              expect(settings.get("api.http.port")).to eq(10000..10000)
+              expect(settings.get("api.http.port")).to eq(::LogStash.as_java_range(10000..10000))
             end
 
             subject.run("bin/logstash", args)
@@ -346,7 +346,7 @@ describe LogStash::Runner do
           it "creates an Agent whose `api.http.port` uses the appropriate inclusive-end range" do
             expect(LogStash::Agent).to receive(:new) do |settings|
               expect(settings.set?("api.http.port")).to be(true)
-              expect(settings.get("api.http.port")).to eq(10000..20000)
+              expect(settings.get("api.http.port")).to eq(::LogStash.as_java_range(10000..20000))
             end
 
             subject.run("bin/logstash", args)

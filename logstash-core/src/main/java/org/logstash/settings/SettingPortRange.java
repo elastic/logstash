@@ -1,19 +1,24 @@
 package org.logstash.settings;
 
-import java.util.function.Predicate;
-
+// Ideally would be a Coercible<Range<Integer>>, but given the fact that
+// values can be effectively coerced into the constructor, it needs instances
+// of Objects to represent Integer, String, Long to be later coerced into Range<Integer>.
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SettingPortRange extends Coercible<Range<Integer>> {
+public class SettingPortRange extends Coercible<Object> {
 
     private static final Range<Integer> VALID_PORT_RANGE = new Range<>(1, 65535);
     public static final String PORT_SEPARATOR = "-";
 
-    public SettingPortRange(String name, Range<Integer> defaultValue) {
+    public SettingPortRange(String name, Object defaultValue) {
         super(name, defaultValue, true, SettingPortRange::isValid);
     }
 
-    public static boolean isValid(Range<Integer> range) {
-        return VALID_PORT_RANGE.contains(range);
+    public static boolean isValid(Object range) {
+        if (!(range instanceof Range)) {
+            return false;
+        }
+
+        return VALID_PORT_RANGE.contains((Range<Integer>) range);
     }
 
     // TODO cover with tests
@@ -55,10 +60,10 @@ public class SettingPortRange extends Coercible<Range<Integer>> {
     }
 
     @Override
-    public void validate(Range<Integer> value) throws IllegalArgumentException {
+    public void validate(Object value) throws IllegalArgumentException {
         if (!isValid(value)) {
-            final String msg = String.format("Invalid value \"{}: {}}\", valid options are within the range of {}-{}",
-                    getName(), value, VALID_PORT_RANGE, VALID_PORT_RANGE.getFirst(), VALID_PORT_RANGE.getLast());
+            final String msg = String.format("Invalid value \"%s: %s\", valid options are within the range of %d-%d",
+                    getName(), value, VALID_PORT_RANGE.getFirst(), VALID_PORT_RANGE.getLast());
 
             throw new IllegalArgumentException(msg);
         }

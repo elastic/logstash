@@ -1,5 +1,6 @@
 package org.logstash.settings;
 
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class Range<T extends Integer> {
@@ -39,5 +40,26 @@ public class Range<T extends Integer> {
 
     public int count() {
         return last.intValue() - first.intValue() + 1;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() +
+                "{first=" + first +
+                ", last=" + last +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Range<?> range = (Range<?>) o;
+        return Objects.equals(first, range.first) && Objects.equals(last, range.last);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(first, last);
     }
 }
