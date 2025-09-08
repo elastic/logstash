@@ -10,7 +10,7 @@ scms:
       owner: '{{ .scm.owner }}'
       repository: '{{ .scm.repository }}'
       token: '{{ requiredEnv "GITHUB_TOKEN" }}'
-      branch: '{{ requiredEnv "BRANCH_NAME" }}'
+      branch: '{{ requiredEnv "LOGSTASH_BRANCH" }}'
       commitusingapi: true
       force: false
 
