@@ -23,7 +23,7 @@ jobs:
 
       - uses: elastic/oblt-actions/updatecli/run@v1
         with:
-          command: apply --config .ci/updatecli/bump-logstash-version.yml --values .ci/updatecli/values.d/scm.yml
+          command: apply --config .ci/updatecli/bump-logstash-version.yml --config .ci/updatecli/bump-logstash-version-lockfile.yml --values .ci/updatecli/values.d/scm.yml
           version-file: .updatecli-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

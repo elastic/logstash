@@ -1,5 +1,6 @@
 ---
-name: Update logstash version
+name: Update logstash version files
+pipelineid: "logstash/version-updates"
 
 scms:
   default:
@@ -18,22 +19,13 @@ actions:
   default:
     title: 'Bump logstash version {{ requiredEnv "LOGSTASH_VERSION" }}'
     kind: github/pullrequest
-    scmid: default
     spec:
       automerge: false
       labels:
       - automation
       description: |-
         ### What
-        Update logstash version
-
-conditions:
-  lockfile_exists:
-    name: Check if lockfile exists
-    kind: file
-    disablesourceinput: true
-    spec:
-      file: Gemfile.jruby-3.1.lock.release
+        Update logstash version in versions.yml
 
 targets:
   update_logstash_version:
@@ -53,25 +45,3 @@ targets:
       file: versions.yml
       key: $.logstash-core
       value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
-
-  update_gemfile_lock_dependency:
-    name: Update logstash-core dependency in lockfile
-    kind: file
-    disablesourceinput: true
-    conditionsids:
-      - lockfile_exists
-    spec:
-      file: Gemfile.jruby-3.1.lock.release
-      matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
-      replacepattern: 'logstash-core (= {{ requiredEnv "LOGSTASH_VERSION" }}'
-  
-  update_gemfile_lock_spec:
-    name: Update logstash-core spec in lockfile
-    kind: file
-    disablesourceinput: true
-    conditionsids:
-      - lockfile_exists
-    spec:
-      file: Gemfile.jruby-3.1.lock.release
-      matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
-      replacepattern: 'logstash-core ({{ requiredEnv "LOGSTASH_VERSION" }}-java)'
