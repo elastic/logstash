@@ -5,7 +5,8 @@
 {ls} requires one of these versions:
 
 * Java 11
-* Java 17 (default). Check out <<jdk17-upgrade>> for settings info.
+* Java 17
+* Java 21 (default)
 
 Use the
 http://www.oracle.com/technetwork/java/javase/downloads/index.html[official
@@ -64,11 +65,11 @@ install the correct startup method (SysV init scripts, Upstart, or systemd). If
 installation, you may get an error message, and {ls} will not start properly.
 
 [float]
-[[jdk17-upgrade]]
-==== Using JDK 17
+[[jdk-upgrade]]
+==== Update JDK settings when upgrading from {ls} 7.11.x (or earlier)
 
-{ls} uses JDK 17 by default, but you need to update settings in `jvm.options` and
-`log4j2.properties` if you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later.
+{ls} uses JDK 21 by default. 
+If you are upgrading from  {ls} 7.11.x (or earlier) to 7.12 or later, you need to update settings in `jvm.options` and `log4j2.properties`.
 
 
 [float]
