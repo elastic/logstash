@@ -47,9 +47,11 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
     @SuppressWarnings("rawtypes")
     private JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass,
-                                     BlockingQueue queue, int batchSize, int waitForMillis) {
+                                     BlockingQueue queue, int batchSize, int waitForMillis,
+                                     BatchSizeSamplingType batchSizeSamplingType) {
         super(runtime, metaClass);
         this.queue = queue;
+        this.batchSizeSamplingType = batchSizeSamplingType;
         this.batchSize = batchSize;
         this.waitForNanos = TimeUnit.NANOSECONDS.convert(waitForMillis, TimeUnit.MILLISECONDS);
         this.waitForMillis = waitForMillis;
@@ -58,8 +60,14 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
     @SuppressWarnings("rawtypes")
     public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
                                                   int waitForMillis) {
+        return create(queue, batchSize, waitForMillis, BatchSizeSamplingType.FULL);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize, int waitForMillis,
+                                                  BatchSizeSamplingType batchSizeSamplingType) {
         return new JrubyMemoryReadClientExt(RubyUtil.RUBY,
-                RubyUtil.MEMORY_READ_CLIENT_CLASS, queue, batchSize, waitForMillis);
+                RubyUtil.MEMORY_READ_CLIENT_CLASS, queue, batchSize, waitForMillis, batchSizeSamplingType);
     }
 
     @Override

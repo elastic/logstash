@@ -42,6 +42,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     private static final long serialVersionUID = 1L;
 
     private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
+    private QueueReadClientBase.BatchSizeSamplingType batchMetricsSamplingType;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -50,8 +51,11 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     @JRubyMethod
     @SuppressWarnings("unchecked")
     public JrubyWrappedSynchronousQueueExt initialize(final ThreadContext context,
-        IRubyObject size) {
+                                                      IRubyObject size,
+                                                      IRubyObject batchMetricsSampling) {
         int typedSize = ((RubyNumeric)size).getIntValue();
+        this.batchMetricsSamplingType = QueueReadClientBase.BatchSizeSamplingType.decode(batchMetricsSampling.asJavaString());
+
         this.queue = new ArrayBlockingQueue<>(typedSize);
         return this;
     }
@@ -65,7 +69,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     protected QueueReadClientBase getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
-        return JrubyMemoryReadClientExt.create(queue, 125, 50);
+        return JrubyMemoryReadClientExt.create(queue, 125, 50, batchMetricsSamplingType);
     }
 
     @Override

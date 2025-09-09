@@ -40,6 +40,7 @@ import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.ext.JrubyTimestampExtLibrary;
+import org.logstash.instrument.metrics.histogram.HistogramSnapshot;
 import org.logstash.secret.SecretVariable;
 
 public final class Rubyfier {
@@ -133,6 +134,7 @@ public final class Rubyfier {
             )
         );
         converters.put(SecretVariable.class, JAVAUTIL_CONVERTER);
+        converters.put(HistogramSnapshot.class, JAVAUTIL_CONVERTER);
         return converters;
     }
 
