@@ -47,7 +47,7 @@ jobs:
       - run: ./vendor/jruby/bin/jruby -S bundle update --all --${{ github.event.inputs.bump }} --strict
       - run: mv Gemfile.lock Gemfile.jruby-*.lock.release
       - run: echo "T=$(date +%s)" >> $GITHUB_ENV
-      - run: echo "BRANCH=update_lock_${T}" >> $GITHUB_ENV
+      - run: echo "BRANCH=update_lock_${{ env.INPUTS_BRANCH }}_${T}" >> $GITHUB_ENV
       - run: |
           git checkout -b $BRANCH
           git add .
