@@ -28,7 +28,6 @@ targets:
     name: Update logstash-core dependency in lockfile
     kind: file
     disablesourceinput: true
-    scmid: default
     conditionsids:
       - lockfile_exists
     spec:
@@ -40,7 +39,6 @@ targets:
     name: Update logstash-core spec in lockfile
     kind: file
     disablesourceinput: true
-    scmid: default
     conditionsids:
       - lockfile_exists
     spec:
