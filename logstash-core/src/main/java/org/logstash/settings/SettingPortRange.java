@@ -19,6 +19,10 @@
 
 package org.logstash.settings;
 
+import org.jruby.RubyInteger;
+import org.jruby.RubyRange;
+import org.logstash.RubyUtil;
+
 // Ideally would be a Coercible<Range<Integer>>, but given the fact that
 // values can be effectively coerced into the constructor, it needs instances
 // of Objects to represent Integer, String, Long to be later coerced into Range<Integer>.
@@ -40,7 +44,6 @@ public class SettingPortRange extends Coercible<Object> {
         return VALID_PORT_RANGE.contains((Range<Integer>) range);
     }
 
-    // TODO cover with tests
     @Override
     public Range<Integer> coerce(Object obj) {
         if (obj instanceof Range) {
@@ -58,7 +61,7 @@ public class SettingPortRange extends Coercible<Object> {
         }
 
         if (obj instanceof String) {
-            String val = (String) obj;
+            String val = ((String) obj).trim();
             String[] parts = val.split(PORT_SEPARATOR);
             String firstStr = parts[0];
             String lastStr;
@@ -74,6 +77,13 @@ public class SettingPortRange extends Coercible<Object> {
             } catch(NumberFormatException e) {
                 throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
             }
+        }
+
+        if (obj instanceof RubyRange) {
+            RubyRange rubyRange = (RubyRange) obj;
+            RubyInteger begin = rubyRange.begin(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
+            RubyInteger end = rubyRange.end(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
+            return new Range<>(begin.getIntValue(), end.getIntValue());
         }
         throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
     }
