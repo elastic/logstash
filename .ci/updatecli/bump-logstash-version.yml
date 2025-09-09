@@ -15,18 +15,6 @@ scms:
       commitusingapi: true
       force: false
 
-actions:
-  default:
-    title: 'Bump logstash version {{ requiredEnv "LOGSTASH_VERSION" }}'
-    kind: github/pullrequest
-    spec:
-      automerge: false
-      labels:
-      - automation
-      description: |-
-        ### What
-        Update logstash version in versions.yml
-
 targets:
   update_logstash_version:
     name: Update logstash version in versions.yml
