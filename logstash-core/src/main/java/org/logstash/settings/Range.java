@@ -28,8 +28,11 @@ public class Range<T extends Integer> {
     private final T last;
 
     public Range(T first, T last) {
-        this.first = first;
-        this.last = last;
+        this.first = Objects.requireNonNull(first);
+        this.last =Objects.requireNonNull(last);
+        if (first.compareTo(last) > 0) {
+            throw new IllegalArgumentException("First must be less than or equal to last");
+        }
     }
 
     public boolean contains(Range<T> other) {
@@ -44,7 +47,6 @@ public class Range<T extends Integer> {
         return last;
     }
 
-    // TODO cover with tests
     public void eachWithIndex(BiConsumer<Integer, Integer> consumer) {
         // In case of a single value range, we should still yield once
         if (first.intValue() == last.intValue()) {
@@ -52,7 +54,7 @@ public class Range<T extends Integer> {
             return;
         }
         int index = 0;
-        for (int value = first.intValue(); first.intValue() < last.intValue(); value++) {
+        for (int value = first.intValue(); value < last.intValue(); value++) {
             consumer.accept(value, index++);
         }
     }
