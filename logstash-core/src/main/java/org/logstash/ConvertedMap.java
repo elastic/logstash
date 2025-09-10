@@ -180,10 +180,10 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private long estimateMemory(Object o) {
         if (o instanceof Boolean) {
-            return 1;
+            return Byte.BYTES;
         }
         if (o instanceof Byte) {
-            return Byte.SIZE / Byte.SIZE;
+            return Byte.BYTES;
         }
         if (o instanceof Short) {
             return Short.BYTES;
@@ -259,7 +259,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return Integer.BYTES;
         }
         if (o instanceof RubyBoolean) {
-            return Byte.SIZE / Byte.SIZE;
+            return Byte.BYTES;
         }
         if (o instanceof RubyNil) {
             return 8 + Integer.BYTES; // object reference, one int
