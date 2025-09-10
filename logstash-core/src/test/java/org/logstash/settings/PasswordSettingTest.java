@@ -45,7 +45,7 @@ public class PasswordSettingTest {
     }
 
     @Test
-    public void  givenUnsetPasswordSetting_whenIsSetIsInvoked_thenReturnFalse() {
+    public void  givenUnsetPasswordSetting_wheIsSetIsInvoked_thenReturnFalse() {
         assertFalse(sut.isSet());
     }
 
