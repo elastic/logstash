@@ -238,6 +238,76 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.1.4 [logstash-9.1.4-release-notes]
+
+### Features and enhancements [logstash-9.1.4-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.1.4
+
+=== Logstash Commits between 9.1 and 9.1.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.3..9.1"
+
+3a8a5c095 - (HEAD -> 9.1, origin/9.1) bump lock file for 9.1 (#18147) (27 hours ago) <github-actions[bot]>
+9e8d90853 - Fix race condition with version bump action (#18150) (#18154) (28 hours ago) <mergify[bot]>
+07371061a - Fix aarch64 acceptance tests (#18135) (#18140) (2 days ago) <mergify[bot]>
+51e7dce96 - test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18124) (#18127) (5 days ago) <mergify[bot]>
+c872a6956 - Update patch plugin versions in gemfile lock (#18120) (6 days ago) <github-actions[bot]>
+c58238823 - compat: add test for deserializing stringref enabled and disabled (#17988) (6 days ago) <Rye Biesemeyer>
+9d8ab4c76 - [9.1] (backport #18091) Preserve mtime explicitly when creating tar artifacts (#18112) (6 days ago) <mergify[bot]>
+9ad2692ad - Doc: Provide accurate post-geoip lookup example (#18092) (#18094) (7 days ago) <mergify[bot]>
+8727e12f9 - [9.1] (backport #17995) Build artifacts only for those that match host arch (#18075) (8 days ago) <mergify[bot]>
+bb1442f60 - Fix gauge type correctly in pipelines metrics. (#18082) (#18090) (8 days ago) <mergify[bot]>
+186934129 - [9.1] (backport #18083) upgrade golang to 1.25 (#18085) (8 days ago) <mergify[bot]>
+b848ad76c - replace placeholder URLs (#18070) (#18077) (13 days ago) <mergify[bot]>
+5b4b35e31 - [9.1] (backport #18049) Stop waiting on ALL steps before staring junit annotation (#18057) (13 days ago) <mergify[bot]>
+2038c34ba - Update versions.yml (#17906) (#18030) (13 days ago) <mergify[bot]>
+c66e16a6b - Bump to 9.1.4 (#18062) (13 days ago) <Mashhur>
+6042f225d - [9.1] (backport #18036) Split integration tests into more parts (#18041) (2 weeks ago) <mergify[bot]>
+6e7066ad1 - Add stub workflow file to iterate on (#17993) (#18046) (2 weeks ago) <mergify[bot]>
+6c9ea7c88 - Release notes for 9.1.3 (#18029) (2 weeks ago) <github-actions[bot]>
+0ec1c193c - [9.1] (backport #17951) Release notes for 9.0.5 (#17961) (2 weeks ago) <mergify[bot]>
+6c8ffeba0 - Update branch in logstash-api.yaml (#17852) (3 weeks ago) <Lisa Cawley>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.1.3..9.1 *.release"
+Changed plugin versions:
+logstash-filter-elasticsearch: 4.2.0 -> 4.3.0
+logstash-input-beats: 7.0.2 -> 7.0.3
+logstash-input-http: 4.1.2 -> 4.1.3
+logstash-input-jms: 3.3.0 -> 3.3.1
+logstash-input-tcp: 7.0.2 -> 7.0.3
+logstash-integration-kafka: 11.6.3 -> 11.6.4
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.1.4-changes]
+
+**Elasticsearch Filter - 4.3.0**
+
+* ES|QL support [#194](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194)
+
+**Beats Input - 7.0.3**
+
+* Upgrade netty 4.1.126 [#517](https://github.com/logstash-plugins/logstash-input-beats/pull/517)
+
+**Http Input - 4.1.3**
+
+* Upgrade netty to 4.1.126 [#198](https://github.com/logstash-plugins/logstash-input-http/pull/198)
+
+**Jms Input - 3.3.1**
+
+* Fixed a regression introduced in 3.3.0 where `add_field` is no longer enriching events [#59](https://github.com/logstash-plugins/logstash-input-jms/pull/59)
+
+**Tcp Input - 7.0.3**
+
+* Upgrade netty to 4.1.126 [#235](https://github.com/logstash-plugins/logstash-input-tcp/pull/235)
+
+**Kafka Integration - 11.6.4**
+
+* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
+
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
