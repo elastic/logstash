@@ -71,7 +71,7 @@ module LogStash
            Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", true),
            Setting::Boolean.new("api.enabled", true),
             Setting::SettingString.new("api.http.host", "127.0.0.1"),
-         Setting::PortRange.new("api.http.port", 9600..9700),
+         Setting::SettingPortRange.new("api.http.port", 9600..9700),
             Setting::SettingString.new("api.environment", "production"),
             Setting::SettingString.new("api.auth.type", "none", true, %w(none basic)),
             Setting::SettingString.new("api.auth.basic.username", nil, false).nullable,
