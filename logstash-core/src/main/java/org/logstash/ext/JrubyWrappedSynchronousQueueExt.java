@@ -26,10 +26,12 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyNumeric;
+import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 
@@ -42,6 +44,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     private static final long serialVersionUID = 1L;
 
     private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
+    private QueueFactoryExt.BatchMetricType batchMetricType;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -50,9 +53,11 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     @JRubyMethod
     @SuppressWarnings("unchecked")
     public JrubyWrappedSynchronousQueueExt initialize(final ThreadContext context,
-        IRubyObject size) {
+                                                      IRubyObject size,
+                                                      IRubyObject batchMetricType) {
         int typedSize = ((RubyNumeric)size).getIntValue();
         this.queue = new ArrayBlockingQueue<>(typedSize);
+        this.batchMetricType = QueueFactoryExt.BatchMetricType.valueOf(batchMetricType.asJavaString().toUpperCase());
         return this;
     }
 
@@ -65,7 +70,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     protected QueueReadClientBase getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
-        return JrubyMemoryReadClientExt.create(queue, 125, 50);
+        return JrubyMemoryReadClientExt.create(queue, 125, 50, batchMetricType);
     }
 
     @Override
