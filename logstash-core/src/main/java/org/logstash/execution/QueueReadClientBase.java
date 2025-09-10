@@ -33,21 +33,15 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.QueueFactoryExt;
-import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
-import java.security.SecureRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import static org.logstash.instrument.metrics.MetricKeys.BATCH_COUNT;
-import static org.logstash.instrument.metrics.MetricKeys.BATCH_KEY;
-import static org.logstash.instrument.metrics.MetricKeys.BATCH_TOTAL_BYTES;
-import static org.logstash.instrument.metrics.MetricKeys.BATCH_TOTAL_EVENTS;
 import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 /**
@@ -57,7 +51,6 @@ import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 public abstract class QueueReadClientBase extends RubyObject implements QueueReadClient {
 
     private static final long serialVersionUID = 1L;
-    private final QueueFactoryExt.BatchMetricType batchMetricType;
 
     protected int batchSize = 125;
     protected long waitForNanos = 50 * 1000 * 1000; // 50 millis to nanos
@@ -70,10 +63,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private transient LongCounter pipelineMetricOut;
     private transient LongCounter pipelineMetricFiltered;
     private transient TimerMetric pipelineMetricTime;
-    private transient LongCounter pipelineMetricBatchCount;
-    private transient LongCounter pipelineMetricBatchByteSize;
-    private transient LongCounter pipelineMetricBatchTotalEvents;
-    private final SecureRandom random = new SecureRandom();
+    private final transient QueueReadClientBatchMetrics batchMetrics;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
         this(runtime, metaClass, QueueFactoryExt.BatchMetricType.NONE);
@@ -82,7 +72,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass,
                                   final QueueFactoryExt.BatchMetricType batchMetricType) {
         super(runtime, metaClass);
-        this.batchMetricType = batchMetricType;
+        this.batchMetrics = new QueueReadClientBatchMetrics(batchMetricType);
     }
 
     @JRubyMethod(name = "inflight_batches")
@@ -108,16 +98,11 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         final AbstractNamespacedMetricExt namespacedMetric = (AbstractNamespacedMetricExt) metric;
         ThreadContext context = metric.getRuntime().getCurrentContext();
         AbstractNamespacedMetricExt eventsNamespace = namespacedMetric.namespace(context, EVENTS_KEY);
-        AbstractNamespacedMetricExt batchNamespace = namespacedMetric.namespace(context, BATCH_KEY);
         synchronized(namespacedMetric.getMetric()) {
             pipelineMetricOut = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.OUT_KEY);
             pipelineMetricFiltered = LongCounter.fromRubyBase(eventsNamespace, MetricKeys.FILTERED_KEY);
             pipelineMetricTime = TimerMetric.fromRubyBase(eventsNamespace, MetricKeys.DURATION_IN_MILLIS_KEY);
-            if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
-                pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
-                pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
-                pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
-            }
+            batchMetrics.setupMetrics(namespacedMetric);
         }
         return this;
     }
@@ -221,27 +206,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         // JTODO getId has been deprecated in JDK 19, when JDK 21 is the target version use threadId() instead
         long threadId = Thread.currentThread().getId();
         inflightBatches.put(threadId, batch);
-        if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
-            boolean updateMetric = true;
-            if (batchMetricType == QueueFactoryExt.BatchMetricType.MINIMAL) {
-                // 1% chance to update metric
-                updateMetric = random.nextInt(100) < 2;
-            }
-
-            if (updateMetric) {
-                pipelineMetricBatchCount.increment();
-                pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
-                updateBatchSizeMetric(batch);
-            }
-        }
-    }
-
-    private void updateBatchSizeMetric(QueueBatch batch) {
-        long totalSize = 0L;
-        for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
-            totalSize += rubyEvent.getEvent().estimateMemory();
-        }
-        pipelineMetricBatchByteSize.increment(totalSize);
+        batchMetrics.updateBatchMetrics(batch);
     }
 
     @Override
