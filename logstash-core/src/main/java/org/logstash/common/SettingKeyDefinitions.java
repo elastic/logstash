@@ -28,7 +28,7 @@ public class SettingKeyDefinitions {
 
     public static final String PIPELINE_WORKERS = "pipeline.workers";
 
-    public static final String PIPELINE_BATCH_METRICS = "pipeline.batch.metrics";
+    public static final String PIPELINE_BATCH_METRICS = "pipeline.batch.metrics.sampling_type";
 
     public static final String PIPELINE_BATCH_SIZE = "pipeline.batch.size";
 

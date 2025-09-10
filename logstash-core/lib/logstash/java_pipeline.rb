@@ -267,7 +267,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
-      batch_metric_sampling = settings.get("pipeline.batch.metrics")
+      batch_metric_sampling = settings.get("pipeline.batch.metrics.sampling_type")
 
       max_inflight = batch_size * pipeline_workers
 
