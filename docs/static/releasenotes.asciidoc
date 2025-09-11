@@ -101,6 +101,8 @@ This section summarizes the changes in the following releases:
 
 * Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives https://github.com/elastic/logstash/pull/18109[#18109]
 
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards https://github.com/elastic/logstash/pull/18087[#18087]
+
 ==== Plugins
 
 *Beats Input - 6.9.4*
