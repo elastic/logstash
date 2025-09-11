@@ -691,20 +691,20 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return Optional.of((NumberGauge) delegatingGauge.getMetric().get());
     }
 
-    private Optional<TextGauge> initOrGetTextGaugeMetric(final ThreadContext context,
-                                                         final RubySymbol[] subPipelineNamespacePath,
-                                                         final RubySymbol metricName) {
-        final IRubyObject collector = this.metric.collector(context);
-        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
-        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
-
-        LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
-        if (Objects.isNull(delegatingGauge.getType()) || delegatingGauge.getType() != MetricType.GAUGE_TEXT) {
-            return Optional.empty();
-        }
-
-        return Optional.of((TextGauge) delegatingGauge.getMetric().get());
-    }
+//    private Optional<TextGauge> initOrGetTextGaugeMetric(final ThreadContext context,
+//                                                         final RubySymbol[] subPipelineNamespacePath,
+//                                                         final RubySymbol metricName) {
+//        final IRubyObject collector = this.metric.collector(context);
+//        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+//        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
+//
+//        LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
+//        if (Objects.isNull(delegatingGauge.getType()) || delegatingGauge.getType() != MetricType.GAUGE_TEXT) {
+//            return Optional.empty();
+//        }
+//
+//        return Optional.of((TextGauge) delegatingGauge.getMetric().get());
+//    }
 
     private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
                                                final RubySymbol[] subPipelineNamespacePath,

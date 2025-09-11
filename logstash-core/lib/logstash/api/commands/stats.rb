@@ -176,14 +176,15 @@ module LogStash
             current_data_point = stats[:batch][:current]
             {
               :event_count => {
-                :current => current_data_point,
+                # current_data_point is an instance of org.logstash.instrument.metrics.gauge.LazyDelegatingGauge so need to invoke getValue() to obtain the actual value
+                :current => current_data_point.value[0],
                 :average => {
                   # average return a FlowMetric which and we need to invoke getValue to obtain the map with metric details.
                   :lifetime => stats[:batch][:event_count][:average].value["lifetime"] ? stats[:batch][:event_count][:average].value["lifetime"].round : 0
                 }
               },
               :byte_size => {
-                :current => current_data_point,
+                :current => current_data_point.value[1],
                 :average => {
                   :lifetime => stats[:batch][:byte_size][:average].value["lifetime"] ? stats[:batch][:byte_size][:average].value["lifetime"].round : 0
                 }
