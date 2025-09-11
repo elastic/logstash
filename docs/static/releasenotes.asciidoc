@@ -97,37 +97,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-18-7]]
 === Logstash 8.18.7 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.18.7
-
-=== Logstash Commits between 8.18 and 8.18.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.6..8.18"
-
-3f721cd79 - (HEAD -> 8.18, origin/8.18) Update patch plugin versions in gemfile lock (#18148) (27 hours ago) <github-actions[bot]>
-1e96635a2 - Fix race condition with version bump action (#18150) (#18151) (28 hours ago) <mergify[bot]>
-4b28b3c6b - Doc: Update Java version requirements for 8.18 (#18129) (35 hours ago) <Karen Metts>
-45f05cf11 - Fix aarch64 acceptance tests (#18135) (#18137) (2 days ago) <mergify[bot]>
-caaaff6ed - Update patch plugin versions in gemfile lock (#18117) (6 days ago) <github-actions[bot]>
-b92aa3dd3 - [8.18] (backport #18091) Preserve mtime explicitly when creating tar artifacts (#18109) (6 days ago) <mergify[bot]>
-0aac377b8 - Doc: Refine geoip filter example (#18101) (#18104) (7 days ago) <mergify[bot]>
-703dd7e32 - [8.18] (backport #17995) Build artifacts only for those that match host arch (#18072) (8 days ago) <mergify[bot]>
-65a6109eb - Fix gauge type correctly in pipelines metrics. (#18082) (#18087) (8 days ago) <mergify[bot]>
-1fd7b06ea - [8.18] (backport #18049) Stop waiting on ALL steps before staring junit annotation (#18054) (13 days ago) <mergify[bot]>
-0e59efbb0 - Update versions.yml (#17906) (#18033) (13 days ago) <mergify[bot]>
-445852952 - Bump version to 8.18.7 (#18059) (2 weeks ago) <Edmo Vamerlatti Costa>
-573eb028b - Release notes for 8.18.6 (#18048) (2 weeks ago) <github-actions[bot]>
-fd8ea4ea9 - [8.18] (backport #18036) Split integration tests into more parts (#18038) (2 weeks ago) <mergify[bot]>
-9092c6ed8 - Add stub workflow file to iterate on (#17993) (#18043) (2 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.18.6..8.18 *.release"
-Changed plugin versions:
-logstash-input-beats: 6.9.3 -> 6.9.4
-logstash-input-http: 3.10.2 -> 3.10.3
-logstash-input-tcp: 6.4.6 -> 6.4.7
-logstash-integration-kafka: 11.6.3 -> 11.6.4
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
