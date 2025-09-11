@@ -52,7 +52,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     private static final RubySymbol DECREMENT = RubyUtil.RUBY.newSymbol("decrement");
 
-    private static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
+    public static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
     private static final RubySymbol TIMER = RubyUtil.RUBY.newSymbol("timer");
     private static final RubySymbol SET = RubyUtil.RUBY.newSymbol("set");
     private static final RubySymbol GET = RubyUtil.RUBY.newSymbol("get");

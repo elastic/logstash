@@ -92,6 +92,7 @@ import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UpScaledMetric;
+import org.logstash.instrument.metrics.gauge.TextGauge;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -607,6 +608,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
+
+//        initOrGetTextGaugeMetric(context, buildNamespace(BATCH_KEY), BATCH_CURRENT_KEY);
+//        Optional<TextGauge> textGauge = initOrGetTextGaugeMetric(context, buildNamespace(BATCH_KEY), BATCH_CURRENT_KEY);
+//        if (textGauge.isPresent()) {
+//            storeMetric(context, batchSizeNamespace, textGauge.get());
+//        } else {
+//            LOGGER.warn("Unable to initialize batch.current gauge, it will not be available");
+//        }
     }
 
     private boolean isBatchMetricsEnabled(ThreadContext context) {
@@ -680,6 +689,21 @@ public class AbstractPipelineExt extends RubyBasicObject {
         }
 
         return Optional.of((NumberGauge) delegatingGauge.getMetric().get());
+    }
+
+    private Optional<TextGauge> initOrGetTextGaugeMetric(final ThreadContext context,
+                                                         final RubySymbol[] subPipelineNamespacePath,
+                                                         final RubySymbol metricName) {
+        final IRubyObject collector = this.metric.collector(context);
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
+
+        LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
+        if (Objects.isNull(delegatingGauge.getType()) || delegatingGauge.getType() != MetricType.GAUGE_TEXT) {
+            return Optional.empty();
+        }
+
+        return Optional.of((TextGauge) delegatingGauge.getMetric().get());
     }
 
     private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,

@@ -5,6 +5,7 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 
 import java.security.SecureRandom;
 
@@ -17,6 +18,7 @@ class QueueReadClientBatchMetrics {
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
     private final SecureRandom random = new SecureRandom();
+    private LazyDelegatingGauge currentBatchDimensions;
 
     public QueueReadClientBatchMetrics(QueueFactoryExt.BatchMetricType batchMetricType) {
         this.batchMetricType = batchMetricType;
@@ -29,6 +31,7 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
             pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
             pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
+            currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
         }
     }
 
@@ -54,5 +57,7 @@ class QueueReadClientBatchMetrics {
             totalSize += rubyEvent.getEvent().estimateMemory();
         }
         pipelineMetricBatchByteSize.increment(totalSize);
+
+        currentBatchDimensions.set(String.format("%d-%d", batch.filteredSize(), totalSize));
     }
 }

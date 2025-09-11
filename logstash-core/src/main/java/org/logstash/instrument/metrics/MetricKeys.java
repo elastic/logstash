@@ -131,4 +131,6 @@ public final class MetricKeys {
 
     public static final RubySymbol BATCH_BYTE_SIZE_KEY = RubyUtil.RUBY.newSymbol("byte_size");
 
+    public static final RubySymbol BATCH_CURRENT_KEY = RubyUtil.RUBY.newSymbol("current");
+
 }
