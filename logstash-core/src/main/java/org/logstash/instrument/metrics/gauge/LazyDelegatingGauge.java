@@ -23,8 +23,13 @@ package org.logstash.instrument.metrics.gauge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
+import org.jruby.RubySymbol;
+import org.jruby.runtime.ThreadContext;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyTimestampExtLibrary.RubyTimestamp;
 import org.logstash.instrument.metrics.AbstractMetric;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricType;
 
 import java.util.List;
@@ -39,10 +44,27 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
 
     private static final Logger LOGGER = LogManager.getLogger(LazyDelegatingGauge.class);
 
+    public static final LazyDelegatingGauge DUMMY_GAUGE = new LazyDelegatingGauge("dummy");
+
     protected final String key;
 
     @SuppressWarnings("rawtypes")
     private GaugeMetric lazyMetric;
+
+
+    public static LazyDelegatingGauge fromRubyBase(final AbstractNamespacedMetricExt metric, final RubySymbol key) {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        // just initialize an empty gauge
+        final IRubyObject gauge = metric.gauge(context, key, context.runtime.newString("undefined"));
+//        gauge.callMethod(context, "set", context.runtime.newString("zero"));
+        final LazyDelegatingGauge javaGauge;
+        if (LazyDelegatingGauge.class.isAssignableFrom(gauge.getJavaClass())) {
+            javaGauge = gauge.toJava(LazyDelegatingGauge.class);
+        } else {
+            javaGauge = DUMMY_GAUGE;
+        }
+        return javaGauge;
+    }
 
     /**
      * Constructor - null initial value

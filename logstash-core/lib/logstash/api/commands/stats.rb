@@ -173,14 +173,17 @@ module LogStash
           end
 
           def refine_batch_metrics(stats)
+            current_data_point = stats[:batch][:current]
             {
               :event_count => {
+                :current => current_data_point,
                 :average => {
                   # average return a FlowMetric which and we need to invoke getValue to obtain the map with metric details.
                   :lifetime => stats[:batch][:event_count][:average].value["lifetime"] ? stats[:batch][:event_count][:average].value["lifetime"].round : 0
                 }
               },
               :byte_size => {
+                :current => current_data_point,
                 :average => {
                   :lifetime => stats[:batch][:byte_size][:average].value["lifetime"] ? stats[:batch][:byte_size][:average].value["lifetime"].round : 0
                 }
