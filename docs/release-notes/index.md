@@ -25,7 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.0.7-features-enhancements]
 
-### Fixes [logstash-9.0.4-fixes]
+### Fixes [logstash-9.0.7-fixes]
 
 * A fix to receive gauge metric types in pipeline info which appears in pipeline vertex of node stats API [#18089](https://github.com/elastic/logstash/pull/18089)
 * Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18111](https://github.com/elastic/logstash/pull/18111)
