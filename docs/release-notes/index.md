@@ -21,6 +21,33 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.7 [logstash-9.0.7-release-notes]
+
+### Features and enhancements [logstash-9.0.7-features-enhancements]
+
+### Fixes [logstash-9.0.4-fixes]
+
+* A fix to receive gauge metric types in pipeline info which appears in pipeline vertex of node stats API [#18089](https://github.com/elastic/logstash/pull/18089)
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18111](https://github.com/elastic/logstash/pull/18111)
+
+### Plugins [logstash-plugin-9.0.7-changes]
+
+**Beats Input - 7.0.3**
+
+* Upgrade netty 4.1.126 [#517](https://github.com/logstash-plugins/logstash-input-beats/pull/517)
+
+**Http Input - 4.1.3**
+
+* Upgrade netty to 4.1.126 [#198](https://github.com/logstash-plugins/logstash-input-http/pull/198)
+
+**Tcp Input - 7.0.3**
+
+* Upgrade netty to 4.1.126 [#235](https://github.com/logstash-plugins/logstash-input-tcp/pull/235)
+
+**Kafka Integration - 11.6.4**
+
+* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
+
 ## 9.0.6 [logstash-9.0.6-release-notes]
 
 ### Features and enhancements [logstash-9.0.6-features-enhancements]
@@ -131,64 +158,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.0.7 [logstash-9.0.7-release-notes]
-
-### Features and enhancements [logstash-9.0.7-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.0.7
-
-=== Logstash Commits between 9.0 and 9.0.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.6..9.0"
-
-8dd4c6973 - (HEAD -> 9.0, origin/9.0) Update patch plugin versions in gemfile lock (#18149) (27 hours ago) <github-actions[bot]>
-4eb8b6f79 - Fix race condition with version bump action (#18150) (#18153) (28 hours ago) <mergify[bot]>
-ac21727fe - Fix aarch64 acceptance tests (#18135) (#18139) (2 days ago) <mergify[bot]>
-e719b5d9e - test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18124) (#18126) (5 days ago) <mergify[bot]>
-97358829e - Update patch plugin versions in gemfile lock (#18119) (6 days ago) <github-actions[bot]>
-9120e4c00 - compat: add test for deserializing stringref enabled and disabled (#17989) (6 days ago) <Rye Biesemeyer>
-36b0d5394 - [9.0] (backport #18091) Preserve mtime explicitly when creating tar artifacts (#18111) (6 days ago) <mergify[bot]>
-f7e601635 - Doc: Provide accurate post-geoip lookup example (#18092) (#18093) (7 days ago) <mergify[bot]>
-f05a5b8aa - [9.0] (backport #17995) Build artifacts only for those that match host arch (#18074) (8 days ago) <mergify[bot]>
-a4be6ae9c - Fix gauge type correctly in pipelines metrics. (#18082) (#18089) (8 days ago) <mergify[bot]>
-3e95cd775 - [9.0] (backport #18083) upgrade golang to 1.25 (#18084) (8 days ago) <mergify[bot]>
-a5674735f - replace placeholder URLs (#18070) (#18076) (13 days ago) <mergify[bot]>
-8e7e66040 - [9.0] (backport #18049) Stop waiting on ALL steps before staring junit annotation (#18056) (13 days ago) <mergify[bot]>
-a27441d07 - Update versions.yml (#17906) (#18031) (13 days ago) <mergify[bot]>
-5edfd32d8 - Bump to 9.0.7 (#18061) (13 days ago) <Mashhur>
-b2e6a7144 - [9.0] (backport #18036) Split integration tests into more parts (#18040) (2 weeks ago) <mergify[bot]>
-cb9715afd - Add stub workflow file to iterate on (#17993) (#18045) (2 weeks ago) <mergify[bot]>
-39316b107 - Release notes for 9.0.6 (#18028) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.0.6..9.0 *.release"
-Changed plugin versions:
-logstash-input-beats: 7.0.2 -> 7.0.3
-logstash-input-http: 4.1.2 -> 4.1.3
-logstash-input-tcp: 7.0.2 -> 7.0.3
-logstash-integration-kafka: 11.6.3 -> 11.6.4
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.0.7-changes]
-
-**Beats Input - 7.0.3**
-
-* Upgrade netty 4.1.126 [#517](https://github.com/logstash-plugins/logstash-input-beats/pull/517)
-
-**Http Input - 4.1.3**
-
-* Upgrade netty to 4.1.126 [#198](https://github.com/logstash-plugins/logstash-input-http/pull/198)
-
-**Tcp Input - 7.0.3**
-
-* Upgrade netty to 4.1.126 [#235](https://github.com/logstash-plugins/logstash-input-tcp/pull/235)
-
-**Kafka Integration - 11.6.4**
-
-* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
