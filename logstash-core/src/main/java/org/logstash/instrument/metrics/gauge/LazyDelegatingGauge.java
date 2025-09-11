@@ -32,6 +32,7 @@ import org.logstash.instrument.metrics.AbstractMetric;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.MetricType;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +56,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     public static LazyDelegatingGauge fromRubyBase(final AbstractNamespacedMetricExt metric, final RubySymbol key) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         // just initialize an empty gauge
-        final IRubyObject gauge = metric.gauge(context, key, context.runtime.newString("undefined"));
+        final IRubyObject gauge = metric.gauge(context, key, context.runtime.newArray(context.runtime.newString("undefined"), context.runtime.newString("undefined")));
 //        gauge.callMethod(context, "set", context.runtime.newString("zero"));
         final LazyDelegatingGauge javaGauge;
         if (LazyDelegatingGauge.class.isAssignableFrom(gauge.getJavaClass())) {

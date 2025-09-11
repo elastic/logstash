@@ -8,6 +8,7 @@ import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static org.logstash.instrument.metrics.MetricKeys.*;
 
@@ -58,6 +59,7 @@ class QueueReadClientBatchMetrics {
         }
         pipelineMetricBatchByteSize.increment(totalSize);
 
-        currentBatchDimensions.set(String.format("%d-%d", batch.filteredSize(), totalSize));
+//        currentBatchDimensions.set(String.format("%d-%d", batch.filteredSize(), totalSize));
+        currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalSize));
     }
 }
