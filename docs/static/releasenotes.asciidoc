@@ -99,42 +99,17 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-4]]
 === Logstash 8.19.4 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.4
+[[notable-8-19-4]]
+==== Notable issues fixed
 
-=== Logstash Commits between 8.19 and 8.19.3
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives https://github.com/elastic/logstash/pull/18110[#18110]
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.3..8.19"
+[[featured-8-19-4]]
+==== New features and enhancements
 
-a38b3ca4e - (HEAD -> 8.19, origin/8.19) bump lock file for 8.19 (#18146) (27 hours ago) <github-actions[bot]>
-4aef2c826 - Fix race condition with version bump action (#18150) (#18152) (28 hours ago) <mergify[bot]>
-e25675c5d - Fix aarch64 acceptance tests (#18135) (#18138) (2 days ago) <mergify[bot]>
-19d9e13ec - [8.19] (backport #18124) test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18125) (5 days ago) <mergify[bot]>
-75ba04fca - Doc: Update Java version requirements for 8.19 (#18115) (5 days ago) <Karen Metts>
-d07affc30 - Update patch plugin versions in gemfile lock (#18118) (6 days ago) <github-actions[bot]>
-c30c38696 - [8.19] (backport #18091) Preserve mtime explicitly when creating tar artifacts (#18110) (6 days ago) <mergify[bot]>
-397138cb4 - compat: add test for deserializing stringref enabled and disabled (#17990) (6 days ago) <Rye Biesemeyer>
-86ee4df16 - Doc: Refine geoip filter example (#18101) (7 days ago) <Karen Metts>
-99b7e2afb - Start observabilitySRE container builds immediately on DRA (#18016) (#18066) (8 days ago) <mergify[bot]>
-5a16e26bc - [8.19] (backport #17995) Build artifacts only for those that match host arch (#18073) (8 days ago) <mergify[bot]>
-42ee87937 - Fix gauge type correctly in pipelines metrics. (#18082) (#18088) (8 days ago) <mergify[bot]>
-91971cdcd - Stop waiting on ALL steps before staring junit annotation (#18049) (#18055) (13 days ago) <mergify[bot]>
-e90e0b734 - Update versions.yml (#17906) (#18032) (13 days ago) <mergify[bot]>
-9a5b06f6b - Bump version to 8.19.4 (#18060) (13 days ago) <Edmo Vamerlatti Costa>
-fc55be192 - Release notes for 8.19.3 (#18047) (2 weeks ago) <github-actions[bot]>
-c58e8a96e - Split integration tests into more parts (#18036) (#18039) (2 weeks ago) <mergify[bot]>
-aa50a4669 - Add stub workflow file to iterate on (#17993) (#18044) (2 weeks ago) <mergify[bot]>
+===== ES|QL Support in Elasticsearch Filter (Technical Preview)
+* https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/199[Support] for using ES|QL queries in the Elasticsearch filter to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.3..8.19 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 3.18.0 -> 3.19.0
-logstash-input-beats: 6.9.3 -> 6.9.4
-logstash-input-http: 3.10.2 -> 3.10.3
-logstash-input-jms: 3.3.0 -> 3.3.1
-logstash-input-tcp: 6.4.6 -> 6.4.7
-logstash-integration-kafka: 11.6.3 -> 11.6.4
----------- GENERATED CONTENT ENDS HERE ------------
 
 ==== Plugins
 
