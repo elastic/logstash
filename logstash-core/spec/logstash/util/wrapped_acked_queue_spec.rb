@@ -53,7 +53,8 @@ describe LogStash::WrappedAckedQueue do
     let(:checkpoint_acks) { 1024 }
     let(:checkpoint_writes) { 1024 }
     let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::WrappedAckedQueue.new(path, page_capacity, max_events, checkpoint_acks, checkpoint_writes, false, max_bytes) }
+    let(:queue) { LogStash::WrappedAckedQueue.new(path, page_capacity, max_events, checkpoint_acks,
+                                                  checkpoint_writes, false, max_bytes, "none") }
 
     after do
       queue.close

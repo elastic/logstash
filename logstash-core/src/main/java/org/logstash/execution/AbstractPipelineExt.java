@@ -92,6 +92,7 @@ import org.logstash.instrument.metrics.Metric;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UpScaledMetric;
+import org.logstash.instrument.metrics.gauge.TextGauge;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -317,8 +318,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     new IRubyObject[]{
                             STATS_KEY,
                             PIPELINES_KEY,
-                            pipelineId.convertToString().intern(),
-                            EVENTS_KEY
+                            pipelineId.convertToString().intern()
                     }
                 )
             )
@@ -585,9 +585,45 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, utilizationFlow);
         storeMetric(context, flowNamespace, utilizationFlow);
 
+        // Batch average byte size and count metrics
+        if (isBatchMetricsEnabled(context)) {
+            initializeBatchMetrics(context);
+        }
+
         initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
         initializePluginFlowMetrics(context, uptimeMetric);
         return context.nil;
+    }
+
+    private void initializeBatchMetrics(ThreadContext context) {
+        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+        final LongCounter batchEventsInCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_EVENTS);
+        final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
+        final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, batchEventsInCounter, batchCounter);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
+        storeMetric(context, batchNamespace, documentsPerBatch);
+
+        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, BATCH_BYTE_SIZE_KEY);
+        final LongCounter totalBytes = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_BYTES);
+        final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
+        storeMetric(context, batchSizeNamespace, byteSizePerBatch);
+
+//        initOrGetTextGaugeMetric(context, buildNamespace(BATCH_KEY), BATCH_CURRENT_KEY);
+//        Optional<TextGauge> textGauge = initOrGetTextGaugeMetric(context, buildNamespace(BATCH_KEY), BATCH_CURRENT_KEY);
+//        if (textGauge.isPresent()) {
+//            storeMetric(context, batchSizeNamespace, textGauge.get());
+//        } else {
+//            LOGGER.warn("Unable to initialize batch.current gauge, it will not be available");
+//        }
+    }
+
+    private boolean isBatchMetricsEnabled(ThreadContext context) {
+        IRubyObject pipelineBatchMetricsSetting = getSetting(context, "pipeline.batch.metrics.sampling_type");
+        return !pipelineBatchMetricsSetting.isNil() &&
+                QueueFactoryExt.BatchMetricType.valueOf(
+                        pipelineBatchMetricsSetting.asJavaString().toUpperCase()
+                ) != QueueFactoryExt.BatchMetricType.NONE;
     }
 
     @JRubyMethod(name = "collect_flow_metrics")
@@ -654,6 +690,21 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         return Optional.of((NumberGauge) delegatingGauge.getMetric().get());
     }
+
+//    private Optional<TextGauge> initOrGetTextGaugeMetric(final ThreadContext context,
+//                                                         final RubySymbol[] subPipelineNamespacePath,
+//                                                         final RubySymbol metricName) {
+//        final IRubyObject collector = this.metric.collector(context);
+//        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+//        final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("gauge")});
+//
+//        LazyDelegatingGauge delegatingGauge = retrievedMetric.toJava(LazyDelegatingGauge.class);
+//        if (Objects.isNull(delegatingGauge.getType()) || delegatingGauge.getType() != MetricType.GAUGE_TEXT) {
+//            return Optional.empty();
+//        }
+//
+//        return Optional.of((TextGauge) delegatingGauge.getMetric().get());
+//    }
 
     private UptimeMetric initOrGetUptimeMetric(final ThreadContext context,
                                                final RubySymbol[] subPipelineNamespacePath,

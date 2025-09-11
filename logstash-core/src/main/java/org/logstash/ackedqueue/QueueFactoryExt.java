@@ -43,6 +43,12 @@ import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 
+    public enum BatchMetricType {
+        NONE,
+        MINIMAL,
+        FULL
+    }
+
     /**
      * A static value to indicate Persistent Queue is enabled.
      */
@@ -68,6 +74,15 @@ public final class QueueFactoryExt extends RubyBasicObject {
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
+        final String batchMetricTypeStr = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
+                .asJavaString();
+
+        final BatchMetricType batchMetricType;
+        if (batchMetricTypeStr == null || batchMetricTypeStr.isEmpty()) {
+            batchMetricType = BatchMetricType.NONE;
+        } else {
+            batchMetricType = BatchMetricType.valueOf(batchMetricTypeStr.toUpperCase());
+        }
         if (PERSISTED_TYPE.equals(type)) {
             final Path queuePath = Paths.get(
                 getSetting(context, settings, SettingKeyDefinitions.PATH_QUEUE).asJavaString(),
@@ -89,19 +104,20 @@ public final class QueueFactoryExt extends RubyBasicObject {
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_WRITES),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_ACKS),
                         getSetting(context, settings, SettingKeyDefinitions.QUEUE_CHECKPOINT_RETRY),
-                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_BYTES)
+                        getSetting(context, settings, SettingKeyDefinitions.QUEUE_MAX_BYTES),
+                        context.runtime.newString(batchMetricType.toString())
                     }
                 );
         } else if (MEMORY_TYPE.equals(type)) {
+            final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
+                    .convertToInteger().getIntValue();
+            final int workers = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
+                    .convertToInteger().getIntValue();
+            int queueSize = batchSize * workers;
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
+                context, context.runtime.newFixnum(queueSize), context.runtime.newString(batchMetricType.toString())
             );
         } else {
             throw context.runtime.newRaiseException(
