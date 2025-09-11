@@ -269,11 +269,17 @@ describe "Test Monitoring API" do
           expect(batch_stats["event_count"]["average"]["lifetime"]).to be_a_kind_of(Numeric)
           expect(batch_stats["event_count"]["average"]["lifetime"]).to be > 0
 
+          expect(batch_stats["event_count"]["current"]).not_to be_nil
+          expect(batch_stats["event_count"]["current"]).to be >= 0
+
           expect(batch_stats["byte_size"]).not_to be_nil
           expect(batch_stats["byte_size"]["average"]).not_to be_nil
           expect(batch_stats["byte_size"]["average"]["lifetime"]).not_to be_nil
           expect(batch_stats["byte_size"]["average"]["lifetime"]).to be_a_kind_of(Numeric)
           expect(batch_stats["byte_size"]["average"]["lifetime"]).to be > 0
+
+          expect(batch_stats["byte_size"]["current"]).not_to be_nil
+          expect(batch_stats["byte_size"]["current"]).to be >= 0
         end
       end
     end
