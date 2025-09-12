@@ -39,6 +39,7 @@ targets:
     name: Update logstash version in versions.yml
     kind: yaml
     disablesourceinput: true
+    scmid: default
     spec:
       file: versions.yml
       key: $.logstash
@@ -48,6 +49,7 @@ targets:
     name: Update logstash-core version in versions.yml
     kind: yaml
     disablesourceinput: true
+    scmid: default
     spec:
       file: versions.yml
       key: $.logstash-core
@@ -57,6 +59,7 @@ targets:
     name: Update logstash-core dependency in lockfile
     kind: file
     disablesourceinput: true
+    scmid: default
     dependson:
       - 'source#lock_file_exists'
     spec:
@@ -68,6 +71,7 @@ targets:
     name: Update logstash-core spec in lockfile
     kind: file
     disablesourceinput: true
+    scmid: default
     dependson:
       - 'source#lock_file_exists'
     spec:
