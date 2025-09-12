@@ -30,5 +30,4 @@ jobs:
           version-file: .updatecli-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: "${{ github.event.inputs.logstash_branch }}"
           LOGSTASH_VERSION: "${{ github.event.inputs.logstash_version }}"
