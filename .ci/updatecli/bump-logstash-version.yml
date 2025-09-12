@@ -31,6 +31,7 @@ actions:
 sources:
   lock_file_exists:
     kind: shell
+    scmid: default
     spec:
       command: test -f Gemfile.jruby-3.1.lock.release
 
