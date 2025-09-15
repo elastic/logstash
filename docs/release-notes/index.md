@@ -27,7 +27,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ##### ES|QL Support in Elasticsearch Filter (Technical Preview)
 
-* [Support](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194) for using ES|QL queries in the Elasticsearch filter to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
+* [Support for using ES|QL queries](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194) in the Elasticsearch filter to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
 
 ### Fixes [logstash-9.1.4-fixes]
 
