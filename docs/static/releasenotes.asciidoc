@@ -110,7 +110,7 @@ This section summarizes the changes in the following releases:
 ==== New features and enhancements
 
 ===== ES|QL Support in Elasticsearch Filter (Technical Preview)
-* https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/199[Support] for using ES|QL queries in the Elasticsearch filter to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
+* https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/199[Support for ES|QL queries] in the Elasticsearch filter to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
 
 
 ==== Plugins
