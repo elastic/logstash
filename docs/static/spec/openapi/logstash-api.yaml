@@ -1089,6 +1089,7 @@ paths:
 #                  - $ref: "#/components/schemas/Common"
 #                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
+                type: object
               examples:
                 PipelineWithPersistedQueue:
                   description: A pipeline with a persisted queue.
