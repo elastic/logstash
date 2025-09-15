@@ -23,8 +23,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.0.7 [logstash-9.0.7-release-notes]
 
-### Features and enhancements [logstash-9.0.7-features-enhancements]
-
 ### Fixes [logstash-9.0.7-fixes]
 
 * Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards. [#18089](https://github.com/elastic/logstash/pull/18089)
