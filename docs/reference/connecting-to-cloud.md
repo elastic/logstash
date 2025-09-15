@@ -31,16 +31,17 @@ Cloud Auth is optional. Construct this value by following this format "<username
 
 ## Using Cloud ID and Cloud Auth with plugins [cloud-id-plugins]
 
-The Elasticsearch input, output, and filter plugins support cloud_id and cloud_auth in their configurations.
+The Elasticsearch input, output, and filter plugins, as well as the Elastic_integration filter plugin, support cloud_id and cloud_auth in their configurations.
 
 * [Elasticsearch input plugin](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-cloud_id)
 * [Elasticsearch filter plugin](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-cloud_id)
 * [Elasticsearch output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
+* [Elastic_integration filter plugin](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-cloud_id)
 
 
-## Sending {{ls}} management data to {{ech}} [cloud-id-mgmt]
+## Using {{ls}} Central Pipeline Management with {{ech}} [cloud-id-mgmt]
 
-These settings in the `logstash.yml` config file can help you get set up to send management data to Elastic Cloud:
+These settings in the `logstash.yml` config file can help you get set up to use Central Pipeline Management in Elastic Cloud:
 
 * `xpack.management.elasticsearch.cloud_id`
 * `xpack.management.elasticsearch.cloud_auth`
