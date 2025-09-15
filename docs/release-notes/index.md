@@ -21,6 +21,31 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.7 [logstash-9.0.7-release-notes]
+
+### Fixes [logstash-9.0.7-fixes]
+
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards. [#18089](https://github.com/elastic/logstash/pull/18089)
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives. [#18111](https://github.com/elastic/logstash/pull/18111)
+
+### Plugins [logstash-plugin-9.0.7-changes]
+
+**Beats Input - 7.0.3**
+
+* Upgrade netty 4.1.126 [#517](https://github.com/logstash-plugins/logstash-input-beats/pull/517)
+
+**Http Input - 4.1.3**
+
+* Upgrade netty to 4.1.126 [#198](https://github.com/logstash-plugins/logstash-input-http/pull/198)
+
+**Tcp Input - 7.0.3**
+
+* Upgrade netty to 4.1.126 [#235](https://github.com/logstash-plugins/logstash-input-tcp/pull/235)
+
+**Kafka Integration - 11.6.4**
+
+* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
+
 ## 9.0.6 [logstash-9.0.6-release-notes]
 
 ### Features and enhancements [logstash-9.0.6-features-enhancements]
