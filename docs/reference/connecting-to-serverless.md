@@ -53,9 +53,9 @@ This option formats the API key in the correct `id:api_key` format required by {
 The UI for API keys may look different depending on the deployment type.
 
 
-## Sending {{ls}} management data to {{es-serverless}} [mgmt-data]
+## Using {{ls}} Central Pipeline Management with {{es-serverless}} [cpm-serverless]
 
-This setting in the `logstash.yml` config file can help you get set up to send management data to Elastic Cloud:
+This setting in the `logstash.yml` config file can help you get set up to use Central Pipeline management in Elastic Cloud:
 
 * `xpack.management.elasticsearch.cloud_id`
 
