@@ -97,6 +97,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-18-7]]
 === Logstash 8.18.7 Release Notes
 
+[[notable-8-18-7]]
 ==== Notable issues fixed
 
 * Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives https://github.com/elastic/logstash/pull/18109[#18109]
