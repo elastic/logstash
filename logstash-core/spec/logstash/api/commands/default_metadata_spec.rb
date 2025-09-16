@@ -35,8 +35,8 @@ describe LogStash::Api::Commands::DefaultMetadata do
   before :all do
     registerIfNot(LogStash::Setting::BooleanSetting.new("xpack.monitoring.enabled", false))
     registerIfNot(LogStash::Setting::ArrayCoercible.new("xpack.monitoring.elasticsearch.hosts", String, ["http://localhost:9200"]))
-    registerIfNot(LogStash::Setting::SettingNullableString.new("xpack.monitoring.elasticsearch.username", "logstash_TEST system"))
-    registerIfNot(LogStash::Setting::SettingNullableString.new("xpack.monitoring.elasticsearch.username", "logstash_TEST system"))
+    registerIfNot(LogStash::Setting::NullableStringSetting.new("xpack.monitoring.elasticsearch.username", "logstash_TEST system"))
+    registerIfNot(LogStash::Setting::NullableStringSetting.new("xpack.monitoring.elasticsearch.username", "logstash_TEST system"))
   end
 
   after :each do

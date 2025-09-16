@@ -20,21 +20,21 @@ package org.logstash.settings;
 
 import java.util.List;
 
-public class SettingNullableString extends StringSetting {
+public class NullableStringSetting extends StringSetting {
 
-    public SettingNullableString(String name, String defaultValue, boolean strict, List<String> possibleStrings) {
+    public NullableStringSetting(String name, String defaultValue, boolean strict, List<String> possibleStrings) {
         super(name, defaultValue, strict, possibleStrings);
     }
 
-    public SettingNullableString(String name, String defaultValue) {
+    public NullableStringSetting(String name, String defaultValue) {
         super(name, defaultValue);
     }
 
-    public SettingNullableString(String name, String defaultValue, boolean strict) {
+    public NullableStringSetting(String name, String defaultValue, boolean strict) {
         super(name, defaultValue, strict);
     }
 
-    public SettingNullableString(String name) {
+    public NullableStringSetting(String name) {
         super(name, null);
     }
 

@@ -436,7 +436,7 @@ module LogStash
     
     java_import org.logstash.settings.StringSetting
 
-    java_import org.logstash.settings.SettingNullableString
+    java_import org.logstash.settings.NullableStringSetting
 
     class Password < Coercible
       def initialize(name, default = nil, strict = true)

@@ -40,9 +40,9 @@ module LogStash
   [
            Setting::BooleanSetting.new("allow_superuser", false),
             Setting::StringSetting.new("node.name", Socket.gethostname),
-    Setting::SettingNullableString.new("path.config", nil, false),
+    Setting::NullableStringSetting.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
-    Setting::SettingNullableString.new("config.string", nil, false),
+    Setting::NullableStringSetting.new("config.string", nil, false),
            Setting::BooleanSetting.new("config.test_and_exit", false),
            Setting::BooleanSetting.new("config.reload.automatic", false),
          Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
@@ -61,7 +61,7 @@ module LogStash
    Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
    Setting::CoercibleString.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
                     Setting.new("path.plugins", Array, []),
-    Setting::SettingNullableString.new("interactive", nil, false),
+    Setting::NullableStringSetting.new("interactive", nil, false),
            Setting::BooleanSetting.new("config.debug", false),
             Setting::StringSetting.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::BooleanSetting.new("version", false),
@@ -99,14 +99,14 @@ module LogStash
              Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
            Setting::SettingNumeric.new("dead_letter_queue.flush_interval", 5000),
             Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
-    Setting::SettingNullableString.new("dead_letter_queue.retain.age"), # example 5d
+    Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
          Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
          Setting::TimeValue.new("slowlog.threshold.info", "-1"),
          Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
-    Setting::SettingNullableString.new("monitoring.cluster_uuid"),
+    Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
             Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
