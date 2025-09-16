@@ -1,34 +1,19 @@
-
-name: UPDATE
-
+name: Stub GH action for devoping new workflows [STUB]
 on:
   workflow_dispatch:
-    inputs:
-      logstash_version:
-        description: 'Logstash version'
-        required: true
-        type: string
-      logstash_branch:
-        description: 'Logstash branch'
-        required: true
-        type: string
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  pull-requests: write
+  contents: write
+
 jobs:
-  bump:
-    permissions:
-      contents: write
-      pull-requests: write
+  stub_job_name:
+    name: Stub Job
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: elastic/oblt-actions/updatecli/run@v1
-        with:
-          command: apply --config .ci/updatecli/bump-logstash-version.yml --values .ci/updatecli/values.d/scm.yml
-          version-file: .updatecli-version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: "${{ github.event.inputs.logstash_branch }}"
-          LOGSTASH_VERSION: "${{ github.event.inputs.logstash_version }}"
+      - name: Stub step
+        run: |
+          echo "Stub to iterate via PR"
+      

@@ -1,6 +1,6 @@
 ---
 name: Update logstash version files
-pipelineid: "logstash/version-updates"
+pipelineid: "logstash/version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
 
 scms:
   default:

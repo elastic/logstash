@@ -1,5 +1,3 @@
 scm:
-  enabled: true
   owner: elastic
   repository: logstash
-  commitusingapi: true

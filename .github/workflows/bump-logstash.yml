@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       logstash_version:
-        description: 'Logstash version'
+        description: 'Logstash version (example: 9.1.4)'
         required: true
         type: string
       logstash_branch:
-        description: 'Logstash branch'
+        description: 'Logstash branch (example: 9.1)'
         required: true
         type: string
 
