@@ -419,7 +419,7 @@ module LogStash
 
     java_import org.logstash.settings.SettingPositiveInteger
 
-    java_import org.logstash.settings.SettingPort # seems unused
+    java_import org.logstash.settings.PortSetting # seems unused
 
     java_import org.logstash.settings.PortRangeSetting
 
