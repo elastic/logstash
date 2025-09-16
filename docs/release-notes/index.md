@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.1.2 [logstash-9.1.2-release-notes]
 
 No user-facing changes in Logstash core.
