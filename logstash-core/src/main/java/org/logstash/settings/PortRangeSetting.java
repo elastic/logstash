@@ -27,13 +27,13 @@ import org.logstash.RubyUtil;
 // values can be effectively coerced into the constructor, it needs instances
 // of Objects to represent Integer, String, Long to be later coerced into Range<Integer>.
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SettingPortRange extends Coercible<Object> {
+public class PortRangeSetting extends Coercible<Object> {
 
     private static final Range<Integer> VALID_PORT_RANGE = new Range<>(1, 65535);
     public static final String PORT_SEPARATOR = "-";
 
-    public SettingPortRange(String name, Object defaultValue) {
-        super(name, defaultValue, true, SettingPortRange::isValid);
+    public PortRangeSetting(String name, Object defaultValue) {
+        super(name, defaultValue, true, PortRangeSetting::isValid);
     }
 
     public static boolean isValid(Object range) {

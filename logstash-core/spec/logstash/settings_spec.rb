@@ -64,7 +64,7 @@ describe LogStash::Settings do
 
   describe "#to_hash" do
     let(:java_deprecated_alias) { LogStash::Setting::Boolean.new("java.actual", true).with_deprecated_alias("java.deprecated") }
-    let(:ruby_deprecated_alias) { LogStash::Setting::SettingPortRange.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
+    let(:ruby_deprecated_alias) { LogStash::Setting::PortRangeSetting.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
     let(:non_deprecated) { LogStash::Setting::Boolean.new("plain_setting", false) }
 
     before :each do

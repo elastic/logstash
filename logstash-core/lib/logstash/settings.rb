@@ -421,7 +421,7 @@ module LogStash
 
     java_import org.logstash.settings.SettingPort # seems unused
 
-    java_import org.logstash.settings.SettingPortRange
+    java_import org.logstash.settings.PortRangeSetting
 
     class Validator < Setting
       def initialize(name, default = nil, strict = true, validator_class = nil)

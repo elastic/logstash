@@ -28,7 +28,7 @@ import org.logstash.RubyUtil;
 import static org.junit.Assert.*;
 
 // Porting to Java of logstash-core/spec/logstash/settings/port_range_spec.rb
-public class SettingPortRangeTest {
+public class PortRangeSettingTest {
 
     private static void assertThrowsError(String expectedErrorMessage, Runnable action) {
         try {
@@ -41,35 +41,35 @@ public class SettingPortRangeTest {
 
     @Test
     public void givenPortRangeCreatedWithSingleIntegerValue_thenCoercesTheValueToRange() {
-        SettingPortRange sut = new SettingPortRange("test", 9_000);
+        PortRangeSetting sut = new PortRangeSetting("test", 9_000);
         assertEquals(new Range<>(9_000, 9_000), sut.value());
     }
 
     @Test
     public void givenPortRangeCreatedWithSingleIntegerValue_thenCanUpdateTheRange() {
-        SettingPortRange sut = new SettingPortRange("test", 9_000);
+        PortRangeSetting sut = new PortRangeSetting("test", 9_000);
         sut.set(10_000);
         assertEquals(new Range<>(10_000, 10_000), sut.value());
     }
 
     @Test
     public void givenPortRangeCreatedWithStringValue_thenCoercesTheValueToRange() {
-        SettingPortRange sut = new SettingPortRange("test", "9000-10000");
+        PortRangeSetting sut = new PortRangeSetting("test", "9000-10000");
         assertEquals(new Range<>(9_000, 10_000), sut.value());
-        sut = new SettingPortRange("test", " 9000-10000 ");
+        sut = new PortRangeSetting("test", " 9000-10000 ");
         assertEquals(new Range<>(9_000, 10_000), sut.value());
     }
 
     @Test
     public void givenPortRangeCreatedWithStringValue_whenUpperPortIsOutOfRange_thenThrowsAnError() {
         assertThrowsError("valid options are within the range of 1-65535",
-                () -> new SettingPortRange("test", "9000-95000")
+                () -> new PortRangeSetting("test", "9000-95000")
         );
     }
 
     @Test
     public void givenPortRangeCreatedWithStringValue_thenCanUpdateTheRange() {
-        SettingPortRange sut = new SettingPortRange("test", "9000-10000");
+        PortRangeSetting sut = new PortRangeSetting("test", "9000-10000");
         sut.set("500-1000");
         assertEquals(new Range<>(500, 1000), sut.value());
     }
@@ -77,13 +77,13 @@ public class SettingPortRangeTest {
     @Test
     public void givenPortRangeCreatedWithGarbageString_thenThrowsAnError() {
         assertThrowsError("Could not coerce [fsdfnsdkjnfjs](type: class java.lang.String) into a port range",
-                () -> new SettingPortRange("test", "fsdfnsdkjnfjs")
+                () -> new PortRangeSetting("test", "fsdfnsdkjnfjs")
         );
     }
 
     @Test
     public void givenPortRange_whenUpdatedWithGarbageString_thenThrowsAnError() {
-        final SettingPortRange sut = new SettingPortRange("test", 10_000);
+        final PortRangeSetting sut = new PortRangeSetting("test", 10_000);
         assertThrowsError("Could not coerce [dsfnsdknfksdnfjksdnfjns](type: class java.lang.String) into a port range",
                 () -> sut.set("dsfnsdknfksdnfjksdnfjns")
         );
@@ -92,13 +92,13 @@ public class SettingPortRangeTest {
     @Test
     public void givenPortRangeCreatedWithUnknownType_thenThrowsAnError() {
         assertThrowsError("Could not coerce [0.1](type: class java.lang.Double) into a port range",
-                () -> new SettingPortRange("test", 0.1)
+                () -> new PortRangeSetting("test", 0.1)
         );
     }
 
     @Test
     public void givenPortRange_whenUpdatedWithUnknownType_thenThrowsAnError() {
-        final SettingPortRange sut = new SettingPortRange("test", 10_000);
+        final PortRangeSetting sut = new PortRangeSetting("test", 10_000);
         assertThrowsError("Could not coerce [0.1](type: class java.lang.Double) into a port range",
                 () -> sut.set(0.1)
         );
@@ -106,7 +106,7 @@ public class SettingPortRangeTest {
 
     @Test
     public void givenPortRangeCreatedWithRangeValue_thenCoercesTheValueToRange() {
-        SettingPortRange sut = new SettingPortRange("test", new Range<>(9_000, 10_000));
+        PortRangeSetting sut = new PortRangeSetting("test", new Range<>(9_000, 10_000));
         assertEquals(new Range<>(9_000, 10_000), sut.value());
     }
 
@@ -114,13 +114,13 @@ public class SettingPortRangeTest {
     public void givenPortRangeCreatedWithRubyRangeValue_thenCoercesTheValueToRange() {
         ThreadContext ctx = RubyUtil.RUBY.getCurrentContext();
         RubyRange rubyRange = RubyRange.newExclusiveRange(ctx, new RubyFixnum(RubyUtil.RUBY, 9_000), new RubyFixnum(RubyUtil.RUBY, 10_000));
-        SettingPortRange sut = new SettingPortRange("test", rubyRange);
+        PortRangeSetting sut = new PortRangeSetting("test", rubyRange);
         assertEquals(new Range<>(9_000, 10_000), sut.value());
     }
 
     @Test
     public void givenPortRangeCreatedWithRangeValue_thenCanUpdateTheRange() {
-        SettingPortRange sut = new SettingPortRange("test", new Range<>(9_000, 10_000));
+        PortRangeSetting sut = new PortRangeSetting("test", new Range<>(9_000, 10_000));
         sut.set(new Range<>(500, 1_000));
         assertEquals(new Range<>(500, 1_000), sut.value());
     }
@@ -128,14 +128,14 @@ public class SettingPortRangeTest {
     @Test
     public void givenPortRangeCreatedWithOutOfRangeUpperPort_thenThrowsAnError() {
         assertThrowsError("valid options are within the range of 1-65535",
-                () -> new SettingPortRange("test", new Range<>(9_000, 90_000))
+                () -> new PortRangeSetting("test", new Range<>(9_000, 90_000))
         );
     }
 
     @Test
     public void givenPortRangeCreatedWithOutOfRangePort_thenThrowsAnError() {
         assertThrowsError("valid options are within the range of 1-65535",
-                () -> new SettingPortRange("test", new Range<>(-1_000, 1_000))
+                () -> new PortRangeSetting("test", new Range<>(-1_000, 1_000))
         );
     }
 }
