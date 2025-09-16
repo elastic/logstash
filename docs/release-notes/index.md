@@ -137,6 +137,51 @@ The Elasticsearch Input now provides [support](https://github.com/logstash-plugi
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.0.6 [logstash-9.0.6-release-notes]
+
+### Features and enhancements [logstash-9.0.6-features-enhancements]
+
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17934](https://github.com/elastic/logstash/pull/17934)
+
+### Plugins [logstash-plugin-9.0.6-changes]
+
+No change to the plugins in this release.
+
+## 9.0.5 [logstash-9.0.5-release-notes]
+
+### Features and enhancements [logstash-9.0.5-features-enhancements]
+
+## 9.0.5 [logstash-9.0.5-release-notes]
+
+### Features and enhancements [logstash-9.0.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.5-changes]
+
+**Elastic_integration Filter - 9.0.2**
+
+* Adds support for missing `terminate` processor [#345](https://github.com/elastic/logstash-filter-elastic_integration/pull/345)
+
+**Translate Filter - 3.4.3**
+
+* FIX: Reduces memory consumption when configured with a YAML dictionary file by allowing YamlFile's Psych::Parser and Visitor instances to be garbage collected [#104](https://github.com/logstash-plugins/logstash-filter-translate/pull/104)
+
+**Xml Filter - 4.3.2**
+
+* Update Nokogiri dependency version [#89](https://github.com/logstash-plugins/logstash-filter-xml/pull/89)
+
+**Azure_event_hubs Input - 1.5.2**
+
+* Updated JWT dependency [#101](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101)
+
+**Snmp Integration - 4.0.7**
+* FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value [#75](https://github.com/logstash-plugins/logstash-integration-snmp/pull/75)
+
+**Elasticsearch Output - 12.0.6**
+
+* Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
+
 ## 9.0.4 [logstash-9.0.4-release-notes]
 
 ### Fixes [logstash-9.0.4-fixes]
