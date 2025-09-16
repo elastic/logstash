@@ -1,5 +1,5 @@
 
-name: DOES THIS WORK?
+name: UPDATE
 
 on:
   workflow_dispatch:
