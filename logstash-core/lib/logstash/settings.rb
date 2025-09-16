@@ -415,7 +415,7 @@ module LogStash
     java_import org.logstash.settings.BooleanSetting
     java_import org.logstash.settings.NumericSetting
 
-    java_import org.logstash.settings.SettingInteger
+    java_import org.logstash.settings.IntegerSetting
 
     java_import org.logstash.settings.SettingPositiveInteger
 

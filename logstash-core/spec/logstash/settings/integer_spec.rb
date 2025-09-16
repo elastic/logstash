@@ -18,7 +18,7 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::SettingInteger do
+describe LogStash::Setting::IntegerSetting do
   subject { described_class.new("a number", nil, false) }
   describe "#set" do
     context "when giving a number which is not an integer" do

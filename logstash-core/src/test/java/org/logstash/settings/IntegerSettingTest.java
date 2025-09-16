@@ -5,13 +5,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SettingIntegerTest {
+public class IntegerSettingTest {
 
-    private SettingInteger sut;
+    private IntegerSetting sut;
 
     @Before
     public void setUp() {
-        sut = new SettingInteger("a number", null, false);
+        sut = new IntegerSetting("a number", null, false);
     }
 
     @Test(expected = IllegalArgumentException.class)
