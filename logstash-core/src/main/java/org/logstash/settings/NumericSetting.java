@@ -18,21 +18,21 @@
  */
 package org.logstash.settings;
 
-public class SettingNumeric extends Coercible<Number> {
+public class NumericSetting extends Coercible<Number> {
 
-    public SettingNumeric(String name, Number defaultValue) {
+    public NumericSetting(String name, Number defaultValue) {
         super(name, defaultValue, true, noValidator());
     }
 
     // constructor used only in tests, but needs to be public to be used in Ruby spec
-    public SettingNumeric(String name, Number defaultValue, boolean strict) {
+    public NumericSetting(String name, Number defaultValue, boolean strict) {
         super(name, defaultValue, strict, noValidator());
     }
 
     @Override
     public Number coerce(Object obj) {
         if (obj == null) {
-            throw new IllegalArgumentException("Failed to coerce value to SettingNumeric. Received null");
+            throw new IllegalArgumentException("Failed to coerce value to NumericSetting. Received null");
         }
         if (obj instanceof Number) {
             return (Number) obj;
@@ -53,6 +53,6 @@ public class SettingNumeric extends Coercible<Number> {
     }
 
     private String coercionFailureMessage(Object obj) {
-        return String.format("Failed to coerce value to SettingNumeric. Received %s (%s)", obj, obj.getClass());
+        return String.format("Failed to coerce value to NumericSetting. Received %s (%s)", obj, obj.getClass());
     }
 }

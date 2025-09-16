@@ -413,7 +413,7 @@ module LogStash
     ### Specific settings #####
 
     java_import org.logstash.settings.BooleanSetting
-    java_import org.logstash.settings.SettingNumeric
+    java_import org.logstash.settings.NumericSetting
 
     java_import org.logstash.settings.SettingInteger
 
