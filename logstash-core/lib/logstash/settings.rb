@@ -434,7 +434,7 @@ module LogStash
       end
     end
     
-    java_import org.logstash.settings.SettingString
+    java_import org.logstash.settings.StringSetting
 
     java_import org.logstash.settings.SettingNullableString
 

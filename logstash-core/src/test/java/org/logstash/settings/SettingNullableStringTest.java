@@ -16,7 +16,7 @@ public class SettingNullableStringTest {
 
     public static class WithValueConstraintCase{
         private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
@@ -47,7 +47,7 @@ public class SettingNullableStringTest {
     }
 
     public static class WithoutValueConstraintCase {
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
