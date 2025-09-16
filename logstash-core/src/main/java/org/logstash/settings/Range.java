@@ -29,7 +29,7 @@ public class Range<T extends Integer> {
 
     public Range(T first, T last) {
         this.first = Objects.requireNonNull(first);
-        this.last =Objects.requireNonNull(last);
+        this.last = Objects.requireNonNull(last);
         if (first.compareTo(last) > 0) {
             throw new IllegalArgumentException("First must be less than or equal to last");
         }
