@@ -416,8 +416,7 @@ module LogStash
     java_import org.logstash.settings.NumericSetting
 
     java_import org.logstash.settings.IntegerSetting
-
-    java_import org.logstash.settings.SettingPositiveInteger
+    java_import org.logstash.settings.PositiveIntegerSetting
 
     java_import org.logstash.settings.PortSetting # seems unused
 
