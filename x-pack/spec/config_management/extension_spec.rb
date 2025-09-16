@@ -28,7 +28,7 @@ describe LogStash::ConfigManagement::Extension do
 
     describe "#additionals_settings" do
       define_settings(
-        "xpack.management.enabled" => [LogStash::Setting::Boolean, false],
+        "xpack.management.enabled" => [LogStash::Setting::BooleanSetting, false],
         "xpack.management.logstash.poll_interval" => [LogStash::Setting::TimeValue, LogStash::Util::TimeValue.from_value("5s")],
         "xpack.management.pipeline.id" => [LogStash::Setting::ArrayCoercible, ["main"]],
         "xpack.management.elasticsearch.hosts" => [LogStash::Setting::ArrayCoercible, ["https://localhost:9200"]],

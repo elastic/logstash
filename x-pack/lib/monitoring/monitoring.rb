@@ -272,9 +272,9 @@ module LogStash
     private
     def register_monitoring_settings(settings, prefix = "")
       if prefix == "xpack."
-        settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.allow_legacy_collection", false))
+        settings.register(LogStash::Setting::BooleanSetting.new("xpack.monitoring.allow_legacy_collection", false))
       end
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.enabled", false))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.enabled", false))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.hosts", String, ["http://localhost:9200"]))
       settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.interval", "10s"))
       settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
@@ -294,9 +294,9 @@ module LogStash
       settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate"))
       settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.key"))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.ssl.cipher_suites", String, []))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.elasticsearch.sniffing", false))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.config.enabled", true))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.elasticsearch.sniffing", false))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.collection.config.enabled", true))
     end
   end
 end

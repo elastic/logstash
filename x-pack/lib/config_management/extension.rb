@@ -21,7 +21,7 @@ module LogStash
         require "logstash/runner"
         logger.trace("Registering additionals settings")
 
-        settings.register(LogStash::Setting::Boolean.new("xpack.management.enabled", false))
+        settings.register(LogStash::Setting::BooleanSetting.new("xpack.management.enabled", false))
         settings.register(LogStash::Setting::TimeValue.new("xpack.management.logstash.poll_interval", "5s"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.pipeline.id", String, ["main"]))
         settings.register(LogStash::Setting::SettingNullableString.new("xpack.management.elasticsearch.username", "logstash_system"))
@@ -41,7 +41,7 @@ module LogStash
         settings.register(LogStash::Setting::SettingNullableString.new("xpack.management.elasticsearch.ssl.key"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.ssl.cipher_suites", String, []))
         settings.register(LogStash::Setting::SettingString.new("xpack.management.elasticsearch.ssl.verification_mode", "full", true, %w[none certificate full]))
-        settings.register(LogStash::Setting::Boolean.new("xpack.management.elasticsearch.sniffing", false))
+        settings.register(LogStash::Setting::BooleanSetting.new("xpack.management.elasticsearch.sniffing", false))
       rescue => e
         logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
         raise e

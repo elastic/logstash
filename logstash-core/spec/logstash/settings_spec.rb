@@ -63,9 +63,9 @@ describe LogStash::Settings do
   end
 
   describe "#to_hash" do
-    let(:java_deprecated_alias) { LogStash::Setting::Boolean.new("java.actual", true).with_deprecated_alias("java.deprecated") }
+    let(:java_deprecated_alias) { LogStash::Setting::BooleanSetting.new("java.actual", true).with_deprecated_alias("java.deprecated") }
     let(:ruby_deprecated_alias) { LogStash::Setting::PortRangeSetting.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
-    let(:non_deprecated) { LogStash::Setting::Boolean.new("plain_setting", false) }
+    let(:non_deprecated) { LogStash::Setting::BooleanSetting.new("plain_setting", false) }
 
     before :each do
       subject.register(java_deprecated_alias)
@@ -169,7 +169,7 @@ describe LogStash::Settings do
 
     context 'when a registered setting responds to `observe_post_process`' do
       let(:observe_post_process_setting) do
-        LogStash::Setting::Boolean.new("this.that", true).tap { |s| allow(s).to receive(:observe_post_process) }
+        LogStash::Setting::BooleanSetting.new("this.that", true).tap { |s| allow(s).to receive(:observe_post_process) }
       end
       subject(:settings) do
         described_class.new.tap { |s| s.register(observe_post_process_setting) }
@@ -205,7 +205,7 @@ describe LogStash::Settings do
     context "when running #validate_all" do
       it "merge and validate all the registered setting" do
         subject.from_yaml(yaml_path)
-        subject.register(LogStash::Setting::Boolean.new("do.not.exist.on.boot", false))
+        subject.register(LogStash::Setting::BooleanSetting.new("do.not.exist.on.boot", false))
 
         expect { subject.validate_all }.not_to raise_error
         expect(subject.get("do.not.exist.on.boot")).to be_truthy

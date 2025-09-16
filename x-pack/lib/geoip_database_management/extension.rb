@@ -14,7 +14,7 @@ module LogStash module GeoipDatabaseManagement
       settings.register(LogStash::Setting::SettingString.new("xpack.geoip.downloader.endpoint", "https://geoip.elastic.co/v1/database")
                                                  .with_deprecated_alias("xpack.geoip.download.endpoint"))
       settings.register(LogStash::Setting::TimeValue.new("xpack.geoip.downloader.poll.interval", "24h"))
-      settings.register(LogStash::Setting::Boolean.new("xpack.geoip.downloader.enabled", true))
+      settings.register(LogStash::Setting::BooleanSetting.new("xpack.geoip.downloader.enabled", true))
     rescue => e
       logger.error("Cannot register new settings", :message => e.message, :backtrace => e.backtrace)
       raise e

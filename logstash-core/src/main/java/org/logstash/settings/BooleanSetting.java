@@ -19,13 +19,13 @@
 
 package org.logstash.settings;
 
-public class Boolean extends Coercible<java.lang.Boolean> {
+public class BooleanSetting extends Coercible<java.lang.Boolean> {
 
-    public Boolean(String name, boolean defaultValue) {
+    public BooleanSetting(String name, boolean defaultValue) {
         super(name, defaultValue, true, noValidator());
     }
 
-    public Boolean(String name, boolean defaultValue, boolean strict) {
+    public BooleanSetting(String name, boolean defaultValue, boolean strict) {
         super(name, defaultValue, strict, noValidator());
     }
 
