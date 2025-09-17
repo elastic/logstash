@@ -271,6 +271,10 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
             return Double.BYTES;
         }
 
-        throw new RuntimeException("Unsupported type in estimating memory size of event: " + o.getClass());
+        throw new IllegalArgumentException(
+                "Unsupported type encountered in estimateMemory: " + o.getClass().getName() +
+                        ". Please ensure all objects passed to estimateMemory are of supported types. " +
+                        "Refer to the ConvertedMap.estimateMemory method for the list of supported types."
+        );
     }
 }

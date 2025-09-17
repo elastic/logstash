@@ -1,5 +1,7 @@
 package org.logstash.execution;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.runtime.ThreadContext;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ext.JrubyEventExtLibrary;
@@ -11,6 +13,9 @@ import java.security.SecureRandom;
 import static org.logstash.instrument.metrics.MetricKeys.*;
 
 class QueueReadClientBatchMetrics {
+
+    private static final Logger LOG = LogManager.getLogger(QueueReadClientBatchMetrics.class);
+
     private final QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     private LongCounter pipelineMetricBatchCount;
@@ -50,8 +55,12 @@ class QueueReadClientBatchMetrics {
 
     private void updateBatchSizeMetric(QueueBatch batch) {
         long totalSize = 0L;
-        for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
-            totalSize += rubyEvent.getEvent().estimateMemory();
+        try {
+            for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
+                totalSize += rubyEvent.getEvent().estimateMemory();
+            }
+        } catch (IllegalArgumentException e) {
+            LOG.error("Failed to calculate batch byte size for metrics", e);
         }
         pipelineMetricBatchByteSize.increment(totalSize);
     }
