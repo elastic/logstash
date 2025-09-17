@@ -58,7 +58,7 @@ module LogStash
       "path.dead_letter_queue",
       "path.queue",
       "pipeline.batch.delay",
-      "pipeline.batch.metrics.sampling_type",
+      "pipeline.batch.metrics.sampling_mode",
       "pipeline.batch.size",
       "pipeline.id",
       "pipeline.reloadable",

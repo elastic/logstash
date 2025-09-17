@@ -240,9 +240,9 @@ describe "Test Monitoring API" do
       end
     end
 
-    context "when pipeline.batch.metrics.sampling_type is set to 'full'" do
+    context "when pipeline.batch.metrics.sampling_mode is set to 'full'" do
       let(:settings_overrides) do
-        super().merge({'pipeline.batch.metrics.sampling_type' => 'full'})
+        super().merge({'pipeline.batch.metrics.sampling_mode' => 'full'})
       end
 
       it "can retrieve batch stats" do
@@ -278,9 +278,9 @@ describe "Test Monitoring API" do
       end
     end
 
-    context "when pipeline.batch.metrics.sampling_type is set to 'none'" do
+    context "when pipeline.batch.metrics.sampling_mode is set to 'disabled'" do
       let(:settings_overrides) do
-        super().merge({'pipeline.batch.metrics.sampling_type' => 'none'})
+        super().merge({'pipeline.batch.metrics.sampling_mode' => 'disabled'})
       end
 
       it "no batch stats metrics are available" do

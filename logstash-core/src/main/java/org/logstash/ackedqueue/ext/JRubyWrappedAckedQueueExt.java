@@ -50,7 +50,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
-    private QueueFactoryExt.BatchMetricType batchMetricType;
+    private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     @JRubyMethod(required=1)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
@@ -65,7 +65,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         }
         Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
         this.queue = JRubyAckedQueueExt.create(javaSettings);
-        this.batchMetricType = javaSettings.batchMetricMode();
+        this.batchMetricMode = javaSettings.batchMetricMode();
         this.queue.open();
 
         return this;
@@ -116,7 +116,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected QueueReadClientBase getReadClient() {
-        return JrubyAckedReadClientExt.create(queue, batchMetricType);
+        return JrubyAckedReadClientExt.create(queue, batchMetricMode);
     }
 
     @Override

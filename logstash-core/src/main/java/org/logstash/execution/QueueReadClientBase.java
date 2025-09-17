@@ -66,13 +66,13 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     private final transient QueueReadClientBatchMetrics batchMetrics;
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass) {
-        this(runtime, metaClass, QueueFactoryExt.BatchMetricType.NONE);
+        this(runtime, metaClass, QueueFactoryExt.BatchMetricMode.DISABLED);
     }
 
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass,
-                                  final QueueFactoryExt.BatchMetricType batchMetricType) {
+                                  final QueueFactoryExt.BatchMetricMode batchMetricMode) {
         super(runtime, metaClass);
-        this.batchMetrics = new QueueReadClientBatchMetrics(batchMetricType);
+        this.batchMetrics = new QueueReadClientBatchMetrics(batchMetricMode);
     }
 
     @JRubyMethod(name = "inflight_batches")

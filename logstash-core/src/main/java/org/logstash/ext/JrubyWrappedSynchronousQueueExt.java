@@ -26,7 +26,6 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyNumeric;
-import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -44,7 +43,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     private static final long serialVersionUID = 1L;
 
     private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
-    private QueueFactoryExt.BatchMetricType batchMetricType;
+    private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -57,7 +56,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
                                                       IRubyObject batchMetricType) {
         int typedSize = ((RubyNumeric)size).getIntValue();
         this.queue = new ArrayBlockingQueue<>(typedSize);
-        this.batchMetricType = QueueFactoryExt.BatchMetricType.valueOf(batchMetricType.asJavaString().toUpperCase());
+        this.batchMetricMode = QueueFactoryExt.BatchMetricMode.valueOf(batchMetricType.asJavaString().toUpperCase());
         return this;
     }
 
@@ -70,7 +69,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     protected QueueReadClientBase getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
-        return JrubyMemoryReadClientExt.create(queue, 125, 50, batchMetricType);
+        return JrubyMemoryReadClientExt.create(queue, 125, 50, batchMetricMode);
     }
 
     @Override

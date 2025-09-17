@@ -610,11 +610,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private boolean isBatchMetricsEnabled(ThreadContext context) {
-        IRubyObject pipelineBatchMetricsSetting = getSetting(context, "pipeline.batch.metrics.sampling_type");
+        IRubyObject pipelineBatchMetricsSetting = getSetting(context, "pipeline.batch.metrics.sampling_mode");
         return !pipelineBatchMetricsSetting.isNil() &&
-                QueueFactoryExt.BatchMetricType.valueOf(
+                QueueFactoryExt.BatchMetricMode.valueOf(
                         pipelineBatchMetricsSetting.asJavaString().toUpperCase()
-                ) != QueueFactoryExt.BatchMetricType.NONE;
+                ) != QueueFactoryExt.BatchMetricMode.DISABLED;
     }
 
     @JRubyMethod(name = "collect_flow_metrics")

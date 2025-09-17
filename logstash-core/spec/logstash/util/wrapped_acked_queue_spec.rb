@@ -61,7 +61,7 @@ describe LogStash::WrappedAckedQueue do
                           .checkpointMaxAcks(checkpoint_acks)
                           .checkpointMaxWrites(checkpoint_writes)
                           .queueMaxBytes(max_bytes)
-                          .batchMetricMode(LogStash::QueueFactory::BatchMetricType.NONE)
+                          .batchMetricMode(LogStash::QueueFactory::BatchMetricMode.DISABLED)
                           .build
     end
 

@@ -11,21 +11,21 @@ import java.security.SecureRandom;
 import static org.logstash.instrument.metrics.MetricKeys.*;
 
 class QueueReadClientBatchMetrics {
-    private final QueueFactoryExt.BatchMetricType batchMetricType;
+    private final QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     private LongCounter pipelineMetricBatchCount;
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
     private final SecureRandom random = new SecureRandom();
 
-    public QueueReadClientBatchMetrics(QueueFactoryExt.BatchMetricType batchMetricType) {
-        this.batchMetricType = batchMetricType;
+    public QueueReadClientBatchMetrics(QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        this.batchMetricMode = batchMetricMode;
     }
 
     public void setupMetrics(AbstractNamespacedMetricExt namespacedMetric) {
         ThreadContext context = namespacedMetric.getRuntime().getCurrentContext();
         AbstractNamespacedMetricExt batchNamespace = namespacedMetric.namespace(context, BATCH_KEY);
-        if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
+        if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {
             pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
             pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
             pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
@@ -33,9 +33,9 @@ class QueueReadClientBatchMetrics {
     }
 
     public void updateBatchMetrics(QueueBatch batch) {
-        if (batchMetricType != QueueFactoryExt.BatchMetricType.NONE) {
+        if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {
             boolean updateMetric = true;
-            if (batchMetricType == QueueFactoryExt.BatchMetricType.MINIMAL) {
+            if (batchMetricMode == QueueFactoryExt.BatchMetricMode.MINIMAL) {
                 // 1% chance to update metric
                 updateMetric = random.nextInt(100) < 2;
             }

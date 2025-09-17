@@ -50,12 +50,12 @@ public final class JrubyAckedReadClientExt extends QueueReadClientBase implement
     public static JrubyAckedReadClientExt create(final ThreadContext context,
         final IRubyObject recv, final IRubyObject queue) {
         return new JrubyAckedReadClientExt(
-            context.runtime, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, QueueFactoryExt.BatchMetricType.NONE
+            context.runtime, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, QueueFactoryExt.BatchMetricMode.DISABLED
         );
     }
 
-    public static JrubyAckedReadClientExt create(IRubyObject queue, QueueFactoryExt.BatchMetricType batchMetricType) {
-        return new JrubyAckedReadClientExt(RubyUtil.RUBY, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, batchMetricType);
+    public static JrubyAckedReadClientExt create(IRubyObject queue, QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        return new JrubyAckedReadClientExt(RubyUtil.RUBY, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, batchMetricMode);
     }
 
     public JrubyAckedReadClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -63,8 +63,8 @@ public final class JrubyAckedReadClientExt extends QueueReadClientBase implement
     }
 
     private JrubyAckedReadClientExt(final Ruby runtime, final RubyClass metaClass,
-                                    final IRubyObject queue, final QueueFactoryExt.BatchMetricType batchMetricType) {
-        super(runtime, metaClass, batchMetricType);
+                                    final IRubyObject queue, final QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        super(runtime, metaClass, batchMetricMode);
         this.queue = (JRubyAckedQueueExt)queue;
     }
 

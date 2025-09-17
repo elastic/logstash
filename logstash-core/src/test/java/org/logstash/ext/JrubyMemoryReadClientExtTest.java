@@ -83,7 +83,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         queue.add(testEvent);
 
         final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50,
-                QueueFactoryExt.BatchMetricType.FULL);
+                QueueFactoryExt.BatchMetricMode.FULL);
         client.setPipelineMetric(metric);
 
         final QueueBatch batch = client.readBatch();
@@ -96,7 +96,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         queue.add(testEvent);
 
         final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50,
-                QueueFactoryExt.BatchMetricType.NONE);
+                QueueFactoryExt.BatchMetricMode.DISABLED);
         client.setPipelineMetric(metric);
 
         final QueueBatch batch = client.readBatch();
@@ -110,7 +110,7 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
         queue.add(testEvent);
 
         final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50,
-                QueueFactoryExt.BatchMetricType.FULL);
+                QueueFactoryExt.BatchMetricMode.FULL);
         client.setPipelineMetric(metric);
 
         final QueueBatch batch = client.readBatch();

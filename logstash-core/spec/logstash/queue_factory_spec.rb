@@ -31,7 +31,7 @@ describe LogStash::QueueFactory do
       LogStash::Setting::NumericSetting.new("queue.checkpoint.writes", 1024),
       LogStash::Setting::BooleanSetting.new("queue.checkpoint.retry", false),
       LogStash::Setting::StringSetting.new("pipeline.id", pipeline_id),
-      LogStash::Setting::StringSetting.new("pipeline.batch.metrics.sampling_type", "none", true, ["none", "minimal", "full"]),
+      LogStash::Setting::StringSetting.new("pipeline.batch.metrics.sampling_type", "none", true, ["disabled", "minimal", "full"]),
       LogStash::Setting::PositiveIntegerSetting.new("pipeline.batch.size", 125),
       LogStash::Setting::PositiveIntegerSetting.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
     ]
