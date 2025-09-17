@@ -85,10 +85,13 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
 :   Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is `1000`. Set to `0` to eliminate periodic checkpoints.
 
 `queue.compression` {applies_to}`stack: ga 9.2`
-:   Sets the event compression goal for use with the persisted queue. Default is `none`. Acceptable values include:
+:   Sets the event compression level for use with the Persisted Queue. Default is `none`. Possible values are:
     * `speed`: optimize for fastest compression operation
     * `size`: optimize for smallest possible size on disk, spending more CPU
     * `balanced`: a balance between the `speed` and `size` settings
+:::{important}
+Enabling compression will make the PQ incompatible with previous Logstash releases that did not support compression.
+:::
 
 ## Configuration notes [pq-config-notes]
 
