@@ -1089,7 +1089,6 @@ paths:
 #                  - $ref: "#/components/schemas/Common"
 #                  - $ref: '#/components/schemas/PipelineSettings'
                   - $ref: "#/components/schemas/PipelinesStats"
-                type: object
               examples:
                 PipelineWithPersistedQueue:
                   description: A pipeline with a persisted queue.
@@ -2297,6 +2296,8 @@ components:
           oneOf:
             - type: object
               description: "The metrics of persisted queue."
+              required:
+                - type
               properties:
                 type:
                   type: string
@@ -2341,6 +2342,8 @@ components:
                   format: int64
             - type: object
               description: "The metrics of memory queue."
+              required:
+                - type
               properties:
                 type:
                   type: string
