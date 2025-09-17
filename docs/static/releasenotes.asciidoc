@@ -3,16 +3,13 @@
 
 This section summarizes the changes in the following releases:
 
-<<<<<<< HEAD
 * <<logstash-8-19-3,Logstash 8.19.3>>
 * <<logstash-8-19-2,Logstash 8.19.2>>
 * <<logstash-8-19-1,Logstash 8.19.1>>
 * <<logstash-8-19-0,Logstash 8.19.0>>
-=======
 * <<logstash-8-18-7,Logstash 8.18.7>>
 * <<logstash-8-18-6,Logstash 8.18.6>>
 * <<logstash-8-18-5,Logstash 8.18.5>>
->>>>>>> f713bd13 (Release notes for 8.18.7 (#18156))
 * <<logstash-8-18-4,Logstash 8.18.4>>
 * <<logstash-8-18-3,Logstash 8.18.3>>
 * <<logstash-8-18-2,Logstash 8.18.2>>
@@ -101,7 +98,6 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
 
-<<<<<<< HEAD
 [[logstash-8-19-3]]
 === Logstash 8.19.3 Release Notes
 
@@ -116,7 +112,6 @@ No change to the plugins in this release.
 
 [[logstash-8-19-2]]
 === Logstash 8.19.2 Release Notes
-=======
 [[logstash-8-18-7]]
 === Logstash 8.18.7 Release Notes
 
@@ -149,7 +144,6 @@ No change to the plugins in this release.
 
 [[logstash-8-18-6]]
 === Logstash 8.18.6 Release Notes
->>>>>>> f713bd13 (Release notes for 8.18.7 (#18156))
 
 No user-facing changes in Logstash core.
 
