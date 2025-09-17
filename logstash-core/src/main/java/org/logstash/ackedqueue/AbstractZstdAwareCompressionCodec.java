@@ -3,14 +3,6 @@ package org.logstash.ackedqueue;
 import com.github.luben.zstd.Zstd;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.logstash.util.CleanerThreadLocal;
-import org.logstash.util.SetOnceReference;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.ref.Cleaner;
-import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
 
 /**
  * Subclasses of {@link AbstractZstdAwareCompressionCodec} are {@link CompressionCodec}s that are capable
