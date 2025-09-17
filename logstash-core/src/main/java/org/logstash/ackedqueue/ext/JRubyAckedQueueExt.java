@@ -31,6 +31,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
@@ -39,6 +40,7 @@ import org.logstash.ackedqueue.AckedBatch;
 import org.logstash.ackedqueue.Batch;
 import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.QueueExceptionMessages;
+import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
 
 /**
@@ -60,27 +62,27 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
-    public static JRubyAckedQueueExt create(String path, int capacity, int maxEvents, int checkpointMaxWrites,
-                                            int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
+    public static JRubyAckedQueueExt create(final Settings settings) {
         JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
-        queueExt.initializeQueue(path, capacity, maxEvents, checkpointMaxWrites, checkpointMaxAcks, checkpointRetry,
-                maxBytes);
+        queueExt.queue = new Queue(settings);
         return queueExt;
     }
 
-    private void initializeQueue(String path, int capacity, int maxEvents, int checkpointMaxWrites,
-                                 int checkpointMaxAcks, boolean checkpointRetry, long maxBytes) {
-        this.queue = new Queue(
-                SettingsImpl.fileSettingsBuilder(path)
-                        .capacity(capacity)
-                        .maxUnread(maxEvents)
-                        .queueMaxBytes(maxBytes)
-                        .checkpointMaxAcks(checkpointMaxAcks)
-                        .checkpointMaxWrites(checkpointMaxWrites)
-                        .checkpointRetry(checkpointRetry)
-                        .elementClass(Event.class)
-                        .build()
-        );
+    /**
+     * Helper method for retrieving a ruby-usable {@link Settings.Builder} with the provided path as its directory,
+     * using {@link Event} as its element-type.
+     *
+     * @param context the ruby thread context
+     * @param recv noop receiver (will be rubified LogStash::AckedQueue class)
+     * @param path the path to the queue
+     * @return a ruby-usable proxy for {@link Settings.Builder}
+     */
+    @JRubyMethod(meta = true, name = "file_settings_builder")
+    public static IRubyObject fileSettingsBuilder(final ThreadContext context, IRubyObject recv, final RubyString path) {
+        final Settings.Builder settingsBuilder = SettingsImpl
+                .fileSettingsBuilder(path.asJavaString())
+                .elementClass(Event.class);
+        return JavaUtil.convertJavaToRuby(context.runtime, settingsBuilder);
     }
 
     @JRubyMethod(name = "max_unread_events")
