@@ -21,7 +21,7 @@ package org.logstash.settings;
 
 import java.util.function.Predicate;
 
-public final class PortSetting extends SettingInteger {
+public final class PortSetting extends IntegerSetting {
 
     public static final Predicate<Integer> VALID_PORT_RANGE = new Predicate<>() {
         @Override
