@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-4,Logstash 8.19.4>>
 * <<logstash-8-19-3,Logstash 8.19.3>>
 * <<logstash-8-19-2,Logstash 8.19.2>>
 * <<logstash-8-19-1,Logstash 8.19.1>>
@@ -94,6 +95,50 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-4]]
+=== Logstash 8.19.4 Release Notes
+
+[[notable-8-19-4]]
+==== Notable issues fixed
+
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives https://github.com/elastic/logstash/pull/18110[#18110]
+
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards https://github.com/elastic/logstash/pull/18088[#18088]
+
+[[featured-8-19-4]]
+==== New features and enhancements
+
+===== ES|QL Support in Elasticsearch Filter (Technical Preview)
+* https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/199[Support for ES|QL queries] in the Elasticsearch filter to add improved flexibility when ingesting data from {es} is now in Technical Preview. 
+
+
+==== Plugins
+
+*Elasticsearch Filter - 3.19.0*
+
+* ES|QL support https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/199[#199]
+
+*Beats Input - 6.9.4*
+
+* Upgrade netty to 4.1.126 https://github.com/logstash-plugins/logstash-input-beats/pull/518[#518]
+
+*Http Input - 3.10.3*
+
+* Upgrade netty to 4.1.126 https://github.com/logstash-plugins/logstash-input-http/pull/199[#199]
+
+*Jms Input - 3.3.1*
+
+* Fixed a regression introduced in 3.3.0 where `add_field` is no longer enriching events https://github.com/logstash-plugins/logstash-input-jms/pull/59[#59]
+
+*Tcp Input - 6.4.7*
+
+* Upgrade netty to 4.1.126 https://github.com/logstash-plugins/logstash-input-tcp/pull/236[#236]
+
+*Kafka Integration - 11.6.4*
+
+* Display exception chain comes from kafka client https://github.com/logstash-plugins/logstash-integration-kafka/pull/200[#200]
+
 
 [[logstash-8-19-3]]
 === Logstash 8.19.3 Release Notes
