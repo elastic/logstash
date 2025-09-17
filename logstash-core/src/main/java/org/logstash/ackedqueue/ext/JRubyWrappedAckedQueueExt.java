@@ -32,6 +32,7 @@ import org.jruby.runtime.Arity;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -48,16 +49,18 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
+    private QueueFactoryExt.BatchMetricType batchMetricType;
 
-    @JRubyMethod(optional = 8)
+    @JRubyMethod(optional = 9)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 7, 0);
+        args = Arity.scanArgs(context.runtime, args, 8, 0);
         int capacity = RubyFixnum.num2int(args[1]);
         int maxEvents = RubyFixnum.num2int(args[2]);
         int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
         int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
         boolean checkpointRetry = !((RubyBoolean) args[5]).isFalse();
         long queueMaxBytes = RubyFixnum.num2long(args[6]);
+        this.batchMetricType = QueueFactoryExt.BatchMetricType.valueOf(args[7].asJavaString().toUpperCase());
 
         this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
                 checkpointMaxWrites, checkpointMaxAcks, checkpointRetry, queueMaxBytes);
@@ -101,7 +104,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected QueueReadClientBase getReadClient() {
-        return JrubyAckedReadClientExt.create(queue);
+        return JrubyAckedReadClientExt.create(queue, batchMetricType);
     }
 
     @Override

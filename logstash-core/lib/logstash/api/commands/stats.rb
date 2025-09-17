@@ -172,6 +172,27 @@ module LogStash
             end
           end
 
+          def refine_batch_metrics(stats)
+            current_data_point = stats[:batch][:current]
+            {
+              :event_count => {
+                # current_data_point is an instance of org.logstash.instrument.metrics.gauge.LazyDelegatingGauge so need to invoke getValue() to obtain the actual value
+                :current => current_data_point.value[0],
+                :average => {
+                  # average return a FlowMetric which and we need to invoke getValue to obtain the map with metric details.
+                  :lifetime => stats[:batch][:event_count][:average].value["lifetime"]
+                }
+              },
+              :byte_size => {
+                :current => current_data_point.value[1],
+                :average => {
+                  :lifetime => stats[:batch][:byte_size][:average].value["lifetime"]
+                }
+              }
+            }
+          end
+          private :refine_batch_metrics
+
           def report(stats, extended_stats = nil, opts = {})
             ret = {
               :events => stats[:events],
@@ -190,6 +211,9 @@ module LogStash
                 :batch_delay => stats.dig(:config, :batch_delay),
               }
             }
+            if stats.include?(:batch)
+              ret[:batch] = refine_batch_metrics(stats)
+            end
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
             # if extended_stats were provided, enrich the return value
