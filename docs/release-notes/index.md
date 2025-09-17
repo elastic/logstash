@@ -20,6 +20,47 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 % ### Fixes [logstash-next-fixes]
 % *
+
+## 9.1.4 [logstash-9.1.4-release-notes]
+
+### Features and enhancements [logstash-9.1.4-features-enhancements]
+
+##### ES|QL Support in Elasticsearch Filter (Technical Preview)
+
+* [Support for using ES|QL queries](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194) in the Elasticsearch filter to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
+
+### Fixes [logstash-9.1.4-fixes]
+
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards [#18090](https://github.com/elastic/logstash/pull/18090)
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
+
+
+### Plugins [logstash-plugin-9.1.4-changes]
+
+**Elasticsearch Filter - 4.3.0**
+
+* ES|QL support [#194](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194)
+
+**Beats Input - 7.0.3**
+
+* Upgrade netty 4.1.126 [#517](https://github.com/logstash-plugins/logstash-input-beats/pull/517)
+
+**Http Input - 4.1.3**
+
+* Upgrade netty to 4.1.126 [#198](https://github.com/logstash-plugins/logstash-input-http/pull/198)
+
+**Jms Input - 3.3.1**
+
+* Fixed a regression introduced in 3.3.0 where `add_field` is no longer enriching events [#59](https://github.com/logstash-plugins/logstash-input-jms/pull/59)
+
+**Tcp Input - 7.0.3**
+
+* Upgrade netty to 4.1.126 [#235](https://github.com/logstash-plugins/logstash-input-tcp/pull/235)
+
+**Kafka Integration - 11.6.4**
+
+* Display exception chain comes from kafka client [#200](https://github.com/logstash-plugins/logstash-integration-kafka/pull/200)
+
 ## 9.1.3 [logstash-9.1.3-release-notes]
 
 ### Features and enhancements [logstash-9.1.3-features-enhancements]
