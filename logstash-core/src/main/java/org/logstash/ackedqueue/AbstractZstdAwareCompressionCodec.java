@@ -1,6 +1,8 @@
 package org.logstash.ackedqueue;
 
 import com.github.luben.zstd.Zstd;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.util.CleanerThreadLocal;
 import org.logstash.util.SetOnceReference;
 
@@ -16,13 +18,18 @@ import java.util.zip.Inflater;
  * deflate-compressed, the given bytes are emitted verbatim.
  */
 abstract class AbstractZstdAwareCompressionCodec implements CompressionCodec {
+    // log from the concrete class
+    protected final Logger logger = LogManager.getLogger(this.getClass());
+
     @Override
     public byte[] decode(byte[] data) {
         if (!isZstd(data)) {
             return data;
         }
         try {
-            return Zstd.decompress(data);
+            final byte[] decoded = Zstd.decompress(data);
+            logger.trace("decoded {} -> {}", data.length, decoded.length);
+            return decoded;
         } catch (Exception e) {
             throw new RuntimeException("Exception while decoding", e);
         }
