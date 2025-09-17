@@ -419,8 +419,6 @@ public final class Queue implements Closeable {
         byte[] serializedBytes = element.serialize();
         byte[] data = compressionCodec.encode(serializedBytes);
 
-        logger.trace("serialized: {}->{}", serializedBytes.length, data.length);
-
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
         // *after* the write which is both safer for a crash condition, and the queue closing sequence. In the former case
@@ -773,7 +771,6 @@ public final class Queue implements Closeable {
     public Queueable deserialize(byte[] bytes) {
         try {
             byte[] decodedBytes = compressionCodec.decode(bytes);
-            logger.trace("deserialized: {}->{}", bytes.length, decodedBytes.length);
             return (Queueable)this.deserializeMethod.invoke(this.elementClass, decodedBytes);
         } catch (IllegalAccessException|InvocationTargetException e) {
             throw new QueueRuntimeException("deserialize invocation error", e);

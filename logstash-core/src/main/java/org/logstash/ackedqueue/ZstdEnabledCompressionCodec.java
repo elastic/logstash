@@ -31,7 +31,9 @@ class ZstdEnabledCompressionCodec extends AbstractZstdAwareCompressionCodec impl
     @Override
     public byte[] encode(byte[] data) {
         try {
-            return Zstd.compress(data, internalLevel);
+            final byte[] encoded = Zstd.compress(data, internalLevel);
+            logger.trace("encoded {} -> {}", data.length, encoded.length);
+            return encoded;
         } catch (Exception e) {
             throw new RuntimeException("Exception while encoding", e);
         }
