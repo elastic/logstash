@@ -12,15 +12,15 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.*;
 
 @RunWith(Enclosed.class)
-public class SettingNullableStringTest {
+public class NullableStringSettingTest {
 
     public static class WithValueConstraintCase{
         private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
-            sut = new SettingNullableString("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
+            sut = new NullableStringSetting("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
         }
 
         @Test
@@ -47,11 +47,11 @@ public class SettingNullableStringTest {
     }
 
     public static class WithoutValueConstraintCase {
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
-            sut = new SettingNullableString("mytext", "foo", true);
+            sut = new NullableStringSetting("mytext", "foo", true);
         }
 
         @Test

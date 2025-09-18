@@ -16,35 +16,43 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.logstash.settings;
 
-public class Boolean extends Coercible<java.lang.Boolean> {
+public class NumericSetting extends Coercible<Number> {
 
-    public Boolean(String name, boolean defaultValue) {
+    public NumericSetting(String name, Number defaultValue) {
         super(name, defaultValue, true, noValidator());
     }
 
-    public Boolean(String name, boolean defaultValue, boolean strict) {
+    // constructor used only in tests, but needs to be public to be used in Ruby spec
+    public NumericSetting(String name, Number defaultValue, boolean strict) {
         super(name, defaultValue, strict, noValidator());
     }
 
     @Override
-    public java.lang.Boolean coerce(Object obj) {
-        if (obj instanceof String) {
-            switch((String) obj) {
-                case "true": return true;
-                case "false": return false;
-                default: throw new IllegalArgumentException(coercionFailureMessage(obj));
-            }
+    public Number coerce(Object obj) {
+        if (obj == null) {
+            throw new IllegalArgumentException("Failed to coerce value to NumericSetting. Received null");
         }
-        if (obj instanceof java.lang.Boolean) {
-            return (java.lang.Boolean) obj;
+        if (obj instanceof Number) {
+            return (Number) obj;
         }
+        try {
+            return Integer.parseInt(obj.toString());
+        } catch (NumberFormatException e) {
+            // ugly flow control
+        }
+        try {
+            return Float.parseFloat(obj.toString());
+        } catch (NumberFormatException e) {
+            // ugly flow control
+        }
+
+        // no integer neither float parsing succeed, invalid coercion
         throw new IllegalArgumentException(coercionFailureMessage(obj));
     }
 
     private String coercionFailureMessage(Object obj) {
-        return String.format("Cannot coerce `%s` to boolean (%s)", obj, getName());
+        return String.format("Failed to coerce value to NumericSetting. Received %s (%s)", obj, obj.getClass());
     }
 }

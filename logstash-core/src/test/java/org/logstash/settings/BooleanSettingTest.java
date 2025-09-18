@@ -26,14 +26,14 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BooleanTest {
+public class BooleanSettingTest {
 
 
-    private Boolean sut;
+    private BooleanSetting sut;
 
     @Before
     public void setUp() {
-        sut = new Boolean("api.enabled", true);
+        sut = new BooleanSetting("api.enabled", true);
     }
 
     @Test

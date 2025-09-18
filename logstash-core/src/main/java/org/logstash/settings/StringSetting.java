@@ -21,11 +21,11 @@ package org.logstash.settings;
 import java.util.Collections;
 import java.util.List;
 
-public class SettingString extends BaseSetting<String> {
+public class StringSetting extends BaseSetting<String> {
 
     private List<String> possibleStrings = Collections.emptyList();
 
-    public SettingString(String name, String defaultValue, boolean strict, List<String> possibleStrings) {
+    public StringSetting(String name, String defaultValue, boolean strict, List<String> possibleStrings) {
         super(name, strict, noValidator()); // this super doesn't call validate either if it's strict
         this.possibleStrings = possibleStrings;
         this.defaultValue = defaultValue;
@@ -35,11 +35,11 @@ public class SettingString extends BaseSetting<String> {
         }
     }
 
-    public SettingString(String name, String defaultValue) {
+    public StringSetting(String name, String defaultValue) {
         this(name, defaultValue, true, Collections.emptyList());
     }
 
-    public SettingString(String name, String defaultValue, boolean strict) {
+    public StringSetting(String name, String defaultValue, boolean strict) {
         this(name, defaultValue, strict, Collections.emptyList());
     }
 

@@ -31,15 +31,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 @RunWith(Enclosed.class)
-public class SettingStringTest {
+public class StringSettingTest {
 
     public static class WithValueConstraintCase {
         private static final List<String> POSSIBLE_VALUES = List.of("a", "b", "c");
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
-            sut = new SettingString("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
+            sut = new StringSetting("mytext", POSSIBLE_VALUES.iterator().next(), true, POSSIBLE_VALUES);
         }
 
         @Test
@@ -67,11 +67,11 @@ public class SettingStringTest {
     }
 
     public static class WithoutValueConstraintCase {
-        private SettingString sut;
+        private StringSetting sut;
 
         @Before
         public void setUp() throws Exception {
-            sut = new SettingString("mytext", "foo", true);
+            sut = new StringSetting("mytext", "foo", true);
         }
 
         @Test

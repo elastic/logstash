@@ -2,9 +2,9 @@ package org.logstash.settings;
 
 import java.util.function.Predicate;
 
-public class SettingPositiveInteger extends SettingInteger {
+public class PositiveIntegerSetting extends IntegerSetting {
 
-    public SettingPositiveInteger(String name, Integer defaultValue) {
+    public PositiveIntegerSetting(String name, Integer defaultValue) {
         super(name, defaultValue, true, new Predicate<Integer>() {
             @Override
             public boolean test(Integer v) {

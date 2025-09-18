@@ -2,19 +2,19 @@ package org.logstash.settings;
 
 import java.util.function.Predicate;
 
-public class SettingInteger extends Coercible<Integer> {
+public class IntegerSetting extends Coercible<Integer> {
 
-    public SettingInteger(String name, Integer defaultValue) {
+    public IntegerSetting(String name, Integer defaultValue) {
         super(name, defaultValue, true, noValidator());
     }
 
     // constructor used only in tests, but needs to be public to be used in Ruby spec
-    public SettingInteger(String name, Integer defaultValue, boolean strict) {
+    public IntegerSetting(String name, Integer defaultValue, boolean strict) {
         super(name, defaultValue, strict, noValidator());
     }
 
     // Exposed to be redefined in subclasses
-    protected SettingInteger(String name, Integer defaultValue, boolean strict, Predicate<Integer> validator) {
+    protected IntegerSetting(String name, Integer defaultValue, boolean strict, Predicate<Integer> validator) {
         super(name, defaultValue, strict, validator);
     }
 
@@ -43,6 +43,6 @@ public class SettingInteger extends Coercible<Integer> {
     }
 
     private String coercionFailureMessage(Object obj) {
-        return String.format("Failed to coerce value to SettingInteger. Received %s (%s)", obj, obj.getClass());
+        return String.format("Failed to coerce value to IntegerSetting. Received %s (%s)", obj, obj.getClass());
     }
 }

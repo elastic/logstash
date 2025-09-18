@@ -412,12 +412,11 @@ module LogStash
     end
     ### Specific settings #####
 
-    java_import org.logstash.settings.Boolean
-    java_import org.logstash.settings.SettingNumeric
+    java_import org.logstash.settings.BooleanSetting
+    java_import org.logstash.settings.NumericSetting
 
-    java_import org.logstash.settings.SettingInteger
-
-    java_import org.logstash.settings.SettingPositiveInteger
+    java_import org.logstash.settings.IntegerSetting
+    java_import org.logstash.settings.PositiveIntegerSetting
 
     java_import org.logstash.settings.PortSetting # seems unused
 
@@ -434,9 +433,9 @@ module LogStash
       end
     end
     
-    java_import org.logstash.settings.SettingString
+    java_import org.logstash.settings.StringSetting
 
-    java_import org.logstash.settings.SettingNullableString
+    java_import org.logstash.settings.NullableStringSetting
 
     class Password < Coercible
       def initialize(name, default = nil, strict = true)

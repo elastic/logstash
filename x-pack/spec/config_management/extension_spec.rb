@@ -28,20 +28,20 @@ describe LogStash::ConfigManagement::Extension do
 
     describe "#additionals_settings" do
       define_settings(
-        "xpack.management.enabled" => [LogStash::Setting::Boolean, false],
+        "xpack.management.enabled" => [LogStash::Setting::BooleanSetting, false],
         "xpack.management.logstash.poll_interval" => [LogStash::Setting::TimeValue, LogStash::Util::TimeValue.from_value("5s")],
         "xpack.management.pipeline.id" => [LogStash::Setting::ArrayCoercible, ["main"]],
         "xpack.management.elasticsearch.hosts" => [LogStash::Setting::ArrayCoercible, ["https://localhost:9200"]],
-        "xpack.management.elasticsearch.username" => [LogStash::Setting::SettingString, "logstash_system"],
-        "xpack.management.elasticsearch.password" => [LogStash::Setting::SettingString, nil],
-        "xpack.management.elasticsearch.ssl.certificate_authority" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.ca_trusted_fingerprint" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.truststore.path" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.truststore.password" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.certificate" => [LogStash::Setting::SettingNullableString, nil],
-        "xpack.management.elasticsearch.ssl.key" => [LogStash::Setting::SettingNullableString, nil],
+        "xpack.management.elasticsearch.username" => [LogStash::Setting::StringSetting, "logstash_system"],
+        "xpack.management.elasticsearch.password" => [LogStash::Setting::StringSetting, nil],
+        "xpack.management.elasticsearch.ssl.certificate_authority" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.ca_trusted_fingerprint" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.truststore.path" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.truststore.password" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.keystore.path" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.keystore.password" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.certificate" => [LogStash::Setting::NullableStringSetting, nil],
+        "xpack.management.elasticsearch.ssl.key" => [LogStash::Setting::NullableStringSetting, nil],
         "xpack.management.elasticsearch.ssl.cipher_suites" => [LogStash::Setting::ArrayCoercible, []],
       )
 
