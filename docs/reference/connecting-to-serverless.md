@@ -52,6 +52,16 @@ This option formats the API key in the correct `id:api_key` format required by {
 
 The UI for API keys may look different depending on the deployment type.
 
+## Using Cloud ID with plugins [cloud-id-serverless]
+
+The Elasticsearch input, output, and filter plugins, as well as the Elastic_integration filter plugin, support cloud_id in their configurations.
+
+* [Elasticsearch input plugin](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-cloud_id)
+* [Elasticsearch filter plugin](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-cloud_id)
+* [Elasticsearch output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
+* [Elastic_integration filter plugin](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-cloud_id)
+
+
 
 ## Using {{ls}} Central Pipeline Management with {{es-serverless}} [cpm-serverless]
 
