@@ -38,6 +38,11 @@ class QueueReadClientBatchMetrics {
     }
 
     public void updateBatchMetrics(QueueBatch batch) {
+        if (batch.events().isEmpty()) {
+            // avoid to increment batch count for empty batches
+            return;
+        }
+
         if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {
             boolean updateMetric = true;
             if (batchMetricMode == QueueFactoryExt.BatchMetricMode.MINIMAL) {

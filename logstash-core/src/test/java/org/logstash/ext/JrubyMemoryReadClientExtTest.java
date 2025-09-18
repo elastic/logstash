@@ -105,6 +105,17 @@ public final class JrubyMemoryReadClientExtTest extends RubyTestBase {
     }
 
     @Test
+    public void givenEmptyQueueWhenEmptyBatchIsReadAndMetricIsFullyCollectedThenBatchCounterMetricIsNotUpdated() throws InterruptedException {
+        final JrubyMemoryReadClientExt client = JrubyMemoryReadClientExt.create(queue, 5, 50,
+                QueueFactoryExt.BatchMetricMode.FULL);
+        client.setPipelineMetric(metric);
+
+        final QueueBatch batch = client.readBatch();
+        assertEquals(0, batch.filteredSize());
+        assertEquals(0L, batchCounter.getValue().longValue());
+    }
+
+    @Test
     public void givenNonEmptyQueueWhenBatchIsReadThenBatchByteSizeMetricIsUpdated() throws InterruptedException {
         final long expectedBatchByteSize = testEvent.getEvent().estimateMemory();
         queue.add(testEvent);
