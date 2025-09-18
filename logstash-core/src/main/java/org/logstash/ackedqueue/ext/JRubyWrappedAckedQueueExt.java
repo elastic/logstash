@@ -51,9 +51,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(required=1)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
-        if (JavaUtil.isJavaObject(settings)) {
-            this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
-        } else {
+        if (!JavaUtil.isJavaObject(settings)) {
             // We should never get here, but previously had an initialize method
             // that took 7 technically-optional ordered parameters.
             throw new IllegalArgumentException(
@@ -62,6 +60,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings.getClass().getName(),
                             settings));
         }
+        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
         this.queue.open();
 
         return this;
