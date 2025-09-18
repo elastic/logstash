@@ -18,7 +18,7 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::Password do
+describe LogStash::Setting::PasswordSetting do
   let(:setting_name) { "secure" }
   subject(:password_setting) { described_class.new(setting_name, nil, true) }
 
@@ -55,7 +55,7 @@ describe LogStash::Setting::Password do
     context 'with an invalid non-string value' do
       let(:setting_value) { 867_5309 }
       it 'rejects the invalid value' do
-        expect { password_setting.set(setting_value) }.to raise_error(ArgumentError, "Setting `#{setting_name}` could not coerce non-string value to password")
+        expect { password_setting.set(setting_value) }.to raise_error(IllegalArgumentException, "Setting `#{setting_name}` could not coerce non-string value to password")
         expect(password_setting).to_not be_set
       end
     end
