@@ -38,14 +38,14 @@ public class PasswordSettingTest {
     }
 
     @Test
-    public void  givenUnsetPasswordSetting_thenIsConsideredAsValid() {
+    public void givenUnsetPasswordSetting_thenIsConsideredAsValid() {
         assertNotThrown(() -> sut.validateValue());
         assertThat(sut.value(), is(instanceOf(co.elastic.logstash.api.Password.class)));
         assertNull(((co.elastic.logstash.api.Password) sut.value()).getValue());
     }
 
     @Test
-    public void  givenUnsetPasswordSetting_wheIsSetIsInvoked_thenReturnFalse() {
+    public void givenUnsetPasswordSetting_wheIsSetIsInvoked_thenReturnFalse() {
         assertFalse(sut.isSet());
     }
 
@@ -59,14 +59,14 @@ public class PasswordSettingTest {
     }
 
     @Test
-    public void  givenSetPasswordSetting_whenIsSetIsInvoked_thenReturnTrue() {
+    public void givenSetPasswordSetting_whenIsSetIsInvoked_thenReturnTrue() {
         sut.set("s3cUr3p4$$w0rd");
 
         assertTrue(sut.isSet());
     }
 
     @Test
-    public void  givenSetPasswordSettingWithInvalidNonStringValue_thenRejectsTheInvalidValue() {
+    public void givenSetPasswordSettingWithInvalidNonStringValue_thenRejectsTheInvalidValue() {
         Exception e = assertThrows(IllegalArgumentException.class, () -> sut.set(867_5309));
         assertThat(e.getMessage(), is("Setting `" + SETTING_NAME + "` could not coerce non-string value to password"));
     }
