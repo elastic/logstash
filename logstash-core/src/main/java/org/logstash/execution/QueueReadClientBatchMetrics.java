@@ -54,21 +54,22 @@ class QueueReadClientBatchMetrics {
         }
 
         if (updateMetric) {
-            pipelineMetricBatchCount.increment();
-            pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
             updateBatchSizeMetric(batch);
         }
     }
 
     private void updateBatchSizeMetric(QueueBatch batch) {
-        long totalSize = 0L;
         try {
+            // if an error occurs in estimating the size of the batch, no counter has to be updated
+            long totalSize = 0L;
             for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
                 totalSize += rubyEvent.getEvent().estimateMemory();
             }
+            pipelineMetricBatchCount.increment();
+            pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
+            pipelineMetricBatchByteSize.increment(totalSize);
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
-        pipelineMetricBatchByteSize.increment(totalSize);
     }
 }
