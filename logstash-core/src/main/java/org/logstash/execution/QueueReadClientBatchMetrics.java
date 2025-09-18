@@ -43,18 +43,20 @@ class QueueReadClientBatchMetrics {
             return;
         }
 
-        if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {
-            boolean updateMetric = true;
-            if (batchMetricMode == QueueFactoryExt.BatchMetricMode.MINIMAL) {
-                // 1% chance to update metric
-                updateMetric = random.nextInt(100) < 2;
-            }
+        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.DISABLED) {
+            return;
+        }
 
-            if (updateMetric) {
-                pipelineMetricBatchCount.increment();
-                pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
-                updateBatchSizeMetric(batch);
-            }
+        boolean updateMetric = true;
+        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.MINIMAL) {
+            // 1% chance to update metric
+            updateMetric = random.nextInt(100) < 2;
+        }
+
+        if (updateMetric) {
+            pipelineMetricBatchCount.increment();
+            pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
+            updateBatchSizeMetric(batch);
         }
     }
 
