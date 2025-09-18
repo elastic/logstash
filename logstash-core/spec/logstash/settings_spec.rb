@@ -284,14 +284,14 @@ describe LogStash::Settings do
       it "raises an error when supplied value is not LogStash::Util::Password" do
         expect {
           LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
+        }.to raise_error(IllegalArgumentException, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
       end
 
       it "fails on validation" do
         password = LogStash::Util::Password.new("Password!")
         expect {
           LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Password must contain at least one digit between 0 and 9."))
+        }.to raise_error(IllegalArgumentException, a_string_including("Password must contain at least one digit between 0 and 9."))
       end
 
       it "validates the password successfully" do
