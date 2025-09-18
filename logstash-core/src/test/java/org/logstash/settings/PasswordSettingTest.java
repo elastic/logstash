@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 
 public class PasswordSettingTest {
 
-    private final String SETTING_NAME= "setting_name";
+    private final String SETTING_NAME = "setting_name";
     private PasswordSetting sut;
 
     @Before
@@ -45,7 +45,7 @@ public class PasswordSettingTest {
     }
 
     @Test
-    public void  givenUnsetPasswordSetting_wheIsSetIsInvoked_thenReturnFalse() {
+    public void  givenUnsetPasswordSetting_whenIsSetIsInvoked_thenReturnFalse() {
         assertFalse(sut.isSet());
     }
 
