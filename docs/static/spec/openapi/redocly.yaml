@@ -26,15 +26,10 @@ rules:
  # Paths
   no-ambiguous-paths: warn
   no-identical-paths: error
-  path-excludes-patterns:
-    severity: error
-    patterns:
-      - ^\/internal
  # Responses
   operation-4xx-response: off
   operation-2xx-response: off
  # Schema
-  spec: off
   spec-strict-refs: off
  # Tags
   operation-tag-defined: off
@@ -50,3 +45,10 @@ rules:
     assertions:
       maxLength: 45
       minLength: 5
+  rule/path-exclude-pattern:
+    subject:
+      type: Paths
+    message: Do not include internal APIs
+    assertions:
+      notPattern: ^\/internal
+    severity: error
