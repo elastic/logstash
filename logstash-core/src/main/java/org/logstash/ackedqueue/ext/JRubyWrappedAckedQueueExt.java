@@ -21,10 +21,12 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
+import org.jruby.RubyFixnum;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -32,6 +34,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -48,6 +51,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
+    private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     @JRubyMethod(required=1)
     public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
@@ -60,7 +64,9 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings.getClass().getName(),
                             settings));
         }
-        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
+        Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
+        this.queue = JRubyAckedQueueExt.create(javaSettings);
+        this.batchMetricMode = Objects.requireNonNull(javaSettings.batchMetricMode(), "batchMetricMode setting must be non-null");
         this.queue.open();
 
         return this;
@@ -72,6 +78,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings) throws IOException {
         super(runtime, metaClass);
+        this.batchMetricMode = Objects.requireNonNull(settings.batchMetricMode(), "batchMetricMode setting must be non-null");
         this.queue = JRubyAckedQueueExt.create(settings);
         this.queue.open();
     }
@@ -111,7 +118,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected QueueReadClientBase getReadClient() {
-        return JrubyAckedReadClientExt.create(queue);
+        return JrubyAckedReadClientExt.create(queue, batchMetricMode);
     }
 
     @Override

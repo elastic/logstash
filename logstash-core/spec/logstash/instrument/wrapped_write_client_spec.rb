@@ -113,7 +113,7 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024) }
+    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024, "disabled") }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -127,12 +127,14 @@ describe LogStash::WrappedWriteClient do
     let(:path) { Stud::Temporary.directory }
 
     let(:queue_settings) do
+      java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
       LogStash::AckedQueue.file_settings_builder(path)
          .capacity(1024)
          .maxUnread(10)
          .checkpointMaxAcks(1024)
          .checkpointMaxWrites(1024)
          .queueMaxBytes(4096)
+         .batchMetricMode(BatchMetricMode::DISABLED)
          .build
     end
 

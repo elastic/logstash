@@ -28,6 +28,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.AckedReadBatch;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ackedqueue.ext.JRubyAckedQueueExt;
 import org.logstash.execution.QueueBatch;
 import org.logstash.execution.QueueReadClient;
@@ -49,12 +50,12 @@ public final class JrubyAckedReadClientExt extends QueueReadClientBase implement
     public static JrubyAckedReadClientExt create(final ThreadContext context,
         final IRubyObject recv, final IRubyObject queue) {
         return new JrubyAckedReadClientExt(
-            context.runtime, RubyUtil.ACKED_READ_CLIENT_CLASS, queue
+            context.runtime, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, QueueFactoryExt.BatchMetricMode.DISABLED
         );
     }
 
-    public static JrubyAckedReadClientExt create(IRubyObject queue) {
-        return new JrubyAckedReadClientExt(RubyUtil.RUBY, RubyUtil.ACKED_READ_CLIENT_CLASS, queue);
+    public static JrubyAckedReadClientExt create(IRubyObject queue, QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        return new JrubyAckedReadClientExt(RubyUtil.RUBY, RubyUtil.ACKED_READ_CLIENT_CLASS, queue, batchMetricMode);
     }
 
     public JrubyAckedReadClientExt(final Ruby runtime, final RubyClass metaClass) {
@@ -62,8 +63,8 @@ public final class JrubyAckedReadClientExt extends QueueReadClientBase implement
     }
 
     private JrubyAckedReadClientExt(final Ruby runtime, final RubyClass metaClass,
-        final IRubyObject queue) {
-        super(runtime, metaClass);
+                                    final IRubyObject queue, final QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        super(runtime, metaClass, batchMetricMode);
         this.queue = (JRubyAckedQueueExt)queue;
     }
 

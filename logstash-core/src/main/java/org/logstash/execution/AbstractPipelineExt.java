@@ -317,8 +317,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                     new IRubyObject[]{
                             STATS_KEY,
                             PIPELINES_KEY,
-                            pipelineId.convertToString().intern(),
-                            EVENTS_KEY
+                            pipelineId.convertToString().intern()
                     }
                 )
             )
@@ -585,9 +584,37 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, utilizationFlow);
         storeMetric(context, flowNamespace, utilizationFlow);
 
+        // Batch average byte size and count metrics
+        if (isBatchMetricsEnabled(context)) {
+            initializeBatchMetrics(context);
+        }
+
         initializePqFlowMetrics(context, flowNamespace, uptimeMetric);
         initializePluginFlowMetrics(context, uptimeMetric);
         return context.nil;
+    }
+
+    private void initializeBatchMetrics(ThreadContext context) {
+        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+        final LongCounter batchEventsInCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_EVENTS);
+        final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
+        final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, batchEventsInCounter, batchCounter);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
+        storeMetric(context, batchNamespace, documentsPerBatch);
+
+        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, BATCH_BYTE_SIZE_KEY);
+        final LongCounter totalBytes = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_BYTES);
+        final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
+        this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
+        storeMetric(context, batchSizeNamespace, byteSizePerBatch);
+    }
+
+    private boolean isBatchMetricsEnabled(ThreadContext context) {
+        IRubyObject pipelineBatchMetricsSetting = getSetting(context, "pipeline.batch.metrics.sampling_mode");
+        return !pipelineBatchMetricsSetting.isNil() &&
+                QueueFactoryExt.BatchMetricMode.valueOf(
+                        pipelineBatchMetricsSetting.asJavaString().toUpperCase()
+                ) != QueueFactoryExt.BatchMetricMode.DISABLED;
     }
 
     @JRubyMethod(name = "collect_flow_metrics")

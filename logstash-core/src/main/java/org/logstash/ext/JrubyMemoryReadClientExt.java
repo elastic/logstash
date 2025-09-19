@@ -26,6 +26,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.common.LsQueueUtils;
 import org.logstash.execution.MemoryReadBatch;
 import org.logstash.execution.QueueBatch;
@@ -47,8 +48,9 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
 
     @SuppressWarnings("rawtypes")
     private JrubyMemoryReadClientExt(final Ruby runtime, final RubyClass metaClass,
-                                     BlockingQueue queue, int batchSize, int waitForMillis) {
-        super(runtime, metaClass);
+                                     BlockingQueue queue, int batchSize, int waitForMillis,
+                                     QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        super(runtime, metaClass, batchMetricMode);
         this.queue = queue;
         this.batchSize = batchSize;
         this.waitForNanos = TimeUnit.NANOSECONDS.convert(waitForMillis, TimeUnit.MILLISECONDS);
@@ -58,8 +60,15 @@ public final class JrubyMemoryReadClientExt extends QueueReadClientBase {
     @SuppressWarnings("rawtypes")
     public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
                                                   int waitForMillis) {
+        return create(queue, batchSize, waitForMillis, QueueFactoryExt.BatchMetricMode.DISABLED);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static JrubyMemoryReadClientExt create(BlockingQueue queue, int batchSize,
+                                                  int waitForMillis,
+                                                  QueueFactoryExt.BatchMetricMode batchMetricMode) {
         return new JrubyMemoryReadClientExt(RubyUtil.RUBY,
-                RubyUtil.MEMORY_READ_CLIENT_CLASS, queue, batchSize, waitForMillis);
+                RubyUtil.MEMORY_READ_CLIENT_CLASS, queue, batchSize, waitForMillis, batchMetricMode);
     }
 
     @Override
