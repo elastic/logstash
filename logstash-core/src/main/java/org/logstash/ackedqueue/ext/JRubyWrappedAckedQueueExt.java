@@ -21,6 +21,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
@@ -66,6 +67,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
         this.queue = JRubyAckedQueueExt.create(javaSettings);
         this.batchMetricMode = javaSettings.batchMetricMode();
+//        Objects.requireNonNull(this.batchMetricMode, "batchMetricMode must be non-null");
         this.queue.open();
 
         return this;

@@ -28,6 +28,7 @@ class QueueReadClientBatchMetrics {
     }
 
     public void setupMetrics(AbstractNamespacedMetricExt namespacedMetric) {
+        LOG.debug("setupMetrics called with mode: {}", batchMetricMode);
         ThreadContext context = namespacedMetric.getRuntime().getCurrentContext();
         AbstractNamespacedMetricExt batchNamespace = namespacedMetric.namespace(context, BATCH_KEY);
         if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {

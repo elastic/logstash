@@ -39,6 +39,7 @@ import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -72,7 +73,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     protected QueueReadClientBase(final Ruby runtime, final RubyClass metaClass,
                                   final QueueFactoryExt.BatchMetricMode batchMetricMode) {
         super(runtime, metaClass);
-        this.batchMetrics = new QueueReadClientBatchMetrics(batchMetricMode);
+//        Objects.requireNonNull(batchMetricMode, "batchMetricMode must not be null");
+        this.batchMetrics = new QueueReadClientBatchMetrics(batchMetricMode == null ? QueueFactoryExt.BatchMetricMode.DISABLED : batchMetricMode);
     }
 
     @JRubyMethod(name = "inflight_batches")
