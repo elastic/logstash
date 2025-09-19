@@ -16,7 +16,7 @@ If `false`, Logstash does not manage GeoIP2 databases and plugins that need a Ge
 `xpack.geoip.downloader.endpoint`::
 
 (String) Endpoint URL used to download updates for GeoIP2 databases.
-For example, `https://mydomain.com/overview.json`.
+For example, `https://example.com/overview.json`.
 Defaults to `https://geoip.elastic.co/v1/database`.
 Note that Logstash will periodically make a GET request to `${xpack.geoip.downloader.endpoint}?elastic_geoip_service_tos=agree`, expecting the list of metadata about databases typically found in `overview.json`.
 
