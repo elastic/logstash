@@ -25,13 +25,13 @@ import java.io.IOException;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
-import org.jruby.runtime.Arity;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.Settings;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -49,21 +49,31 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     private JRubyAckedQueueExt queue;
 
-    @JRubyMethod(optional = 8)
-    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
-        args = Arity.scanArgs(context.runtime, args, 7, 0);
-        int capacity = RubyFixnum.num2int(args[1]);
-        int maxEvents = RubyFixnum.num2int(args[2]);
-        int checkpointMaxWrites = RubyFixnum.num2int(args[3]);
-        int checkpointMaxAcks = RubyFixnum.num2int(args[4]);
-        boolean checkpointRetry = !((RubyBoolean) args[5]).isFalse();
-        long queueMaxBytes = RubyFixnum.num2long(args[6]);
-
-        this.queue = JRubyAckedQueueExt.create(args[0].asJavaString(), capacity, maxEvents,
-                checkpointMaxWrites, checkpointMaxAcks, checkpointRetry, queueMaxBytes);
+    @JRubyMethod(required=1)
+    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
+        if (!JavaUtil.isJavaObject(settings)) {
+            // We should never get here, but previously had an initialize method
+            // that took 7 technically-optional ordered parameters.
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Failed to instantiate JRubyWrappedAckedQueueExt with <%s:%s>",
+                            settings.getClass().getName(),
+                            settings));
+        }
+        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
         this.queue.open();
 
         return this;
+    }
+
+    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings) throws IOException {
+        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings);
+    }
+
+    public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings) throws IOException {
+        super(runtime, metaClass);
+        this.queue = JRubyAckedQueueExt.create(settings);
+        this.queue.open();
     }
 
     public JRubyWrappedAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {
