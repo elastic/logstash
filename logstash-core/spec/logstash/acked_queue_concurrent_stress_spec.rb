@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/instrument/namespaced_metric"
+# require "logstash/instrument/collector"
 
 describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
@@ -29,12 +30,13 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue_settings) do
+      java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
       LogStash::AckedQueue.file_settings_builder(path)
                           .capacity(page_capacity)
                           .checkpointMaxAcks(queue_checkpoint_acks)
                           .checkpointMaxWrites(queue_checkpoint_writes)
                           .queueMaxBytes(queue_capacity)
-                          .batchMetricMode(LogStash::QueueFactory::BatchMetricType.DISABLED)
+                          .batchMetricMode(BatchMetricMode::DISABLED)
                           .build
     end
 

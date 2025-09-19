@@ -127,13 +127,14 @@ describe LogStash::WrappedWriteClient do
     let(:path) { Stud::Temporary.directory }
 
     let(:queue_settings) do
+      java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
       LogStash::AckedQueue.file_settings_builder(path)
          .capacity(1024)
          .maxUnread(10)
          .checkpointMaxAcks(1024)
          .checkpointMaxWrites(1024)
          .queueMaxBytes(4096)
-         .batchMetricMode(LogStash::QueueFactory::BatchMetricMode.DISABLED)
+         .batchMetricMode(BatchMetricMode::DISABLED)
          .build
     end
 
