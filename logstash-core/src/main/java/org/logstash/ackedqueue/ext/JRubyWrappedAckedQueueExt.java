@@ -66,8 +66,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         }
         Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
         this.queue = JRubyAckedQueueExt.create(javaSettings);
-        this.batchMetricMode = javaSettings.batchMetricMode();
-//        Objects.requireNonNull(this.batchMetricMode, "batchMetricMode must be non-null");
+        this.batchMetricMode = Objects.requireNonNull(javaSettings.batchMetricMode(), "batchMetricMode setting must be non-null");
         this.queue.open();
 
         return this;
@@ -79,6 +78,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings) throws IOException {
         super(runtime, metaClass);
+        this.batchMetricMode = Objects.requireNonNull(settings.batchMetricMode(), "batchMetricMode setting must be non-null");
         this.queue = JRubyAckedQueueExt.create(settings);
         this.queue.open();
     }

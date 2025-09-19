@@ -207,9 +207,7 @@ module LogStash
                 :batch_delay => stats.dig(:config, :batch_delay),
               }
             }
-            if stats.include?(:batch)
-              ret[:batch] = refine_batch_metrics(stats)
-            end
+            ret[:batch] = refine_batch_metrics(stats) if stats.include?(:batch)
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
             # if extended_stats were provided, enrich the return value
