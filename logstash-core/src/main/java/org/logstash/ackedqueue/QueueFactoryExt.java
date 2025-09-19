@@ -77,15 +77,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
-        final String batchMetricModeStr = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
-                .asJavaString();
-
-        final BatchMetricMode batchMetricMode;
-        if (batchMetricModeStr == null || batchMetricModeStr.isEmpty()) {
-            batchMetricMode = BatchMetricMode.DISABLED;
-        } else {
-            batchMetricMode = BatchMetricMode.valueOf(batchMetricModeStr.toUpperCase());
-        }
+        final BatchMetricMode batchMetricMode = decodeBatchMetricMode(context, settings);
         if (PERSISTED_TYPE.equals(type)) {
             final Settings queueSettings = extractQueueSettings(settings);
             final Path queuePath = Paths.get(queueSettings.getDirPath());
@@ -119,6 +111,16 @@ public final class QueueFactoryExt extends RubyBasicObject {
         }
     }
 
+    private static BatchMetricMode decodeBatchMetricMode(ThreadContext context, IRubyObject settings) {
+        final String batchMetricModeStr = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
+                .asJavaString();
+
+        if (batchMetricModeStr == null || batchMetricModeStr.isEmpty()) {
+            return BatchMetricMode.DISABLED;
+        }
+        return BatchMetricMode.valueOf(batchMetricModeStr.toUpperCase());
+    }
+
     private static IRubyObject getSetting(final ThreadContext context, final IRubyObject settings,
         final String name) {
         return settings.callMethod(context, "get_value", context.runtime.newString(name));
@@ -131,15 +133,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 getSetting(context, settings, PIPELINE_ID).asJavaString()
         );
 
-        final String batchMetricModeStr = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
-                .asJavaString();
-
-        final BatchMetricMode batchMetricType;
-        if (batchMetricModeStr == null || batchMetricModeStr.isEmpty()) {
-            batchMetricType = BatchMetricMode.DISABLED;
-        } else {
-            batchMetricType = BatchMetricMode.valueOf(batchMetricModeStr.toUpperCase());
-        }
+        final BatchMetricMode batchMetricMode = decodeBatchMetricMode(context, settings);
 
         return SettingsImpl.fileSettingsBuilder(queuePath.toString())
                 .elementClass(Event.class)
@@ -149,7 +143,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
                 .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
-                .batchMetricMode(batchMetricType)
+                .batchMetricMode(batchMetricMode)
                 .build();
     }
 }
