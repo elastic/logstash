@@ -142,7 +142,12 @@ build-from-dockerfiles_full: public-dockerfiles_full
 	cd $(ARTIFACTS_DIR)/docker && \
 	mkdir -p dockerfile_build_full && cd dockerfile_build_full && \
 	tar -zxf ../../logstash-$(VERSION_TAG)-docker-build-context.tar.gz && \
-	sed 's/artifacts/snapshots/g' Dockerfile > Dockerfile.tmp && mv Dockerfile.tmp Dockerfile && \
+	cp ../../logstash-$(VERSION_TAG)-linux-$(ARCHITECTURE).tar.gz . && \
+	awk '/# Add Logstash itself and set permissions/{print; print "COPY logstash-$(VERSION_TAG)-linux-$(ARCHITECTURE).tar.gz /tmp/logstash.tar.gz"; next}1' Dockerfile > Dockerfile.tmp && \
+	sed '/curl --fail --location --output logstash.tar.gz.*tar.gz &&/d' Dockerfile.tmp > Dockerfile.tmp2 && \
+	sed 's|tar -zxf logstash.tar.gz|tar -zxf /tmp/logstash.tar.gz|' Dockerfile.tmp2 > Dockerfile.tmp3 && \
+	sed 's|rm logstash.tar.gz|rm /tmp/logstash.tar.gz|' Dockerfile.tmp3 > Dockerfile && \
+	rm -f Dockerfile.tmp* && \
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-dockerfile-full:$(VERSION_TAG) .
 
 public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
