@@ -1,5 +1,4 @@
-
-name: UPDATE
+name: bump-logstash-version
 
 on:
   workflow_dispatch:
@@ -12,8 +11,6 @@ on:
         description: 'Logstash branch'
         required: true
         type: string
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   bump:
