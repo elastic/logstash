@@ -341,12 +341,12 @@ steps:
 
   - label: "🏁 Annotate JUnit results"
     depends_on: "java-unit-tests"
-    # the plugin requires docker run, hence the use of a VM
     agents:
-      provider: gcp
-      imageProject: elastic-images-prod
-      image: family/platform-ingest-logstash-ubuntu-2204
-      machineType: "n2-standard-2"
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
-      - junit-annotate#v2.4.1:
+      - junit-annotate#v2.7.0:
           artifacts: "**/TEST-*.xml"
+          report-skipped: true
+          always-annotate: true
+          run-in-docker: false
