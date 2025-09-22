@@ -437,9 +437,27 @@ module LogStash
 
     java_import org.logstash.settings.NullableStringSetting
 
-    java_import org.logstash.settings.PasswordSetting
+    class Password < Coercible
+      def initialize(name, default = nil, strict = true)
+        super(name, LogStash::Util::Password, default, strict)
+      end
 
-    class ValidatedPassword < Setting::PasswordSetting
+      def coerce(value)
+        return value if value.kind_of?(LogStash::Util::Password)
+
+        if value && !value.kind_of?(::String)
+          raise(ArgumentError, "Setting `#{name}` could not coerce non-string value to password")
+        end
+
+        LogStash::Util::Password.new(value)
+      end
+
+      def validate(value)
+        super(value)
+      end
+    end
+
+    class ValidatedPassword < Setting::Password
       def initialize(name, value, password_policies)
         @password_policies = password_policies
         super(name, value, true)
