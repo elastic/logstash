@@ -22,8 +22,6 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
 
   context "with multiple writers" do
-    # java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
-
     let(:items) { expected_count / writers }
     let(:page_capacity) { 1 << page_capacity_multiplier }
     let(:queue_capacity) { page_capacity * queue_capacity_multiplier }
