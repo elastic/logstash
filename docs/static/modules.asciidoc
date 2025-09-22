@@ -59,7 +59,7 @@ settings, and sets up the netflow index pattern and dashboards:
 
 [source,shell]
 ----
-bin/logstash --modules netflow --setup 
+bin/logstash --modules netflow --setup
 ----
 
 The following command runs the Netflow module and overrides the Elasticsearch
@@ -67,7 +67,7 @@ The following command runs the Netflow module and overrides the Elasticsearch
 
 [source,shell]
 ----
-bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.mycloud.com"
+bin/logstash --modules netflow -M "netflow.var.elasticsearch.host=es.example.com"
 ----
 
 
@@ -94,10 +94,10 @@ settings. For example:
 ----
 modules:
 - name: netflow
-  var.elasticsearch.hosts: "es.mycloud.com"
+  var.elasticsearch.hosts: "es.example.com"
   var.elasticsearch.username: "foo"
   var.elasticsearch.password: "password"
-  var.kibana.host: "kb.mycloud.com"
+  var.kibana.host: "kb.example.com"
   var.kibana.username: "foo"
   var.kibana.password: "password"
   var.input.tcp.port: 5606
@@ -145,7 +145,7 @@ command line option:
 
 Notice that the fully-qualified setting name includes the module name.
 
-You can specify multiple overrides. Each override must start with `-M`. 
+You can specify multiple overrides. Each override must start with `-M`.
 
 The following command runs the Netflow module and overrides both the
 Elasticsearch `host` setting and the `udp.port` setting:
@@ -159,9 +159,9 @@ Any settings defined in the command line are ephemeral and will not persist acro
 subsequent runs of Logstash. If you want to persist a configuration, you need to
 set it in the `logstash.yml` <<logstash-settings-file,settings file>>.
 
-Settings that you specify at the command line are merged with any settings 
+Settings that you specify at the command line are merged with any settings
 specified in the `logstash.yml` file. If an option is set in both
-places, the value specified at the command line takes precedence. 
+places, the value specified at the command line takes precedence.
 
 [discrete]
 [[module-to-cloud]]
