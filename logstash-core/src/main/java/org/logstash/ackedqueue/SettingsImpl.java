@@ -31,7 +31,6 @@ public class SettingsImpl implements Settings {
     private final int checkpointMaxAcks;
     private final int checkpointMaxWrites;
     private final boolean checkpointRetry;
-    private final QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     public static Builder builder(final Settings settings) {
         return new BuilderImpl(settings);
@@ -50,7 +49,6 @@ public class SettingsImpl implements Settings {
         this.checkpointMaxAcks = builder.checkpointMaxAcks;
         this.checkpointMaxWrites = builder.checkpointMaxWrites;
         this.checkpointRetry = builder.checkpointRetry;
-        this.batchMetricMode = builder.batchMetricMode;
     }
 
     @Override
@@ -91,11 +89,6 @@ public class SettingsImpl implements Settings {
     @Override
     public boolean getCheckpointRetry() {
         return this.checkpointRetry;
-    }
-
-    @Override
-    public QueueFactoryExt.BatchMetricMode batchMetricMode() {
-        return this.batchMetricMode;
     }
 
     /**
@@ -147,8 +140,6 @@ public class SettingsImpl implements Settings {
 
         private boolean checkpointRetry;
 
-        private QueueFactoryExt.BatchMetricMode batchMetricMode;
-
         private BuilderImpl(final String dirForFiles) {
             this.dirForFiles = dirForFiles;
             this.elementClass = null;
@@ -158,7 +149,6 @@ public class SettingsImpl implements Settings {
             this.checkpointMaxAcks = DEFAULT_CHECKPOINT_MAX_ACKS;
             this.checkpointMaxWrites = DEFAULT_CHECKPOINT_MAX_WRITES;
             this.checkpointRetry = false;
-            this.batchMetricMode = QueueFactoryExt.BatchMetricMode.DISABLED;
         }
 
         private BuilderImpl(final Settings settings) {
@@ -170,7 +160,6 @@ public class SettingsImpl implements Settings {
             this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
             this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
             this.checkpointRetry = settings.getCheckpointRetry();
-            this.batchMetricMode = settings.batchMetricMode();
         }
 
         @Override
@@ -212,12 +201,6 @@ public class SettingsImpl implements Settings {
         @Override
         public Builder checkpointRetry(final boolean checkpointRetry) {
             this.checkpointRetry = checkpointRetry;
-            return this;
-        }
-
-        @Override
-        public Builder batchMetricMode(QueueFactoryExt.BatchMetricMode batchMetricType) {
-            this.batchMetricMode = batchMetricType;
             return this;
         }
 

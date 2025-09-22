@@ -22,6 +22,8 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
 
   context "with multiple writers" do
+    # java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
+
     let(:items) { expected_count / writers }
     let(:page_capacity) { 1 << page_capacity_multiplier }
     let(:queue_capacity) { page_capacity * queue_capacity_multiplier }
@@ -30,18 +32,16 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     let(:reject_memo_keys) { [:reject_memo_keys, :path, :queue, :writer_threads, :collector, :metric, :reader_threads, :output_strings] }
 
     let(:queue_settings) do
-      java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
       LogStash::AckedQueue.file_settings_builder(path)
                           .capacity(page_capacity)
                           .checkpointMaxAcks(queue_checkpoint_acks)
                           .checkpointMaxWrites(queue_checkpoint_writes)
                           .queueMaxBytes(queue_capacity)
-                          .batchMetricMode(BatchMetricMode::DISABLED)
                           .build
     end
 
     let(:queue) do
-      described_class.new(queue_settings)
+      described_class.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED)
     end
 
     let(:writer_threads) do

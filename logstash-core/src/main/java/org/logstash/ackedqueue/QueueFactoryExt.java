@@ -88,7 +88,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 Files.createDirectories(queuePath);
             }
 
-            return JRubyWrappedAckedQueueExt.create(context, queueSettings);
+            return JRubyWrappedAckedQueueExt.create(context, queueSettings, batchMetricMode);
         } else if (MEMORY_TYPE.equals(type)) {
             final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
                     .convertToInteger().getIntValue();
@@ -133,8 +133,6 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 getSetting(context, settings, PIPELINE_ID).asJavaString()
         );
 
-        final BatchMetricMode batchMetricMode = decodeBatchMetricMode(context, settings);
-
         return SettingsImpl.fileSettingsBuilder(queuePath.toString())
                 .elementClass(Event.class)
                 .capacity(getSetting(context, settings, QUEUE_PAGE_CAPACITY).toJava(Integer.class))
@@ -143,7 +141,6 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
                 .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
-                .batchMetricMode(batchMetricMode)
                 .build();
     }
 }

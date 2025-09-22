@@ -55,18 +55,16 @@ describe LogStash::WrappedAckedQueue do
     let(:path) { Stud::Temporary.directory }
 
     let(:queue_settings) do
-      java_import org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode
       LogStash::AckedQueue.file_settings_builder(path)
                           .capacity(page_capacity)
                           .maxUnread(max_events)
                           .checkpointMaxAcks(checkpoint_acks)
                           .checkpointMaxWrites(checkpoint_writes)
                           .queueMaxBytes(max_bytes)
-                          .batchMetricMode(BatchMetricMode::DISABLED)
                           .build
     end
 
-    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings) }
+    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED) }
 
     after do
       queue.close
