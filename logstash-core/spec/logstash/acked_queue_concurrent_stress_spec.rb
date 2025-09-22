@@ -16,7 +16,6 @@
 # under the License.
 
 require "logstash/instrument/namespaced_metric"
-# require "logstash/instrument/collector"
 
 describe LogStash::WrappedAckedQueue, :stress_test => true do
   let(:path) { Stud::Temporary.directory }
