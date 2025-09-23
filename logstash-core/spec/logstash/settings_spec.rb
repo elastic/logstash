@@ -299,6 +299,25 @@ describe LogStash::Settings do
         expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
+
+    context "containing a mode WARN policy" do
+      before :each do
+        # Needs to mock the logger method at LogStash::Settings instead of LogStash::Setting::ValidatedPassword
+        # else the LOGGABLE_PROXY hide the mock itself.
+        allow(LogStash::Settings).to receive(:logger).at_least(:once).and_return(mock_logger)
+        allow(mock_logger).to receive(:warn)
+      end
+      let(:mock_logger) { double("logger") }
+      let(:password_policies) { super().merge({ "mode": "WARN" }) }
+
+      it "logs a warning on validation failure" do
+        password = LogStash::Util::Password.new("Password!")
+        expect {
+          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
+        }.not_to raise_error
+        expect(mock_logger).to have_received(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
+      end
+    end
   end
 
   context "placeholders in nested logstash.yml" do
