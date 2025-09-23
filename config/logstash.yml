@@ -54,7 +54,6 @@
 # Default is "minimal".
 #
 # pipeline.batch.metrics.sampling_mode: "minimal"
-pipeline.batch.metrics.sampling_mode: minimal
 #
 # Force Logstash to exit during shutdown even if there are still inflight
 # events in memory. By default, logstash will refuse to quit until all
