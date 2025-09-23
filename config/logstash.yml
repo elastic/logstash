@@ -51,9 +51,10 @@
 #
 # Set the pipeline's batch metrics reporting mode. It can be "disabled" to disable it.
 # "minimal" to collect only 1% of the batches metrics, "full" to collect all batches.
-# Default is "disabled".
+# Default is "minimal".
 #
-# pipeline.batch.metrics.sampling_mode: "disabled"
+# pipeline.batch.metrics.sampling_mode: "minimal"
+pipeline.batch.metrics.sampling_mode: minimal
 #
 # Force Logstash to exit during shutdown even if there are still inflight
 # events in memory. By default, logstash will refuse to quit until all
