@@ -41,7 +41,7 @@
 			"allowed_list": [
 				"dependabot[bot]",
 				"mergify[bot]",
-				"github-actions[bot]",
+				"github-actions[bot]"
 			],
 			"set_commit_status": true,
 			"build_on_commit": true,
@@ -57,9 +57,7 @@
 				"^.pre-commit-config.yaml",
 				"\\.md$"
 			],
-			"always_require_ci_on_changed": [
-				"^qa/acceptance/"
-			]
+			"always_require_ci_on_changed": []
 		}
 	]
 }
