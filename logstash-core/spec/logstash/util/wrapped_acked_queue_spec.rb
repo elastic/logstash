@@ -64,7 +64,7 @@ describe LogStash::WrappedAckedQueue do
                           .build
     end
 
-    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings) }
+    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED) }
 
     after do
       queue.close

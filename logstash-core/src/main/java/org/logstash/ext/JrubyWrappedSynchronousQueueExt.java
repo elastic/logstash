@@ -20,6 +20,7 @@
 
 package org.logstash.ext;
 
+import java.util.Objects;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -28,8 +29,11 @@ import org.jruby.RubyClass;
 import org.jruby.RubyNumeric;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 
@@ -42,18 +46,42 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     private static final long serialVersionUID = 1L;
 
     private transient BlockingQueue<JrubyEventExtLibrary.RubyEvent> queue;
+    private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
     public JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
     }
 
+    private JrubyWrappedSynchronousQueueExt(final Ruby runtime, final RubyClass metaClass,
+                                           int size, QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        super(runtime, metaClass);
+        this.queue = new ArrayBlockingQueue<>(size);
+        this.batchMetricMode = Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
+    }
+
     @JRubyMethod
     @SuppressWarnings("unchecked")
     public JrubyWrappedSynchronousQueueExt initialize(final ThreadContext context,
-        IRubyObject size) {
+                                                      IRubyObject size,
+                                                      IRubyObject batchMetricMode) {
+        if (!JavaUtil.isJavaObject(batchMetricMode)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Failed to instantiate JrubyWrappedSynchronousQueueExt with <%s:%s>",
+                            batchMetricMode.getClass().getName(),
+                            batchMetricMode));
+        }
+
         int typedSize = ((RubyNumeric)size).getIntValue();
         this.queue = new ArrayBlockingQueue<>(typedSize);
+        Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
+        this.batchMetricMode = JavaUtil.unwrapJavaObject(batchMetricMode);
         return this;
+    }
+
+    public static JrubyWrappedSynchronousQueueExt create(final ThreadContext context, int size,
+                                                        QueueFactoryExt.BatchMetricMode batchMetricMode) {
+        return new JrubyWrappedSynchronousQueueExt(context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS, size, batchMetricMode);
     }
 
     @Override
@@ -65,7 +93,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     protected QueueReadClientBase getReadClient() {
         // batch size and timeout are currently hard-coded to 125 and 50ms as values observed
         // to be reasonable tradeoffs between latency and throughput per PR #8707
-        return JrubyMemoryReadClientExt.create(queue, 125, 50);
+        return JrubyMemoryReadClientExt.create(queue, 125, 50, batchMetricMode);
     }
 
     @Override

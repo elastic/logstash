@@ -529,6 +529,7 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
      * and needs to be converted to a list before appending to it.
      * @param existing Existing Tag
      * @param tag Tag to add
+     *
      */
     private void scalarTagFallback(final String existing, final String tag) {
         final List<String> tags = new ArrayList<>(2);
@@ -566,5 +567,17 @@ public final class Event implements Cloneable, Queueable, co.elastic.logstash.ap
             path.add(field.getKey());
             return path.stream().collect(Collectors.joining("][", "[", "]"));
         }
+    }
+
+    /**
+     * @return a byte size estimation of the event, based on the payloads carried by nested data structures,
+     * without considering the space needed by the JVM to represent the object itself.
+     *
+     * */
+    public long estimateMemory() {
+        long total = 0;
+        total += data.estimateMemory();
+        total += metadata.estimateMemory();
+        return total;
     }
 }
