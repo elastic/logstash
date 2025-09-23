@@ -1,0 +1,81 @@
+---
+name: Update logstash version files
+pipelineid: "logstash/version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      branch: '{{ requiredEnv "LOGSTASH_BRANCH" }}'
+      commitusingapi: true
+      force: false
+
+actions:
+  default:
+    title: 'Bump logstash version {{ requiredEnv "LOGSTASH_VERSION" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      automerge: false
+      labels:
+      - automation
+      description: |-
+        ### What
+        Update logstash version
+
+sources:
+  lock_file_exists:
+    kind: shell
+    scmid: default
+    spec:
+      command: test -f Gemfile.jruby-3.1.lock.release
+
+targets:
+  update_logstash_version:
+    name: Update logstash version in versions.yml
+    kind: yaml
+    disablesourceinput: true
+    scmid: default
+    spec:
+      file: versions.yml
+      key: $.logstash
+      value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
+  
+  update_logstash_core_version:
+    name: Update logstash-core version in versions.yml
+    kind: yaml
+    disablesourceinput: true
+    scmid: default
+    spec:
+      file: versions.yml
+      key: $.logstash-core
+      value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
+
+  update_gemfile_lock_dependency:
+    name: Update logstash-core dependency in lockfile
+    kind: file
+    disablesourceinput: true
+    scmid: default
+    dependson:
+      - 'source#lock_file_exists'
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \(= [0-9]+\.[0-9]+\.[0-9]+'
+      replacepattern: 'logstash-core (= {{ requiredEnv "LOGSTASH_VERSION" }}'
+  
+  update_gemfile_lock_spec:
+    name: Update logstash-core spec in lockfile
+    kind: file
+    disablesourceinput: true
+    scmid: default
+    dependson:
+      - 'source#lock_file_exists'
+    spec:
+      file: Gemfile.jruby-3.1.lock.release
+      matchpattern: 'logstash-core \([0-9]+\.[0-9]+\.[0-9]+-java\)'
+      replacepattern: 'logstash-core ({{ requiredEnv "LOGSTASH_VERSION" }}-java)'
