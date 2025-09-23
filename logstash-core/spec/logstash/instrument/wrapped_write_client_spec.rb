@@ -113,7 +113,7 @@ describe LogStash::WrappedWriteClient do
   end
 
   context "WrappedSynchronousQueue" do
-    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024) }
+    let(:queue) { LogStash::WrappedSynchronousQueue.new(1024, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED) }
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))
@@ -136,7 +136,9 @@ describe LogStash::WrappedWriteClient do
          .build
     end
 
-    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings) }
+    let(:queue) do
+      LogStash::WrappedAckedQueue.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED)
+    end
 
     before do
       read_client.set_events_metric(metric.namespace([:stats, :events]))

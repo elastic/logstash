@@ -46,6 +46,12 @@ import static org.logstash.common.SettingKeyDefinitions.*;
 @JRubyClass(name = "QueueFactory")
 public final class QueueFactoryExt extends RubyBasicObject {
 
+    public enum BatchMetricMode {
+        DISABLED,
+        MINIMAL,
+        FULL
+    }
+
     /**
      * A static value to indicate Persistent Queue is enabled.
      */
@@ -71,6 +77,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
         final IRubyObject settings) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
+        final BatchMetricMode batchMetricMode = decodeBatchMetricMode(context, settings);
         if (PERSISTED_TYPE.equals(type)) {
             final Settings queueSettings = extractQueueSettings(settings);
             final Path queuePath = Paths.get(queueSettings.getDirPath());
@@ -81,18 +88,14 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 Files.createDirectories(queuePath);
             }
 
-            return JRubyWrappedAckedQueueExt.create(context, queueSettings);
+            return JRubyWrappedAckedQueueExt.create(context, queueSettings, batchMetricMode);
         } else if (MEMORY_TYPE.equals(type)) {
-            return new JrubyWrappedSynchronousQueueExt(
-                context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
-            ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
-            );
+            final int batchSize = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
+                    .convertToInteger().getIntValue();
+            final int workers = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
+                    .convertToInteger().getIntValue();
+            int queueSize = batchSize * workers;
+            return JrubyWrappedSynchronousQueueExt.create(context, queueSize, batchMetricMode);
         } else {
             throw context.runtime.newRaiseException(
                 RubyUtil.CONFIGURATION_ERROR_CLASS,
@@ -102,6 +105,16 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 )
             );
         }
+    }
+
+    private static BatchMetricMode decodeBatchMetricMode(ThreadContext context, IRubyObject settings) {
+        final String batchMetricModeStr = getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_METRICS)
+                .asJavaString();
+
+        if (batchMetricModeStr == null || batchMetricModeStr.isEmpty()) {
+            return BatchMetricMode.DISABLED;
+        }
+        return BatchMetricMode.valueOf(batchMetricModeStr.toUpperCase());
     }
 
     private static IRubyObject getSetting(final ThreadContext context, final IRubyObject settings,
@@ -115,6 +128,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 getSetting(context, settings, PATH_QUEUE).asJavaString(),
                 getSetting(context, settings, PIPELINE_ID).asJavaString()
         );
+
         return SettingsImpl.fileSettingsBuilder(queuePath.toString())
                 .elementClass(Event.class)
                 .capacity(getSetting(context, settings, QUEUE_PAGE_CAPACITY).toJava(Integer.class))

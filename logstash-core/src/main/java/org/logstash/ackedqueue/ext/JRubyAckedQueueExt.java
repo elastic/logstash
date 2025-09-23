@@ -44,7 +44,7 @@ import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
 
 /**
- * JRuby extension to wrap a persistent queue istance.
+ * JRuby extension to wrap a persistent queue instance.
  */
 @JRubyClass(name = "AckedQueue")
 public final class JRubyAckedQueueExt extends RubyObject {

@@ -38,7 +38,7 @@ describe LogStash::WrappedAckedQueue, :stress_test => true do
     end
 
     let(:queue) do
-      described_class.new(queue_settings)
+      described_class.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED)
     end
 
     let(:writer_threads) do

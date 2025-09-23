@@ -116,4 +116,19 @@ public final class MetricKeys {
 
     public static final RubySymbol WRITES_IN_KEY = RubyUtil.RUBY.newSymbol("writes_in");
 
+    // Batch metrics keys
+    public static final RubySymbol BATCH_EVENT_COUNT_KEY = RubyUtil.RUBY.newSymbol("event_count");
+
+    public static final RubySymbol BATCH_AVERAGE_KEY = RubyUtil.RUBY.newSymbol("average");
+
+    public static final RubySymbol BATCH_KEY = RubyUtil.RUBY.newSymbol("batch");
+
+    public static final RubySymbol BATCH_COUNT = RubyUtil.RUBY.newSymbol("count");
+
+    public static final RubySymbol BATCH_TOTAL_EVENTS = RubyUtil.RUBY.newSymbol("total_events");
+
+    public static final RubySymbol BATCH_TOTAL_BYTES = RubyUtil.RUBY.newSymbol("total_bytes");
+
+    public static final RubySymbol BATCH_BYTE_SIZE_KEY = RubyUtil.RUBY.newSymbol("byte_size");
+
 }

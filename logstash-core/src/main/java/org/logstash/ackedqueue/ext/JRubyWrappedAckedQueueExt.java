@@ -21,6 +21,7 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
@@ -32,6 +33,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.Settings;
+import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.execution.QueueReadClientBase;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
@@ -48,9 +50,10 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private static final long serialVersionUID = 1L;
 
     private JRubyAckedQueueExt queue;
+    private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
-    @JRubyMethod(required=1)
-    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
+    @JRubyMethod(required=2)
+    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings, IRubyObject batchMetricMode) throws IOException {
         if (!JavaUtil.isJavaObject(settings)) {
             // We should never get here, but previously had an initialize method
             // that took 7 technically-optional ordered parameters.
@@ -60,18 +63,33 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings.getClass().getName(),
                             settings));
         }
-        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
+
+        Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
+        if (!JavaUtil.isJavaObject(batchMetricMode)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Failed to instantiate JRubyWrappedAckedQueueExt with <%s:%s>",
+                            batchMetricMode.getClass().getName(),
+                            batchMetricMode));
+        }
+
+
+        Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
+        this.queue = JRubyAckedQueueExt.create(javaSettings);
+
+        this.batchMetricMode = JavaUtil.unwrapJavaObject(batchMetricMode);
         this.queue.open();
 
         return this;
     }
 
-    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings) throws IOException {
-        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings);
+    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings, QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
+        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings, batchMetricMode);
     }
 
-    public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings) throws IOException {
+    public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings, QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
         super(runtime, metaClass);
+        this.batchMetricMode = Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
         this.queue = JRubyAckedQueueExt.create(settings);
         this.queue.open();
     }
@@ -111,7 +129,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @Override
     protected QueueReadClientBase getReadClient() {
-        return JrubyAckedReadClientExt.create(queue);
+        return JrubyAckedReadClientExt.create(queue, batchMetricMode);
     }
 
     @Override

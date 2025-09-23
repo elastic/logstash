@@ -90,6 +90,5 @@ public interface Settings {
         Builder checkpointRetry(boolean checkpointRetry);
 
         Settings build();
-
     }
 }
