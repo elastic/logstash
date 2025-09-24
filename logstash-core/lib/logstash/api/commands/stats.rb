@@ -173,6 +173,8 @@ module LogStash
           end
 
           def refine_batch_metrics(stats)
+            # current is a tuple of [event_count, byte_size] store the reference locally to avoid repeatedly
+            # reading and retrieve unrelated values
             current_data_point = stats[:batch][:current]
             {
               :event_count => {

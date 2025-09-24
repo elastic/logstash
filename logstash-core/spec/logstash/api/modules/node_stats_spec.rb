@@ -150,11 +150,13 @@ describe LogStash::Api::Modules::NodeStats do
        },
        "batch" => {
          "event_count" => {
+           "current" => Numeric,
            "average" => {
              "lifetime" => Numeric
            }
          },
          "byte_size" => {
+           "current" => Numeric,
            "average" => {
              "lifetime" => Numeric
            }

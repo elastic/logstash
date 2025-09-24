@@ -57,7 +57,6 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         // just initialize an empty gauge
         final IRubyObject gauge = metric.gauge(context, key, context.runtime.newArray(context.runtime.newString("undefined"), context.runtime.newString("undefined")));
-//        gauge.callMethod(context, "set", context.runtime.newString("zero"));
         final LazyDelegatingGauge javaGauge;
         if (LazyDelegatingGauge.class.isAssignableFrom(gauge.getJavaClass())) {
             javaGauge = gauge.toJava(LazyDelegatingGauge.class);
