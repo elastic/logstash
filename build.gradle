@@ -42,7 +42,6 @@ apply from: "rubyUtils.gradle"
 
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
-import java.util.regex.Pattern
 import org.logstash.gradle.tooling.ListProjectDependencies
 import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
@@ -855,33 +854,6 @@ tasks.register("downloadJdk", Download) {
     doLast {
         mkdir project.ext.jdkBundlingDirectory
         println "Downloaded to ${project.ext.jdkDownloadLocation}"
-    }
-}
-
-tasks.register("updateJdkVersion") {
-    description = "Update JDK version in versions.yml to match latest from JVM catalog"
-    doLast {
-        def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
-        // Get latest version from catalog (same API call as checkLocalVersionMatchingLatest)
-        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${jdkDetails.major}_linux"
-        def catalogConnection = URI.create(url).toURL().openConnection()
-        catalogConnection.requestMethod = 'GET'
-        assert catalogConnection.responseCode == 200
-
-        def catalogMetadata = new JsonSlurper().parseText(catalogConnection.content.text)
-
-        if (catalogMetadata.version == jdkDetails.revision && catalogMetadata.revision == jdkDetails.build) {
-            println "JDK version is already up to date: ${jdkDetails.revision} build ${jdkDetails.build}"
-            return
-        }
-
-        println "Updating JDK from ${jdkDetails.revision} build ${jdkDetails.build} to ${catalogMetadata.version} build ${catalogMetadata.revision}"
-
-        // Simple line-based replacement preserving format
-        def versionsFile = file("${projectDir}/versions.yml")
-        versionsFile.text = versionsFile.text
-            .replaceAll(/(?m)^(\s*revision:\s*)${Pattern.quote(jdkDetails.revision)}$/, "\$1${catalogMetadata.version}")
-            .replaceAll(/(?m)^(\s*build:\s*)${jdkDetails.build}$/, "\$1${catalogMetadata.revision}")
     }
 }
 
