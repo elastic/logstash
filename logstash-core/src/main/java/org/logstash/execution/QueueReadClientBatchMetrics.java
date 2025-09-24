@@ -43,12 +43,13 @@ class QueueReadClientBatchMetrics {
     }
 
     public void updateBatchMetrics(QueueBatch batch) {
-        if (batch.events().isEmpty()) {
-            // avoid to increment batch count for empty batches
+        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.DISABLED) {
             return;
         }
 
-        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.DISABLED) {
+        if (batch.events().isEmpty()) {
+            // avoid to increment batch count for empty batches
+            currentBatchDimensions.set(Arrays.asList(0L, 0L));
             return;
         }
 
