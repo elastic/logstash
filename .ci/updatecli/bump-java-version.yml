@@ -1,0 +1,46 @@
+---
+name: Update java version file
+pipelineid: "logstash/version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      branch: '{{ requiredEnv "LOGSTASH_BRANCH" }}'
+      commitusingapi: true
+      force: false
+
+sources:
+  latest_jdk_version:
+    kind: json
+    spec:
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_21_linux'
+      key: 'version'
+
+  latest_jdk_build:
+    kind: json
+    spec:
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_21_linux'
+      key: 'revision'
+
+targets:
+  update_jdk_revision:
+    name: "Update JDK revision"
+    kind: yaml
+    sourceid: latest_jdk_version
+    spec:
+      file: versions.yml
+      key: $.bundled_jdk.revision
+
+  update_jdk_build:
+    name: "Update JDK build"
+    kind: yaml
+    sourceid: latest_jdk_build
+    spec:
+      file: versions.yml
+      key: $.bundled_jdk.build
