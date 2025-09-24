@@ -1,6 +1,6 @@
 ---
 name: Update java version file
-pipelineid: "logstash/version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
+pipelineid: "logstash/jdk-version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
 
 scms:
   default:
