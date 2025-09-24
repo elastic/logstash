@@ -33,7 +33,6 @@ spec:
     - resource:logstash-windows-jdk-matrix-pipeline
     - resource:logstash-benchmark-pipeline
     - resource:logstash-health-report-tests-pipeline
-    - resource:logstash-jdk-availability-check-pipeline
 
 # ***********************************
 # Declare serverless IT pipeline
@@ -795,62 +794,3 @@ spec:
           branch: main
           cronline: 30 20 * * *
           message: Daily trigger of Health Report Tests Pipeline
-
-# *******************************
-# SECTION END: Health Report Tests pipeline
-# *******************************
-
-# ***********************************
-# Declare JDK check pipeline
-# ***********************************
----
-# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: logstash-jdk-availability-check-pipeline
-  description: ":logstash: check availability of new JDK version"
-spec:
-  type: buildkite-pipeline
-  owner: group:logstash
-  system: platform-ingest
-  implementation:
-    apiVersion: buildkite.elastic.dev/v1
-    kind: Pipeline
-    metadata:
-      name: logstash-jdk-availability-check-pipeline
-    spec:
-      repository: elastic/logstash
-      pipeline_file: ".buildkite/jdk_availability_check_pipeline.yml"
-      maximum_timeout_in_minutes: 10
-      provider_settings:
-        trigger_mode: none # don't trigger jobs from github activity
-      env:
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
-        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
-        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
-        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
-      teams:
-        logstash:
-          access_level: MANAGE_BUILD_AND_READ
-        ingest-eng-prod:
-          access_level: MANAGE_BUILD_AND_READ
-        everyone:
-          access_level: READ_ONLY
-      schedules:
-        Weekly JDK availability check (main):
-          branch: main
-          cronline: 0 2 * * 1  # every Monday@2AM UTC
-          message: Weekly trigger of JDK update availability pipeline per branch
-          env:
-            PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
-        Weekly JDK availability check (8.19):
-          branch: "8.19"
-          cronline: 0 2 * * 1  # every Monday@2AM UTC
-          message: Weekly trigger of JDK update availability pipeline per branch
-          env:
-            PIPELINES_TO_TRIGGER: 'logstash-jdk-availability-check-pipeline'
-
-# *******************************
-# SECTION END: JDK check pipeline
-# *******************************

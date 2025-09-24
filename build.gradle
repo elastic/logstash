@@ -748,23 +748,6 @@ class JDKDetails {
         return createElasticCatalogDownloadUrl()
     }
 
-    // throws an error iff local version in versions.yml doesn't match the latest from JVM catalog.
-    void checkLocalVersionMatchingLatest() {
-        // retrieve the metadata from remote
-        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
-        def catalogMetadataUrl = URI.create(url).toURL()
-        def catalogConnection = catalogMetadataUrl.openConnection()
-        catalogConnection.requestMethod = 'GET'
-        assert catalogConnection.responseCode == 200
-
-        def metadataRetrieved = catalogConnection.content.text
-        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-
-        if (catalogMetadata.version != revision || catalogMetadata.revision != build) {
-            throw new GradleException("Found new jdk version. Please update version.yml to ${catalogMetadata.version} build ${catalogMetadata.revision}")
-        }
-    }
-
     private String createElasticCatalogDownloadUrl() {
         // Ask details to catalog https://jvm-catalog.elastic.co/jdk and return the url to download the JDK
 
@@ -872,13 +855,6 @@ tasks.register("downloadJdk", Download) {
         mkdir project.ext.jdkBundlingDirectory
         println "Downloaded to ${project.ext.jdkDownloadLocation}"
     }
-}
-
-tasks.register("checkNewJdkVersion") {
-    // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, "linux", "x86_64")
-    // throws Gradle exception if local and remote doesn't match
-    jdkDetails.checkLocalVersionMatchingLatest()
 }
 
 tasks.register("deleteLocalJdk", Delete) {
