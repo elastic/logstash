@@ -815,18 +815,6 @@ tasks.register("downloadJdk", Download) {
     }
 }
 
-<<<<<<< HEAD
-tasks.register("checkNewJdkVersion") {
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
-
-    // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
-    // throws Gradle exception if local and remote doesn't match
-    jdkDetails.checkLocalVersionMatchingLatest()
-}
-
-=======
->>>>>>> 2fab5f46 (Replace buildkite jdk version check w/GH action (#17945))
 tasks.register("deleteLocalJdk", Delete) {
     // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
     String osName = selectOsType()
