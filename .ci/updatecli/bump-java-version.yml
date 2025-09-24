@@ -16,16 +16,26 @@ scms:
       force: false
 
 sources:
+  jdk_major:
+    kind: yaml
+    spec:
+      file: "versions.yml"
+      key: "$.bundled_jdk.revision"
+    transformers:
+      - findsubmatch:
+          pattern: '^(\d+)\.\d+\.\d+$'
+          captureindex: 1
+
   latest_jdk_version:
     kind: json
     spec:
-      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_21_linux'
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_{{ source "jdk_major" }}_linux'
       key: 'version'
 
   latest_jdk_build:
     kind: json
     spec:
-      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_21_linux'
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_{{ source "jdk_major" }}_linux'
       key: 'revision'
 
 targets:
