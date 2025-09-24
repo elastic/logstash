@@ -57,7 +57,9 @@
 				"^.pre-commit-config.yaml",
 				"\\.md$"
 			],
-			"always_require_ci_on_changed": ["^qa/acceptance/"]
+			"always_require_ci_on_changed": [
+				"^qa/acceptance/"
+			]
 		}
 	]
 }
