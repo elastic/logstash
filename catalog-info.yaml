@@ -33,7 +33,6 @@ spec:
     - resource:logstash-windows-jdk-matrix-pipeline
     - resource:logstash-benchmark-pipeline
     - resource:logstash-health-report-tests-pipeline
-    - resource:logstash-jdk-availability-check-pipeline
 
 # ***********************************
 # Declare serverless IT pipeline
@@ -694,6 +693,7 @@ spec:
           branch: main
           cronline: 30 20 * * *
           message: Daily trigger of Health Report Tests Pipeline
+<<<<<<< HEAD
 
 # *******************************
 # SECTION END: Health Report Tests pipeline
@@ -753,3 +753,5 @@ spec:
 # *******************************
 # SECTION END: JDK check pipeline
 # *******************************
+=======
+>>>>>>> 2fab5f46 (Replace buildkite jdk version check w/GH action (#17945))
