@@ -22,12 +22,17 @@ package org.logstash.plugins;
 
 import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
+import co.elastic.logstash.api.UserMetric;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyHash;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -157,5 +162,68 @@ public class NamespacedMetricImplTest extends MetricTestCase {
         final Metric root = metrics.root();
         final NamespacedMetric namespaced = root.namespace("someothernamespace");
         assertThat(namespaced.namespaceName()).containsExactly("someothernamespace");
+    }
+
+    @Test
+    public void testRegister() {
+        final NamespacedMetric metrics = this.getInstance().namespace("testRegister");
+
+        CustomMetric leftCustomMetric = metrics.register("left", CorrelatingCustomMetric.FACTORY);
+
+        // re-registering the same metric should get the existing instance.
+        assertThat(metrics.register("left", CorrelatingCustomMetric.FACTORY)).isSameAs(leftCustomMetric);
+
+        // registering a new metric should be different instance
+        CustomMetric rightCustomMetric = metrics.register("right", CorrelatingCustomMetric.FACTORY);
+        assertThat(rightCustomMetric).isNotSameAs(leftCustomMetric);
+
+        // this tests our test-only CustomMetric impl more than anything, but it validates
+        // that the instances we update are connected to their values.
+        leftCustomMetric.record("this");
+        leftCustomMetric.record("that");
+        rightCustomMetric.record("that");
+        leftCustomMetric.record("this");
+        rightCustomMetric.record("another");
+        rightCustomMetric.record("that");
+        rightCustomMetric.record("another");
+
+        assertThat(leftCustomMetric.getValue()).contains("this=2", "that=1");
+        assertThat(rightCustomMetric.getValue()).contains("that=2", "another=2");
+    }
+
+    private interface CustomMetric extends UserMetric<String> {
+        void record(final String value);
+
+        UserMetric.Provider<CustomMetric> PROVIDER = new UserMetric.Provider<CustomMetric>(CustomMetric.class, new CustomMetric() {
+            @Override
+            public void record(String value) {
+                // no-op
+            }
+
+            @Override
+            public String getValue() {
+                return "";
+            }
+        });
+    }
+
+    private static class CorrelatingCustomMetric implements CustomMetric {
+        private final ConcurrentHashMap<String, Integer> mapping = new ConcurrentHashMap<>();
+
+        static UserMetric.Factory<CustomMetric> FACTORY = CustomMetric.PROVIDER.getFactory((name) -> new CorrelatingCustomMetric());
+
+        @Override
+        public void record(String value) {
+            mapping.compute(value, (k, v) -> v == null ? 1 : v + 1);
+        }
+
+        @Override
+        public String getValue() {
+            return Map.copyOf(mapping).entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map((e) -> (e.getKey() + '=' + e.getValue().toString()))
+                    .reduce((a, b) -> a + ';' + b).orElse("EMPTY");
+        }
     }
 }

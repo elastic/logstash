@@ -112,6 +112,11 @@ public final class NullMetricExt extends AbstractSimpleMetricExt {
     }
 
     @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject namespace, IRubyObject key, Block metricSupplier) {
+        return context.nil;
+    }
+
+    @Override
     protected AbstractNamespacedMetricExt createNamespaced(final ThreadContext context,
         final IRubyObject name) {
         MetricExt.validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
