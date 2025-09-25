@@ -113,6 +113,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     }
 
     @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier) {
+        return context.nil;
+    }
+
+    @Override
     @SuppressWarnings("rawtypes")
     protected RubyArray getNamespaceName(final ThreadContext context) {
         return namespaceName;

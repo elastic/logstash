@@ -53,6 +53,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
         return getTimer(context, key);
     }
 
+    @JRubyMethod
+    public IRubyObject register(final ThreadContext context, final IRubyObject key, final Block metricSupplier) {
+        return doRegister(context, key, metricSupplier);
+    }
+
     @JRubyMethod(required = 1, optional = 1)
     public IRubyObject increment(final ThreadContext context, final IRubyObject[] args) {
         return doIncrement(context, args);
@@ -103,6 +108,8 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
+
+    protected abstract IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier);
 
     public abstract AbstractMetricExt getMetric();
 }

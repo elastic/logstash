@@ -52,6 +52,16 @@ public interface NamespacedMetric extends Metric {
     TimerMetric timer(String metric);
 
     /**
+     * Creates or retrieves a {@link UserMetric} with the provided {@code metric} name,
+     * using the supplied {@code userMetricFactory}.
+     * @param metric the name of the metric
+     * @param userMetricFactory a factory for creating the metric
+     * @return the resulting metric at the address, whether retrieved or created
+     * @param <USER_METRIC> the type of metric to create
+     */
+    <USER_METRIC extends UserMetric<?>> USER_METRIC register(String metric, UserMetric.Factory<USER_METRIC> userMetricFactory);
+
+    /**
      * Increment the {@code metric} metric by 1.
      *
      * @param metric metric to increment
