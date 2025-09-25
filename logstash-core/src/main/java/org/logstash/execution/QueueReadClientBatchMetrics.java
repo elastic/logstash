@@ -48,7 +48,7 @@ class QueueReadClientBatchMetrics {
         }
 
         if (batch.events().isEmpty()) {
-            // avoid to increment batch count for empty batches
+            // don't update averages for empty batches, but set current back to zero
             currentBatchDimensions.set(Arrays.asList(0L, 0L));
             return;
         }
