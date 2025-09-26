@@ -7,8 +7,10 @@ import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 import static org.logstash.instrument.metrics.MetricKeys.*;
 
@@ -22,6 +24,7 @@ class QueueReadClientBatchMetrics {
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
     private final SecureRandom random = new SecureRandom();
+    private LazyDelegatingGauge currentBatchDimensions;
 
     public QueueReadClientBatchMetrics(QueueFactoryExt.BatchMetricMode batchMetricMode) {
         this.batchMetricMode = batchMetricMode;
@@ -35,16 +38,18 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchCount = LongCounter.fromRubyBase(batchNamespace, BATCH_COUNT);
             pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
             pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
+            currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
         }
     }
 
     public void updateBatchMetrics(QueueBatch batch) {
-        if (batch.events().isEmpty()) {
-            // avoid to increment batch count for empty batches
+        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.DISABLED) {
             return;
         }
 
-        if (batchMetricMode == QueueFactoryExt.BatchMetricMode.DISABLED) {
+        if (batch.events().isEmpty()) {
+            // don't update averages for empty batches, but set current back to zero
+            currentBatchDimensions.set(Arrays.asList(0L, 0L));
             return;
         }
 
@@ -62,13 +67,14 @@ class QueueReadClientBatchMetrics {
     private void updateBatchSizeMetric(QueueBatch batch) {
         try {
             // if an error occurs in estimating the size of the batch, no counter has to be updated
-            long totalSize = 0L;
+            long totalByteSize = 0L;
             for (JrubyEventExtLibrary.RubyEvent rubyEvent : batch.events()) {
-                totalSize += rubyEvent.getEvent().estimateMemory();
+                totalByteSize += rubyEvent.getEvent().estimateMemory();
             }
             pipelineMetricBatchCount.increment();
             pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
-            pipelineMetricBatchByteSize.increment(totalSize);
+            pipelineMetricBatchByteSize.increment(totalByteSize);
+            currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalByteSize));
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
