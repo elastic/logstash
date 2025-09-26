@@ -74,6 +74,12 @@ module LogStash module Instrument
       end
     end
 
+    ##
+    # @return [Metric]: the metric that exists after registration
+    def register(namespaces_path, key, &metric_supplier)
+      @metric_store.fetch_or_store(namespaces_path, key, &metric_supplier)
+    end
+
     # test injection, see MetricExtFactory
     def initialize_metric(type, namespaces_path, key)
       MetricType.create(type, namespaces_path, key)
