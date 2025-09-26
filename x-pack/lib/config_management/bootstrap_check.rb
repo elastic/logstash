@@ -14,7 +14,7 @@ module LogStash
     class BootstrapCheck
       include LogStash::Util::Loggable
 
-      # pipeline ID must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers
+      # pipeline ID must begin with a letter or underscore and contain only letters, underscores, dashes, hyphens, and numbers
       # wildcard character `*` is also acceptable and follows globbing rules
       PIPELINE_ID_PATTERN = %r{\A[a-z_*][a-z_\-0-9*]*\Z}i
 
@@ -47,7 +47,7 @@ module LogStash
 
         invalid_patterns = pipeline_ids.reject { |entry| PIPELINE_ID_PATTERN =~ entry }
         if invalid_patterns.any?
-          raise LogStash::BootstrapCheckError, "Pipeline id in `xpack.management.pipeline.id` must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers. The asterisk wildcard `*` can also be used. Invalid ids: #{invalid_patterns.join(', ')}"
+          raise LogStash::BootstrapCheckError, "Pipeline id in `xpack.management.pipeline.id` must begin with a letter or underscore and contain only letters, underscores, dashes, hyphens, and numbers. The asterisk wildcard `*` can also be used. Invalid ids: #{invalid_patterns.join(', ')}"
         end
 
         duplicate_ids = find_duplicate_ids(pipeline_ids)
