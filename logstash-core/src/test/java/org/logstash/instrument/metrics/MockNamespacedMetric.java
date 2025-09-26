@@ -9,6 +9,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.instrument.metrics.counter.LongCounter;
+import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.Objects;
@@ -36,7 +37,9 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
 
     @Override
     protected IRubyObject getGauge(ThreadContext context, IRubyObject key, IRubyObject value) {
-        return null;
+        Objects.requireNonNull(key);
+        requireRubySymbol(key, "key");
+        return RubyUtil.toRubyObject(metrics.computeIfAbsent(key.asJavaString(), LazyDelegatingGauge::new));
     }
 
     @Override
