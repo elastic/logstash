@@ -23,15 +23,15 @@ public class CompressionCodecTest {
     static final ImmutableByteArrayBarrier COMPRESSED_DEFAULT = new ImmutableByteArrayBarrier(compress(RAW_BYTES.bytes(), 3));
     static final ImmutableByteArrayBarrier COMPRESSED_MAXIMUM = new ImmutableByteArrayBarrier(compress(RAW_BYTES.bytes(), 22));
 
-    private final CompressionCodec codecDisabled = CompressionCodec.fromConfigValue("disabled");
-    private final CompressionCodec codecNone = CompressionCodec.fromConfigValue("none");
-    private final CompressionCodec codecSpeed = CompressionCodec.fromConfigValue("speed");
-    private final CompressionCodec codecBalanced = CompressionCodec.fromConfigValue("balanced");
-    private final CompressionCodec codecSize = CompressionCodec.fromConfigValue("size");
+    private final CompressionCodec codecDisabled = CompressionCodec.fromConfigValue("disabled").create();
+    private final CompressionCodec codecNone = CompressionCodec.fromConfigValue("none").create();
+    private final CompressionCodec codecSpeed = CompressionCodec.fromConfigValue("speed").create();
+    private final CompressionCodec codecBalanced = CompressionCodec.fromConfigValue("balanced").create();
+    private final CompressionCodec codecSize = CompressionCodec.fromConfigValue("size").create();
 
     @Test
     public void testDisabledCompressionCodecDecodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled").create();
         assertDecodesRaw(compressionCodec);
 
         // ensure true pass-through when compression is disabled, even if the payload looks like ZSTD
@@ -42,7 +42,7 @@ public class CompressionCodecTest {
 
     @Test
     public void testDisabledCompressionCodecEncodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("disabled").create();
         // ensure true pass-through when compression is disabled
         assertThat(compressionCodec.encode(RAW_BYTES.bytes()), is(equalTo(RAW_BYTES.bytes())));
     }
@@ -50,13 +50,13 @@ public class CompressionCodecTest {
     @Test
     public void testDisabledCompressionCodecLogging() throws Exception {
         final Logger mockLogger = Mockito.mock(Logger.class);
-        CompressionCodec.fromConfigValue("disabled", mockLogger);
+        CompressionCodec.fromConfigValue("disabled", mockLogger).create();
         Mockito.verify(mockLogger).warn(argThat(stringContainsInOrder("compression support", "disabled")));
     }
 
     @Test
     public void testNoneCompressionCodecDecodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none").create();
         assertDecodesRaw(compressionCodec);
         assertDecodesDeflateAnyLevel(compressionCodec);
         assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
@@ -64,20 +64,20 @@ public class CompressionCodecTest {
 
     @Test
     public void testNoneCompressionCodecEncodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("none").create();
         assertThat(compressionCodec.encode(RAW_BYTES.bytes()), is(equalTo(RAW_BYTES.bytes())));
     }
 
     @Test
     public void testNoneCompressionCodecLogging() throws Exception {
         final Logger mockLogger = Mockito.mock(Logger.class);
-        CompressionCodec.fromConfigValue("none", mockLogger);
+        CompressionCodec.fromConfigValue("none", mockLogger).create();
         Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "read-only")));
     }
 
     @Test
     public void testSpeedCompressionCodecDecodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed").create();
         assertDecodesRaw(compressionCodec);
         assertDecodesDeflateAnyLevel(compressionCodec);
         assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
@@ -85,20 +85,20 @@ public class CompressionCodecTest {
 
     @Test
     public void testSpeedCompressionCodecEncodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("speed").create();
         assertEncodesSmallerRoundTrip(compressionCodec);
     }
 
     @Test
     public void testSpeedCompressionCodecLogging() throws Exception {
         final Logger mockLogger = Mockito.mock(Logger.class);
-        CompressionCodec.fromConfigValue("speed", mockLogger);
+        CompressionCodec.fromConfigValue("speed", mockLogger).create();
         Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "speed")));
     }
 
     @Test
     public void testBalancedCompressionCodecDecodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced").create();
         assertDecodesRaw(compressionCodec);
         assertDecodesDeflateAnyLevel(compressionCodec);
         assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
@@ -106,20 +106,20 @@ public class CompressionCodecTest {
 
     @Test
     public void testBalancedCompressionCodecEncodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("balanced").create();
         assertEncodesSmallerRoundTrip(compressionCodec);
     }
 
     @Test
     public void testBalancedCompressionCodecLogging() throws Exception {
         final Logger mockLogger = Mockito.mock(Logger.class);
-        CompressionCodec.fromConfigValue("balanced", mockLogger);
+        CompressionCodec.fromConfigValue("balanced", mockLogger).create();
         Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "balanced")));
     }
 
     @Test
     public void testSizeCompressionCodecDecodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size").create();
         assertDecodesRaw(compressionCodec);
         assertDecodesDeflateAnyLevel(compressionCodec);
         assertDecodesOutputOfAllKnownCompressionCodecs(compressionCodec);
@@ -127,14 +127,14 @@ public class CompressionCodecTest {
 
     @Test
     public void testSizeCompressionCodecEncodes() throws Exception {
-        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size");
+        final CompressionCodec compressionCodec = CompressionCodec.fromConfigValue("size").create();
         assertEncodesSmallerRoundTrip(compressionCodec);
     }
 
     @Test
     public void testSizeCompressionCodecLogging() throws Exception {
         final Logger mockLogger = Mockito.mock(Logger.class);
-        CompressionCodec.fromConfigValue("size", mockLogger);
+        CompressionCodec.fromConfigValue("size", mockLogger).create();
         Mockito.verify(mockLogger).info(argThat(stringContainsInOrder("compression support", "enabled", "size")));
     }
 

@@ -23,6 +23,7 @@ package org.logstash.ackedqueue.ext;
 import java.io.IOException;
 import java.util.Objects;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -42,6 +43,8 @@ import org.logstash.ackedqueue.Queue;
 import org.logstash.ackedqueue.QueueExceptionMessages;
 import org.logstash.ackedqueue.Settings;
 import org.logstash.ackedqueue.SettingsImpl;
+import org.logstash.plugins.NamespacedMetricImpl;
+
 
 /**
  * JRuby extension to wrap a persistent queue instance.
@@ -62,9 +65,14 @@ public final class JRubyAckedQueueExt extends RubyObject {
         return this.queue;
     }
 
+    @Deprecated
     public static JRubyAckedQueueExt create(final Settings settings) {
+        return create(settings, NamespacedMetricImpl.getNullMetric());
+    }
+
+    public static JRubyAckedQueueExt create(final Settings settings, final Metric metric) {
         JRubyAckedQueueExt queueExt = new JRubyAckedQueueExt(RubyUtil.RUBY, RubyUtil.ACKED_QUEUE_CLASS);
-        queueExt.queue = new Queue(settings);
+        queueExt.queue = new Queue(settings, metric);
         return queueExt;
     }
 

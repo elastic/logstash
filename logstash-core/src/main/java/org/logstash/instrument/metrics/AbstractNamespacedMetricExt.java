@@ -20,6 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -28,6 +29,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 @JRubyClass(name = "AbstractNamespacedMetric")
 public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
@@ -108,6 +110,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
+
+    @Override
+    public Metric asApiMetric() {
+        return new NamespacedMetricImpl(getRuntime().getCurrentContext(), this);
+    }
 
     protected abstract IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier);
 

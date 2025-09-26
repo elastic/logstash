@@ -23,6 +23,7 @@ package org.logstash.ackedqueue.ext;
 import java.io.IOException;
 import java.util.Objects;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -40,6 +41,8 @@ import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.instrument.metrics.AbstractMetricExt;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 /**
  * JRuby extension
@@ -52,8 +55,9 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     private JRubyAckedQueueExt queue;
     private QueueFactoryExt.BatchMetricMode batchMetricMode;
 
-    @JRubyMethod(required=2)
-    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings, IRubyObject batchMetricMode) throws IOException {
+    @JRubyMethod(required=2, optional=1)
+    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
+        final IRubyObject settings = args[0];
         if (!JavaUtil.isJavaObject(settings)) {
             // We should never get here, but previously had an initialize method
             // that took 7 technically-optional ordered parameters.
@@ -64,6 +68,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings));
         }
 
+        final IRubyObject batchMetricMode = args[1];
         Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
         if (!JavaUtil.isJavaObject(batchMetricMode)) {
             throw new IllegalArgumentException(
@@ -73,9 +78,10 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             batchMetricMode));
         }
 
+        final Metric metric = getApiMetric(args.length > 2 ? args[2] : null);
 
         Settings javaSettings = JavaUtil.unwrapJavaObject(settings);
-        this.queue = JRubyAckedQueueExt.create(javaSettings);
+        this.queue = JRubyAckedQueueExt.create(javaSettings, metric);
 
         this.batchMetricMode = JavaUtil.unwrapJavaObject(batchMetricMode);
         this.queue.open();
@@ -83,19 +89,41 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
         return this;
     }
 
-    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings, QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
-        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings, batchMetricMode);
+    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings, Metric metric, QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
+        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings, metric, batchMetricMode);
     }
 
+    @Deprecated
     public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings, QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
+        this(runtime, metaClass, settings, NamespacedMetricImpl.getNullMetric(), batchMetricMode);
+    }
+
+    public JRubyWrappedAckedQueueExt(final Ruby runtime,
+                                     final RubyClass metaClass,
+                                     final Settings settings,
+                                     final Metric metric,
+                                     final QueueFactoryExt.BatchMetricMode batchMetricMode) throws IOException {
         super(runtime, metaClass);
         this.batchMetricMode = Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
-        this.queue = JRubyAckedQueueExt.create(settings);
+        this.queue = JRubyAckedQueueExt.create(settings, metric);
         this.queue.open();
     }
 
     public JRubyWrappedAckedQueueExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    private static Metric getApiMetric(IRubyObject metric) {
+        if (Objects.isNull(metric) || metric.isNil()) {
+            return NamespacedMetricImpl.getNullMetric();
+        }
+        if (metric instanceof AbstractMetricExt rubyExtensionMetric) {
+            return rubyExtensionMetric.asApiMetric();
+        }
+        if (Metric.class.isAssignableFrom(metric.getJavaClass())) {
+            return metric.toJava(Metric.class);
+        }
+        throw new IllegalArgumentException(String.format("Object <%s> could not be converted to a metric", metric.inspect()));
     }
 
     @JRubyMethod(name = "queue")
