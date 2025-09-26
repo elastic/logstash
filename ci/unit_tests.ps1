@@ -68,11 +68,19 @@ else {
 
 if (Test-Path Env:BUILD_JAVA_HOME) {    
     if (Test-Path Env:GRADLE_OPTS) {    
-        $env:GRADLE_OPTS=$env:GRADLE_OPTS + " -Dorg.gradle.vfs.watch=false -Dorg.gradle.java.home=" + $env:BUILD_JAVA_HOME
+        $env:GRADLE_OPTS=$env:GRADLE_OPTS + " -Dorg.gradle.java.home=" + $env:BUILD_JAVA_HOME
     } else {
-        $env:GRADLE_OPTS="-Dorg.gradle.vfs.watch=false -Dorg.gradle.java.home=" + $env:BUILD_JAVA_HOME
+        $env:GRADLE_OPTS="-Dorg.gradle.java.home=" + $env:BUILD_JAVA_HOME
     }
+} 
+
+# Disable the file watcher to retain compatibility with Windows 2016
+if (Test-Path Env:GRADLE_OPTS) {    
+    $env:GRADLE_OPTS="$env:GRADLE_OPTS -Dorg.gradle.vfs.watch=false"
+} else {
+    $env:GRADLE_OPTS="-Dorg.gradle.vfs.watch=false"
 }
+
 
 $testOpts = "GRADLE_OPTS: $env:GRADLE_OPTS, BUILD_JAVA_HOME: $env:BUILD_JAVA_HOME"
 
