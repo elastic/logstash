@@ -31,7 +31,7 @@ public class SettingsImpl implements Settings {
     private final int checkpointMaxAcks;
     private final int checkpointMaxWrites;
     private final boolean checkpointRetry;
-    private final CompressionCodec compressionCodec;
+    private final CompressionCodec.Factory compressionCodec;
 
     public static Builder builder(final Settings settings) {
         return new BuilderImpl(settings);
@@ -50,7 +50,7 @@ public class SettingsImpl implements Settings {
         this.checkpointMaxAcks = builder.checkpointMaxAcks;
         this.checkpointMaxWrites = builder.checkpointMaxWrites;
         this.checkpointRetry = builder.checkpointRetry;
-        this.compressionCodec = builder.compressionCodec;
+        this.compressionCodec = builder.compressionCodecFactory;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class SettingsImpl implements Settings {
     }
 
     @Override
-    public CompressionCodec getCompressionCodec() {
+    public CompressionCodec.Factory getCompressionCodecFactory() {
         return this.compressionCodec;
     }
 
@@ -147,7 +147,7 @@ public class SettingsImpl implements Settings {
 
         private boolean checkpointRetry;
 
-        private CompressionCodec compressionCodec;
+        private CompressionCodec.Factory compressionCodecFactory;
 
         private BuilderImpl(final String dirForFiles) {
             this.dirForFiles = dirForFiles;
@@ -157,7 +157,7 @@ public class SettingsImpl implements Settings {
             this.maxUnread = DEFAULT_MAX_UNREAD;
             this.checkpointMaxAcks = DEFAULT_CHECKPOINT_MAX_ACKS;
             this.checkpointMaxWrites = DEFAULT_CHECKPOINT_MAX_WRITES;
-            this.compressionCodec = CompressionCodec.NOOP;
+            this.compressionCodecFactory = (metric) -> CompressionCodec.NOOP;
             this.checkpointRetry = false;
         }
 
@@ -170,7 +170,7 @@ public class SettingsImpl implements Settings {
             this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
             this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
             this.checkpointRetry = settings.getCheckpointRetry();
-            this.compressionCodec = settings.getCompressionCodec();
+            this.compressionCodecFactory = settings.getCompressionCodecFactory();
         }
 
         @Override
@@ -216,8 +216,8 @@ public class SettingsImpl implements Settings {
         }
 
         @Override
-        public Builder compressionCodec(CompressionCodec compressionCodec) {
-            this.compressionCodec = compressionCodec;
+        public Builder compressionCodecFactory(CompressionCodec.Factory compressionCodec) {
+            this.compressionCodecFactory = compressionCodec;
             return this;
         }
 

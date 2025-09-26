@@ -24,13 +24,17 @@ import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import co.elastic.logstash.api.UserMetric;
+import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.ArrayList;
@@ -44,6 +48,25 @@ import java.util.stream.Stream;
  * metrics and other namespaces to it.
  */
 public class NamespacedMetricImpl implements NamespacedMetric {
+
+    private static final NamespacedMetric NULL_METRIC;
+    static {
+        final Ruby rubyRuntime = RubyUtil.RUBY;
+        final ThreadContext context = rubyRuntime.getCurrentContext();
+        final NullMetricExt nullMetricExt = NullMetricExt.create();
+        final AbstractNamespacedMetricExt namespacedMetricExt = NullNamespacedMetricExt.create(nullMetricExt, rubyRuntime.newArray());
+
+        NULL_METRIC = new NamespacedMetricImpl(context, namespacedMetricExt){
+            @Override
+            public NamespacedMetric namespace(String... key) {
+                return this;
+            }
+        };
+    }
+
+    public static NamespacedMetric getNullMetric() {
+        return NULL_METRIC;
+    }
 
     private final ThreadContext threadContext;
 

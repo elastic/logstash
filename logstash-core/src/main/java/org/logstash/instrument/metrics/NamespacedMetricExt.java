@@ -20,6 +20,8 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
+import co.elastic.logstash.api.NamespacedMetric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -30,6 +32,7 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 @JRubyClass(name = "NamespacedMetric")
 public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
@@ -51,6 +54,11 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
 
     public NamespacedMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    @Override
+    public Metric asApiMetric() {
+        return new NamespacedMetricImpl(getRuntime().getCurrentContext(), this);
     }
 
     @Override

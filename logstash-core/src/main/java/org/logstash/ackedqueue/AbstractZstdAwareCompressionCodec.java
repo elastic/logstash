@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import co.elastic.logstash.api.Metric;
+import co.elastic.logstash.api.NamespacedMetric;
 import com.github.luben.zstd.Zstd;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,13 +15,26 @@ abstract class AbstractZstdAwareCompressionCodec implements CompressionCodec {
     // log from the concrete class
     protected final Logger logger = LogManager.getLogger(this.getClass());
 
+    private final IORatioMetric decodeRatioMetric;
+    private final RelativeSpendMetric decodeTimerMetric;
+
+    public AbstractZstdAwareCompressionCodec(Metric queueMetric) {
+        final NamespacedMetric decodeNamespace = queueMetric.namespace("compression", "decode");
+        decodeRatioMetric = decodeNamespace.namespace("ratio")
+                .register("lifetime", AtomicIORatioMetric.FACTORY);
+        decodeTimerMetric = decodeNamespace.namespace("spend")
+                .register("lifetime", CalculatedRelativeSpendMetric.FACTORY);
+    }
+
     @Override
     public byte[] decode(byte[] data) {
         if (!isZstd(data)) {
+            decodeRatioMetric.incrementBy(data.length, data.length);
             return data;
         }
         try {
-            final byte[] decoded = Zstd.decompress(data);
+            final byte[] decoded = decodeTimerMetric.time(() -> Zstd.decompress(data));
+            decodeRatioMetric.incrementBy(data.length, decoded.length);
             logger.trace("decoded {} -> {}", data.length, decoded.length);
             return decoded;
         } catch (Exception e) {

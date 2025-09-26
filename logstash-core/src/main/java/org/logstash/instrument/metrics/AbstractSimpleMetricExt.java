@@ -20,6 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -27,6 +28,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.plugins.RootMetricImpl;
 
 @JRubyClass(name = "AbstractSimpleMetric")
 public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
@@ -35,6 +37,11 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
 
     AbstractSimpleMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    @Override
+    public Metric asApiMetric() {
+        return new RootMetricImpl(getRuntime().getCurrentContext(), this);
     }
 
     @JRubyMethod(required = 2, optional = 1)

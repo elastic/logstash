@@ -5,6 +5,10 @@ import java.util.function.LongSupplier;
 public class TimerMetricFactory {
     static final TimerMetricFactory INSTANCE = new TimerMetricFactory();
 
+    public static TimerMetricFactory getInstance() {
+        return INSTANCE;
+    }
+
     private TimerMetricFactory() {
     }
 

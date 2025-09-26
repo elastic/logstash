@@ -21,7 +21,9 @@
 package org.logstash.ackedqueue.ext;
 
 import java.io.IOException;
+import java.util.Objects;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
@@ -38,6 +40,8 @@ import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JrubyAckedReadClientExt;
 import org.logstash.ext.JrubyAckedWriteClientExt;
 import org.logstash.ext.JrubyEventExtLibrary;
+import org.logstash.instrument.metrics.AbstractMetricExt;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 /**
  * JRuby extension
@@ -49,8 +53,9 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     private JRubyAckedQueueExt queue;
 
-    @JRubyMethod(required=1)
-    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject settings) throws IOException {
+    @JRubyMethod(required=1, optional=1)
+    public JRubyWrappedAckedQueueExt initialize(ThreadContext context, IRubyObject[] args) throws IOException {
+        final IRubyObject settings = args[0];
         if (!JavaUtil.isJavaObject(settings)) {
             // We should never get here, but previously had an initialize method
             // that took 7 technically-optional ordered parameters.
@@ -60,16 +65,44 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
                             settings.getClass().getName(),
                             settings));
         }
-        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings));
+
+        final Metric metric = getApiMetric(args.length > 1 ? args[1] : null);
+
+        this.queue = JRubyAckedQueueExt.create(JavaUtil.unwrapJavaObject(settings), metric);
         this.queue.open();
 
         return this;
     }
 
-    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings) throws IOException {
-        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings);
+    private static Metric getApiMetric(IRubyObject metric) {
+        if (Objects.isNull(metric) || metric.isNil()) {
+            return NamespacedMetricImpl.getNullMetric();
+        }
+        if (metric instanceof AbstractMetricExt rubyExtensionMetric) {
+            return rubyExtensionMetric.asApiMetric();
+        }
+        if (Metric.class.isAssignableFrom(metric.getJavaClass())) {
+            return metric.toJava(Metric.class);
+        }
+        throw new IllegalArgumentException(String.format("Object <%s> could not be converted to a metric", metric.inspect()));
     }
 
+    @Deprecated
+    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings) throws IOException {
+        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings, NamespacedMetricImpl.getNullMetric());
+    }
+
+    public static JRubyWrappedAckedQueueExt create(ThreadContext context, Settings settings, Metric metric) throws IOException {
+        return new JRubyWrappedAckedQueueExt(context.runtime, RubyUtil.WRAPPED_ACKED_QUEUE_CLASS, settings, metric);
+    }
+
+    public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings, Metric metric) throws IOException {
+        super(runtime, metaClass);
+        this.queue = JRubyAckedQueueExt.create(settings, metric);
+        this.queue.open();
+    }
+
+    @Deprecated
     public JRubyWrappedAckedQueueExt(Ruby runtime, RubyClass metaClass, Settings settings) throws IOException {
         super(runtime, metaClass);
         this.queue = JRubyAckedQueueExt.create(settings);

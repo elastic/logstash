@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import co.elastic.logstash.api.NamespacedMetric;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
@@ -40,6 +41,8 @@ import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.SettingKeyDefinitions;
 import org.logstash.execution.AbstractWrappedQueueExt;
 import org.logstash.ext.JrubyWrappedSynchronousQueueExt;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 import static org.logstash.common.SettingKeyDefinitions.*;
 
@@ -72,9 +75,16 @@ public final class QueueFactoryExt extends RubyBasicObject {
         super(runtime, metaClass);
     }
 
+    @Deprecated
     @JRubyMethod(meta = true)
     public static AbstractWrappedQueueExt create(final ThreadContext context, final IRubyObject recv,
-        final IRubyObject settings) throws IOException {
+                                                 final IRubyObject settings) throws IOException {
+        return create(context, settings, null);
+    }
+
+    public static AbstractWrappedQueueExt create(final ThreadContext context,
+                                                 final IRubyObject settings,
+                                                 final AbstractNamespacedMetricExt metric) throws IOException {
         final String type = getSetting(context, settings, QUEUE_TYPE_CONTEXT_NAME).asJavaString();
         if (PERSISTED_TYPE.equals(type)) {
             final Settings queueSettings = extractQueueSettings(settings);
@@ -86,27 +96,35 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 Files.createDirectories(queuePath);
             }
 
-            return JRubyWrappedAckedQueueExt.create(context, queueSettings);
+            final NamespacedMetric namespacedMetric = getMetric(context, metric);
+            return JRubyWrappedAckedQueueExt.create(context, queueSettings, namespacedMetric);
         } else if (MEMORY_TYPE.equals(type)) {
             return new JrubyWrappedSynchronousQueueExt(
-                context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
+                    context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
+                    context, context.runtime.newFixnum(
+                            getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
+                                    .convertToInteger().getIntValue()
+                                    * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
+                                    .convertToInteger().getIntValue()
+                    )
             );
         } else {
             throw context.runtime.newRaiseException(
-                RubyUtil.CONFIGURATION_ERROR_CLASS,
-                String.format(
-                    "Invalid setting `%s` for `queue.type`, supported types are: 'memory' or 'persisted'",
-                    type
-                )
+                    RubyUtil.CONFIGURATION_ERROR_CLASS,
+                    String.format(
+                            "Invalid setting `%s` for `queue.type`, supported types are: 'memory' or 'persisted'",
+                            type
+                    )
             );
         }
+    }
+
+    private static NamespacedMetric getMetric(final ThreadContext context, final AbstractNamespacedMetricExt metric) {
+        if ( metric == null ) {
+            return NamespacedMetricImpl.getNullMetric();
+        }
+        return new NamespacedMetricImpl(context, metric);
     }
 
     private static IRubyObject getSetting(final ThreadContext context, final IRubyObject settings,
@@ -128,11 +146,11 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
                 .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
-                .compressionCodec(extractConfiguredCodec(settings))
+                .compressionCodecFactory(extractConfiguredCodec(settings))
                 .build();
     }
 
-    private static CompressionCodec extractConfiguredCodec(final IRubyObject settings) {
+    private static CompressionCodec.Factory extractConfiguredCodec(final IRubyObject settings) {
         final ThreadContext context = settings.getRuntime().getCurrentContext();
         final String compressionSetting = getSetting(context, settings, QUEUE_COMPRESSION).asJavaString();
         return CompressionCodec.fromConfigValue(compressionSetting, LOGGER);
