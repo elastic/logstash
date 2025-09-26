@@ -229,6 +229,10 @@
 #
 # queue.checkpoint.writes: 1024
 #
+# If using queue.type: persisted, the compression goal. Valid values are `none`, `speed`, `balanced`, and `size`.
+# The default `none` is able to decompress previously-written events, even if they were compressed.
+#
+# queue.compression: none
 #
 # ------------ Dead-Letter Queue Settings --------------
 # Flag to turn on dead-letter queue.

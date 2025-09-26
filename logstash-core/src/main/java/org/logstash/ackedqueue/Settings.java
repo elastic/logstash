@@ -44,6 +44,8 @@ public interface Settings {
 
     boolean getCheckpointRetry();
 
+    CompressionCodec getCompressionCodec();
+
     /**
      * Validate and return the settings, or throw descriptive {@link QueueRuntimeException}
      * @param settings the settings to validate
@@ -88,6 +90,8 @@ public interface Settings {
         Builder checkpointMaxWrites(int checkpointMaxWrites);
 
         Builder checkpointRetry(boolean checkpointRetry);
+
+        Builder compressionCodec(CompressionCodec compressionCodec);
 
         Settings build();
     }
