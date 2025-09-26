@@ -824,9 +824,11 @@ paths:
                   beats-es:
                     batch:
                       event_count:
+                        current: 78
                         average:
                           lifetime: 115
                       byte_size:
+                        current: 32767
                         average:
                           lifetime: 14820
                     events:
