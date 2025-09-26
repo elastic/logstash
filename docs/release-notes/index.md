@@ -183,7 +183,7 @@ The Elasticsearch Input now provides [support](https://github.com/logstash-plugi
 ### Fixes [logstash-9.0.7-fixes]
 
 * Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards. [#18089](https://github.com/elastic/logstash/pull/18089)
-* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives. [#18111](https://github.com/elastic/logstash/pull/18111)
+* Improve logstash release artifacts file metadata: mtime is preserved when building tar archives. [#18111](https://github.com/elastic/logstash/pull/18111)
 
 ### Plugins [logstash-plugin-9.0.7-changes]
 
