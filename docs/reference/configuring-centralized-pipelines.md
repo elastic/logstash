@@ -144,7 +144,7 @@ This setting can be used only if `xpack.management.elasticsearch.ssl.certificate
 ## Wildcard support in pipeline ID [wildcard-in-pipeline-id]
 
 
-Pipeline IDs must begin with a letter or underscore and contain only letters, underscores, dashes, and numbers. You can use `*` in `xpack.management.pipeline.id` to match any number of letters, underscores, dashes, and numbers.
+Pipeline IDs must begin with a letter or underscore and contain only letters, underscores, dashes, hyphens and numbers. You can use `*` in `xpack.management.pipeline.id` to match any number of letters, underscores, dashes, hyphens, and numbers.
 
 ```shell
 xpack.management.pipeline.id: ["*logs", "*apache*", "tomcat_log"]
