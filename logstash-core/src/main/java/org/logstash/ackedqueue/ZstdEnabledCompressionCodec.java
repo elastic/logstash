@@ -1,5 +1,7 @@
 package org.logstash.ackedqueue;
 
+import co.elastic.logstash.api.Metric;
+import co.elastic.logstash.api.NamespacedMetric;
 import com.github.luben.zstd.Zstd;
 
 /**
@@ -24,14 +26,25 @@ class ZstdEnabledCompressionCodec extends AbstractZstdAwareCompressionCodec impl
 
     private final int internalLevel;
 
-    ZstdEnabledCompressionCodec(final Goal internalLevel) {
+    private final IORatioMetric encodeRatioMetric;
+    private final RelativeSpendMetric encodeTimerMetric;
+
+    ZstdEnabledCompressionCodec(final Goal internalLevel, final Metric queueMetric) {
+        super(queueMetric);
         this.internalLevel = internalLevel.internalLevel;
+
+        final NamespacedMetric encodeNamespace = queueMetric.namespace("compression", "encode");
+        encodeRatioMetric = encodeNamespace.namespace("ratio")
+                .register("lifetime", AtomicIORatioMetric.FACTORY);
+        encodeTimerMetric = encodeNamespace.namespace("spend")
+                .register("lifetime", CalculatedRelativeSpendMetric.FACTORY);
     }
 
     @Override
     public byte[] encode(byte[] data) {
         try {
-            final byte[] encoded = Zstd.compress(data, internalLevel);
+            final byte[] encoded = encodeTimerMetric.time(() -> Zstd.compress(data, internalLevel));
+            encodeRatioMetric.incrementBy(data.length, encoded.length);
             logger.trace("encoded {} -> {}", data.length, encoded.length);
             return encoded;
         } catch (Exception e) {

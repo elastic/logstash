@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+import co.elastic.logstash.api.Metric;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.FileLockFactory;
@@ -46,6 +47,7 @@ import org.logstash.ackedqueue.io.FileCheckpointIO;
 import org.logstash.ackedqueue.io.MmapPageIOV2;
 import org.logstash.ackedqueue.io.PageIO;
 import org.logstash.common.FsUtil;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 /**
  * Persistent queue implementation.
@@ -96,7 +98,15 @@ public final class Queue implements Closeable {
 
     private static final Logger logger = LogManager.getLogger(Queue.class);
 
+    private final Metric metric;
+
+
     public Queue(Settings settings) {
+        this(settings, null);
+    }
+
+    public Queue(Settings settings, Metric metric) {
+        this.metric = Objects.requireNonNullElseGet(metric, NamespacedMetricImpl::getNullMetric);
         try {
             final Path queueDir = Paths.get(settings.getDirPath());
             // Files.createDirectories raises a FileAlreadyExistsException
@@ -113,7 +123,7 @@ public final class Queue implements Closeable {
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
         this.elementClass = settings.getElementClass();
-        this.compressionCodec = settings.getCompressionCodec();
+        this.compressionCodec = settings.getCompressionCodecFactory().create(metric);
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
         this.closed = new AtomicBoolean(true); // not yet opened

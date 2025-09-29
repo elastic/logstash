@@ -1,7 +1,10 @@
 package org.logstash.ackedqueue;
 
+import co.elastic.logstash.api.Metric;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.logstash.ackedqueue.ZstdEnabledCompressionCodec.Goal;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 public interface CompressionCodec {
     Logger LOGGER = LogManager.getLogger(CompressionCodec.class);
@@ -26,33 +29,41 @@ public interface CompressionCodec {
         }
     };
 
-    static CompressionCodec fromConfigValue(final String configValue) {
-        return fromConfigValue(configValue, LOGGER);
+    @FunctionalInterface
+    interface Factory {
+        CompressionCodec create(final Metric metric);
+        default CompressionCodec create() {
+            return create(NamespacedMetricImpl.getNullMetric());
+        }
     }
 
-    static CompressionCodec fromConfigValue(final String configValue, final Logger logger) {
-        return switch (configValue) {
-            case "disabled" -> {
+    static CompressionCodec.Factory fromConfigValue(final String configValue, final Logger logger) {
+        return switch(configValue) {
+            case "disabled" -> (metric) -> {
                 logger.warn("compression support has been disabled");
-                yield CompressionCodec.NOOP;
-            }
-            case "none" -> {
+                return CompressionCodec.NOOP;
+            };
+            case "none" -> (metric) -> {
                 logger.info("compression support is enabled (read-only)");
-                yield ZstdAwareCompressionCodec.getInstance();
-            }
-            case "speed" -> {
+                return new ZstdAwareCompressionCodec(metric);
+            };
+            case "speed" -> (metric) -> {
                 logger.info("compression support is enabled (goal: speed)");
-                yield new ZstdEnabledCompressionCodec(ZstdEnabledCompressionCodec.Goal.SPEED);
-            }
-            case "balanced" -> {
+                return new ZstdEnabledCompressionCodec(Goal.SPEED, metric);
+            };
+            case "balanced" -> (metric) -> {
                 logger.info("compression support is enabled (goal: balanced)");
-                yield new ZstdEnabledCompressionCodec(ZstdEnabledCompressionCodec.Goal.BALANCED);
-            }
-            case "size" -> {
+                return new ZstdEnabledCompressionCodec(Goal.BALANCED, metric);
+            };
+            case "size" -> (metric) -> {
                 logger.info("compression support is enabled (goal: size)");
-                yield new ZstdEnabledCompressionCodec(ZstdEnabledCompressionCodec.Goal.SIZE);
-            }
+                return new ZstdEnabledCompressionCodec(Goal.SIZE, metric);
+            };
             default -> throw new IllegalArgumentException(String.format("Unsupported compression setting `%s`", configValue));
         };
+    }
+
+    static CompressionCodec.Factory fromConfigValue(final String configValue) {
+        return fromConfigValue(configValue, LOGGER);
     }
 }

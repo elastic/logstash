@@ -44,7 +44,7 @@ public interface Settings {
 
     boolean getCheckpointRetry();
 
-    CompressionCodec getCompressionCodec();
+    CompressionCodec.Factory getCompressionCodecFactory();
 
     /**
      * Validate and return the settings, or throw descriptive {@link QueueRuntimeException}
@@ -91,7 +91,7 @@ public interface Settings {
 
         Builder checkpointRetry(boolean checkpointRetry);
 
-        Builder compressionCodec(CompressionCodec compressionCodec);
+        Builder compressionCodecFactory(CompressionCodec.Factory compressionCodecFactory);
 
         Settings build();
     }
