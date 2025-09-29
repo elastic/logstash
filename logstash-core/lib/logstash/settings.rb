@@ -70,6 +70,7 @@ module LogStash
       "queue.checkpoint.interval", # remove it for #17155
       "queue.checkpoint.writes",
       "queue.checkpoint.retry",
+      "queue.compression",
       "queue.drain",
       "queue.max_bytes",
       "queue.max_events",

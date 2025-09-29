@@ -83,6 +83,7 @@ public final class Queue implements Closeable {
     // deserialization
     private final Class<? extends Queueable> elementClass;
     private final Method deserializeMethod;
+    private final CompressionCodec compressionCodec;
 
     // thread safety
     private final ReentrantLock lock = new ReentrantLock();
@@ -112,6 +113,7 @@ public final class Queue implements Closeable {
         this.maxBytes = settings.getQueueMaxBytes();
         this.checkpointIO = new FileCheckpointIO(dirPath, settings.getCheckpointRetry());
         this.elementClass = settings.getElementClass();
+        this.compressionCodec = settings.getCompressionCodec();
         this.tailPages = new ArrayList<>();
         this.unreadTailPages = new ArrayList<>();
         this.closed = new AtomicBoolean(true); // not yet opened
@@ -414,7 +416,8 @@ public final class Queue implements Closeable {
             throw new QueueRuntimeException(QueueExceptionMessages.CANNOT_WRITE_TO_CLOSED_QUEUE);
         }
 
-        byte[] data = element.serialize();
+        byte[] serializedBytes = element.serialize();
+        byte[] data = compressionCodec.encode(serializedBytes);
 
         // the write strategy with regard to the isFull() state is to assume there is space for this element
         // and write it, then after write verify if we just filled the queue and wait on the notFull condition
@@ -767,7 +770,8 @@ public final class Queue implements Closeable {
      */
     public Queueable deserialize(byte[] bytes) {
         try {
-            return (Queueable)this.deserializeMethod.invoke(this.elementClass, bytes);
+            byte[] decodedBytes = compressionCodec.decode(bytes);
+            return (Queueable)this.deserializeMethod.invoke(this.elementClass, decodedBytes);
         } catch (IllegalAccessException|InvocationTargetException e) {
             throw new QueueRuntimeException("deserialize invocation error", e);
         }

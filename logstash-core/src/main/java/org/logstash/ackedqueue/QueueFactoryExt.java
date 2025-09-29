@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jruby.Ruby;
 import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
@@ -68,6 +71,8 @@ public final class QueueFactoryExt extends RubyBasicObject {
     public static String QUEUE_TYPE_CONTEXT_NAME = "queue.type";
 
     private static final long serialVersionUID = 1L;
+
+    private static final Logger LOGGER = LogManager.getLogger(QueueFactoryExt.class);
 
     public QueueFactoryExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -137,6 +142,13 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
                 .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
+                .compressionCodec(extractConfiguredCodec(settings))
                 .build();
+    }
+
+    private static CompressionCodec extractConfiguredCodec(final IRubyObject settings) {
+        final ThreadContext context = settings.getRuntime().getCurrentContext();
+        final String compressionSetting = getSetting(context, settings, QUEUE_COMPRESSION).asJavaString();
+        return CompressionCodec.fromConfigValue(compressionSetting, LOGGER);
     }
 }
