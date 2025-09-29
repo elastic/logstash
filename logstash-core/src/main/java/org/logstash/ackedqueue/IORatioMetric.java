@@ -11,7 +11,7 @@ interface IORatioMetric extends UserMetric<Double>, org.logstash.instrument.metr
 
     Value getLifetime();
 
-    void incrementBy(long bytesIn, long bytesOut);
+    void incrementBy(int bytesIn, int bytesOut);
 
     @Override
     default MetricType getType() {
@@ -37,7 +37,7 @@ interface IORatioMetric extends UserMetric<Double>, org.logstash.instrument.metr
         }
 
         @Override
-        public void incrementBy(long bytesIn, long bytesOut) {
+        public void incrementBy(int bytesIn, int bytesOut) {
             // no-op
         }
 

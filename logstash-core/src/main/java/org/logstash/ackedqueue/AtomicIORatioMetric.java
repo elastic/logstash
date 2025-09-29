@@ -1,6 +1,8 @@
 package org.logstash.ackedqueue;
 
 import co.elastic.logstash.api.UserMetric;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.logstash.instrument.metrics.AbstractMetric;
 
 import java.math.BigDecimal;
@@ -18,11 +20,18 @@ class AtomicIORatioMetric extends AbstractMetric<Double> implements IORatioMetri
 
     private static final MathContext LIMITED_PRECISION = new MathContext(4, RoundingMode.HALF_UP);
     private static final ImmutableRatio ZERO = new ImmutableRatio(0L, 0L);
+    private static final Logger LOGGER = LogManager.getLogger(AtomicIORatioMetric.class);
 
     private final AtomicReference<ImmutableRatio> atomicReference = new AtomicReference<>(ZERO);
+    private final Logger logger;
 
     AtomicIORatioMetric(final String name) {
+        this(name, LOGGER);
+    }
+
+    AtomicIORatioMetric(final String name, final Logger logger) {
         super(name);
+        this.logger = logger;
     }
 
     @Override
@@ -31,8 +40,17 @@ class AtomicIORatioMetric extends AbstractMetric<Double> implements IORatioMetri
     }
 
     @Override
-    public void incrementBy(long bytesIn, long bytesOut) {
-        this.atomicReference.getAndUpdate((existing) -> existing.incrementedBy(bytesIn, bytesOut));
+    public void incrementBy(int bytesIn, int bytesOut) {
+        if (bytesIn < 0 || bytesOut < 0) {
+            logger.warn("cannot decrement IORatioMetric {}", this.getName());
+            return;
+        }
+        this.atomicReference.getAndUpdate((existing) -> doIncrement(existing, bytesIn, bytesOut));
+    }
+
+    // test injection
+    void setTo(long bytesIn, long bytesOut) {
+        this.atomicReference.set(new ImmutableRatio(bytesIn, bytesOut));
     }
 
     @Override
@@ -57,17 +75,21 @@ class AtomicIORatioMetric extends AbstractMetric<Double> implements IORatioMetri
         this.atomicReference.set(ZERO);
     }
 
-    public record ImmutableRatio(long bytesIn, long bytesOut) implements Value {
-        ImmutableRatio incrementedBy(final long bytesIn, final long bytesOut) {
-            try {
-                final long combinedBytesIn = Math.addExact(this.bytesIn(), bytesIn);
-                final long combinedBytesOut = Math.addExact(this.bytesOut(), bytesOut);
+    private ImmutableRatio doIncrement(final ImmutableRatio existing, final int bytesIn, final int bytesOut) {
 
-                return new ImmutableRatio(combinedBytesIn, combinedBytesOut);
-            } catch (ArithmeticException e) {
-                // don't crash, just start over.
-                return new ImmutableRatio(bytesIn, bytesOut);
-            }
+        final long combinedBytesIn = existing.bytesIn() + bytesIn;
+        final long combinedBytesOut = existing.bytesOut() + bytesOut;
+
+        if (combinedBytesIn < 0 || combinedBytesOut < 0) {
+            logger.warn("long overflow; precision will be reduced");
+            final long reducedBytesIn = Math.addExact(Math.floorDiv(existing.bytesIn(), 2), bytesIn);
+            final long reducedBytesOut = Math.addExact(Math.floorDiv(existing.bytesOut(), 2), bytesOut);
+
+            return new ImmutableRatio(reducedBytesIn, reducedBytesOut);
         }
+
+        return new ImmutableRatio(combinedBytesIn, combinedBytesOut);
     }
+
+    public record ImmutableRatio(long bytesIn, long bytesOut) implements Value { }
 }
