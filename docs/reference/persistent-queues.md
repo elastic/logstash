@@ -84,6 +84,17 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
 `queue.checkpoint.interval` {applies_to}`stack: deprecated 9.1`
 :   Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is `1000`. Set to `0` to eliminate periodic checkpoints.
 
+`queue.compression` {applies_to}`stack: ga 9.2`
+:   Sets the event compression level for use with the Persisted Queue. Default is `none`. Possible values are:
+    * `none`: does not perform compression, but reads compressed events
+    * `speed`: optimize for fastest compression operation
+    * `size`: optimize for smallest possible size on disk, spending more CPU
+    * `balanced`: a balance between the `speed` and `size` settings
+:::{important}
+Compression can be enabled for an existing PQ, but once compressed elements have been added to a PQ, that PQ cannot be read by previous Logstash releases that did not support compression.
+If you need to downgrade Logstash after enabling the PQ, you will need to either delete the PQ or run the pipeline with `queue.drain: true` first to ensure that no compressed elements remain.
+:::
+
 ## Configuration notes [pq-config-notes]
 
 Every situation and environment is different, and the "ideal" configuration varies. If you optimize for performance, you may increase your risk of losing data. If you optimize for data protection, you may impact performance.

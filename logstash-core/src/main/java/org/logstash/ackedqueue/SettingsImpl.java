@@ -31,6 +31,7 @@ public class SettingsImpl implements Settings {
     private final int checkpointMaxAcks;
     private final int checkpointMaxWrites;
     private final boolean checkpointRetry;
+    private final CompressionCodec compressionCodec;
 
     public static Builder builder(final Settings settings) {
         return new BuilderImpl(settings);
@@ -49,6 +50,7 @@ public class SettingsImpl implements Settings {
         this.checkpointMaxAcks = builder.checkpointMaxAcks;
         this.checkpointMaxWrites = builder.checkpointMaxWrites;
         this.checkpointRetry = builder.checkpointRetry;
+        this.compressionCodec = builder.compressionCodec;
     }
 
     @Override
@@ -89,6 +91,11 @@ public class SettingsImpl implements Settings {
     @Override
     public boolean getCheckpointRetry() {
         return this.checkpointRetry;
+    }
+
+    @Override
+    public CompressionCodec getCompressionCodec() {
+        return this.compressionCodec;
     }
 
     /**
@@ -140,6 +147,8 @@ public class SettingsImpl implements Settings {
 
         private boolean checkpointRetry;
 
+        private CompressionCodec compressionCodec;
+
         private BuilderImpl(final String dirForFiles) {
             this.dirForFiles = dirForFiles;
             this.elementClass = null;
@@ -148,6 +157,7 @@ public class SettingsImpl implements Settings {
             this.maxUnread = DEFAULT_MAX_UNREAD;
             this.checkpointMaxAcks = DEFAULT_CHECKPOINT_MAX_ACKS;
             this.checkpointMaxWrites = DEFAULT_CHECKPOINT_MAX_WRITES;
+            this.compressionCodec = CompressionCodec.NOOP;
             this.checkpointRetry = false;
         }
 
@@ -160,6 +170,7 @@ public class SettingsImpl implements Settings {
             this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
             this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
             this.checkpointRetry = settings.getCheckpointRetry();
+            this.compressionCodec = settings.getCompressionCodec();
         }
 
         @Override
@@ -201,6 +212,12 @@ public class SettingsImpl implements Settings {
         @Override
         public Builder checkpointRetry(final boolean checkpointRetry) {
             this.checkpointRetry = checkpointRetry;
+            return this;
+        }
+
+        @Override
+        public Builder compressionCodec(CompressionCodec compressionCodec) {
+            this.compressionCodec = compressionCodec;
             return this;
         }
 

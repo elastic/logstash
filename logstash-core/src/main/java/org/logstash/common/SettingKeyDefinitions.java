@@ -45,4 +45,6 @@ public class SettingKeyDefinitions {
     public static final String QUEUE_CHECKPOINT_RETRY = "queue.checkpoint.retry";
 
     public static final String QUEUE_MAX_BYTES = "queue.max_bytes";
+
+    public static final String QUEUE_COMPRESSION = "queue.compression";
 }

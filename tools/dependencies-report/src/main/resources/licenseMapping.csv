@@ -33,6 +33,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "com.fasterxml.jackson.core:jackson-databind:",https://github.com/FasterXML/jackson-databind,Apache-2.0
 "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:",https://github.com/FasterXML/jackson-dataformats-binary,Apache-2.0
 "com.fasterxml.jackson.module:jackson-module-afterburner:",https://github.com/FasterXML/jackson-modules-base,Apache-2.0
+"com.github.luben:zstd-jni:1.5.7-4",https://github.com/luben/zstd-jni,BSD-2-Clause
 "com.google.googlejavaformat:google-java-format:",https://github.com/google/google-java-format,Apache-2.0
 "com.google.guava:guava:",https://github.com/google/guava,Apache-2.0
 "com.google.j2objc:j2objc-annotations:",https://github.com/google/j2objc/,Apache-2.0
