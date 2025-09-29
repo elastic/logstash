@@ -74,6 +74,11 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
         return doTime(context, namespace, key, block);
     }
 
+    @JRubyMethod(name = "register")
+    public IRubyObject register(final ThreadContext context, final IRubyObject namespace, final IRubyObject key, final Block metricSupplier) {
+        return doRegister(context, namespace, key, metricSupplier);
+    }
+
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
@@ -88,4 +93,6 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
 
     protected abstract IRubyObject doTime(ThreadContext context, IRubyObject namespace,
         IRubyObject key, Block block);
+
+    protected abstract IRubyObject doRegister(ThreadContext context, IRubyObject namespace, IRubyObject key, Block metricSupplier);
 }
