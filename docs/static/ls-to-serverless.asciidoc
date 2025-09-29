@@ -20,7 +20,7 @@ Set the value to port :443 instead.
 ****
 
 [[connecting-to-elasticsearch-serverless]]
-==== Communication between {ls} {es-serverless} 
+==== Communication between {ls} and {es-serverless} 
 
 link:docs-content://solutions/search/serverless-elasticsearch-get-started.md[{es-serverless}] simplifies safe, secure communication between {ls} and {es}.
 When you configure the Elasticsearch output plugin to use link:logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id[`cloud_id`] and an link:logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key[`api_key`], no additional SSL configuration is needed.
