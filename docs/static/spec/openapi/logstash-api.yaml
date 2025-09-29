@@ -2340,6 +2340,59 @@ components:
                 max_queue_size_in_bytes:
                   type: integer
                   format: int64
+                compression:
+                  type: object
+                  properties:
+                    encode:
+                      type: object
+                      properties:
+                        ratio:
+                          type: object
+                          description: the ratio of event size in bytes to its representation on disk
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                        spend:
+                          type: object
+                          description: the fraction of wall-clock time spent encoding events
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                    decode:
+                      type: object
+                      properties:
+                        ratio:
+                          type: object
+                          description: the ratio of event representation on disk to event size
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                        spend:
+                          type: object
+                          description: the fraction of wall-clock time spent decoding events
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
             - type: object
               description: "The metrics of memory queue."
               required:

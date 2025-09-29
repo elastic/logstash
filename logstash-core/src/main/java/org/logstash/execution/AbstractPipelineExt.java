@@ -300,8 +300,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
      */
     @JRubyMethod(name = "open_queue")
     public final IRubyObject openQueue(final ThreadContext context) {
+        final AbstractNamespacedMetricExt queueNamespace = metric.namespace(context, pipelineNamespacedPath(QUEUE_KEY));
         try {
-            queue = QueueFactoryExt.create(context, null, settings);
+            queue = QueueFactoryExt.create(context, settings, queueNamespace);
         } catch (final Exception ex) {
             LOGGER.error("Logstash failed to create queue.", ex);
             throw new IllegalStateException(ex);
