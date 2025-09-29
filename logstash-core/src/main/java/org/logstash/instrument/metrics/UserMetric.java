@@ -31,12 +31,12 @@ public class UserMetric {
 
         final IRubyObject result = metric.register(context, key, metricSupplier);
         final Class<USER_METRIC> type = metricFactory.getType();
-        if (type.isAssignableFrom(result.getJavaClass())) {
-            return result.toJava(type);
-        } else {
+        if (!type.isAssignableFrom(result.getJavaClass())) {
             LOGGER.warn("UserMetric type mismatch for %s (expected: %s, received: %s); " +
                     "a null implementation will be substituted", key.asJavaString(), type, result.getJavaClass());
             return metricFactory.nullImplementation();
         }
+        
+        return result.toJava(type);
     }
 }
