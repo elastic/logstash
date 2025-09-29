@@ -25,7 +25,7 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
 
     private static final long serialVersionUID = -6507123659910450215L;
 
-    private transient final ConcurrentMap<String, Metric> metrics = new ConcurrentHashMap<>();
+    private transient final ConcurrentMap<String, Object> metrics = new ConcurrentHashMap<>();
 
     public static MockNamespacedMetric create() {
         return new MockNamespacedMetric(RubyUtil.RUBY, RubyUtil.NAMESPACED_METRIC_CLASS);
@@ -84,6 +84,11 @@ public class MockNamespacedMetric extends AbstractNamespacedMetricExt {
     @Override
     public AbstractMetricExt getMetric() {
         return NullMetricExt.create();
+    }
+
+    @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier) {
+        return RubyUtil.toRubyObject(metrics.computeIfAbsent(key.asJavaString(), (k) -> metricSupplier.call(context)));
     }
 
     @Override

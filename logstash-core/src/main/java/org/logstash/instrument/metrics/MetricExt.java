@@ -154,6 +154,12 @@ public final class MetricExt extends AbstractSimpleMetricExt {
     }
 
     @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject namespace, IRubyObject key, Block supplier) {
+        MetricExt.validateKey(context, null, key);
+        return collector.callMethod(context, "register", new IRubyObject[]{normalizeNamespace(namespace), key}, supplier);
+    }
+
+    @Override
     protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject namespace,
         final IRubyObject key, final IRubyObject duration) {
         MetricExt.validateKey(context, null, key);
