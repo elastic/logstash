@@ -215,6 +215,11 @@ describe "Test Monitoring API" do
       logstash_service.start_with_stdin
       logstash_service.wait_for_logstash
 
+      number_of_events.times {
+        logstash_service.write_to_stdin("Testing flow metrics")
+        sleep(1)
+      }
+
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         # node_stats can fail if the stats subsystem isn't ready
         result = logstash_service.monitoring_api.node_stats rescue nil
@@ -234,6 +239,9 @@ describe "Test Monitoring API" do
           expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
           expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
           expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
+          queue_compression_stats = queue_stats.fetch("compression")
+          expect(queue_compression_stats.dig('decode', 'ratio', 'lifetime')).to be >= 1
+          expect(queue_compression_stats.dig('decode', 'spend', 'lifetime')).not_to be_nil
         else
           expect(queue_stats["type"]).to eq("memory")
         end
