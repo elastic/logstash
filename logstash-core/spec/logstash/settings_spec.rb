@@ -302,6 +302,10 @@ describe LogStash::Settings do
 
     context "containing a mode WARN policy" do
 
+      # Need to open the existing class to inject getter and setter for logger.
+      # This is done because the RSpec mock framework, like:
+      # allow(LogStash::Setting::ValidatedPassword).to receive(:logger).at_least(:once).and_return(mock_logger)
+      # is not able to mock the logger method.
       class TestableValidatedPassword < LogStash::Setting::ValidatedPassword
 
         def self.set_logger(logger)
@@ -312,12 +316,8 @@ describe LogStash::Settings do
           @@mock_logger
         end
       end
-
-
+      
       before :each do
-        # Needs to mock the logger method at LogStash::Settings instead of LogStash::Setting::ValidatedPassword
-        # else the LOGGABLE_PROXY hide the mock itself.
-        allow(LogStash::Setting::ValidatedPassword).to receive(:logger).at_least(:once).and_return(mock_logger)
         allow(mock_logger).to receive(:warn)
       end
       let(:mock_logger) { double("logger") }
