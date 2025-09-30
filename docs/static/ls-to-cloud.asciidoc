@@ -1,5 +1,5 @@
 [[connecting-to-cloud]]
-=== Sending data to Elastic Cloud (hosted Elasticsearch Service)
+=== Sending data to {ech}
 
 Our hosted {ess} on https://cloud.elastic.co/[Elastic Cloud] simplifies safe, secure communication between {ls} and {es}. 
 When you configure the Elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> with either the <<plugins-outputs-elasticsearch-cloud_auth,`cloud_auth` option>> or the <<plugins-outputs-elasticsearch-api_key,`api_key` option>>, no additional SSL configuration is needed.
@@ -31,16 +31,16 @@ If you change your Cloud password in the Cloud UI, remember to change it here, t
 [[cloud-id-plugins]]
 ==== Using Cloud ID and Cloud Auth with plugins
 
-The Elasticsearch input, output, and filter plugins support cloud_id and
-cloud_auth in their configurations. 
+The Elasticsearch input, output, and filter plugins, as well as the Elastic_integration filter plugin, support cloud_id and cloud_auth in their configurations.
 
 * <<plugins-inputs-elasticsearch-cloud_id,Elasticsearch input plugin>>
 * <<plugins-filters-elasticsearch-cloud_id,Elasticsearch filter plugin>>
 * <<plugins-outputs-elasticsearch-cloud_id,Elasticsearch output plugin>>
+* <<plugins-filters-elastic_integration-cloud_id,Elastic_integration filter plugin>>
 
 
 [[cloud-id-mgmt]]
-==== Sending {ls} management data to {es} Services
+==== Using {ls} Central Pipeline Management with {ech}
 
 These settings in the `logstash.yml` config file can help you get set up to send
 management data to Elastic Cloud:
