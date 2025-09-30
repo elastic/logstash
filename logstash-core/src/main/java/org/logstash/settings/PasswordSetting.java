@@ -20,9 +20,13 @@
 package org.logstash.settings;
 
 import co.elastic.logstash.api.Password;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class PasswordSetting extends Coercible<Object> {
+
+    private static final Logger LOG = LogManager.getLogger();
 
     public PasswordSetting(String name, Object defaultValue) {
         this(name, defaultValue, true);
@@ -41,5 +45,9 @@ public class PasswordSetting extends Coercible<Object> {
             throw new IllegalArgumentException("Setting `" + getName() + "` could not coerce non-string value to password");
         }
         return new Password((String) obj);
+    }
+
+    public Logger getLogger() {
+        return LOG;
     }
 }
