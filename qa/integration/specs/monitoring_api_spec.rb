@@ -208,7 +208,12 @@ describe "Test Monitoring API" do
   shared_examples "pipeline metrics" do
     # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
     let(:settings_overrides) do
-      super().merge({'pipeline.id' => pipeline_id})
+      super().dup.tap do |overrides|
+        overrides['pipeline.id'] = pipeline_id
+        if logstash_service.settings.feature_flag == "persistent_queues"
+          overrides['queue.compression'] = %w(none speed balanced size).sample
+        end
+      end
     end
 
     it "can retrieve queue stats" do
@@ -242,6 +247,11 @@ describe "Test Monitoring API" do
           queue_compression_stats = queue_stats.fetch("compression")
           expect(queue_compression_stats.dig('decode', 'ratio', 'lifetime')).to be >= 1
           expect(queue_compression_stats.dig('decode', 'spend', 'lifetime')).not_to be_nil
+          if settings_overrides['queue.compression'] != 'none'
+            expect(queue_compression_stats.dig('encode', 'goal')).to eq(settings_overrides['queue.compression'])
+            expect(queue_compression_stats.dig('encode', 'ratio', 'lifetime')).to be <= 1
+            expect(queue_compression_stats.dig('encode', 'spend', 'lifetime')).not_to be_nil
+          end
         else
           expect(queue_stats["type"]).to eq("memory")
         end
