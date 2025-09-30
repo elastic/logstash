@@ -315,4 +315,5 @@ input { # comments can appear at the end of a line, too
 include::event-data.asciidoc[]
 include::env-vars.asciidoc[]
 include::ls-to-cloud.asciidoc[]
+include::ls-to-serverless.asciidoc[]
 include::pipeline-config-exps.asciidoc[]
