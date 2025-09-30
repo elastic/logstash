@@ -50,6 +50,7 @@ Make sure you’ve read the [Performance troubleshooting](/reference/performance
 If you plan to modify the default pipeline settings, take into account the following suggestions:
 
 * The total number of inflight events is determined by the product of the  `pipeline.workers` and `pipeline.batch.size` settings. This product is referred to as the *inflight count*. Keep the value of the inflight count in mind as you adjust the `pipeline.workers` and `pipeline.batch.size` settings. Pipelines that intermittently receive large events at irregular intervals require sufficient memory to handle these spikes. Set the JVM heap space accordingly in the `jvm.options` config file (See [Logstash Configuration Files](/reference/config-setting-files.md) for more info).
+* {applies_to}`stack: preview 9.2.0` Consider enabling the metering of batch sizes using the setting `pipeline.batch.metrics.sampling_mode` to help you understand the actual batch sizes being processed by your pipeline. This setting can be useful tuning the `pipeline.batch.size` setting. For more details see [logstash.yml](/reference/logstash-settings-file.md).
 * Measure each change to make sure it increases, rather than decreases, performance.
 * Ensure that you leave enough memory available to cope with a sudden increase in event size. For example, an application that generates exceptions that are represented as large blobs of text.
 * The number of workers may be set higher than the number of CPU cores since outputs often spend idle time in I/O wait conditions.
