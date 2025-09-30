@@ -2346,6 +2346,11 @@ components:
                     encode:
                       type: object
                       properties:
+                        goal:
+                          - enum:
+                              - speed
+                              - balanced
+                              - size
                         ratio:
                           type: object
                           description: the ratio of event size in bytes to its representation on disk

@@ -4,6 +4,8 @@ import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
 import com.github.luben.zstd.Zstd;
 
+import java.util.Locale;
+
 /**
  * A {@link ZstdEnabledCompressionCodec} is a {@link CompressionCodec} that can decode deflate-compressed
  * bytes and performs deflate compression when encoding.
@@ -34,6 +36,7 @@ class ZstdEnabledCompressionCodec extends AbstractZstdAwareCompressionCodec impl
         this.internalLevel = internalLevel.internalLevel;
 
         final NamespacedMetric encodeNamespace = queueMetric.namespace("compression", "encode");
+        encodeNamespace.gauge("goal", internalLevel.name().toLowerCase(Locale.ROOT));
         encodeRatioMetric = encodeNamespace.namespace("ratio")
                 .register("lifetime", AtomicIORatioMetric.FACTORY);
         encodeTimerMetric = encodeNamespace.namespace("spend")
