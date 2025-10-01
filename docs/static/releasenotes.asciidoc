@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-18-8,Logstash 8.18.8>>
 * <<logstash-8-18-7,Logstash 8.18.7>>
 * <<logstash-8-18-6,Logstash 8.18.6>>
 * <<logstash-8-18-5,Logstash 8.18.5>>
@@ -93,6 +94,32 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-18-8]]
+=== Logstash 8.18.8 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.18.8
+
+=== Logstash Commits between 8.18 and 8.18.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.18.7..8.18"
+
+8e00c8722 - (HEAD -> 8.18, origin/8.18) Doc: Add LS-to-svrless page for 8.19 (#18201) (#18244) (21 hours ago) <mergify[bot]>
+e1b101139 - Update patch plugin versions in gemfile lock (#18235) (25 hours ago) <github-actions[bot]>
+db3a5bba1 - Update patch plugin versions in gemfile lock (#18232) (25 hours ago) <github-actions[bot]>
+f17951fc0 - [8.19] (backport #18216) [Docs] Add hyphen to the pipeline ID restriction description. (#18221) (#18228) (5 days ago) <mergify[bot]>
+13bfa4196 - [8.18] (backport #17945) Replace buildkite jdk version check w/GH action (#18211) (7 days ago) <mergify[bot]>
+bc3d3757d - GH action for updating logstash version (#18035) (#18205) (8 days ago) <mergify[bot]>
+2e27db60a - Bump logstash version 8.18.8 (#18163) (2 weeks ago) <github-actions[bot]>
+f713bd13f - Release notes for 8.18.7 (#18156) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.18.7..8.18 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
 
 [[logstash-8-18-7]]
 === Logstash 8.18.7 Release Notes
