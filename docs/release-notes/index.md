@@ -21,6 +21,17 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.0.8 [logstash-9.0.8-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.8-changes]
+
+**Elasticsearch Output - 12.0.7**
+
+* Support both, encoded and non encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
+
+
 ## 9.0.7 [logstash-9.0.7-release-notes]
 
 ### Fixes [logstash-9.0.7-fixes]
@@ -156,42 +167,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.0.8 [logstash-9.0.8-release-notes]
-
-### Features and enhancements [logstash-9.0.8-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.0.8
-
-=== Logstash Commits between 9.0 and 9.0.7
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.0.7..9.0"
-
-51634cf00 - (HEAD -> 9.0, origin/9.0) Fix heading (#18237) (#18239) (22 hours ago) <mergify[bot]>
-6c470abbb - Update patch plugin versions in gemfile lock (#18234) (25 hours ago) <github-actions[bot]>
-e98a89449 - Doc: Refine serverless and hosted content (#18166) (#18167) (2 days ago) <mergify[bot]>
-71f86a93b - [Docs] Add hyphen to the pipeline ID restriction description. (#18216) (#18222) (5 days ago) <mergify[bot]>
-eaf2f3485 - [9.0] (backport #17945) Replace buildkite jdk version check w/GH action (#18213) (7 days ago) <mergify[bot]>
-354c3e2af - GH action for updating logstash version (#18035) (#18207) (8 days ago) <mergify[bot]>
-2d83ef19d - [9.0] (backport #18018) [DOCS] Fix nullable type linting error in OpenAPI document (#18020) (9 days ago) <mergify[bot]>
-fce75d636 - bk: update junit-annotate to run faster (#18193) (#18197) (9 days ago) <mergify[bot]>
-9d8bb60c2 - Bump logstash version 9.0.8 (#18176) (2 weeks ago) <github-actions[bot]>
-55e6b2ba7 - Release notes for 9.0.7 (#18158) (2 weeks ago) <github-actions[bot]>
-251221721 - Doc: Add Logstash-to-serverless page (#18034) (#18164) (2 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.0.7..9.0 *.release"
-Changed plugin versions:
-logstash-output-elasticsearch: 12.0.6 -> 12.0.7
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.0.8-changes]
-
-**Elasticsearch Output - 12.0.7**
-
-* Support both, encoded and non encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
