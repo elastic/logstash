@@ -21,6 +21,28 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.5 [logstash-9.1.5-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.5-changes]
+
+**Elasticsearch Filter - 4.3.1**
+
+* Added support for encoded and non encoded api-key formats on plugin configuration [#203](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/203)
+
+**Elasticsearch Input - 5.2.1**
+
+* Added support for encoded and non encoded api-key formats on plugin configuration [#237](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/237)
+
+**Jdbc Integration - 5.6.1**
+
+* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures [#187](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187)
+
+**Elasticsearch Output - 12.0.7**
+
+* Support both, encoded and non encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
+
 ## 9.1.4 [logstash-9.1.4-release-notes]
 
 ### Features and enhancements [logstash-9.1.4-features-enhancements]
@@ -288,61 +310,6 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
-
-## 9.1.5 [logstash-9.1.5-release-notes]
-
-### Features and enhancements [logstash-9.1.5-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.5
-
-=== Logstash Commits between 9.1 and 9.1.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.4..9.1"
-
-8994afd54 - (HEAD -> 9.1, origin/9.1) Fix heading (#18237) (#18240) (22 hours ago) <mergify[bot]>
-ee490572d - Update patch plugin versions in gemfile lock (#18233) (25 hours ago) <github-actions[bot]>
-22eb4578e - Doc: Refine serverless and hosted content (#18166) (#18168) (2 days ago) <mergify[bot]>
-9d4d31343 - Doc: Attribute fixes in release notes 9.1.0 (#18226) (5 days ago) <Karen Metts>
-721c5194f - [Docs] Add hyphen to the pipeline ID restriction description. (#18216) (#18223) (5 days ago) <mergify[bot]>
-0f0c1207a - Replace buildkite jdk version check w/GH action (#17945) (#18214) (7 days ago) <mergify[bot]>
-953ee0e57 - GH action for updating logstash version (#18035) (#18208) (8 days ago) <mergify[bot]>
-dcb96498a - [DOCS] Fix nullable type linting error in OpenAPI document (#18018) (#18021) (9 days ago) <mergify[bot]>
-31f762a11 - bk: update junit-annotate to run faster (#18193) (#18198) (9 days ago) <mergify[bot]>
-1981530a6 - Revert "Release notes for 9.0.7 (#18158) (#18177)" (#18191) (9 days ago) <Cas Donoghue>
-55169ef89 - Bump logstash version 9.1.5 (#18188) (13 days ago) <github-actions[bot]>
-24adc5111 - Release notes for 9.1.4 (#18159) (2 weeks ago) <github-actions[bot]>
-68cd0d45d - Release notes for 9.0.7 (#18158) (#18177) (2 weeks ago) <mergify[bot]>
-ab53eb7d9 - Release notes for 9.0.6 (#18028) (#18172) (2 weeks ago) <mergify[bot]>
-1b6304952 - Doc: Add Logstash-to-serverless page (#18034) (#18165) (2 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.4..9.1 *.release"
-Changed plugin versions:
-logstash-filter-elasticsearch: 4.3.0 -> 4.3.1
-logstash-input-elasticsearch: 5.2.0 -> 5.2.1
-logstash-integration-jdbc: 5.6.0 -> 5.6.1
-logstash-output-elasticsearch: 12.0.6 -> 12.0.7
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.1.5-changes]
-
-**Elasticsearch Filter - 4.3.1**
-
-* Added support for encoded and non encoded api-key formats on plugin configuration [#203](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/203)
-
-**Elasticsearch Input - 5.2.1**
-
-* Added support for encoded and non encoded api-key formats on plugin configuration [#237](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/237)
-
-**Jdbc Integration - 5.6.1**
-
-* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures [#187](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187)
-
-**Elasticsearch Output - 12.0.7**
-
-* Support both, encoded and non encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
-
 
 ## 9.0.0 [logstash-900-release-notes]
 
