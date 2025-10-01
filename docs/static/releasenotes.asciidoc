@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-5,Logstash 8.19.5>>
 * <<logstash-8-19-4,Logstash 8.19.4>>
 * <<logstash-8-19-3,Logstash 8.19.3>>
 * <<logstash-8-19-2,Logstash 8.19.2>>
@@ -95,6 +96,39 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-5]]
+=== Logstash 8.19.5 Release Notes
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v8.19.5
+
+=== Logstash Commits between 8.19 and 8.19.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.4..8.19"
+
+e7ae92b3b - (HEAD -> 8.19, origin/8.19) Doc: Add LS-to-svrless page for 8.19 (#18201) (23 hours ago) <Karen Metts>
+22188f84a - Update patch plugin versions in gemfile lock (#18236) (24 hours ago) <github-actions[bot]>
+9d3d8e76a - [8.19] (backport #18216) [Docs] Add hyphen to the pipeline ID restriction description. (#18221) (5 days ago) <mergify[bot]>
+58f3f76f3 - [8.19] (backport #17945) Replace buildkite jdk version check w/GH action (#18212) (7 days ago) <mergify[bot]>
+5f97c2708 - GH action for updating logstash version (#18035) (#18206) (8 days ago) <mergify[bot]>
+6e8cdeb6a - bk: update junit-annotate to run faster (#18193) (#18196) (9 days ago) <mergify[bot]>
+d80fa0ef2 - replace placeholder URLs (#18194) (9 days ago) <Colleen McGinnis>
+568e3b1ef - Bump logstash version 8.19.5 (#18189) (13 days ago) <github-actions[bot]>
+2e1417076 - Release notes for 8.19.4 (#18157) (2 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v8.19.4..8.19 *.release"
+Changed plugin versions:
+logstash-integration-jdbc: 5.6.0 -> 5.6.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+==== Plugins
+
+*Jdbc Integration - 5.6.1*
+
+* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187[#187]
+
 
 [[logstash-8-19-4]]
 === Logstash 8.19.4 Release Notes
