@@ -171,7 +171,11 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
+<<<<<<< HEAD
   task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8", "build_docker_wolfi", "build_docker_observabilitySRE"]
+=======
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -418,12 +422,15 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
+<<<<<<< HEAD
   desc "Generate Dockerfile for UBI8 images"
   task "dockerfile_ubi8" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building ubi8 Dockerfiles")
     build_dockerfile('ubi8')
   end
 
+=======
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
   desc "Generate Dockerfile for wolfi images"
   task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building wolfi Dockerfiles")
@@ -457,6 +464,7 @@ namespace "artifact" do
     Rake::Task["artifact:archives_oss"].invoke
   end
 
+<<<<<<< HEAD
   task "build_docker_full" => [:generate_build_metadata] do
     Rake::Task["artifact:docker"].invoke
     Rake::Task["artifact:dockerfile_full"].invoke
@@ -482,6 +490,8 @@ namespace "artifact" do
     Rake::Task["artifact:dockerfile_wolfi"].invoke
   end
 
+=======
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
   task "generate_build_metadata" do
     require 'time'
     require 'tempfile'
