@@ -8,6 +8,9 @@ set -x
 export JRUBY_OPTS="-J-Xmx1g"
 export GRADLE_OPTS="-Xmx4g -Dorg.gradle.console=plain -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info -Dfile.encoding=UTF-8"
 
+# Use local artifacts for acceptance test Docker builds
+export LOCAL_ARTIFACTS=true
+
 if [ -n "$BUILD_JAVA_HOME" ]; then
   GRADLE_OPTS="$GRADLE_OPTS -Dorg.gradle.java.home=$BUILD_JAVA_HOME"
 fi
