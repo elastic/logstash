@@ -316,6 +316,24 @@ Check out the [security advisory](https://discuss.elastic.co/c/announcements/sec
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
 
+## 9.2.0 [logstash-9.2.0-release-notes]
+
+### Features and enhancements [logstash-9.2.0-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.2.0
+
+=== Logstash Commits between 9.2 and 9.1.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.7..9.2"
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.1.7..9.2 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.2.0-changes]
+
 ## 9.0.0 [logstash-900-release-notes]
 
 ### Features and enhancements [logstash-900-features-enhancements]
