@@ -875,24 +875,10 @@ namespace "artifact" do
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
-    end
-  end
-
-  def build_docker_from_dockerfiles(flavor)
-    env = {
-      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
-      "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
-    }
-    Dir.chdir("docker") do |dir|
-      safe_system(env, "make build-from-dockerfiles_#{flavor}")
     end
   end
 
