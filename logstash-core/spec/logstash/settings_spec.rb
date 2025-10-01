@@ -301,21 +301,6 @@ describe LogStash::Settings do
     end
 
     describe "mode WARN" do
-      # Need to open the existing class to inject getter and setter for logger.
-      # This is done because the RSpec mock framework, like:
-      # allow(LogStash::Setting::ValidatedPassword).to receive(:logger).at_least(:once).and_return(mock_logger)
-      # is not able to mock the logger method.
-      class TestableValidatedPassword < LogStash::Setting::ValidatedPassword
-
-        def self.set_logger(logger)
-          @@mock_logger = logger
-        end
-
-        def logger
-          @@mock_logger
-        end
-      end
-
       let(:password_policies) { super().merge("mode": "WARN") }
 
       context "when the password does not conform to the policy" do
@@ -323,12 +308,13 @@ describe LogStash::Settings do
         let(:mock_logger) { double("logger") }
 
         before :each do
-          TestableValidatedPassword.set_logger(mock_logger)
+          allow_any_instance_of(LogStash::Setting::ValidatedPassword).to receive(:logger).and_return(mock_logger)
         end
 
         it "logs a warning on validation failure" do
           expect(mock_logger).to receive(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
-          TestableValidatedPassword.new("test.validated.password", password, password_policies)
+
+          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
         end
       end
     end
