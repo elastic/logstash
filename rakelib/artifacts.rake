@@ -171,11 +171,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-<<<<<<< HEAD
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8", "build_docker_wolfi", "build_docker_observabilitySRE"]
-=======
-  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ubi8", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
