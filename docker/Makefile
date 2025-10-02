@@ -157,33 +157,19 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
 	tar -zcf ../logstash-oss-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-<<<<<<< HEAD
 public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
-=======
-public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
 		arch="${ARCHITECTURE}" \
 		version_tag="${VERSION_TAG}" \
-<<<<<<< HEAD
 	  release="${RELEASE}" \
 		image_flavor="ubi8" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ubi8" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
 	tar -zcf ../logstash-ubi8-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
-=======
-		release="${RELEASE}" \
-		image_flavor="wolfi" \
-		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
-	cd $(ARTIFACTS_DIR)/docker && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
-	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 
 public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
@@ -199,7 +185,6 @@ public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(CO
 	cp $(ARTIFACTS_DIR)/Dockerfile-observability-sre Dockerfile && \
 	tar -zcf ../logstash-observability-sre-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-<<<<<<< HEAD
 public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
@@ -208,16 +193,13 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="wolfi" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
 	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
 public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
-=======
-public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
@@ -228,13 +210,8 @@ public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Iro
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="ironbank" \
-<<<<<<< HEAD
-		local_artifacts="false" \
-		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
-=======
 		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
+		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
