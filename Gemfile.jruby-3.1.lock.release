@@ -299,7 +299,7 @@ GEM
       lru_redux (~> 1.1.0)
     logstash-filter-drop (3.0.5)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-elastic_integration (9.1.1-java)
+    logstash-filter-elastic_integration (9.2.0-java)
       logstash-core (>= 8.7.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-elasticsearch (4.3.1)
