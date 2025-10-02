@@ -22,14 +22,11 @@ package org.logstash.settings;
 import co.elastic.logstash.api.Password;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.RubySymbol;
-import org.logstash.RubyUtil;
 import org.logstash.secret.password.PasswordPolicyParam;
 import org.logstash.secret.password.PasswordPolicyType;
 import org.logstash.secret.password.PasswordValidator;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ValidatedPasswordSetting extends PasswordSetting {
@@ -70,7 +67,6 @@ public class ValidatedPasswordSetting extends PasswordSetting {
             throw new IllegalArgumentException("Setting `" + getName() + "` could not coerce LogStash::Util::Password value to password");
         }
         LOGGER.info("Password policies: {}", passwordPolicies);
-        System.out.printf("Password policies: %s%n", passwordPolicies);
         Map<PasswordPolicyType, PasswordPolicyParam> policies = buildPasswordPolicies();
         String validatedResult = new PasswordValidator(policies).validate(((Password) password).getValue());
 
@@ -122,6 +118,4 @@ public class ValidatedPasswordSetting extends PasswordSetting {
         }
         return current;
     }
-
-
 }

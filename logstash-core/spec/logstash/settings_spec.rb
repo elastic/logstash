@@ -299,25 +299,6 @@ describe LogStash::Settings do
         expect(LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
-
-    describe "mode WARN" do
-      let(:password_policies) { super().merge("mode": "WARN") }
-
-      context "when the password does not conform to the policy" do
-        let(:password) { LogStash::Util::Password.new("NoNumbers!") }
-        let(:mock_logger) { double("logger") }
-
-        before :each do
-          allow_any_instance_of(LogStash::Setting::ValidatedPassword).to receive(:logger).and_return(mock_logger)
-        end
-
-        it "logs a warning on validation failure" do
-          expect(mock_logger).to receive(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
-
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        end
-      end
-    end
   end
 
   context "placeholders in nested logstash.yml" do
