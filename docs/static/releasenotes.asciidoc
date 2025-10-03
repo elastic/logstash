@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-5,Logstash 8.19.5>>
 * <<logstash-8-19-4,Logstash 8.19.4>>
 * <<logstash-8-19-3,Logstash 8.19.3>>
 * <<logstash-8-19-2,Logstash 8.19.2>>
@@ -95,6 +96,19 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-5]]
+=== Logstash 8.19.5 Release Notes
+
+No user-facing changes in Logstash core.
+
+[[plugins-8-19-5]]
+==== Plugins
+
+*Jdbc Integration - 5.6.1*
+
+* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures. https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187[#187]
+
 
 [[logstash-8-19-4]]
 === Logstash 8.19.4 Release Notes
