@@ -102,6 +102,7 @@ This section summarizes the changes in the following releases:
 
 No user-facing changes in Logstash core.
 
+[[plugins-8-19-5]]
 ==== Plugins
 
 *Jdbc Integration - 5.6.1*
