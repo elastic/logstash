@@ -137,7 +137,7 @@ public-dockerfiles_full: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="full" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-full" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-full Dockerfile && \
@@ -151,7 +151,7 @@ public-dockerfiles_oss: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="oss" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-oss" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-oss Dockerfile && \
@@ -165,7 +165,7 @@ public-dockerfiles_ubi8: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="ubi8" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ubi8" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ubi8 Dockerfile && \
@@ -179,7 +179,7 @@ public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(CO
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="observability-sre" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-observability-sre" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-observability-sre Dockerfile && \
@@ -193,7 +193,7 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="wolfi" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-wolfi" && \
 	cd $(ARTIFACTS_DIR)/docker && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
@@ -210,7 +210,7 @@ public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Doc
 		version_tag="${VERSION_TAG}" \
 	  release="${RELEASE}" \
 		image_flavor="ironbank" \
-		local_artifacts="false" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
 		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \

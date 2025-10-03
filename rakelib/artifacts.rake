@@ -171,7 +171,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_ubi8", "build_docker_wolfi", "build_docker_observabilitySRE"]
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ubi8", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -455,31 +455,6 @@ namespace "artifact" do
     Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives_oss"].invoke
-  end
-
-  task "build_docker_full" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker"].invoke
-    Rake::Task["artifact:dockerfile_full"].invoke
-  end
-
-  task "build_docker_oss" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss"].invoke
-  end
-
-  task "build_docker_ubi8" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_ubi8"].invoke
-    Rake::Task["artifact:dockerfile_ubi8"].invoke
-  end
-
-  task "build_docker_observabilitySRE" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_observabilitySRE"].invoke
-    Rake::Task["artifact:dockerfile_observabilitySRE"].invoke
-  end
-
-  task "build_docker_wolfi" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_wolfi"].invoke
-    Rake::Task["artifact:dockerfile_wolfi"].invoke
   end
 
   task "generate_build_metadata" do
