@@ -29,7 +29,7 @@ No user-facing changes in Logstash core.
 
 **Elasticsearch Filter - 4.3.1**
 
-* Added support for encoded and non encoded api-key formats on plugin configuration [#203](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/203)
+* Added support for encoded and non-encoded api-key formats on plugin configuration [#203](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/203)
 
 **Elasticsearch Input - 5.2.1**
 
