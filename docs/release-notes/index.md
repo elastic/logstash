@@ -33,7 +33,7 @@ No user-facing changes in Logstash core.
 
 **Elasticsearch Input - 5.2.1**
 
-* Added support for encoded and non encoded api-key formats on plugin configuration [#237](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/237)
+* Added support for encoded and non-encoded api-key formats on plugin configuration [#237](https://github.com/logstash-plugins/logstash-input-elasticsearch/pull/237)
 
 **Jdbc Integration - 5.6.1**
 
