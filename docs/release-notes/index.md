@@ -21,7 +21,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.1.5 [logstash-9.1.5-release-notes]
+=======
+## 9.0.8 [logstash-9.0.8-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.8-changes]
+
+**Elasticsearch Output - 12.0.7**
+
+* Support both, encoded and non-encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
+
+
+## 9.0.7 [logstash-9.0.7-release-notes]
+>>>>>>> 82ff1f76 (Release notes for 9.0.8 (#18247))
 
 No user-facing changes in Logstash core.
 
