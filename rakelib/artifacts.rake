@@ -169,7 +169,11 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
+<<<<<<< HEAD
   task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi"]
+=======
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -371,11 +375,18 @@ namespace "artifact" do
     build_dockerfile('oss')
   end
 
+<<<<<<< HEAD
   namespace "dockerfile_oss" do
     desc "Build Oss Docker image from Dockerfile context files"
     task "docker" => ["archives_docker", "dockerfile_oss"]  do
       build_docker_from_dockerfiles('oss')
     end
+=======
+  desc "Generate Dockerfile for observability-sre images"
+  task "dockerfile_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    puts("[dockerfiles] Building observability-sre Dockerfile")
+    build_dockerfile('observability-sre')
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
   end
 
   desc "Generate Dockerfile for full images"
@@ -384,24 +395,10 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
-  namespace "dockerfile_full" do
-    desc "Build Full Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_full"]  do
-      build_docker_from_dockerfiles('full')
-    end
-  end
-
   desc "Generate Dockerfile for wolfi images"
   task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building wolfi Dockerfiles")
     build_dockerfile('wolfi')
-  end
-
-  namespace "dockerfile_wolfi" do
-    desc "Build Wolfi Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_wolfi"]  do
-      build_docker_from_dockerfiles('wolfi')
-    end
   end
 
   desc "Generate build context for ironbank"
@@ -429,6 +426,7 @@ namespace "artifact" do
     Rake::Task["artifact:archives_oss"].invoke
   end
 
+<<<<<<< HEAD
   task "build_docker_full" => [:generate_build_metadata] do
     Rake::Task["artifact:docker"].invoke
     Rake::Task["artifact:dockerfile_full"].invoke
@@ -447,6 +445,8 @@ namespace "artifact" do
     Rake::Task["artifact:dockerfile_wolfi:docker"].invoke
   end
 
+=======
+>>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
   task "generate_build_metadata" do
     require 'time'
     require 'tempfile'
@@ -826,24 +826,10 @@ namespace "artifact" do
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
-    end
-  end
-
-  def build_docker_from_dockerfiles(flavor)
-    env = {
-      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
-      "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
-    }
-    Dir.chdir("docker") do |dir|
-      safe_system(env, "make build-from-dockerfiles_#{flavor}")
     end
   end
 
