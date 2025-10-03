@@ -37,7 +37,7 @@ No user-facing changes in Logstash core.
 
 **Jdbc Integration - 5.6.1**
 
-* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures [#187](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187)
+* Fixes an issue where the `jdbc_static` filter's throughput was artificially limited to 4 concurrent queries, causing the plugin to become a bottleneck in pipelines with more than 4 workers. Each instance of the plugin is now limited to 16 concurrent queries, with increased timeouts to eliminate enrichment failures. [#187](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/187)
 
 **Elasticsearch Output - 12.0.7**
 
