@@ -29,7 +29,7 @@ No user-facing changes in Logstash core.
 
 **Elasticsearch Output - 12.0.7**
 
-* Support both, encoded and non encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
+* Support both, encoded and non-encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
 
 
 ## 9.0.7 [logstash-9.0.7-release-notes]
