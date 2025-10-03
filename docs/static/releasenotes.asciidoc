@@ -100,9 +100,10 @@ This section summarizes the changes in the following releases:
 
 No user-facing changes in Logstash core.
 
+[[plugins-8-18-8]]
 ==== Plugins
 
-No change to the plugins in this release.
+No user-facing changes. 
 
 [[logstash-8-18-7]]
 === Logstash 8.18.7 Release Notes
