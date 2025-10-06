@@ -33,7 +33,7 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
+    classpath "com.gradleup.shadow:shadow-gradle-plugin:${shadowGradlePluginVersion}"
   }
 }
 
@@ -56,7 +56,7 @@ test {
   jvmArgs '-Djava.net.preferIPv4Stack=true'
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'com.gradleup.shadow'
 
 shadowJar {
   archiveBaseName = 'dependencies-report'

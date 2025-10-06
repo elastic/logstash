@@ -4276,7 +4276,7 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
-Notice for: com.google.googlejavaformat:google-java-format-1.22.0
+Notice for: com.google.googlejavaformat:google-java-format-1.25.2
 ----------
 
 Copyright 2015 Google Inc.

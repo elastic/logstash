@@ -36,8 +36,8 @@ class SignAliasDefinitionsTest {
 
         def task = project.task("signerTask", type: SignAliasDefinitions) {
             stage SignAliasDefinitions.Stage.test
-            registry = "ToSign.yml"
-            hashedFile = project.file("${project.buildDir}/hashed_output.yml")
+            registry.set("ToSign.yml")
+            hashedFile.set(project.layout.buildDirectory.file("hashed_output.yml"))
         }
 
         // Exercise
