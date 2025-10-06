@@ -199,6 +199,16 @@ The Elasticsearch Input now provides [support](https://github.com/logstash-plugi
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
+## 9.0.8 [logstash-9.0.8-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.0.8-changes]
+
+**Elasticsearch Output - 12.0.7**
+
+* Support both, encoded and non-encoded api-key formats on plugin configuration [#1223](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1223)
+
 
 ## 9.0.7 [logstash-9.0.7-release-notes]
 
