@@ -24,6 +24,9 @@ esac
 rake artifact:docker || error "artifact:docker build failed."
 rake artifact:docker_oss || error "artifact:docker_oss build failed."
 rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
+
+# Generating public dockerfiles is the primary use case for NOT using local artifacts
+export LOCAL_ARTIFACTS=false
 rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
 
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
