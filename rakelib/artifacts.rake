@@ -169,11 +169,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-<<<<<<< HEAD
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi"]
-=======
   task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -375,20 +371,6 @@ namespace "artifact" do
     build_dockerfile('oss')
   end
 
-<<<<<<< HEAD
-  namespace "dockerfile_oss" do
-    desc "Build Oss Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_oss"]  do
-      build_docker_from_dockerfiles('oss')
-    end
-=======
-  desc "Generate Dockerfile for observability-sre images"
-  task "dockerfile_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
-    puts("[dockerfiles] Building observability-sre Dockerfile")
-    build_dockerfile('observability-sre')
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
-  end
-
   desc "Generate Dockerfile for full images"
   task "dockerfile_full" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building full Dockerfiles")
@@ -426,27 +408,6 @@ namespace "artifact" do
     Rake::Task["artifact:archives_oss"].invoke
   end
 
-<<<<<<< HEAD
-  task "build_docker_full" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker"].invoke
-    Rake::Task["artifact:dockerfile_full"].invoke
-    Rake::Task["artifact:dockerfile_full:docker"].invoke
-  end
-
-  task "build_docker_oss" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss:docker"].invoke
-  end
-
-  task "build_docker_wolfi" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_wolfi"].invoke
-    Rake::Task["artifact:dockerfile_wolfi"].invoke
-    Rake::Task["artifact:dockerfile_wolfi:docker"].invoke
-  end
-
-=======
->>>>>>> a994c7cb (Remove redundant testing and circular dependency from docker acceptance testing (#18181))
   task "generate_build_metadata" do
     require 'time'
     require 'tempfile'
