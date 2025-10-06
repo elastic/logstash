@@ -337,7 +337,7 @@ tasks.register("artifactDockerObservabilitySRE") {
         include "jdk-*-linux-*.tar.gz"
     }
     doLast {
-        rake(projectDir, buildDir, 'artifact:build_docker_observabilitySRE')
+        rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
     }
 }
 
