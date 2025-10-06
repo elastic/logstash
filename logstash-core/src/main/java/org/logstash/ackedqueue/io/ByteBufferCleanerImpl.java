@@ -14,12 +14,13 @@ public class ByteBufferCleanerImpl implements ByteBufferCleaner {
             Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
             unsafeField.setAccessible(true);
             unsafe = (Unsafe) unsafeField.get(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new IllegalStateException(e);
         }
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void clean(MappedByteBuffer buffer) {
         unsafe.invokeCleaner(buffer);
     }

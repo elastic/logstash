@@ -37,6 +37,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.janino.Scanner;
 import org.codehaus.commons.compiler.ISimpleCompiler;
@@ -72,6 +74,8 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     private static final String CLASS_NAME_PLACEHOLDER = "CLASS_NAME_PLACEHOLDER";
 
     private static final Pattern CLASS_NAME_PLACEHOLDER_REGEX = Pattern.compile(CLASS_NAME_PLACEHOLDER);
+
+    private static final Logger LOGGER = LogManager.getLogger(ComputeStepSyntaxElement.class);
 
     private final Iterable<MethodSyntaxElement> methods;
 
@@ -170,23 +174,25 @@ public final class ComputeStepSyntaxElement<T extends Dataset> {
     }
 
     private String generateCode(final String name) {
-        try {
-            return REDUNDANT_SEMICOLON.matcher(new Formatter().formatSource(
-                String.format(
-                    "package org.logstash.generated;\npublic final class %s extends org.logstash.config.ir.compiler.BaseDataset implements %s { %s }",
-                    name,
-                    type.getName(),
-                    SyntaxFactory.join(
-                        fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
-                        combine(
-                            StreamSupport.stream(methods.spliterator(), false)
-                                .toArray(SyntaxElement[]::new)
-                        )
-                    )
+        final String rawSource = String.format(
+            "package org.logstash.generated;\npublic final class %s extends org.logstash.config.ir.compiler.BaseDataset implements %s { %s }",
+            name,
+            type.getName(),
+            SyntaxFactory.join(
+                fields.inlineAssigned().generateCode(), fieldsAndCtor(name),
+                combine(
+                    StreamSupport.stream(methods.spliterator(), false)
+                        .toArray(SyntaxElement[]::new)
                 )
-            )).replaceAll("\n");
-        } catch (final FormatterException ex) {
-            throw new IllegalStateException(ex);
+            )
+        );
+
+        try {
+            final String formatted = new Formatter().formatSource(rawSource);
+            return REDUNDANT_SEMICOLON.matcher(formatted).replaceAll("\n");
+        } catch (final FormatterException | LinkageError ex) {
+            LOGGER.warn("Failed to format generated pipeline class with google-java-format; continuing with unformatted code", ex);
+            return REDUNDANT_SEMICOLON.matcher(rawSource).replaceAll("\n");
         }
     }
 

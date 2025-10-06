@@ -19,7 +19,7 @@
 
 buildscript {
     ext {
-        shadowGradlePluginVersion = '8.1.1'
+        shadowGradlePluginVersion = '9.2.2'
     }
 
     repositories {
@@ -194,15 +194,15 @@ tasks.register("configureArtifactInfo") {
     }
 }
 
-tasks.register("markAliasDefinitions", SignAliasDefinitions) {
+def markAliasDefinitions = tasks.register("markAliasDefinitions", SignAliasDefinitions) {
     description = "Create an hashes aliases file from original aliases yml definition"
-    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
+    hashedFile.set(layout.buildDirectory.file("plugin_aliases_hashed.yml"))
 }
 
-tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
+def markTestAliasDefinitions = tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
     description = "Create an hashes aliases file for testing aliases yml definition"
     stage SignAliasDefinitions.Stage.test
-    hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
+    hashedFile.set(layout.buildDirectory.file("plugin_aliases_hashed_test.yml"))
 }
 
 tasks.register("copyPluginAlias", Copy) {
@@ -212,11 +212,13 @@ tasks.register("copyPluginAlias", Copy) {
 
 tasks.register("copyPluginAlias_ruby", Copy) {
     description = "Copy the marked plugin_aliases.yml file to destination folders"
-    dependsOn "markAliasDefinitions"
+    dependsOn markAliasDefinitions
 
-    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+    def hashedFileProvider = markAliasDefinitions.flatMap { it.hashedFile }
 
-    from(markAliasDefinitions.hashedFile) {
+    inputs.file(hashedFileProvider)
+
+    from(hashedFileProvider) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     into "lib/pluginmanager/"
@@ -224,11 +226,13 @@ tasks.register("copyPluginAlias_ruby", Copy) {
 
 tasks.register("copyPluginAlias_java", Copy) {
     description = "Copy the marked plugin_aliases.yml file to destination folders"
-    dependsOn "markAliasDefinitions"
+    dependsOn markAliasDefinitions
 
-    inputs.file("${buildDir}/plugin_aliases_hashed.yml")
+    def hashedFileProvider = markAliasDefinitions.flatMap { it.hashedFile }
 
-    from(markAliasDefinitions.hashedFile) {
+    inputs.file(hashedFileProvider)
+
+    from(hashedFileProvider) {
         rename "plugin_aliases_hashed.yml", "plugin_aliases.yml"
     }
     into "logstash-core/src/main/resources/org/logstash/plugins/"
@@ -241,11 +245,13 @@ tasks.register("copyPluginTestAlias") {
 
 tasks.register("copyPluginTestAlias_ruby", Copy) {
     description = "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
-    dependsOn "markTestAliasDefinitions"
+    dependsOn markTestAliasDefinitions
 
-    inputs.file(markTestAliasDefinitions.hashedFile)
+    def hashedTestFileProvider = markTestAliasDefinitions.flatMap { it.hashedFile }
 
-    from(markTestAliasDefinitions.hashedFile) {
+    inputs.file(hashedTestFileProvider)
+
+    from(hashedTestFileProvider) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
     into "spec/unit/plugin_manager/"
@@ -253,11 +259,13 @@ tasks.register("copyPluginTestAlias_ruby", Copy) {
 
 tasks.register("copyPluginTestAlias_java", Copy) {
     description = "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
-    dependsOn "markTestAliasDefinitions"
+    dependsOn markTestAliasDefinitions
 
-    inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
+    def hashedTestFileProvider = markTestAliasDefinitions.flatMap { it.hashedFile }
 
-    from(markTestAliasDefinitions.hashedFile) {
+    inputs.file(hashedTestFileProvider)
+
+    from(hashedTestFileProvider) {
         rename "plugin_aliases_hashed_test.yml", "plugin_aliases.yml"
     }
     into "logstash-core/src/test/resources/org/logstash/plugins/"

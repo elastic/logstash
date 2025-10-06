@@ -243,9 +243,9 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
-    implementation group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'com.google.guava', name: 'guava', version: '33.1.0-jre'
-    implementation('com.google.googlejavaformat:google-java-format:1.22.0') {
+    implementation 'org.yaml:snakeyaml:2.2'
+    implementation 'com.google.guava:guava:33.1.0-jre'
+    implementation('com.google.googlejavaformat:google-java-format:1.25.2') {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.javassist:javassist:3.30.2-GA'
@@ -258,7 +258,7 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
-    api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
-    api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
-    api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+    api 'org.apache.httpcomponents:httpclient:4.5.14'
+    api 'commons-codec:commons-codec:1.17.0'
+    api 'org.apache.httpcomponents:httpcore:4.4.16'
 }
