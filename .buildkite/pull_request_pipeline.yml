@@ -88,8 +88,6 @@ steps:
     retry:
       automatic:
         - limit: 3
-    env:
-      ENABLE_SONARQUBE: true
     command: |
       set -euo pipefail      
       source .buildkite/scripts/common/container-agent.sh
@@ -110,8 +108,6 @@ steps:
     retry:
       automatic:
         - limit: 3
-    env:
-      ENABLE_SONARQUBE: true
     command: |
       set -euo pipefail
 
@@ -121,27 +117,6 @@ steps:
       - "**/build/test-results/javaTests/TEST-*.xml"
       - "**/jacocoTestReport.xml"
       - "**/build/classes/**/*.*"
-
-  - label: ":sonarqube: Continuous Code Inspection"
-    if: | 
-      build.pull_request.id != null || 
-      build.branch == "main" || 
-      build.branch =~ /^[0-9]+\.[0-9]+\$/
-    env:
-      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/logstash/sonar-analyze-token"
-    agents:
-      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-    command:
-      - "buildkite-agent artifact download --step ruby-unit-tests coverage/coverage.json ."
-      - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ."
-      - "buildkite-agent artifact download --step java-unit-tests **/build/classes/**/*.* ."
-      - "/scan-source-code.sh"
-    depends_on:
-      - "ruby-unit-tests"
-      - "java-unit-tests"
-    retry:
-      manual:
-        allowed: true
 
   - label: "Observability SRE container smoke test"
     key: "observability-sre-container-smoke-test"
