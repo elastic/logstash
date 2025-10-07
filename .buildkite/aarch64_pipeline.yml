@@ -23,9 +23,6 @@ steps:
 
       - label: ":java: Java unit tests"
         key: "java-unit-tests"
-        env:
-          # https://github.com/elastic/logstash/pull/15486 for background
-          ENABLE_SONARQUBE: "false"
         command: |
           set -euo pipefail
 
