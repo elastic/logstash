@@ -29,20 +29,12 @@ buildscript {
 
 plugins {
     id "jacoco"
-    id "org.sonarqube" version "4.3.0.3225"
 }
 
 apply plugin: 'jacoco'
-apply plugin: "org.sonarqube"
 
 repositories {
     mavenCentral()
-}
-
-sonarqube {
-    properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-    }
 }
 
 jacoco {
