@@ -76,12 +76,14 @@ filter {
     # we use a "temporal" field with a predefined arbitrary known value that
     # lives only in filtering stage.
     add_field => { "[@metadata][test_field_check]" => "a null value" }
+  }
 
+filter {
+  mutate {
     # we copy the field of interest into that temporal field.
     # If the field doesn't exist, copy is not executed.
     copy => { "test_field" => "[@metadata][test_field_check]" }
   }
-
 
   # now we now if testField didn't exists, our field will have 
   # the initial arbitrary value
