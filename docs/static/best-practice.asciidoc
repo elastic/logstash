@@ -85,7 +85,7 @@ filter {
     copy => { "test_field" => "[@metadata][test_field_check]" }
   }
 
-  # now we now if testField didn't exists, our field will have 
+  # now we know if testField didn't exist, our field will have 
   # the initial arbitrary value
   if [@metadata][test_field_check] == "a null value" {
     # logic to execute when [test_field] did not exist
