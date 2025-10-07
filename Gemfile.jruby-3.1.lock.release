@@ -78,7 +78,7 @@ GEM
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
-    backports (3.25.1)
+    backports (3.25.2)
     base64 (0.2.0)
     belzebuth (0.2.3)
       childprocess
@@ -115,7 +115,7 @@ GEM
     elastic-enterprise-search (8.9.0)
       elastic-transport (~> 8.1)
       jwt (>= 1.5, < 3.0)
-    elastic-transport (8.4.0)
+    elastic-transport (8.4.1)
       faraday (< 3)
       multi_json
     elasticsearch (8.17.2)
@@ -713,7 +713,7 @@ GEM
     naught (1.1.0)
     net-http (0.6.0)
       uri
-    net-imap (0.5.10)
+    net-imap (0.5.12)
       date
       net-protocol
     net-pop (0.1.2)
@@ -754,7 +754,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
-    rack (3.1.16)
+    rack (3.1.17)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -853,7 +853,7 @@ GEM
     tzinfo-data (1.2025.2)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.6.0)
-    uri (0.12.4)
+    uri (0.12.5)
     webhdfs (0.11.0)
       addressable
     webmock (3.25.1)
