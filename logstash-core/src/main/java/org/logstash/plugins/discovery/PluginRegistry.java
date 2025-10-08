@@ -31,12 +31,9 @@ import co.elastic.logstash.api.Input;
 import co.elastic.logstash.api.LogstashPlugin;
 import co.elastic.logstash.api.Output;
 import org.logstash.plugins.PluginLookup.PluginType;
-import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +44,7 @@ import java.util.Set;
  * This is singleton ofr two reasons:
  * <ul>
  *  <li>it's a registry so no need for multiple instances</li>
- *  <li>the Reflections library used need to run in single thread during discovery phase</li>
+ *  <li>plugin discovery touches the classpath, so we keep it single-threaded</li>
  * </ul>
  * */
 public final class PluginRegistry {
@@ -79,34 +76,30 @@ public final class PluginRegistry {
     
     @SuppressWarnings("unchecked")
     private void discoverPlugins() {
-        // the constructor of Reflection must be called only by one thread, else there is a
-        // risk that the first thread that completes close the Zip files for the others.
-        // scan all .class present in package classpath
-        final ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("org.logstash.plugins"))
-                .filterInputsBy(input -> input.endsWith(".class"));
-        Reflections reflections = new Reflections(configurationBuilder);
-
-        Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(LogstashPlugin.class);
+        // the discovery runs single-threaded to avoid concurrent access issues while scanning
+        Set<Class<?>> annotated = PackageScanner.scanForAnnotation("org.logstash.plugins", LogstashPlugin.class, PluginRegistry.class.getClassLoader());
         for (final Class<?> cls : annotated) {
-            for (final Annotation annotation : cls.getAnnotations()) {
-                if (annotation instanceof LogstashPlugin) {
-                    String name = ((LogstashPlugin) annotation).name();
-                    if (Filter.class.isAssignableFrom(cls)) {
-                        filters.put(name, (Class<Filter>) cls);
-                    }
-                    if (Output.class.isAssignableFrom(cls)) {
-                        outputs.put(name, (Class<Output>) cls);
-                    }
-                    if (Input.class.isAssignableFrom(cls)) {
-                        inputs.put(name, (Class<Input>) cls);
-                    }
-                    if (Codec.class.isAssignableFrom(cls)) {
-                        codecs.put(name, (Class<Codec>) cls);
-                    }
+            if (Modifier.isAbstract(cls.getModifiers())) {
+                continue;
+            }
 
-                    break;
-                }
+            LogstashPlugin annotation = cls.getAnnotation(LogstashPlugin.class);
+            if (annotation == null) {
+                continue;
+            }
+
+            String name = annotation.name();
+            if (Filter.class.isAssignableFrom(cls)) {
+                filters.put(name, (Class<Filter>) cls);
+            }
+            if (Output.class.isAssignableFrom(cls)) {
+                outputs.put(name, (Class<Output>) cls);
+            }
+            if (Input.class.isAssignableFrom(cls)) {
+                inputs.put(name, (Class<Input>) cls);
+            }
+            if (Codec.class.isAssignableFrom(cls)) {
+                codecs.put(name, (Class<Codec>) cls);
             }
         }
 
