@@ -28,6 +28,7 @@ class ScenarioExecutor:
 
             if type(expectations.get(key)) != type(reports.get(key)):
                 differences.append(f"Scenario expectation and Health API report structure differs for {key}.")
+                differences.append(f"Reported health data: {reports}.")
                 return differences
 
             if isinstance(expectations.get(key), str):
