@@ -80,7 +80,7 @@ filter {
 
 filter {
   mutate {
-    # we copy the field of interest into that temporal field.
+    # We copy the field of interest into that temporal field.
     # If the field doesn't exist, copy is not executed.
     copy => { "test_field" => "[@metadata][test_field_check]" }
   }
