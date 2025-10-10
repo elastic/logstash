@@ -41,9 +41,6 @@
 # use our provided JNA always versus the system one
 #-Djna.nosys=true
 
-# Turn on JRuby invokedynamic
--Djruby.compile.invokedynamic=true
-
 ## heap dumps
 
 # generate a heap dump when an allocation from the Java heap fails
@@ -59,9 +56,6 @@
 
 # Entropy source for randomness
 -Djava.security.egd=file:/dev/urandom
-
-# Copy the logging context from parent threads to children
--Dlog4j2.isThreadContextMapInheritable=true
 
 # FasterXML/jackson defaults
 #
