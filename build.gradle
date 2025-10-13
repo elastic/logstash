@@ -91,6 +91,7 @@ allprojects {
     // Add Exports to enable tests to run in JDK17
     jvmArgs = [
       "-Djruby.compile.invokedynamic=true",
+      "-Dlog4j2.isThreadContextMapInheritable=true",
       "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
       "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
       "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
