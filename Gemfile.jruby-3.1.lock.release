@@ -628,7 +628,7 @@ GEM
       rufus-scheduler (>= 3.0.9)
     logstash-mixin-validator_support (1.1.1-java)
       logstash-core (>= 6.8)
-    logstash-output-csv (3.0.10)
+    logstash-output-csv (3.0.11)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-output-file
     logstash-output-elasticsearch (11.22.13-java)
@@ -757,7 +757,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
-    rack (3.1.17)
+    rack (3.1.18)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
