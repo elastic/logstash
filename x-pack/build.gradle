@@ -6,6 +6,9 @@
 
 description = """Logstash X-Pack"""
 
+project.ext.LOGSTASH_CORE_PATH = "${projectDir}/../logstash-core"
+apply from: "../rubyUtils.gradle"
+
 repositories {
   mavenCentral()
 }
@@ -44,6 +47,8 @@ tasks.register("unzipGeolite", Copy) {
 
 tasks.register("rubyTests", Test) {
   dependsOn unzipGeolite
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   inputs.files fileTree("${projectDir}/spec")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
@@ -55,10 +60,68 @@ tasks.register("rubyIntegrationTests", Test) {
   if ((JavaVersion.current().getMajorVersion() as int) >= 17) {
     jvmArgs = ['--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/java.io=ALL-UNNAMED']
   }
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
   dependsOn (":copyEs")
+  dependsOn ":assemble"
+  dependsOn "buildFipsValidationGem"
   inputs.files fileTree("${projectDir}/qa")
   inputs.files fileTree("${projectDir}/lib")
   inputs.files fileTree("${projectDir}/modules")
+  inputs.files fileTree("${rootProject.projectDir}/Gemfile.lock")
+  inputs.files fileTree("${rootProject.projectDir}/logstash-core/lib")
   systemProperty 'logstash.root.dir', projectDir.parent
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
+}
+
+tasks.register("buildFipsValidationGem") {
+  doLast {
+    rake(rootProject.projectDir, rootProject.buildDir, 'plugin:build-fips-validation-plugin')
+  }
+}
+
+tasks.register("observabilitySREsmokeTests", Test) {
+    description = "Run ObservabilitySRE smoke tests using RSpec with docker-compose orchestration"
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    // Need to have set up the ruby environment for rspec even through we are running in container
+    dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
+    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/smoke")
+    doFirst {
+        // Generate the certificates first
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/smoke/docker/certs")
+            commandLine 'bash', './generate.sh'
+            ignoreExitValue = false
+        }
+    }
+    systemProperty 'logstash.root.dir', projectDir.parent
+    include '**/org/logstash/xpack/test/RSpecObservabilitySRETests.class'
+    doLast {
+        // Clean up the generated certificates
+        delete fileTree("distributions/internal/observabilitySRE/qa/smoke/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
+    }
+}
+
+tasks.register("observabilitySREacceptanceTests", Test) {
+    description = "Run ObservabilitySRE acceptance tests using RSpec with docker-compose orchestration"
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    // Need to have set up the ruby environment for rspec even through we are running in container
+    dependsOn(":bootstrap", ":logstash-core:assemble", ":installDevelopmentGems")
+    inputs.files fileTree("${projectDir}/distributions/internal/observabilitySRE/qa/acceptance")
+    doFirst {
+        // Generate the certificates first
+        exec {
+            workingDir file("distributions/internal/observabilitySRE/qa/acceptance/docker/certs")
+            commandLine 'bash', './generate.sh'
+            ignoreExitValue = false
+        }
+    }
+    systemProperty 'logstash.root.dir', projectDir.parent
+    include '**/org/logstash/xpack/test/RSpecObservabilitySREAcceptanceTests.class'
+    doLast {
+        // Clean up the generated certificates
+        delete fileTree("distributions/internal/observabilitySRE/qa/acceptance/docker/certs").include("*.key", "*.crt", "*.csr", "*.srl")
+    }
 }

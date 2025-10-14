@@ -19,6 +19,26 @@ steps:
       export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
       ci/license_check.sh -m 4G
 
+  - label: ":passport_control: License check - Fedramp High Mode"
+    key: "license-check-fedramp-high"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export JRUBY_OPTS="-J-Xmx1g"
+      export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false -Dorg.gradle.logging.level=info"
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e ORG_GRADLE_PROJECT_fedrampHighMode=true test-runner-image ci/license_check.sh -m 4G
+
   - label: ":rspec: Ruby unit tests"
     key: "ruby-unit-tests"
     agents:
@@ -39,6 +59,25 @@ steps:
     artifact_paths:
       - "coverage/coverage.json"
 
+  - label: ":rspec: Ruby unit tests - FIPS mode"
+    key: "ruby-unit-tests-fips"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run test-runner-image ./gradlew --info --stacktrace -PfedrampHighMode=true rubyTests
+    artifact_paths:
+      - "coverage/coverage.json"
+
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
     agents:
@@ -49,8 +88,6 @@ steps:
     retry:
       automatic:
         - limit: 3
-    env:
-      ENABLE_SONARQUBE: true
     command: |
       set -euo pipefail      
       source .buildkite/scripts/common/container-agent.sh
@@ -60,29 +97,148 @@ steps:
       - "**/jacocoTestReport.xml"
       - "**/build/classes/**/*.*"
 
-  - label: ":sonarqube: Continuous Code Inspection"
-    if: | 
-      build.pull_request.id != null || 
-      build.branch == "main" || 
-      build.branch =~ /^[0-9]+\.[0-9]+\$/
-    env:
-      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/logstash/sonar-analyze-token"
+  - label: ":java: Java unit tests - FIPS mode"
+    key: "java-unit-tests-fips"
     agents:
-      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-    command:
-      - "buildkite-agent artifact download --step ruby-unit-tests coverage/coverage.json ."
-      - "buildkite-agent artifact download --step java-unit-tests **/jacocoTestReport.xml ."
-      - "buildkite-agent artifact download --step java-unit-tests **/build/classes/**/*.* ."
-      - "/scan-source-code.sh"
-    depends_on:
-      - "ruby-unit-tests"
-      - "java-unit-tests"
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
     retry:
-      manual:
-        allowed: true
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
 
-  - label: ":lab_coat: Integration Tests / part 1-of-3"
-    key: "integration-tests-part-1-of-3"
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run test-runner-image ./gradlew --info --stacktrace -PfedrampHighMode=true javaTests
+    artifact_paths:
+      - "**/build/test-results/javaTests/TEST-*.xml"
+      - "**/jacocoTestReport.xml"
+      - "**/build/classes/**/*.*"
+
+  - label: "Observability SRE container smoke test"
+    key: "observability-sre-container-smoke-test"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      export ARCH="x86_64"
+      ./ci/observabilitySREsmoke_tests.sh
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-6"
+    key: "integration-tests-fips-part-1-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 0 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 2-of-6"
+    key: "integration-tests-fips-part-2-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 1 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 3-of-6"
+    key: "integration-tests-fips-part-3-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 2 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 4-of-6"
+    key: "integration-tests-fips-part-4-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 3 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 5-of-6"
+    key: "integration-tests-fips-part-5-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: Integration Tests - FIPS mode / part 6-of-6"
+    key: "integration-tests-fips-part-6-of-6"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image ci/integration_tests.sh split 5 6
+
+  - label: ":lab_coat: Integration Tests / part 1-of-6"
+    key: "integration-tests-part-1-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -97,10 +253,10 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 0 3
+      ci/integration_tests.sh split 0 6
 
-  - label: ":lab_coat: Integration Tests / part 2-of-3"
-    key: "integration-tests-part-2-of-3"
+  - label: ":lab_coat: Integration Tests / part 2-of-6"
+    key: "integration-tests-part-2-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -115,10 +271,10 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 1 3
+      ci/integration_tests.sh split 1 6
 
-  - label: ":lab_coat: Integration Tests / part 3-of-3"
-    key: "integration-tests-part-3-of-3"
+  - label: ":lab_coat: Integration Tests / part 3-of-6"
+    key: "integration-tests-part-3-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -133,10 +289,64 @@ steps:
       set -euo pipefail
 
       source .buildkite/scripts/common/container-agent.sh
-      ci/integration_tests.sh split 2 3
+      ci/integration_tests.sh split 2 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 1-of-3"
-    key: "integration-tests-qa-part-1-of-3"
+  - label: ":lab_coat: Integration Tests / part 4-of-6"
+    key: "integration-tests-part-4-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/integration_tests.sh split 3 6
+
+  - label: ":lab_coat: Integration Tests / part 5-of-6"
+    key: "integration-tests-part-5-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: Integration Tests / part 6-of-6"
+    key: "integration-tests-part-6-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      ci/integration_tests.sh split 5 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 1-of-6"
+    key: "integration-tests-qa-part-1-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -152,10 +362,10 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 0 3
+      ci/integration_tests.sh split 0 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 2-of-3"
-    key: "integration-tests-qa-part-2-of-3"
+  - label: ":lab_coat: IT Persistent Queues / part 2-of-6"
+    key: "integration-tests-qa-part-2-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -171,10 +381,10 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 1 3
+      ci/integration_tests.sh split 1 6
 
-  - label: ":lab_coat: IT Persistent Queues / part 3-of-3"
-    key: "integration-tests-qa-part-3-of-3"
+  - label: ":lab_coat: IT Persistent Queues / part 3-of-6"
+    key: "integration-tests-qa-part-3-of-6"
     agents:
       image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
@@ -190,7 +400,64 @@ steps:
 
       source .buildkite/scripts/common/container-agent.sh
       export FEATURE_FLAG=persistent_queues
-      ci/integration_tests.sh split 2 3
+      ci/integration_tests.sh split 2 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 4-of-6"
+    key: "integration-tests-qa-part-4-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as non root (logstash) user. UID is hardcoded in image.
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 3 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 5-of-6"
+    key: "integration-tests-qa-part-5-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as non root (logstash) user. UID is hardcoded in image.
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 4 6
+
+  - label: ":lab_coat: IT Persistent Queues / part 6-of-6"
+    key: "integration-tests-qa-part-6-of-6"
+    agents:
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
+      cpu: "8"
+      memory: "16Gi"
+      ephemeralStorage: "100Gi"
+      # Run as non root (logstash) user. UID is hardcoded in image.
+      imageUID: "1002"
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      source .buildkite/scripts/common/container-agent.sh
+      export FEATURE_FLAG=persistent_queues
+      ci/integration_tests.sh split 5 6
 
   - label: ":lab_coat: x-pack unit tests"
     key: "x-pack-unit-tests"
@@ -228,16 +495,48 @@ steps:
       source .buildkite/scripts/common/container-agent.sh
       x-pack/ci/integration_tests.sh
 
-  - wait: ~
-    continue_on_failure: true
-
-  - label: "🏁 Annotate JUnit results"
-    # the plugin requires docker run, hence the use of a VM
+  - label: ":lab_coat: x-pack unit tests - FIPS mode"
+    key: "x-pack-unit-tests-fips"
     agents:
       provider: gcp
       imageProject: elastic-images-prod
       image: family/platform-ingest-logstash-ubuntu-2204
-      machineType: "n2-standard-2"
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image x-pack/ci/unit_tests.sh
+
+  - label: ":lab_coat: x-pack integration - FIPS mode"
+    key: "integration-tests-x-pack-fips"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+
+      docker build -t test-runner-image -f x-pack/distributions/internal/observabilitySRE/docker/Dockerfile .
+      docker run -e FEDRAMP_HIGH_MODE=true test-runner-image x-pack/ci/integration_tests.sh
+
+  - label: "🏁 Annotate JUnit results"
+    depends_on: "java-unit-tests"
+    agents:
+      # requires at least "bash", "curl" and "git"
+      image: "docker.elastic.co/ci-agent-images/buildkite-junit-annotate:1.0"
     plugins:
-      - junit-annotate#v2.4.1:
+      - junit-annotate#v2.7.0:
           artifacts: "**/TEST-*.xml"
+          report-skipped: true
+          always-annotate: true
+          run-in-docker: false

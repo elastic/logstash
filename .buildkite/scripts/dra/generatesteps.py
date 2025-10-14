@@ -17,8 +17,8 @@ def to_bk_key_friendly_string(key):
 
 def package_x86_step(branch, workflow_type):
     step = f'''
-- label: ":package: Build packages / {branch}-{workflow_type.upper()} DRA artifacts"
-  key: "logstash_build_packages_dra"
+- label: ":package: Build x86 packages / {branch}-{workflow_type.upper()} DRA artifacts"
+  key: "logstash_build_x86_packages_dra"
   agents:
     provider: gcp
     imageProject: elastic-images-prod
@@ -28,12 +28,37 @@ def package_x86_step(branch, workflow_type):
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    export ARCH="x86_64"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/build_packages.sh
   artifact_paths:
     - "**/*.hprof"
 '''
+    return step
 
+def package_arm_step(branch, workflow_type):
+  # Note: this is currently using an x86 host. We can use a true arm host later 
+  # if we want. System packages dont rely on matching host arch to target artifact arch
+  # This just parallelizes the packaging for each across different build hosts for shorter
+  # total time
+    step = f'''
+- label: ":package: Build arm packages / {branch}-{workflow_type.upper()} DRA artifacts"
+  key: "logstash_build_arm_packages_dra"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-prod
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-16"
+    diskSizeGb: 200
+  command: |
+    export WORKFLOW_TYPE="{workflow_type}"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    ARCH="aarch64"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/build_packages.sh
+  artifact_paths:
+    - "**/*.hprof"
+'''
     return step
 
 def package_x86_docker_step(branch, workflow_type):
@@ -79,6 +104,57 @@ def package_aarch64_docker_step(branch, workflow_type):
 
     return step
 
+def ship_observability_sre_image_steps(branch, workflow_type):
+    step = f'''
+- label: ":package: Build & Ship aarch64 ObservabilitySRE container / {branch}-{workflow_type.upper()}"
+  key: "logstash_build_and_ship_observability_sre_aarch64"
+  agents:
+    provider: aws
+    imagePrefix: platform-ingest-logstash-ubuntu-2204-aarch64
+    instanceType: "m6g.4xlarge"
+    diskSizeGb: 200
+  artifact_paths:
+    - "**/*.hprof"
+  command: |
+    export WORKFLOW_TYPE="{workflow_type}"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    export ARCH="aarch64"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/build-and-push-observability-sre.sh
+- label: ":package: Build & Ship x86_64 ObservabilitySRE container / {branch}-{workflow_type.upper()}"
+  key: "logstash_build_and_ship_observability_sre_x86_64"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-prod
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-16"
+    diskSizeGb: 200
+  artifact_paths:
+    - "**/*.hprof"
+  command: |
+    export WORKFLOW_TYPE="{workflow_type}"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    export ARCH="x86_64"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/build-and-push-observability-sre.sh
+- label: ":docker: Create & Push ObservabilitySRE Multi-Arch Manifest / {branch}-{workflow_type.upper()}"
+  key: "logstash_create_observability_sre_manifest"
+  depends_on:
+    - "logstash_build_and_ship_observability_sre_aarch64"
+    - "logstash_build_and_ship_observability_sre_x86_64"
+  agents:
+    provider: gcp
+    imageProject: elastic-images-prod
+    image: family/platform-ingest-logstash-ubuntu-2204
+    machineType: "n2-standard-8"
+  command: |
+    export WORKFLOW_TYPE="{workflow_type}"
+    export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
+    eval "$(rbenv init -)"
+    .buildkite/scripts/dra/multi-architecture-observability-sre.sh
+'''
+    return step
+
 def publish_dra_step(branch, workflow_type, depends_on):
     step = f'''
 - label: ":elastic-stack: Publish  / {branch}-{workflow_type.upper()} DRA artifacts"
@@ -106,6 +182,7 @@ def publish_dra_step(branch, workflow_type, depends_on):
 def build_steps_to_yaml(branch, workflow_type):
     steps = []
     steps.extend(yaml.safe_load(package_x86_step(branch, workflow_type)))
+    steps.extend(yaml.safe_load(package_arm_step(branch, workflow_type)))
     steps.extend(yaml.safe_load(package_x86_docker_step(branch, workflow_type)))
     steps.extend(yaml.safe_load(package_aarch64_docker_step(branch, workflow_type)))
 
@@ -139,9 +216,14 @@ if __name__ == "__main__":
             "steps": build_steps_to_yaml(branch, workflow_type),
         })
 
-        # Final step: pull artifacts built above and publish them via the release-manager
+        # Pull artifacts built above and publish them via the release-manager
         structure["steps"].extend(
             yaml.safe_load(publish_dra_step(branch, workflow_type, depends_on=group_key)),
+        )
+
+        # Once published, do the same for observabilitySRE image
+        structure["steps"].extend(
+            yaml.safe_load(ship_observability_sre_image_steps(branch, workflow_type)),
         )
 
     print(YAML_HEADER + yaml.dump(structure, Dumper=yaml.Dumper, sort_keys=False))

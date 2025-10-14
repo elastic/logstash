@@ -33,4 +33,8 @@ require "rspec/core"
 
 RSpec.clear_examples
 
+RSpec.configure do |c|
+    c.filter_run_excluding skip_fips: true if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
+end
+
 return RSpec::Core::Runner.run($JUNIT_ARGV).to_i

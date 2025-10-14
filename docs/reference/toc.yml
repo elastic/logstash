@@ -37,6 +37,7 @@ toc:
       - file: event-dependent-configuration.md
       - file: environment-variables.md
       - file: connecting-to-cloud.md
+      - file: connecting-to-serverless.md
       - file: config-examples.md
   - file: secure-connection.md
   - file: advanced-logstash-configurations.md

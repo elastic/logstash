@@ -73,8 +73,6 @@ module LogStash; module Config;
 
        (stats || {}).reduce([]) do |acc, kv|
         plugin_id, plugin_stats = kv
-
-        props = Hash.new {|h, k| h[k] = []}
         next unless plugin_stats
 
         flattened = flatten_metrics(plugin_stats)
@@ -93,7 +91,7 @@ module LogStash; module Config;
 
             nested_type = if type_sym == :"counter/long"
                             :long_counters
-                          elsif type_sym == :"gauge/numeric"
+                          elsif type_sym == :"gauge/number"
                             :double_gauges
                           else
                             nil

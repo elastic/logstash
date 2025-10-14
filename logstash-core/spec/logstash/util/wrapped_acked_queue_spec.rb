@@ -52,9 +52,19 @@ describe LogStash::WrappedAckedQueue do
     let(:max_bytes) { 0 }
     let(:checkpoint_acks) { 1024 }
     let(:checkpoint_writes) { 1024 }
-    let(:checkpoint_interval) { 0 }
     let(:path) { Stud::Temporary.directory }
-    let(:queue) { LogStash::WrappedAckedQueue.new(path, page_capacity, max_events, checkpoint_acks, checkpoint_writes, checkpoint_interval, false, max_bytes) }
+
+    let(:queue_settings) do
+      LogStash::AckedQueue.file_settings_builder(path)
+                          .capacity(page_capacity)
+                          .maxUnread(max_events)
+                          .checkpointMaxAcks(checkpoint_acks)
+                          .checkpointMaxWrites(checkpoint_writes)
+                          .queueMaxBytes(max_bytes)
+                          .build
+    end
+
+    let(:queue) { LogStash::WrappedAckedQueue.new(queue_settings, org.logstash.ackedqueue.QueueFactoryExt::BatchMetricMode::DISABLED) }
 
     after do
       queue.close

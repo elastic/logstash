@@ -1,0 +1,56 @@
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash-observability-sre:${OBSERVABILITY_SRE_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    container_name: fips_test_logstash
+    ports:
+      - "5044:5044"
+    volumes:
+      - ./logstash/config/${LOGSTASH_CONFIG:-logstash-fips.yml}:/usr/share/logstash/config/logstash.yml
+      - ./logstash/pipeline/${LOGSTASH_PIPELINE:-logstash-to-elasticsearch.conf}:/usr/share/logstash/pipeline/logstash.conf
+      - ./certs:/usr/share/logstash/config/certs
+    networks:
+      - elastic
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    container_name: fips_test_elasticsearch
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elasticsearch/config/${ELASTICSEARCH_CONFIG:-elasticsearch-fips.yml}:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./certs:/usr/share/elasticsearch/config/certs
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Djava.security.properties=/usr/share/elasticsearch/config/fips_java.security"
+      - ELASTIC_PASSWORD=changeme
+    networks:
+      - elastic
+
+  filebeat:
+    # The filebeat shipped with the elasticsearch-fips container is built for FIPS support
+    # There is no stand alone distribution. This uses the shipped version for testing. 
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${FILEBEAT_IMAGE_VERSION:-8.19.0-SNAPSHOT}
+    container_name: fips_test_filebeat
+    working_dir: /usr/share/filebeat
+    entrypoint: ["/bin/bash", "-c"]
+    # Start Filebeat with /tmp for data (always writable)
+    command: 
+      - |
+        exec /opt/filebeat/filebeat -e \
+          --strict.perms=false \
+          -c /usr/share/filebeat/filebeat.yml \
+          --path.data /tmp/filebeat_data
+    volumes:
+      - ./filebeat/config/${FILEBEAT_CONFIG:-filebeat-fips.yml}:/usr/share/filebeat/filebeat.yml:ro
+      - ./filebeat/data:/data/logs:ro
+      - ./certs:/usr/share/filebeat/certs:ro
+    networks:
+      - elastic
+    depends_on:
+      - logstash
+
+networks:
+  elastic:
+    driver: bridge

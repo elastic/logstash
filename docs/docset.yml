@@ -14,9 +14,9 @@ toc:
   - toc: release-notes
   - toc: extend
 subs:
-  version: "9.0.0"
   logstash-ref:   "https://www.elastic.co/guide/en/logstash/current"
   ecloud:   "Elastic Cloud"
+  ech:   "Elastic Cloud Hosted"
   esf:   "Elastic Serverless Forwarder"
   ess:   "Elasticsearch Service"
   serverless-full:   "Elastic Cloud Serverless"
@@ -44,8 +44,6 @@ subs:
   ilm-init:   "ILM"
   dlm:   "data lifecycle management"
   dlm-init:   "DLM"
-  stack-version: "9.0.0"
-  major-version: "9.x"
   docker-repo: "docker.elastic.co/logstash/logstash"
-  ess-leadin-short:   "Our hosted Elasticsearch Service is available on AWS, GCP, and Azure, and you can try it for free at https://cloud.elastic.co/registration"
-  ess-leadin: "You can run Elasticsearch on your own hardware or use our hosted Elasticsearch Service that is available on AWS, GCP, and Azure. Try the Elasticsearch Service for free: https://cloud.elastic.co/registration."
+  ess-leadin-short:   "Elastic Cloud Hosted is available on AWS, GCP, and Azure, and you can try it for free at https://cloud.elastic.co/registration."
+  ess-leadin: "You can run Elasticsearch on your own hardware or use Elastic Cloud Hosted, available on AWS, GCP, and Azure. Try Elastic Cloud Hosted for free: https://cloud.elastic.co/registration."

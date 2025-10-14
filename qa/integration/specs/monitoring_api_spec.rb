@@ -208,12 +208,22 @@ describe "Test Monitoring API" do
   shared_examples "pipeline metrics" do
     # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
     let(:settings_overrides) do
-      super().merge({'pipeline.id' => pipeline_id})
+      super().dup.tap do |overrides|
+        overrides['pipeline.id'] = pipeline_id
+        if logstash_service.settings.feature_flag == "persistent_queues"
+          overrides['queue.compression'] = %w(none speed balanced size).sample
+        end
+      end
     end
 
     it "can retrieve queue stats" do
       logstash_service.start_with_stdin
       logstash_service.wait_for_logstash
+
+      number_of_events.times {
+        logstash_service.write_to_stdin("Testing flow metrics")
+        sleep(1)
+      }
 
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         # node_stats can fail if the stats subsystem isn't ready
@@ -234,8 +244,86 @@ describe "Test Monitoring API" do
           expect(queue_capacity_stats["page_capacity_in_bytes"]).not_to be_nil
           expect(queue_capacity_stats["max_queue_size_in_bytes"]).not_to be_nil
           expect(queue_capacity_stats["max_unread_events"]).not_to be_nil
+          queue_compression_stats = queue_stats.fetch("compression")
+          expect(queue_compression_stats.dig('decode', 'ratio', 'lifetime')).to be >= 1
+          expect(queue_compression_stats.dig('decode', 'spend', 'lifetime')).not_to be_nil
+          if settings_overrides['queue.compression'] != 'none'
+            expect(queue_compression_stats.dig('encode', 'goal')).to eq(settings_overrides['queue.compression'])
+            expect(queue_compression_stats.dig('encode', 'ratio', 'lifetime')).to be <= 1
+            expect(queue_compression_stats.dig('encode', 'spend', 'lifetime')).not_to be_nil
+          end
         else
           expect(queue_stats["type"]).to eq("memory")
+        end
+      end
+    end
+
+    context "when pipeline.batch.metrics.sampling_mode is set to 'full'" do
+      let(:settings_overrides) do
+        super().merge({'pipeline.batch.metrics.sampling_mode' => 'full'})
+      end
+
+      it "can retrieve batch stats" do
+        logstash_service.start_with_stdin
+        logstash_service.wait_for_logstash
+
+        number_of_events.times {
+          logstash_service.write_to_stdin("Testing flow metrics")
+          sleep(1)
+        }
+
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          # we use fetch here since we want failed fetches to raise an exception
+          # and trigger the retry block
+          batch_stats = result.fetch("pipelines").fetch(pipeline_id).fetch("batch")
+          expect(batch_stats).not_to be_nil
+
+          expect(batch_stats["event_count"]).not_to be_nil
+          expect(batch_stats["event_count"]["average"]).not_to be_nil
+          expect(batch_stats["event_count"]["average"]["lifetime"]).not_to be_nil
+          expect(batch_stats["event_count"]["average"]["lifetime"]).to be_a_kind_of(Numeric)
+          expect(batch_stats["event_count"]["average"]["lifetime"]).to be > 0
+
+          expect(batch_stats["event_count"]["current"]).not_to be_nil
+          expect(batch_stats["event_count"]["current"]).to be >= 0
+
+          expect(batch_stats["byte_size"]).not_to be_nil
+          expect(batch_stats["byte_size"]["average"]).not_to be_nil
+          expect(batch_stats["byte_size"]["average"]["lifetime"]).not_to be_nil
+          expect(batch_stats["byte_size"]["average"]["lifetime"]).to be_a_kind_of(Numeric)
+          expect(batch_stats["byte_size"]["average"]["lifetime"]).to be > 0
+
+          expect(batch_stats["byte_size"]["current"]).not_to be_nil
+          expect(batch_stats["byte_size"]["current"]).to be >= 0
+        end
+      end
+    end
+
+    context "when pipeline.batch.metrics.sampling_mode is set to 'disabled'" do
+      let(:settings_overrides) do
+        super().merge({'pipeline.batch.metrics.sampling_mode' => 'disabled'})
+      end
+
+      it "no batch stats metrics are available" do
+        logstash_service.start_with_stdin
+        logstash_service.wait_for_logstash
+
+        number_of_events.times {
+          logstash_service.write_to_stdin("Testing flow metrics")
+          sleep(1)
+        }
+
+        Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+          # node_stats can fail if the stats subsystem isn't ready
+          result = logstash_service.monitoring_api.node_stats rescue nil
+          expect(result).not_to be_nil
+          # we use fetch here since we want failed fetches to raise an exception
+          # and trigger the retry block
+          pipeline_stats = result.fetch("pipelines").fetch(pipeline_id)
+          expect(pipeline_stats).not_to include("batch")
         end
       end
     end

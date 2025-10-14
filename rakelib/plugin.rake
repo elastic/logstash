@@ -17,6 +17,9 @@
 
 require_relative "default_plugins"
 require 'rubygems'
+require 'shellwords'
+
+require 'bootstrap/environment'
 
 namespace "plugin" do
   def install_plugins(*args)
@@ -27,6 +30,36 @@ namespace "plugin" do
   def remove_plugin(plugin, *more_plugins)
     require_relative "../lib/pluginmanager/main"
     LogStash::PluginManager::Main.run("bin/logstash-plugin", ["remove", plugin] + more_plugins)
+  end
+
+  def list_plugins(search=nil, expand: nil, verbose: nil)
+    require_relative "../lib/pluginmanager/main"
+    args = []
+    args << "--verbose" if verbose
+    args << search unless search.nil?
+
+    stdout = invoke_plugin_manager!("list", *args)
+
+    stdout.lines.select do |line|
+      # STDOUT pollution removal needed until 8.19 and 9.1
+      # https://github.com/elastic/logstash/pull/17125
+      next false if line.match?(/^Using (system java|bundled JDK|LS_JAVA_HOME defined java)/)
+      
+      # post-execution filtration is needed until 8.19 and 9.1
+      # when list --[no-]expand flag is supported, use it instead
+      # https://github.com/elastic/logstash/pull/17124
+      expand || line.match?(/^[a-z]/)
+    end.map(&:chomp)
+  end
+
+  # the plugin manager's list command (and possibly others)
+  def invoke_plugin_manager!(command, *args)
+    plugin_manager_bin = Pathname.new(LogStash::Environment::LOGSTASH_HOME) / "bin" / "logstash-plugin"
+    stdout_and_stderr = %x(#{Shellwords.escape(plugin_manager_bin)} #{Shellwords.join([command]+args)} 2>&1)
+    unless $?.success?
+      fail "ERROR INVOKING PLUGIN MANAGER: #{stdout_and_stderr}"
+    end
+    stdout_and_stderr
   end
 
   task "install-base" => "bootstrap" do
@@ -78,6 +111,48 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end
 
+  task "trim-for-observabilitySRE" do |task, _|
+    puts("[plugin:trim-for-observabilitySRE] Removing plugins not necessary for observabilitySRE")
+
+    allow_list = (Pathname.new(__dir__).parent / "x-pack" / "distributions" / "internal" / "observabilitySRE" / "plugin-allow-list.txt").readlines.map(&:chomp)
+    installed_plugins = list_plugins(expand: false)
+
+    excess_plugins = installed_plugins - allow_list
+
+    remove_plugin(*excess_plugins) unless excess_plugins.empty?
+
+    task.reenable # Allow this task to be run again
+  end
+
+  task "build-fips-validation-plugin" do |task, _|
+    puts("[plugin:build-fips-validation-plugin] installing fips_validation plugin")
+
+    with_merged_env("GEM_BUILD_VERSION" => get_versions.fetch("logstash")) do
+      name = "logstash-integration-fips_validation"
+      path = Pathname.new(__dir__).parent / "x-pack" / "distributions" / "internal" / "observabilitySRE" / "plugin" / name
+
+      # ensure fresh GEM_BUILD_VERSION comes from the env
+      path.glob("GEM_BUILD_VERSION").each(&:unlink)
+
+      Rake::Task["plugin:build-local-core-gem"].invoke(name, path.to_s)
+    end
+
+    task.reenable # Allow this task to be run again
+  end
+
+  task "install-fips-validation-plugin" => "build-fips-validation-plugin" do |task, _|
+    puts("[plugin:install-fips-validation-plugin] installing fips_validation plugin")
+
+    path = "build/gems"
+    name = "logstash-integration-fips_validation"
+    gems = Dir[File.join(path, "#{name}-*.gem")]
+    abort("ERROR: #{name} gem not found in #{path}") if gems.size != 1
+    puts("[plugin:install-fips-validation-plugin] Installing #{gems.first}")
+    install_plugins("--no-verify", gems.first)
+
+    task.reenable # Allow this task to be run again
+  end
+
   task "clean-local-core-gem", [:name, :path] do |task, args|
     name = args[:name]
     path = args[:path]
@@ -120,5 +195,14 @@ namespace "plugin" do
     install_plugins("--no-verify", gems.first)
 
     task.reenable # Allow this task to be run again
+  end
+
+  # @param env [Hash]
+  def with_merged_env(env)
+    backup = ENV.to_hash
+    ENV.replace(backup.merge(env).compact)
+    yield
+  ensure
+    ENV.replace(backup)
   end
 end # namespace "plugin"

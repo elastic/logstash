@@ -22,6 +22,7 @@ require "logstash/util/cloud_setting_id"
 require "logstash/util/cloud_setting_auth"
 require "socket"
 require "stud/temporary"
+require "uri"
 
 module LogStash
   # In the event that we're requiring this file without bootstrap/environment.rb
@@ -32,77 +33,83 @@ module LogStash
     end
   end
 
+  def self.as_java_range(r)
+    org::logstash::settings::Range.new(r.first.to_java(java.lang.Integer), r.last.to_java(java.lang.Integer))
+  end
+
   [
-           Setting::Boolean.new("allow_superuser", false),
-            Setting::SettingString.new("node.name", Socket.gethostname),
-    Setting::SettingNullableString.new("path.config", nil, false),
+           Setting::BooleanSetting.new("allow_superuser", false),
+            Setting::StringSetting.new("node.name", Socket.gethostname),
+    Setting::NullableStringSetting.new("path.config", nil, false),
  Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
-    Setting::SettingNullableString.new("config.string", nil, false),
-           Setting::Boolean.new("config.test_and_exit", false),
-           Setting::Boolean.new("config.reload.automatic", false),
+    Setting::NullableStringSetting.new("config.string", nil, false),
+           Setting::BooleanSetting.new("config.test_and_exit", false),
+           Setting::BooleanSetting.new("config.reload.automatic", false),
          Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
-           Setting::Boolean.new("config.support_escapes", false),
-            Setting::SettingString.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
-           Setting::Boolean.new("metric.collect", true),
-            Setting::SettingString.new("pipeline.id", "main"),
-           Setting::Boolean.new("pipeline.system", false),
-   Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
-   Setting::PositiveInteger.new("pipeline.batch.size", 125),
-           Setting::SettingNumeric.new("pipeline.batch.delay", 50), # in milliseconds
-           Setting::Boolean.new("pipeline.unsafe_shutdown", false),
-           Setting::Boolean.new("pipeline.reloadable", true),
-           Setting::Boolean.new("pipeline.plugin_classloaders", false),
-           Setting::Boolean.new("pipeline.separate_logs", false),
+           Setting::BooleanSetting.new("config.support_escapes", false),
+            Setting::StringSetting.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
+           Setting::BooleanSetting.new("metric.collect", true),
+            Setting::StringSetting.new("pipeline.id", "main"),
+           Setting::BooleanSetting.new("pipeline.system", false),
+   Setting::PositiveIntegerSetting.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
+   Setting::PositiveIntegerSetting.new("pipeline.batch.size", 125),
+           Setting::NumericSetting.new("pipeline.batch.delay", 50), # in milliseconds
+           Setting::BooleanSetting.new("pipeline.unsafe_shutdown", false),
+           Setting::BooleanSetting.new("pipeline.reloadable", true),
+           Setting::BooleanSetting.new("pipeline.plugin_classloaders", false),
+           Setting::BooleanSetting.new("pipeline.separate_logs", false),
    Setting::CoercibleString.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),
    Setting::CoercibleString.new("pipeline.ecs_compatibility", "v8", true, %w(disabled v1 v8)),
                     Setting.new("path.plugins", Array, []),
-    Setting::SettingNullableString.new("interactive", nil, false),
-           Setting::Boolean.new("config.debug", false),
-            Setting::SettingString.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
-           Setting::Boolean.new("version", false),
-           Setting::Boolean.new("help", false),
-           Setting::Boolean.new("enable-local-plugin-development", false),
-            Setting::SettingString.new("log.format", "plain", true, ["json", "plain"]),
-           Setting::Boolean.new("log.format.json.fix_duplicate_message_fields", true),
-           Setting::Boolean.new("api.enabled", true),
-            Setting::SettingString.new("api.http.host", "127.0.0.1"),
-         Setting::PortRange.new("api.http.port", 9600..9700),
-            Setting::SettingString.new("api.environment", "production"),
-            Setting::SettingString.new("api.auth.type", "none", true, %w(none basic)),
-            Setting::SettingString.new("api.auth.basic.username", nil, false).nullable,
-          Setting::Password.new("api.auth.basic.password", nil, false).nullable,
-            Setting::SettingString.new("api.auth.basic.password_policy.mode", "WARN", true, %w[WARN ERROR]),
-           Setting::SettingNumeric.new("api.auth.basic.password_policy.length.minimum", 8),
-            Setting::SettingString.new("api.auth.basic.password_policy.include.upper", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
-            Setting::SettingString.new("api.auth.basic.password_policy.include.lower", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
-            Setting::SettingString.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
-            Setting::SettingString.new("api.auth.basic.password_policy.include.symbol", "OPTIONAL", true, %w[REQUIRED OPTIONAL]),
-           Setting::Boolean.new("api.ssl.enabled", false),
+    Setting::NullableStringSetting.new("interactive", nil, false),
+           Setting::BooleanSetting.new("config.debug", false),
+            Setting::StringSetting.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
+           Setting::BooleanSetting.new("version", false),
+           Setting::BooleanSetting.new("help", false),
+           Setting::BooleanSetting.new("enable-local-plugin-development", false),
+            Setting::StringSetting.new("log.format", "plain", true, ["json", "plain"]),
+           Setting::BooleanSetting.new("log.format.json.fix_duplicate_message_fields", true),
+           Setting::BooleanSetting.new("api.enabled", true),
+            Setting::StringSetting.new("api.http.host", "127.0.0.1"),
+         Setting::PortRangeSetting.new("api.http.port", 9600..9700),
+            Setting::StringSetting.new("api.environment", "production"),
+            Setting::StringSetting.new("api.auth.type", "none", true, %w(none basic)),
+            Setting::StringSetting.new("api.auth.basic.username", nil, false).nullable,
+          Setting::PasswordSetting.new("api.auth.basic.password", nil, false).nullable,
+            Setting::StringSetting.new("api.auth.basic.password_policy.mode", "WARN", true, %w[WARN ERROR]),
+           Setting::NumericSetting.new("api.auth.basic.password_policy.length.minimum", 8),
+            Setting::StringSetting.new("api.auth.basic.password_policy.include.upper", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
+            Setting::StringSetting.new("api.auth.basic.password_policy.include.lower", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
+            Setting::StringSetting.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
+            Setting::StringSetting.new("api.auth.basic.password_policy.include.symbol", "OPTIONAL", true, %w[REQUIRED OPTIONAL]),
+           Setting::BooleanSetting.new("api.ssl.enabled", false),
   Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
-          Setting::Password.new("api.ssl.keystore.password", nil, false).nullable,
+          Setting::PasswordSetting.new("api.ssl.keystore.password", nil, false).nullable,
        Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
-            Setting::SettingString.new("queue.type", "memory", true, ["persisted", "memory"]),
-           Setting::Boolean.new("queue.drain", false),
+           Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
+            Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
+           Setting::BooleanSetting.new("queue.drain", false),
              Setting::Bytes.new("queue.page_capacity", "64mb"),
              Setting::Bytes.new("queue.max_bytes", "1024mb"),
-           Setting::SettingNumeric.new("queue.max_events", 0), # 0 is unlimited
-           Setting::SettingNumeric.new("queue.checkpoint.acks", 1024), # 0 is unlimited
-           Setting::SettingNumeric.new("queue.checkpoint.writes", 1024), # 0 is unlimited
-           Setting::SettingNumeric.new("queue.checkpoint.interval", 1000), # 0 is no time-based checkpointing
-           Setting::Boolean.new("queue.checkpoint.retry", true),
-           Setting::Boolean.new("dead_letter_queue.enable", false),
+           Setting::NumericSetting.new("queue.max_events", 0), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.acks", 1024), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.writes", 1024), # 0 is unlimited
+           Setting::NumericSetting.new("queue.checkpoint.interval", 1000), # remove it for #17155
+           Setting::BooleanSetting.new("queue.checkpoint.retry", true),
+            Setting::StringSetting.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
+           Setting::BooleanSetting.new("dead_letter_queue.enable", false),
              Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
-           Setting::SettingNumeric.new("dead_letter_queue.flush_interval", 5000),
-            Setting::SettingString.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
-    Setting::SettingNullableString.new("dead_letter_queue.retain.age"), # example 5d
+           Setting::NumericSetting.new("dead_letter_queue.flush_interval", 5000),
+            Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
+    Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
          Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
          Setting::TimeValue.new("slowlog.threshold.info", "-1"),
          Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
          Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
-            Setting::SettingString.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
-            Setting::SettingString.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
-    Setting::SettingNullableString.new("monitoring.cluster_uuid"),
-            Setting::SettingString.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
+            Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
+            Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
+    Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
+            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 

@@ -72,7 +72,7 @@ public class DeadLetterQueueReaderTest {
     private Path dir;
     private int defaultDlqSize = 100_000_000; // 100mb
 
-    private static final int PAD_FOR_BLOCK_SIZE_EVENT = 32490;
+    private static final int PAD_FOR_BLOCK_SIZE_EVENT = 32511;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -240,7 +240,7 @@ public class DeadLetterQueueReaderTest {
     // This test tests for a single event that ends on a block boundary
     @Test
     public void testBlockBoundary() throws Exception {
-        final int PAD_FOR_BLOCK_SIZE_EVENT = 32490;
+        final int PAD_FOR_BLOCK_SIZE_EVENT = 32511;
         Event event = createEventWithConstantSerializationOverhead();
         char[] field = new char[PAD_FOR_BLOCK_SIZE_EVENT];
         Arrays.fill(field, 'e');
@@ -267,7 +267,7 @@ public class DeadLetterQueueReaderTest {
     @Test
     public void testBlockBoundaryMultiple() throws Exception {
         Event event = createEventWithConstantSerializationOverhead();
-        char[] field = new char[7929];
+        char[] field = new char[7950];
         Arrays.fill(field, 'x');
         event.setField("message", new String(field));
         long startTime = System.currentTimeMillis();
@@ -935,7 +935,7 @@ public class DeadLetterQueueReaderTest {
 
     private int prepareFilledSegmentFiles(int segments, long start) throws IOException {
         final Event event = createEventWithConstantSerializationOverhead(Collections.emptyMap());
-        event.setField("message", generateMessageContent(32479));
+        event.setField("message", generateMessageContent(32500));
 
         DLQEntry entry = new DLQEntry(event, "", "", String.format("%05d", 1), constantSerializationLengthTimestamp(start));
         assertEquals("Serialized dlq entry + header MUST be 32Kb (size of a block)", BLOCK_SIZE, entry.serialize().length + 13);

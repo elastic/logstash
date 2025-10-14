@@ -262,7 +262,7 @@ module LogStash
       # (Experimental) Direct shipping settings
       register_monitoring_settings(settings)
 
-      settings.register(LogStash::Setting::SettingString.new("node.uuid", ""))
+      settings.register(LogStash::Setting::StringSetting.new("node.uuid", ""))
     rescue => e
       logger.error e.message
       logger.error e.backtrace.to_s
@@ -272,31 +272,31 @@ module LogStash
     private
     def register_monitoring_settings(settings, prefix = "")
       if prefix == "xpack."
-        settings.register(LogStash::Setting::Boolean.new("xpack.monitoring.allow_legacy_collection", false))
+        settings.register(LogStash::Setting::BooleanSetting.new("xpack.monitoring.allow_legacy_collection", false))
       end
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.enabled", false))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.enabled", false))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.hosts", String, ["http://localhost:9200"]))
       settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.interval", "10s"))
       settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.username", "logstash_system"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.password"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.proxy"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.cloud_id"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.cloud_auth"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.api_key"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate_authority"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.ca_trusted_fingerprint"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.path"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.keystore.password"))
-      settings.register(LogStash::Setting::SettingString.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "full", true, ["none", "certificate", "full"]))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.certificate"))
-      settings.register(LogStash::Setting::SettingNullableString.new("#{prefix}monitoring.elasticsearch.ssl.key"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.username", "logstash_system"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.password"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.proxy"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.cloud_id"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.cloud_auth"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.api_key"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.certificate_authority"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.ca_trusted_fingerprint"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.truststore.path"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.truststore.password"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.keystore.path"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.keystore.password"))
+      settings.register(LogStash::Setting::StringSetting.new("#{prefix}monitoring.elasticsearch.ssl.verification_mode", "full", true, ["none", "certificate", "full"]))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.certificate"))
+      settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.ssl.key"))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.ssl.cipher_suites", String, []))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.elasticsearch.sniffing", false))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
-      settings.register(LogStash::Setting::Boolean.new("#{prefix}monitoring.collection.config.enabled", true))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.elasticsearch.sniffing", false))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.collection.pipeline.details.enabled", true))
+      settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.collection.config.enabled", true))
     end
   end
 end

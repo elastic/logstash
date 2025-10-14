@@ -45,7 +45,7 @@ These appenders define:
 * **triggering policies** that determine *if* a rollover should be performed, and
 * **rollover strategy**  to defines *how* the rollover should be done.
 
-By default, two triggering policies are defined—​time and size.
+By default, two triggering policies are defined—time and size.
 
 * The **time** policy creates one file per day.
 * The **size** policy forces the creation of a new file after the file size surpasses 100 MB.

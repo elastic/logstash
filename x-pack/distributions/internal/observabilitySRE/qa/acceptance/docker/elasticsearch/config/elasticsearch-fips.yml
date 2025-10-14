@@ -1,0 +1,18 @@
+# Elasticsearch settings
+discovery.type: single-node
+http.port: 9200
+network.host: 0.0.0.0
+# Security settings
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch.key
+xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+xpack.security.transport.ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/elasticsearch.key
+xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/elasticsearch.crt
+xpack.security.http.ssl.certificate_authorities: ["/usr/share/elasticsearch/config/certs/ca.crt"]
+# FIPS Configuration - Let Elasticsearch auto-detect and register providers
+xpack.security.fips_mode.enabled: true
+xpack.security.autoconfiguration.enabled: false

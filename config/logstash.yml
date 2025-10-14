@@ -49,6 +49,12 @@
 #
 # pipeline.batch.delay: 50
 #
+# Set the pipeline's batch metrics reporting mode. It can be "disabled" to disable it.
+# "minimal" to collect only 1% of the batches metrics, "full" to collect all batches.
+# Default is "minimal".
+#
+# pipeline.batch.metrics.sampling_mode: "minimal"
+#
 # Force Logstash to exit during shutdown even if there are still inflight
 # events in memory. By default, logstash will refuse to quit until all
 # received events have been pushed to the outputs.
@@ -223,10 +229,10 @@
 #
 # queue.checkpoint.writes: 1024
 #
-# If using queue.type: persisted, the interval in milliseconds when a checkpoint is forced on the head page
-# Default is 1000, 0 for no periodic checkpoint.
+# If using queue.type: persisted, the compression goal. Valid values are `none`, `speed`, `balanced`, and `size`.
+# The default `none` is able to decompress previously-written events, even if they were compressed.
 #
-# queue.checkpoint.interval: 1000
+# queue.compression: none
 #
 # ------------ Dead-Letter Queue Settings --------------
 # Flag to turn on dead-letter queue.
@@ -288,7 +294,7 @@
 #
 # ------------ Other Settings --------------
 #
-# Allow or block running Logstash as superuser (default: true). Windows are excluded from the checking
+# Allow or block running Logstash as superuser (default: false). Windows are excluded from the checking
 # allow_superuser: false
 #
 # Where to find custom plugins

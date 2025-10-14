@@ -15,14 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require "logstash/instrument/metric_type/counter"
+require "logstash/json"
 require "spec_helper"
 
-describe LogStash::Instrument::MetricType::Counter do
-  let(:namespaces) { [:root, :pipelines, :pipeline_01] }
+describe org.logstash.instrument.metrics.counter.LongCounter do
   let(:key) { :mykey }
 
-  subject { LogStash::Instrument::MetricType::Counter.new(namespaces, key) }
+  subject { described_class.new(key.to_s) }
 
   describe "#increment" do
     it "increment the counter" do

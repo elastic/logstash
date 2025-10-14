@@ -57,7 +57,8 @@ var validSettings = []string{
 	"queue.max_bytes",
 	"queue.checkpoint.acks",
 	"queue.checkpoint.writes",
-	"queue.checkpoint.interval",
+	"queue.checkpoint.interval", // remove it for #17155
+	"queue.compression",
 	"queue.drain",
 	"dead_letter_queue.enable",
 	"dead_letter_queue.max_bytes",

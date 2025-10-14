@@ -19,7 +19,7 @@ Event and data field types:
 
 
 ::::{important}
-Some configuration options in Logstash require the existence of fields in order to function. Because inputs generate events, there are no fields to evaluate within the input block—​they do not exist yet!
+Some configuration options in Logstash require the existence of fields in order to function. Because inputs generate events, there are no fields to evaluate within the input block—they do not exist yet!
 
 [Field references](#logstash-config-field-references), [sprintf format](#sprintf), and [conditionals](#conditionals) do not work in input blocks.
 These configuration options depend on events and fields, and therefore, work only within filter and output blocks.

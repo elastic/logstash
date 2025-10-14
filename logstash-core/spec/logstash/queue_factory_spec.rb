@@ -23,17 +23,18 @@ describe LogStash::QueueFactory do
   let(:settings_array) do
     [
       LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
-      LogStash::Setting::SettingString.new("queue.type", "memory", true, ["persisted", "memory"]),
+      LogStash::Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
       LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
       LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),
-      LogStash::Setting::SettingNumeric.new("queue.max_events", 0),
-      LogStash::Setting::SettingNumeric.new("queue.checkpoint.acks", 1024),
-      LogStash::Setting::SettingNumeric.new("queue.checkpoint.writes", 1024),
-      LogStash::Setting::SettingNumeric.new("queue.checkpoint.interval", 1000),
-      LogStash::Setting::Boolean.new("queue.checkpoint.retry", false),
-      LogStash::Setting::SettingString.new("pipeline.id", pipeline_id),
-      LogStash::Setting::PositiveInteger.new("pipeline.batch.size", 125),
-      LogStash::Setting::PositiveInteger.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
+      LogStash::Setting::NumericSetting.new("queue.max_events", 0),
+      LogStash::Setting::NumericSetting.new("queue.checkpoint.acks", 1024),
+      LogStash::Setting::NumericSetting.new("queue.checkpoint.writes", 1024),
+      LogStash::Setting::BooleanSetting.new("queue.checkpoint.retry", false),
+      LogStash::Setting::StringSetting.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
+      LogStash::Setting::StringSetting.new("pipeline.id", pipeline_id),
+      LogStash::Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
+      LogStash::Setting::PositiveIntegerSetting.new("pipeline.batch.size", 125),
+      LogStash::Setting::PositiveIntegerSetting.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum)
     ]
   end
 

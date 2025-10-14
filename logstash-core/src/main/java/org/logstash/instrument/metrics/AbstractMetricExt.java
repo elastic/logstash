@@ -52,6 +52,8 @@ public abstract class AbstractMetricExt extends RubyObject {
         return getCollector(context);
     }
 
+    public abstract co.elastic.logstash.api.Metric asApiMetric();
+
     protected abstract AbstractNamespacedMetricExt createNamespaced(
         ThreadContext context, IRubyObject name
     );

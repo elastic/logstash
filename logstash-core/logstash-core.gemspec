@@ -55,16 +55,13 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "pry", "~> 0.12"  #(Ruby license)
   gem.add_runtime_dependency "stud", "~> 0.0.19" #(Apache 2.0 license)
-  gem.add_runtime_dependency "clamp", "~> 1" #(MIT license) for command line args/flags
+  gem.add_runtime_dependency "clamp", "~> 1", ">= 1.3.3" #(MIT license) for command line args/flags
   gem.add_runtime_dependency "filesize", "~> 0.2" #(MIT license) for :bytes config validator
   gem.add_runtime_dependency "gems", "~> 1"  #(MIT license)
   gem.add_runtime_dependency "concurrent-ruby", "~> 1", "< 1.1.10" # pinned until https://github.com/elastic/logstash/issues/13956
   gem.add_runtime_dependency "rack", '~> 3'
   gem.add_runtime_dependency "sinatra", '~> 4'
   gem.add_runtime_dependency 'puma', '~> 6.3', '>= 6.4.2'
-  gem.add_runtime_dependency 'ruby-maven-libs', '~> 3', '>= 3.8.9'
-  gem.add_runtime_dependency "jar-dependencies",'= 0.4.1' # Pin to `0.4.1` until https://github.com/jruby/jruby/issues/7262 is resolved
-  gem.add_runtime_dependency "jruby-openssl", "~> 0.15.4" # Pin until upgrade to jruby 9.4.12.0 https://github.com/elastic/logstash/issues/17007 
 
   gem.add_runtime_dependency "treetop", "~> 1" #(MIT license)
 

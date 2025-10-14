@@ -21,8 +21,13 @@ require "sinatra"
 require "logstash/api/modules/node_stats"
 
 describe LogStash::Api::Modules::NodeStats do
-  # enable PQ to ensure PQ-related metrics are present
-  include_context "api setup", {"queue.type" => "persisted"}
+
+  include_context "api setup", {
+    # enable PQ to ensure PQ-related metrics are present
+    "queue.type" => "persisted",
+    #enable batch metrics
+    "pipeline.batch.metrics.sampling_mode" => "full"
+  }
   include_examples "not found"
 
   extend ResourceDSLMethods
@@ -141,6 +146,20 @@ describe LogStash::Api::Modules::NodeStats do
            "storage_type" => String,
            "path" => String,
            "free_space_in_bytes" => Numeric
+         }
+       },
+       "batch" => {
+         "event_count" => {
+           "current" => Numeric,
+           "average" => {
+             "lifetime" => Numeric
+           }
+         },
+         "byte_size" => {
+           "current" => Numeric,
+           "average" => {
+             "lifetime" => Numeric
+           }
          }
        }
      }

@@ -125,6 +125,7 @@ set -eo pipefail
 source .buildkite/scripts/common/vm-agent.sh
 echo "--- Building all artifacts"
 ./gradlew clean bootstrap
+export ARCH="x86_64"
 rake artifact:deb artifact:rpm
 """),
         "artifact_paths": [
@@ -155,18 +156,39 @@ ci/acceptance_tests.sh"""),
 
 def acceptance_docker_steps()-> list[typing.Any]:
     steps = []
-    for flavor in ["full", "oss", "ubi", "wolfi"]:
+    for flavor in ["full", "oss", "wolfi"]:
         steps.append({
             "label": f":docker: {flavor} flavor acceptance",
             "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
             "command": LiteralScalarString(f"""#!/usr/bin/env bash
 set -euo pipefail
 source .buildkite/scripts/common/vm-agent.sh
+export ARCH="x86_64"
 ci/docker_acceptance_tests.sh {flavor}"""),
             "retry": {"automatic": [{"limit": 3}]},
         })
 
     return steps
+
+def fips_test_runner_step() -> dict[str, typing.Any]:
+    step = {
+        "label": "Observability SRE Acceptance Tests",
+        "key": "observabilitySRE-acceptance-tests",
+        "agents": {
+            "provider": "aws",
+            "instanceType": "m6i.xlarge",
+            "diskSizeGb": 60,
+            "instanceMaxAge": 1440,
+            "imagePrefix": "platform-ingest-logstash-ubuntu-2204-fips"
+        },
+        "retry": {"automatic": [{"limit": 1}]},
+        "command": LiteralScalarString("""#!/usr/bin/env bash
+set -euo pipefail
+source .buildkite/scripts/common/vm-agent.sh
+./ci/observabilitySREacceptance_tests.sh
+"""),
+    }
+    return step
 
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
@@ -182,7 +204,7 @@ if __name__ == "__main__":
     structure = {"steps": []}
 
     structure["steps"].append({
-        "group": "Testing Phase",
+        "group": "Pull request suite",
         "key": "testing-phase",
         **testing_phase_steps(),
     })
@@ -190,29 +212,31 @@ if __name__ == "__main__":
     structure["steps"].append({
             "group": "Compatibility / Linux",
             "key": "compatibility-linux",
-            "depends_on": "testing-phase",
             "steps": compat_linux_steps,
     })
 
     structure["steps"].append({
             "group": "Compatibility / Windows",
             "key": "compatibility-windows",
-            "depends_on": "testing-phase",
             "steps": [compat_windows_step(imagesuffix=windows_test_os)],
     })
 
     structure["steps"].append({
             "group": "Acceptance / Packaging",
             "key": "acceptance-packaging",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_linux_steps(),
     })
 
     structure["steps"].append({
             "group": "Acceptance / Docker",
             "key": "acceptance-docker",
-            "depends_on": ["testing-phase"],
             "steps": acceptance_docker_steps(),
+    })
+
+    structure["steps"].append({
+        "group": "Observability SRE Acceptance Tests",
+        "key": "acceptance-observability-sre",
+        "steps": [fips_test_runner_step()],
     })
 
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')

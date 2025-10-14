@@ -63,9 +63,9 @@ describe LogStash::Settings do
   end
 
   describe "#to_hash" do
-    let(:java_deprecated_alias) { LogStash::Setting::Boolean.new("java.actual", true).with_deprecated_alias("java.deprecated") }
-    let(:ruby_deprecated_alias) { LogStash::Setting::PortRange.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
-    let(:non_deprecated) { LogStash::Setting::Boolean.new("plain_setting", false) }
+    let(:java_deprecated_alias) { LogStash::Setting::BooleanSetting.new("java.actual", true).with_deprecated_alias("java.deprecated") }
+    let(:ruby_deprecated_alias) { LogStash::Setting::PortRangeSetting.new("ruby.actual", 9600..9700).with_deprecated_alias("ruby.deprecated") }
+    let(:non_deprecated) { LogStash::Setting::BooleanSetting.new("plain_setting", false) }
 
     before :each do
       subject.register(java_deprecated_alias)
@@ -154,8 +154,8 @@ describe LogStash::Settings do
       settings.on_post_process do
         settings.set("baz", "bot")
       end
-      settings.register(LogStash::Setting::SettingString.new("foo", "bar"))
-      settings.register(LogStash::Setting::SettingString.new("baz", "somedefault"))
+      settings.register(LogStash::Setting::StringSetting.new("foo", "bar"))
+      settings.register(LogStash::Setting::StringSetting.new("baz", "somedefault"))
       settings.post_process
     end
 
@@ -169,7 +169,7 @@ describe LogStash::Settings do
 
     context 'when a registered setting responds to `observe_post_process`' do
       let(:observe_post_process_setting) do
-        LogStash::Setting::Boolean.new("this.that", true).tap { |s| allow(s).to receive(:observe_post_process) }
+        LogStash::Setting::BooleanSetting.new("this.that", true).tap { |s| allow(s).to receive(:observe_post_process) }
       end
       subject(:settings) do
         described_class.new.tap { |s| s.register(observe_post_process_setting) }
@@ -183,7 +183,7 @@ describe LogStash::Settings do
   context "transient settings" do
     subject do
       settings = described_class.new
-      settings.register(LogStash::Setting::SettingString.new("exist", "bonsoir"))
+      settings.register(LogStash::Setting::StringSetting.new("exist", "bonsoir"))
       settings
     end
 
@@ -205,7 +205,7 @@ describe LogStash::Settings do
     context "when running #validate_all" do
       it "merge and validate all the registered setting" do
         subject.from_yaml(yaml_path)
-        subject.register(LogStash::Setting::Boolean.new("do.not.exist.on.boot", false))
+        subject.register(LogStash::Setting::BooleanSetting.new("do.not.exist.on.boot", false))
 
         expect { subject.validate_all }.not_to raise_error
         expect(subject.get("do.not.exist.on.boot")).to be_truthy
@@ -237,9 +237,9 @@ describe LogStash::Settings do
 
       subject do
         settings = described_class.new
-        settings.register(LogStash::Setting::SettingString.new("interpolated_env", "missing"))
-        settings.register(LogStash::Setting::SettingString.new("with_dot_env", "missing"))
-        settings.register(LogStash::Setting::SettingString.new("interpolated_store", "missing"))
+        settings.register(LogStash::Setting::StringSetting.new("interpolated_env", "missing"))
+        settings.register(LogStash::Setting::StringSetting.new("with_dot_env", "missing"))
+        settings.register(LogStash::Setting::StringSetting.new("interpolated_store", "missing"))
         settings
       end
 
@@ -297,6 +297,25 @@ describe LogStash::Settings do
       it "validates the password successfully" do
         password = LogStash::Util::Password.new("Password123!")
         expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
+      end
+    end
+
+    describe "mode WARN" do
+      let(:password_policies) { super().merge("mode": "WARN") }
+
+      context "when the password does not conform to the policy" do
+        let(:password) { LogStash::Util::Password.new("NoNumbers!") }
+        let(:mock_logger) { double("logger") }
+
+        before :each do
+          allow_any_instance_of(LogStash::Setting::ValidatedPassword).to receive(:logger).and_return(mock_logger)
+        end
+
+        it "logs a warning on validation failure" do
+          expect(mock_logger).to receive(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
+
+          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
+        end
       end
     end
   end

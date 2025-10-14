@@ -28,7 +28,7 @@ class BootstrapContextManager:
             raise ValueError(f"Could not find logstash-integration-failure_injector plugin.")
 
         self.bootstrap.install_plugin(matching_files[0])
-        print(f"logstash-integration-failure_injector successfully installed.")
+        print("logstash-integration-failure_injector successfully installed.")
         return self.bootstrap
 
     def __exit__(self, exc_type, exc_value, exc_traceback):

@@ -17,44 +17,40 @@
  * under the License.
  */
 
-
 package org.logstash.ackedqueue;
 
 /**
  * Persistent queue settings implementation.
  * */
 public class SettingsImpl implements Settings {
-    private String dirForFiles;
-    private Class<? extends Queueable> elementClass;
-    private int capacity;
-    private long queueMaxBytes;
-    private int maxUnread;
-    private int checkpointMaxAcks;
-    private int checkpointMaxWrites;
-    private boolean checkpointRetry;
+    private final String dirForFiles;
+    private final Class<? extends Queueable> elementClass;
+    private final int capacity;
+    private final long queueMaxBytes;
+    private final int maxUnread;
+    private final int checkpointMaxAcks;
+    private final int checkpointMaxWrites;
+    private final boolean checkpointRetry;
+    private final CompressionCodec.Factory compressionCodec;
 
     public static Builder builder(final Settings settings) {
-        return new BuilderImpl(settings.getDirPath(), settings.getElementClass(), settings.getCapacity(),
-            settings.getQueueMaxBytes(), settings.getMaxUnread(), settings.getCheckpointMaxAcks(),
-            settings.getCheckpointMaxWrites(), settings.getCheckpointRetry()
-        );
+        return new BuilderImpl(settings);
     }
 
     public static Builder fileSettingsBuilder(final String dirForFiles) {
         return new BuilderImpl(dirForFiles);
     }
 
-    private SettingsImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
-        final int capacity, final long queueMaxBytes, final int maxUnread,
-        final int checkpointMaxAcks, final int checkpointMaxWrites, boolean checkpointRetry) {
-        this.dirForFiles = dirForFiles;
-        this.elementClass = elementClass;
-        this.capacity = capacity;
-        this.queueMaxBytes = queueMaxBytes;
-        this.maxUnread = maxUnread;
-        this.checkpointMaxAcks = checkpointMaxAcks;
-        this.checkpointMaxWrites = checkpointMaxWrites;
-        this.checkpointRetry = checkpointRetry;
+    private SettingsImpl(final BuilderImpl builder) {
+        this.dirForFiles = builder.dirForFiles;
+        this.elementClass = builder.elementClass;
+        this.capacity = builder.capacity;
+        this.queueMaxBytes = builder.queueMaxBytes;
+        this.maxUnread = builder.maxUnread;
+        this.checkpointMaxAcks = builder.checkpointMaxAcks;
+        this.checkpointMaxWrites = builder.checkpointMaxWrites;
+        this.checkpointRetry = builder.checkpointRetry;
+        this.compressionCodec = builder.compressionCodecFactory;
     }
 
     @Override
@@ -97,6 +93,11 @@ public class SettingsImpl implements Settings {
         return this.checkpointRetry;
     }
 
+    @Override
+    public CompressionCodec.Factory getCompressionCodecFactory() {
+        return this.compressionCodec;
+    }
+
     /**
      * Default implementation for Setting's Builder
      * */
@@ -132,103 +133,97 @@ public class SettingsImpl implements Settings {
 
         private final String dirForFiles;
 
-        private final Class<? extends Queueable> elementClass;
+        private Class<? extends Queueable> elementClass;
 
-        private final int capacity;
+        private int capacity;
 
-        private final long queueMaxBytes;
+        private long queueMaxBytes;
 
-        private final int maxUnread;
+        private int maxUnread;
 
-        private final int checkpointMaxAcks;
+        private int checkpointMaxAcks;
 
-        private final int checkpointMaxWrites;
+        private int checkpointMaxWrites;
 
-        private final boolean checkpointRetry;
+        private boolean checkpointRetry;
+
+        private CompressionCodec.Factory compressionCodecFactory;
 
         private BuilderImpl(final String dirForFiles) {
-            this(dirForFiles, null, DEFAULT_CAPACITY, DEFAULT_MAX_QUEUE_BYTES,
-                DEFAULT_MAX_UNREAD, DEFAULT_CHECKPOINT_MAX_ACKS, DEFAULT_CHECKPOINT_MAX_WRITES, false
-            );
+            this.dirForFiles = dirForFiles;
+            this.elementClass = null;
+            this.capacity = DEFAULT_CAPACITY;
+            this.queueMaxBytes = DEFAULT_MAX_QUEUE_BYTES;
+            this.maxUnread = DEFAULT_MAX_UNREAD;
+            this.checkpointMaxAcks = DEFAULT_CHECKPOINT_MAX_ACKS;
+            this.checkpointMaxWrites = DEFAULT_CHECKPOINT_MAX_WRITES;
+            this.compressionCodecFactory = (metric) -> CompressionCodec.NOOP;
+            this.checkpointRetry = false;
         }
 
-        private BuilderImpl(final String dirForFiles, final Class<? extends Queueable> elementClass,
-            final int capacity, final long queueMaxBytes, final int maxUnread,
-            final int checkpointMaxAcks, final int checkpointMaxWrites, final boolean checkpointRetry) {
-            this.dirForFiles = dirForFiles;
-            this.elementClass = elementClass;
-            this.capacity = capacity;
-            this.queueMaxBytes = queueMaxBytes;
-            this.maxUnread = maxUnread;
-            this.checkpointMaxAcks = checkpointMaxAcks;
-            this.checkpointMaxWrites = checkpointMaxWrites;
-            this.checkpointRetry = checkpointRetry;
+        private BuilderImpl(final Settings settings) {
+            this.dirForFiles = settings.getDirPath();
+            this.elementClass = settings.getElementClass();
+            this.capacity = settings.getCapacity();
+            this.queueMaxBytes = settings.getQueueMaxBytes();
+            this.maxUnread = settings.getMaxUnread();
+            this.checkpointMaxAcks = settings.getCheckpointMaxAcks();
+            this.checkpointMaxWrites = settings.getCheckpointMaxWrites();
+            this.checkpointRetry = settings.getCheckpointRetry();
+            this.compressionCodecFactory = settings.getCompressionCodecFactory();
         }
 
         @Override
         public Builder elementClass(final Class<? extends Queueable> elementClass) {
-            return new BuilderImpl(
-                this.dirForFiles, elementClass, this.capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            this.elementClass = elementClass;
+            return this;
         }
 
         @Override
         public Builder capacity(final int capacity) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, capacity, this.queueMaxBytes, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            this.capacity = capacity;
+            return this;
         }
 
         @Override
         public Builder queueMaxBytes(final long size) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, this.capacity, size, this.maxUnread,
-                this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            this.queueMaxBytes = size;
+            return this;
         }
 
         @Override
         public Builder maxUnread(final int maxUnread) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass,
-                this.capacity, this.queueMaxBytes, maxUnread, this.checkpointMaxAcks,
-                this.checkpointMaxWrites, this.checkpointRetry
-            );
+            this.maxUnread = maxUnread;
+            return this;
         }
 
         @Override
         public Builder checkpointMaxAcks(final int checkpointMaxAcks) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass,
-                this.capacity, this.queueMaxBytes, this.maxUnread, checkpointMaxAcks,
-                this.checkpointMaxWrites, this.checkpointRetry
-            );
+            this.checkpointMaxAcks = checkpointMaxAcks;
+            return this;
         }
 
         @Override
         public Builder checkpointMaxWrites(final int checkpointMaxWrites) {
-            return new BuilderImpl(
-                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, this.checkpointRetry
-            );
+            this.checkpointMaxWrites = checkpointMaxWrites;
+            return this;
         }
 
         @Override
         public Builder checkpointRetry(final boolean checkpointRetry) {
-            return new BuilderImpl(
-                    this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                    this.maxUnread, this.checkpointMaxAcks, checkpointMaxWrites, checkpointRetry
-            );
+            this.checkpointRetry = checkpointRetry;
+            return this;
+        }
+
+        @Override
+        public Builder compressionCodecFactory(CompressionCodec.Factory compressionCodec) {
+            this.compressionCodecFactory = compressionCodec;
+            return this;
         }
 
         @Override
         public Settings build() {
-            return new SettingsImpl(
-                this.dirForFiles, this.elementClass, this.capacity, this.queueMaxBytes,
-                this.maxUnread, this.checkpointMaxAcks, this.checkpointMaxWrites, this.checkpointRetry
-            );
+            return Settings.ensureValid(new SettingsImpl(this));
         }
     }
 }

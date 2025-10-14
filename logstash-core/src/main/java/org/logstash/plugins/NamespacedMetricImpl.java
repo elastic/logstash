@@ -23,17 +23,23 @@ package org.logstash.plugins;
 import co.elastic.logstash.api.CounterMetric;
 import co.elastic.logstash.api.Metric;
 import co.elastic.logstash.api.NamespacedMetric;
+import co.elastic.logstash.api.UserMetric;
+import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.NullNamespacedMetricExt;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -42,6 +48,25 @@ import java.util.stream.Stream;
  * metrics and other namespaces to it.
  */
 public class NamespacedMetricImpl implements NamespacedMetric {
+
+    private static final NamespacedMetric NULL_METRIC;
+    static {
+        final Ruby rubyRuntime = RubyUtil.RUBY;
+        final ThreadContext context = rubyRuntime.getCurrentContext();
+        final NullMetricExt nullMetricExt = NullMetricExt.create();
+        final AbstractNamespacedMetricExt namespacedMetricExt = NullNamespacedMetricExt.create(nullMetricExt, rubyRuntime.newArray());
+
+        NULL_METRIC = new NamespacedMetricImpl(context, namespacedMetricExt){
+            @Override
+            public NamespacedMetric namespace(String... key) {
+                return this;
+            }
+        };
+    }
+
+    public static NamespacedMetric getNullMetric() {
+        return NULL_METRIC;
+    }
 
     private final ThreadContext threadContext;
 
@@ -65,6 +90,13 @@ public class NamespacedMetricImpl implements NamespacedMetric {
     @Override
     public co.elastic.logstash.api.TimerMetric timer(final String metric) {
         return TimerMetric.fromRubyBase(metrics, threadContext.getRuntime().newString(metric).intern());
+    }
+
+    @Override
+    public <USER_METRIC extends UserMetric<?>> USER_METRIC register(String metric, UserMetric.Factory<USER_METRIC> userMetricFactory) {
+        USER_METRIC userMetric = org.logstash.instrument.metrics.UserMetric.fromRubyBase(metrics, threadContext.runtime.newSymbol(metric), userMetricFactory);
+
+        return Objects.requireNonNullElseGet(userMetric, userMetricFactory::nullImplementation);
     }
 
     @Override

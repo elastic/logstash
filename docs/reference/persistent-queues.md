@@ -81,10 +81,19 @@ If you want to define values for a specific pipeline, use [`pipelines.yml`](/ref
 
     To avoid losing data in the persistent queue, you can set `queue.checkpoint.writes: 1` to force a checkpoint after each event is written. Keep in mind that disk writes have a resource cost. Setting this value to `1` ensures maximum durability, but can severely impact performance. See [Controlling durability](#durability-persistent-queues) to better understand the trade-offs.
 
-
-`queue.checkpoint.interval`
+`queue.checkpoint.interval` {applies_to}`stack: deprecated 9.1`
 :   Sets the interval in milliseconds when a checkpoint is forced on the head page. Default is `1000`. Set to `0` to eliminate periodic checkpoints.
 
+`queue.compression` {applies_to}`stack: ga 9.2`
+:   Sets the event compression level for use with the Persisted Queue. Default is `none`. Possible values are:
+    * `none`: does not perform compression, but reads compressed events
+    * `speed`: optimize for fastest compression operation
+    * `size`: optimize for smallest possible size on disk, spending more CPU
+    * `balanced`: a balance between the `speed` and `size` settings
+:::{important}
+Compression can be enabled for an existing PQ, but once compressed elements have been added to a PQ, that PQ cannot be read by previous Logstash releases that did not support compression.
+If you need to downgrade Logstash after enabling the PQ, you will need to either delete the PQ or run the pipeline with `queue.drain: true` first to ensure that no compressed elements remain.
+:::
 
 ## Configuration notes [pq-config-notes]
 

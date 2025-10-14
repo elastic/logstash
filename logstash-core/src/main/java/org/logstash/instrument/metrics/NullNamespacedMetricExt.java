@@ -20,6 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -31,6 +32,7 @@ import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 @JRubyClass(name = "NamespacedNullMetric", parent = "AbstractNamespacedMetric")
 public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
@@ -67,6 +69,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
             this.namespaceName = RubyArray.newArray(context.runtime, namespaceName);
         }
         return this;
+    }
+
+    @Override
+    public Metric asApiMetric() {
+        return NamespacedMetricImpl.getNullMetric();
     }
 
     @Override
@@ -109,6 +116,11 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     @Override
     protected IRubyObject doReportTime(final ThreadContext context, final IRubyObject key,
         final IRubyObject duration) {
+        return context.nil;
+    }
+
+    @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier) {
         return context.nil;
     }
 

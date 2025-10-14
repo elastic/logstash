@@ -20,6 +20,9 @@
 
 package org.logstash.ackedqueue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Persistent queue settings definition.
  * */
@@ -41,6 +44,34 @@ public interface Settings {
 
     boolean getCheckpointRetry();
 
+    CompressionCodec.Factory getCompressionCodecFactory();
+
+    /**
+     * Validate and return the settings, or throw descriptive {@link QueueRuntimeException}
+     * @param settings the settings to validate
+     * @return the settings that were provided
+     */
+    static Settings ensureValid(final Settings settings) {
+        final List<String> errors = new ArrayList<>();
+
+        if (settings == null) {
+            errors.add("settings cannot be null");
+        } else {
+            if (settings.getDirPath() == null) {
+                errors.add("dirPath cannot be null");
+            }
+            if (settings.getElementClass() == null) {
+                errors.add("elementClass cannot be null");
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new QueueRuntimeException(String.format("Invalid Queue Settings: %s", errors));
+        }
+
+        return settings;
+    }
+
     /**
      * Persistent queue Setting's fluent builder definition
      * */
@@ -60,7 +91,8 @@ public interface Settings {
 
         Builder checkpointRetry(boolean checkpointRetry);
 
-        Settings build();
+        Builder compressionCodecFactory(CompressionCodec.Factory compressionCodecFactory);
 
+        Settings build();
     }
 }

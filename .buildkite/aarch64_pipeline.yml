@@ -23,9 +23,6 @@ steps:
 
       - label: ":java: Java unit tests"
         key: "java-unit-tests"
-        env:
-          # https://github.com/elastic/logstash/pull/15486 for background
-          ENABLE_SONARQUBE: "false"
         command: |
           set -euo pipefail
 
@@ -127,14 +124,15 @@ steps:
             - limit: 3
 
   - group: "Acceptance Phase"
-    depends_on: "testing-phase"
     key: "acceptance-phase"
     steps:
       - label: "Docker [{{matrix}}] flavor acceptance"
-        command:
+        command: |
           set -euo pipefail
-          
-          source .buildkite/scripts/common/vm-agent.sh && ci/docker_acceptance_tests.sh {{matrix}}
+
+          source .buildkite/scripts/common/vm-agent.sh
+          export ARCH="aarch64"
+          ci/docker_acceptance_tests.sh {{matrix}}
         retry:
           automatic:
             - limit: 3

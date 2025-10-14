@@ -2,12 +2,12 @@
 
 ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
-ARG BASE_TAG=9.5
+ARG BASE_TAG=9.6
 ARG LOGSTASH_VERSION=<%= elastic_version %>
-ARG GOLANG_VERSION=1.21.8
+ARG GOLANG_VERSION=1.25.0
 
 # stage 1: build env2yaml
-FROM ${BASE_REGISTRY}/google/golang/ubi9/golang-1.21:${GOLANG_VERSION} AS env2yaml
+FROM ${BASE_REGISTRY}/google/golang/ubi9/golang-1.25:${GOLANG_VERSION} AS env2yaml
 
 ENV GOPATH=/go
 

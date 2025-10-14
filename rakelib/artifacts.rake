@@ -22,7 +22,13 @@ namespace "artifact" do
   VERSION_QUALIFIER = ENV["VERSION_QUALIFIER"].to_s.strip.empty? ? nil : ENV["VERSION_QUALIFIER"]
   LOCAL_ARTIFACTS = ENV["LOCAL_ARTIFACTS"] || "true"
   PACKAGE_SUFFIX = SNAPSHOT_BUILD ? "-SNAPSHOT" : ""
-
+  # Normalize ARCH environment variable to either x86_64 or arm64, defaulting to arm64
+  ARCH = case ENV["ARCH"]
+         when "x86_64"
+           "x86_64"
+         else
+           "arm64" # default for aarch64, arm64, or any other value (including nil)
+         end
   ## TODO: Install new service files
   def package_files
     res = [
@@ -107,7 +113,7 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
 
-    @exclude_paths
+    @exclude_paths.freeze
   end
 
   def oss_exclude_paths
@@ -163,16 +169,18 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "build_docker_full", "build_docker_oss", "build_docker_wolfi"]
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
-
+    if ARCH == "x86_64"
+      create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    else
+      create_archive_pack(license_details, "arm64", "linux", "darwin")
+    end
     #without JDK
     safe_system("./gradlew bootstrap") #force the build of Logstash jars
     @bundles_jdk = false
@@ -184,30 +192,29 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-    create_archive_pack(license_details, "x86_64", "linux")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, ARCH, "linux")
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
-  def create_archive_pack(license_details, arch, *oses)
+  def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
     oses.each do |os_name|
       puts("[artifact:archives] Building tar.gz/zip of default plugins for OS: #{os_name}, arch: #{arch}")
-      create_single_archive_pack(os_name, arch, license_details)
+      create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
     end
   end
 
-  def create_single_archive_pack(os_name, arch, license_details)
+  def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
     safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
     if arch == 'arm64'
       arch = 'aarch64'
     end
     case os_name
     when "linux"
-      build_tar(*license_details, platform: "-linux-#{arch}")
+      build_tar(*license_details, platform: "-linux-#{arch}", &tar_interceptor)
     when "windows"
       build_zip(*license_details, platform: "-windows-#{arch}")
     when "darwin"
-      build_tar(*license_details, platform: "-darwin-#{arch}")
+      build_tar(*license_details, platform: "-darwin-#{arch}", &tar_interceptor)
     end
     safe_system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
@@ -235,8 +242,11 @@ namespace "artifact" do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-    create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
-    create_archive_pack(license_details, "arm64", "linux", "darwin")
+    if ARCH == "x86_64"
+      create_archive_pack(license_details, "x86_64", "linux", "windows", "darwin")
+    else
+      create_archive_pack(license_details, "arm64", "linux", "darwin")
+    end
 
     #without JDK
     @bundles_jdk = false
@@ -250,8 +260,26 @@ namespace "artifact" do
     #with bundled JDKs
     @bundles_jdk = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-    create_archive_pack(license_details, "x86_64", "linux")
-    create_archive_pack(license_details, "arm64", "linux")
+    create_archive_pack(license_details, ARCH, "linux")
+    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+  end
+
+  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
+  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    #with bundled JDKs
+    @bundles_jdk = true
+    exclude_paths = default_exclude_paths + %w(
+      bin/logstash-plugin
+      bin/logstash-plugin.bat
+      bin/logstash-keystore
+      bin/logstash-keystore.bat
+    )
+    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
+    create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
+      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
+      # copy additional files into the tarball
+      puts "HELLO(#{dedicated_directory_tar})"
+    end
     safe_system("./gradlew bootstrap") # force the build of Logstash jars
   end
 
@@ -259,11 +287,8 @@ namespace "artifact" do
   task "rpm" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:rpm] building rpm package x86_64")
-    package_with_jdk("centos", "x86_64")
-
-    puts("[artifact:rpm] building rpm package arm64")
-    package_with_jdk("centos", "arm64")
+    puts("[artifact:rpm] building rpm package #{ARCH}")
+    package_with_jdk("centos", ARCH)
 
     #without JDKs
     @bundles_jdk = false
@@ -275,11 +300,8 @@ namespace "artifact" do
   task "rpm_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:rpm] building rpm OSS package x86_64")
-    package_with_jdk("centos", "x86_64", :oss)
-
-    puts("[artifact:rpm] building rpm OSS package arm64")
-    package_with_jdk("centos", "arm64", :oss)
+    puts("[artifact:rpm] building rpm OSS package #{ARCH}")
+    package_with_jdk("centos", ARCH, :oss)
 
     #without JDKs
     @bundles_jdk = false
@@ -291,11 +313,8 @@ namespace "artifact" do
   task "deb" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:deb] building deb package for x86_64")
-    package_with_jdk("ubuntu", "x86_64")
-
-    puts("[artifact:deb] building deb package for OS: linux arm64")
-    package_with_jdk("ubuntu", "arm64")
+    puts("[artifact:deb] building deb package for #{ARCH}")
+    package_with_jdk("ubuntu", ARCH)
 
     #without JDKs
     @bundles_jdk = false
@@ -307,11 +326,8 @@ namespace "artifact" do
   task "deb_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
-    puts("[artifact:deb_oss] building deb OSS package x86_64")
-    package_with_jdk("ubuntu", "x86_64", :oss)
-
-    puts("[artifact:deb_oss] building deb OSS package arm64")
-    package_with_jdk("ubuntu", "arm64", :oss)
+    puts("[artifact:deb_oss] building deb OSS package #{ARCH}")
+    package_with_jdk("ubuntu", ARCH, :oss)
 
     #without JDKs
     @bundles_jdk = false
@@ -353,6 +369,12 @@ namespace "artifact" do
     build_docker('oss')
   end
 
+  desc "Build observabilitySRE docker image"
+  task "docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata", "archives_docker_observabilitySRE"] do
+    puts("[docker_observabilitySRE] Building observabilitySRE docker image")
+    build_docker('observability-sre')
+  end
+
   desc "Build wolfi docker image"
   task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
     puts("[docker_wolfi] Building Wolfi docker image")
@@ -365,6 +387,7 @@ namespace "artifact" do
     build_dockerfile('oss')
     build_dockerfile('full')
     build_dockerfile('wolfi')
+    build_dockerfile('observability-sre')
     build_dockerfile('ironbank')
   end
 
@@ -374,11 +397,10 @@ namespace "artifact" do
     build_dockerfile('oss')
   end
 
-  namespace "dockerfile_oss" do
-    desc "Build Oss Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_oss"]  do
-      build_docker_from_dockerfiles('oss')
-    end
+  desc "Generate Dockerfile for observability-sre images"
+  task "dockerfile_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    puts("[dockerfiles] Building observability-sre Dockerfile")
+    build_dockerfile('observability-sre')
   end
 
   desc "Generate Dockerfile for full images"
@@ -387,24 +409,10 @@ namespace "artifact" do
     build_dockerfile('full')
   end
 
-  namespace "dockerfile_full" do
-    desc "Build Full Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_full"]  do
-      build_docker_from_dockerfiles('full')
-    end
-  end
-
   desc "Generate Dockerfile for wolfi images"
   task "dockerfile_wolfi" => ["prepare", "generate_build_metadata"] do
     puts("[dockerfiles] Building wolfi Dockerfiles")
     build_dockerfile('wolfi')
-  end
-
-  namespace "dockerfile_wolfi" do
-    desc "Build Wolfi Docker image from Dockerfile context files"
-    task "docker" => ["archives_docker", "dockerfile_wolfi"]  do
-      build_docker_from_dockerfiles('wolfi')
-    end
   end
 
   desc "Generate build context for ironbank"
@@ -425,29 +433,12 @@ namespace "artifact" do
       Rake::Task["artifact:docker_wolfi"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
+      Rake::Task["artifact:docker_observabilitySRE"].invoke
     end
 
     Rake::Task["artifact:deb_oss"].invoke
     Rake::Task["artifact:rpm_oss"].invoke
     Rake::Task["artifact:archives_oss"].invoke
-  end
-
-  task "build_docker_full" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker"].invoke
-    Rake::Task["artifact:dockerfile_full"].invoke
-    Rake::Task["artifact:dockerfile_full:docker"].invoke
-  end
-
-  task "build_docker_oss" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss"].invoke
-    Rake::Task["artifact:dockerfile_oss:docker"].invoke
-  end
-
-  task "build_docker_wolfi" => [:generate_build_metadata] do
-    Rake::Task["artifact:docker_wolfi"].invoke
-    Rake::Task["artifact:dockerfile_wolfi"].invoke
-    Rake::Task["artifact:dockerfile_wolfi:docker"].invoke
   end
 
   task "generate_build_metadata" do
@@ -527,6 +518,17 @@ namespace "artifact" do
     end
   end
 
+  task "prepare-observabilitySRE" do
+    if ENV['SKIP_PREPARE'] != "1"
+      Rake::Task['bootstrap'].invoke
+      Rake::Task['plugin:install-default'].invoke
+      Rake::Task['plugin:install'].invoke('logstash-filter-age')
+      Rake::Task['plugin:trim-for-observabilitySRE'].invoke
+      Rake::Task['plugin:install-fips-validation-plugin'].invoke
+      Rake::Task['artifact:clean-bundle-config'].invoke
+    end
+  end
+
   def ensure_logstash_version_constant_defined
     # we do not want this file required when rake (ruby) parses this file
     # only when there is a task executing, not at the very top of this file
@@ -535,7 +537,7 @@ namespace "artifact" do
     end
   end
 
-  def build_tar(license, tar_suffix = nil, exclude_paths = default_exclude_paths, platform: '')
+  def build_tar(license, tar_suffix = nil, exclude_paths = default_exclude_paths, platform: '', &tar_interceptor)
     require "zlib"
     require 'rubygems'
     require 'rubygems/package'
@@ -549,36 +551,82 @@ namespace "artifact" do
     puts("[artifact:tar] building #{tarpath}")
     gz = Zlib::GzipWriter.new(File.new(tarpath, "wb"), Zlib::BEST_COMPRESSION)
     Minitar::Writer.open(gz) do |tar|
+      dedicated_directory_tarball = DedicatedDirectoryTarball.new(tar, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}")
       files(exclude_paths).each do |path|
-        write_to_tar(tar, path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}")
+        dedicated_directory_tarball.write(path)
       end
 
       source_license_path = "licenses/#{license}.txt"
       fail("Missing source license: #{source_license_path}") unless File.exist?(source_license_path)
-      write_to_tar(tar, source_license_path, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/LICENSE.txt")
+      dedicated_directory_tarball.write(source_license_path, "LICENSE.txt")
 
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
-      path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
-      write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
+      dedicated_directory_tarball.write(BUILD_METADATA_FILE.path, metadata_file_path_in_tar)
+
+      # yield to the tar interceptor if we have one
+      yield(dedicated_directory_tarball) if block_given?
     end
     gz.close
   end
 
-  def write_to_tar(tar, path, path_in_tar)
-    stat = File.lstat(path)
-    if stat.directory?
-      tar.mkdir(path_in_tar, :mode => stat.mode)
-    elsif stat.symlink?
-      tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode)
-    else
-      tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size) do |io|
-        File.open(path, 'rb') do |fd|
-          chunk = nil
-          size = 0
-          size += io.write(chunk) while chunk = fd.read(16384)
-          if stat.size != size
-            raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+  ##
+  # A `DedicatedDirectoryTarball` writes everything into a dedicated
+  # directory that is known at init-time (e.g., NOT a tarbomb). All paths are
+  class DedicatedDirectoryTarball
+    def initialize(minitar_writer, dedicated_directory)
+      @minitar_writer = minitar_writer
+      @dedicated_directory = Pathname.new(dedicated_directory)
+    end
+
+    ##
+    # Write the contents of the file, directory, or symlink in `source_path` to
+    # the `destination_path` inside the tarball's dedicated directory.
+    # @param source_path [String]: the path to the file to copy, relative to PWD
+    # @param destination_path [String]: the path, relative to the tarball's dedicated directory, to
+    #                                   write to (default: `source_path`)
+    # @return [void]
+    def write(source_path, destination_path=source_path)
+      write_to_tar(@minitar_writer, source_path, expand(destination_path))
+
+      nil
+    end
+
+    def to_s
+      "#<#{self.class.name}:#{@dedicated_directory}>"
+    end
+
+    private
+
+    ##
+    # Expands the given `destination_path` relative to the dedicated directory,
+    # ensuring that the result is inside the dedicated directory
+    # @param destination_path [String]
+    # @return [String]
+    def expand(destination_path)
+      expanded_destination_path = @dedicated_directory / destination_path
+      fail("illegal destination path `#{destination_path}`") unless expanded_destination_path.descend.peek == @dedicated_directory
+
+      expanded_destination_path.to_s
+    end
+
+    def write_to_tar(tar, path, path_in_tar)
+      stat = File.lstat(path)
+      # in the off-chance that mtime returns nil we don't want nil to be interpreted as epoch, so fall back to Time.now
+      mtime = (stat.mtime || Time.now).to_i
+      if stat.directory?
+        tar.mkdir(path_in_tar, :mode => stat.mode, :mtime => mtime)
+      elsif stat.symlink?
+        tar.symlink(path_in_tar, File.readlink(path), :mode => stat.mode, :mtime => mtime)
+      else
+        tar.add_file_simple(path_in_tar, :mode => stat.mode, :size => stat.size, :mtime => mtime) do |io|
+          File.open(path, 'rb') do |fd|
+            chunk = nil
+            size = 0
+            size += io.write(chunk) while chunk = fd.read(16384)
+            if stat.size != size
+              raise "Failure to write the entire file (#{path}) to the tarball. Expected to write #{stat.size} bytes; actually write #{size}"
+            end
           end
         end
       end
@@ -827,24 +875,10 @@ namespace "artifact" do
       "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
       "RELEASE" => ENV["RELEASE"],
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
+      "BUILD_DATE" => BUILD_DATE
     }
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
-    end
-  end
-
-  def build_docker_from_dockerfiles(flavor)
-    env = {
-      "ARTIFACTS_DIR" => ::File.join(Dir.pwd, "build"),
-      "RELEASE" => ENV["RELEASE"],
-      "VERSION_QUALIFIER" => VERSION_QUALIFIER,
-      "BUILD_DATE" => BUILD_DATE,
-      "LOCAL_ARTIFACTS" => LOCAL_ARTIFACTS
-    }
-    Dir.chdir("docker") do |dir|
-      safe_system(env, "make build-from-dockerfiles_#{flavor}")
     end
   end
 

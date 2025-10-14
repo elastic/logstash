@@ -229,7 +229,6 @@ fi
         step_name_human = "Java Unit Test"
         step_key = f"{self.group_key}-java-unit-test"
         test_command = '''
-export ENABLE_SONARQUBE="false"
 ci/unit_tests.sh java
         '''
 

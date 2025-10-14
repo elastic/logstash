@@ -2,7 +2,7 @@ name: Backport to active branches
 
 on:
   pull_request_target:
-    types: [closed]
+    types: [closed, labeled]
     branches:
       - main
 
@@ -13,9 +13,13 @@ permissions:
 jobs:
   backport:
     # Only run if the PR was merged (not just closed) and has one of the backport labels
+    # or has been added afterwards.
     if: |
-      github.event.pull_request.merged == true && 
-      contains(toJSON(github.event.pull_request.labels.*.name), 'backport-active-')
+      github.event.pull_request.merged == true &&
+      (
+        (github.event.action == 'closed' && contains(toJSON(github.event.pull_request.labels.*.name), 'backport-active-')) ||
+        (github.event.action == 'labeled' && startsWith(github.event.label.name, 'backport-active-'))
+      )
     runs-on: ubuntu-latest
 
     steps:

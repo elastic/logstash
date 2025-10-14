@@ -1,0 +1,56 @@
+---
+name: Update java version file
+pipelineid: "logstash/jdk-version-updates-{{ requiredEnv "LOGSTASH_BRANCH" }}"
+
+scms:
+  default:
+    kind: github
+    spec:
+      user: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      username: '{{ requiredEnv "GITHUB_ACTOR" }}'
+      owner: '{{ .scm.owner }}'
+      repository: '{{ .scm.repository }}'
+      token: '{{ requiredEnv "GITHUB_TOKEN" }}'
+      branch: '{{ requiredEnv "LOGSTASH_BRANCH" }}'
+      commitusingapi: true
+      force: false
+
+sources:
+  jdk_major:
+    kind: yaml
+    spec:
+      file: "versions.yml"
+      key: "$.bundled_jdk.revision"
+    transformers:
+      - findsubmatch:
+          pattern: '^(\d+)\.\d+\.\d+$'
+          captureindex: 1
+
+  latest_jdk_version:
+    kind: json
+    spec:
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_{{ source "jdk_major" }}_linux'
+      key: 'version'
+
+  latest_jdk_build:
+    kind: json
+    spec:
+      file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_{{ source "jdk_major" }}_linux'
+      key: 'revision'
+
+targets:
+  update_jdk_revision:
+    name: "Update JDK revision"
+    kind: yaml
+    sourceid: latest_jdk_version
+    spec:
+      file: versions.yml
+      key: $.bundled_jdk.revision
+
+  update_jdk_build:
+    name: "Update JDK build"
+    kind: yaml
+    sourceid: latest_jdk_build
+    spec:
+      file: versions.yml
+      key: $.bundled_jdk.build

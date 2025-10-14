@@ -8,16 +8,16 @@ mapped_pages:
 ::::{admonition} macOS Gatekeeper warnings
 :class: important
 
-Apple’s rollout of stricter notarization requirements affected the notarization of the {{version}} {{ls}} artifacts. If macOS Catalina displays a dialog when you first run {{ls}}, you need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which was extracted:
+Apple’s rollout of stricter notarization requirements affected the notarization of the {{version.stack}} {{ls}} artifacts. If macOS Catalina displays a dialog when you first run {{ls}}, you need to take an action to allow it to run. To prevent Gatekeeper checks on the {{ls}} files, run the following command on the downloaded `.tar.gz` archive or the directory to which was extracted:
 
 ```sh
 xattr -d -r com.apple.quarantine <archive-or-directory>
 ```
 
-For example, if the `.tar.gz` file was extracted to the default logstash-{{version}} directory, the command is:
+For example, if the `.tar.gz` file was extracted to the default logstash-{{version.stack}} directory, the command is:
 
 ```sh subs=true
-xattr -d -r com.apple.quarantine logstash-{{version}}
+xattr -d -r com.apple.quarantine logstash-{{version.stack}}
 ```
 
 Alternatively, you can add a security override if a Gatekeeper popup appears by following the instructions in the *How to open an app that hasn’t been notarized or is from an unidentified developer* section of [Safely open apps on your Mac](https://support.apple.com/en-us/HT202491).

@@ -1,0 +1,57 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${ELASTICSEARCH_IMAGE_VERSION:-9.2.0-SNAPSHOT}
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+      - "ES_JAVA_OPTS=-Djava.security.properties=/usr/share/elasticsearch/config/fips_java.security"
+    ports:
+      - "9200:9200"
+    volumes:
+      - ./elasticsearch/config/${ELASTICSEARCH_CONFIG:-elasticsearch-fips.yml}:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - smoketest
+
+  logstash:
+    # We build the observability SRE image with the gradle task, but then tag it
+    # as this in CI to ensure we are getting the local one built from the PR and not from 
+    # the container registry
+    image: pr-built-observability-sre-image
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./certs:/usr/share/logstash/config/certs
+    ports:
+      - "5044:5044"
+    depends_on:
+      - elasticsearch
+    networks:
+      - smoketest
+
+  filebeat:
+    # The filebeat shipped with the elasticsearch-fips container is built for FIPS support
+    # There is no stand alone distribution. This uses the shipped version for testing. 
+    image: docker.elastic.co/cloud-release/elasticsearch-cloud-ess-fips:${FILEBEAT_IMAGE_VERSION:-9.2.0-SNAPSHOT}
+    container_name: fips_test_filebeat
+    working_dir: /usr/share/filebeat
+    entrypoint: ["/bin/bash", "-c"]
+    # Start Filebeat with /tmp for data (always writable)
+    command:
+      - |
+        exec /opt/filebeat/filebeat -e \
+          --strict.perms=false \
+          -c /usr/share/filebeat/filebeat.yml \
+          --path.data /tmp/filebeat_data
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./certs:/usr/share/filebeat/certs:ro
+      - ./test-logs:/test-logs:ro
+    depends_on:
+      - logstash
+    networks:
+      - smoketest
+
+networks:
+  smoketest:
+    driver: bridge

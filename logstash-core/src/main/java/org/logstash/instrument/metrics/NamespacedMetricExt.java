@@ -53,6 +53,11 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
         super(runtime, metaClass);
     }
 
+    @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier) {
+        return metric.register(context, namespaceName, key, metricSupplier);
+    }
+
     @JRubyMethod(visibility = Visibility.PRIVATE)
     public NamespacedMetricExt initialize(final ThreadContext context, final IRubyObject metric,
         final IRubyObject namespaceName) {
@@ -76,7 +81,10 @@ public final class NamespacedMetricExt extends AbstractNamespacedMetricExt {
     @Override
     protected IRubyObject getGauge(final ThreadContext context, final IRubyObject key,
         final IRubyObject value) {
-        return metric.gauge(context, namespaceName, key, value);
+        metric.gauge(context, namespaceName, key, value);
+        return collector(context).callMethod(
+                context, "get", new IRubyObject[]{namespaceName, key, MetricExt.GAUGE}
+        );
     }
 
     @Override

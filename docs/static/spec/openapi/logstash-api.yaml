@@ -134,6 +134,9 @@ paths:
                     - "G1 Young Generation"
                     - "G1 Concurrent GC"
                     - "G1 Old Generation"
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/os:
     get:
@@ -161,6 +164,9 @@ paths:
                   arch: "aarch64"
                   version: "15.3.1"
                   available_processors: 12
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/pipelines:
     get:
@@ -203,6 +209,9 @@ paths:
                     config_reload_automatic: false
                     config_reload_interval: 3
                     dead_letter_queue_enabled: false
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/pipelines/{pipeline_name}:
     get:
@@ -243,6 +252,9 @@ paths:
                     config_reload_automatic: false
                     config_reload_interval: 3
                     dead_letter_queue_enabled: false
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/plugins:
     get:
@@ -291,6 +303,9 @@ paths:
                         version: 3.0.2
                       - name: logstash-coded-edn
                         version: 3.0.2
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats:
     get:
@@ -504,6 +519,9 @@ paths:
                 os: { }
                 queue:
                   events_count: 0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/events:
     get:
@@ -531,6 +549,9 @@ paths:
                   filtered: 56
                   out: 56
                   queue_push_duration_in_millis: 2
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/flow:
     get:
@@ -586,6 +607,9 @@ paths:
                     last_5_minutes: 0.000246
                     last_15_minutes: 0.0002941
                     lifetime: 0.000242
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/geoip_download_manager:
     get:
@@ -630,7 +654,9 @@ paths:
                             description: "The last download status."
                             type: string
                             enum: [ "succeeded", "failed", "updating" ]
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/stats/jvm:
     get:
       summary: Get JVM statistics
@@ -690,7 +716,9 @@ paths:
                         collection_count: 0
                         collection_time_in_millis: 0
                   uptime_in_millis: 2512572
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/stats/os:
     get:
       summary: Get Cgroup statistics
@@ -759,6 +787,9 @@ paths:
                         number_of_elapsed_periods: 4157
                         number_of_times_throttled: 460
                         time_throttled_nanos: 581617440755
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/pipelines:
     get:
@@ -779,6 +810,7 @@ paths:
             - stats for each configured filter or output stage
             - info about config reload successes and failures (when [config reload](https://www.elastic.co/guide/en/logstash/current/reloading-config.html) is enabled)
             - info about the persistent queue (when [persistent queues](https://www.elastic.co/guide/en/logstash/current/persistent-queues.html) are enabled)
+            - metrics related to processed batch sizes. Includes the size in bytes and the number of events of batches processed in this pipeline. (when setting [pipeline.batch.metrics.sampling_mode](https://www.elastic.co/docs/reference/logstash/logstash-settings-file.html) is not `disabled`).
 
           content:
             application/json:
@@ -790,6 +822,15 @@ paths:
               example:
                 pipelines:
                   beats-es:
+                    batch:
+                      event_count:
+                        current: 78
+                        average:
+                          lifetime: 115
+                      byte_size:
+                        current: 32767
+                        average:
+                          lifetime: 14820
                     events:
                       duration_in_millis: 365495
                       in: 216610
@@ -1029,6 +1070,9 @@ paths:
                       batch_delay: 50
                     hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
                     ephemeral_id: 6a218b06-9655-4ddc-84e9-d5bfa51e5dc7
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/pipelines/{pipeline_name}:
     get:
@@ -1061,6 +1105,13 @@ paths:
                   value:
                     pipelines:
                       heartbeat-ruby-stdout:
+                        batch:
+                          event_count:
+                            average:
+                              lifetime: 115
+                          byte_size:
+                            average:
+                              lifetime: 14820
                         events:
                           queue_push_duration_in_millis: 159
                           in: 45
@@ -1317,9 +1368,9 @@ paths:
                           batch_delay: 50
                         hash: c11e0502ebf98956dffa371775fd1cb719f85f819ee166b770b3e982da1c999d
                         ephemeral_id: c91bff2b-c92b-45ac-8c74-04783f6cc1dd
-
-
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/process:
     get:
@@ -1352,7 +1403,9 @@ paths:
                     percent: 0
                     load_average:
                       1m: 6.06201171875
-
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_node/stats/reloads:
     get:
@@ -1377,6 +1430,9 @@ paths:
                 reloads:
                   successes: 0
                   failures: 0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/hot_threads:
     get:
       summary: Get hot threads
@@ -1464,6 +1520,9 @@ paths:
                             - "org.jruby.RubyClass.allocate(RubyClass.java:225)"
                             - "org.jruby.RubyClass.newInstance(RubyClass.java:856)"
                             - "org.jruby.RubyClass$INVOKER$i$newInstance.call(RubyClass$INVOKER$i$newInstance.gen)"
+      x-metaTags:
+        - content: Logstash
+          name: product_name
 
   /_health_report:
     get:
@@ -1666,6 +1725,10 @@ paths:
                                 worker_utilization:
                                   last_1_minute: 100.0
                                   last_5_minutes: 100.0
+      x-metaTags:
+        - content: Logstash
+          name: product_name
+
 components:
   parameters:
     pretty:
@@ -1702,11 +1765,9 @@ components:
           type: string
           description: A unique identifier for the ephemeral session of the Logstash instance.
         snapshot:
-          type: boolean
-          nullable: true
+          type: [boolean, 'null']
         status:
           $ref: '#/components/schemas/Status'
-
     PipelineSettings:
       type: object
       properties:
@@ -2217,19 +2278,16 @@ components:
           type: object
           properties:
             last_error:
-              type: string
-              nullable: true
+              type: [ string, 'null']
             successes:
               type: integer
               format: int64
             last_success_timestamp:
-              type: string
+              type: [ string, 'null']
               format: date-time
-              nullable: true
             last_failure_timestamp:
-              type: string
+              type: [ string, 'null']
               format: date-time
-              nullable: true
             failures:
               type: integer
               format: int64
@@ -2255,6 +2313,8 @@ components:
           oneOf:
             - type: object
               description: "The metrics of persisted queue."
+              required:
+                - type
               properties:
                 type:
                   type: string
@@ -2297,8 +2357,68 @@ components:
                 max_queue_size_in_bytes:
                   type: integer
                   format: int64
+                compression:
+                  type: object
+                  properties:
+                    encode:
+                      type: object
+                      properties:
+                        goal:
+                          - enum:
+                              - speed
+                              - balanced
+                              - size
+                        ratio:
+                          type: object
+                          description: the ratio of event size in bytes to its representation on disk
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                        spend:
+                          type: object
+                          description: the fraction of wall-clock time spent encoding events
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                    decode:
+                      type: object
+                      properties:
+                        ratio:
+                          type: object
+                          description: the ratio of event representation on disk to event size
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
+                        spend:
+                          type: object
+                          description: the fraction of wall-clock time spent decoding events
+                          properties:
+                            lifetime:
+                              oneOf:
+                                - type: number
+                                - enum:
+                                    - "Infinity"
+                                    - "NaN"
+                                    - "-Infinity"
             - type: object
               description: "The metrics of memory queue."
+              required:
+                - type
               properties:
                 type:
                   type: string

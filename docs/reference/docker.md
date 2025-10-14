@@ -18,27 +18,27 @@ pull` command against the Elastic Docker registry.
 
 
 ```sh subs=true
-docker pull {{docker-repo}}:{{stack-version}}
+docker pull {{docker-repo}}:{{version.stack}}
 ```
 
 Alternatively, you can download other Docker images that contain only features
-available under the Apache 2.0 license. To download the images, go to 
-[www.docker.elastic.co](https://www.docker.elastic.co). 
+available under the Apache 2.0 license. To download the images, go to
+[www.docker.elastic.co](https://www.docker.elastic.co).
 
 
 ## Verifying the image [_verifying_the_image]
 
 Although it's optional, we highly recommend verifying the signatures included with your downloaded Docker images to ensure that the images are valid.
 
-Elastic images are signed with [Cosign](https://docs.sigstore.dev/cosign/) which is part of the [Sigstore](https://www.sigstore.dev/) project. 
-Cosign supports container signing, verification, and storage in an OCI registry. 
+Elastic images are signed with [Cosign](https://docs.sigstore.dev/cosign/) which is part of the [Sigstore](https://www.sigstore.dev/) project.
+Cosign supports container signing, verification, and storage in an OCI registry.
 Install the appropriate Cosign application for your operating system.
 
-Run the following commands to verify the container image signature for {{ls}} v{{stack-version}}:
+Run the following commands to verify the container image signature for {{ls}} v{{version.stack}}:
 
 ```sh subs=true
 wget https://artifacts.elastic.co/cosign.pub <1>
-cosign verify --key cosign.pub {{docker-repo}}:{{stack-version}} <2>
+cosign verify --key cosign.pub {{docker-repo}}:{{version.stack}} <2>
 ```
 
 1. Download the Elastic public key to verify container signature
@@ -47,7 +47,7 @@ cosign verify --key cosign.pub {{docker-repo}}:{{stack-version}} <2>
 The command prints the check results and the signature payload in JSON format, for example:
 
 ```sh subs=true
-Verification for {{docker-repo}}:{{stack-version}} --
+Verification for {{docker-repo}}:{{version.stack}} --
 The following checks were performed on each of these signatures:
   - The cosign claims were validated
   - Existence of the claims in the transparency log was verified offline

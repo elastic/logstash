@@ -64,4 +64,4 @@ class ScenarioExecutor:
         if attempts == 0:
             raise Exception(f"{scenario_name} failed.")
         else:
-            print(f"Scenario `{scenario_name}` expectaion meets the health report stats.")
+            print(f"Scenario `{scenario_name}` expectation meets the health report stats.")

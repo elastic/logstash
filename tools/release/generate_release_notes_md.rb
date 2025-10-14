@@ -42,7 +42,7 @@ release_notes = IO.read(RELEASE_NOTES_PATH).split("\n")
 
 coming_tag_index = release_notes.find_index {|line| line.match(/^## #{current_release} \[logstash-#{current_release}-release-notes\]$/) }
 coming_tag_index += 1 if coming_tag_index
-release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/\[logstash-\d+-release-notes\]$/) }
+release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/^## .*\[logstash-.*-release-notes\]$/) }
 
 unless coming_tag_index
   report << "## #{current_release} [logstash-#{current_release}-release-notes]\n\n"

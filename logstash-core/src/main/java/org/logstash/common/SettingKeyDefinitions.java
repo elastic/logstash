@@ -28,6 +28,8 @@ public class SettingKeyDefinitions {
 
     public static final String PIPELINE_WORKERS = "pipeline.workers";
 
+    public static final String PIPELINE_BATCH_METRICS = "pipeline.batch.metrics.sampling_mode";
+
     public static final String PIPELINE_BATCH_SIZE = "pipeline.batch.size";
 
     public static final String PATH_QUEUE = "path.queue";
@@ -40,9 +42,9 @@ public class SettingKeyDefinitions {
 
     public static final String QUEUE_CHECKPOINT_ACKS = "queue.checkpoint.acks";
 
-    public static final String QUEUE_CHECKPOINT_INTERVAL = "queue.checkpoint.interval";
-
     public static final String QUEUE_CHECKPOINT_RETRY = "queue.checkpoint.retry";
 
     public static final String QUEUE_MAX_BYTES = "queue.max_bytes";
+
+    public static final String QUEUE_COMPRESSION = "queue.compression";
 }

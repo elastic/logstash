@@ -33,8 +33,8 @@ module LogStash::Util::SettingsHelper
   # The `path.settings` and `path.logs` can not be defined in "logstash/environment" since the `Environment::LOGSTASH_HOME` doesn't
   # exist unless launched via "bootstrap/environment"
   def self.pre_process
-    LogStash::SETTINGS.register(LogStash::Setting::SettingString.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
-    LogStash::SETTINGS.register(LogStash::Setting::SettingString.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
+    LogStash::SETTINGS.register(LogStash::Setting::StringSetting.new("path.settings", ::File.join(LogStash::Environment::LOGSTASH_HOME, "config")))
+    LogStash::SETTINGS.register(LogStash::Setting::StringSetting.new("path.logs", ::File.join(LogStash::Environment::LOGSTASH_HOME, "logs")))
   end
 
   # Ensure that any settings are re-calculated after loading yaml

@@ -18,12 +18,12 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::Integer do
+describe LogStash::Setting::IntegerSetting do
   subject { described_class.new("a number", nil, false) }
   describe "#set" do
     context "when giving a number which is not an integer" do
       it "should raise an exception" do
-        expect { subject.set(1.1) }.to raise_error(ArgumentError)
+        expect { subject.set(1.1) }.to raise_error(java.lang.IllegalArgumentException)
       end
     end
     context "when giving a number which is an integer" do

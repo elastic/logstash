@@ -211,6 +211,13 @@ class LogStash::Runner < Clamp::StrictCommand
     :attribute_name => "path.settings",
     :default => LogStash::SETTINGS.get_default("path.settings")
 
+  # API: PRIVATE (subject to change without notice)
+  option(['--setting', '-S'], "KEY=VALUE",
+         "individual setting",
+         :attribute_name => "SETTINGS_PASSTHROUGH",
+         :multivalued => true,
+         :hidden => true)
+
   ### DEPRECATED FLAGS ###
   deprecated_option ["--verbose"], :flag,
     I18n.t("logstash.runner.flag.verbose"),
@@ -269,6 +276,9 @@ class LogStash::Runner < Clamp::StrictCommand
     if setting("pipeline.buffer.type") != nil
       configure_pipeline_buffer_type
     end
+
+    deprecation_logger.deprecated "The setting `queue.checkpoint.interval` has no effect and will be removed from both " +
+          "logstash.yml and pipeline.yml in a future release." if @settings.set?("queue.checkpoint.interval")
 
     while (msg = LogStash::DeprecationMessage.instance.shift)
       deprecation_logger.deprecated msg

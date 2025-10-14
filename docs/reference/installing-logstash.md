@@ -8,7 +8,7 @@ mapped_pages:
 
 ## Installing from a Downloaded Binary [installing-binary]
 
-The {{ls}} binaries are available from [https://www.elastic.co/downloads](https://www.elastic.co/downloads/logstash). Download the Logstash installation file for your host environment—​TAR.GZ, DEB, ZIP, or RPM.
+The {{ls}} binaries are available from [https://www.elastic.co/downloads](https://www.elastic.co/downloads/logstash). Download the Logstash installation file for your host environment—TAR.GZ, DEB, ZIP, or RPM.
 
 Unpack the file. Do not install Logstash into a directory path that contains colon (:) characters.
 
@@ -59,15 +59,15 @@ You may need to install the `apt-transport-https` package on Debian before proce
 sudo apt-get install apt-transport-https
 ```
 
-Save the repository definition to  /etc/apt/sources.list.d/elastic-{{major-version}}.list:
+Save the repository definition to  /etc/apt/sources.list.d/elastic-{{version.stack | M.x}}.list:
 
 ```sh subs=true
-echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/{{major-version}}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{{major-version}}.list
+echo "deb [signed-by=/usr/share/keyrings/elastic-keyring.gpg] https://artifacts.elastic.co/packages/{{version.stack | M.x}}/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-{{version.stack | M.x}}.list
 ```
 
 ::::{warning}
 Use the `echo` method described above to add the Logstash repository.
-Do not use `add-apt-repository` as it will add a `deb-src` entry as well, but we do not provide a source package. 
+Do not use `add-apt-repository` as it will add a `deb-src` entry as well, but we do not provide a source package.
 If you have added the `deb-src` entry, you will see an error like the following:
 
 ```
@@ -100,9 +100,9 @@ Add the following in your `/etc/yum.repos.d/` directory
 in a file with a `.repo` suffix, for example `logstash.repo`
 
 ```sh subs=true
-[logstash-{{major-version}}]
-name=Elastic repository for {{major-version}} packages
-baseurl=https://artifacts.elastic.co/packages/{{major-version}}/yum
+[logstash-{{version.stack | M.x}}]
+name=Elastic repository for {{version.stack | M.x}} packages
+baseurl=https://artifacts.elastic.co/packages/{{version.stack | M.x}}/yum
 gpgcheck=1
 gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
 enabled=1

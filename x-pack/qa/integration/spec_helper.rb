@@ -9,3 +9,9 @@ require_relative "support/shared_examples"
 require_relative "support/elasticsearch/api/actions/update_password"
 require "json"
 require "json-schema"
+
+RSpec.configure do |c|
+  if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
+    c.filter_run_excluding skip_fips: true
+  end
+end

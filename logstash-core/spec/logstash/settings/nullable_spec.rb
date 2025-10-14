@@ -20,7 +20,7 @@ require "logstash/settings"
 
 describe LogStash::Setting::Nullable do
   let(:setting_name) { "this.that" }
-  let(:normal_setting) { LogStash::Setting::SettingString.new(setting_name, nil, false, possible_strings) }
+  let(:normal_setting) { LogStash::Setting::StringSetting.new(setting_name, nil, false, possible_strings) }
   let(:possible_strings) { [] } # empty means any string passes
 
   subject(:nullable_setting) { normal_setting.nullable }

@@ -19,30 +19,16 @@
 
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
-    }
 }
 
 plugins {
     id "jacoco"
-    id "org.sonarqube" version "4.3.0.3225"
 }
 
 apply plugin: 'jacoco'
-apply plugin: "org.sonarqube"
 
 repositories {
     mavenCentral()
-}
-
-sonarqube {
-    properties {
-        property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-    }
 }
 
 jacoco {
@@ -50,10 +36,7 @@ jacoco {
 }
 
 
-import org.yaml.snakeyaml.Yaml
-
-// fetch version from Logstash's main versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../versions.yml").text)
+def versionMap = gradle.ext.versions
 
 description = """Logstash Core Java"""
 
@@ -112,6 +95,8 @@ configurations.archives {
 
 tasks.register("javaTests", Test) {
     dependsOn ':bootstrap'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
     exclude '/org/logstash/RSpecTests.class'
     exclude '/org/logstash/config/ir/ConfigCompilerTest.class'
     exclude '/org/logstash/config/ir/CompiledPipelineTest.class'
@@ -145,6 +130,8 @@ javaTests.finalizedBy(jacocoTestReport)
 
 tasks.register("rubyTests", Test) {
     dependsOn compileTestJava
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
     inputs.files fileTree("${projectDir}/lib")
     inputs.files fileTree("${projectDir}/spec")
     systemProperty 'logstash.root.dir', projectDir.parent
@@ -180,10 +167,10 @@ tasks {
 artifacts {
     sources(sourcesJar) {
         // Weird Gradle quirk where type will be used for the extension, but only for sources
-        type 'jar'
+        type = 'jar'
     }
     javadoc(javadocJar) {
-        type 'javadoc'
+        type = 'javadoc'
     }
 }
 
@@ -244,6 +231,7 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.github.luben:zstd-jni:1.5.7-4"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'

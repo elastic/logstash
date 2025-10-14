@@ -16,10 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.yaml.snakeyaml.Yaml
 
-// fetch version from Logstash's main versions.yml file
-def versionMap = (Map) (new Yaml()).load(new File("$projectDir/../../versions.yml").text)
+def versionMap = gradle.ext.versions
 
 description = """Logstash End to End Benchmarking Utility"""
 version = versionMap['logstash-core']
@@ -36,7 +34,6 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath group: 'org.yaml', name: 'snakeyaml', version: "${snakeYamlVersion}"
     classpath "com.github.johnrengelman:shadow:${shadowGradlePluginVersion}"
   }
 }
@@ -50,7 +47,7 @@ dependencies {
   implementation 'net.sf.jopt-simple:jopt-simple:5.0.4'
   implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
   implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.26.1'
-  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.14.0'
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
   implementation group: 'commons-codec', name: 'commons-codec', version: '1.17.0' // transitively required by httpclient
 
   implementation group: 'commons-io', name: 'commons-io', version: '2.16.1'

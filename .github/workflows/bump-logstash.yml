@@ -1,0 +1,31 @@
+name: bump-logstash-version
+
+on:
+  workflow_dispatch:
+    inputs:
+      logstash_version:
+        description: 'Logstash version (example: 9.1.4)'
+        required: true
+        type: string
+      logstash_branch:
+        description: 'Logstash branch (example: 9.1)'
+        required: true
+        type: string
+
+jobs:
+  bump:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: elastic/oblt-actions/updatecli/run@v1
+        with:
+          command: apply --config .ci/updatecli/bump-logstash-version.yml --values .ci/updatecli/values.d/scm.yml
+          version-file: .updatecli-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: "${{ github.event.inputs.logstash_branch }}"
+          LOGSTASH_VERSION: "${{ github.event.inputs.logstash_version }}"

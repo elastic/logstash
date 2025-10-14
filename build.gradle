@@ -19,18 +19,14 @@
 
 buildscript {
     ext {
-        snakeYamlVersion = '2.2'
         shadowGradlePluginVersion = '8.1.1'
     }
 
     repositories {
         mavenCentral()
         maven {
-            url 'https://plugins.gradle.org/m2/'
+            url = 'https://plugins.gradle.org/m2/'
         }
-    }
-    dependencies {
-        classpath "org.yaml:snakeyaml:${snakeYamlVersion}"
     }
 }
 
@@ -39,10 +35,11 @@ plugins {
     id "com.dorongold.task-tree" version "2.1.0"
 }
 
+apply from: "${projectDir}/x-pack/distributions/internal/observabilitySRE/build-ext.gradle"
+
 apply plugin: 'de.undercouch.download'
 apply from: "rubyUtils.gradle"
 
-import org.yaml.snakeyaml.Yaml
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
@@ -59,8 +56,8 @@ allprojects {
   apply plugin: 'java-library'
 
   java {
-      sourceCompatibility = JavaVersion.VERSION_11
-      targetCompatibility = JavaVersion.VERSION_11
+      sourceCompatibility = JavaVersion.VERSION_17
+      targetCompatibility = JavaVersion.VERSION_17
   }
 
   tasks.withType(JavaCompile).configureEach {
@@ -106,16 +103,16 @@ allprojects {
     testLogging {
       // set options for log level LIFECYCLE
       events "passed", "skipped", "failed", "standardOut"
-      showExceptions true
-      exceptionFormat "full"
-      showCauses true
-      showStackTraces true
-      enableAssertions false
+      showExceptions = true
+      exceptionFormat = "full"
+      showCauses = true
+      showStackTraces = true
+      enableAssertions = false
 
       // set options for log level DEBUG and INFO
       debug {
         events "started", "passed", "skipped", "failed", "standardOut", "standardError"
-        exceptionFormat "full"
+        exceptionFormat = "full"
       }
       info.events = debug.events
       info.exceptionFormat = debug.exceptionFormat
@@ -136,7 +133,7 @@ subprojects {
     repositories {
         mavenCentral()
         maven {
-            url 'https://plugins.gradle.org/m2/'
+            url = 'https://plugins.gradle.org/m2/'
         }
     }
 
@@ -168,8 +165,9 @@ tasks.register("configureArchitecture") {
 
 tasks.register("configureArtifactInfo") {
     dependsOn configureArchitecture
-    description "Set the url to download stack artifacts for select stack version"
+    description = "Set the url to download stack artifacts for select stack version"
 
+    def projectRef = project
     doLast {
         def splitVersion = version.split('\\.')
         int major = splitVersion[0].toInteger()
@@ -192,28 +190,28 @@ tasks.register("configureArtifactInfo") {
             }
         }
 
-        project.ext.set("artifactApiVersion", qualifiedVersion)
+        projectRef.ext.set("artifactApiVersion", qualifiedVersion)
     }
 }
 
 tasks.register("markAliasDefinitions", SignAliasDefinitions) {
-    description "Create an hashes aliases file from original aliases yml definition"
+    description = "Create an hashes aliases file from original aliases yml definition"
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed.yml")
 }
 
 tasks.register("markTestAliasDefinitions", SignAliasDefinitions) {
-    description "Create an hashes aliases file for testing aliases yml definition"
+    description = "Create an hashes aliases file for testing aliases yml definition"
     stage SignAliasDefinitions.Stage.test
     hashedFile = project.file("${project.buildDir}/plugin_aliases_hashed_test.yml")
 }
 
 tasks.register("copyPluginAlias", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn = [copyPluginAlias_ruby, copyPluginAlias_java]
 }
 
 tasks.register("copyPluginAlias_ruby", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
@@ -225,7 +223,7 @@ tasks.register("copyPluginAlias_ruby", Copy) {
 }
 
 tasks.register("copyPluginAlias_java", Copy) {
-    description "Copy the marked plugin_aliases.yml file to destination folders"
+    description = "Copy the marked plugin_aliases.yml file to destination folders"
     dependsOn "markAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed.yml")
@@ -237,12 +235,12 @@ tasks.register("copyPluginAlias_java", Copy) {
 }
 
 tasks.register("copyPluginTestAlias") {
-    description "Copy the marked test plugin_aliases.yml file to destination folders"
+    description = "Copy the marked test plugin_aliases.yml file to destination folders"
     dependsOn = [copyPluginTestAlias_ruby, copyPluginTestAlias_java]
 }
 
 tasks.register("copyPluginTestAlias_ruby", Copy) {
-    description "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
+    description = "Copy the marked test plugin_aliases.yml file into Ruby's plugin_manager specs"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file(markTestAliasDefinitions.hashedFile)
@@ -254,7 +252,7 @@ tasks.register("copyPluginTestAlias_ruby", Copy) {
 }
 
 tasks.register("copyPluginTestAlias_java", Copy) {
-    description "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
+    description = "Copy the marked test plugin_aliases.yml file into logstash-core's test resources"
     dependsOn "markTestAliasDefinitions"
 
     inputs.file("${buildDir}/plugin_aliases_hashed_test.yml")
@@ -319,6 +317,34 @@ tasks.register("compileGrammar") {
     dependsOn bootstrap
     doLast {
         rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
+tasks.register("artifactDockerObservabilitySRE") {
+    dependsOn bootstrap
+    inputs.files fileTree("${projectDir}/rakelib")
+    inputs.files fileTree("${projectDir}/bin")
+    inputs.files fileTree("${projectDir}/config")
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+    inputs.files fileTree("${projectDir}/logstash-core/lib")
+    inputs.files fileTree("${projectDir}/logstash-core/src")
+    inputs.files fileTree("${projectDir}/x-pack")
+    outputs.files fileTree("${buildDir}") {
+        include "Dockerfile-observability-sre"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-linux-*.tar.gz"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-docker-build-context.tar.gz"
+        include "plugin_aliases_hashed.yml"
+        include "jdk-*-linux-*.tar.gz"
+    }
+    doFirst {
+        if (!fedrampHighMode) {
+            logger.error("NOT in Fedramp High mode. Aborting.")
+            throw new GradleException("cannot build docker artifact for observabilitySRE without `-PfedrampHighMode=true`")
+        }
+    }
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
     }
 }
 
@@ -422,30 +448,39 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat") {
-    dependsOn  configureArtifactInfo
-    description "Download Filebeat Snapshot for current branch version: ${version}"
+tasks.register("prepareFilebeatDownload") {
+    dependsOn configureArtifactInfo
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        projectRef.ext.set("unpackedFilebeatName", downloadedFilebeatName)
+
+        def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
+        projectRef.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+    }
+}
+
+tasks.register("downloadFilebeat", Download) {
+    dependsOn prepareFilebeatDownload
+    description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    // Use lazy configuration to get values after prepareFilebeatDownload runs
+    src { projectRef.ext.filebeatSnapshotUrl }
+    dest { new File(projectRef.ext.filebeatDownloadLocation) }
+
+    onlyIfNewer true
+    retries 3
+
     doLast {
-        download {
-            String beatsVersion = project.ext.get("artifactApiVersion")
-            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
-            project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
-
-            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-            src project.ext.filebeatSnapshotUrl
-            onlyIfNewer true
-
-            dest new File(project.ext.filebeatDownloadLocation)
-            retries 3
-        }
-        System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.filebeatDownloadLocation}"
     }
 }
 
@@ -470,11 +505,12 @@ tasks.register("copyFilebeat") {
 tasks.register("checkEsSHA") {
     dependsOn  configureArtifactInfo
 
-    description "Download ES version remote's fingerprint file"
+    description = "Download ES version remote's fingerprint file"
 
+    def projectRef = project
     doLast {
-        String esVersion = project.ext.get("artifactApiVersion")
-        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
         String remoteSHA
 
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
@@ -504,30 +540,39 @@ tasks.register("checkEsSHA") {
     }
 }
 
-tasks.register("downloadEs") {
-    dependsOn  = [configureArtifactInfo, checkEsSHA]
+tasks.register("prepareEsDownload") {
+    dependsOn configureArtifactInfo
 
-    description "Download ES Snapshot for current branch version: ${version}"
+    def projectRef = project
+    doLast {
+        String esVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
+
+        projectRef.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
+
+        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
+        projectRef.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
+    }
+}
+
+tasks.register("downloadEs", Download) {
+    dependsOn  = [prepareEsDownload, checkEsSHA]
+
+    description = "Download ES Snapshot for current branch version: ${version}"
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    src { projectRef.ext.elasticsearchSnapshotURL }
+    dest { new File(projectRef.ext.elasticsearchDownloadLocation) }
+
+    onlyIfNewer true
+    overwrite false
+    retries 3
+
     doLast {
-        download {
-            String esVersion = project.ext.get("artifactApiVersion")
-            String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
-
-            project.ext.set("unpackedElasticsearchName", "elasticsearch-${esVersion}")
-
-            def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-            project.ext.set("elasticsearchSnapshotURL", System.getenv("ELASTICSEARCH_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("elasticsearchDownloadLocation", "${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-
-            src project.ext.elasticsearchSnapshotURL
-            onlyIfNewer true
-            retries 3
-            dest new File(project.ext.elasticsearchDownloadLocation)
-        }
-
-        System.out.println "Downloaded to ${project.ext.elasticsearchDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.elasticsearchDownloadLocation}"
     }
 }
 
@@ -584,7 +629,7 @@ tasks.register("generateLicenseReport", JavaExec) {
     String noticePath = "NOTICE.txt"
 
     classpath = project.files([jarFile])
-    main = "org.logstash.dependencies.Main"
+    mainClass = "org.logstash.dependencies.Main"
     args licenseReportInputCSV,
       project.getBuildDir().toString() + "/licenseReportFolders.txt",
       licenseReportOutputCSV, noticePath
@@ -680,10 +725,10 @@ class JDKDetails {
     final String unpackedJdkName
     private String arch
 
-    JDKDetails(versionYml, osName, jdkArch) {
-        revision = versionYml.bundled_jdk.revision
-        build = versionYml.bundled_jdk.build
-        vendor = versionYml.bundled_jdk.vendor
+    JDKDetails(bundledJdk, osName, jdkArch) {
+        revision = bundledJdk.revision
+        build = bundledJdk.build
+        vendor = bundledJdk.vendor
         major = revision.split('\\.').first() as int
         this.osName = osName
 
@@ -701,23 +746,6 @@ class JDKDetails {
 
     String createDownloadUrl() {
         return createElasticCatalogDownloadUrl()
-    }
-
-    // throws an error iff local version in versions.yml doesn't match the latest from JVM catalog.
-    void checkLocalVersionMatchingLatest() {
-        // retrieve the metadata from remote
-        def url = "https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_${major}_${osName}"
-        def catalogMetadataUrl = URI.create(url).toURL()
-        def catalogConnection = catalogMetadataUrl.openConnection()
-        catalogConnection.requestMethod = 'GET'
-        assert catalogConnection.responseCode == 200
-
-        def metadataRetrieved = catalogConnection.content.text
-        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-
-        if (catalogMetadata.version != revision || catalogMetadata.revision != build) {
-            throw new GradleException("Found new jdk version. Please update version.yml to ${catalogMetadata.version} build ${catalogMetadata.revision}")
-        }
     }
 
     private String createElasticCatalogDownloadUrl() {
@@ -799,11 +827,11 @@ tasks.register("downloadJdk", Download) {
     project.ext.set("versionFound", true)
     String osName = selectOsType()
 
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
     String jdkArch = selectArch()
-    def jdkDetails = new JDKDetails(versionYml, osName, jdkArch)
 
-    description "Download JDK ${jdkDetails.major}, OS: ${osName}"
+    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
+
+    description = "Download JDK ${jdkDetails.major}, OS: ${osName}"
 
     // find url of build artifact
     String artifactApiUrl = jdkDetails.createDownloadUrl()
@@ -827,15 +855,6 @@ tasks.register("downloadJdk", Download) {
         mkdir project.ext.jdkBundlingDirectory
         println "Downloaded to ${project.ext.jdkDownloadLocation}"
     }
-}
-
-tasks.register("checkNewJdkVersion") {
-    def versionYml = new Yaml().load(new File("$projectDir/versions.yml").text)
-
-    // use Linux x86_64 as canary platform
-    def jdkDetails = new JDKDetails(versionYml, "linux", "x86_64")
-    // throws Gradle exception if local and remote doesn't match
-    jdkDetails.checkLocalVersionMatchingLatest()
 }
 
 tasks.register("deleteLocalJdk", Delete) {

@@ -45,6 +45,13 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def initialize(pipeline_config, namespaced_metric = nil, agent = nil)
     @logger = self.logger
     super pipeline_config, namespaced_metric, @logger, agent
+
+    Util::with_logging_thread_context('pipeline.id' => pipeline_id) do
+      finish_initialization
+    end
+  end
+
+  def finish_initialization
     open_queue
 
     @worker_threads = []
@@ -126,9 +133,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def start
     # Since we start lets assume that the metric namespace is cleared
     # this is useful in the context of pipeline reloading
-    collect_stats
-    collect_dlq_stats
-    initialize_flow_metrics
+    Util::with_logging_thread_context("pipeline.id" => pipeline_id) do
+      collect_stats
+      collect_dlq_stats
+      initialize_flow_metrics
+    end
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
@@ -137,9 +146,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
     @thread = Thread.new do
       error_log_params = ->(e) {
-        default_logging_keys(
-          :exception => e,
-          :backtrace => e.backtrace,
+        exception_logging_keys(e,
           "pipeline.sources" => pipeline_source_details
         )
       }
@@ -260,6 +267,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
+      batch_metric_sampling = settings.get("pipeline.batch.metrics.sampling_mode")
 
       max_inflight = batch_size * pipeline_workers
 
@@ -280,6 +288,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
         "pipeline.max_inflight" => max_inflight,
+        "batch_metric_sampling" => batch_metric_sampling,
         "pipeline.sources" => pipeline_source_details)
       @logger.info("Starting pipeline", pipeline_log_params)
 
@@ -312,7 +321,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
             @crash_detected.make_true
             @logger.error(
               "Pipeline worker error, the pipeline will be stopped",
-              default_logging_keys(:error => e.cause.message, :exception => e.cause.class, :backtrace => e.cause.backtrace)
+              exception_logging_keys(e.cause)
             )
           end
         end
@@ -422,21 +431,14 @@ module LogStash; class JavaPipeline < AbstractPipeline
       if plugin.stop?
         @logger.debug(
           "Input plugin raised exception during shutdown, ignoring it.",
-           default_logging_keys(
-             :plugin => plugin.class.config_name,
-             :exception => e.message,
-             :backtrace => e.backtrace))
+           exception_logging_keys(e, :plugin => plugin.class.config_name))
         return
       end
 
       # otherwise, report error and restart
       @logger.error(I18n.t(
         "logstash.pipeline.worker-error-debug",
-        **default_logging_keys(
-          :plugin => plugin.inspect,
-          :error => e.message,
-          :exception => e.class,
-          :stacktrace => e.backtrace.join("\n"))))
+        **exception_logging_keys(e, :plugin => plugin.inspect)))
 
       # Assuming the failure that caused this exception is transient,
       # let's sleep for a bit and execute #run again
@@ -580,10 +582,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     rescue => e
       @logger.warn(
         "plugin raised exception while closing, ignoring",
-        default_logging_keys(
-          :plugin => plugin.class.config_name,
-          :exception => e.message,
-          :backtrace => e.backtrace))
+        exception_logging_keys(e, :plugin => plugin.class.config_name))
     end
   end
 
@@ -607,12 +606,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
     rescue => e
       @logger.error(
         "Worker loop initialization error",
-        default_logging_keys(:error => e.message, :exception => e.class, :stacktrace => e.backtrace.join("\n")))
+        exception_logging_keys(e))
       nil
     rescue Java::java.lang.StackOverflowError => se
       @logger.error(
         "Stack overflow error while compiling Pipeline. Please increase thread stack size using -Xss",
-        default_logging_keys())
+        exception_logging_keys(se))
       nil
     end
   end
@@ -628,6 +627,42 @@ module LogStash; class JavaPipeline < AbstractPipeline
     keys = {:pipeline_id => pipeline_id}.merge other_keys
     keys[:thread] ||= thread.inspect if thread
     keys
+  end
+
+  def exception_logging_keys(active_exception = $!, other_keys = {})
+    base = active_exception ? unwind_cause_chain(active_exception) : {}
+    default_logging_keys(base.merge(other_keys))
+  end
+
+  ##
+  # Yields once per exception in the provided exception's cause chain
+  # @param exception [Exception]
+  # @yield_param [Exception]
+  def cause_chain(exception, &block)
+    return enum_for(:cause_chain, exception) unless block_given?
+
+    current = exception
+    while !current.nil?
+      yield current
+      cause = current.cause
+      current = (cause == current ? nil : cause)
+    end
+  end
+
+  ##
+  # unwinds the provided exception to create a deeply-nested structure
+  # representing the exception and its cause chain
+  # @param [Exception] exception
+  # @return [Hash{Symbol=>[String|Hash]}]
+  def unwind_cause_chain(exception)
+    cause_chain(exception).reverse_each.reduce(nil) do |cause, exception|
+      {
+        :exception   => exception.class.name,
+        :error       => exception.message,
+        :stacktrace  => exception.backtrace.join("\n"),
+        :cause       => cause,
+      }.compact
+    end
   end
 
   def preserve_event_order?(pipeline_workers)

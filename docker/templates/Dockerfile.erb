@@ -1,24 +1,34 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
-<%# image_flavor 'full', oss', 'wolfi' -%>
+<%# image_flavor 'full', oss', 'wolfi', 'observability-sre' -%>
 <% if local_artifacts == 'false' -%>
   <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
 <% else -%>
   <%   url_root = 'http://localhost:8000' -%>
 <% end -%>
 <% if image_flavor == 'oss' -%>
-  <%   tarball = "logstash-oss-#{elastic_version}-linux-#{arch}.tar.gz" -%>
+  <%   tarball = "logstash-oss-#{elastic_version}-linux-${arch}.tar.gz" -%>
   <%   license = 'Apache 2.0' -%>
-<% else -%>
+<% elsif image_flavor == 'full' %>
+  <%   tarball = "logstash-#{elastic_version}-linux-${arch}.tar.gz" -%>
+  <%   license = 'Elastic License' -%>
+<% elsif image_flavor == 'observability-sre' -%><%# 'observability-sre' needs arch to be injected from the outside -%>
+  <%   tarball = "logstash-observability-sre-#{elastic_version}-linux-#{arch}.tar.gz" -%>
+  <%   license = 'Elastic License' -%>
+<% else -%><%# 'wolfi' needs arch to be injected from the outside -%>
   <%   tarball = "logstash-#{elastic_version}-linux-#{arch}.tar.gz" -%>
   <%   license = 'Elastic License' -%>
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
   <%   base_image = 'redhat/ubi9-minimal:latest' -%>
-  <%   go_image = 'golang:1.23' -%>
+  <%   go_image = 'golang:1.25' -%>
   <%   package_manager = 'microdnf' -%>
+<% elsif image_flavor == 'observability-sre' -%>
+  <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
+  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
+  <%   package_manager = 'apk' -%>
 <% else -%>
   <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
-  <%   go_image = 'docker.elastic.co/wolfi/go:1.23' -%>
+  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
   <%   package_manager = 'apk' -%>
 <% end -%>
 <%   locale = 'C.UTF-8' -%>
@@ -43,21 +53,15 @@ ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 WORKDIR /usr/share
 
 # Install packages
-RUN for iter in {1..10}; do \
+RUN \
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%= package_manager %> update -y && \
   <%= package_manager %> install -y procps findutils tar gzip && \
   <%= package_manager %> install -y openssl && \
   <%= package_manager %> install -y which shadow-utils && \
-  <%= package_manager %> clean all && \
-<% else -%><%# 'wolfi' -%>
-  <%= package_manager %> add --no-cache curl bash openssl && \
+  <%= package_manager %> clean all
+<% else -%><%# 'wolfi', 'observability-sre' -%>
+  <%= package_manager %> add --no-cache java-cacerts curl bash openssl
 <% end -%>
-  exit_code=0 && break || \
-  exit_code=$? && echo "packaging error: retry $iter in 10s" && \
-  <%= package_manager %> clean all && sleep 10; \
-  done; \
-  (exit $exit_code)
 
 # Provide a non-root user to run the process
 # Add Logstash itself and set permissions
@@ -67,7 +71,7 @@ RUN groupadd --gid 1000 logstash && \
   --home "/usr/share/logstash" \
   --no-create-home \
   logstash && \
-<% else -%><%# 'wolfi' -%>
+<% else -%><%# 'wolfi', 'observability-sre' -%>
 RUN addgroup -g 1000 logstash && \
   adduser -u 1000 -G logstash \
   --disabled-password \
@@ -77,8 +81,12 @@ RUN addgroup -g 1000 logstash && \
   --no-create-home \
   logstash && \
 <% end -%>
-  curl -Lo - <%= url_root %>/<%= tarball %> | \
-  tar zxf - -C /usr/share && \
+<% if image_flavor == 'full' || image_flavor == 'oss' -%>
+  arch="$(rpm --query --queryformat='%{ARCH}' rpm)" && \
+<% end -%>
+  curl --fail --location --output logstash.tar.gz <%= url_root %>/<%= tarball %> && \
+  tar -zxf logstash.tar.gz -C /usr/share && \
+  rm logstash.tar.gz && \
   mv /usr/share/logstash-<%= elastic_version %> /usr/share/logstash && \
   chown -R logstash:root /usr/share/logstash && \
   chmod -R g=u /usr/share/logstash && \
@@ -92,11 +100,49 @@ COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2ya
 COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
 <% if image_flavor == 'oss' -%>
 COPY --chown=logstash:root config/logstash-oss.yml /usr/share/logstash/config/logstash.yml
-<% else -%><%# 'full', 'wolfi' -%>
+<% else -%><%# 'full', 'wolfi', 'observability-sre' -%>
 COPY --chown=logstash:root config/logstash-full.yml /usr/share/logstash/config/logstash.yml
 <% end -%>
 COPY --chown=logstash:root pipeline/default.conf /usr/share/logstash/pipeline/logstash.conf
 COPY --chmod=0755 bin/docker-entrypoint /usr/local/bin/
+
+<% if image_flavor == 'observability-sre' -%>
+<%# Add FIPS configuration for observability-sre image flavor %>
+
+RUN mkdir -p /usr/share/logstash/config/security
+
+# Copy JVM security configuration files from the unpacked tarball
+RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/security/java.security /usr/share/logstash/config/security/ && \
+    chown --recursive logstash:root /usr/share/logstash/config/security/
+
+# Copy additional JVM options and append to existing jvm.options
+RUN cp /usr/share/logstash/x-pack/distributions/internal/observabilitySRE/config/fips-jvm.options /tmp/fips-jvm.options && \
+    chown logstash:root /tmp/fips-jvm.options
+# echos are for ensuring that the file ends with a newline
+RUN ( \
+      echo ""; echo ""; \
+      cat /tmp/fips-jvm.options \
+    ) >> /usr/share/logstash/config/jvm.options && \
+    rm /tmp/fips-jvm.options
+
+# list the classes provided by the fips BC
+RUN find /usr/share/logstash -name *.jar | grep lib
+
+# Update certs installed from java-cacerts package
+RUN ln -sf /etc/ssl/certs/java/cacerts /usr/share/logstash/jdk/lib/security/cacerts
+
+# Convert JKS to BCFKS for truststore
+RUN /usr/share/logstash/jdk/bin/keytool -importkeystore \
+    -srckeystore /usr/share/logstash/jdk/lib/security/cacerts \
+    -destkeystore /usr/share/logstash/config/security/cacerts.bcfks \
+    -srcstoretype jks \
+    -deststoretype bcfks \
+    -providerpath /usr/share/logstash/logstash-core/lib/jars/bc-fips-2.0.0.jar \
+    -provider org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider \
+    -deststorepass changeit \
+    -srcstorepass changeit \
+    -noprompt
+<% end -%>
 
 WORKDIR /usr/share/logstash
 

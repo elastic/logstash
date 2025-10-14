@@ -20,6 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -28,6 +29,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.plugins.NamespacedMetricImpl;
 
 @JRubyClass(name = "AbstractNamespacedMetric")
 public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
@@ -51,6 +53,11 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     @JRubyMethod
     public IRubyObject timer(final ThreadContext context, final IRubyObject key) {
         return getTimer(context, key);
+    }
+
+    @JRubyMethod
+    public IRubyObject register(final ThreadContext context, final IRubyObject key, final Block metricSupplier) {
+        return doRegister(context, key, metricSupplier);
     }
 
     @JRubyMethod(required = 1, optional = 1)
@@ -103,6 +110,13 @@ public abstract class AbstractNamespacedMetricExt extends AbstractMetricExt {
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
+
+    @Override
+    public Metric asApiMetric() {
+        return new NamespacedMetricImpl(getRuntime().getCurrentContext(), this);
+    }
+
+    protected abstract IRubyObject doRegister(ThreadContext context, IRubyObject key, Block metricSupplier);
 
     public abstract AbstractMetricExt getMetric();
 }

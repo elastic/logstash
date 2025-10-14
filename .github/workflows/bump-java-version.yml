@@ -1,0 +1,25 @@
+name: bump-java-version
+
+on:
+  schedule:
+    # Run weekly on Mondays at midnight UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+
+jobs:
+  bump:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: elastic/oblt-actions/updatecli/run@v1
+        with:
+          command: apply --config .ci/updatecli/bump-java-version.yml --values .ci/updatecli/values.d/scm.yml
+          version-file: .updatecli-version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LOGSTASH_BRANCH: ${{ github.ref_name }}

@@ -1,0 +1,16 @@
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /test-logs/*.log
+  id: test-logs-input
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  ssl:
+    enabled: true
+    certificate_authorities: ["/usr/share/filebeat/certs/ca.crt"]
+    certificate: "/usr/share/filebeat/certs/filebeat.crt"
+    key: "/usr/share/filebeat/certs/filebeat.key"
+    verification_mode: "full"
+    supported_protocols: ["TLSv1.2"]

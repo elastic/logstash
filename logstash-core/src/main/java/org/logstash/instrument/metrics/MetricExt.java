@@ -44,15 +44,15 @@ public final class MetricExt extends AbstractSimpleMetricExt {
 
     private static final long serialVersionUID = 1L;
 
-    public static final RubySymbol COUNTER = RubyUtil.RUBY.newSymbol("counter");
+    // These two metric type symbols need to be package-private because used in NamespacedMetricExt
+    static final RubySymbol COUNTER = RubyUtil.RUBY.newSymbol("counter");
+    static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
 
     private static final RubyFixnum ONE = RubyUtil.RUBY.newFixnum(1);
 
     private static final RubySymbol INCREMENT = RubyUtil.RUBY.newSymbol("increment");
 
     private static final RubySymbol DECREMENT = RubyUtil.RUBY.newSymbol("decrement");
-
-    private static final RubySymbol GAUGE = RubyUtil.RUBY.newSymbol("gauge");
     private static final RubySymbol TIMER = RubyUtil.RUBY.newSymbol("timer");
     private static final RubySymbol SET = RubyUtil.RUBY.newSymbol("set");
     private static final RubySymbol GET = RubyUtil.RUBY.newSymbol("get");
@@ -151,6 +151,12 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         return collector.callMethod(context,
                 "get", new IRubyObject[]{normalizeNamespace(namespace), key, TIMER}
                 );
+    }
+
+    @Override
+    protected IRubyObject doRegister(ThreadContext context, IRubyObject namespace, IRubyObject key, Block supplier) {
+        MetricExt.validateKey(context, null, key);
+        return collector.callMethod(context, "register", new IRubyObject[]{normalizeNamespace(namespace), key}, supplier);
     }
 
     @Override

@@ -31,11 +31,8 @@ module LogStash module Instrument
     SNAPSHOT_ROTATION_TIME_SECS = 1 # seconds
     SNAPSHOT_ROTATION_TIMEOUT_INTERVAL_SECS = 10 * 60 # seconds
 
-    attr_accessor :agent
-
     def initialize
       @metric_store = MetricStore.new
-      @agent = nil
     end
 
     # The metric library will call this unique interface
@@ -48,9 +45,16 @@ module LogStash module Instrument
     def push(namespaces_path, key, type, *metric_type_params)
       begin
         metric_proxy = get(namespaces_path, key, type)
-        return metric_proxy.execute(*metric_type_params) if metric_proxy.respond_to?(:execute)
-
-        logger.error("Collector: Cannot record metric action #{type}@#{metric_type_params.join('/')} on <#{metric_proxy}> at path #{namespaces_path.join('/')}/#{key}")
+        _, metric_arg = metric_type_params
+        case type
+        when :gauge
+          return metric_proxy.set(metric_arg)
+        when :counter
+          return metric_proxy.increment if metric_arg.nil?
+          return metric_proxy.increment(metric_arg)
+        else
+          logger.error("Collector: Cannot record metric action #{type}@#{metric_type_params.join('/')} on <#{metric_proxy}> at path #{namespaces_path.join('/')}/#{key}")
+        end
       rescue MetricStore::NamespacesExpectedError => e
         logger.error("Collector: Cannot record metric", :exception => e)
       rescue NameError => e
@@ -68,6 +72,12 @@ module LogStash module Instrument
       @metric_store.fetch_or_store(namespaces_path, key) do
         initialize_metric(type, namespaces_path, key)
       end
+    end
+
+    ##
+    # @return [Metric]: the metric that exists after registration
+    def register(namespaces_path, key, &metric_supplier)
+      @metric_store.fetch_or_store(namespaces_path, key, &metric_supplier)
     end
 
     # test injection, see MetricExtFactory

@@ -15,9 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# work around https://github.com/jruby/jruby/issues/8579
-require_relative './patches/jar_dependencies'
-
 module LogStash
   module Bundler
     extend self
@@ -43,16 +40,43 @@ module LogStash
         end
       end
 
-      # This patch makes rubygems fetch directly from the remote servers
-      # the dependencies he need and might not have downloaded in a local
-      # repository. This basically enabled the offline feature to work as
-      # we remove the gems from the vendor directory before packaging.
+      # When preparing offline packs or generally when installing gems, bundler wants to have `.gem` files 
+      # cached. We ship a default set of gems that inclue all of the unpacked code. During dependency
+      # resolution bundler still wants to ensure`.gem` files exist. This patch updates two paths in bundler where 
+      # it natively it would *fail* when a `.gem` file is not found. Instead of failing we force the cache to be
+      # updated with a `.gem` file. This preserves the original patch behavior. There is still an open question of
+      # *how* to potentially update the files we vendor or the way we set up bundler to avoid carrying this patch. 
+      # As of JRuby 9.4.13.0 rubygems (bundler) is at 3.6.3. There have been some releases and changes in bundler code
+      # since then but it does not seem to have changed the way it handles gem files. Obviously carrying a patch like this
+      # carries a maintenance burden so prioritizing a packaging solution may be 
       ::Bundler::Source::Rubygems.module_exec do
-        def cached_gem(spec)
-          cached_built_in_gem(spec)
+        def fetch_gem_if_possible(spec, previous_spec = nil)
+          path = if spec.remote
+            fetch_gem(spec, previous_spec)
+          else
+            cached_gem(spec)
+          end
+          # BEGIN-PATCH: inject built-in gems
+          path || cached_built_in_gem(spec)
+          # END-PATCH
+        end
+
+        def cache(spec, custom_path = nil)
+          cached_path = ::Bundler.settings[:cache_all_platforms] ? fetch_gem_if_possible(spec) : cached_gem(spec)
+          # BEGIN-PATCH: inject built-in gems
+          cached_path ||= cached_built_in_gem(spec)
+          # END-PATCH
+          raise GemNotFound, "Missing gem file '#{spec.file_name}'." unless cached_path
+          return if File.dirname(cached_path) == ::Bundler.app_cache.to_s
+          ::Bundler.ui.info "  * #{File.basename(cached_path)}"
+          FileUtils.cp(cached_path, ::Bundler.app_cache(custom_path))
+        rescue Errno::EACCES => e
+          ::Bundler.ui.debug(e)
+          raise InstallError, e.message
         end
       end
     end
+
 
     # prepare bundler's environment variables, but do not invoke ::Bundler::setup
     def prepare(options = {})
@@ -165,7 +189,7 @@ module LogStash
           begin
             execute_bundler(options)
             break
-          rescue ::Bundler::VersionConflict => e
+          rescue ::Bundler::SolveFailure => e
             $stderr.puts("Plugin version conflict, aborting")
             raise(e)
           rescue ::Bundler::GemNotFound => e
@@ -202,7 +226,7 @@ module LogStash
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform})
+        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
       end
       output
     end

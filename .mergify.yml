@@ -68,13 +68,8 @@ pull_request_rules:
       - label=backport-8.16
     actions:
       backport:
-        assignees:
-          - "{{ author }}"
         branches:
           - "8.16"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to 8.17 branch
     conditions:
@@ -83,13 +78,8 @@ pull_request_rules:
       - label=backport-8.17
     actions:
       backport:
-        assignees:
-          - "{{ author }}"
         branches:
           - "8.17"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to 8.18 branch
     conditions:
@@ -98,13 +88,8 @@ pull_request_rules:
       - label=backport-8.18
     actions:
       backport:
-        assignees:
-          - "{{ author }}"
         branches:
           - "8.18"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
 
   - name: backport patches to 8.19 branch
     conditions:
@@ -123,10 +108,27 @@ pull_request_rules:
       - label=backport-9.0
     actions:
       backport:
-        assignees:
-          - "{{ author }}"
         branches:
           - "9.0"
-        labels:
-          - "backport"
-        title: "[{{ destination_branch }}] {{ title }} (backport #{{ number }})"
+
+  - name: backport patches to 9.1 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-9.1
+    actions:
+      backport:
+        branches:
+          - "9.1"
+
+  - name: forwardport docs changes to main
+    conditions:
+      - merged
+      - label=docs
+      - files~=^docs/
+      - base~=^\d+\.
+    actions:
+      backport:
+        branches:
+          - main
+        title: "[{{ destination_branch }}] (forwardport #{{ number }}) {{ title }}"

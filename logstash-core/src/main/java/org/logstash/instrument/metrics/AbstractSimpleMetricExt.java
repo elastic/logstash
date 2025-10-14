@@ -20,6 +20,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
@@ -27,6 +28,7 @@ import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.plugins.RootMetricImpl;
 
 @JRubyClass(name = "AbstractSimpleMetric")
 public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
@@ -35,6 +37,11 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
 
     AbstractSimpleMetricExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
+    }
+
+    @Override
+    public Metric asApiMetric() {
+        return new RootMetricImpl(getRuntime().getCurrentContext(), this);
     }
 
     @JRubyMethod(required = 2, optional = 1)
@@ -74,6 +81,11 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
         return doTime(context, namespace, key, block);
     }
 
+    @JRubyMethod(name = "register")
+    public IRubyObject register(final ThreadContext context, final IRubyObject namespace, final IRubyObject key, final Block metricSupplier) {
+        return doRegister(context, namespace, key, metricSupplier);
+    }
+
     protected abstract IRubyObject doDecrement(ThreadContext context, IRubyObject[] args);
 
     protected abstract IRubyObject doIncrement(ThreadContext context, IRubyObject[] args);
@@ -88,4 +100,6 @@ public abstract class AbstractSimpleMetricExt extends AbstractMetricExt {
 
     protected abstract IRubyObject doTime(ThreadContext context, IRubyObject namespace,
         IRubyObject key, Block block);
+
+    protected abstract IRubyObject doRegister(ThreadContext context, IRubyObject namespace, IRubyObject key, Block metricSupplier);
 }

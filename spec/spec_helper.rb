@@ -63,7 +63,7 @@ RSpec.configure do |c|
   Flores::RSpec.configure(c)
   c.include LogStashHelper
   c.extend LogStashHelper
-
+  c.filter_run_excluding skip_fips: true if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
   if ENV['COVERAGE']
     c.after(:suite) do
       SimpleCov.result.format!
