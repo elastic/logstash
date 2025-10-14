@@ -741,7 +741,7 @@ GEM
     raabro (1.4.0)
     racc (1.8.1-java)
     rack (3.2.3)
-    rack-protection (4.1.1)
+    rack-protection (4.2.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
       rack (>= 3.0.0, < 4)
