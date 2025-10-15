@@ -74,4 +74,14 @@ class MonitoringAPI
     resp = Manticore.put("http://localhost:#{@port}/_node/logging/reset", {headers: {"Content-Type" => "application/json"}}).body
     JSON.parse(resp)
   end
+
+  def health_report
+    resp = Manticore.get("http://localhost:#{@port}/_health_report").body
+    JSON.parse(resp)
+  end
+
+  def node_plugins
+    resp = Manticore.get("http://localhost:#{@port}/_node/plugins").body
+    JSON.parse(resp)
+  end
 end
