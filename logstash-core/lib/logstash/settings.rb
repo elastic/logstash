@@ -44,8 +44,6 @@ module LogStash
     PIPELINE_SETTINGS_WHITE_LIST = [
       "config.debug",
       "config.support_escapes",
-      "config.reload.automatic",
-      "config.reload.interval",
       "config.string",
       "dead_letter_queue.enable",
       "dead_letter_queue.flush_interval",
@@ -76,6 +74,12 @@ module LogStash
       "queue.max_events",
       "queue.page_capacity",
       "queue.type",
+    ]
+
+    # These are deprecated as pipeline override settings, they still exist as process-level settings
+    PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL = [
+      "config.reload.automatic",
+      "config.reload.interval",
     ]
 
     def initialize
@@ -154,12 +158,11 @@ module LogStash
     alias_method :set, :set_value
 
     def to_hash
-      hash = {}
-      @settings.each do |name, setting|
-        next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias)
+      @settings.each_with_object({}) do |(name, setting), hash|
+        next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias) ||
+          PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.include?(setting.name)
         hash[name] = setting.value
       end
-      hash
     end
 
     def merge(hash, graceful = false)
@@ -169,7 +172,10 @@ module LogStash
 
     def merge_pipeline_settings(hash, graceful = false)
       hash.each do |key, _|
-        unless PIPELINE_SETTINGS_WHITE_LIST.include?(key)
+        if PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.include?(key)
+          deprecation_logger.deprecated("Config option (#{key}) is deprecated as a pipeline override setting, please only set it at the process level.")
+          hash.delete(key)
+        elsif !PIPELINE_SETTINGS_WHITE_LIST.include?(key)
           raise ArgumentError.new("Only pipeline related settings are expected. Received \"#{key}\". Allowed settings: #{PIPELINE_SETTINGS_WHITE_LIST}")
         end
       end

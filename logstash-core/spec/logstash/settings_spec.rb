@@ -381,4 +381,43 @@ describe LogStash::Settings do
                                                     ])
     end
   end
+
+  describe "deprecated pipeline override settings" do
+
+    let(:subject) { described_class.new }
+
+    context '#merge_pipeline_settings' do
+
+      described_class::PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.each do |setting|
+
+        context "when the setting (#{setting}) is set" do
+
+          let(:deprecation_logger) { subject.deprecation_logger }
+
+          it "a warning is logged" do
+            expect(deprecation_logger).to receive(:deprecated).with(
+              a_string_matching("Config option (#{setting}) is deprecated as a pipeline override setting, please only set it at the process level.")
+            )
+            subject.merge_pipeline_settings(setting => double('setting_value'))
+          end
+
+          context 'other settings are also set' do
+
+            before(:each) do
+              subject.register(LogStash::Setting::BooleanSetting.new("config.debug", true))
+              subject.merge_pipeline_settings(setting => double('setting_value'))
+            end
+
+            it "it does not set (#{setting})" do
+              expect{ subject.get_setting(setting) }.to raise_error(ArgumentError)
+            end
+
+            it "it leaves other settings intact" do
+              expect(subject.get_setting("config.debug").value).to be(true)
+            end
+          end
+        end
+      end
+    end
+  end
 end
