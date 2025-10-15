@@ -21,6 +21,164 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.0 [logstash-9.2.0-release-notes]
+
+### Features and enhancements [logstash-9.2.0-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.2.0
+
+=== Logstash Commits between 9.2 and 9.1.5
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.5..9.2"
+
+3cf4222b4 - (HEAD -> 9.2, origin/9.2) Adds integration test for the `_health_report` and `_node/plugins` APIs. (#18306) (#18311) (8 hours ago) <mergify[bot]>
+d32268785 - Update rack to 3.2.3 (#18300) (31 hours ago) <Mashhur>
+da313459d - Doc: Update docs for testing for boolean fields (#18271) (#18292) (8 days ago) <mergify[bot]>
+bf6cf7b88 - Update rack rubygem dep to 3.2.2 (#18293) (8 days ago) <Cas Donoghue>
+6b7e1cc01 - Remove redundant testing and circular dependency from docker acceptance testing (#18181) (#18255) (8 days ago) <mergify[bot]>
+06a09d01e - Downgrade gradle to coninute testing on windows server 2016 (#18263) (#18278) (8 days ago) <mergify[bot]>
+ee9a0ec3a - ci: remove sonarqube (#18273) (#18286) (9 days ago) <mergify[bot]>
+98c54cf44 - [9.2] (backport #18247) Release notes for 9.0.8 (#18269) (9 days ago) <mergify[bot]>
+f333f73ba - Release notes for 9.1.5 (#18248) (#18266) (9 days ago) <mergify[bot]>
+e9df375de - Ensure docs gen inserts at correct place in file (#18250) (#18259) (9 days ago) <mergify[bot]>
+587d2560b - Take up 9.2 version of elastic_integration plugin (#18261) (13 days ago) <Cas Donoghue>
+bcdc991e6 - Add lockfile for new 9.2 branch (#18242) (2 weeks ago) <Cas Donoghue>
+4934f0839 - (origin/mergify/bp/main/pr-18240) Fix heading (#18237) (2 weeks ago) <Karen Metts>
+0f8c7ba06 - Documentation for batch's event metrics (current and average) (#18017) (2 weeks ago) <Andrea Selva>
+425478cd6 - metrics: add gauge with compression goal if enabled (#18230) (2 weeks ago) <Rye Biesemeyer>
+1b3b3eeb0 - Pq compression user metrics (#18227) (2 weeks ago) <Rye Biesemeyer>
+88b853aff - (origin/mergify/bp/main/pr-18168) metric: improve accuracy of timer metric under contention (#18219) (2 weeks ago) <Rye Biesemeyer>
+75eca8475 - metrics: add support for user-defined metrics (#18218) (2 weeks ago) <Rye Biesemeyer>
+a1522385b - PQ: Add support for event-level compression using ZStandard (ZSTD) (#18121) (2 weeks ago) <Rye Biesemeyer>
+0f9b2fe46 - [DOCS] Fix substitution variables (#18224) (3 weeks ago) <Lisa Cawley>
+46bf75eed - (origin/mergify/bp/main/pr-18223) [Docs] Add hyphen to the pipeline ID restriction description. (#18216) (3 weeks ago) <Mashhur>
+fdeb6a0b9 - Implements current batch event count and byte size metrics (#18160) (3 weeks ago) <Andrea Selva>
+2fab5f469 - Replace buildkite jdk version check w/GH action (#17945) (3 weeks ago) <Cas Donoghue>
+ecaf1fdd4 - Cover the warn password policy usage of ValidatedPassword setting (#18203) (3 weeks ago) <Andrea Selva>
+ad200323b - GH action for updating logstash version (#18035) (3 weeks ago) <Cas Donoghue>
+132f917ea - Update logstash_project_board.yml (#18116) (3 weeks ago) <Rob Bavey>
+e6e7f87a8 - Remove uncommented line erroneously committed. (#18204) (3 weeks ago) <Andrea Selva>
+d29021800 - Measure average batch byte size and event count (#18000) (3 weeks ago) <Andrea Selva>
+105eecca7 - (origin/mergify/bp/main/pr-18021) Revert "Moved Ruby Password setting to Java implementation (#18183)" (#18199) (3 weeks ago) <Cas Donoghue>
+c2851a958 - bk: update junit-annotate to run faster (#18193) (3 weeks ago) <Copilot>
+ad42337ee - Bump anchore/scan-action from 6 to 7 in the github-actions group across 1 directory (#18195) (3 weeks ago) <dependabot[bot]>
+f3212484f - PQ settings refactor: propagate builder upward (#18180) (4 weeks ago) <Rye Biesemeyer>
+8228fe5dc - Release notes for 9.1.4 (#18159) (#18190) (4 weeks ago) <mergify[bot]>
+6aa265dcd - Moved Ruby Password setting to Java implementation (#18183) (4 weeks ago) <Andrea Selva>
+cd71a4b18 - Rename Java settings classes to <Name>Setting (#18171) (4 weeks ago) <Andrea Selva>
+08db1d19f - Adds a required type tag to the open API spec of Logstash APIs. (#18169) (4 weeks ago) <Mashhur>
+25c2551c8 - Release notes for 9.0.7 (#18158) (#18178) (4 weeks ago) <mergify[bot]>
+b8bc4d8de - Move Port and PortRange Ruby settings to Java (#17964) (4 weeks ago) <Andrea Selva>
+089361de5 - [main] (backport #18028) Release notes for 9.0.6 (#18173) (4 weeks ago) <mergify[bot]>
+041e895c5 - Release notes for 9.1.3 (#18029) (#18174) (4 weeks ago) <mergify[bot]>
+809ed0029 - Doc: Refine serverless and hosted content (#18166) (4 weeks ago) <Karen Metts>
+feabee287 - (origin/mergify/bp/main/pr-18165) Doc: Add Logstash-to-serverless page (#18034) (4 weeks ago) <Karen Metts>
+556366d87 - Fix race condition with version bump action (#18150) (5 weeks ago) <Cas Donoghue>
+096f1a381 - Downgrade jruby to 9.4.13.0 (#18136) (5 weeks ago) <Cas Donoghue>
+1e127fdda - Fix aarch64 acceptance tests (#18135) (5 weeks ago) <Cas Donoghue>
+e16200a63 - Bump the github-actions group across 1 directory with 2 updates (#18133) (5 weeks ago) <dependabot[bot]>
+6a51c82e4 - test: explicitly load ascii fixture as ascii, do line-oriented parsing (#18124) (6 weeks ago) <Rye Biesemeyer>
+fe4a735c6 - Update JRuby version to 9.4.14.0 (#18080) (6 weeks ago) <João Duarte>
+ba0787817 - pq: activate stringref extension for more-compact PQ representation (#17849) (6 weeks ago) <Rye Biesemeyer>
+ef97a87d8 - Ensure any file object in a tar archive has an mtime (#18113) (6 weeks ago) <Cas Donoghue>
+d2baf9fbc - github-actions: support backport labels after being merged (#18102) (6 weeks ago) <Victor Martinez>
+d9b95bfd8 - Preserve mtime explicitly when creating tar artifacts (#18091) (6 weeks ago) <Cas Donoghue>
+23d06e665 - Doc: Provide accurate post-geoip lookup example (#18092) (6 weeks ago) <Karen Metts>
+5fb563473 - Fix gauge type correctly in pipelines metrics. (#18082) (6 weeks ago) <Mashhur>
+f2621b00e - Ensure acceptance test artifacts are being built for correct arch (#18079) (6 weeks ago) <Cas Donoghue>
+398a66cbe - upgrade golang to 1.25 (#18083) (6 weeks ago) <João Duarte>
+386869a69 - make gradle files ready for gradle 10 (#17947) (6 weeks ago) <João Duarte>
+895cfa5b1 - (origin/mergify/bp/main/pr-18077) Add Mergify rule for forwardporting documentation changes (#17874) (7 weeks ago) <Felipe Cotti>
+e3055d14e - replace placeholder URLs (#18070) (7 weeks ago) <Colleen McGinnis>
+f2e494843 - Build artifacts only for those that match host arch (#17995) (7 weeks ago) <Cas Donoghue>
+e676b59ac - Start observabilitySRE container builds immediately on DRA (#18016) (7 weeks ago) <Cas Donoghue>
+91a9527e5 - Stop waiting on ALL steps before staring junit annotation (#18049) (7 weeks ago) <Cas Donoghue>
+ef41e83f7 - Add stub workflow file to iterate on (#17993) (7 weeks ago) <Cas Donoghue>
+19d991416 - Split integration tests into more parts (#18036) (7 weeks ago) <Cas Donoghue>
+5f7a6cdc1 - fixing thin and zero width white space characters in docs (#18019) (8 weeks ago) <George Wallace>
+34a7c6769 - [DOCS] Fix nullable type linting error in OpenAPI document (#18018) (8 weeks ago) <Lisa Cawley>
+75abd8a42 - [main] (backport #17781) Harmonize observability sre acceptance (#18001) (8 weeks ago) <mergify[bot]>
+bc4645cee - adding x-metatags to openapi spec (#17854) (8 weeks ago) <George Wallace>
+26027a1d8 - add pipeline id to thread context during init/start (#17944) (8 weeks ago) <Rye Biesemeyer>
+50fc6458d - Bump actions/checkout in the github-actions group across 1 directory (#17996) (8 weeks ago) <dependabot[bot]>
+7d4f476e6 - Update deploying-scaling-logstash.md (#17999) (#18002) (8 weeks ago) <mergify[bot]>
+4512e57e6 - Put back the full start requirement which can be managed according to scenario requirement. (#17994) (9 weeks ago) <Mashhur>
+74c7ec266 - [health-report CI] Print Logstash logs when pipeline faces an issue. (#17991) (9 weeks ago) <Mashhur>
+22f6b69f4 - Preserve coerce behavior from Ruby impl (#17992) (9 weeks ago) <Cas Donoghue>
+332355d68 - Start all exhastive tests in parallel (#17978) (9 weeks ago) <Cas Donoghue>
+aed28eb32 - [docs] Add `applies_to` labels for 9.1.0 (#17864) (9 weeks ago) <Colleen McGinnis>
+371d49537 - Remove release note (#17966) (#17972) (9 weeks ago) <Cas Donoghue>
+64e64625e - Add fips config to jvm.options for observabilitySRE (#17958) (9 weeks ago) <Cas Donoghue>
+fbb65ee34 - Include the prune filter for observabilitySRE image (#17957) (9 weeks ago) <Cas Donoghue>
+aabf84ba4 - Convert Ruby Integer and PositiveInteger settings classes to Java (#17460) (9 weeks ago) <Andrea Selva>
+5cad4367d - Replace reference to Elasticsearch Services with Elastic Cloud Hosted (#17946) (9 weeks ago) <Visha Angelova>
+0b4360183 - Update source/target to Java17 (#17943) (10 weeks ago) <Rye Biesemeyer>
+95a0466d8 - Move logstash release information to `.ci` (#17924) (10 weeks ago) <Cas Donoghue>
+9b9790cd1 - pipeline logging: add cause chain when logging (#16677) (10 weeks ago) <Rye Biesemeyer>
+90887906f - Update creating-logstash-pipeline.md (#17926) (#17927) (2 months ago) <mergify[bot]>
+3b13df1d6 - cli: add hidden command-line flag for overriding settings (#17582) (2 months ago) <Rye Biesemeyer>
+f164c2a5a - Release notes for 9.1.1 (#17914) (#17923) (2 months ago) <mergify[bot]>
+1d565c0af - Removal of Ruby bridge classes for Gauge and Counter (#17858) (2 months ago) <Andrea Selva>
+6b8d0903c - Log *what* components trigger a grype scan (#17905) (2 months ago) <Cas Donoghue>
+97306065f - Update versions.yml (#17906) (2 months ago) <Andrea Selva>
+f7dd12a59 - Removed agent field from collector, because not used (#17893) (2 months ago) <Andrea Selva>
+a1a263bcf - Update release matrix based on 9.1.0 and 8.19.0 releases (#17868) (3 months ago) <Cas Donoghue>
+bc7b74dd3 - [main] (backport #17875) Make sure FIPS comments belong in the platform-sre Dockerfile (#17898) (3 months ago) <mergify[bot]>
+b430599c5 - make sure versions.yml is only read once into gradle.ext (#17865) (3 months ago) <João Duarte>
+3565db81b - Update monkey patch for clamp to 1.3.3 (#17879) (3 months ago) <Cas Donoghue>
+591437c94 - Standardization of FIPS Java config with ES (#17839) (3 months ago) <Cas Donoghue>
+6d7d45ce3 - Fail pipeline when observabilitySRE fails to build (#17872) (3 months ago) <Cas Donoghue>
+58af5e5bb - Release notes for 9.1.0 (#17822) (#17869) (3 months ago) <mergify[bot]>
+882021815 - use centrally maintained version variables (#17857) (3 months ago) <Colleen McGinnis>
+f1823d8fa - bump ci release version (#17844) (3 months ago) <kaisecheng>
+caf91cf17 - Restore cgi pin (#17774) (3 months ago) <Cas Donoghue>
+198adcf84 - [CI] fix benchmark docker name (#17827) (3 months ago) <kaisecheng>
+f4c195ce6 - [CI] Remove UBI docker acceptance test (#17828) (3 months ago) <kaisecheng>
+9583f0436 - Run tests with jruby 9.4.13.0 (#17798) (3 months ago) <Cas Donoghue>
+207a69751 - Forwardport observability-sre internal distro support from 8.19 to main (#17785) (3 months ago) <Rye Biesemeyer>
+521af3bd4 - Obsolete PQ setting queue.checkpoint.interval  (#17759) (3 months ago) <kaisecheng>
+d03f2ce33 - Release notes for 9.0.4 (#17784) (#17818) (3 months ago) <mergify[bot]>
+aaff3e91b - update commons-lang3 lib (#17812) (3 months ago) <kaisecheng>
+95866a9fd - Pin jar-dependencies to match jruby 9.4.13.0 (#17787) (3 months ago) <Cas Donoghue>
+9c5092d24 - update ubi9 ironbank base image to 9.6 (#17802) (3 months ago) <João Duarte>
+8e73c680f - update dockerfile template based on feedback from dockerhub (#17794) (3 months ago) <João Duarte>
+ddd519cc8 - pq: reduce read contention when caught up (#17765) (3 months ago) <Rye Biesemeyer>
+95624abd9 - Fix allow_superuser comment (#17775) (3 months ago) <kaisecheng>
+ba76f9414 - Bump the github-actions group across 1 directory with 3 updates (#17678) (3 months ago) <dependabot[bot]>
+e9a3b7edb - Moved dependabot reviewers to codeowners (#17745) (3 months ago) <Olga Naydyonock>
+9721b074c -  Update mergify with new 9.1 branch (#17740) (3 months ago) <Cas Donoghue>
+d474b34e3 - mergify: remove duplicated config and use the default ones for the backport labels (#17742) (4 months ago) <Victor Martinez>
+ed4022057 - Implement BufferedTokenizer to return an iterable that can verify size limit for every token emitted (#17229) (4 months ago) <Andrea Selva>
+443e52728 - Fix deprecation warning with latest jruby/bundler (#17766) (4 months ago) <Cas Donoghue>
+05da1bbc8 - Doc: Update getting started file to test publishing (#17762) (4 months ago) <Karen Metts>
+5f54c0cc0 - Standardize image artifact name (#17727) (4 months ago) <kaisecheng>
+b23882479 - Doc: Add clarification about API key format for Logstash (#17688) (4 months ago) <Visha Angelova>
+792382765 - Bump to 9.2.0 for main (#17739) (4 months ago) <Cas Donoghue>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.1.5..9.2 *.release"
+Changed plugin versions:
+logstash-filter-elastic_integration: 9.1.1 -> 9.2.0
+logstash-filter-translate: 3.4.3 -> 3.5.0
+logstash-integration-snmp: 4.0.7 -> 4.1.0
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.2.0-changes]
+
+**Elastic_integration Filter - 9.2.0**
+
+404: Not Found
+
+**Translate Filter - 3.5.0**
+
+* Introduce opt-in "yaml_load_strategy => streaming" to stream parse YAML dictionaries [#106](https://github.com/logstash-plugins/logstash-filter-translate/pull/106)
+
+**Snmp Integration - 4.1.0**
+
+* Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
+
+
 ## 9.1.5 [logstash-9.1.5-release-notes]
 
 No user-facing changes in Logstash core.
