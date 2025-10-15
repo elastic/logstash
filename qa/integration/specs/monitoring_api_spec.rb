@@ -205,6 +205,20 @@ describe "Test Monitoring API" do
     end
   end
 
+  it 'retrieves health report' do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # health_report can fail if the subsystem isn't ready
+      result = logstash_service.monitoring_api.health_report rescue nil
+      expect(result).not_to be_nil
+      expect(result).to be_a(Hash)
+      expect(result).to include("status")
+      expect(result["status"]).to match(/^(green|yellow|red)$/)
+    end
+  end
+
   shared_examples "pipeline metrics" do
     # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
     let(:settings_overrides) do
