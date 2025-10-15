@@ -66,14 +66,15 @@ module LogStash
         begin
           fetcher.fetch_config(es_version, pipeline_ids, client)
         rescue LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError => e
-          # es-output 12.0.2 throws 404 as error, but we want to handle it as empty config
-          return [] if e.response_code == 404
+          # es-output 12.0.2 throws 404 as an error, returned cache if it exists, otherwise none
+          if e.response_code == 404
+            return @cached_pipelines || []
+          end
           raise e
         end
 
-        fetcher.get_pipeline_ids.collect do |pid|
-          get_pipeline(pid, fetcher)
-        end.compact
+        @cached_pipelines = fetcher.get_pipeline_ids.collect { |pid| get_pipeline(pid, fetcher) }.compact
+        return @cached_pipelines
       end
 
       def get_es_version
