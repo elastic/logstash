@@ -159,8 +159,7 @@ module LogStash
 
     def to_hash
       @settings.each_with_object({}) do |(name, setting), hash|
-        next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias) ||
-          DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.include?(setting.name)
+        next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias)
         hash[name] = setting.value
       end
     end
