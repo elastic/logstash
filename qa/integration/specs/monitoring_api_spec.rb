@@ -219,6 +219,28 @@ describe "Test Monitoring API" do
     end
   end
 
+  it 'retrieves node plugins information' do
+    logstash_service = @fixture.get_service("logstash")
+    logstash_service.start_with_stdin
+    logstash_service.wait_for_logstash
+    Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+      # node_plugins can fail if the subsystem isn't ready
+      result = logstash_service.monitoring_api.node_plugins rescue nil
+      expect(result).not_to be_nil
+      expect(result).to be_a(Hash)
+      expect(result).to include("plugins")
+      plugins = result["plugins"]
+      expect(plugins).to be_a(Array)
+      expect(plugins.size).to be > 0
+      # verify plugin structure and that stdin plugin is present
+      stdin_plugin = plugins.find { |p| p["name"] == "logstash-input-stdin" }
+      expect(stdin_plugin).not_to be_nil
+      expect(stdin_plugin).to include("name")
+      expect(stdin_plugin["name"]).to eq("logstash-input-stdin")
+      expect(stdin_plugin).to include("version")
+    end
+  end
+
   shared_examples "pipeline metrics" do
     # let(:pipeline_id) { defined?(super()) or fail NotImplementedError }
     let(:settings_overrides) do
