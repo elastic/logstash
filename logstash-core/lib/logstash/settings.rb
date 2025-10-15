@@ -77,7 +77,7 @@ module LogStash
     ]
 
     # These are deprecated as pipeline override settings, they still exist as process-level settings
-    PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL = [
+    DEPRECATED_PIPELINE_OVERRIDE_SETTINGS = [
       "config.reload.automatic",
       "config.reload.interval",
     ]
@@ -160,7 +160,7 @@ module LogStash
     def to_hash
       @settings.each_with_object({}) do |(name, setting), hash|
         next if (setting.kind_of? Setting::DeprecatedAlias) || (setting.kind_of? Java::org.logstash.settings.DeprecatedAlias) ||
-          PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.include?(setting.name)
+          DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.include?(setting.name)
         hash[name] = setting.value
       end
     end
@@ -172,7 +172,7 @@ module LogStash
 
     def merge_pipeline_settings(hash, graceful = false)
       hash.each do |key, _|
-        if PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.include?(key)
+        if DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.include?(key)
           deprecation_logger.deprecated("Config option (#{key}) is deprecated as a pipeline override setting, please only set it at the process level.")
           hash.delete(key)
         elsif !PIPELINE_SETTINGS_WHITE_LIST.include?(key)

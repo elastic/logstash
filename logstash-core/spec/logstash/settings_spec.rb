@@ -388,7 +388,7 @@ describe LogStash::Settings do
 
     context '#merge_pipeline_settings' do
 
-      described_class::PIPELINE_SETTINGS_ONLY_PROCESS_LEVEL.each do |setting|
+      described_class::DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.each do |setting|
 
         context "the setting (#{setting}) is set" do
 
