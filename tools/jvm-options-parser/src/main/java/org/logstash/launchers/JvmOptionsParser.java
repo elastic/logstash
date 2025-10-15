@@ -53,7 +53,9 @@ public class JvmOptionsParser {
 
     private static final String[] MANDATORY_JVM_OPTIONS = new String[]{
             "-Djruby.regexp.interruptible=true",
+            "-Djruby.compile.invokedynamic=true",
             "-Djdk.io.File.enableADS=true",
+            "-Dlog4j2.isThreadContextMapInheritable=true",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
             "16-:--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
