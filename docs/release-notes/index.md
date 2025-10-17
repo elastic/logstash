@@ -27,8 +27,9 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ##### Event compression for persisted queue
 
-* Support for event compression in the persisted queue, controlled by the per-pipeline `queue.compression` setting, which defaults to `none` [#18121](https://github.com/elastic/logstash/pull/18121)
-* Added metrics for pq compression [#18227](https://github.com/elastic/logstash/pull/18227)
+* Added support for event compression in the persisted queue, allowing you to spend CPU to reduce disk usage and IO, which can improve overall throughput with metered or throttled disks.
+  This feature is opt-in, and can be configured with the per-pipeline `queue.compression` setting, which accepts `speed`, `balanced`, and `size` for escalating compression ratios, and defaults to `none`.
+  Per-queue metrics provide visibility into the effective compression ratio and the amount of CPU being spent [#17819](https://github.com/elastic/logstash/issues/17819)
 
 ##### Batch performance metrics
 
