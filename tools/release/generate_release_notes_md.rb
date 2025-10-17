@@ -91,15 +91,17 @@ report << "### Plugins [logstash-plugin-#{current_release}-changes]\n"
 plugin_changes.each do |plugin, versions|
   _, type, name = plugin.split("-")
   header = "**#{name.capitalize} #{type.capitalize} - #{versions.last}**"
+  # Determine the correct GitHub organization
+  org = plugin.include?('elastic_integration') ? 'elastic' : 'logstash-plugins'
   start_changelog_file = Tempfile.new(plugin + 'start')
   end_changelog_file = Tempfile.new(plugin + 'end')
-  changelog = `curl https://raw.githubusercontent.com/logstash-plugins/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")
+  changelog = `curl https://raw.githubusercontent.com/#{org}/#{plugin}/v#{versions.last}/CHANGELOG.md`.split("\n")
   report << "#{header}\n"
   changelog.each do |line|
     break if line.match(/^## #{versions.first}/)
     next if line.match(/^##/)
     line.gsub!(/^\+/, "")
-    line.gsub!(/ #(?<number>\d+)\s*$/, " https://github.com/logstash-plugins/#{plugin}/issues/\\k<number>[#\\k<number>]")
+    line.gsub!(/ #(?<number>\d+)\s*$/, " https://github.com/#{org}/#{plugin}/issues/\\k<number>[#\\k<number>]")
     line.gsub!(/\[#(?<number>\d+)\]\((?<url>[^)]*)\)/, "[#\\k<number>](\\k<url>)")
     line.gsub!(/^\s+-/, "*")
     report << line
