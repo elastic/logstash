@@ -199,15 +199,11 @@ paths:
                     workers: 1
                     batch_size: 125
                     batch_delay: 50
-                    config_reload_automatic: false
-                    config_reload_interval: 3
                     dead_letter_queue_enabled: false
                   ingestion-pipeline:
                     workers: 8
                     batch_size: 125
                     batch_delay: 5
-                    config_reload_automatic: false
-                    config_reload_interval: 3
                     dead_letter_queue_enabled: false
       x-metaTags:
         - content: Logstash
@@ -249,8 +245,6 @@ paths:
                     workers: 1
                     batch_size: 125
                     batch_delay: 50
-                    config_reload_automatic: false
-                    config_reload_interval: 3
                     dead_letter_queue_enabled: false
       x-metaTags:
         - content: Logstash
@@ -1789,10 +1783,6 @@ components:
         batch_size:
           type: integer
         batch_delay:
-          type: integer
-        config_reload_automatic:
-          type: boolean
-        config_reload_interval:
           type: integer
         dead_letter_queue_enabled:
           type: boolean
