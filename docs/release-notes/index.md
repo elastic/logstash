@@ -21,6 +21,46 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.0 [logstash-9.2.0-release-notes]
+
+### Features and enhancements [logstash-9.2.0-features-enhancements]
+
+##### Event compression for persisted queue
+
+* Added support for event compression in the persisted queue, allowing you to spend CPU to reduce disk usage and IO, which can improve overall throughput with metered or throttled disks.
+  This feature is opt-in, and can be configured with the per-pipeline `queue.compression` setting, which accepts `speed`, `balanced`, and `size` for escalating compression ratios, and defaults to `none`.
+  Per-queue metrics provide visibility into the effective compression ratio and the amount of CPU being spent [#17819](https://github.com/elastic/logstash/issues/17819)
+
+##### Batch performance metrics
+
+* Implements current batch event count and byte size metrics [#18160](https://github.com/elastic/logstash/pull/18160)
+* Implements average batch event count and byte size metrics. The collection of such metric could be disabled, enabled for each batch or done on a sample of the total batches [#18000](https://github.com/elastic/logstash/pull/18000)
+
+* Persisted Queue: improved serialization to be more compact by default (note: queues containing these compact events can be processed by Logstash v8.10.0 and later) [#17849](https://github.com/elastic/logstash/pull/17849)
+* Dropped the persistent queue setting queue.checkpoint.interval [#17759](https://github.com/elastic/logstash/pull/17759)
+* Reimplements BufferedTokenizer to leverage pure Java classes instead of use JRuby runtime's classes [#17229](https://github.com/elastic/logstash/pull/17229)
+* Support for user defined metrics [#18218](https://github.com/elastic/logstash/pull/18218)
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17935](https://github.com/elastic/logstash/pull/17935)
+* [Support for using ES|QL queries](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194) in the Elasticsearch filter to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards [#18090](https://github.com/elastic/logstash/pull/18090)
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
+
+### Plugins [logstash-plugin-9.2.0-changes]
+
+**Elastic_integration Filter - 9.2.0**
+
+* Logging compatability with Elasticsearch 9.2 [#373](https://github.com/elastic/logstash-filter-elastic_integration/pull/373)
+* Utilizes Elasticsearch interfaces via Elasticsearch logstash-bridge [#336](https://github.com/elastic/logstash-filter-elastic_integration/pull/336)
+
+**Translate Filter - 3.5.0**
+
+* Introduce opt-in "yaml_load_strategy => streaming" to stream parse YAML dictionaries. This can hugely reduce the memory footprint when working with large YAML dictionaries.  [#106](https://github.com/logstash-plugins/logstash-filter-translate/pull/106)
+
+**Snmp Integration - 4.1.0**
+
+* Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
+
+
 ## 9.1.5 [logstash-9.1.5-release-notes]
 
 No user-facing changes in Logstash core.
