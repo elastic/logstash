@@ -48,7 +48,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Elastic_integration Filter - 9.2.0**
 
-404: Not Found
+* Logging compatability with Elasticsearch 9.2 [#373](https://github.com/elastic/logstash-filter-elastic_integration/pull/373)
+* Utilizes Elasticsearch interfaces via Elasticsearch logstash-bridge [#336](https://github.com/elastic/logstash-filter-elastic_integration/pull/336)
 
 **Translate Filter - 3.5.0**
 
