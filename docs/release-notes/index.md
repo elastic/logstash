@@ -53,7 +53,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Translate Filter - 3.5.0**
 
-* Introduce opt-in "yaml_load_strategy => streaming" to stream parse YAML dictionaries [#106](https://github.com/logstash-plugins/logstash-filter-translate/pull/106)
+* Introduce opt-in "yaml_load_strategy => streaming" to stream parse YAML dictionaries. This can hugely reduce the memory footprint when working with large YAML dictionaries.  [#106](https://github.com/logstash-plugins/logstash-filter-translate/pull/106)
 
 **Snmp Integration - 4.1.0**
 
