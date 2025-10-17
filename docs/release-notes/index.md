@@ -36,7 +36,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Implements current batch event count and byte size metrics [#18160](https://github.com/elastic/logstash/pull/18160)
 * Implements average batch event count and byte size metrics. The collection of such metric could be disabled, enabled for each batch or done on a sample of the total batches [#18000](https://github.com/elastic/logstash/pull/18000)
 
-
+* Persisted Queue: improved serialization to be more compact by default (note: queues containing these compact events can be processed by Logstash v8.10.0 and later) [#17849](https://github.com/elastic/logstash/pull/17849)
 * Dropped the persistent queue setting queue.checkpoint.interval [#17759](https://github.com/elastic/logstash/pull/17759)
 * Reimplements BufferedTokenizer to leverage pure Java classes instead of use JRuby runtime's classes [#17229](https://github.com/elastic/logstash/pull/17229)
 * Support for user defined metrics [#18218](https://github.com/elastic/logstash/pull/18218)
