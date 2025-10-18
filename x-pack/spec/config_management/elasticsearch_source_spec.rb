@@ -208,6 +208,8 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
       let(:mock_logger) { double("fetcher's logger") }
 
+      let(:bad_response_code_error) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError }
+
       before(:each) {
         allow(subject).to receive(:logger).and_return(mock_logger)
       }
@@ -218,16 +220,36 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
       end
 
-      it "#fetch_config from ES v8.3" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
-        expect(subject.fetch_config(es_version_8_3, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
-      end
+      {
+        'v8.3' => { major: 8, minor: 3},
+        'v9.0' => { major: 9, minor: 0}
+      }.each do |desc, es_version|
+        context "ES #{desc}" do
+          it "#fetch_config works" do
+            expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
+            expect(subject.fetch_config(es_version, [pipeline_id], mock_client)).to eq(elasticsearch_response)
+            expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+          end
 
-      it "#fetch_config from ES v9.0" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
-        expect(subject.fetch_config(es_version_9_0, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+          it "#fetch_config from ES v8.3 with 404->200 is empty list" do
+            wildcard_search_path = "#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}"
+            expect(mock_client).to receive(:get).with(wildcard_search_path)
+                                                .and_raise(bad_response_code_error.new(404, wildcard_search_path, nil, '{}'))
+            expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return({})
+            expect(subject.fetch_config(es_version, [pipeline_id], mock_client)).to eq({})
+          end
+
+          it "#fetch_config from ES v8.3 with 404->404 is error" do
+            # 404's on Wildcard search need to be confirmed with a 404 from the get-all endpoint
+            wildcard_search_path = "#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}"
+            expect(mock_client).to receive(:get).with(wildcard_search_path)
+                                                .and_raise(bad_response_code_error.new(404, wildcard_search_path, nil, '{}'))
+            get_all_path = "#{described_class::SYSTEM_INDICES_API_PATH}/"
+            expect(mock_client).to receive(:get).with(get_all_path)
+                                                .and_raise(bad_response_code_error.new(404, get_all_path, nil, '{}'))
+            expect { subject.fetch_config(es_version, [pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+          end
+        end
       end
 
       it "#fetch_config should raise error" do
@@ -335,7 +357,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
-      it "#fetch_config should raise error when response is empty" do
+      it "#fetch_config should raise error when response is malformed" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(LogStash::Json.load("{}"))
         expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
