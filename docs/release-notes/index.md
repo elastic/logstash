@@ -25,11 +25,19 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.0-features-enhancements]
 
-##### Event compression for persisted queue
+##### Logstash 9.2 introduces PQ compression
 
-* Added support for event compression in the persisted queue, allowing you to spend CPU to reduce disk usage and IO, which can improve overall throughput with metered or throttled disks.
-  This feature is opt-in, and can be configured with the per-pipeline `queue.compression` setting, which accepts `speed`, `balanced`, and `size` for escalating compression ratios, and defaults to `none`.
-  Per-queue metrics provide visibility into the effective compression ratio and the amount of CPU being spent [#17819](https://github.com/elastic/logstash/issues/17819)
+In Logstash 9.2, we’ve added support for compression to the [Persisted Queue](https://www.elastic.co/docs/reference/logstash/persistent-queues), allowing you to spend some CPU in exchange for reduced disk IO. This can help reduce cost and increase throughput in situations where your hardware is rate-limited or metered.
+
+PQ compression is implemented using the industry-standard highly-efficient ZSTD algorithm, and can be activated at one of three levels:
+
+* Speed: spend the least amount of CPU to get minimal compression benefit
+* Balanced: spend moderate CPU to further reduce size
+* Size: enable maximum compression, at significantly higher cost
+
+The effects of these settings will depend on the shape and size of each pipeline’s events. To help you tune your configuration to meet your own requirements, we have added [queue metrics](https://www.elastic.co/docs/api/doc/logstash/operation/operation-nodestatspipelines) exposing the effective compression ratio and the amount of CPU that is being spent to achieve it.
+
+PQ Compression has been introduced as an opt-in feature in 9.2 because a PQ that contains one or more compressed events cannot be read by previous versions of Logstash, making the feature a rollback-barrier. We recommend validating your pipelines with Logstash 9.2+ before enabling PQ compression, so that you have the freedom to roll back if you encounter any issues with your pipelines.
 
 ##### Batch performance metrics
 
