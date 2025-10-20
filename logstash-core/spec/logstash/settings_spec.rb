@@ -385,15 +385,14 @@ describe LogStash::Settings do
   describe "deprecated pipeline override settings" do
 
     let(:subject) { described_class.new }
+    let(:deprecation_logger) { subject.deprecation_logger }
+    let(:setting_value) { double('setting_value') }
 
     context '#merge_pipeline_settings' do
 
       described_class::DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.each do |setting|
 
         context "the setting (#{setting}) is set" do
-
-          let(:deprecation_logger) { subject.deprecation_logger }
-          let(:setting_value) { double('setting_value') }
 
           it "a warning is logged" do
             expect(deprecation_logger).to receive(:deprecated).with(
