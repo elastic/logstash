@@ -39,7 +39,11 @@ The effects of these settings will depend on the shape and size of each pipeline
 
 PQ Compression has been introduced as an opt-in feature in 9.2 because a PQ that contains one or more compressed events cannot be read by previous versions of Logstash, making the feature a rollback-barrier. We recommend validating your pipelines with Logstash 9.2+ before enabling PQ compression, so that you have the freedom to roll back if you encounter any issues with your pipelines.
 
-##### Batch performance metrics
+##### Batch size metrics
+
+In Logstash 9.2, we have added metrics to help you track the size of batches processed by Logstash pipelines. 
+
+The [Node API pipelines endpoint](https://www.elastic.co/docs/api/doc/logstash/operation/operation-nodestatspipelines) now shows includes information displaying the showing the average number of events processed per batch, and the average byte size of those batches for each pipeline. This information can be used to help size Logstash instances, and optimize settings for `pipeline.batch.size` for Logstash pipelines based on real observations of data.
 
 * Implements current batch event count and byte size metrics [#18160](https://github.com/elastic/logstash/pull/18160)
 * Implements average batch event count and byte size metrics. The collection of such metric could be disabled, enabled for each batch or done on a sample of the total batches [#18000](https://github.com/elastic/logstash/pull/18000)
