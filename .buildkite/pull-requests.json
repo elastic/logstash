@@ -32,7 +32,7 @@
 		},
 		{
 			"enabled": true,
-			"pipeline_slug": "logstash-exhaustive-tests-pipeline",
+			"pipeline_slug": "logstash-smart-exhaustive-tests-pipeline",
 			"allow_org_users": true,
 			"allowed_repo_permissions": [
 				"admin",
