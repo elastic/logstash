@@ -53,6 +53,10 @@ PQ Compression has been introduced as an opt-in feature in 9.2 because a PQ that
 * Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards [#18090](https://github.com/elastic/logstash/pull/18090)
 * Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
 
+### Known issues
+
+* The `decode_size_limit_bytes` setting for plugins that use the `json_lines` codec behaves differently in 9.2.0. Specifically when the size limit exceeds the limit without a separator in the data the size will grow beyond the limit. The details for this issue and the details for the future behavior are being tracked in [#18321](https://github.com/elastic/logstash/issues/18321)
+
 ### Plugins [logstash-plugin-9.2.0-changes]
 
 **Elastic_integration Filter - 9.2.0**
