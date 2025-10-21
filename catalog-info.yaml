@@ -502,7 +502,7 @@ spec:
     kind: Pipeline
     metadata:
       name: "Logstash Smart Exhaustive tests pipeline"
-      description: '🔍 Run exhaustive tests against Logstash using different operating systems'
+      description: '🔍 Run smart exhaustive tests against Logstash using different operating systems'
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/smart_exhaustive_tests_pipeline.yml"
