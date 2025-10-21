@@ -507,9 +507,15 @@ spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/smart_exhaustive_tests_pipeline.yml"
       provider_settings:
-        trigger_mode: none
-      cancel_intermediate_builds: false
-      skip_intermediate_builds: false
+        build_pull_request_forks: false
+        build_pull_requests: true # requires filter_enabled and filter_condition settings as below when used with buildkite-pr-bot
+        build_branches: false
+        build_tags: false
+        filter_enabled: true
+        filter_condition: >-
+          build.creator.name == 'elasticmachine' && build.pull_request.id != null
+      cancel_intermediate_builds: true
+      skip_intermediate_builds: true
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
