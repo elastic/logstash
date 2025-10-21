@@ -44,10 +44,10 @@
 				"github-actions[bot]"
 			],
 			"set_commit_status": true,
-			"build_on_commit": false,
+			"build_on_commit": true,
 			"build_on_comment": true,
 			"trigger_comment_regex": "^(?:(?:/run\\W+)?(?:exhaustive)\\W+(?:tests))",
-			"always_trigger_comment_regex": "^(?:(?:/run\\W+)?(?:exhaustive)\\W+(?:tests))",
+			"always_trigger_comment_regex": "^(?:(?:/run\\W+)(?:exhaustive)\\W+(?:tests))",
 			"skip_ci_labels": [],
 			"skip_target_branches": [],
 			"skip_ci_on_only_changed": [
@@ -57,7 +57,9 @@
 				"^.pre-commit-config.yaml",
 				"\\.md$"
 			],
-			"always_require_ci_on_changed": []
+			"always_require_ci_on_changed": [
+				"^qa/acceptance/"
+			]
 		}
 	]
 }
