@@ -170,6 +170,30 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
           expect { described_class.new(system_settings) }.to_not raise_error
         end
       end
+
+      context "when api_key is set (encoded or not)" do
+        [
+          { desc: "non-encoded", value: "foo:bar" },
+          { desc: "encoded", value: Base64.strict_encode64("foo:bar") }
+        ].each do |api_key_case|
+          context "with #{api_key_case[:desc]} api_key" do
+            let(:settings) do
+              {
+                "xpack.management.enabled" => true,
+                "xpack.management.pipeline.id" => "main",
+                "xpack.management.elasticsearch.api_key" => api_key_case[:value],
+              }
+            end
+
+            it "will rely on #{api_key_case[:desc]} api_key for authentication" do
+              # the http client used by xpack module is the same as the one used by the ES output plugin
+              # and the HttpClientBuilder.setup_api_key method will handle both encoded and non-encoded api_key values.
+              # These tests prevent future regressions if the plugin client is changed.
+              expect { described_class.new(system_settings) }.to_not raise_error
+            end
+          end
+        end
+      end
     end
 
     context "valid settings" do
