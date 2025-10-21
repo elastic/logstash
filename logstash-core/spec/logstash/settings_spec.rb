@@ -398,7 +398,7 @@ describe LogStash::Settings do
 
           it "a warning is logged" do
             expect(deprecation_logger).to receive(:deprecated).with(
-              a_string_matching("Config option \"#{setting}\", set for pipeline [test], is deprecated as a " +
+              a_string_matching("Config option \"#{setting}\", set for pipeline \"test\", is deprecated as a " +
                                   "pipeline override setting. Please only set it at the process level.")
             )
             subject.merge_pipeline_settings("pipeline.id" => "test", setting => setting_value)
