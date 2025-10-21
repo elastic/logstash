@@ -172,7 +172,9 @@ module LogStash
     def merge_pipeline_settings(hash, graceful = false)
       hash.each do |key, _|
         if DEPRECATED_PIPELINE_OVERRIDE_SETTINGS.include?(key)
-          deprecation_logger.deprecated("Config option (#{key}) is deprecated as a pipeline override setting, please only set it at the process level.")
+          deprecation_logger.deprecated("Config option \"#{key}\", set for pipeline [#{hash['pipeline.id']}], is " +
+                                          "deprecated as a pipeline override setting. Please only set it at " +
+                                          "the process level.")
           hash.delete(key)
         elsif !PIPELINE_SETTINGS_WHITE_LIST.include?(key)
           raise ArgumentError.new("Only pipeline related settings are expected. Received \"#{key}\". Allowed settings: #{PIPELINE_SETTINGS_WHITE_LIST}")
