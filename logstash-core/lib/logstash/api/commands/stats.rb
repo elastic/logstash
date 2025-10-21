@@ -32,7 +32,7 @@ module LogStash
           total_queued_events = 0
           pipeline_ids.each do |pipeline_id|
             p_stats = service.get_shallow(:stats, :pipelines, pipeline_id.to_sym)
-            type = p_stats[:queue] && p_stats[:queue][:type].value
+            type = p_stats[:queue] && p_stats[:queue][:type] && p_stats[:queue][:type].value
             pipeline = service.agent.get_pipeline(pipeline_id)
             next if pipeline.nil? || pipeline.system? || type != 'persisted'
             total_queued_events += p_stats.dig(:queue, :events)&.value || 0
