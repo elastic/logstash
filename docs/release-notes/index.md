@@ -21,6 +21,16 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.6 [logstash-9.1.6-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.6-changes]
+
+**Csv Output - 3.0.11**
+
+* Docs: Correct code snippet [#28](https://github.com/logstash-plugins/logstash-output-csv/pull/28)
+
 ## 9.1.5 [logstash-9.1.5-release-notes]
 
 No user-facing changes in Logstash core.
