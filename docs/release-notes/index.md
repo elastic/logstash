@@ -25,6 +25,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.0-features-enhancements]
 
+#### Highlights
+
 ##### Logstash 9.2 introduces PQ compression
 
 In Logstash 9.2, we’ve added support for compression to the [Persisted Queue](https://www.elastic.co/docs/reference/logstash/persistent-queues), allowing you to spend some CPU in exchange for reduced disk IO. This can help reduce cost and increase throughput in situations where your hardware is rate-limited or metered.
@@ -44,6 +46,9 @@ PQ Compression has been introduced as an opt-in feature in 9.2 because a PQ that
 In Logstash 9.2, we have added metrics to help you track the size of batches processed by Logstash pipelines. 
 
 The [Node API pipelines endpoint](https://www.elastic.co/docs/api/doc/logstash/operation/operation-nodestatspipelines) now shows includes information displaying the showing the average number of events processed per batch, and the average byte size of those batches for each pipeline. This information can be used to help size Logstash instances, and optimize settings for `pipeline.batch.size` for Logstash pipelines based on real observations of data.
+
+
+#### Other Features and Enhancements 
 
 * Implements current batch event count and byte size metrics [#18160](https://github.com/elastic/logstash/pull/18160)
 * Implements average batch event count and byte size metrics. The collection of such metric could be disabled, enabled for each batch or done on a sample of the total batches [#18000](https://github.com/elastic/logstash/pull/18000)
