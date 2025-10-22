@@ -21,6 +21,70 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.0 [logstash-9.2.0-release-notes]
+
+### Features and enhancements [logstash-9.2.0-features-enhancements]
+
+#### Highlights
+
+##### Logstash 9.2 introduces PQ compression
+
+In Logstash 9.2, we’ve added support for compression to the [Persisted Queue](https://www.elastic.co/docs/reference/logstash/persistent-queues), allowing you to spend some CPU in exchange for reduced disk IO. This can help reduce cost and increase throughput in situations where your hardware is rate-limited or metered.
+
+PQ compression is implemented using the industry-standard highly-efficient ZSTD algorithm, and can be activated at one of three levels:
+
+* Speed: spend the least amount of CPU to get minimal compression benefit
+* Balanced: spend moderate CPU to further reduce size
+* Size: enable maximum compression, at significantly higher cost
+
+The effects of these settings will depend on the shape and size of each pipeline’s events. To help you tune your configuration to meet your own requirements, we have added [queue metrics](https://www.elastic.co/docs/api/doc/logstash/operation/operation-nodestatspipelines) exposing the effective compression ratio and the amount of CPU that is being spent to achieve it.
+
+PQ Compression has been introduced as an opt-in feature in 9.2 because a PQ that contains one or more compressed events cannot be read by previous versions of Logstash, making the feature a rollback-barrier. We recommend validating your pipelines with Logstash 9.2+ before enabling PQ compression, so that you have the freedom to roll back if you encounter any issues with your pipelines.
+
+Related:
+* Persisted Queue: improved serialization to be more compact by default (note: queues containing these compact events can be processed by Logstash v8.10.0 and later) [#17849](https://github.com/elastic/logstash/pull/17849)
+* Support for user defined metrics [#18218](https://github.com/elastic/logstash/pull/18218)
+* PQ: Add support for event-level compression using ZStandard (ZSTD) [#18121](https://github.com/elastic/logstash/pull/18121)
+
+##### Batch size metrics
+
+In Logstash 9.2, we have added metrics to help you track the size of batches processed by Logstash pipelines. 
+
+The [Node API pipelines endpoint](https://www.elastic.co/docs/api/doc/logstash/operation/operation-nodestatspipelines) now shows includes information displaying the showing the average number of events processed per batch, and the average byte size of those batches for each pipeline. This information can be used to help size Logstash instances, and optimize settings for `pipeline.batch.size` for Logstash pipelines based on real observations of data.
+
+Related:
+* Implements current batch event count and byte size metrics [#18160](https://github.com/elastic/logstash/pull/18160)
+* Implements average batch event count and byte size metrics. The collection of such metric could be disabled, enabled for each batch or done on a sample of the total batches [#18000](https://github.com/elastic/logstash/pull/18000)
+
+
+#### Other Features and Enhancements 
+
+* Dropped the persistent queue setting queue.checkpoint.interval [#17759](https://github.com/elastic/logstash/pull/17759)
+* Reimplements BufferedTokenizer to leverage pure Java classes instead of use JRuby runtime's classes [#17229](https://github.com/elastic/logstash/pull/17229)
+* Logging improvement while handling exceptions in the pipeline, ensuring that chained exceptions propagate enough information to be actionable. [#17935](https://github.com/elastic/logstash/pull/17935)
+* [Support for using ES|QL queries](https://github.com/logstash-plugins/logstash-filter-elasticsearch/pull/194) in the Elasticsearch filter to add improved flexibility when ingesting data from Elasticsearch is now in Technical Preview. 
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards [#18090](https://github.com/elastic/logstash/pull/18090)
+* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
+
+### Known issues
+
+* The `decode_size_limit_bytes` setting for plugins that use the `json_lines` codec behaves differently in 9.2.0. Specifically when the size limit exceeds the limit without a separator in the data the size will grow beyond the limit. The details for this issue and the details for the future behavior are being tracked in [#18321](https://github.com/elastic/logstash/issues/18321)
+
+### Plugins [logstash-plugin-9.2.0-changes]
+
+**Elastic_integration Filter - 9.2.0**
+
+* Logging compatability with Elasticsearch 9.2 [#373](https://github.com/elastic/logstash-filter-elastic_integration/pull/373)
+* Utilizes Elasticsearch interfaces via Elasticsearch logstash-bridge [#336](https://github.com/elastic/logstash-filter-elastic_integration/pull/336)
+
+**Translate Filter - 3.5.0**
+
+* Introduce opt-in "yaml_load_strategy => streaming" to stream parse YAML dictionaries. This can hugely reduce the memory footprint when working with large YAML dictionaries.  [#106](https://github.com/logstash-plugins/logstash-filter-translate/pull/106)
+
+**Snmp Integration - 4.1.0**
+
+* Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
+
 ## 9.1.6 [logstash-9.1.6-release-notes]
 
 No user-facing changes in Logstash core.
