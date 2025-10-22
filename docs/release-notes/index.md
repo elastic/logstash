@@ -23,41 +23,13 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.1.6 [logstash-9.1.6-release-notes]
 
-### Features and enhancements [logstash-9.1.6-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.6
-
-=== Logstash Commits between 9.1 and 9.1.5
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.5..9.1"
-
-de66b73f4 - (HEAD -> 9.1, origin/9.1) Add encoded/non-encoded auth method to x-pack unit tests (#18307) (#18324) (9 hours ago) <mergify[bot]>
-cb73c4e36 - Update patch plugin versions in gemfile lock (#18329) (16 hours ago) <github-actions[bot]>
-fce92b8bc - Handle GH org for elastic_integration plugin (#18315) (#18317) (5 days ago) <mergify[bot]>
-8b4da5097 - Adds integration test for the `_health_report` and `_node/plugins` APIs. (#18306) (#18309) (7 days ago) <mergify[bot]>
-4d73b10a9 - Doc: Update docs for testing for boolean fields (#18271) (#18291) (2 weeks ago) <mergify[bot]>
-d1f03336a - Update patch plugin versions in gemfile lock (#18288) (2 weeks ago) <github-actions[bot]>
-c57329286 - [9.1] (backport #18273) ci: remove sonarqube (#18285) (2 weeks ago) <mergify[bot]>
-6fc579af6 - [9.1] (backport #18181) Remove redundant testing and circular dependency from docker acceptance testing (#18254) (2 weeks ago) <mergify[bot]>
-aff27b3b7 - Ensure docs gen inserts at correct place in file (#18250) (#18260) (2 weeks ago) <mergify[bot]>
-6e4ea9eca - Bump logstash version 9.1.6 (#18282) (2 weeks ago) <github-actions[bot]>
-88a260f83 - [9.1] (backport #18247) Release notes for 9.0.8 (#18268) (3 weeks ago) <mergify[bot]>
-f861bb4aa - Release notes for 9.1.5 (#18248) (3 weeks ago) <github-actions[bot]>
-8994afd54 - Fix heading (#18237) (#18240) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.5..9.1 *.release"
-Changed plugin versions:
-logstash-output-csv: 3.0.10 -> 3.0.11
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ### Plugins [logstash-plugin-9.1.6-changes]
 
 **Csv Output - 3.0.11**
 
 * Docs: Correct code snippet [#28](https://github.com/logstash-plugins/logstash-output-csv/pull/28)
-
 
 ## 9.1.5 [logstash-9.1.5-release-notes]
 
