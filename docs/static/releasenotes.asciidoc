@@ -101,30 +101,9 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-6]]
 === Logstash 8.19.6 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.6
+No user-facing changes in Logstash core.
 
-=== Logstash Commits between 8.19 and 8.19.5
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.5..8.19"
-
-c80bed451 - (HEAD -> 8.19, origin/8.19) bump lock file for 8.19 (#18328) (16 hours ago) <github-actions[bot]>
-cfafdd56f - Adds integration test for the `_health_report` and `_node/plugins` APIs. (#18306) (#18310) (7 days ago) <mergify[bot]>
-10805955c - Update patch plugin versions in gemfile lock (#18302) (8 days ago) <github-actions[bot]>
-dfee4f64d - Doc: Update docs for testing for boolean fields (#18294) (13 days ago) <Karen Metts>
-1c739ef52 - Update patch plugin versions in gemfile lock (#18287) (2 weeks ago) <github-actions[bot]>
-f842caaf3 - ci: remove sonarqube (#18273) (#18284) (2 weeks ago) <mergify[bot]>
-b5de207ca - [8.19] (backport #18181) Remove redundant testing and circular dependency from docker acceptance testing (#18252) (2 weeks ago) <mergify[bot]>
-8de4a1903 - Bump logstash version 8.19.6 (#18280) (2 weeks ago) <github-actions[bot]>
-91ca8c1a8 - Release notes for 8.19.5 (#18246) (3 weeks ago) <github-actions[bot]>
-e7ae92b3b - Doc: Add LS-to-svrless page for 8.19 (#18201) (3 weeks ago) <Karen Metts>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.5..8.19 *.release"
-Changed plugin versions:
-logstash-output-csv: 3.0.10 -> 3.0.11
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-19-6]]
 ==== Plugins
 
 *Csv Output - 3.0.11*
