@@ -2,12 +2,12 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 9.2.0)
+      logstash-core (= 9.2.1)
 
 PATH
   remote: logstash-core
   specs:
-    logstash-core (9.2.0-java)
+    logstash-core (9.2.1-java)
       clamp (~> 1, >= 1.3.3)
       concurrent-ruby (~> 1, < 1.1.10)
       down (~> 5.2.0)
