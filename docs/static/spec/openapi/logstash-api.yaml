@@ -2354,7 +2354,8 @@ components:
                       type: object
                       properties:
                         goal:
-                          - enum:
+                          type: string
+                          enum:
                               - speed
                               - balanced
                               - size
