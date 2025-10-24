@@ -65,7 +65,7 @@ describe "Beat Input" do
 
       Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
         # event_stats can fail if the stats subsystem isn't ready
-         result = logstash_service.monitoring_api.event_stats rescue nil
+         result = logstash_service.monitoring_api.event_stats
          expect(result).not_to be_nil
          expect(result["in"]).to eq(number_of_events)
       end
