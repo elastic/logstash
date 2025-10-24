@@ -45,6 +45,7 @@ import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 import org.logstash.gradle.tooling.SnapshotArtifactURLs
+import java.net.HttpURLConnection
 
 allprojects {
   group = 'org.logstash'
@@ -708,22 +709,88 @@ class JDKDetails {
         if (arch == "aarch64") {
             url += "-${arch}"
         }
-        println "Retrieving JDK from catalog..."
+        println "Retrieving JDK location URL from Elastic catalog..."
         def catalogMetadataUrl = URI.create(url).toURL()
-        def catalogConnection = catalogMetadataUrl.openConnection()
-        catalogConnection.requestMethod = 'GET'
-        if (catalogConnection.responseCode != 200) {
-            println "Can't find adoptiumjdk ${revision} for ${osName} on Elastic JVM catalog"
-            throw new GradleException("JVM not present on catalog")
+        int maxAttempts = 5
+        long retryDelayMillis = 3000
+        int connectTimeoutMillis = 15000
+        int readTimeoutMillis = 60000
+        int lastResponseCode = -1
+        String lastResponseMessage = null
+        String lastErrorBody = null
+        Exception lastException = null
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            HttpURLConnection catalogConnection = null
+            try {
+                catalogConnection = catalogMetadataUrl.openConnection() as HttpURLConnection
+                catalogConnection.requestMethod = 'GET'
+                catalogConnection.connectTimeout = connectTimeoutMillis
+                catalogConnection.readTimeout = readTimeoutMillis
+
+                int responseCode = catalogConnection.responseCode
+                if (responseCode == 200) {
+                    def metadataRetrieved = catalogConnection.inputStream.withCloseable { stream -> stream.getText('UTF-8') }
+                    println "Retrieved!"
+
+                    def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
+                    validateMetadata(catalogMetadata)
+
+                    return catalogMetadata.url
+                }
+
+                lastResponseCode = responseCode
+                lastResponseMessage = catalogConnection.responseMessage
+                lastErrorBody = catalogConnection.errorStream?.withCloseable { stream -> stream.getText('UTF-8') }?.trim()
+                lastException = null
+
+                def statusMessage = lastResponseMessage ? "${responseCode} ${lastResponseMessage}" : "${responseCode}"
+                if (lastErrorBody) {
+                    statusMessage += ": ${lastErrorBody.take(200)}"
+                }
+                if (attempt < maxAttempts) {
+                    println "Attempt ${attempt} of ${maxAttempts} failed with HTTP ${statusMessage}. Retrying..."
+                    try {
+                        Thread.sleep(retryDelayMillis)
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw new GradleException("Interrupted while retrying Elastic JVM catalog metadata request", interruptedException)
+                    }
+                }
+            } catch (Exception e) {
+                lastException = e
+                lastResponseCode = -1
+                lastResponseMessage = null
+                lastErrorBody = null
+                if (attempt < maxAttempts) {
+                    println "Attempt ${attempt} of ${maxAttempts} failed: ${e.message}. Retrying..."
+                    try {
+                        Thread.sleep(retryDelayMillis)
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw new GradleException("Interrupted while retrying Elastic JVM catalog metadata request", interruptedException)
+                    }
+                }
+            } finally {
+                catalogConnection?.disconnect()
+            }
         }
 
-        def metadataRetrieved = catalogConnection.content.text
-        println "Retrieved!"
-
-        def catalogMetadata = new JsonSlurper().parseText(metadataRetrieved)
-        validateMetadata(catalogMetadata)
-
-        return catalogMetadata.url
+        def requestedArtifact = "adoptiumjdk-${revision}+${build}-${osName}${arch == "aarch64" ? "-${arch}" : ""}"
+        if (lastResponseCode == 404) {
+            throw new GradleException("Elastic JVM catalog returned 404 for ${requestedArtifact}. Verify the artifact exists.", lastException)
+        }
+        if (lastResponseCode != -1) {
+            def statusMessage = lastResponseMessage ? "${lastResponseCode} ${lastResponseMessage}" : "${lastResponseCode}"
+            if (lastErrorBody) {
+                statusMessage += " (${lastErrorBody.take(200)})"
+            }
+            throw new GradleException("Failed to fetch Elastic JVM catalog metadata for ${requestedArtifact}. Last HTTP response: ${statusMessage}", lastException)
+        }
+        if (lastException != null) {
+            throw new GradleException("Failed to fetch Elastic JVM catalog metadata for ${requestedArtifact}: ${lastException.message}", lastException)
+        }
+        throw new GradleException("Failed to fetch Elastic JVM catalog metadata for ${requestedArtifact}.")
     }
 
     //Verify that the artifact metadata correspond to the request, if not throws an error
@@ -796,6 +863,7 @@ tasks.register("downloadJdk", Download) {
     src project.ext.jdkURL
     onlyIfNewer true
     overwrite false
+    retries 3
     quiet true
     inputs.file("${projectDir}/versions.yml")
     outputs.file(project.ext.jdkDownloadLocation)
