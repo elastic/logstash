@@ -15,6 +15,16 @@ scms:
       commitusingapi: true
       force: false
 
+actions:
+  default:
+    title: 'Update bundled JDK to {{ source "latest_jdk_version" }} build {{ source "latest_jdk_build" }}'
+    kind: github/pullrequest
+    scmid: default
+    spec:
+      automerge: false
+      labels:
+        - automation
+
 sources:
   jdk_major:
     kind: yaml
@@ -43,6 +53,7 @@ targets:
     name: "Update JDK revision"
     kind: yaml
     sourceid: latest_jdk_version
+    scmid: default
     spec:
       file: versions.yml
       key: $.bundled_jdk.revision
@@ -51,6 +62,7 @@ targets:
     name: "Update JDK build"
     kind: yaml
     sourceid: latest_jdk_build
+    scmid: default
     spec:
       file: versions.yml
       key: $.bundled_jdk.build
