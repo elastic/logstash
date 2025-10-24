@@ -96,9 +96,9 @@ It is important that you secure the communication between Logstash instances. Us
 
 3. Configure the upstream (sending) Logstash to use SSL. Add these settings to the HTTP output configuration:
 
-    * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
-    * `client_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
-    * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the Logstash server.
+    * `ssl_certificate_authorities`: Configures the Logstash client to trust any certificates signed by the specified CA.
+    * `ssl_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
+    * `ssl_certification`: Specifies the certificate that the Logstash client uses to authenticate to the Logstash server.
 
     For example:
 
@@ -107,9 +107,9 @@ It is important that you secure the communication between Logstash instances. Us
       http {
         ...
 
-        cacert => "ca.crt"
-        client_key => "client.key.pk8"
-        client_cert => "client.crt"
+        ssl_certificate_authorities => "ca.crt"
+        ssl_key => "client.key.pk8"
+        ssl_certificate => "client.crt"
       }
     }
     ```
