@@ -63,17 +63,9 @@ describe "Beat Input" do
       logstash_service.start_background(logstash_config)
       process = filebeat_service.run(filebeat_config_path)
 
-      # It can take some delay for filebeat to connect to logstash and start sending data.
-      # Its possible that logstash isn't completely initialized here, we can get "Connection Refused"
-      begin
-        sleep(1) while (result = logstash_service.monitoring_api.event_stats).nil?
-      rescue
-        sleep(1)
-        retry
-      end
-
       Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
-         result = logstash_service.monitoring_api.event_stats
+         result = logstash_service.monitoring_api.event_stats rescue nil
+         expect(result).not_to be_nil
          expect(result["in"]).to eq(number_of_events)
       end
     end
