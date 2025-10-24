@@ -16,7 +16,7 @@ gem "minitar", "~> 1", :group => :build
 gem "childprocess", "~> 4", :group => :build
 gem "fpm", "~> 1", ">= 1.14.1", :group => :build # compound due to bugfix https://github.com/jordansissel/fpm/pull/1856
 gem "gems", "~> 1", :group => :build
-gem "octokit", "~> 4.25", :group => :build
+gem "octokit", "~> 5", :group => :build
 gem "rubyzip", "~> 1", :group => :build
 gem "stud", "~> 0.0.22", :group => :build
 # remove fileutils declaration when start using Ruby 3.2+, by default includes `fileutils-v1.7.0`
