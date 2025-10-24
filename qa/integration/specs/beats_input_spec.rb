@@ -63,7 +63,8 @@ describe "Beat Input" do
       logstash_service.start_background(logstash_config)
       process = filebeat_service.run(filebeat_config_path)
 
-      Stud.try(max_retry.times, RSpec::Expectations::ExpectationNotMetError) do
+      Stud.try(max_retry.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
+        # event_stats can fail if the stats subsystem isn't ready
          result = logstash_service.monitoring_api.event_stats rescue nil
          expect(result).not_to be_nil
          expect(result["in"]).to eq(number_of_events)
