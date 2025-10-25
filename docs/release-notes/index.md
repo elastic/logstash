@@ -25,7 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.0-features-enhancements]
 
-#### Persistent queue (PQ} compression [logstash-9.2.0-pq-compression]
+#### Persistent queue (PQ) compression [logstash-9.2.0-pq-compression]
 
 We’ve added support for compression to the [Persistent Queue (PQ)](https://www.elastic.co/docs/reference/logstash/persistent-queues), allowing you to spend some CPU in exchange for reduced disk IO. This can help reduce cost and increase throughput in situations where your hardware is rate-limited or metered.
 
