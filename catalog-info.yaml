@@ -448,7 +448,7 @@ spec:
     spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/exhaustive_tests_pipeline.yml"
-      maximum_timeout_in_minutes: 90
+      maximum_timeout_in_minutes: 45
       provider_settings:
         build_branches: true
         build_pull_request_forks: false
