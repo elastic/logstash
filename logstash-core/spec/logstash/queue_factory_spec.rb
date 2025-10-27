@@ -77,11 +77,12 @@ describe LogStash::QueueFactory do
     end
 
     context "when queue.max_bytes is larger than Java int" do
-      let(:large_queue_max_bytes) { "2g" } # 2^31 bytes, bigger than 2^31-1 int limit
+      let(:large_queue_max_bytes) { 2**31 } # 2^31 bytes, bigger than 2^31-1 int limit
       before(:each) do
         settings.set("queue.max_bytes", large_queue_max_bytes)
       end
       it "does not raise error" do
+        queue = nil
         expect { queue = subject.create(settings) }.to_not raise_error
         expect(queue.queue.max_size_in_bytes).to eq(large_queue_max_bytes)
         queue.close
