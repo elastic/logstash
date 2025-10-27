@@ -175,7 +175,7 @@ GEM
       semantic_logger
     jruby-openssl (0.15.5-java)
     jruby-stdin-channel (0.2.0-java)
-    json (2.15.1-java)
+    json (2.15.2-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
     kramdown (2.5.1)
@@ -717,7 +717,7 @@ GEM
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     parallel (1.27.0)
-    parser (3.3.9.0)
+    parser (3.3.10.0)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.32)
@@ -843,7 +843,7 @@ GEM
     uri (1.0.4)
     webhdfs (0.11.0)
       addressable
-    webmock (3.25.1)
+    webmock (3.25.2)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
