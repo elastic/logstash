@@ -50,8 +50,14 @@ describe LogStash::QueueFactory do
   subject { described_class }
 
   context "when `queue.type` is `persisted`" do
+    let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
+
     before do
       settings.set("queue.type", "persisted")
+    end
+
+    after(:each) do
+      FileUtils.rm_rf(queue_path)
     end
 
     it "returns a `WrappedAckedQueue`" do
@@ -61,16 +67,23 @@ describe LogStash::QueueFactory do
     end
 
     describe "per pipeline id subdirectory creation" do
-      let(:queue_path) { ::File.join(settings.get("path.queue"), pipeline_id) }
-
-      after :each do
-        FileUtils.rm_rf(queue_path)
-      end
 
       it "creates a queue directory based on the pipeline id" do
         expect(Dir.exist?(queue_path)).to be_falsey
         queue = subject.create(settings)
         expect(Dir.exist?(queue_path)).to be_truthy
+        queue.close
+      end
+    end
+
+    context "when queue.max_bytes is larger than Java int" do
+      let(:large_queue_max_bytes) { "2g" } # 2^31 bytes, bigger than 2^31-1 int limit
+      before(:each) do
+        settings.set("queue.max_bytes", large_queue_max_bytes)
+      end
+      it "does not raise error" do
+        expect { queue = subject.create(settings) }.to_not raise_error
+        expect(queue.queue.max_size_in_bytes).to eq(large_queue_max_bytes)
         queue.close
       end
     end
