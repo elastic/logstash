@@ -160,7 +160,7 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .checkpointMaxWrites(getSetting(context, settings, QUEUE_CHECKPOINT_WRITES).toJava(Integer.class))
                 .checkpointMaxAcks(getSetting(context, settings, QUEUE_CHECKPOINT_ACKS).toJava(Integer.class))
                 .checkpointRetry(getSetting(context, settings, QUEUE_CHECKPOINT_RETRY).isTrue())
-                .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Integer.class))
+                .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Long.class))
                 .compressionCodecFactory(extractConfiguredCodec(settings))
                 .build();
     }
