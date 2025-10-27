@@ -19,9 +19,34 @@ module LogStash
   module Api
     module Modules
       class Root < ::LogStash::Api::Modules::Base
+
+        HEALTH_STATUS = [
+          'GREEN',
+          'YELLOW',
+          'RED'
+        ]
+
         get "/" do
+          target_status = params[:wait_for_status]&.upcase
+
+          if target_status && HEALTH_STATUS.include?(target_status)
+            wait_for_status(params[:timeout], target_status) if params[:timeout]
+          end
+
           command = factory.build(:system_basic_info)
           respond_with command.run
+        end
+
+        private
+        def wait_for_status(timeout, target_status)
+          end_time = Time.now + timeout.to_i
+          wait_interval_seconds = 1
+
+          while Time.now < end_time
+            break if target_status == agent.health_observer.status.to_s
+            sleep(wait_interval_seconds)
+            wait_interval_seconds = wait_interval_seconds * 2
+          end
         end
       end
     end
