@@ -23,6 +23,11 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.2.0 [logstash-9.2.0-release-notes]
 
+::::{warning}
+
+If you use the Persistent Queue with a value of `queue.max_bytes` greater than 2GiB, do not upgrade to this version of Logstash.
+For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.2.0).
+
 ### Features and enhancements [logstash-9.2.0-features-enhancements]
 
 #### Persistent queue (PQ} compression [logstash-9.2.0-pq-compression]

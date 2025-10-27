@@ -8,7 +8,7 @@ Known issues are significant defects or limitations that may impact your impleme
 These issues are actively being worked on and will be addressed in a future release. 
 Review known issues to help you make informed decisions, such as upgrading to a new version.
 
-## 9.2.0
+## 9.2.0 [logstash-ki-9.2.0]
 
 **Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**
 
