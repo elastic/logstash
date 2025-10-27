@@ -10,6 +10,16 @@ Review known issues to help you make informed decisions, such as upgrading to a 
 
 ## 9.2.0
 
+**Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**
+
+Applies to: {{ls}} 9.2.0
+
+::::{dropdown} Details
+
+Attempts to start Logstash when `queue.max_bytes` has been set to `2147483648` bytes or greater will fail. There is currently no workaround for this issue other than downgrading to a previous version of Logstash. Therefore we recommend that any Logstash users with a Persistent Queue greater than size not upgrade to Logstash `9.2.0`.
+
+Details of the bug are included in [this PR fixing the issue](https://github.com/elastic/logstash/pull/18366), which will be included in a future version of Logstash.
+
 **BufferedTokenizer may silently drop data when oversize input has no delimiters**
 
 Applies to: {{ls}} 9.2.0
