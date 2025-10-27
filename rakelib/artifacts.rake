@@ -123,10 +123,12 @@ namespace "artifact" do
 
     # Exclude default gems duplicates
     default_duplicates.each do |gem_name|
+      # CODEREVIEW: removing the code itself causes issues with gem loading. Remove only the gemspecs
+      # for duplicated gems. This should help the code scanning case.
       exclusions << "vendor/jruby/lib/ruby/gems/shared/specifications/default/#{gem_name}-*.gemspec"
-      exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}.rb"
-      exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}/**/*"
-      exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}"
+      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}.rb"
+      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}/**/*"
+      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}"
     end
 
     exclusions
