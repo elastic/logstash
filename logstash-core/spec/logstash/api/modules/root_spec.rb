@@ -66,8 +66,10 @@ describe LogStash::Api::Modules::Root do
 
         let(:timeout) { 2 }
 
+        let(:return_statuses) { ['GREEN', 'YELLOW'] }
+
         before do
-          allow(@agent.health_observer.status).to receive(:to_s).and_return('GREEN', 'YELLOW')
+          allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statuses)
         end
 
         it 'returns when the target status is reached' do
@@ -96,8 +98,11 @@ describe LogStash::Api::Modules::Root do
           statuses << status
         end
 
-        it 'checks for the status until it changes' do
+        before do
           allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statues)
+        end
+
+        it 'checks for the status until it changes' do
           start_time = Time.now
           get "/?wait_for_status=#{status}&timeout=#{timeout}"
           end_time = Time.now
@@ -109,13 +114,18 @@ describe LogStash::Api::Modules::Root do
     context 'status string is formatted differently' do
 
       let(:timeout) { 2 }
+
       let(:return_time) do
         # We wait 1 second to check the status a second time. The target status
         # is reached on the second check.
         1.1
       end
 
-      before { allow(@agent.health_observer.status).to receive(:to_s).and_return('GREEN', 'YELLOW') }
+      let(:return_statuses) { ['GREEN', 'YELLOW'] }
+
+      before do
+        allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statuses)
+      end
 
       it 'normalizes the format and checks the status' do
         start_time = Time.now
