@@ -66,6 +66,77 @@ tags:
     #   description:
     #   url:
 paths:
+  /:
+    get:
+      summary: Gets basic metadata
+      description: |
+        Shows basic metadata about the running logstash service. This includes build info, pipeline info and the service's status.
+      operationId: root
+      tags:
+        - root
+      parameters:
+        - name: wait_for_status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: One of green, yellow or red. Will wait (until the timeout provided) until the status of the service changes to the one provided or better, i.e. green > yellow > red. By default, will not wait for any status.
+        - name: timeout
+            in: query
+            required: false
+            schema:
+              type: string
+            description: Period to wait for the status to reach the requested target status. If the target status is not reached before the timeout expires, the request returns as normal.
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                - type: object
+                  properties:
+                    host:
+                      type: string
+                    version:
+                      type: string
+                    http_address:
+                      type: string
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    ephemeral_id:
+                      type: string
+                    snapshot:
+                      type: string
+                    status:
+                      type: string
+                    pipeline:
+                      type: object
+                      properties:
+                        workers:
+                          type: integer
+                        batch_size:
+                          type: integer
+                        batch_delay:
+                          type: integer
+              example:
+                host: ""
+                version: "9.3.0"
+                http_address: "127.0.0.1:9600"
+                id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
+                name: ""
+                ephermeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
+                snapshot:
+                status: "green"
+                pipeline:
+                  workers: 10
+                  batch_size: 125
+                  batch_delay: 50
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/jvm:
     get:
       summary: Gets node-level JVM info
