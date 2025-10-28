@@ -21,9 +21,9 @@ module LogStash
       class Root < ::LogStash::Api::Modules::Base
 
         HEALTH_STATUS = [
-          'GREEN',
-          'YELLOW',
-          'RED'
+          Java::OrgLogstashHealth::Status::GREEN.to_s,
+          Java::OrgLogstashHealth::Status::YELLOW.to_s,
+          Java::OrgLogstashHealth::Status::RED.to_s
         ]
 
         get "/" do
