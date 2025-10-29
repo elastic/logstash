@@ -8,6 +8,7 @@ steps:
           watch:
             - path:
                 - ^qa/acceptance/
+                - ^ci/acceptance_tests.sh
                 - .buildkite/smart_exhaustive_tests_pipeline.yml
               config:
                 trigger: "logstash-exhaustive-tests-pipeline"
