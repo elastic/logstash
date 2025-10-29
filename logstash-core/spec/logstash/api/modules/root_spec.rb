@@ -66,10 +66,15 @@ describe LogStash::Api::Modules::Root do
 
         let(:timeout) { 2 }
 
-        let(:return_statuses) { ['GREEN', 'YELLOW'] }
+        let(:return_statuses) do
+          [
+            org.logstash.health.Status::GREEN,
+            org.logstash.health.Status::YELLOW
+          ]
+        end
 
         before do
-          allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statuses)
+          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
         end
 
         it 'returns when the target status is reached' do
@@ -81,7 +86,7 @@ describe LogStash::Api::Modules::Root do
       end
     end
 
-    described_class::HEALTH_STATUS.each do |status|
+    java.util.EnumSet.allOf(org.logstash.health.Status).each do |status|
 
       context "#{status} is provided" do
 
@@ -93,13 +98,13 @@ describe LogStash::Api::Modules::Root do
 
         let(:return_statues) do
           # Make the target status last in the returned values
-          statuses = described_class::HEALTH_STATUS.dup
+          statuses = java.util.EnumSet.allOf(org.logstash.health.Status).to_a
           statuses.delete(status)
           statuses << status
         end
 
         before do
-          allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statues)
+          allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
         end
 
         it 'checks for the status until it changes' do
@@ -121,10 +126,15 @@ describe LogStash::Api::Modules::Root do
         1.1
       end
 
-      let(:return_statuses) { ['GREEN', 'YELLOW'] }
+      let(:return_statuses) do
+        [
+          org.logstash.health.Status::GREEN,
+          org.logstash.health.Status::YELLOW
+        ]
+      end
 
       before do
-        allow(@agent.health_observer.status).to receive(:to_s).and_return(*return_statuses)
+        allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
       end
 
       it 'normalizes the format and checks the status' do
