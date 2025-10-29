@@ -20,14 +20,10 @@ module LogStash
     module Modules
       class Root < ::LogStash::Api::Modules::Base
 
-        HEALTH_STATUS = [
-          Java::OrgLogstashHealth::Status::GREEN.to_s,
-          Java::OrgLogstashHealth::Status::YELLOW.to_s,
-          Java::OrgLogstashHealth::Status::RED.to_s
-        ]
+        HEALTH_STATUS = java.util.EnumSet.allOf(org.logstash.health.Status).map(&:external_value)
 
         get "/" do
-          target_status = params[:wait_for_status]&.upcase
+          target_status = params[:wait_for_status]&.downcase
 
           if target_status && HEALTH_STATUS.include?(target_status)
             wait_for_status(params[:timeout], target_status) if params[:timeout]
@@ -43,7 +39,7 @@ module LogStash
           wait_interval_seconds = 1
 
           while Time.now < end_time
-            break if target_status == agent.health_observer.status.to_s
+            break if target_status == agent.health_observer.status.external_value
             sleep(wait_interval_seconds)
             wait_interval_seconds = wait_interval_seconds * 2
           end
