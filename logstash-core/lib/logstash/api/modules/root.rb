@@ -24,13 +24,14 @@ module LogStash
 
         get "/" do
           target_status = params[:wait_for_status]&.downcase
+          status = 200
 
-          if target_status && HEALTH_STATUS.include?(target_status)
-            wait_for_status(params[:timeout], target_status) if params[:timeout]
+          if HEALTH_STATUS.include?(target_status) && params[:timeout]
+            status = 503 unless wait_for_status(params[:timeout], target_status)
           end
 
           command = factory.build(:system_basic_info)
-          respond_with command.run
+          respond_with(command.run, status_code: status)
         end
 
         private
@@ -39,7 +40,9 @@ module LogStash
           wait_interval_seconds = 1
 
           while Time.now < end_time
-            break if target_status == agent.health_observer.status.external_value
+            if HEALTH_STATUS.index(agent.health_observer.status.external_value) <= HEALTH_STATUS.index(target_status)
+              return true
+            end
             sleep(wait_interval_seconds)
             wait_interval_seconds = wait_interval_seconds * 2
           end
