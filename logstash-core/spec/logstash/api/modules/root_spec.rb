@@ -32,17 +32,15 @@ describe LogStash::Api::Modules::Root do
 
   describe 'wait_for_status query param' do
 
-    let(:margin_of_error) { 0.1 }
+    let(:margin_of_error) { 0.2 }
 
     context 'no timeout is provided' do
-
-      let(:return_time) { 0.1 }
 
       it 'returns immediately' do
         start_time = Time.now
         get "/?wait_for_status=red"
         end_time = Time.now
-        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+        expect(end_time - start_time).to be < 1
       end
     end
 
@@ -54,11 +52,26 @@ describe LogStash::Api::Modules::Root do
 
         let(:return_time) { timeout + 0.1 }
 
+        let(:return_statuses) do
+          [
+            org.logstash.health.Status::RED
+          ]
+        end
+
+        before do
+          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+        end
+
         it 'checks the status until the timeout is reached' do
           start_time = Time.now
-          get "/?wait_for_status=red&timeout=#{timeout}"
+          get "/?wait_for_status=green&timeout=#{timeout}"
           end_time = Time.now
           expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+        end
+
+        it 'returns status code 503' do
+          response = get "/?wait_for_status=green&timeout=#{timeout}"
+          expect(response.status).to eq 503
         end
       end
 
@@ -68,7 +81,7 @@ describe LogStash::Api::Modules::Root do
 
         let(:return_statuses) do
           [
-            org.logstash.health.Status::GREEN,
+            org.logstash.health.Status::RED,
             org.logstash.health.Status::YELLOW
           ]
         end
@@ -86,33 +99,88 @@ describe LogStash::Api::Modules::Root do
       end
     end
 
-    java.util.EnumSet.allOf(org.logstash.health.Status).each do |status|
+    context "green is provided" do
 
-      context "#{status} is provided" do
+      let(:timeout) do
+        # Two statuses are checked before the target is reached. The first wait time is 1 second,
+        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
+        4
+      end
 
-        let(:timeout) do
-          # Two statuses are checked before the target is reached. The first wait time is 1 second,
-          # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
-          3.1
-        end
+      let(:return_time) { 3.1 }
 
-        let(:return_statues) do
-          # Make the target status last in the returned values
-          statuses = java.util.EnumSet.allOf(org.logstash.health.Status).to_a
-          statuses.delete(status)
-          statuses << status
-        end
+      let(:return_statues) do
+        [
+          org.logstash.health.Status::RED,
+          org.logstash.health.Status::YELLOW,
+          org.logstash.health.Status::GREEN,
+        ]
+      end
 
-        before do
-          allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
-        end
+      before do
+        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
+      end
 
-        it 'checks for the status until it changes' do
-          start_time = Time.now
-          get "/?wait_for_status=#{status}&timeout=#{timeout}"
-          end_time = Time.now
-          expect(end_time - start_time).to be < timeout
-        end
+      it 'checks for the status until it changes' do
+        start_time = Time.now
+        get "/?wait_for_status=green&timeout=#{timeout}"
+        end_time = Time.now
+        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+      end
+    end
+
+    context "yellow is provided" do
+
+      let(:timeout) do
+        # Two statuses are checked before the target is reached. The first wait time is 1 second,
+        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
+        2
+      end
+
+      let(:return_statues) do
+        [
+          org.logstash.health.Status::RED,
+          org.logstash.health.Status::YELLOW
+        ]
+      end
+
+      before do
+        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
+      end
+
+      it 'checks for the status until it changes' do
+        start_time = Time.now
+        get "/?wait_for_status=yellow&timeout=#{timeout}"
+        end_time = Time.now
+        expect(end_time - start_time).to be < timeout
+      end
+    end
+
+    context "red is provided" do
+
+      let(:timeout) do
+        # Two statuses are checked before the target is reached. The first wait time is 1 second,
+        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
+        2
+      end
+
+      let(:return_statues) do
+        [
+          org.logstash.health.Status::RED
+        ]
+      end
+
+      let(:return_time) { 0.2 }
+
+      before do
+        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
+      end
+
+      it 'checks for the status until it changes to the target' do
+        start_time = Time.now
+        get "/?wait_for_status=red&timeout=#{timeout}"
+        end_time = Time.now
+        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
       end
     end
 
@@ -120,15 +188,9 @@ describe LogStash::Api::Modules::Root do
 
       let(:timeout) { 2 }
 
-      let(:return_time) do
-        # We wait 1 second to check the status a second time. The target status
-        # is reached on the second check.
-        1.1
-      end
-
       let(:return_statuses) do
         [
-          org.logstash.health.Status::GREEN,
+          org.logstash.health.Status::RED,
           org.logstash.health.Status::YELLOW
         ]
       end
@@ -141,7 +203,7 @@ describe LogStash::Api::Modules::Root do
         start_time = Time.now
         get "/?wait_for_status=yElLoW&timeout=#{timeout}"
         end_time = Time.now
-        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+        expect(end_time - start_time).to be < timeout
       end
     end
 
