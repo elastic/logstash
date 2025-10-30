@@ -18,14 +18,14 @@ steps:
                   env:
                     BUILDKITE_PULL_REQUEST="${BUILDKITE_PULL_REQUEST}"
                     BUILDKITE_PULL_REQUEST_BASE_BRANCH="${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
-                    ELASTIC_SLACK_NOTIFICATIONS_ENABLE=false
+                    ELASTIC_SLACK_NOTIFICATIONS_ENABLED=false
 
   - label: "Trigger logstash-exhaustive-tests-pipeline for GitHub comments"
     if: build.env("GITHUB_PR_TRIGGER_COMMENT") == "/run exhaustive tests"
     trigger: "logstash-exhaustive-tests-pipeline"
     build:
       commit: "HEAD"
-      branch: "pull/${BUILDKITE_PULL_REQUEST}/merge"
+      branch: "pull/${GITHUB_PR_NUMBER}/merge"
       env:
         BUILDKITE_PULL_REQUEST="${BUILDKITE_PULL_REQUEST}"
-        ELASTIC_SLACK_NOTIFICATIONS_ENABLE=false
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED=false
