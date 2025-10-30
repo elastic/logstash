@@ -25,7 +25,7 @@ steps:
     trigger: "logstash-exhaustive-tests-pipeline"
     build:
       commit: "HEAD"
-      branch: "pull/${GITHUB_PR_NUMBER}/merge"
+      branch: "pull/${BUILDKITE_PULL_REQUEST}/merge"
       env:
         - BUILDKITE_PULL_REQUEST="${BUILDKITE_PULL_REQUEST}"
         - ELASTIC_SLACK_NOTIFICATIONS_ENABLED=false
