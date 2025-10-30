@@ -1,6 +1,6 @@
 steps:
   - label: "Trigger logstash-exhaustive-tests-pipeline for PRs with qa/acceptance/ changes"
-    if: build.pull_request.id != null
+    if: build.pull_request.id != null && build.env("GITHUB_PR_TRIGGER_COMMENT") != "/run exhaustive tests"
     plugins:
       - monorepo-diff#v1.0.1:
           diff: "git diff --name-only origin/${GITHUB_PR_TARGET_BRANCH}...HEAD"
@@ -22,5 +22,5 @@ steps:
                     ELASTIC_SLACK_NOTIFICATIONS_ENABLE=false
 
   - label: "Trigger logstash-exhaustive-tests-pipeline for GitHub comments"
-    if: build.env("GITHUB_PR_TRIGGER_COMMENT") != ""
+    if: build.env("GITHUB_PR_LABELS") == "/run exhaustive tests"
     command: "buildkite-agent pipeline upload .buildkite/exhaustive_tests_pipeline.yml"
