@@ -30,9 +30,10 @@ module LogStash
 
         get "/" do
           target_status = params[:wait_for_status]&.downcase
+          timeout = params[:timeout].to_i
           status = 200
 
-          if HEALTH_STATUS.include?(target_status) && params[:timeout]
+          if HEALTH_STATUS.include?(target_status) && timeout > 0
             begin
               wait_for_status(params[:timeout], target_status)
             rescue Timeout::Error
