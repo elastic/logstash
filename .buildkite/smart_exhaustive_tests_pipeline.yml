@@ -24,9 +24,8 @@ steps:
     if: build.env("GITHUB_PR_TRIGGER_COMMENT") == "/run exhaustive tests"
     trigger: "logstash-exhaustive-tests-pipeline"
     build:
-      commit: "${BUILDKITE_COMMIT}"
-      branch: "${BUILDKITE_BRANCH}"
+      commit: "HEAD"
+      branch: "pull/${BUILDKITE_PULL_REQUEST}/merge"
       env:
         BUILDKITE_PULL_REQUEST="${BUILDKITE_PULL_REQUEST}"
-        BUILDKITE_PULL_REQUEST_BASE_BRANCH="${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
         ELASTIC_SLACK_NOTIFICATIONS_ENABLE=false
