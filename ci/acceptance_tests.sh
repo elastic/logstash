@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-
 function get_package_type {
   # determines OS packaging system; at the moment either rpm or deb
   source /etc/os-release
