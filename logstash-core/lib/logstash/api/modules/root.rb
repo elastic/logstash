@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'timeout'
+
 module LogStash
   module Api
     module Modules
@@ -27,7 +29,11 @@ module LogStash
           status = 200
 
           if HEALTH_STATUS.include?(target_status) && params[:timeout]
-            status = 503 unless wait_for_status(params[:timeout], target_status)
+            begin
+              wait_for_status(params[:timeout], target_status)
+            rescue Timeout::Error
+              status = 503
+            end
           end
 
           command = factory.build(:system_basic_info)
@@ -35,14 +41,13 @@ module LogStash
         end
 
         private
-        def wait_for_status(timeout, target_status)
-          end_time = Time.now + timeout.to_i
+        def wait_for_status(timeout_seconds, target_status)
           wait_interval_seconds = 1
 
-          while Time.now < end_time
-            if HEALTH_STATUS.index(agent.health_observer.status.external_value) <= HEALTH_STATUS.index(target_status)
-              return true
-            end
+          Timeout.timeout(timeout_seconds.to_i) do
+            current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
+            break if current_status <= HEALTH_STATUS.index(target_status)
+
             sleep(wait_interval_seconds)
             wait_interval_seconds = wait_interval_seconds * 2
           end
