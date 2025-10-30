@@ -22,7 +22,11 @@ module LogStash
     module Modules
       class Root < ::LogStash::Api::Modules::Base
 
-        HEALTH_STATUS = java.util.EnumSet.allOf(org.logstash.health.Status).map(&:external_value)
+        HEALTH_STATUS = [
+          Java::OrgLogstashHealth::Status::GREEN,
+          Java::OrgLogstashHealth::Status::YELLOW,
+          Java::OrgLogstashHealth::Status::RED
+        ].map(&:external_value)
 
         get "/" do
           target_status = params[:wait_for_status]&.downcase
