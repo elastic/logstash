@@ -50,11 +50,13 @@ module LogStash
           wait_interval_seconds = 1
 
           Timeout.timeout(timeout_seconds.to_i) do
-            current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
-            break if current_status <= HEALTH_STATUS.index(target_status)
+            loop do
+              current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
+              break if current_status <= HEALTH_STATUS.index(target_status)
 
-            sleep(wait_interval_seconds)
-            wait_interval_seconds = wait_interval_seconds * 2
+              sleep(wait_interval_seconds)
+              wait_interval_seconds = wait_interval_seconds * 2
+            end
           end
         end
       end
