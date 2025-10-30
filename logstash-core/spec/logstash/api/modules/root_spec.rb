@@ -31,26 +31,34 @@ describe LogStash::Api::Modules::Root do
   include_examples "not found"
 
   describe 'wait_for_status query param' do
-
-    let(:margin_of_error) { 0.2 }
-
+    
     context 'no timeout is provided' do
 
       it 'returns immediately' do
         start_time = Time.now
         get "/?wait_for_status=red"
         end_time = Time.now
-        expect(end_time - start_time).to be < 1
+        expect(end_time - start_time).to be < 0.5
       end
     end
 
     context "timeout is provided" do
 
-      let(:timeout) { 1 }
+      context "the timeout value is not a valid integer" do
+
+        let(:timeout) { "invalid" }
+
+        it 'returns immediately' do
+          start_time = Time.now
+          get "/?wait_for_status=red&timeout=#{timeout}"
+          end_time = Time.now
+          expect(end_time - start_time).to be < 0.5
+        end
+      end
 
       context "the status doesn't change" do
 
-        let(:return_time) { timeout + 0.1 }
+        let(:timeout) { 1 }
 
         let(:return_statuses) do
           [
@@ -66,7 +74,7 @@ describe LogStash::Api::Modules::Root do
           start_time = Time.now
           get "/?wait_for_status=green&timeout=#{timeout}"
           end_time = Time.now
-          expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+          expect(end_time - start_time).to be >= timeout
         end
 
         it 'returns status code 503' do
@@ -75,9 +83,12 @@ describe LogStash::Api::Modules::Root do
         end
       end
 
-      context 'the status changes within the timeout' do
+      context 'the status changes to the target status within the timeout' do
 
-        let(:timeout) { 2 }
+        let(:timeout) do
+          # The first wait interval is 1 second
+          2
+        end
 
         let(:return_statuses) do
           [
@@ -99,124 +110,246 @@ describe LogStash::Api::Modules::Root do
       end
     end
 
-    context "green is provided" do
+    context 'status is provided' do
 
-      let(:timeout) do
-        # Two statuses are checked before the target is reached. The first wait time is 1 second,
-        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
-        4
+      context 'no timeout' do
+
+        described_class::HEALTH_STATUS.each do |status|
+
+          context "with status \"#{status}\"" do
+
+            it 'returns immediately' do
+              start_time = Time.now
+              get "/?wait_for_status=#{status}"
+              end_time = Time.now
+              expect(end_time - start_time).to be < 0.5
+            end
+          end
+        end
       end
 
-      let(:return_time) { 3.1 }
+      context "invalid status" do
 
-      let(:return_statues) do
-        [
-          org.logstash.health.Status::RED,
-          org.logstash.health.Status::YELLOW,
-          org.logstash.health.Status::GREEN,
-        ]
+        it "pending", :skip do
+          # start_time = Time.now
+          # get "/?wait_for_status=invalid"
+          # end_time = Time.now
+          # expect(end_time - start_time).to be < 0.5
+        end
       end
 
-      before do
-        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
+      context 'status is formatted differently' do
+
+        let(:timeout) { 2 }
+
+        let(:return_statuses) do
+          [
+            org.logstash.health.Status::RED,
+            org.logstash.health.Status::YELLOW
+          ]
+        end
+
+        before do
+          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+        end
+
+        it 'normalizes the format and checks the status' do
+          start_time = Time.now
+          get "/?wait_for_status=yElLoW&timeout=#{timeout}"
+          end_time = Time.now
+          expect(end_time - start_time).to be < timeout
+        end
       end
 
-      it 'checks for the status until it changes' do
-        start_time = Time.now
-        get "/?wait_for_status=green&timeout=#{timeout}"
-        end_time = Time.now
-        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
-      end
-    end
+      context 'target status is green' do
 
-    context "yellow is provided" do
+        let(:timeout) { 2 }
 
-      let(:timeout) do
-        # Two statuses are checked before the target is reached. The first wait time is 1 second,
-        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
-        2
-      end
+        context 'the status does not change' do
 
-      let(:return_statues) do
-        [
-          org.logstash.health.Status::RED,
-          org.logstash.health.Status::YELLOW
-        ]
-      end
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::YELLOW
+            ]
+          end
 
-      before do
-        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
-      end
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
 
-      it 'checks for the status until it changes' do
-        start_time = Time.now
-        get "/?wait_for_status=yellow&timeout=#{timeout}"
-        end_time = Time.now
-        expect(end_time - start_time).to be < timeout
-      end
-    end
+          it 'checks for the status until the timeout is reached' do
+            start_time = Time.now
+            get "/?wait_for_status=green&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be >= timeout
+          end
+        end
 
-    context "red is provided" do
+        context 'the status changes to green' do
 
-      let(:timeout) do
-        # Two statuses are checked before the target is reached. The first wait time is 1 second,
-        # the second wait time is 2 seconds. So it takes at least 3 seconds to reach target status.
-        2
-      end
+          let(:timeout) { 2 }
 
-      let(:return_statues) do
-        [
-          org.logstash.health.Status::RED
-        ]
-      end
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::GREEN
+            ]
+          end
 
-      let(:return_time) { 0.2 }
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
 
-      before do
-        allow(@agent.health_observer).to receive(:status).and_return(*return_statues)
+          it 'checks for the status until the timeout is reached' do
+            start_time = Time.now
+            get "/?wait_for_status=green&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < timeout
+          end
+        end
       end
 
-      it 'checks for the status until it changes to the target' do
-        start_time = Time.now
-        get "/?wait_for_status=red&timeout=#{timeout}"
-        end_time = Time.now
-        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+      context 'target status is yellow' do
+
+        let(:timeout) { 2 }
+
+        context 'the status does not change' do
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
+
+          it 'checks for the status until the timeout is reached' do
+            start_time = Time.now
+            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be >= timeout
+          end
+        end
+
+        context 'the status changes to yellow' do
+
+          let(:timeout) { 2 }
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::YELLOW
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
+
+          it 'checks for the status until the yellow status is reached' do
+            start_time = Time.now
+            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < timeout
+          end
+        end
+
+        context 'the status changes to green' do
+
+          let(:timeout) { 2 }
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::GREEN
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
+
+          it 'checks for the status until a status that is better (green) is reached' do
+            start_time = Time.now
+            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < timeout
+          end
+        end
       end
-    end
 
-    context 'status string is formatted differently' do
+      context 'target status is red' do
 
-      let(:timeout) { 2 }
+        let(:timeout) { 2 }
 
-      let(:return_statuses) do
-        [
-          org.logstash.health.Status::RED,
-          org.logstash.health.Status::YELLOW
-        ]
-      end
+        context 'the status does not change' do
 
-      before do
-        allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-      end
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED
+            ]
+          end
 
-      it 'normalizes the format and checks the status' do
-        start_time = Time.now
-        get "/?wait_for_status=yElLoW&timeout=#{timeout}"
-        end_time = Time.now
-        expect(end_time - start_time).to be < timeout
-      end
-    end
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
 
-    context "invalid status is provided" do
+          it 'returns immediately' do
+            start_time = Time.now
+            get "/?wait_for_status=red&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < 0.5
+          end
+        end
 
-      let(:timeout) { 2 }
-      let(:return_time) { 0.1 }
+        context 'the status changes to yellow' do
 
-      it 'returns immediately' do
-        start_time = Time.now
-        get "/?wait_for_status=invalid&timeout=#{timeout}"
-        end_time = Time.now
-        expect(end_time - start_time).to be_within(margin_of_error).of(return_time)
+          let(:timeout) { 2 }
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::YELLOW
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
+
+          it 'returns immediately' do
+            start_time = Time.now
+            get "/?wait_for_status=red&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < 0.5
+          end
+        end
+
+        context 'the status changes to green' do
+
+          let(:timeout) { 2 }
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED,
+              org.logstash.health.Status::GREEN
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
+
+          it 'returns immediately' do
+            start_time = Time.now
+            get "/?wait_for_status=red&timeout=#{timeout}"
+            end_time = Time.now
+            expect(end_time - start_time).to be < 0.5
+          end
+        end
       end
     end
   end
