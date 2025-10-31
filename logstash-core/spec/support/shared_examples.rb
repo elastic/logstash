@@ -119,3 +119,13 @@ shared_examples "not found" do
     expect(LogStash::Json.load(last_response.body)["path"]).not_to be_nil
   end
 end
+
+shared_examples "returns without waiting" do
+
+  it 'returns immediately' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be < 0.5
+  end
+end
