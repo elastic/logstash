@@ -120,12 +120,57 @@ shared_examples "not found" do
   end
 end
 
-shared_examples "returns without waiting" do
+shared_examples "returns successfully without waiting" do
+
+  it 'returns status code 200' do
+    expect(response.status).to be 200
+  end
 
   it 'returns immediately' do
     start_time = Time.now
     response
     end_time = Time.now
     expect(end_time - start_time).to be < 0.5
+  end
+end
+
+shared_examples "timed out response" do
+
+  it 'returns an error response' do
+    expect(response.body).to include(error_message)
+  end
+
+  it 'returns an 400 status' do
+    expect(response.status).to be 400
+  end
+end
+
+shared_examples 'waits until the target status (or better) is reached and returns successfully' do
+  it 'returns status code 200' do
+    expect(response.status).to be 200
+  end
+
+  it 'checks for the status until the target status (or better) is reached' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be < timeout_num
+  end
+end
+
+shared_examples 'times out waiting for target status (or better)' do
+  it 'times out waiting for target status (or better)' do
+    start_time = Time.now
+    response
+    end_time = Time.now
+    expect(end_time - start_time).to be >= timeout_num
+  end
+
+  it 'returns status code 503' do
+    expect(response.status).to eq 503
+  end
+
+  it 'returns a message saying the request timed out' do
+    expect(response.body).to include(described_class::TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [status])
   end
 end
