@@ -289,7 +289,7 @@ Tips for creating API keys:
 
 * API keys are tied to the cluster they are created in. If you are sending output to different clusters, be sure to create the correct kind of API key.
 * {{ls}} can send both collected data and monitoring information to {{es}}. If you are sending both to the same cluster, you can use the same API key. For different clusters, you need an API key per cluster.
-* A single cluster can share a key for ingestion and monitoring purposes.
+* A single cluster can share a key for ingestion and monitoring.
 * A production cluster and a monitoring cluster require separate keys.
 * When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
   This option formats the API key in the correct `id:api_key` format required by {{ls}}.
