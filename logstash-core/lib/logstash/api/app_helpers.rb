@@ -29,8 +29,7 @@ module LogStash::Api::AppHelpers
     as     = options.fetch(:as, :json)
     filter = options.fetch(:filter, "")
 
-    status data.respond_to?(:status_code) ?
-             data.status_code : options.fetch(:status_code, 200)
+    status data.respond_to?(:status_code) ? data.status_code : 200
 
     if as == :json
       if api_error?(data)
