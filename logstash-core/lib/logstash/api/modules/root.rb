@@ -61,7 +61,7 @@ module LogStash
         end
 
         def parse_status(input_status)
-          target_status = input_status&.downcase
+          target_status = input_status.downcase
           target_status if HEALTH_STATUS.include?(target_status)
         end
 
