@@ -30,35 +30,150 @@ describe LogStash::Api::Modules::Root do
 
   include_examples "not found"
 
-  describe 'wait_for_status query param' do
-    
-    context 'no timeout is provided' do
+  describe 'wait_for_status' do
 
-      it 'returns immediately' do
-        start_time = Time.now
-        get "/?wait_for_status=red"
-        end_time = Time.now
-        expect(end_time - start_time).to be < 0.5
+    let(:response) { get request }
+
+    context 'timeout' do
+
+      context 'no timeout provided' do
+
+        let(:request) { "/" }
+
+        include_examples "returns without waiting"
+      end
+
+      context 'timeout is provided' do
+
+        let(:request) { "/?timeout=#{timeout}" }
+
+        context 'timeout does not have units' do
+
+          let(:timeout) { '1' }
+
+          it 'returns an error response' do
+            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
+          end
+
+          it 'returns a 400 status' do
+            expect(response.status).to be 400
+          end
+        end
+
+        context 'timeout number is not an integer' do
+
+          let(:timeout) { '1.0s' }
+
+          it 'returns an error response' do
+            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
+          end
+
+          it 'returns an 400 status' do
+            expect(response.status).to be 400
+          end
+        end
+
+        context 'timeout is not in the accepted format' do
+
+          let(:timeout) { 'invalid' }
+
+          it 'returns an error response' do
+            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
+          end
+
+          it 'returns an 400 status' do
+            expect(response.status).to be 400
+          end
+        end
+
+        context 'valid timeout is provided' do
+
+          context 'no status is provided' do
+
+            let(:timeout) { '1s' }
+
+            include_examples "returns without waiting"
+          end
+
+          context 'status is provided' do
+
+            let(:timeout) { '1s' }
+            let(:status) { 'green' }
+            let(:request) { "/?status=#{status}timeout=#{timeout}" }
+
+            it 'returns status code 200' do
+              expect(response.status).to be 200
+            end
+
+            include_examples "returns without waiting"
+          end
+        end
       end
     end
 
-    context "timeout is provided" do
+    context 'status' do
 
-      context "the timeout value is not a valid integer" do
+      context 'no status provided' do
 
-        let(:timeout) { "invalid" }
+        let(:request) { '/'}
 
-        it 'returns immediately' do
-          start_time = Time.now
-          get "/?wait_for_status=red&timeout=#{timeout}"
-          end_time = Time.now
-          expect(end_time - start_time).to be < 0.5
-        end
+        include_examples "returns without waiting"
       end
 
-      context "the status doesn't change" do
+      context 'status is provided' do
 
-        let(:timeout) { 1 }
+        let(:request) { "/?wait_for_status=#{status}" }
+
+        context 'status is not valid' do
+
+          let(:status) { 'invalid' }
+
+          it 'returns an error response' do
+            expect(response.body).to include(described_class::INVALID_HEALTH_STATUS_MESSAGE % [status])
+          end
+
+          it 'returns an 400 status' do
+            expect(response.status).to be 400
+          end
+        end
+
+        context 'status is valid' do
+
+          let(:status) { 'red' }
+
+          context 'no timeout is provided' do
+
+
+          end
+
+          context 'timeout is provided' do
+
+            let(:timeout) { '1s' }
+            let(:status) { 'green' }
+            let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout}" }
+
+            it 'returns status code 200' do
+              expect(response.status).to be 200
+            end
+
+            include_examples "returns without waiting"
+          end
+        end
+      end
+    end
+
+    context 'timeout and status provided' do
+
+      let(:timeout_num) { 2 }
+      let(:timeout_string) { "#{timeout_num}s"}
+      let(:status) { 'green' }
+      let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
+
+      before do
+        allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+      end
+
+      context "the status doesn't change before the timeout" do
 
         let(:return_statuses) do
           [
@@ -66,104 +181,25 @@ describe LogStash::Api::Modules::Root do
           ]
         end
 
-        before do
-          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-        end
-
-        it 'checks the status until the timeout is reached' do
+        it 'checks the status until timeout' do
           start_time = Time.now
-          get "/?wait_for_status=green&timeout=#{timeout}"
+          response
           end_time = Time.now
-          expect(end_time - start_time).to be >= timeout
+          expect(end_time - start_time).to be >= timeout_num
         end
 
         it 'returns status code 503' do
-          response = get "/?wait_for_status=green&timeout=#{timeout}"
           expect(response.status).to eq 503
         end
-      end
 
-      context 'the status changes to the target status within the timeout' do
-
-        let(:timeout) do
-          # The first wait interval is 1 second
-          2
-        end
-
-        let(:return_statuses) do
-          [
-            org.logstash.health.Status::RED,
-            org.logstash.health.Status::YELLOW
-          ]
-        end
-
-        before do
-          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-        end
-
-        it 'returns when the target status is reached' do
-          start_time = Time.now
-          get "/?wait_for_status=yellow&timeout=#{timeout}"
-          end_time = Time.now
-          expect(end_time - start_time).to be < timeout
-        end
-      end
-    end
-
-    context 'status is provided' do
-
-      context 'no timeout' do
-
-        described_class::HEALTH_STATUS.each do |status|
-
-          context "with status \"#{status}\"" do
-
-            it 'returns immediately' do
-              start_time = Time.now
-              get "/?wait_for_status=#{status}"
-              end_time = Time.now
-              expect(end_time - start_time).to be < 0.5
-            end
-          end
-        end
-      end
-
-      context "invalid status" do
-
-        it "pending", :skip do
-          # start_time = Time.now
-          # get "/?wait_for_status=invalid"
-          # end_time = Time.now
-          # expect(end_time - start_time).to be < 0.5
-        end
-      end
-
-      context 'status is formatted differently' do
-
-        let(:timeout) { 2 }
-
-        let(:return_statuses) do
-          [
-            org.logstash.health.Status::RED,
-            org.logstash.health.Status::YELLOW
-          ]
-        end
-
-        before do
-          allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-        end
-
-        it 'normalizes the format and checks the status' do
-          start_time = Time.now
-          get "/?wait_for_status=yElLoW&timeout=#{timeout}"
-          end_time = Time.now
-          expect(end_time - start_time).to be < timeout
+        it 'returns a message saying the request timed out' do
+          expect(response.body).to include(described_class::TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [status])
         end
       end
 
       context 'target status is green' do
 
-        let(:timeout) { 2 }
+        let(:status) { 'green' }
 
         context 'the status does not change' do
 
@@ -174,21 +210,15 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'checks for the status until the timeout is reached' do
+          it 'checks for the status until timeout' do
             start_time = Time.now
-            get "/?wait_for_status=green&timeout=#{timeout}"
+            response
             end_time = Time.now
-            expect(end_time - start_time).to be >= timeout
+            expect(end_time - start_time).to be >= timeout_num
           end
         end
 
         context 'the status changes to green' do
-
-          let(:timeout) { 2 }
 
           let(:return_statuses) do
             [
@@ -197,22 +227,18 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'checks for the status until the timeout is reached' do
+          it 'checks for the status until the target status is reached' do
             start_time = Time.now
-            get "/?wait_for_status=green&timeout=#{timeout}"
+            response
             end_time = Time.now
-            expect(end_time - start_time).to be < timeout
+            expect(end_time - start_time).to be < timeout_num
           end
         end
       end
 
       context 'target status is yellow' do
 
-        let(:timeout) { 2 }
+        let(:status) { 'yellow' }
 
         context 'the status does not change' do
 
@@ -222,21 +248,15 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'checks for the status until the timeout is reached' do
+          it 'checks for the status until timeout' do
             start_time = Time.now
-            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            response
             end_time = Time.now
-            expect(end_time - start_time).to be >= timeout
+            expect(end_time - start_time).to be >= timeout_num
           end
         end
 
         context 'the status changes to yellow' do
-
-          let(:timeout) { 2 }
 
           let(:return_statuses) do
             [
@@ -245,21 +265,15 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
           it 'checks for the status until the yellow status is reached' do
             start_time = Time.now
-            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            response
             end_time = Time.now
-            expect(end_time - start_time).to be < timeout
+            expect(end_time - start_time).to be < timeout_num
           end
         end
 
         context 'the status changes to green' do
-
-          let(:timeout) { 2 }
 
           let(:return_statuses) do
             [
@@ -268,22 +282,18 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
           it 'checks for the status until a status that is better (green) is reached' do
             start_time = Time.now
-            get "/?wait_for_status=yellow&timeout=#{timeout}"
+            response
             end_time = Time.now
-            expect(end_time - start_time).to be < timeout
+            expect(end_time - start_time).to be < timeout_num
           end
         end
       end
 
       context 'target status is red' do
 
-        let(:timeout) { 2 }
+        let(:status) { 'red' }
 
         context 'the status does not change' do
 
@@ -293,21 +303,10 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'returns immediately' do
-            start_time = Time.now
-            get "/?wait_for_status=red&timeout=#{timeout}"
-            end_time = Time.now
-            expect(end_time - start_time).to be < 0.5
-          end
+          include_examples "returns without waiting"
         end
 
         context 'the status changes to yellow' do
-
-          let(:timeout) { 2 }
 
           let(:return_statuses) do
             [
@@ -316,21 +315,10 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'returns immediately' do
-            start_time = Time.now
-            get "/?wait_for_status=red&timeout=#{timeout}"
-            end_time = Time.now
-            expect(end_time - start_time).to be < 0.5
-          end
+          include_examples "returns without waiting"
         end
 
         context 'the status changes to green' do
-
-          let(:timeout) { 2 }
 
           let(:return_statuses) do
             [
@@ -339,16 +327,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
-
-          it 'returns immediately' do
-            start_time = Time.now
-            get "/?wait_for_status=red&timeout=#{timeout}"
-            end_time = Time.now
-            expect(end_time - start_time).to be < 0.5
-          end
+          include_examples "returns without waiting"
         end
       end
     end
