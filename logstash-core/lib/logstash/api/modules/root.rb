@@ -41,11 +41,11 @@ module LogStash
           end
 
           if input_timeout
-            return timeout_error_response(input_timeout) unless timeout_f = parse_timeout_f(input_timeout)
+            return timeout_error_response(input_timeout) unless timeout_s = parse_timeout_s(input_timeout)
           end
 
-          if target_status && timeout_f
-            wait_for_status_and_respond(target_status, timeout_f)
+          if target_status && timeout_s
+            wait_for_status_and_respond(target_status, timeout_s)
           else
             command = factory.build(:system_basic_info)
             respond_with(command.run)
@@ -53,7 +53,9 @@ module LogStash
         end
 
         private
-        def parse_timeout_f(timeout)
+        def parse_timeout_s(timeout)
+          # If we call #to_seconds directly, the value will be rounded. So call to_nanos, then convert
+          # to seconds, represented as a float.
           LogStash::Util::TimeValue.from_value(timeout).to_nanos/1e9
         rescue ArgumentError
         end
