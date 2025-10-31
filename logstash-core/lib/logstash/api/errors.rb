@@ -40,5 +40,25 @@ module LogStash
         404
       end
     end
+
+    class BadRequest < ApiError
+      def initialize(message = nil)
+        super(message || "Bad Request")
+      end
+
+      def status_code
+        400
+      end
+    end
+
+    class TimedOut < ApiError
+      def initialize(message = nil)
+        super(message || "Timed out")
+      end
+
+      def status_code
+        503
+      end
+    end
   end
 end
