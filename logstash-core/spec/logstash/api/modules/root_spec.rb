@@ -40,7 +40,7 @@ describe LogStash::Api::Modules::Root do
 
         let(:request) { "/" }
 
-        include_examples "returns without waiting"
+        include_examples "returns successfully without waiting"
       end
 
       context 'timeout is provided' do
@@ -50,40 +50,25 @@ describe LogStash::Api::Modules::Root do
         context 'timeout does not have units' do
 
           let(:timeout) { '1' }
+          let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          it 'returns an error response' do
-            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
-          end
-
-          it 'returns a 400 status' do
-            expect(response.status).to be 400
-          end
+          include_examples 'timed out response'
         end
 
         context 'timeout number is not an integer' do
 
           let(:timeout) { '1.0s' }
+          let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          it 'returns an error response' do
-            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
-          end
-
-          it 'returns an 400 status' do
-            expect(response.status).to be 400
-          end
+          include_examples 'timed out response'
         end
 
         context 'timeout is not in the accepted format' do
 
           let(:timeout) { 'invalid' }
+          let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          it 'returns an error response' do
-            expect(response.body).to include(described_class::INVALID_TIMEOUT_MESSAGE % [timeout])
-          end
-
-          it 'returns an 400 status' do
-            expect(response.status).to be 400
-          end
+          include_examples 'timed out response'
         end
 
         context 'valid timeout is provided' do
@@ -92,7 +77,7 @@ describe LogStash::Api::Modules::Root do
 
             let(:timeout) { '1s' }
 
-            include_examples "returns without waiting"
+            include_examples "returns successfully without waiting"
           end
 
           context 'status is provided' do
@@ -105,7 +90,7 @@ describe LogStash::Api::Modules::Root do
               expect(response.status).to be 200
             end
 
-            include_examples "returns without waiting"
+            include_examples "returns successfully without waiting"
           end
         end
       end
@@ -117,7 +102,7 @@ describe LogStash::Api::Modules::Root do
 
         let(:request) { '/'}
 
-        include_examples "returns without waiting"
+        include_examples "returns successfully without waiting"
       end
 
       context 'status is provided' do
@@ -127,36 +112,46 @@ describe LogStash::Api::Modules::Root do
         context 'status is not valid' do
 
           let(:status) { 'invalid' }
+          let(:error_message) { described_class::INVALID_HEALTH_STATUS_MESSAGE % [status] }
 
-          it 'returns an error response' do
-            expect(response.body).to include(described_class::INVALID_HEALTH_STATUS_MESSAGE % [status])
-          end
-
-          it 'returns an 400 status' do
-            expect(response.status).to be 400
-          end
+          include_examples 'timed out response'
         end
 
         context 'status is valid' do
 
-          let(:status) { 'red' }
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED
+            ]
+          end
+
+          before do
+            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+          end
 
           context 'no timeout is provided' do
 
+            let(:request) { "/?wait_for_status=green" }
 
+            include_examples "returns successfully without waiting"
           end
 
           context 'timeout is provided' do
 
-            let(:timeout) { '1s' }
+            let(:timeout_num) { 2 }
+            let(:timeout_string) { "#{timeout_num}s"}
             let(:status) { 'green' }
-            let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout}" }
+            let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
 
-            it 'returns status code 200' do
-              expect(response.status).to be 200
+            let(:return_statuses) do
+              [
+                org.logstash.health.Status::RED,
+                org.logstash.health.Status::GREEN
+
+              ]
             end
 
-            include_examples "returns without waiting"
+            include_examples 'waits until the target status (or better) is reached and returns successfully'
           end
         end
       end
@@ -181,20 +176,7 @@ describe LogStash::Api::Modules::Root do
           ]
         end
 
-        it 'checks the status until timeout' do
-          start_time = Time.now
-          response
-          end_time = Time.now
-          expect(end_time - start_time).to be >= timeout_num
-        end
-
-        it 'returns status code 503' do
-          expect(response.status).to eq 503
-        end
-
-        it 'returns a message saying the request timed out' do
-          expect(response.body).to include(described_class::TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [status])
-        end
+        include_examples 'times out waiting for target status (or better)'
       end
 
       context 'target status is green' do
@@ -210,12 +192,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          it 'checks for the status until timeout' do
-            start_time = Time.now
-            response
-            end_time = Time.now
-            expect(end_time - start_time).to be >= timeout_num
-          end
+          include_examples 'times out waiting for target status (or better)'
         end
 
         context 'the status changes to green' do
@@ -227,12 +204,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          it 'checks for the status until the target status is reached' do
-            start_time = Time.now
-            response
-            end_time = Time.now
-            expect(end_time - start_time).to be < timeout_num
-          end
+          include_examples 'waits until the target status (or better) is reached and returns successfully'
         end
       end
 
@@ -248,12 +220,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          it 'checks for the status until timeout' do
-            start_time = Time.now
-            response
-            end_time = Time.now
-            expect(end_time - start_time).to be >= timeout_num
-          end
+          include_examples 'times out waiting for target status (or better)'
         end
 
         context 'the status changes to yellow' do
@@ -265,12 +232,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          it 'checks for the status until the yellow status is reached' do
-            start_time = Time.now
-            response
-            end_time = Time.now
-            expect(end_time - start_time).to be < timeout_num
-          end
+          include_examples 'waits until the target status (or better) is reached and returns successfully'
         end
 
         context 'the status changes to green' do
@@ -282,12 +244,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          it 'checks for the status until a status that is better (green) is reached' do
-            start_time = Time.now
-            response
-            end_time = Time.now
-            expect(end_time - start_time).to be < timeout_num
-          end
+          include_examples 'waits until the target status (or better) is reached and returns successfully'
         end
       end
 
@@ -303,7 +260,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          include_examples "returns without waiting"
+          include_examples "returns successfully without waiting"
         end
 
         context 'the status changes to yellow' do
@@ -315,7 +272,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          include_examples "returns without waiting"
+          include_examples "returns successfully without waiting"
         end
 
         context 'the status changes to green' do
@@ -327,7 +284,7 @@ describe LogStash::Api::Modules::Root do
             ]
           end
 
-          include_examples "returns without waiting"
+          include_examples "returns successfully without waiting"
         end
       end
     end
