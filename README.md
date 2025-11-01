@@ -287,3 +287,5 @@ For more information about contributing, see the
 
     This will install the 80+ default plugins which makes Logstash ready to connect to multiple data sources, perform transformations and send the results to Elasticsearch and other destinations.
     </details>
+
+
