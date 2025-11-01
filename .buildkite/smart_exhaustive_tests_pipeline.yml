@@ -1,0 +1,31 @@
+steps:
+  - label: "Trigger logstash-exhaustive-tests-pipeline for PRs with qa/acceptance/ changes"
+    if: build.pull_request.id != null && build.env("GITHUB_PR_TRIGGER_COMMENT") != "run exhaustive tests"
+    plugins:
+      - monorepo-diff#v1.0.1:
+          diff: "git diff --name-only origin/${GITHUB_PR_TARGET_BRANCH}...HEAD"
+          interpolation: false
+          watch:
+            - path:
+                - ^qa/acceptance/
+                - ^ci/acceptance_tests.sh
+                - .buildkite/smart_exhaustive_tests_pipeline.yml
+              config:
+                trigger: "logstash-exhaustive-tests-pipeline"
+                build:
+                  commit: "${BUILDKITE_COMMIT}"
+                  branch: "${BUILDKITE_BRANCH}"
+                  env:
+                    BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
+                    BUILDKITE_PULL_REQUEST_BASE_BRANCH: "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+                    ELASTIC_SLACK_NOTIFICATIONS_ENABLED: false
+
+  - label: "Trigger logstash-exhaustive-tests-pipeline for GitHub comments"
+    if: build.env("GITHUB_PR_TRIGGER_COMMENT") == "run exhaustive tests"
+    trigger: "logstash-exhaustive-tests-pipeline"
+    build:
+      commit: "HEAD"
+      branch: "pull/${BUILDKITE_PULL_REQUEST}/merge"
+      env:
+        BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: false
