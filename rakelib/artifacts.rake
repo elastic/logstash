@@ -82,58 +82,6 @@ namespace "artifact" do
     res
   end
 
-  def duplicated_gems_exclude_paths
-    shared_gems_path = 'vendor/jruby/lib/ruby/gems/shared/gems'
-    default_gemspecs_path = 'vendor/jruby/lib/ruby/gems/shared/specifications/default'
-    bundle_gems_path = 'vendor/bundle/jruby/*/gems'
-
-    exclusions = []
-
-    # "bundled" gems in jruby
-    # https://github.com/jruby/jruby/blob/024123c29d73b672d50730117494f3e4336a0edb/lib/pom.rb#L108-L152
-    shared_gem_names = Dir.glob(File.join(shared_gems_path, '*')).map do |path|
-      match = File.basename(path).match(/^(.+?)-\d+/)
-      match ? match[1] : nil
-    end.compact
-
-    # "default" gems in jruby/ruby
-    # https://github.com/jruby/jruby/blob/024123c29d73b672d50730117494f3e4336a0edb/lib/pom.rb#L21-L106
-    default_gem_names = Dir.glob(File.join(default_gemspecs_path, '*.gemspec')).map do |path|
-      match = File.basename(path).match(/^(.+?)-\d+/)
-      match ? match[1] : nil
-    end.compact
-
-    # gems we explicitly manage with bundler (we always want these to take precedence)
-    bundle_gem_names = Dir.glob(File.join(bundle_gems_path, '*')).map do |path|
-      match = File.basename(path).match(/^(.+?)-\d+/)
-      match ? match[1] : nil
-    end.compact
-
-    shared_duplicates = shared_gem_names & bundle_gem_names
-    default_duplicates = default_gem_names & bundle_gem_names
-    all_duplicates = (shared_duplicates + default_duplicates).uniq
-    puts "Adding duplicate gems to exclude path: #{all_duplicates.sort.join(', ')}"
-
-    # Exclude shared/bundled gems duplicates
-    shared_duplicates.each do |gem_name|
-      exclusions << "vendor/jruby/lib/ruby/gems/shared/gems/#{gem_name}-*/**/*"
-      exclusions << "vendor/jruby/lib/ruby/gems/shared/gems/#{gem_name}-*"
-      exclusions << "vendor/jruby/lib/ruby/gems/shared/specifications/#{gem_name}-*.gemspec"
-    end
-
-    # Exclude default gems duplicates
-    default_duplicates.each do |gem_name|
-      # CODEREVIEW: removing the code itself causes issues with gem loading. Remove only the gemspecs
-      # for duplicated gems. This should help the code scanning case.
-      exclusions << "vendor/jruby/lib/ruby/gems/shared/specifications/default/#{gem_name}-*.gemspec"
-      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}.rb"
-      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}/**/*"
-      # exclusions << "vendor/jruby/lib/ruby/stdlib/#{gem_name}"
-    end
-
-    exclusions
-  end
-
   def default_exclude_paths
     return @exclude_paths if @exclude_paths
 
@@ -153,9 +101,6 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
-    @exclude_paths.concat(duplicated_gems_exclude_paths)
-    puts "Full exclude_paths list:"
-    @exclude_paths.each { |path| puts " - #{path}" }
     @exclude_paths.freeze
   end
 
