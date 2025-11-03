@@ -1,22 +1,66 @@
 {
-    "jobs": [
-      {
-        "enabled": true,
-        "pipeline_slug": "logstash-pull-request-pipeline",
-        "allow_org_users": true,
-        "allowed_repo_permissions": ["admin", "write"],
-        "allowed_list": ["dependabot[bot]", "mergify[bot]", "github-actions[bot]", "elastic-vault-github-plugin-prod[bot]"],
-        "set_commit_status": true,
-        "build_on_commit": true,
-        "build_on_comment": true,
-        "trigger_comment_regex": "^(?:(?:buildkite\\W+)?(?:build|test)\\W+(?:this|it))",
-        "always_trigger_comment_regex": "^(?:(?:buildkite\\W+)?(?:build|test)\\W+(?:this|it))",
-        "skip_ci_labels": [ ],
-        "skip_target_branches": [ ],
-        "skip_ci_on_only_changed": [
-          "^docs/"
-        ],
-        "always_require_ci_on_changed": [ ]
-      }
-    ]
-  }
+	"jobs": [
+		{
+			"enabled": true,
+			"pipeline_slug": "logstash-pull-request-pipeline",
+			"allow_org_users": true,
+			"allowed_repo_permissions": [
+				"admin",
+				"write"
+			],
+			"allowed_list": [
+				"dependabot[bot]",
+				"mergify[bot]",
+				"github-actions[bot]",
+				"elastic-vault-github-plugin-prod[bot]"
+			],
+			"set_commit_status": true,
+			"build_on_commit": true,
+			"build_on_comment": true,
+			"trigger_comment_regex": "^(?:(?:buildkite\\W+)?(?:build|test)\\W+(?:this|it))",
+			"always_trigger_comment_regex": "^(?:(?:buildkite\\W+)?(?:build|test)\\W+(?:this|it))",
+			"skip_ci_labels": [],
+			"skip_target_branches": [],
+			"skip_ci_on_only_changed": [
+				"^.github/",
+				"^docs/",
+				"^.mergify.yml$",
+				"^.pre-commit-config.yaml",
+				"\\.md$"
+			],
+			"always_require_ci_on_changed": []
+		},
+		{
+			"enabled": true,
+			"pipeline_slug": "logstash-smart-exhaustive-tests-pipeline",
+			"allow_org_users": true,
+			"allowed_repo_permissions": [
+				"admin",
+				"write"
+			],
+			"allowed_list": [
+				"dependabot[bot]",
+				"mergify[bot]",
+				"github-actions[bot]"
+			],
+			"set_commit_status": true,
+			"build_on_commit": true,
+			"build_on_comment": true,
+			"trigger_comment_regex": "^run\\s+exhaustive\\s+tests$",
+			"always_trigger_comment_regex": "^run\\s+exhaustive\\s+tests$",
+			"skip_ci_labels": [],
+			"skip_target_branches": [],
+			"skip_ci_on_only_changed": [
+				"^.github/",
+				"^docs/",
+				"^.mergify.yml$",
+				"^.pre-commit-config.yaml",
+				"\\.md$"
+			],
+			"always_require_ci_on_changed": [
+				"^qa/acceptance/",
+				"^ci/acceptance_tests.sh"
+			]
+		}
+	]
+}
