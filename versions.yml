@@ -3,6 +3,9 @@
 logstash: 9.3.0
 logstash-core: 9.3.0
 logstash-core-plugin-api: 2.1.16
+# Logstash release track corresponding to keys in https://github.com/logstash-plugins/.ci/blob/1.x/logstash-versions.yml
+# For example 9.current, 9.previous, etc
+logstash-release-track: main
 
 bundled_jdk:
   # for AdoptOpenJDK/OpenJDK jdk-14.0.1+7.1, the revision is 14.0.1 while the build is 7.1
