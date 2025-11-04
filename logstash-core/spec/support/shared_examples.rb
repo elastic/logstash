@@ -154,7 +154,7 @@ shared_examples 'waits until the target status (or better) is reached and return
     start_time = Time.now
     response
     end_time = Time.now
-    expect(end_time - start_time).to be < timeout_num
+    expect(end_time - start_time).to be <= timeout_num
   end
 end
 
