@@ -11,7 +11,10 @@ on:
         description: 'Logstash branch (example: 9.1)'
         required: true
         type: string
-
+      logstash_release_track:
+        description: 'Release track (example: 9.current, 9.previous, main)'
+        required: true
+        type: string
 jobs:
   bump:
     permissions:
@@ -29,3 +32,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LOGSTASH_BRANCH: "${{ github.event.inputs.logstash_branch }}"
           LOGSTASH_VERSION: "${{ github.event.inputs.logstash_version }}"
+          LOGSTASH_RELEASE_TRACK: "${{ github.event.inputs.logstash_release_track }}"
