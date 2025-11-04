@@ -122,7 +122,7 @@ paths:
                         batch_delay:
                           type: integer
               example:
-                host: ""
+                host: "logstash-pipelines.example.com"
                 version: "9.3.0"
                 http_address: "127.0.0.1:9600"
                 id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
