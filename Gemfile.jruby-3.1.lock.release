@@ -114,10 +114,10 @@ GEM
     elastic-transport (8.4.1)
       faraday (< 3)
       multi_json
-    elasticsearch (8.19.1)
+    elasticsearch (8.19.2)
       elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.19.1)
-    elasticsearch-api (8.19.1)
+      elasticsearch-api (= 8.19.2)
+    elasticsearch-api (8.19.2)
       multi_json
     equalizer (0.0.11)
     et-orbi (1.4.0)
@@ -175,7 +175,7 @@ GEM
       semantic_logger
     jruby-openssl (0.15.5-java)
     jruby-stdin-channel (0.2.0-java)
-    json (2.15.1-java)
+    json (2.15.2-java)
     json-schema (2.8.1)
       addressable (>= 2.4)
     kramdown (2.5.1)
@@ -262,7 +262,7 @@ GEM
     logstash-codec-rubydebug (3.1.0)
       amazing_print (~> 1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-devutils (2.6.2-java)
+    logstash-devutils (2.6.3-java)
       fivemat
       gem_publisher
       kramdown (~> 2)
@@ -313,7 +313,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3 (= 0.1.6)
-    logstash-filter-geoip (7.3.1-java)
+    logstash-filter-geoip (7.3.2-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -344,7 +344,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       metriks
       thread_safe
-    logstash-filter-mutate (3.5.8)
+    logstash-filter-mutate (3.5.9)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-prune (3.0.4)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -382,12 +382,12 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       nokogiri (>= 1.18.9)
       xml-simple
-    logstash-input-azure_event_hubs (1.5.2)
+    logstash-input-azure_event_hubs (1.5.3)
       logstash-codec-json
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (7.0.3-java)
+    logstash-input-beats (7.0.4-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -575,7 +575,7 @@ GEM
       logstash-mixin-plugin_factory_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.1)
       stud
-    logstash-integration-rabbitmq (7.4.0-java)
+    logstash-integration-rabbitmq (7.4.1-java)
       back_pressure (~> 1.0)
       logstash-codec-json
       logstash-core (>= 6.5.0)
@@ -708,7 +708,7 @@ GEM
       timeout
     net-smtp (0.5.1)
       net-protocol
-    nio4r (2.7.4-java)
+    nio4r (2.7.5-java)
     nokogiri (1.18.10-java)
       racc (~> 1.4)
     octokit (4.25.1)
@@ -717,7 +717,7 @@ GEM
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     parallel (1.27.0)
-    parser (3.3.9.0)
+    parser (3.3.10.0)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.32)
@@ -740,7 +740,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
-    rack (3.2.3)
+    rack (3.2.4)
     rack-protection (4.2.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -751,7 +751,7 @@ GEM
     rack-test (2.2.0)
       rack (>= 1.3)
     rainbow (3.1.1)
-    rake (13.3.0)
+    rake (13.3.1)
     redis (4.8.1)
     regexp_parser (2.11.3)
     rexml (3.4.4)
@@ -764,7 +764,7 @@ GEM
     rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.6)
+    rspec-mocks (3.13.7)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.6)
@@ -819,7 +819,7 @@ GEM
     thwait (0.2.0)
       e2mmap
     tilt (2.6.1)
-    timeout (0.4.3)
+    timeout (0.4.4)
     treetop (1.6.15)
       polyglot (~> 0.3)
     twitter (6.2.0)
@@ -843,7 +843,7 @@ GEM
     uri (1.0.4)
     webhdfs (0.11.0)
       addressable
-    webmock (3.25.1)
+    webmock (3.25.2)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
