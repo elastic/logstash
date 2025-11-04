@@ -51,13 +51,13 @@ module LogStash
       end
     end
 
-    class TimedOut < ApiError
+    class RequestTimeout < ApiError
       def initialize(message = nil)
-        super(message || "Timed out")
+        super(message || "Request Timeout")
       end
 
       def status_code
-        503
+        408
       end
     end
   end
