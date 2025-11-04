@@ -74,22 +74,23 @@ module LogStash
         end
 
         def wait_for_status_and_respond(target_status, timeout)
-          wait_interval_s = 1
+          wait_interval = 0.2 # seconds
+          deadline = Time.now + timeout
 
-          Timeout.timeout(timeout) do
-            loop do
-              current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
-              break if current_status <= HEALTH_STATUS.index(target_status)
+          loop do
+            current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
+            break if current_status <= HEALTH_STATUS.index(target_status)
 
-              sleep(wait_interval_s)
-              wait_interval_s = wait_interval_s * 2
+            if Time.now > deadline
+              return respond_with(TimedOut.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
             end
 
-            command = factory.build(:system_basic_info)
-            respond_with(command.run)
+            sleep(wait_interval)
+            wait_interval = wait_interval * 2
           end
-        rescue Timeout::Error
-          respond_with(TimedOut.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
+
+          command = factory.build(:system_basic_info)
+          respond_with(command.run)
         end
       end
     end
