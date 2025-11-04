@@ -80,7 +80,7 @@ module LogStash
             break if current_status <= HEALTH_STATUS.index(target_status)
 
             if Time.now > deadline
-              return respond_with(TimedOut.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
+              return respond_with(RequestTimeout.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
             end
 
             sleep(wait_interval)
