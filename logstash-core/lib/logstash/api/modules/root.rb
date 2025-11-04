@@ -53,7 +53,7 @@ module LogStash
         private
         def parse_timeout_s(timeout)
           # If we call #to_seconds directly, the value will be rounded. So call to_nanos, then convert
-          # to seconds, so we get a float.
+          # to a float and divide by 1e9 to get the value in seconds.
           LogStash::Util::TimeValue.from_value(timeout).to_nanos.to_f/1_000_000_000
         rescue ArgumentError
         end
