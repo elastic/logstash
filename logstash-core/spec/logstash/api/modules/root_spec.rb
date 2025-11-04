@@ -161,7 +161,8 @@ describe LogStash::Api::Modules::Root do
     context 'timeout and status provided' do
 
       let(:timeout_num) { 2 }
-      let(:timeout_string) { "#{timeout_num}s"}
+      let(:timeout_unit) { 's' }
+      let(:timeout_string) { "#{timeout_num}#{timeout_unit}"}
       let(:status) { 'green' }
       let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
 
@@ -286,6 +287,22 @@ describe LogStash::Api::Modules::Root do
           end
 
           include_examples "returns successfully without waiting"
+        end
+      end
+
+      context 'timeout units is ms' do
+
+        let(:timeout_unit) { 'ms' }
+
+        context "the status doesn't change before the timeout" do
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::RED
+            ]
+          end
+
+          include_examples 'times out waiting for target status (or better)'
         end
       end
     end

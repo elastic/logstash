@@ -159,11 +159,16 @@ shared_examples 'waits until the target status (or better) is reached and return
 end
 
 shared_examples 'times out waiting for target status (or better)' do
+
+  let(:expected_time_elapsed) do
+    LogStash::Util::TimeValue.from_value(timeout_string).to_nanos.to_f/1_000_000_000
+  end
+
   it 'times out waiting for target status (or better)' do
     start_time = Time.now
     response
     end_time = Time.now
-    expect(end_time - start_time).to be >= timeout_num
+    expect(end_time - start_time).to be >= expected_time_elapsed
   end
 
   it 'returns status code 503' do
