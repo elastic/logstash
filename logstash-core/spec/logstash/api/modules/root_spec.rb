@@ -161,8 +161,8 @@ describe LogStash::Api::Modules::Root do
     context 'timeout and status provided' do
 
       let(:timeout_num) { 2 }
-      let(:timeout_unit) { 's' }
-      let(:timeout_string) { "#{timeout_num}#{timeout_unit}"}
+      let(:timeout_units) { 's' }
+      let(:timeout_string) { "#{timeout_num}#{timeout_units}"}
       let(:status) { 'green' }
       let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
 
@@ -292,7 +292,7 @@ describe LogStash::Api::Modules::Root do
 
       context 'timeout units is ms' do
 
-        let(:timeout_unit) { 'ms' }
+        let(:timeout_units) { 'ms' }
 
         context "the status doesn't change before the timeout" do
 
