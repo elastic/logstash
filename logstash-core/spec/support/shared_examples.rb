@@ -171,8 +171,8 @@ shared_examples 'times out waiting for target status (or better)' do
     expect(end_time - start_time).to be >= expected_time_elapsed
   end
 
-  it 'returns status code 503' do
-    expect(response.status).to eq 503
+  it 'returns status code 408' do
+    expect(response.status).to eq 408
   end
 
   it 'returns a message saying the request timed out' do
