@@ -52,7 +52,7 @@ describe LogStash::Api::Modules::Root do
           let(:timeout) { '1' }
           let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          include_examples 'timed out response'
+          include_examples 'bad request response'
         end
 
         context 'timeout number is not an integer' do
@@ -60,7 +60,7 @@ describe LogStash::Api::Modules::Root do
           let(:timeout) { '1.0s' }
           let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          include_examples 'timed out response'
+          include_examples 'bad request response'
         end
 
         context 'timeout is not in the accepted format' do
@@ -68,7 +68,7 @@ describe LogStash::Api::Modules::Root do
           let(:timeout) { 'invalid' }
           let(:error_message) { described_class::INVALID_TIMEOUT_MESSAGE % [timeout] }
 
-          include_examples 'timed out response'
+          include_examples 'bad request response'
         end
 
         context 'valid timeout is provided' do
@@ -82,15 +82,16 @@ describe LogStash::Api::Modules::Root do
 
           context 'status is provided' do
 
-            let(:timeout) { '1s' }
+            let(:timeout_num) { 2 }
+            let(:timeout_string) { "#{timeout_num}s"}
             let(:status) { 'green' }
-            let(:request) { "/?status=#{status}timeout=#{timeout}" }
+            let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
 
             it 'returns status code 200' do
               expect(response.status).to be 200
             end
 
-            include_examples "returns successfully without waiting"
+            include_examples "waits until the target status (or better) is reached and returns successfully"
           end
         end
       end
@@ -114,7 +115,7 @@ describe LogStash::Api::Modules::Root do
           let(:status) { 'invalid' }
           let(:error_message) { described_class::INVALID_HEALTH_STATUS_MESSAGE % [status] }
 
-          include_examples 'timed out response'
+          include_examples 'bad request response'
         end
 
         context 'status is valid' do

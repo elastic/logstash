@@ -134,7 +134,7 @@ shared_examples "returns successfully without waiting" do
   end
 end
 
-shared_examples "timed out response" do
+shared_examples "bad request response" do
 
   it 'returns an error response' do
     expect(response.body).to include(error_message)
