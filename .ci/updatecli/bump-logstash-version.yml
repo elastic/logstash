@@ -56,6 +56,16 @@ targets:
       key: $.logstash-core
       value: '{{ requiredEnv "LOGSTASH_VERSION" }}'
 
+  update_release_track:
+      name: Update logstash-release-track in versions.yml
+      kind: yaml
+      disablesourceinput: true
+      scmid: default
+      spec:
+        file: versions.yml
+        key: $.logstash-release-track
+        value: '{{ requiredEnv "LOGSTASH_RELEASE_TRACK" }}'
+
   update_gemfile_lock_dependency:
     name: Update logstash-core dependency in lockfile
     kind: file
