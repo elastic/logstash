@@ -126,7 +126,7 @@ paths:
                 version: "9.3.0"
                 http_address: "127.0.0.1:9600"
                 id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
-                name: ""
+                name: "logstash-pipelines"
                 ephermeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
                 snapshot:
                 status: "green"
