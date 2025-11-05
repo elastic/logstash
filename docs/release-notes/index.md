@@ -21,6 +21,63 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.7 [logstash-9.1.7-release-notes]
+
+### Features and enhancements [logstash-9.1.7-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.1.7
+
+=== Logstash Commits between 9.1 and 9.1.6
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.6..9.1"
+
+3b8f1afd7 - (HEAD -> 9.1, origin/9.1) [9.1] (backport #18375) Use logstash-versions.yml for observabilitySRE stack versions (#18401) (15 hours ago) <mergify[bot]>
+3abdae38b - Upgrade JDK to 21.0.9 (#18350) (#18397) (17 hours ago) <mergify[bot]>
+447bc3542 - Update patch plugin versions in gemfile lock (#18393) (18 hours ago) <github-actions[bot]>
+d16c4f761 - Backport smart exhaustive tests (#18386) (#18388) (4 days ago) <mergify[bot]>
+8b8ce8b5b - Modify logger config to link deprecation logger to root logger by default (#18326) (#18379) (7 days ago) <mergify[bot]>
+de0968921 - Actually raise a PR when java-bump is detected (#18351) (#18372) (9 days ago) <mergify[bot]>
+337868e28 - retry catalog queries and jdk downloads (#18345) (#18348) (10 days ago) <mergify[bot]>
+ce53763a7 - Fixes the NPE when stats info doesn't have queue type entry. (#18331) (#18354) (12 days ago) <mergify[bot]>
+33cab35de - Bump stack version to 9.1.7 (#18342) (13 days ago) <Mashhur>
+ce3f77158 - Release notes for 9.1.6 (#18334) (2 weeks ago) <github-actions[bot]>
+de66b73f4 - Add encoded/non-encoded auth method to x-pack unit tests (#18307) (#18324) (2 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.1.6..9.1 *.release"
+Changed plugin versions:
+logstash-filter-geoip: 7.3.1 -> 7.3.2
+logstash-filter-mutate: 3.5.8 -> 3.5.9
+logstash-input-azure_event_hubs: 1.5.2 -> 1.5.3
+logstash-input-beats: 7.0.3 -> 7.0.4
+logstash-integration-rabbitmq: 7.4.0 -> 7.4.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.1.7-changes]
+
+**Geoip Filter - 7.3.2**
+
+* Add logs when MaxMind databases fail to deserialize custom field [#235](https://github.com/logstash-plugins/logstash-filter-geoip/pull/235)
+
+**Mutate Filter - 3.5.9**
+
+* Fix `convert` to covert hexadecimal float notation and scientific notation string to float and integer [#175](https://github.com/logstash-plugins/logstash-filter-mutate/pull/175)
+  
+
+**Azure_event_hubs Input - 1.5.3**
+
+* Fix: With `config_mode => 'advanced'`, event hub-specific settings (`initial_position`, `max_batch_size`, `prefetch_count`, `receive_timeout`, `initial_position_look_back`) were being ignored and replaced with global defaults. These settings are now correctly applied per event hub [#104](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/104)
+
+**Beats Input - 7.0.4**
+
+* [DOC] Update keep-fresh variable in config to reduce noise [#523](https://github.com/logstash-plugins/logstash-input-beats/pull/523)
+
+**Rabbitmq Integration - 7.4.1**
+
+* Improve thread safety to avoid race conditions during shutdown and integration tests. [#67](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/66)
+
+
 ## 9.1.6 [logstash-9.1.6-release-notes]
 
 No user-facing changes in Logstash core.
