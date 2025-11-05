@@ -28,6 +28,7 @@ module LogStash
 
         INVALID_HEALTH_STATUS_MESSAGE = "Invalid status '%s' provided. The valid statuses are: green, yellow, red."
         INVALID_TIMEOUT_MESSAGE = "Invalid timeout '%s' provided."
+        TIMEOUT_REQUIRED_WITH_STATUS_MESSAGE = "A timeout must be provided along with a status."
         TIMED_OUT_WAITING_FOR_STATUS_MESSAGE = "Timed out waiting for status '%s'."
 
         get "/" do
@@ -42,7 +43,8 @@ module LogStash
             return timeout_error_response(input_timeout) unless timeout_s = parse_timeout_s(input_timeout)
           end
 
-          if target_status && timeout_s
+          if target_status
+            return timeout_required_with_status_response unless timeout_s
             wait_for_status_and_respond(target_status, timeout_s)
           else
             command = factory.build(:system_basic_info)
@@ -69,6 +71,10 @@ module LogStash
 
         def status_error_response(target_status)
           respond_with(BadRequest.new(INVALID_HEALTH_STATUS_MESSAGE % [target_status]))
+        end
+
+        def timeout_required_with_status_response
+          respond_with(BadRequest.new(TIMEOUT_REQUIRED_WITH_STATUS_MESSAGE))
         end
 
         def wait_for_status_and_respond(target_status, timeout)
