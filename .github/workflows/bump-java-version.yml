@@ -13,13 +13,19 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # When this workflow is triggered (manually or scheduled), it will update all the branches in this list
+        # Make sure to keep this list up to date with the "active" branchges in logstash. 
+        branch: ['main', '9.2', '9.1', '8.19']
     steps:
       - uses: actions/checkout@v5
-
+        with:
+          ref: ${{ matrix.branch }}
       - uses: elastic/oblt-actions/updatecli/run@v1
         with:
           command: apply --config .ci/updatecli/bump-java-version.yml --values .ci/updatecli/values.d/scm.yml
           version-file: .updatecli-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: ${{ github.ref_name }}
+          LOGSTASH_BRANCH: ${{ matrix.branch }}
