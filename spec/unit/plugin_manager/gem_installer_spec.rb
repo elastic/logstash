@@ -27,18 +27,27 @@ describe LogStash::PluginManager::GemInstaller do
   let(:simple_gem) { ::File.join(::File.dirname(__FILE__), "..", "..", "support", "pack", "valid-pack", "logstash", "valid-pack", "#{plugin_name}.gem") }
 
   subject { described_class }
-  let(:temporary_gem_home) { p = Stud::Temporary.pathname; FileUtils.mkdir_p(p); p }
+   let(:gem_home) { LogStash::Environment.logstash_gem_home }
+   # Clean up installed gems after each test
+   after(:each) do
+     spec_file = ::File.join(gem_home, "specifications", "#{plugin_name}.gemspec")
+     FileUtils.rm_f(spec_file) if ::File.exist?(spec_file)
+     gem_dir = ::File.join(gem_home, "gems", plugin_name)
+     FileUtils.rm_rf(gem_dir) if Dir.exist?(gem_dir)
+     cache_file = ::File.join(gem_home, "cache", "#{plugin_name}.gem")
+     FileUtils.rm_f(cache_file) if ::File.exist?(cache_file)
+   end
 
   it "install the specifications in the spec dir" do
-    subject.install(simple_gem, false, temporary_gem_home)
-    spec_file = ::File.join(temporary_gem_home, "specifications", "#{plugin_name}.gemspec")
+    subject.install(simple_gem, false)
+    spec_file = ::File.join(gem_home, "specifications", "#{plugin_name}.gemspec")
     expect(::File.exist?(spec_file)).to be_truthy
     expect(::File.size(spec_file)).to be > 0
   end
 
   it "install the gem in the gems dir" do
-    subject.install(simple_gem, false, temporary_gem_home)
-    gem_dir = ::File.join(temporary_gem_home, "gems", plugin_name)
+    subject.install(simple_gem, false)
+    gem_dir = ::File.join(gem_home, "gems", plugin_name)
     expect(Dir.exist?(gem_dir)).to be_truthy
   end
 
@@ -50,13 +59,13 @@ describe LogStash::PluginManager::GemInstaller do
 
       context "when we want the message" do
         it "display the message" do
-          expect(subject.install(simple_gem, true, temporary_gem_home)).to eq(message)
+          expect(subject.install(simple_gem, true)).to eq(message)
         end
       end
 
       context "when we dont want the message" do
         it "doesn't display the message" do
-          expect(subject.install(simple_gem, false, temporary_gem_home)).to be_nil
+          expect(subject.install(simple_gem, false)).to be_nil
         end
       end
     end
@@ -65,7 +74,7 @@ describe LogStash::PluginManager::GemInstaller do
       context "when we don't want the message" do
         it "doesn't display the message" do
           expect(LogStash::PluginManager.ui).not_to receive(:info).with(message)
-          subject.install(simple_gem, true, temporary_gem_home)
+          subject.install(simple_gem, true)
         end
       end
     end
