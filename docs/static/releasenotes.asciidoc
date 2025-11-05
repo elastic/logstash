@@ -111,7 +111,7 @@ No user-facing changes in Logstash core.
 
 * Update JDK to 21.0.9 https://github.com/elastic/logstash/pull/18350[#18350]
 
-[[logstash-8-19-7]]
+[[plugins-8-19-7]]
 ==== Plugins
 
 *Geoip Filter - 7.3.2*
