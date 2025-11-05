@@ -8,16 +8,27 @@ on:
 
 
 jobs:
+  filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.generator.outputs.matrix }}
+    steps:
+      - id: generator
+        uses: elastic/oblt-actions/elastic/active-branches@v1
+        with:
+          exclude-branches: "7.17"
+          filter-branches: true
   bump:
     permissions:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    needs: [filter]
     strategy:
-      matrix:
-        # When this workflow is triggered (manually or scheduled), it will update all the branches in this list
-        # Make sure to keep this list up to date with the "active" branchges in logstash. 
-        branch: ['main', '9.2', '9.1', '8.19']
+      matrix: ${{ fromJson(needs.filter.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v5
         with:
