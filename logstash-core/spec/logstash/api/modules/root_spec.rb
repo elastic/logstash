@@ -87,6 +87,14 @@ describe LogStash::Api::Modules::Root do
             let(:status) { 'green' }
             let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
 
+            let(:return_statuses) do
+              [
+                org.logstash.health.Status::RED,
+                org.logstash.health.Status::GREEN
+
+              ]
+            end
+
             it 'returns status code 200' do
               expect(response.status).to be 200
             end
@@ -118,16 +126,6 @@ describe LogStash::Api::Modules::Root do
         end
 
         context 'status is valid' do
-
-          let(:return_statuses) do
-            [
-              org.logstash.health.Status::RED
-            ]
-          end
-
-          before do
-            allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-          end
 
           context 'no timeout is provided' do
 
@@ -165,10 +163,6 @@ describe LogStash::Api::Modules::Root do
       let(:timeout_string) { "#{timeout_num}#{timeout_units}"}
       let(:status) { 'green' }
       let(:request) { "/?wait_for_status=#{status}&timeout=#{timeout_string}" }
-
-      before do
-        allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
-      end
 
       context "the status doesn't change before the timeout" do
 

@@ -146,6 +146,11 @@ shared_examples "bad request response" do
 end
 
 shared_examples 'waits until the target status (or better) is reached and returns successfully' do
+
+  before do
+    allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
+  end
+
   it 'returns status code 200' do
     expect(response.status).to be 200
   end
@@ -162,6 +167,10 @@ shared_examples 'times out waiting for target status (or better)' do
 
   let(:expected_time_elapsed) do
     LogStash::Util::TimeValue.from_value(timeout_string).to_nanos.to_f/1_000_000_000
+  end
+
+  before do
+    allow(@agent.health_observer).to receive(:status).and_return(*return_statuses)
   end
 
   it 'times out waiting for target status (or better)' do
