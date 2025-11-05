@@ -80,7 +80,7 @@ paths:
           required: false
           schema:
             type: string
-          description: One of green, yellow or red. Will wait (until the timeout provided) until the status of the service changes to the one provided or better, i.e. green > yellow > red. By default, will not wait for any status.
+          description: One of green, yellow or red. Will wait (until the timeout provided) until the status of the service changes to the one provided or better, i.e. green > yellow > red. Timeout is required when this query param is provided.
         - name: timeout
             in: query
             required: false

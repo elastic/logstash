@@ -108,12 +108,11 @@ describe LogStash::Api::Modules::Root do
 
       context 'status is provided' do
 
-        let(:request) { "/?wait_for_status=#{status}" }
-
         context 'status is not valid' do
 
           let(:status) { 'invalid' }
           let(:error_message) { described_class::INVALID_HEALTH_STATUS_MESSAGE % [status] }
+          let(:request) { "/?wait_for_status=#{status}&timeout=1s" }
 
           include_examples 'bad request response'
         end
@@ -133,8 +132,9 @@ describe LogStash::Api::Modules::Root do
           context 'no timeout is provided' do
 
             let(:request) { "/?wait_for_status=green" }
+            let(:error_message) { described_class::TIMEOUT_REQUIRED_WITH_STATUS_MESSAGE }
 
-            include_examples "returns successfully without waiting"
+            include_examples "bad request response"
           end
 
           context 'timeout is provided' do
