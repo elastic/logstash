@@ -7,7 +7,6 @@
 description = """Logstash X-Pack"""
 
 project.ext.LOGSTASH_CORE_PATH = "${projectDir}/../logstash-core"
-apply from: "../rubyUtils.gradle"
 
 repositories {
   mavenCentral()
@@ -62,7 +61,7 @@ tasks.register("rubyIntegrationTests", Test) {
   }
   testClassesDirs = sourceSets.test.output.classesDirs
   classpath = sourceSets.test.runtimeClasspath
-  dependsOn (":copyEs")
+  dependsOn ":copyEs"
   dependsOn ":assemble"
   dependsOn "buildFipsValidationGem"
   inputs.files fileTree("${projectDir}/qa")
