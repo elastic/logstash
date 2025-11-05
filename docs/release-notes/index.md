@@ -39,7 +39,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Mutate Filter - 3.5.9**
 
-* Fix `convert` to correctly parse hexadecimal float notation and scientific notation strings into floats and integers. [#175](https://github.com/logstash-plugins/logstash-filter-mutate/pull/175)
+* Fix `convert` to correctly parse hexadecimal float notation and scientific notation strings into floats and integers [#175](https://github.com/logstash-plugins/logstash-filter-mutate/pull/175)
 
 **Azure_event_hubs Input - 1.5.3**
 
