@@ -25,45 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.1-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.2.1
-
-=== Logstash Commits between 9.2 and 9.2.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.0..9.2"
-
-d7f6ce35e - (HEAD -> 9.2, origin/9.2) [9.2] (backport #18375) Use logstash-versions.yml for observabilitySRE stack versions (#18402) (15 hours ago) <mergify[bot]>
-6d26e5ded - Upgrade JDK to 21.0.9 (#18350) (#18399) (17 hours ago) <mergify[bot]>
-1ed08601b - Update patch plugin versions in gemfile lock (#18395) (18 hours ago) <github-actions[bot]>
-0e04f6101 - [DOCS] Fix OpenAPI enum error (#18344) (#18392) (2 days ago) <Lisa Cawley>
-906d5bd63 - (origin/mergify/bp/9.2/pr-18386) Backport smart exhaustive tests (#18386) (4 days ago) <Cas Donoghue>
-f1b8d9c79 - Modify logger config to link deprecation logger to root logger by default (#18326) (#18380) (7 days ago) <mergify[bot]>
-18566ef98 - Add PQ unable to start in `9.2.0` known issue (#18369) (#18374) (9 days ago) <mergify[bot]>
-fe0402c3c - Actually raise a PR when java-bump is detected (#18351) (#18373) (9 days ago) <mergify[bot]>
-a0e5260a2 - make queue_max_bytes a long again allowing queues bigger than 2GB (#18366) (#18367) (9 days ago) <mergify[bot]>
-959a37f68 - retry catalog queries and jdk downloads (#18345) (#18349) (10 days ago) <mergify[bot]>
-da60aead5 - [9.2] (backport #18360) Logstash 9.2.0 release notes updates (#18363) (11 days ago) <mergify[bot]>
-8339af58c - Update patch plugin versions in gemfile lock (#18361) (12 days ago) <github-actions[bot]>
-d73ae68d0 - Fixes the NPE when stats info doesn't have queue type entry. (#18331) (#18357) (12 days ago) <mergify[bot]>
-5076a25dd - Upgrade sinatra dependency to 4.2.1 (#18305) (12 days ago) <Mashhur>
-a9ce0a7a2 - Bump logstash version 9.2.1 (#18343) (13 days ago) <github-actions[bot]>
-638ae2490 - Release notes for 9.1.6 (#18334) (#18337) (13 days ago) <mergify[bot]>
-2dea8c95a - Release notes for 9.2.0 (#18313) (13 days ago) <github-actions[bot]>
-0eb53b7aa - Update branch in logstash-api.yaml (#18322) (2 weeks ago) <Lisa Cawley>
-ea81c0211 - Add encoded/non-encoded auth method to x-pack unit tests (#18307) (#18325) (2 weeks ago) <mergify[bot]>
-82be48bf2 - Handle GH org for elastic_integration plugin (#18315) (#18318) (3 weeks ago) <mergify[bot]>
-3cf4222b4 - Adds integration test for the `_health_report` and `_node/plugins` APIs. (#18306) (#18311) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.2.0..9.2 *.release"
-Changed plugin versions:
-logstash-filter-geoip: 7.3.1 -> 7.3.2
-logstash-filter-mutate: 3.5.8 -> 3.5.9
-logstash-input-azure_event_hubs: 1.5.2 -> 1.5.3
-logstash-input-beats: 7.0.3 -> 7.0.4
-logstash-integration-rabbitmq: 7.4.0 -> 7.4.1
-logstash-output-csv: 3.0.10 -> 3.0.11
----------- GENERATED CONTENT ENDS HERE ------------
+* Fix Logstash startup failure when `queue.max_bytes` exceeds 2 GiB [#18366](https://github.com/elastic/logstash/pull/18366)
 
 ### Plugins [logstash-plugin-9.2.1-changes]
 
