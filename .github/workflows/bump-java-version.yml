@@ -8,18 +8,35 @@ on:
 
 
 jobs:
+  filter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.generator.outputs.matrix }}
+    steps:
+      - id: generator
+        uses: elastic/oblt-actions/elastic/active-branches@v1
+        with:
+          exclude-branches: "7.17"
+          filter-branches: true
   bump:
     permissions:
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
+    needs: [filter]
+    strategy:
+      matrix: ${{ fromJson(needs.filter.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v5
-
+        with:
+          ref: ${{ matrix.branch }}
       - uses: elastic/oblt-actions/updatecli/run@v1
         with:
           command: apply --config .ci/updatecli/bump-java-version.yml --values .ci/updatecli/values.d/scm.yml
           version-file: .updatecli-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LOGSTASH_BRANCH: ${{ github.ref_name }}
+          LOGSTASH_BRANCH: ${{ matrix.branch }}
