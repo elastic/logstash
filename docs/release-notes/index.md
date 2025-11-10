@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.2.1 [logstash-9.2.1-release-notes]
 
 ### Features and enhancements [logstash-9.2.1-features-enhancements]
@@ -35,6 +36,19 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Update JDK to 21.0.9 [#18350](https://github.com/elastic/logstash/pull/18350)
 
 ### Plugins [logstash-plugin-9.2.1-changes]
+=======
+## 9.1.7 [logstash-9.1.7-release-notes]
+
+### Features and enhancements [logstash-9.1.7-features-enhancements]
+
+* Deprecation logs are now written to both the deprecation logger and the standard logger [#18326](https://github.com/elastic/logstash/pull/18326)
+
+### Updates to dependencies [logstash-9.1.7-dependencies]
+
+* Update JDK to 21.0.9 [#18350](https://github.com/elastic/logstash/pull/18350)
+
+### Plugins [logstash-plugin-9.1.7-changes]
+>>>>>>> 2a282cc3 (Release notes for 9.1.7 (#18405))
 
 **Geoip Filter - 7.3.2**
 
@@ -52,6 +66,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Improve thread safety to avoid race conditions during shutdown [#67](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/66)
 
+<<<<<<< HEAD
 ## 9.2.0 [logstash-9.2.0-release-notes]
 
 ::::{important}
@@ -116,6 +131,8 @@ Related:
 **Snmp Integration - 4.1.0**
 
 * Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
+=======
+>>>>>>> 2a282cc3 (Release notes for 9.1.7 (#18405))
 
 ## 9.1.6 [logstash-9.1.6-release-notes]
 
