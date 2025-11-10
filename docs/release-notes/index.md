@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.2.0 [logstash-9.2.0-release-notes]
 
 ::::{important}
