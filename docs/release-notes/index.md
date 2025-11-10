@@ -86,7 +86,6 @@ Related:
 
 * Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
 
-=======
 ## 9.1.7 [logstash-9.1.7-release-notes]
 
 ### Features and enhancements [logstash-9.1.7-features-enhancements]
