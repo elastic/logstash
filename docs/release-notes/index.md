@@ -21,6 +21,37 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.1 [logstash-9.2.1-release-notes]
+
+### Features and enhancements [logstash-9.2.1-features-enhancements]
+
+* Fix Logstash startup failure when `queue.max_bytes` exceeds 2 GiB [#18366](https://github.com/elastic/logstash/pull/18366)
+
+* Deprecation logs are now written to both the deprecation logger and the standard logger [#18326](https://github.com/elastic/logstash/pull/18326)
+
+
+### Updates to dependencies [logstash-9.2.1-dependencies]
+
+* Update JDK to 21.0.9 [#18350](https://github.com/elastic/logstash/pull/18350)
+
+### Plugins [logstash-plugin-9.2.1-changes]
+
+**Geoip Filter - 7.3.2**
+
+* Add logs when MaxMind databases fail to deserialize custom field [#235](https://github.com/logstash-plugins/logstash-filter-geoip/pull/235)
+
+**Mutate Filter - 3.5.9**
+
+* Fix `convert` to correctly parse hexadecimal float notation and scientific notation strings into floats and integers [#175](https://github.com/logstash-plugins/logstash-filter-mutate/pull/175)
+
+**Azure_event_hubs Input - 1.5.3**
+
+* Fix an issue when `config_mode => 'advanced'` is set, event hub-specific settings (`initial_position`, `max_batch_size`, `prefetch_count`, `receive_timeout`, `initial_position_look_back`) were being ignored and replaced with global defaults. These settings are now correctly applied per event hub [#104](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/104)
+
+**Rabbitmq Integration - 7.4.1**
+
+* Improve thread safety to avoid race conditions during shutdown [#67](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/66)
+
 ## 9.2.0 [logstash-9.2.0-release-notes]
 
 ::::{important}
