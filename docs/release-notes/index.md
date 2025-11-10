@@ -115,7 +115,6 @@ Related:
 * Improve thread safety to avoid race conditions during shutdown [#67](https://github.com/logstash-plugins/logstash-integration-rabbitmq/pull/66)
 
 
->>>>>>> 2a282cc3 (Release notes for 9.1.7 (#18405))
 ## 9.1.6 [logstash-9.1.6-release-notes]
 
 No user-facing changes in Logstash core.
