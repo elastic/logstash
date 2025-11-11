@@ -14,6 +14,8 @@ require "stud/temporary"
 describe LogStash::ConfigManagement::ElasticsearchSource do
   let(:system_indices_api) { LogStash::ConfigManagement::SystemIndicesFetcher::SYSTEM_INDICES_API_PATH }
   let(:system_indices_url_regex) { Regexp.new("^#{system_indices_api}") }
+  let(:system_indices_url_search_regex) { Regexp.new("^#{Regexp.escape(system_indices_api)}[?]id=([^=&]+)$") }
+  let(:system_indices_url_all_regex) { Regexp.new("^#{Regexp.escape(system_indices_api)}/?$") }
   let(:elasticsearch_url) { ["https://localhost:9898"] }
   let(:elasticsearch_username) { "elastictest" }
   let(:elasticsearch_password) { "testchangeme" }
@@ -91,6 +93,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
   let(:es_version_response) { es_version_8_response }
   let(:es_version_8_response) { cluster_info("8.0.0-SNAPSHOT") }
+  let(:es_version_8_3_response) { cluster_info("8.3.0") }
   let(:es_version_7_9_response) { cluster_info("7.9.1") }
 
   let(:elasticsearch_7_9_err_response) {
@@ -230,7 +233,9 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
       let(:pipeline_id) { "super_generator" }
       let(:elasticsearch_response) { {"#{pipeline_id}" => {"pipeline" => "#{config}"}} }
       let(:all_pipelines) { JSON.parse(::File.read(::File.join(::File.dirname(__FILE__), "fixtures", "pipelines.json"))) }
-      let(:mock_logger) { double("fetcher's logger") }
+      let(:mock_logger) { double("fetcher's logger").as_null_object }
+
+      let(:bad_response_code_error) { LogStash::Outputs::ElasticSearch::HttpClient::Pool::BadResponseCodeError }
 
       before(:each) {
         allow(subject).to receive(:logger).and_return(mock_logger)
@@ -242,16 +247,36 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
       end
 
-      it "#fetch_config from ES v8.3" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
-        expect(subject.fetch_config(es_version_8_3, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
-      end
+      {
+        'v8.3' => { major: 8, minor: 3},
+        'v9.0' => { major: 9, minor: 0}
+      }.each do |desc, es_version|
+        context "ES #{desc}" do
+          it "#fetch_config works" do
+            expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
+            expect(subject.fetch_config(es_version, [pipeline_id], mock_client)).to eq(elasticsearch_response)
+            expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+          end
 
-      it "#fetch_config from ES v9.0" do
-        expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}").and_return(elasticsearch_response.clone)
-        expect(subject.fetch_config(es_version_9_0, [pipeline_id], mock_client)).to eq(elasticsearch_response)
-        expect(subject.get_single_pipeline_setting(pipeline_id)).to eq({"pipeline" => "#{config}"})
+          it "#fetch_config from ES v8.3 with 404->200 is empty list" do
+            wildcard_search_path = "#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}"
+            expect(mock_client).to receive(:get).with(wildcard_search_path)
+                                                .and_raise(bad_response_code_error.new(404, wildcard_search_path, nil, '{}'))
+            expect(mock_client).to receive(:get).with("#{described_class::SYSTEM_INDICES_API_PATH}/").and_return({})
+            expect(subject.fetch_config(es_version, [pipeline_id], mock_client)).to eq({})
+          end
+
+          it "#fetch_config from ES v8.3 with 404->404 is error" do
+            # 404's on Wildcard search need to be confirmed with a 404 from the get-all endpoint
+            wildcard_search_path = "#{described_class::SYSTEM_INDICES_API_PATH}?id=#{pipeline_id}"
+            expect(mock_client).to receive(:get).with(wildcard_search_path)
+                                                .and_raise(bad_response_code_error.new(404, wildcard_search_path, nil, '{}'))
+            get_all_path = "#{described_class::SYSTEM_INDICES_API_PATH}/"
+            expect(mock_client).to receive(:get).with(get_all_path)
+                                                .and_raise(bad_response_code_error.new(404, get_all_path, nil, '{}'))
+            expect { subject.fetch_config(es_version, [pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
+          end
+        end
       end
 
       it "#fetch_config should raise error" do
@@ -359,7 +384,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
 
-      it "#fetch_config should raise error when response is empty" do
+      it "#fetch_config should raise error when response is malformed" do
         expect(mock_client).to receive(:post).with("#{described_class::PIPELINE_INDEX}/_mget", {}, "{\"docs\":[{\"_id\":\"#{pipeline_id}\"},{\"_id\":\"#{another_pipeline_id}\"}]}").and_return(LogStash::Json.load("{}"))
         expect { subject.fetch_config(empty_es_version, [pipeline_id, another_pipeline_id], mock_client) }.to raise_error(LogStash::ConfigManagement::ElasticsearchSource::RemoteConfigError)
       end
@@ -760,10 +785,28 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
         expect { subject.pipeline_configs }.to raise_error /Something bad/
       end
 
-      it "returns empty pipeline when ES client raise BadResponseCodeError in [8]" do
-        allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
-        expect(mock_client).to receive(:get).with(system_indices_url_regex).and_raise(bad_response_404)
-        expect(subject.pipeline_configs).to be_empty
+      context "8.0" do
+        it "returns empty pipeline when ES client raise BadResponseCodeError in [8]" do
+          allow(mock_client).to receive(:get).with("/").and_return(es_version_response)
+          expect(mock_client).to receive(:get).with(system_indices_url_regex).and_raise(bad_response_404)
+          expect { subject.pipeline_configs }.to raise_error /response code '404'/
+        end
+      end
+
+      context "8.3+" do
+        it "returns empty pipeline when ES search 404's but client-side 200's and includes no matching pipelines" do
+          expect(mock_client).to receive(:get).with("/").and_return(es_version_8_3_response)
+          expect(mock_client).to receive(:get).with(system_indices_url_search_regex).and_raise(bad_response_404)
+          expect(mock_client).to receive(:get).with(system_indices_url_all_regex).and_return({})
+          expect(subject.pipeline_configs).to be_empty
+        end
+
+        it "raises the 404 when ES search 404's and client-side query 404's too" do
+          expect(mock_client).to receive(:get).with("/").and_return(es_version_8_3_response)
+          expect(mock_client).to receive(:get).with(system_indices_url_search_regex).and_raise(bad_response_404)
+          expect(mock_client).to receive(:get).with(system_indices_url_all_regex).and_raise(bad_response_404)
+          expect { subject.pipeline_configs }.to raise_error /response code '404'/
+        end
       end
 
       it "returns empty pipeline when ES client raise BadResponseCodeError in [7.9]" do
