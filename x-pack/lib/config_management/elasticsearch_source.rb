@@ -289,6 +289,7 @@ module LogStash
       PIPELINE_INDEX = ".logstash"
 
       def fetch_config(es_version, pipeline_ids, client)
+        deprecation_logger.deprecated("Fetching pipeline configs from Elasticsearch #{es_version}; Central Management will soon require Elasticsearch 8.x+")
         request_body_string = LogStash::Json.dump({ "docs" => pipeline_ids.collect { |pipeline_id| { "_id" => pipeline_id } } })
         retry_handler = ::LogStash::Helpers::LoggableTry.new(logger, 'fetch pipelines from Central Management')
         response = retry_handler.try(10.times, ::LogStash::Outputs::ElasticSearch::HttpClient::Pool::HostUnreachableError) do
