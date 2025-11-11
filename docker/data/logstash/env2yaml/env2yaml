@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Execute Java env2yaml using Logstash's bundled JDK and SnakeYAML
+# The .class file is compiled during Docker build and placed in /usr/local/bin
+
+exec /usr/share/logstash/jdk/bin/java \
+    -cp "/usr/share/logstash/logstash-core/lib/jars/*:/usr/local/bin" \
+    Env2Yaml "$@"
