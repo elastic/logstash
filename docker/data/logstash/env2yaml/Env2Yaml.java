@@ -123,12 +123,16 @@ public class Env2Yaml {
     @SuppressWarnings("unchecked")
     private Map<String, Object> loadExistingConfig(Path fileLocation, Yaml yamlProcessor) throws Exception {
         if (!Files.exists(fileLocation)) {
-            return new HashMap<>();
+            return new TreeMap<>();
         }
 
         try (InputStream fileInput = Files.newInputStream(fileLocation)) {
             Object parsedData = yamlProcessor.load(fileInput);
-            return parsedData instanceof Map ? (Map<String, Object>) parsedData : new HashMap<>();
+            if (parsedData instanceof Map) {
+                // Convert to TreeMap to ensure alphabetical ordering like Go version
+                return new TreeMap<>((Map<String, Object>) parsedData);
+            }
+            return new TreeMap<>();
         }
     }
 
