@@ -1,12 +1,17 @@
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.DumperOptions;
-import java.io.*;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Environment variable to YAML configuration merger
@@ -26,7 +31,7 @@ public class Env2Yaml {
         }
 
         private Map<String, String> buildSettingMap() {
-            Map<String, String> map = new HashMap<>();
+            Map<String, String> map = new TreeMap<>();
             String[] allowedConfigs = {
                 "api.enabled", "api.http.host", "api.http.port", "api.environment",
                 "node.name", "path.data", "pipeline.id", "pipeline.workers",
@@ -99,7 +104,8 @@ public class Env2Yaml {
         }
 
         try {
-            new Env2Yaml().processConfigFile(args[0]);
+            String configPath = args[0];
+            new Env2Yaml().processConfigFile(configPath);
         } catch (Exception e) {
             System.err.println("error: " + e.getMessage());
             System.exit(1);
