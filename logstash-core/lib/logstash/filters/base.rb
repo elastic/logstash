@@ -157,6 +157,14 @@ class LogStash::Filters::Base < LogStash::Plugin
     time = java.lang.System.nanoTime
     filter(event, &block)
     @slow_logger.on_event("event processing time", @original_params, event, java.lang.System.nanoTime - time)
+  rescue => e
+    if e.is_a?(NoMethodError)
+      logger.fatal "Crashed plugin: #{@id}"
+      register
+      retry
+    else
+      raise e
+    end
   end
 
   # in 1.5.0 multi_filter is meant to be used in the generated filter function in LogStash::Config::AST::Plugin only
