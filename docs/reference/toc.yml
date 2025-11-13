@@ -59,6 +59,8 @@ toc:
       - file: logstash-centralized-pipeline-management.md
       - file: configuring-centralized-pipelines.md
   - file: using-logstash-with-elastic-integrations.md
+    children:
+      - file: ea-integration-tutorial.md
   # TO DO: Not migrated
   # - file: working-with-logstash-modules.md
   #   children:
