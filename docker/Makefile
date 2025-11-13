@@ -94,8 +94,8 @@ docker_paths:
 
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint $(ARTIFACTS_DIR)/ironbank/scripts/java/Env2Yaml.java
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/java/env2yaml $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/Env2Yaml.java
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
 
 $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml: data/logstash/config/logstash-full.yml
@@ -103,8 +103,8 @@ $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties: data/logstash/c
 $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/ironbank/scripts/java/Env2Yaml.java: data/logstash/env2yaml/Env2Yaml.java
-$(ARTIFACTS_DIR)/ironbank/scripts/java/env2yaml: data/logstash/env2yaml/env2yaml
+$(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/Env2Yaml.java: data/logstash/env2yaml/Env2Yaml.java
+$(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
 $(ARTIFACTS_DIR)/ironbank/LICENSE: ironbank/LICENSE
 $(ARTIFACTS_DIR)/ironbank/README.md: ironbank/README.md
 
@@ -116,7 +116,7 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/bin
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/config
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/java
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_observability-sre public-dockerfiles_ironbank

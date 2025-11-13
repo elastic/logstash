@@ -4,22 +4,7 @@ ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.6
 ARG LOGSTASH_VERSION=<%= elastic_version %>
-ARG GOLANG_VERSION=1.25.0
 
-# stage 1: build env2yaml
-FROM ${BASE_REGISTRY}/google/golang/ubi9/golang-1.25:${GOLANG_VERSION} AS env2yaml
-
-ENV GOPATH=/go
-
-COPY scripts/go /go
-
-USER root
-
-RUN dnf-3 -y upgrade && dnf-3 install -y git && \
-  cd /go/src/env2yaml && \
-  go build
-
-# Final stage
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
 
 ARG LOGSTASH_VERSION
@@ -29,7 +14,6 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 
 WORKDIR /usr/share
 
-COPY --from=env2yaml /go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY scripts/config/* config/
 COPY scripts/pipeline/default.conf pipeline/logstash.conf
 COPY scripts/bin/docker-entrypoint /usr/local/bin/
@@ -55,6 +39,11 @@ RUN dnf -y upgrade && \
   chmod 0755 /usr/local/bin/docker-entrypoint && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
+
+# Copy and compile Java env2yaml using Logstash's bundled JDK
+COPY scripts/env2yaml/Env2Yaml.java /tmp/
+RUN /usr/share/logstash/jdk/bin/javac -cp "/usr/share/logstash/logstash-core/lib/jars/*" /tmp/Env2Yaml.java -d /usr/local/bin/
+COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml
 
 WORKDIR /usr/share/logstash
 

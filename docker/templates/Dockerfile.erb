@@ -20,15 +20,12 @@
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
   <%   base_image = 'redhat/ubi9-minimal:latest' -%>
-  <%   go_image = 'golang:1.25' -%>
   <%   package_manager = 'microdnf' -%>
 <% elsif image_flavor == 'observability-sre' -%>
   <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
-  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
   <%   package_manager = 'apk' -%>
 <% else -%>
   <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
-  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
   <%   package_manager = 'apk' -%>
 <% end -%>
 <%   locale = 'C.UTF-8' -%>
