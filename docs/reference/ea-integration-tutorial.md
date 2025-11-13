@@ -9,7 +9,7 @@ When you include the `elastic_integration` filter in your configuration, {{ls}} 
 and uses them to apply the transformations from Elastic integrations. 
 This allows you to further process events in the Logstash pipeline before sending them to their configured destinations.
 
-This tutorial walks you through adding the [Crowdstrike integration]({integrations-docs}/docs/reference/crowdstrike-intro.md) sending the data to {{ech}} or self-managed {{es}}.
+This tutorial walks you through adding the [Crowdstrike integration](integration-docs://reference/crowdstrike-intro.md) sending the data to {{ech}} or self-managed {{es}}.
 
 
 ## Prerequisites [ea-integrations-prereqs]
@@ -19,13 +19,13 @@ You need:
 * A working {{es}} cluster
 * A {{ls}} instance
 * {{fleet-server}}
-* An [{{agent}} installed]({fleet-guide}/elastic-agent-installation.html) on the hosts you want to collect data from, and configured to [send output to {{ls}}]({fleet-guide}/logstash-output.html)
+* An [{{agent}} installed](docs-content://reference/fleet/install-elastic-agents.md) on the hosts you want to collect data from, and configured to [send output to {{ls}}](docs-content://reference/fleet/logstash-output.md)
 * An active Elastic [subscription](https://www.elastic.co/subscriptions).
-* A user configured with the [minimum required privileges](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#minimum_required_privileges).
+* A user configured with the [minimum required privileges](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-minimum_required_privileges).
 
 :::{note}
 Even though the focus of this tutorial is {{fleet}}-managed agents, you can use the `elastic_integration` filter and this 
-general approach with [self-managed agents]({fleet-guide}/elastic-agent-configuration.html). 
+general approach with [self-managed agents](docs-content://reference/fleet/install-standalone-elastic-agent.md). 
 :::
 
 ## Process overview [ea-integrations-process-overview]
@@ -63,12 +63,12 @@ is selected and the Agent policy selected is the {{ls}} policy that we created f
 This policy should be selected by default.
 8. Click **Save and continue**.
 
-    You have the option to add the {{agent}} to your hosts. If you haven't already, {fleet-guide}/elastic-agent-installation.html[install the {{agent}}] on the host where you want to collect data.
+    You have the option to add the {{agent}} to your hosts. If you haven't already, [install the {{agent}}](docs-content://reference/fleet/install-elastic-agents.md) on the host where you want to collect data.
 
 
 ## Configure {{ls}} to use the `elastic_integration` filter plugin [ea-integrations-pipeline]
 
-1. Create a new [{{ls}} pipeline]({logstash-ref}/configuration.html).
+1. Create a new [{{ls}} pipeline](/reference/creating-logstash-pipeline.md).
 2. Be sure to include these plugins:
 
 * [`elastic_agent` input](logstash-docs-md://lsr/plugins-inputs-elastic_agent.md) 
@@ -118,7 +118,7 @@ This sample illustrates using the `elastic_agent` input and the `elastic_integra
 
 Check out the [`elastic_integration` filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md) for the full list of configuration options.
 
-Check out [minimum required privileges](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#minimum_required_privileges) for more info. 
+Check out [minimum required privileges](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-minimum_required_privileges) for more info. 
 
 ```txt
 input {
@@ -155,4 +155,4 @@ The user credentials that you specify in the `elastic_integration` filter must h
 
 If your {{agent}} and {{ls}} pipelines are configured correctly, events go to {{ls}} for processing before {{ls}} forwards them on to {{es}}.
 
-If you encounter problems, check out the [Troubleshooting](logstash-docs-md://docs/lsr/plugins-filters-elastic_integration.md#troubleshooting) section in the `elastic_integration` filter docs.
+If you encounter problems, check out the [Troubleshooting](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-troubleshooting) section in the `elastic_integration` filter docs.
