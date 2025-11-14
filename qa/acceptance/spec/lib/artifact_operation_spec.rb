@@ -23,5 +23,5 @@ require_relative '../shared_examples/updated'
 describe "artifacts operation" do
   logstash = ServiceTester::Artifact.new()
   it_behaves_like "installable_with_jdk", logstash
-  it_behaves_like "updated", logstash, from_release_branch="7.17"
+  it_behaves_like "updated", logstash, from_release_branch="8.19"
 end
