@@ -92,8 +92,8 @@ public final class Javafier {
             RubyBigDecimal.class, value -> ((RubyBigDecimal) value).getBigDecimalValue()
         );
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
-        converters.put(RubyFixnum.class, value -> ((RubyFixnum) value).getLongValue());
-        converters.put(RubyFloat.class, value -> ((RubyFloat) value).getDoubleValue());
+        converters.put(RubyFixnum.class, value -> org.jruby.RubyNumeric.num2long((RubyFixnum) value));
+        converters.put(RubyFloat.class, value -> org.jruby.RubyNumeric.num2dbl((RubyFloat) value));
         converters.put(ConvertedMap.class, value -> ((ConvertedMap) value).unconvert());
         converters.put(ConvertedList.class, value -> ((ConvertedList) value).unconvert());
         converters.put(

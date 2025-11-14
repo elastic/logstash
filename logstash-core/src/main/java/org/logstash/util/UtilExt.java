@@ -23,6 +23,7 @@ package org.logstash.util;
 import org.jruby.RubyThread;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.anno.JRubyModule;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -37,7 +38,8 @@ public class UtilExt {
     @SuppressWarnings("deprecation")
     public static IRubyObject get_thread_id(final ThreadContext context, IRubyObject self, IRubyObject thread) {
         if (!(thread instanceof RubyThread)) {
-            throw context.runtime.newTypeError(thread, context.runtime.getThread());
+            throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                "wrong argument type " + thread.getMetaClass() + " (expected Thread)");
         }
         final Thread javaThread = ((RubyThread) thread).getNativeThread(); // weak-reference
         // even if thread is dead the RubyThread instance might stick around while the Java thread
@@ -49,7 +51,8 @@ public class UtilExt {
     @JRubyMethod(module = true)
     public static IRubyObject get_thread_name(final ThreadContext context, IRubyObject self, IRubyObject thread) {
         if (!(thread instanceof RubyThread)) {
-            throw context.runtime.newTypeError(thread, context.runtime.getThread());
+            throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                "wrong argument type " + thread.getMetaClass() + " (expected Thread)");
         }
         final Thread javaThread = ((RubyThread) thread).getNativeThread(); // weak-reference
         // even if thread is dead the RubyThread instance might stick around while the Java thread

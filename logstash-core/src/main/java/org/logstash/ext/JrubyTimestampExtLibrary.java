@@ -76,8 +76,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(optional = 1)
         public JrubyTimestampExtLibrary.RubyTimestamp initialize(final ThreadContext context,
             IRubyObject[] args) {
-            args = Arity.scanArgs(context.runtime, args, 0, 1);
-            IRubyObject time = args[0];
+            IRubyObject time = args.length > 0 ? args[0] : context.nil;
 
             if (time.isNil()) {
                 this.timestamp = new Timestamp();
@@ -94,7 +93,8 @@ public final class JrubyTimestampExtLibrary {
 
                 }
             } else {
-                throw context.runtime.newTypeError("wrong argument type " + time.getMetaClass() + " (expected Time)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + time.getMetaClass() + " (expected Time)");
             }
             return this;
         }
@@ -203,7 +203,8 @@ public final class JrubyTimestampExtLibrary {
 
                 }
             } else {
-                throw context.runtime.newTypeError("wrong argument type " + time.getMetaClass() + " (expected String)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + time.getMetaClass() + " (expected String)");
             }
         }
 
@@ -268,7 +269,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = ">=")
         public IRubyObject op_ge(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return context.runtime.newBoolean(compare(context, other) >= 0);
+                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) >= 0);
             }
             return RubyComparable.op_ge(context, this, other);
         }
@@ -276,7 +277,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = ">")
         public IRubyObject op_gt(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return context.runtime.newBoolean(compare(context, other) > 0);
+                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) > 0);
             }
             return RubyComparable.op_gt(context, this, other);
         }
@@ -284,7 +285,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "<=")
         public IRubyObject op_le(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return context.runtime.newBoolean(compare(context, other) <= 0);
+                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) <= 0);
             }
             return RubyComparable.op_le(context, this, other);
         }
@@ -292,7 +293,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "<")
         public IRubyObject op_lt(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return context.runtime.newBoolean(compare(context, other) < 0);
+                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) < 0);
             }
             return RubyComparable.op_lt(context, this, other);
         }
@@ -318,7 +319,7 @@ public final class JrubyTimestampExtLibrary {
         }
 
         private int compare(final ThreadContext context, final IRubyObject other) {
-            return op_cmp(context, other).convertToInteger().getIntValue();
+            return org.jruby.RubyNumeric.num2int(op_cmp(context, other));
         }
 
         private static RubyTimestamp fromRString(final Ruby runtime, final RubyString string) {
