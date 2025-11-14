@@ -254,10 +254,10 @@ public final class RubyUtil {
         Stream.of(
             "Inputs", "Outputs", "Filters", "Search", "Config", "File", "Web", "PluginMixins",
             "PluginManager", "Api", "Modules"
-        ).forEach(module -> RUBY.defineModuleUnder(module, LOGSTASH_MODULE));
-        PLUGINS_MODULE = RUBY.defineModuleUnder("Plugins", LOGSTASH_MODULE);
+        ).forEach(module -> LOGSTASH_MODULE.defineModuleUnder(module));
+        PLUGINS_MODULE = LOGSTASH_MODULE.defineModuleUnder("Plugins");
         final RubyModule instrumentModule =
-            RUBY.defineModuleUnder("Instrument", LOGSTASH_MODULE);
+            LOGSTASH_MODULE.defineModuleUnder("Instrument");
         METRIC_SNAPSHOT_CLASS =
             instrumentModule.defineClassUnder("Snapshot", RUBY.getObject(), SnapshotExt::new);
         METRIC_SNAPSHOT_CLASS.defineAnnotatedMethods(SnapshotExt.class);
@@ -362,7 +362,7 @@ public final class RubyUtil {
         );
         BUFFERED_TOKENIZER.defineAnnotatedMethods(BufferedTokenizerExt.class);
         OUTPUT_DELEGATOR_STRATEGIES =
-            RUBY.defineModuleUnder("OutputDelegatorStrategies", LOGSTASH_MODULE);
+            LOGSTASH_MODULE.defineModuleUnder("OutputDelegatorStrategies");
         OUTPUT_STRATEGY_ABSTRACT = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
             "AbstractStrategy", RUBY.getObject(), ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );

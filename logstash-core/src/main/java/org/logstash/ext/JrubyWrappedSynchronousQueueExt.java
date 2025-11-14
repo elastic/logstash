@@ -72,7 +72,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
                             batchMetricMode));
         }
 
-        int typedSize = ((RubyNumeric)size).getIntValue();
+        int typedSize = org.jruby.RubyNumeric.num2int(size);
         this.queue = new ArrayBlockingQueue<>(typedSize);
         Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
         this.batchMetricMode = JavaUtil.unwrapJavaObject(batchMetricMode);

@@ -112,8 +112,8 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
     @JRubyMethod(name = "set_batch_dimensions")
     public IRubyObject rubySetBatchDimensions(final IRubyObject batchSize,
         final IRubyObject waitForMillis) {
-        setBatchDimensions(((RubyNumeric) batchSize).getIntValue(),
-                ((RubyNumeric) waitForMillis).getIntValue());
+        setBatchDimensions(org.jruby.RubyNumeric.num2int( batchSize),
+                org.jruby.RubyNumeric.num2int( waitForMillis));
         return this;
     }
 
@@ -189,7 +189,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      */
     @JRubyMethod(name = "add_filtered_metrics")
     public void rubyAddFilteredMetrics(final IRubyObject size) {
-        addFilteredMetrics(((RubyNumeric)size).getIntValue());
+        addFilteredMetrics(org.jruby.RubyNumeric.num2int(size));
     }
 
     /**
@@ -199,7 +199,7 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
      */
     @JRubyMethod(name = "add_output_metrics")
     public void rubyAddOutputMetrics(final IRubyObject size) {
-        addOutputMetrics(((RubyNumeric)size).getIntValue());
+        addOutputMetrics(org.jruby.RubyNumeric.num2int(size));
     }
 
     @Override

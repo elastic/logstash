@@ -54,7 +54,7 @@ public class BufferedTokenizerExt extends RubyObject {
             delimiter = args[0].convertToString().asJavaString();
         }
         if (args.length == 2) {
-            final int sizeLimit = args[1].convertToInteger().getIntValue();
+            final int sizeLimit = org.jruby.RubyNumeric.num2int(args[1].convertToInteger());
             this.tokenizer = new BufferedTokenizer(delimiter, sizeLimit);
         } else {
             this.tokenizer = new BufferedTokenizer(delimiter);
