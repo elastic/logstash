@@ -231,7 +231,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyFloat value, final JsonGenerator generator,
             final SerializerProvider provider) throws IOException {
-            generator.writeNumber(value.getDoubleValue());
+            generator.writeNumber(org.jruby.RubyNumeric.num2dbl(value));
         }
     }
 
@@ -271,7 +271,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyFixnum value, final JsonGenerator generator,
             final SerializerProvider provider) throws IOException {
-            generator.writeNumber(value.getLongValue());
+            generator.writeNumber(org.jruby.RubyNumeric.num2long(value));
         }
     }
 

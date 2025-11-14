@@ -30,6 +30,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -83,9 +84,10 @@ public class SlowLoggerExt extends RubyObject {
 
     static long toLong(final IRubyObject value) {
         if (!(value instanceof RubyNumeric)) {
-            throw RubyUtil.RUBY.newTypeError("Numeric expected, got " + value.getMetaClass());
+            throw RaiseException.from(RubyUtil.RUBY, RubyUtil.RUBY.getTypeError(),
+                "Numeric expected, got " + value.getMetaClass());
         }
-        return ((RubyNumeric) value).getLongValue();
+        return org.jruby.RubyNumeric.num2long(value);
     }
 
     private RubyHash asData(final ThreadContext context, final IRubyObject pluginParams,
@@ -101,7 +103,7 @@ public class SlowLoggerExt extends RubyObject {
     @JRubyMethod(name = "on_event", required = 4)
     public IRubyObject onEvent(final ThreadContext context, final IRubyObject[] args) {
         String message = args[0].asJavaString();
-        long eventDurationNanos = ((RubyNumeric)args[3]).getLongValue();
+        long eventDurationNanos = org.jruby.RubyNumeric.num2long(args[3]);
 
         if (warnThreshold >= 0 && eventDurationNanos > warnThreshold) {
             slowLogger.warn(message, asData(context, args[1], args[2], args[3]));

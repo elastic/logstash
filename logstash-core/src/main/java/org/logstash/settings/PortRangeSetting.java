@@ -83,7 +83,7 @@ public class PortRangeSetting extends Coercible<Object> {
             RubyRange rubyRange = (RubyRange) obj;
             RubyInteger begin = rubyRange.begin(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
             RubyInteger end = rubyRange.end(RubyUtil.RUBY.getCurrentContext()).convertToInteger();
-            return new Range<>(begin.getIntValue(), end.getIntValue());
+            return new Range<>(org.jruby.RubyNumeric.num2int(begin), org.jruby.RubyNumeric.num2int(end));
         }
         throw new IllegalArgumentException("Could not coerce [" + obj + "](type: " + obj.getClass() + ") into a port range");
     }

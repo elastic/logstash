@@ -74,9 +74,9 @@ public final class LoggableExt {
             if (self instanceof RubyClass) {
                 real = ((RubyClass) self).getRealClass();
             }
-            name = real.getName(); // for anonymous: "#<Class:0xcafebabe>"
+            name = real.getBaseName() != null ? real.getBaseName() : real.toString(); // for anonymous: "#<Class:0xcafebabe>"
         } else {
-            name = self.getName();
+            name = self.getBaseName();
         }
         return name.replace("::", ".").toLowerCase(Locale.ENGLISH);
     }

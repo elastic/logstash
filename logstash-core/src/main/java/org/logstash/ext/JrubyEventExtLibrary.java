@@ -115,7 +115,8 @@ public final class JrubyEventExtLibrary {
             final FieldReference r = extractFieldReference(reference);
             if (r.equals(FieldReference.TIMESTAMP_REFERENCE)) {
                 if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
-                    throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
+                    throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                        "wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
                 }
                 this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp) value).getTimestamp());
             } else {
@@ -166,7 +167,8 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "overwrite", required = 1)
         public IRubyObject ruby_overwrite(ThreadContext context, IRubyObject value) {
             if (!(value instanceof RubyEvent)) {
-                throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
             }
 
             return RubyEvent.newRubyEvent(context.runtime, this.event.overwrite(((RubyEvent) value).event));
@@ -175,7 +177,8 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "append", required = 1)
         public IRubyObject ruby_append(ThreadContext context, IRubyObject value) {
             if (!(value instanceof RubyEvent)) {
-                throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
             }
 
             this.event.append(((RubyEvent) value).getEvent());
@@ -283,7 +286,8 @@ public final class JrubyEventExtLibrary {
         @JRubyMethod(name = "timestamp=", required = 1)
         public IRubyObject ruby_set_timestamp(ThreadContext context, IRubyObject value) {
             if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
-                throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
             }
             this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp) value).getTimestamp());
             return value;
@@ -317,7 +321,8 @@ public final class JrubyEventExtLibrary {
                         (Map<String, Object>) ((MapJavaProxy) data).getObject())
                 );
             } else {
-                throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
+                throw RaiseException.from(context.runtime, context.runtime.getTypeError(),
+                    "wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
         }
 

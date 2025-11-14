@@ -209,7 +209,7 @@ public final class Logstash implements Runnable, AutoCloseable {
     private boolean isProductionError(RubyException re){
         if (re instanceof RubyStandardError){
             RubyClass metaClass = re.getMetaClass();
-            return (metaClass.getName().equals("Bundler::ProductionError"));
+            return (metaClass.getBaseName().equals("Bundler::ProductionError"));
         }
         return false;
     }

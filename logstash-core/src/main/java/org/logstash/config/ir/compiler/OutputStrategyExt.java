@@ -189,7 +189,7 @@ public final class OutputStrategyExt {
             if (workerCount.isNil()) {
                 workerCount = RubyFixnum.one(context.runtime);
             }
-            final int count = workerCount.convertToInteger().getIntValue();
+            final int count = org.jruby.RubyNumeric.num2int(workerCount.convertToInteger());
             workerQueue = new ArrayBlockingQueue<>(count);
             workers = context.runtime.newArray(count);
             for (int i = 0; i < count; ++i) {

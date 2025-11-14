@@ -400,8 +400,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final QueueStorageType storageType = QueueStorageType.parse(getSetting(context, "dead_letter_queue.storage_policy").asJavaString());
 
         String dlqPath = getSetting(context, "path.dead_letter_queue").asJavaString();
-        long dlqMaxBytes = getSetting(context, "dead_letter_queue.max_bytes").convertToInteger().getLongValue();
-        Duration dlqFlushInterval = Duration.ofMillis(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger().getLongValue());
+        long dlqMaxBytes = org.jruby.RubyNumeric.num2long(getSetting(context, "dead_letter_queue.max_bytes").convertToInteger());
+        Duration dlqFlushInterval = Duration.ofMillis(org.jruby.RubyNumeric.num2long(getSetting(context, "dead_letter_queue.flush_interval").convertToInteger()));
 
         if (hasSetting(context, "dead_letter_queue.retain.age") && !getSetting(context, "dead_letter_queue.retain.age").isNil()) {
             // convert to Duration
@@ -579,7 +579,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, concurrencyFlow);
         storeMetric(context, flowNamespace, concurrencyFlow);
 
-        final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
+        final int workerCount = org.jruby.RubyNumeric.num2int(getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger());
         final UpScaledMetric percentScaledDurationInMillis = new UpScaledMetric(durationInMillis, 100);
         final UpScaledMetric availableWorkerTimeInMillis = new UpScaledMetric(uptimeInPreciseMillis, workerCount);
         final FlowMetric utilizationFlow = createFlowMetric(WORKER_UTILIZATION_KEY, percentScaledDurationInMillis, availableWorkerTimeInMillis);
@@ -722,7 +722,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             initializePluginThroughputFlowMetric(context, uptime, id);
         }
 
-        final int workerCount = getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger().getIntValue();
+        final int workerCount = org.jruby.RubyNumeric.num2int(getSetting(context, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger());
 
         for (AbstractFilterDelegatorExt delegator: lirExecution.filters()) {
             initializePluginWorkerFlowMetrics(context, workerCount, uptime, FILTERS_KEY, delegator.getId().asJavaString());

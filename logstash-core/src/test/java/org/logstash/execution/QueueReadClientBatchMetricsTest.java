@@ -110,10 +110,10 @@ public class QueueReadClientBatchMetricsTest {
         QueueBatch batch = new MockQueueBatch(10, rubyEvent);
         final long expectedBatchByteSize = rubyEvent.getEvent().estimateMemory();
 
-        for (int i = 0; i < 200; i++) {
+        // MINIMAL mode has 2% chance per update, so use 500 iterations for ~99.996% probability
+        for (int i = 0; i < 500; i++) {
             sut.updateBatchMetrics(batch);
         }
-        sut.updateBatchMetrics(batch);
 
         assertThat(batchCounter.getValue(), org.hamcrest.Matchers.greaterThan(1L));
         assertThat(batchByteSizeCounter.getValue(), org.hamcrest.Matchers.greaterThan(expectedBatchByteSize));

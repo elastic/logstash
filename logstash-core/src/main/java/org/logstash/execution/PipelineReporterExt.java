@@ -233,8 +233,9 @@ public final class PipelineReporterExt extends RubyBasicObject {
     private static int calcInflightCount(final ThreadContext context,
         final Collection<?> workerStates) {
         return workerStates.stream().mapToInt(
-            state -> ((RubyHash) state).op_aref(context, INFLIGHT_COUNT_KEY)
-                .convertToInteger().getIntValue()
+            state -> org.jruby.RubyNumeric.num2int(
+                ((RubyHash) state).op_aref(context, INFLIGHT_COUNT_KEY).convertToInteger()
+            )
         ).sum();
     }
 

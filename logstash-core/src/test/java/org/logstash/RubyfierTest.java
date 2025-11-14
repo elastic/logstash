@@ -195,7 +195,8 @@ public class RubyfierTest extends RubyTestBase {
     public void testDeepWithBigDecimal() {
         Object result = Rubyfier.deep(RubyUtil.RUBY, new BigDecimal(1));
         assertEquals(RubyBigDecimal.class, result.getClass());
-        assertEquals(1.0D, ((RubyBigDecimal)result).getDoubleValue(), 0);
+        // JRuby 10: RubyBigDecimal.getValue() returns the underlying BigDecimal
+        assertEquals(1.0D, ((RubyBigDecimal)result).getValue().doubleValue(), 0);
     }
 
     @Test
@@ -213,7 +214,8 @@ public class RubyfierTest extends RubyTestBase {
         Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(RubyUtil.RUBY, "foo"));
 
         assertEquals(RubyBigDecimal.class, result.getClass());
-        assertEquals(1.0D, ((RubyBigDecimal)result).getDoubleValue(), 0);
+        // JRuby 10: RubyBigDecimal.getValue() returns the underlying BigDecimal
+        assertEquals(1.0D, ((RubyBigDecimal)result).getValue().doubleValue(), 0);
     }
 
     @Test
@@ -226,7 +228,8 @@ public class RubyfierTest extends RubyTestBase {
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
         assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray()[0].getClass());
-        assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
+        // JRuby 10: RubyBigDecimal.getValue() returns the underlying BigDecimal
+        assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray()[0]).getValue().doubleValue(), 0);
     }
 
 

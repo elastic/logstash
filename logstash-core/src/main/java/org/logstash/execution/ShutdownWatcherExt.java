@@ -84,11 +84,11 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
     public ShutdownWatcherExt initialize(final ThreadContext context, final IRubyObject[] args) {
         pipeline = args[0];
         if (args.length >= 2) {
-            cyclePeriod = args[1].convertToInteger().getLongValue();
+            cyclePeriod = org.jruby.RubyNumeric.num2long(args[1].convertToInteger());
             if (args.length >= 3) {
-                reportEvery = args[2].convertToInteger().getIntValue();
+                reportEvery = org.jruby.RubyNumeric.num2int(args[2].convertToInteger());
                 if (args.length >= 4) {
-                    abortThreshold = args[3].convertToInteger().getIntValue();
+                    abortThreshold = org.jruby.RubyNumeric.num2int(args[3].convertToInteger());
                 }
             }
         }
@@ -106,7 +106,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
             return context.fals;
         }
         final int[] inflightCounts = reports.stream().mapToInt(
-            obj -> obj.callMethod(context, "inflight_count").convertToInteger().getIntValue()
+            obj -> org.jruby.RubyNumeric.num2int(obj.callMethod(context, "inflight_count").convertToInteger())
         ).toArray();
         boolean stalled = true;
         for (int i = 0; i < inflightCounts.length - 1; ++i) {

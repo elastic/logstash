@@ -75,6 +75,17 @@ module LogStash
           raise InstallError, e.message
         end
       end
+
+      # JRuby 10 bundler includes a self-manager feature that tries to restart bundler
+      # with a locked version. This causes issues in our embedded environment.
+      # Disable it by making restart_with_locked_bundler_if_needed a no-op.
+      if defined?(::Bundler::SelfManager)
+        ::Bundler::SelfManager.module_exec do
+          def self.restart_with_locked_bundler_if_needed(original_lockfile, **)
+            # No-op: don't attempt to restart with locked bundler
+          end
+        end
+      end
     end
 
 
@@ -134,9 +145,21 @@ module LogStash
       # in the context of calling Bundler::CLI this is not really required since Bundler::CLI will look at
       # Bundler.settings[:gemfile] unlike Bundler.setup. For the sake of consistency and defensive/future proofing, let's keep it here.
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
+      # Disable bundler's self-manager auto-switching in JRuby 10 by setting BUNDLER_VERSION
+      ENV["BUNDLER_VERSION"] = "system"
 
       require "bundler"
       require "bundler/cli"
+
+      # JRuby 10 bundler includes a self-manager feature that tries to restart bundler.
+      # Disable it immediately after requiring bundler to prevent restart attempts.
+      if defined?(::Bundler::SelfManager)
+        ::Bundler::SelfManager.module_exec do
+          def self.restart_with_locked_bundler_if_needed(original_lockfile, **)
+            # No-op: don't attempt to restart with locked bundler
+          end
+        end
+      end
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
@@ -146,7 +169,7 @@ module LogStash
         )
       end
       # create Gemfile.jruby-1.9.lock from template iff a template exists it itself does not exist
-      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.1.lock.release")
+      lock_template = ::File.join(ENV["LOGSTASH_HOME"], "Gemfile.jruby-3.4.lock.release")
       if ::File.exist?(lock_template) && !::File.exist?(Environment::LOCKFILE)
         FileUtils.copy(lock_template, Environment::LOCKFILE)
       end
@@ -226,7 +249,12 @@ module LogStash
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
       specific_platforms.each do |platform|
-        output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
+        begin
+          output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
+        rescue => e
+          # Ignore errors if platform doesn't exist in lockfile
+          $stderr.puts("Note: Could not remove platform #{platform}: #{e.message}") if ENV["DEBUG"]
+        end
       end
       output
     end
