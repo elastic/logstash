@@ -1,5 +1,9 @@
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.DumperOptions;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.api.Dump;
+import org.snakeyaml.engine.v2.api.DumpSettings;
+import org.snakeyaml.engine.v2.common.FlowStyle;
+import org.snakeyaml.engine.v2.common.ScalarStyle;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -114,26 +118,25 @@ public class Env2Yaml {
 
     private void processConfigFile(String configPath) throws Exception {
         Path fileLocation = Paths.get(configPath);
-        Yaml yamlProcessor = new Yaml();
-
-        Map<String, Object> configData = loadExistingConfig(fileLocation, yamlProcessor);
+        Map<String, Object> configData = loadExistingConfig(fileLocation);
 
         SettingValidator validator = new SettingValidator();
         boolean addedNewConfigs = incorporateEnvironmentVars(configData, validator);
 
         if (addedNewConfigs) {
-            saveUpdatedConfig(fileLocation, yamlProcessor, configData);
+            saveUpdatedConfig(fileLocation, configData);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> loadExistingConfig(Path fileLocation, Yaml yamlProcessor) throws Exception {
+    private Map<String, Object> loadExistingConfig(Path fileLocation) throws Exception {
         if (!Files.exists(fileLocation)) {
             return new TreeMap<>();
         }
-
+        LoadSettings loadSettings = LoadSettings.builder().build();
+        Load loader = new Load(loadSettings);
         try (InputStream fileInput = Files.newInputStream(fileLocation)) {
-            Object parsedData = yamlProcessor.load(fileInput);
+            Object parsedData = loader.loadFromInputStream(fileInput);
             if (parsedData instanceof Map) {
                 // Convert to TreeMap to ensure alphabetical ordering like Go version
                 return new TreeMap<>((Map<String, Object>) parsedData);
@@ -164,15 +167,15 @@ public class Env2Yaml {
         return addedNewConfigs;
     }
 
-    private void saveUpdatedConfig(Path fileLocation, Yaml yamlProcessor, Map<String, Object> configData) throws Exception {
+    private void saveUpdatedConfig(Path fileLocation, Map<String, Object> configData) throws Exception {
         // Configure YAML output to match Go version formatting (block style)
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        options.setPrettyFlow(true);
-        options.setIndent(2);
-
-        Yaml blockYaml = new Yaml(options);
-        String yamlOutput = blockYaml.dump(configData);
+        DumpSettings dumpSettings = DumpSettings.builder()
+            .setDefaultFlowStyle(FlowStyle.BLOCK)
+            .setDefaultScalarStyle(ScalarStyle.PLAIN)
+            .setIndent(2)
+            .build();
+        Dump dumper = new Dump(dumpSettings);
+        String yamlOutput = dumper.dumpToString(configData);
 
         Set<PosixFilePermission> existingPermissions = getFilePermissions(fileLocation);
 

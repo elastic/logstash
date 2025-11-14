@@ -84,7 +84,7 @@ RUN addgroup -g 1000 logstash && \
 
 # Copy and compile Java env2yaml using Logstash's bundled JDK
 COPY env2yaml/Env2Yaml.java /tmp/
-RUN /usr/share/logstash/jdk/bin/javac -cp "/usr/share/logstash/logstash-core/lib/jars/*" /tmp/Env2Yaml.java -d /usr/local/bin/
+RUN /usr/share/logstash/jdk/bin/javac -cp "/usr/share/logstash/vendor/jruby/lib/ruby/stdlib/org/snakeyaml/snakeyaml-engine/2.9/*" /tmp/Env2Yaml.java -d /usr/local/bin/
 COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
 <% if image_flavor == 'oss' -%>

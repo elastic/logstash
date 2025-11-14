@@ -42,7 +42,7 @@ RUN dnf -y upgrade && \
 
 # Copy and compile Java env2yaml using Logstash's bundled JDK
 COPY scripts/env2yaml/Env2Yaml.java /tmp/
-RUN /usr/share/logstash/jdk/bin/javac -cp "/usr/share/logstash/logstash-core/lib/jars/*" /tmp/Env2Yaml.java -d /usr/local/bin/
+RUN /usr/share/logstash/jdk/bin/javac -cp "/usr/share/logstash/vendor/jruby/lib/ruby/stdlib/org/snakeyaml/snakeyaml-engine/2.9/*"/tmp/Env2Yaml.java -d /usr/local/bin/
 COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml
 
 WORKDIR /usr/share/logstash
