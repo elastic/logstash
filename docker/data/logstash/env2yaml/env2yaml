@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Execute Java env2yaml using Logstash's bundled JDK and snakeyaml-engine from jruby
-# The .class file is compiled during Docker build and placed in /usr/local/bin
+# Execute the env2yaml java program. Ensure the snakeyaml-engine jar is in the classpath.
 
 exec /usr/share/logstash/jdk/bin/java \
     -XX:+UseSerialGC \
     -Xms32m \
     -Xmx32m \
-    -cp "/usr/share/logstash/vendor/jruby/lib/ruby/stdlib/org/snakeyaml/snakeyaml-engine/2.9/*:/usr/local/bin" \
+    -cp "/usr/share/logstash/env2yaml/snakeyaml-engine-2.9.jar:/usr/share/logstash/env2yaml" \
     Env2Yaml "$@"
