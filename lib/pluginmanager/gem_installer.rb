@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require "bootstrap/environment"
 require "pluginmanager/ui"
 require "pathname"
 require "rubygems/package"
@@ -26,17 +27,16 @@ module LogStash module PluginManager
   # - Generate the specifications
   # - Copy the data in the right folders
   class GemInstaller
-    GEM_HOME = Pathname.new(::File.join(LogStash::Environment::BUNDLE_DIR, "jruby", "3.1.0"))
     SPECIFICATIONS_DIR = "specifications"
     GEMS_DIR = "gems"
     CACHE_DIR = "cache"
 
     attr_reader :gem_home
 
-    def initialize(gem_file, display_post_install_message = false, gem_home = GEM_HOME)
+    def initialize(gem_file, display_post_install_message = false)
       @gem_file = gem_file
       @gem = ::Gem::Package.new(@gem_file)
-      @gem_home = Pathname.new(gem_home)
+      @gem_home = Pathname.new(LogStash::Environment.logstash_gem_home)
       @display_post_install_message = display_post_install_message
     end
 
@@ -48,8 +48,8 @@ module LogStash module PluginManager
       post_install_message
     end
 
-    def self.install(gem_file, display_post_install_message = false, gem_home = GEM_HOME)
-      self.new(gem_file, display_post_install_message, gem_home).install
+    def self.install(gem_file, display_post_install_message = false)
+      self.new(gem_file, display_post_install_message).install
     end
 
     private
