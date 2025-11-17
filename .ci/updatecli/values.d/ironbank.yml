@@ -1,0 +1,9 @@
+config:
+  - path: docker/templates
+    dockerfile: IronbankDockerfile.erb
+    manifest: hardening_manifest.yaml.erb
+
+pull_request:
+  labels:
+    - dependencies
+    - backport-active-all

@@ -1,0 +1,17 @@
+# Config file for `updatecli compose ...`.
+# https://www.updatecli.io/docs/core/compose/
+policies:
+  - name: Handle ironbank bumps
+    policy: ghcr.io/elastic/oblt-updatecli-policies/ironbank/templates:0.5.3@sha256:1d5b2f8ca1c141ebe0368d39ec1cdf8bc32662795a21416907eb02b8bf40d890
+    values:
+      - .ci/updatecli/values.d/scm.yml
+      - .ci/updatecli/values.d/ironbank.yml
+  - name: Handle updatecli bumps
+    policy: ghcr.io/elastic/oblt-updatecli-policies/updatecli/version:0.2.0@sha256:013a37ddcdb627c46e7cba6fb9d1d7bc144584fa9063843ae7ee0f6ef26b4bea
+    values:
+      - .ci/updatecli/values.d/scm.yml
+      - .ci/updatecli/values.d/updatecli.yml
+  - name: Update Updatecli policies
+    policy: ghcr.io/updatecli/policies/autodiscovery/updatecli:0.9.1@sha256:5bbca67a9e31bf5432d5cae1452b9fc770014151ddd856f367ccb9ba46f6f8bb
+    values:
+      - .ci/updatecli/values.d/scm.yml
