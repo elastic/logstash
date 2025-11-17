@@ -40,6 +40,6 @@ jobs:
       - if: ${{ failure()  }}
         uses: elastic/oblt-actions/slack/send@v1
         with:
-          channel-id: '#apm-server'
+          channel-id: '#logstash-build'
           message: ":traffic_cone: updatecli failed for `${{ github.repository }}@${{ github.ref_name }}`, @robots-ci please look what's going on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|here>"
           bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
