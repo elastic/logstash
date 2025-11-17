@@ -1,7 +1,7 @@
 ---
 name: update-compose
 on:
-  pull_request:
+  push:
     branches: [ "test/updatecli-autobump" ]
   workflow_dispatch:
   schedule:
