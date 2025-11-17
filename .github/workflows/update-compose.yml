@@ -14,22 +14,11 @@ jobs:
   compose:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
       packages: read
     steps:
       - uses: actions/checkout@v5
-
-      - name: Get token
-        id: get_token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.OBS_AUTOMATION_APP_ID }}
-          private-key: ${{ secrets.OBS_AUTOMATION_APP_PEM }}
-          owner: ${{ github.repository_owner }}
-          repositories: |
-            apm-server
-          permission-contents: write
-          permission-pull-requests: write
 
       - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
@@ -41,10 +30,10 @@ jobs:
         with:
           command: compose diff
         env:
-          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: elastic/oblt-actions/updatecli/run@v1
         with:
           command: compose apply
         env:
-          GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
