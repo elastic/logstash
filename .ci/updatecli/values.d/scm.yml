@@ -1,3 +1,4 @@
 scm:
   owner: elastic
   repository: logstash
+  branch: main
