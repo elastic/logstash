@@ -41,7 +41,7 @@ module LogStash
       end
 
       # When preparing offline packs or generally when installing gems, bundler wants to have `.gem` files 
-      # cached. We ship a default set of gems that inclue all of the unpacked code. During dependency
+      # cached. We ship a default set of gems that include all of the unpacked code. During dependency
       # resolution bundler still wants to ensure`.gem` files exist. This patch updates two paths in bundler where 
       # it natively it would *fail* when a `.gem` file is not found. Instead of failing we force the cache to be
       # updated with a `.gem` file. This preserves the original patch behavior. There is still an open question of
