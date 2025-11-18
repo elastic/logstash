@@ -210,7 +210,7 @@ module LogStash
         # search to rule out a proxy emitting a 404.
         if es_supports_pipeline_wildcard_search?(es_version)
           begin
-            logger.trace("querying for pipelines #{pipeline_ids.join(",")} using server-side wildcard search")
+            logger.trace? && logger.trace("querying for pipelines #{pipeline_ids.join(",")} using server-side wildcard search")
             response = get_response(client,"#{SYSTEM_INDICES_API_PATH}?id=#{ERB::Util.url_encode(pipeline_ids.join(","))}")
             intercept_error(response, pipeline_ids)
             @pipelines = response
