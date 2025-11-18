@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.snakeyaml:snakeyaml-engine:2.7'
+}
+
+tasks.register('copyBootstrapDeps', Copy) {
+    from configurations.runtimeClasspath
+    into "$buildDir/bootstrap-libs"
+}
+
+tasks.register('copyBootstrapClasses') {
+    dependsOn classes
+    doLast {
+        copy {
+            from "$buildDir/classes/java/main"
+            into "$buildDir/bootstrap-classes"
+        }
+    }
+}
+
+jar.enabled = false
