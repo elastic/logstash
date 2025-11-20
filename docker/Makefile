@@ -91,6 +91,7 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
 	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/docker/env2yaml/
+	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/docker/env2yaml/
 
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
@@ -119,6 +120,7 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
 	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
+	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
 
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_observability-sre public-dockerfiles_ironbank
 

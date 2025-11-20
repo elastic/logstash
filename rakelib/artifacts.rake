@@ -579,10 +579,9 @@ namespace "artifact" do
             relative_path = class_file.sub("#{env2yaml_classes}/", "")
             dedicated_directory_tarball.write(class_file, "env2yaml/classes/#{relative_path}")
           end
-          # Add snakeyaml-engine JAR
-          jar_file = "#{env2yaml_classes}/snakeyaml-engine.jar"
-          if File.exist?(jar_file)
-            dedicated_directory_tarball.write(jar_file, "env2yaml/classes/snakeyaml-engine.jar")
+          # Add dependency JARs
+          Dir.glob("docker/data/logstash/env2yaml/lib/*.jar").each do |jar_file|
+            dedicated_directory_tarball.write(jar_file, "env2yaml/lib/#{File.basename(jar_file)}")
           end
         end
         dedicated_directory_tarball.write("docker/data/logstash/env2yaml/env2yaml", "env2yaml/env2yaml") if File.exist?("docker/data/logstash/env2yaml/env2yaml")

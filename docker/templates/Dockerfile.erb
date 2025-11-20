@@ -84,6 +84,7 @@ RUN addgroup -g 1000 logstash && \
 
 # Copy env2yaml from tarball (pre-compiled by Gradle)
 COPY --chown=logstash:root env2yaml/classes /usr/share/logstash/env2yaml/classes/
+COPY --chown=logstash:root env2yaml/lib /usr/share/logstash/env2yaml/lib/
 COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
 <% if image_flavor == 'oss' -%>
