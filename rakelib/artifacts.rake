@@ -113,6 +113,10 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
 
+    # Exclude env2yaml source files - only compiled classes should be in tarball
+    @exclude_paths << 'docker/data/logstash/env2yaml/**/*.java'
+    @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
+    @exclude_paths << 'docker/data/logstash/env2yaml/settings.gradle'
     @exclude_paths.freeze
   end
 
@@ -192,8 +196,9 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
+    @building_docker = true
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
@@ -259,15 +264,17 @@ namespace "artifact" do
   task "archives_docker_oss" => ["prepare-oss", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
+    @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
   task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
     #with bundled JDKs
     @bundles_jdk = true
+    @building_docker = true
     exclude_paths = default_exclude_paths + %w(
       bin/logstash-plugin
       bin/logstash-plugin.bat
@@ -280,7 +287,7 @@ namespace "artifact" do
       # copy additional files into the tarball
       puts "HELLO(#{dedicated_directory_tar})"
     end
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
+    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   desc "Build an RPM of logstash with all dependencies"
@@ -563,7 +570,23 @@ namespace "artifact" do
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
       dedicated_directory_tarball.write(BUILD_METADATA_FILE.path, metadata_file_path_in_tar)
-
+      # add env2yaml for docker builds
+      if @building_docker
+        env2yaml_classes = "docker/data/logstash/env2yaml/classes"
+        if File.directory?(env2yaml_classes)
+          # Add compiled class files
+          Dir.glob("#{env2yaml_classes}/**/*.class").each do |class_file|
+            relative_path = class_file.sub("#{env2yaml_classes}/", "")
+            dedicated_directory_tarball.write(class_file, "env2yaml/classes/#{relative_path}")
+          end
+          # Add snakeyaml-engine JAR
+          jar_file = "#{env2yaml_classes}/snakeyaml-engine.jar"
+          if File.exist?(jar_file)
+            dedicated_directory_tarball.write(jar_file, "env2yaml/classes/snakeyaml-engine.jar")
+          end
+        end
+        dedicated_directory_tarball.write("docker/data/logstash/env2yaml/env2yaml", "env2yaml/env2yaml") if File.exist?("docker/data/logstash/env2yaml/env2yaml")
+      end
       # yield to the tar interceptor if we have one
       yield(dedicated_directory_tarball) if block_given?
     end

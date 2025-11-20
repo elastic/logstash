@@ -2,27 +2,35 @@ plugins {
     id 'java'
 }
 
-repositories {
-    mavenCentral()
+// Ensure JRuby is downloaded before we try to compile (since we depend on a JAR from it)
+compileJava {
+    dependsOn ':downloadAndInstallJRuby'
+    // Put compiled classes directly in the project directory, not under build/
+    destinationDirectory = file("${projectDir}/classes")
 }
 
 dependencies {
-    implementation 'org.snakeyaml:snakeyaml-engine:2.7'
+    // Use the snakeyaml-engine JAR that ships with JRuby
+    def snakeyamlDir = file("${rootProject.projectDir}/vendor/jruby/lib/ruby/stdlib/org/snakeyaml/snakeyaml-engine")
+    def snakeyamlJar = fileTree(snakeyamlDir).matching { include '**/snakeyaml-engine-*.jar' }.singleFile
+    implementation files(snakeyamlJar)
 }
 
-tasks.register('copyBootstrapDeps', Copy) {
-    from configurations.runtimeClasspath
-    into "$buildDir/bootstrap-libs"
-}
-
-tasks.register('copyBootstrapClasses') {
-    dependsOn classes
+// Copy snakeyaml-engine jar to env2yaml directory for runtime use
+tasks.register('copySnakeyamlJar') {
+    dependsOn compileJava
     doLast {
+        def snakeyamlJar = fileTree("${rootProject.projectDir}/vendor/jruby/lib/ruby/stdlib/org/snakeyaml/snakeyaml-engine").matching { 
+            include '**/snakeyaml-engine-*.jar'
+        }.singleFile
+
         copy {
-            from "$buildDir/classes/java/main"
-            into "$buildDir/bootstrap-classes"
+            from snakeyamlJar
+            into "${projectDir}/classes"
+            // Give the jar a predictable name to reference explicitly in classpath for env2yaml wrapper script
+            rename { 'snakeyaml-engine.jar' }
         }
     }
 }
-
+compileJava.finalizedBy copySnakeyamlJar
 jar.enabled = false

@@ -5,20 +5,6 @@ ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.6
 ARG LOGSTASH_VERSION=<%= elastic_version %>
 
-# Build env2yaml
-FROM gradle:9-jdk21 AS builder-env2yaml
-
-WORKDIR /tmp
-
-COPY scripts/env2yaml/env2yaml .
-COPY scripts/env2yaml/build.gradle .
-COPY scripts/env2yaml/settings.gradle .
-COPY scripts/env2yaml/src ./src
-
-# Compile env2yaml
-RUN gradle copyBootstrapClasses copyBootstrapDeps
-
-# Final stage
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
 
 ARG LOGSTASH_VERSION
@@ -54,10 +40,8 @@ RUN dnf -y upgrade && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
 
-# Copy env2yaml and snakeyaml-engine from builder stage
-RUN mkdir -p /usr/share/logstash/env2yaml
-COPY --from=builder-env2yaml /tmp/build/bootstrap-classes/ /usr/share/logstash/env2yaml/classes/
-COPY --from=builder-env2yaml /tmp/build/bootstrap-libs/ /usr/share/logstash/env2yaml/libs/
+# Copy env2yaml from build context (pre-compiled by Gradle)
+COPY --chown=logstash:root scripts/env2yaml/classes /usr/share/logstash/env2yaml/classes/
 COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml
 
 WORKDIR /usr/share/logstash
