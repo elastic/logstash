@@ -20,9 +20,9 @@ Each Logstash plugin lives in its own GitHub repository. To create a new reposit
 3. Click the green **New** button in the upper right.
 4. Specify the following settings for your new repo:
 
-    * **Repository name** — a unique name of the form `logstash-filter-pluginname`.
-    * **Public or Private** — your choice, but the repository must be Public if you want to submit it as an official plugin.
-    * **Initialize this repository with a README** — enables you to immediately clone the repository to your computer.
+    * **Repository name** - a unique name of the form `logstash-filter-pluginname`.
+    * **Public or Private** - your choice, but the repository must be Public if you want to submit it as an official plugin.
+    * **Initialize this repository with a README** - enables you to immediately clone the repository to your computer.
 
 5. Click **Create Repository**.
 
@@ -632,6 +632,6 @@ Some of the many benefits of having your plugin in the logstash-plugins reposito
 ### Acceptance Guidelines [_acceptance_guidelines_3]
 
 * **Code Review.** Your plugin must be reviewed by members of the community for coherence, quality, readability, stability and security.
-* **Tests.** Your plugin must contain tests to be accepted.  These tests are also subject to code review for scope and completeness.  It’s ok if you don’t know how to write tests — we will guide you. We are working on publishing a guide to creating tests for Logstash which will make it easier.  In the meantime, you can refer to [http://betterspecs.org/](http://betterspecs.org/) for examples.
+* **Tests.** Your plugin must contain tests to be accepted.  These tests are also subject to code review for scope and completeness.  It’s ok if you don’t know how to write tests - we will guide you. We are working on publishing a guide to creating tests for Logstash which will make it easier.  In the meantime, you can refer to [http://betterspecs.org/](http://betterspecs.org/) for examples.
 
 To begin migrating your plugin to logstash-plugins, simply create a new [issue](https://github.com/elasticsearch/logstash/issues) in the Logstash repository. When the acceptance guidelines are completed, we will facilitate the move to the logstash-plugins organization using the recommended [github process](https://help.github.com/articles/transferring-a-repository/#transferring-from-a-user-to-an-organization).
