@@ -6,7 +6,7 @@ exec /usr/share/logstash/jdk/bin/java \
     -XX:+UseSerialGC \
     -Xms32m \
     -Xmx32m \
-    -cp "/usr/share/logstash/env2yaml/classes:/usr/share/logstash/env2yaml/classes/snakeyaml-engine.jar" \
+    -cp "/usr/share/logstash/env2yaml/classes:/usr/share/logstash/env2yaml/lib/*" \
     org.logstash.env2yaml.Env2Yaml "$@"
 
 

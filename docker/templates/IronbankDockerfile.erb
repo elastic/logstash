@@ -40,7 +40,7 @@ RUN dnf -y upgrade && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
 
-# Copy env2yaml from build context (pre-compiled by Gradle)
+<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
 COPY --chown=logstash:root scripts/env2yaml/classes /usr/share/logstash/env2yaml/classes/
 COPY --chown=logstash:root scripts/env2yaml/lib /usr/share/logstash/env2yaml/lib/
 COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml

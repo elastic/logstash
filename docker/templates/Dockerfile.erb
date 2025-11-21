@@ -82,7 +82,7 @@ RUN addgroup -g 1000 logstash && \
   find /usr/share/logstash -type d -exec chmod g+s {} \; && \
   ln -s /usr/share/logstash /opt/logstash
 
-# Copy env2yaml from tarball (pre-compiled by Gradle)
+<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
 COPY --chown=logstash:root env2yaml/classes /usr/share/logstash/env2yaml/classes/
 COPY --chown=logstash:root env2yaml/lib /usr/share/logstash/env2yaml/lib/
 COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
