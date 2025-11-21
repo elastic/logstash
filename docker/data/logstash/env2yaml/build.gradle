@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+compileJava {
+    destinationDirectory = file("${projectDir}/classes")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.snakeyaml:snakeyaml-engine:2.9'
+}
+
+tasks.register('copyRuntimeLibs', Copy) {
+    from configurations.runtimeClasspath
+    into "${projectDir}/lib"
+ }
+
+compileJava.finalizedBy copyRuntimeLibs
+jar.enabled = false
