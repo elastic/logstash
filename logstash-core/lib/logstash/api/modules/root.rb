@@ -85,7 +85,7 @@ module LogStash
             current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
             break if current_status <= HEALTH_STATUS.index(target_status)
 
-            if Time.now > deadline
+            if Time.now >= deadline
               return respond_with(RequestTimeout.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
             end
 
