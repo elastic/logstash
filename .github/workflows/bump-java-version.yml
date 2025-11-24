@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.filter.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
       - uses: elastic/oblt-actions/updatecli/run@v1
