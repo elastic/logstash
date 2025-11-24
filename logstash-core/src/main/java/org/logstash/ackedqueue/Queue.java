@@ -753,15 +753,21 @@ public final class Queue implements Closeable {
         // as a first implementation we assume that all batches are created from the same page
         lock.lock();
         try {
+            boolean wasFull = isFull();
+            
             if (containsSeq(headPage, firstAckSeqNum)) {
                 this.headPage.ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks);
             } else {
                 final int resultIndex = binaryFindPageForSeqnum(firstAckSeqNum);
                 if (tailPages.get(resultIndex).ack(firstAckSeqNum, ackCount, this.checkpointMaxAcks)) {
                     this.tailPages.remove(resultIndex);
-                    notFull.signalAll();
                 }
                 this.headPage.checkpoint();
+            }
+            
+            // If we were full before the ack and are not full anymore, signal that we might not be full
+            if (wasFull && !isFull()) {
+                notFull.signalAll();
             }
         } finally {
             lock.unlock();
