@@ -35,12 +35,12 @@ module LogStash
           input_status = params[:wait_for_status]
           input_timeout = params[:timeout]
 
-          if input_status
-            return status_error_response(input_status) unless target_status = parse_status(input_status)
+          if input_status && !(target_status = parse_status(input_status))
+            return status_error_response(input_status)
           end
 
-          if input_timeout
-            return timeout_error_response(input_timeout) unless timeout_s = parse_timeout_s(input_timeout)
+          if input_timeout && !(timeout_s = parse_timeout_s(input_timeout))
+            return timeout_error_response(input_timeout)
           end
 
           if target_status
