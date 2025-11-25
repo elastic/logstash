@@ -9,7 +9,7 @@ This section describes the default directory structure that is created when you 
 
 ## Directory Layout of `.zip` and `.tar.gz` Archives [zip-targz-layout]
 
-The `.zip` and `.tar.gz` packages are entirely self-contained. All files and directories are, by default, contained within the home directory — the directory created when unpacking the archive.
+The `.zip` and `.tar.gz` packages are entirely self-contained. All files and directories are, by default, contained within the home directory - the directory created when unpacking the archive.
 
 This is very convenient because you don’t have to create any directories to start using Logstash, and uninstalling Logstash is as easy as removing the home directory.  However, it is advisable to change the default locations of the config and the logs directories so that you do not delete important data later on.
 
