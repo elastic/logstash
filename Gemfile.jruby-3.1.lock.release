@@ -32,8 +32,8 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.8.7)
-      public_suffix (>= 2.0.2, < 7.0)
+    addressable (2.8.8)
+      public_suffix (>= 2.0.2, < 8.0)
     amazing_print (1.8.1)
     arr-pm (0.0.12)
     ast (2.4.3)
@@ -125,8 +125,8 @@ GEM
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.1)
-      net-http (>= 0.5.0)
+    faraday-net_http (3.4.2)
+      net-http (~> 0.5)
     ffi (1.17.2-java)
     filesize (0.2.0)
     fileutils (1.7.3)
@@ -351,7 +351,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-sleep (3.0.7)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-split (3.1.8)
+    logstash-filter-split (3.1.10)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-syslog_pri (3.2.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -819,7 +819,7 @@ GEM
       e2mmap
     tilt (2.6.1)
     timeout (0.4.4)
-    treetop (1.6.15)
+    treetop (1.6.18)
       polyglot (~> 0.3)
     twitter (6.2.0)
       addressable (~> 2.3)
