@@ -153,10 +153,6 @@ public class Env2Yaml {
         for (Map.Entry<String, String> envEntry : System.getenv().entrySet()) {
             String envVarName = envEntry.getKey();
             String envValue = envEntry.getValue();
-            // Skip empty values like Go version does
-            if (envValue == null || envValue.trim().isEmpty()) {
-                continue;
-            }
             String canonicalSetting = validator.findCanonicalSetting(envVarName);
 
             if (canonicalSetting != null) {
