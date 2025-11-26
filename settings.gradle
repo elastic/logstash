@@ -1,6 +1,6 @@
 rootProject.name = "logstash"
 
-include ':logstash-core', 'logstash-core-benchmarks', 'benchmark-cli', 'jvm-options-parser', 'logstash-integration-tests', 'dependencies-report'
+include ':logstash-core', 'logstash-core-benchmarks', 'benchmark-cli', 'jvm-options-parser', 'logstash-integration-tests', 'dependencies-report', 'docker:data:logstash:env2yaml'
 project(':logstash-core').projectDir = new File('./logstash-core')
 project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benchmarks')
 project(':logstash-integration-tests').projectDir = new File('./qa/integration')
