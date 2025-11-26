@@ -174,7 +174,9 @@ public class Env2Yaml {
             .build();
         Dump dumper = new Dump(dumpSettings);
         String yamlOutput = dumper.dumpToString(configData);
-
+        // Remove quotes (single or double) around ${VAR} to match Go behavior
+        // https://github.com/snakeyaml/snakeyaml-engine/blob/2070eb4e3d23bb1d81097875526a071003067877/src/main/java/org/snakeyaml/engine/v2/emitter/Emitter.java#L969-L996
+        yamlOutput = yamlOutput.replaceAll("(['\"])(\\$\\{[^}]+\\})\\1", "$2");
         Set<PosixFilePermission> existingPermissions = getFilePermissions(fileLocation);
 
         Files.write(fileLocation, yamlOutput.getBytes(StandardCharsets.UTF_8), StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
