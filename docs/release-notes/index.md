@@ -21,6 +21,39 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.1.8 [logstash-9.1.8-release-notes]
+
+### Features and enhancements [logstash-9.1.8-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.1.8
+
+=== Logstash Commits between 9.1 and 9.1.7
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.7..9.1"
+
+33f5ba63c - (HEAD -> 9.1, origin/9.1) Update patch plugin versions in gemfile lock (#18444) (16 hours ago) <github-actions[bot]>
+dc5bf5d6e - bump: ubi 9.7 (#18426) (#18433) (9 days ago) <mergify[bot]>
+4557b3b35 - Bump logstash version 9.1.8 (#18420) (2 weeks ago) <github-actions[bot]>
+2a282cc38 - Release notes for 9.1.7 (#18405) (2 weeks ago) <github-actions[bot]>
+314a741b8 - Ensure java updator runs on all active branches (#18408) (#18411) (3 weeks ago) <mergify[bot]>
+3b8f1afd7 - [9.1] (backport #18375) Use logstash-versions.yml for observabilitySRE stack versions (#18401) (3 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.1.7..9.1 *.release"
+Changed plugin versions:
+logstash-filter-split: 3.1.8 -> 3.1.10
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.1.8-changes]
+
+**Split Filter - 3.1.10**
+
+* Added trace log to track event size expansion [#49](https://github.com/logstash-plugins/logstash-filter-split/pull/49)
+
+* [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
+
+
 ## 9.1.7 [logstash-9.1.7-release-notes]
 
 ### Features and enhancements [logstash-9.1.7-features-enhancements]
