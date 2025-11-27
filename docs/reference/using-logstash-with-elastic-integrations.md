@@ -1,6 +1,16 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ea-integrations.html
+
+navigation_title: Using Logstash with Elastic integrations
+applies_to:
+  stack: ga 
+  serverless: ga
+products:
+  - id: elasticsearch
+  - id: cloud-hosted
+  - id: cloud-enterprise
+  - id: cloud-kubernetes
 ---
 
 # Using Logstash with Elastic integrations [ea-integrations]
