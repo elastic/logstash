@@ -1,6 +1,16 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ea-integrations.html
+
+navigation_title: Using Logstash with Elastic integrations
+applies_to:
+  stack: ga 
+  serverless: ga
+products:
+  - id: elasticsearch
+  - id: cloud-hosted
+  - id: cloud-enterprise
+  - id: cloud-kubernetes
 ---
 
 # Using Logstash with Elastic integrations [ea-integrations]
@@ -30,6 +40,7 @@ Adding the `filter-elastic_integration` plugin as the *first* filter plugin keep
 
 ::::{admonition} How to
 Create a {{ls}} pipeline that uses the [elastic_agent input](logstash-docs-md://lsr/plugins-inputs-elastic_agent.md) plugin, and the [elastic_integration filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md) plugin as the *first* filter in your {{ls}} pipeline. You can add more filters for additional processing, but they must come after the `logstash-filter-elastic_integration` plugin in your configuration. Add one or more output plugins to complete your pipeline.
+
 ::::
 
 
