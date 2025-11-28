@@ -19,7 +19,8 @@ $LOAD_PATH.unshift(File.expand_path(File.join(__FILE__, "..", "..")))
 
 require "bootstrap/environment"
 
-ENV["GEM_HOME"] = ENV["GEM_PATH"] = LogStash::Environment.logstash_gem_home
+ENV["GEM_HOME"] = LogStash::Environment.logstash_gem_home
+ENV['GEM_PATH'] = ::File.join(LogStash::Environment::LOGSTASH_HOME , "vendor", "jruby", "lib", "ruby", "gems", "shared") + ":" + LogStash::Environment.logstash_gem_home
 Gem.use_paths(LogStash::Environment.logstash_gem_home)
 
 module LogStash

@@ -35,6 +35,7 @@ module Bundler
     end
 
     def uninstall!(gems_to_remove)
+
       gems_to_remove = Array(gems_to_remove)
 
       unsatisfied_dependency_mapping = Dsl.evaluate(gemfile_path, lockfile_path, {}).specs.each_with_object({}) do |spec, memo|
