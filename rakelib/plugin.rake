@@ -90,7 +90,6 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
-
   task "clean-duplicate-gems" do
     shared_gems_path = File.join(LogStash::Environment::LOGSTASH_HOME,
                                   'vendor/jruby/lib/ruby/gems/shared/gems')
@@ -133,13 +132,14 @@ namespace "plugin" do
 
     # Remove default gem gemspecs only
     default_duplicates.each do |gem_name|
-      # For stdlib default gems we only remove the gemspecs as removing the source code 
+      # For stdlib default gems we only remove the gemspecs as removing the source code
       # files results in code loading errors and ruby warnings
       FileUtils.rm_rf(Dir.glob("#{default_gemspecs_path}/#{gem_name}-*.gemspec"))
     end
-    
+
     task.reenable
   end
+
 
   task "install-default" => "bootstrap" do
     puts("[plugin:install-default] Installing default plugins")
