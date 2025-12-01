@@ -112,6 +112,12 @@ paths:
                       type: boolean
                     status:
                       type: string
+                    build_date:
+                      type: string
+                    build_sha:
+                      type: string
+                    build_snapshot:
+                      type: boolean
                     pipeline:
                       type: object
                       properties:
@@ -123,13 +129,16 @@ paths:
                           type: integer
               example:
                 host: "logstash-pipelines.example.com"
-                version: "9.3.0"
+                version: "9.2.1"
                 http_address: "127.0.0.1:9600"
                 id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
                 name: "logstash-pipelines"
                 ephermeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
-                snapshot: false
+                snapshot: true
                 status: "green"
+                build_date: "2025-11-20T01:18:55+00:00"
+                build_sha: "ff3e87d66f10c05a74d0cef7bc2911d60cee1ebc"
+                build_snapshot: true
                 pipeline:
                   workers: 10
                   batch_size: 125
