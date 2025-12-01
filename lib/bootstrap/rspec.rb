@@ -17,6 +17,16 @@
 
 require_relative "environment"
 LogStash::Bundler.setup!({:without => [:build]})
+# Our use of LogStash::Bundler.setup! here leaves us in kind of a wonky state for *all* tests
+# Essentially we end up with a load path that favors bundlers gem env over stdlib. This is
+# not really the call stack in logstash itself, so while this does make the full bundled gem
+# env available for tests, it also has a quirk where stdlib gems are not loaed correctly. The
+# following patch ensures that stdlib gems are bumped to the front of the load path for unit
+# tests.
+## START PATCH ##
+jruby_stdlib = $LOAD_PATH.find { |p| p.end_with?('vendor/jruby/lib/ruby/stdlib') }
+$LOAD_PATH.unshift($LOAD_PATH.delete(jruby_stdlib)) if jruby_stdlib
+## END PATCH ##
 require "logstash-core"
 require "logstash/environment"
 
