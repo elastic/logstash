@@ -114,16 +114,23 @@ module LogStash
         def jruby_bundled_specs
           @jruby_bundled_specs ||= begin
             idx = ::Bundler::Index.new
+            jruby_gem_home = LogStash::Bundler.instance_variable_get(:@jruby_default_gem_dir)
             jruby_specs_dir = LogStash::Bundler.instance_variable_get(:@jruby_bundled_specs_dir)
             jruby_default_specs_dir = LogStash::Bundler.instance_variable_get(:@jruby_default_specs_dir)
 
-            if jruby_specs_dir && ::File.directory?(jruby_specs_dir)
+            if jruby_gem_home && jruby_specs_dir && ::File.directory?(jruby_specs_dir)
+              # gems_dir is where the actual gem code lives (gem_home/gems/)
+              jruby_gems_dir = ::File.join(jruby_gem_home, "gems")
+
               # Get gemspecs from specifications/ but NOT from specifications/default/
               ::Dir[::File.join(jruby_specs_dir, "*.gemspec")].each do |path|
                 # Skip if this is actually in the default directory
                 next if jruby_default_specs_dir && path.start_with?(jruby_default_specs_dir)
 
-                stub = ::Gem::StubSpecification.gemspec_stub(path, jruby_specs_dir, jruby_specs_dir)
+                # gemspec_stub params: filename, base_dir, gems_dir
+                # base_dir = gem home (parent of specifications/)
+                # gems_dir = where gem code lives (gem_home/gems/)
+                stub = ::Gem::StubSpecification.gemspec_stub(path, jruby_gem_home, jruby_gems_dir)
                 # Create a Bundler::StubSpecification from the Gem::StubSpecification
                 bundler_spec = ::Bundler::StubSpecification.from_stub(stub)
                 # Set source to self (the Source::Rubygems instance) - required for materialization
