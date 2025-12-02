@@ -50,9 +50,14 @@ class LogStash::PluginManager::Command < Clamp::Command
 
   def remove_orphan_dependencies!
     locked_gem_names = ::Bundler::LockfileParser.new(File.read(LogStash::Environment::LOCKFILE)).specs.map(&:full_name).to_set
+    bundle_path = LogStash::Environment::BUNDLE_DIR
+    # JRuby bundled gems path - never touch these
+    jruby_gems_path = File.join(LogStash::Environment::LOGSTASH_HOME, "vendor", "jruby", "lib", "ruby", "gems")
     orphan_gem_specs = ::Gem::Specification.each
                                            .reject(&:stubbed?) # skipped stubbed (uninstalled) gems
                                            .reject(&:default_gem?) # don't touch jruby-included default gems
+                                           .reject { |spec| spec.full_gem_path.start_with?(jruby_gems_path) } # don't touch jruby bundled gems
+                                           .select { |spec| spec.full_gem_path.start_with?(bundle_path) } # only gems in bundle path
                                            .reject{ |spec| locked_gem_names.include?(spec.full_name) }
                                            .sort
 

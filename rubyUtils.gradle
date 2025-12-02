@@ -176,7 +176,7 @@ void setupJruby(File projectDir, File buildDir) {
     executeJruby projectDir, buildDir, { ScriptingContainer jruby ->
         jruby.currentDirectory = projectDir
         jruby.runScriptlet("require '${projectDir}/lib/bootstrap/environment'")
-        jruby.runScriptlet("LogStash::Bundler.invoke!")
+        jruby.runScriptlet("LogStash::Bundler.invoke!(:install => true)")
         jruby.runScriptlet("LogStash::Bundler.genericize_platform")
     }
 }
@@ -190,12 +190,13 @@ void setupJruby(File projectDir, File buildDir) {
 Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block) {
     def jruby = new ScriptingContainer()
     def env = jruby.environment
-    def gemDir = "${projectDir}/vendor/bundle/jruby/3.1.0".toString()
+    def gemHomeDir = "${projectDir}/vendor/bundle/jruby/3.1.0".toString()
+    def gemPathDir = "${projectDir}/vendor/jruby/lib/ruby/gems/shared:${projectDir}/vendor/bundle/jruby/3.1.0".toString()
     jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     env.put "USE_RUBY", "1"
-    env.put "GEM_HOME", gemDir
+    env.put "GEM_HOME", gemHomeDir
     env.put "GEM_SPEC_CACHE", "${buildDir}/cache".toString()
-    env.put "GEM_PATH", gemDir
+    env.put "GEM_PATH", gemPathDir
     // Pass through ORG_GRADLE_PROJECT_fedrampHighMode if it exists in the project properties
     // See https://docs.gradle.org/current/userguide/build_environment.html#setting_a_project_property
     // For more information about setting properties via env vars prefixed with ORG_GRADLE_PROJECT
@@ -279,7 +280,11 @@ tasks.register("installCustomJRuby", Copy) {
     dependsOn buildCustomJRuby
     description = "Install custom built JRuby in the vendor directory"
     inputs.file(customJRubyTar)
-    outputs.dir("${projectDir}/vendor/jruby")
+    // Don't re-extract if core JRuby is already installed. This works around
+    // gem deduplication when rake calls back in to gradle.
+    onlyIf {
+        !file("${projectDir}/vendor/jruby/bin/jruby").exists()
+    }
     from tarTree(customJRubyTar == "" ? jrubyTarPath : customJRubyTar)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${customJRubyVersion}", '')
@@ -294,7 +299,11 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     dependsOn=[verifyFile, installCustomJRuby]
     description = "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby")
+    // Don't re-extract if core JRuby is already installed. This works around
+    // gem deduplication when rake calls back in to gradle.
+    onlyIf {
+        !file("${projectDir}/vendor/jruby/bin/jruby").exists()
+    }
     from tarTree(downloadJRuby.dest)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')
