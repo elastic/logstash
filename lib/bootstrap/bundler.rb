@@ -308,14 +308,19 @@ module LogStash
       @jruby_default_gem_dir
     end
 
-    # Patch Gem::Specification.default_stubs to also look in JRuby's original default specs directory
+    # Patch Gem::Specification.default_stubs to also look in JRuby's original specs directories
     # This is needed because Gem.default_specifications_dir only returns a single path,
     # and after Gem.paths = ENV it points to Logstash's gem home, not JRuby's installation
+    # We include BOTH:
+    # - specifications/default/ (true default gems)
+    # - specifications/ (JRuby bundled gems like rexml, rake, net-imap, etc.)
     def patch_default_stubs!
       return if @default_stubs_patched || !defined?(@jruby_default_specs_dir) || @jruby_default_specs_dir.nil?
       @default_stubs_patched = true
 
-      jruby_specs_dir = @jruby_default_specs_dir
+      jruby_default_specs_dir = @jruby_default_specs_dir
+      jruby_bundled_specs_dir = @jruby_bundled_specs_dir
+      jruby_gem_home = @jruby_default_gem_dir
 
       ::Gem::Specification.singleton_class.class_eval do
         alias_method :original_default_stubs, :default_stubs
@@ -324,12 +329,26 @@ module LogStash
           # Get stubs from the current default_specifications_dir
           stubs = original_default_stubs(pattern)
 
-          # Also look in JRuby's original default specs directory if it exists and is different
-          if jruby_specs_dir && ::File.directory?(jruby_specs_dir) && jruby_specs_dir != ::Gem.default_specifications_dir
-            base_dir = jruby_specs_dir
-            ::Dir[::File.join(base_dir, pattern)].each do |path|
+          # Also look in JRuby's original default specs directory (specifications/default/)
+          if jruby_default_specs_dir && ::File.directory?(jruby_default_specs_dir) && jruby_default_specs_dir != ::Gem.default_specifications_dir
+            ::Dir[::File.join(jruby_default_specs_dir, pattern)].each do |path|
               # Use default_gemspec_stub to mark these as default gems (default_gem = true)
-              stub = ::Gem::StubSpecification.default_gemspec_stub(path, base_dir, base_dir)
+              stub = ::Gem::StubSpecification.default_gemspec_stub(path, jruby_default_specs_dir, jruby_default_specs_dir)
+              stubs << stub unless stubs.any? { |s| s.name == stub.name && s.version == stub.version }
+            end
+          end
+
+          # Also include JRuby's bundled gems (specifications/, excluding specifications/default/)
+          # These are gems like rexml, rake, net-imap that ship with JRuby but aren't "default gems"
+          # We treat them as default gems here so they're available via Bundler's add_default_gems_to
+          if jruby_bundled_specs_dir && jruby_gem_home && ::File.directory?(jruby_bundled_specs_dir)
+            jruby_gems_dir = ::File.join(jruby_gem_home, "gems")
+            ::Dir[::File.join(jruby_bundled_specs_dir, pattern)].each do |path|
+              # Skip if this is in the default directory (already handled above)
+              next if jruby_default_specs_dir && path.start_with?(jruby_default_specs_dir)
+
+              # Use gemspec_stub (not default_gemspec_stub) with correct base_dir and gems_dir
+              stub = ::Gem::StubSpecification.gemspec_stub(path, jruby_gem_home, jruby_gems_dir)
               stubs << stub unless stubs.any? { |s| s.name == stub.name && s.version == stub.version }
             end
           end
