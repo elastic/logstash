@@ -17,26 +17,19 @@
 <% end -%>
 <% if image_flavor == 'full' || image_flavor == 'oss' -%>
   <%   base_image = 'redhat/ubi9-minimal:latest' -%>
-  <%   go_image = 'golang:1.25' -%>
   <%   package_manager = 'microdnf' -%>
+<<<<<<< HEAD
+=======
+<% elsif image_flavor == 'observability-sre' -%>
+  <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
+  <%   package_manager = 'apk' -%>
+>>>>>>> b15c6c50 (Rewrite Env2yaml in java instead of Go (#18423))
 <% else -%>
   <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
-  <%   go_image = 'docker.elastic.co/wolfi/go:1.25' -%>
   <%   package_manager = 'apk' -%>
 <% end -%>
 <%   locale = 'C.UTF-8' -%>
 
-# Build env2yaml
-FROM <%= go_image %> AS builder-env2yaml
-
-COPY env2yaml/env2yaml.go env2yaml/go.mod env2yaml/go.sum /tmp/go/src/env2yaml/
-
-WORKDIR /tmp/go/src/env2yaml
-
-RUN go build -trimpath
-
-# Build main image
-# Minimal distributions do not ship with en language packs.
 FROM <%= base_image %>
 
 ENV ELASTIC_CONTAINER=true
@@ -89,7 +82,10 @@ RUN addgroup -g 1000 logstash && \
   find /usr/share/logstash -type d -exec chmod g+s {} \; && \
   ln -s /usr/share/logstash /opt/logstash
 
-COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
+<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
+COPY --chown=logstash:root env2yaml/classes /usr/share/logstash/env2yaml/classes/
+COPY --chown=logstash:root env2yaml/lib /usr/share/logstash/env2yaml/lib/
+COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
 <% if image_flavor == 'oss' -%>
 COPY --chown=logstash:root config/logstash-oss.yml /usr/share/logstash/config/logstash.yml

@@ -60,7 +60,7 @@ build-from-local-wolfi-artifacts: dockerfile
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
-COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go $(ARTIFACTS_DIR)/docker/env2yaml/go.mod $(ARTIFACTS_DIR)/docker/env2yaml/go.sum
+COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
@@ -70,9 +70,7 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml.go: data/logstash/env2yaml/env2yaml.go
-$(ARTIFACTS_DIR)/docker/env2yaml/go.mod: data/logstash/env2yaml/go.mod
-$(ARTIFACTS_DIR)/docker/env2yaml/go.sum: data/logstash/env2yaml/go.sum
+$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -83,11 +81,14 @@ docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/docker/config
 	mkdir -p $(ARTIFACTS_DIR)/docker/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/docker/pipeline
+	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/docker/env2yaml/
+	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/docker/env2yaml/
 
 COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
 COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/env2yaml.go
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.mod $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.sum $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor/modules.txt $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
 
 $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml: data/logstash/config/logstash-full.yml
@@ -95,10 +96,7 @@ $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties: data/logstash/c
 $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/env2yaml.go: data/logstash/env2yaml/env2yaml.go
-$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.mod: ironbank/go/src/env2yaml/go.mod
-$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/go.sum: ironbank/go/src/env2yaml/go.sum
-$(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor/modules.txt: ironbank/go/src/env2yaml/vendor/modules.txt
+$(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
 $(ARTIFACTS_DIR)/ironbank/LICENSE: ironbank/LICENSE
 $(ARTIFACTS_DIR)/ironbank/README.md: ironbank/README.md
 
@@ -110,8 +108,10 @@ ironbank_docker_paths:
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/bin
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/config
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/go/src/env2yaml/vendor
+	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml
 	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
+	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
+	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
 
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_ironbank
 

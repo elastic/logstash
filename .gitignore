@@ -16,7 +16,6 @@ out
 local
 test/setup/elasticsearch/elasticsearch-*
 vendor
-!docker/ironbank/go/src/env2yaml/vendor
 .sass-cache
 /data
 .buildpath
