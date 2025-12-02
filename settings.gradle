@@ -1,6 +1,10 @@
 rootProject.name = "logstash"
 
+<<<<<<< HEAD
 include ':logstash-core', 'logstash-core-benchmarks', 'ingest-converter', 'benchmark-cli', 'jvm-options-parser', 'logstash-integration-tests', 'dependencies-report'
+=======
+include ':logstash-core', 'logstash-core-benchmarks', 'benchmark-cli', 'jvm-options-parser', 'logstash-integration-tests', 'dependencies-report', 'docker:data:logstash:env2yaml'
+>>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
 project(':logstash-core').projectDir = new File('./logstash-core')
 project(':logstash-core-benchmarks').projectDir = new File('./logstash-core/benchmarks')
 project(':logstash-integration-tests').projectDir = new File('./qa/integration')
