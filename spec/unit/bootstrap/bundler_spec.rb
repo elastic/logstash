@@ -62,7 +62,9 @@ describe LogStash::Bundler do
       expect(::Bundler.settings[:gemfile]).to eq(LogStash::Environment::GEMFILE_PATH)
       expect(::Bundler.settings[:without]).to eq(options.fetch(:without, []))
 
-      expect(ENV['GEM_PATH']).to eq(LogStash::Environment.logstash_gem_home)
+      # GEM_PATH includes both logstash gem home and JRuby's gem directory
+      # so that JRuby bundled gems (like rexml) can be found
+      expect(ENV['GEM_PATH']).to start_with(LogStash::Environment.logstash_gem_home)
 
       $stderr = original_stderr
     end
