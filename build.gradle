@@ -300,6 +300,13 @@ tasks.register("bootstrap") {
 }
 
 
+
+task dockerBootstrap {
+    description = "Docker bootstrap ensures env2yaml java is compiled and staged for inclusion in tarballs"
+    dependsOn bootstrap
+    dependsOn ':docker:data:logstash:env2yaml:compileJava'
+}
+
 tasks.register("installDefaultGems") {
     dependsOn bootstrap
     doLast {
