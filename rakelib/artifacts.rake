@@ -113,15 +113,11 @@ namespace "artifact" do
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
     @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
 
-<<<<<<< HEAD
-    @exclude_paths
-=======
     # Exclude env2yaml source files - only compiled classes should be in tarball
     @exclude_paths << 'docker/data/logstash/env2yaml/**/*.java'
     @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
     @exclude_paths << 'docker/data/logstash/env2yaml/settings.gradle'
     @exclude_paths.freeze
->>>>>>> b15c6c50 (Rewrite Env2yaml in java instead of Go (#18423))
   end
 
   def oss_exclude_paths
@@ -274,29 +270,6 @@ namespace "artifact" do
     safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
-<<<<<<< HEAD
-=======
-  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
-  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
-    #with bundled JDKs
-    @bundles_jdk = true
-    @building_docker = true
-    exclude_paths = default_exclude_paths + %w(
-      bin/logstash-plugin
-      bin/logstash-plugin.bat
-      bin/logstash-keystore
-      bin/logstash-keystore.bat
-    )
-    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
-    create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
-      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
-      # copy additional files into the tarball
-      puts "HELLO(#{dedicated_directory_tar})"
-    end
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
-  end
-
->>>>>>> b15c6c50 (Rewrite Env2yaml in java instead of Go (#18423))
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs
@@ -550,11 +523,9 @@ namespace "artifact" do
 
       # add build.rb to tar
       metadata_file_path_in_tar = File.join("logstash-core", "lib", "logstash", "build.rb")
-<<<<<<< HEAD
       path_in_tar = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", metadata_file_path_in_tar)
       write_to_tar(tar, BUILD_METADATA_FILE.path, path_in_tar)
-=======
-      dedicated_directory_tarball.write(BUILD_METADATA_FILE.path, metadata_file_path_in_tar)
+      
       # add env2yaml for docker builds
       if @building_docker
         env2yaml_classes = "docker/data/logstash/env2yaml/classes"
@@ -562,18 +533,21 @@ namespace "artifact" do
           # Add compiled class files
           Dir.glob("#{env2yaml_classes}/**/*.class").each do |class_file|
             relative_path = class_file.sub("#{env2yaml_classes}/", "")
-            dedicated_directory_tarball.write(class_file, "env2yaml/classes/#{relative_path}")
+            docker_path = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", "env2yaml/classes", relative_path)
+            write_to_tar(tar, class_file, docker_path)
           end
           # Add dependency JARs
           Dir.glob("docker/data/logstash/env2yaml/lib/*.jar").each do |jar_file|
-            dedicated_directory_tarball.write(jar_file, "env2yaml/lib/#{File.basename(jar_file)}")
+            docker_path = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", "env2yaml/lib", File.basename(jar_file))
+            write_to_tar(tar, jar_file, docker_path)
           end
         end
-        dedicated_directory_tarball.write("docker/data/logstash/env2yaml/env2yaml", "env2yaml/env2yaml") if File.exist?("docker/data/logstash/env2yaml/env2yaml")
+        env2yaml_script = "docker/data/logstash/env2yaml/env2yaml"
+        if File.exist?(env2yaml_script)
+          docker_path = File.join("logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}", "env2yaml/env2yaml")
+          write_to_tar(tar, env2yaml_script, docker_path)
+        end
       end
-      # yield to the tar interceptor if we have one
-      yield(dedicated_directory_tarball) if block_given?
->>>>>>> b15c6c50 (Rewrite Env2yaml in java instead of Go (#18423))
     end
     gz.close
   end
