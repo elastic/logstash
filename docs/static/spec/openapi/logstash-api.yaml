@@ -86,7 +86,7 @@ paths:
             required: false
             schema:
               type: string
-            description: Period to wait for the status to reach the requested target status. Must be an integer with units, for example `3s`. If the target status is not reached before the timeout expires, the request returns status code 503.
+            description: Period to wait for the status to reach the requested target status. Must be an integer with units, for example `3s`. If the target status is not reached before the timeout expires, the request returns status code 408.
         - $ref: "#/components/parameters/pretty"
       responses:
         '200':
