@@ -280,7 +280,6 @@ module LogStash
       arguments = []
       if options[:install]
         arguments << "install"
-        arguments << "--prefer-local"
         arguments << "--clean" if options[:clean]
         if options[:local]
           arguments << "--local"
