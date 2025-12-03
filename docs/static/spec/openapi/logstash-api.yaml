@@ -82,11 +82,11 @@ paths:
             type: string
           description: One of green, yellow or red. Will wait (until the timeout provided) until the status of the service changes to the one provided or better, i.e. green > yellow > red. The query param, timeout, is required when this query param is provided.
         - name: timeout
-            in: query
-            required: false
-            schema:
-              type: string
-            description: Period to wait for the status to reach the requested target status. Must be an integer with units, for example `3s`. If the target status is not reached before the timeout expires, the request returns status code 408.
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Period to wait for the status to reach the requested target status. Must be an integer with units, for example `3s`. If the target status is not reached before the timeout expires, the request returns status code 408.
         - $ref: "#/components/parameters/pretty"
       responses:
         '200':
@@ -94,55 +94,57 @@ paths:
           content:
             application/json:
               schema:
-                - type: object
-                  properties:
-                    host:
-                      type: string
-                    version:
-                      type: string
-                    http_address:
-                      type: string
-                    id:
-                      type: string
-                    name:
-                      type: string
-                    ephemeral_id:
-                      type: string
-                    snapshot:
-                      type: boolean
-                    status:
-                      type: string
-                    build_date:
-                      type: string
-                    build_sha:
-                      type: string
-                    build_snapshot:
-                      type: boolean
+                type: object
+                properties:
+                  host:
+                    type: string
+                  version:
+                    type: string
+                  http_address:
+                    type: string
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  ephemeral_id:
+                    type: string
+                  snapshot:
+                    type: boolean
+                  status:
+                    type: string
+                  build_date:
+                    type: string
+                  build_sha:
+                    type: string
+                  build_snapshot:
+                    type: boolean
+                  pipeline:
+                    type: object
+                    properties:
+                      workers:
+                        type: integer
+                      batch_size:
+                        type: integer
+                      batch_delay:
+                        type: integer
+              examples:
+                basicMetadataExample1:
+                  value:
+                    host: "logstash-pipelines.example.com"
+                    version: "9.2.1"
+                    http_address: "127.0.0.1:9600"
+                    id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
+                    name: "logstash-pipelines"
+                    ephemeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
+                    snapshot: true
+                    status: "green"
+                    build_date: "2025-11-20T01:18:55+00:00"
+                    build_sha: "ff3e87d66f10c05a74d0cef7bc2911d60cee1ebc"
+                    build_snapshot: true
                     pipeline:
-                      type: object
-                      properties:
-                        workers:
-                          type: integer
-                        batch_size:
-                          type: integer
-                        batch_delay:
-                          type: integer
-              example:
-                host: "logstash-pipelines.example.com"
-                version: "9.2.1"
-                http_address: "127.0.0.1:9600"
-                id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
-                name: "logstash-pipelines"
-                ephermeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
-                snapshot: true
-                status: "green"
-                build_date: "2025-11-20T01:18:55+00:00"
-                build_sha: "ff3e87d66f10c05a74d0cef7bc2911d60cee1ebc"
-                build_snapshot: true
-                pipeline:
-                  workers: 10
-                  batch_size: 125
-                  batch_delay: 50
+                      workers: 10
+                      batch_size: 125
+                      batch_delay: 50
       x-metaTags:
         - content: Logstash
           name: product_name
