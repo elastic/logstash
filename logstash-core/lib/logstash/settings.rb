@@ -445,51 +445,8 @@ module LogStash
     java_import org.logstash.settings.StringSetting
 
     java_import org.logstash.settings.NullableStringSetting
-
     java_import org.logstash.settings.PasswordSetting
-
-    class ValidatedPassword < Setting::PasswordSetting
-      def initialize(name, value, password_policies)
-        @password_policies = password_policies
-        super(name, value, true)
-      end
-
-      def coerce(password)
-        if password && !password.kind_of?(::LogStash::Util::Password)
-          raise(ArgumentError, "Setting `#{name}` could not coerce LogStash::Util::Password value to password")
-        end
-
-        policies = build_password_policies
-        validatedResult = LogStash::Util::PasswordValidator.new(policies).validate(password.value)
-        if validatedResult.length() > 0
-          if @password_policies.fetch(:mode).eql?("WARN")
-            logger.warn("Password #{validatedResult}.")
-          else
-            raise(ArgumentError, "Password #{validatedResult}.")
-          end
-        end
-        password
-      end
-
-      def build_password_policies
-        policies = {}
-        policies[Util::PasswordPolicyType::EMPTY_STRING] = Util::PasswordPolicyParam.new
-        policies[Util::PasswordPolicyType::LENGTH] = Util::PasswordPolicyParam.new("MINIMUM_LENGTH", @password_policies.dig(:length, :minimum).to_s)
-        if @password_policies.dig(:include, :upper).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::UPPER_CASE] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :lower).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::LOWER_CASE] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :digit).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::DIGIT] = Util::PasswordPolicyParam.new
-        end
-        if @password_policies.dig(:include, :symbol).eql?("REQUIRED")
-          policies[Util::PasswordPolicyType::SYMBOL] = Util::PasswordPolicyParam.new
-        end
-        policies
-      end
-    end
+    java_import org.logstash.settings.ValidatedPasswordSetting
 
     # The CoercibleString allows user to enter any value which coerces to a String.
     # For example for true/false booleans; if the possible_strings are ["foo", "true", "false"]

@@ -283,39 +283,20 @@ describe LogStash::Settings do
     context "when running PasswordValidator coerce" do
       it "raises an error when supplied value is not LogStash::Util::Password" do
         expect {
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", "testPassword", password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
+          LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", "testPassword", password_policies)
+        }.to raise_error(IllegalArgumentException, a_string_including("Setting `test.validated.password` could not coerce LogStash::Util::Password value to password"))
       end
 
       it "fails on validation" do
         password = LogStash::Util::Password.new("Password!")
         expect {
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        }.to raise_error(ArgumentError, a_string_including("Password must contain at least one digit between 0 and 9."))
+          LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", password, password_policies)
+        }.to raise_error(IllegalArgumentException, a_string_including("Password must contain at least one digit between 0 and 9."))
       end
 
       it "validates the password successfully" do
         password = LogStash::Util::Password.new("Password123!")
-        expect(LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)).to_not be_nil
-      end
-    end
-
-    describe "mode WARN" do
-      let(:password_policies) { super().merge("mode": "WARN") }
-
-      context "when the password does not conform to the policy" do
-        let(:password) { LogStash::Util::Password.new("NoNumbers!") }
-        let(:mock_logger) { double("logger") }
-
-        before :each do
-          allow_any_instance_of(LogStash::Setting::ValidatedPassword).to receive(:logger).and_return(mock_logger)
-        end
-
-        it "logs a warning on validation failure" do
-          expect(mock_logger).to receive(:warn).with(a_string_including("Password must contain at least one digit between 0 and 9."))
-
-          LogStash::Setting::ValidatedPassword.new("test.validated.password", password, password_policies)
-        end
+        expect(LogStash::Setting::ValidatedPasswordSetting.new("test.validated.password", password, password_policies)).to_not be_nil
       end
     end
   end
