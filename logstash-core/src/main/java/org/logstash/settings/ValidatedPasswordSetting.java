@@ -22,7 +22,6 @@ package org.logstash.settings;
 import co.elastic.logstash.api.Password;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jruby.RubySymbol;
 import org.logstash.secret.password.PasswordPolicyParam;
 import org.logstash.secret.password.PasswordPolicyType;
 import org.logstash.secret.password.PasswordValidator;
@@ -52,11 +51,12 @@ public class ValidatedPasswordSetting extends PasswordSetting {
         for (Map.Entry<Object, Object> entry : passwordPolicies.entrySet()) {
             final String transformedKey = entry.getKey().toString();;
             Object value = entry.getValue();
+            // Here we consider that the value can be a nested map or a value which "toString" is enough.
+            // From the actual usage we have in Logstash, this is enough, we don't expect the value to be a list or
+            // other complex structure. If such need arise, we can enhance this method handling also those classes.
             if (value instanceof Map) {
                 value = convertKeyRubyLabelsToStrings((Map<Object, Object>) value);
             }
-            // TODO handle lists if needed ?
-            // TODO what if the value is a RubySymbol ?
             result.put(transformedKey, value);
         }
         return result;
