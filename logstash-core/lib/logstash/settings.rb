@@ -438,6 +438,7 @@ module LogStash
     java_import org.logstash.settings.StringSetting
 
     java_import org.logstash.settings.NullableStringSetting
+<<<<<<< HEAD
 
     class Password < Coercible
       def initialize(name, default = nil, strict = true)
@@ -501,6 +502,10 @@ module LogStash
         policies
       end
     end
+=======
+    java_import org.logstash.settings.PasswordSetting
+    java_import org.logstash.settings.ValidatedPasswordSetting
+>>>>>>> 3659b6f9 (Moved Ruby ValidatedPassword setting to Java implementation (#18185))
 
     # The CoercibleString allows user to enter any value which coerces to a String.
     # For example for true/false booleans; if the possible_strings are ["foo", "true", "false"]
