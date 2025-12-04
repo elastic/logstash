@@ -22,6 +22,7 @@ package org.logstash.settings;
 import co.elastic.logstash.api.Password;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jruby.RubySymbol;
 import org.logstash.secret.password.PasswordPolicyParam;
 import org.logstash.secret.password.PasswordPolicyType;
 import org.logstash.secret.password.PasswordValidator;
@@ -66,7 +67,7 @@ public class ValidatedPasswordSetting extends PasswordSetting {
         if (password != null && !(password instanceof Password)) {
             throw new IllegalArgumentException("Setting `" + getName() + "` could not coerce LogStash::Util::Password value to password");
         }
-        LOGGER.info("Password policies: {}", passwordPolicies);
+        LOGGER.debug("Password policies: {}", passwordPolicies);
         Map<PasswordPolicyType, PasswordPolicyParam> policies = buildPasswordPolicies();
         String validatedResult = new PasswordValidator(policies).validate(((Password) password).getValue());
 
