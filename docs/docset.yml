@@ -24,6 +24,7 @@ subs:
   es-serverless:   "Elasticsearch Serverless"
   agent:   "Elastic Agent"
   fleet:   "Fleet"
+  fleet-server:   "Fleet Server"
   integrations:   "Integrations"
   stack:   "Elastic Stack"
   xpack:   "X-Pack"
