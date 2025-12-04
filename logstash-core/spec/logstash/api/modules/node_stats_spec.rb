@@ -152,13 +152,19 @@ describe LogStash::Api::Modules::NodeStats do
          "event_count" => {
            "current" => Numeric,
            "average" => {
-             "lifetime" => Numeric
+             "lifetime" => Numeric,
+             "1_minute" => Numeric,
+             "5_minutes" => Numeric,
+             "15_minutes" => Numeric
            }
          },
          "byte_size" => {
            "current" => Numeric,
            "average" => {
-             "lifetime" => Numeric
+             "lifetime" => Numeric,
+             "1_minute" => Numeric,
+             "5_minutes" => Numeric,
+             "15_minutes" => Numeric
            }
          }
        }
