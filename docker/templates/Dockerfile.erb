@@ -1,73 +1,11 @@
 # This Dockerfile was generated from templates/Dockerfile.erb
-<<<<<<< HEAD
-<% if %w(wolfi observability-sre).include?(image_flavor) -%>
-FROM docker.elastic.co/wolfi/go:1-dev as builder-env2yaml
-
-COPY env2yaml/env2yaml.go /tmp/go/src/env2yaml/env2yaml.go
-COPY env2yaml/go.mod      /tmp/go/src/env2yaml/go.mod
-COPY env2yaml/go.sum      /tmp/go/src/env2yaml/go.sum
-
-WORKDIR /tmp/go/src/env2yaml
-
-RUN go build
-<% end -%>
-
 <% if image_flavor == 'ironbank' -%>
 <%# Start image_flavor 'ironbank' %>
 ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi9
 ARG BASE_TAG=9.7
 ARG LOGSTASH_VERSION=<%= elastic_version %>
-ARG GOLANG_VERSION=1.21.8
-=======
-<%# image_flavor 'full', oss', 'wolfi', 'observability-sre' -%>
-<% if local_artifacts == 'false' -%>
-  <%   url_root = 'https://artifacts.elastic.co/downloads/logstash' -%>
-<% else -%>
-  <%   url_root = 'http://localhost:8000' -%>
-<% end -%>
-<% if image_flavor == 'oss' -%>
-  <%   tarball = "logstash-oss-#{elastic_version}-linux-${arch}.tar.gz" -%>
-  <%   license = 'Apache 2.0' -%>
-<% elsif image_flavor == 'full' %>
-  <%   tarball = "logstash-#{elastic_version}-linux-${arch}.tar.gz" -%>
-  <%   license = 'Elastic License' -%>
-<% elsif image_flavor == 'observability-sre' -%><%# 'observability-sre' needs arch to be injected from the outside -%>
-  <%   tarball = "logstash-observability-sre-#{elastic_version}-linux-#{arch}.tar.gz" -%>
-  <%   license = 'Elastic License' -%>
-<% else -%><%# 'wolfi' needs arch to be injected from the outside -%>
-  <%   tarball = "logstash-#{elastic_version}-linux-#{arch}.tar.gz" -%>
-  <%   license = 'Elastic License' -%>
-<% end -%>
-<% if image_flavor == 'full' || image_flavor == 'oss' -%>
-  <%   base_image = 'redhat/ubi9-minimal:latest' -%>
-  <%   package_manager = 'microdnf' -%>
-<% elsif image_flavor == 'observability-sre' -%>
-  <%   base_image = 'docker.elastic.co/wolfi/chainguard-base-fips' -%>
-  <%   package_manager = 'apk' -%>
-<% else -%>
-  <%   base_image = 'docker.elastic.co/wolfi/chainguard-base' -%>
-  <%   package_manager = 'apk' -%>
-<% end -%>
-<%   locale = 'C.UTF-8' -%>
 
-FROM <%= base_image %>
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
-
-# stage 1: build env2yaml
-FROM ${BASE_REGISTRY}/google/golang/ubi9/golang-1.21:${GOLANG_VERSION} AS env2yaml
-
-ENV GOPATH=/go
-
-COPY scripts/go /go
-
-USER root
-
-RUN dnf-3 -y upgrade && dnf-3 install -y git && \
-  cd /go/src/env2yaml && \
-  go build
-
-# Final stage
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
 
 ARG LOGSTASH_VERSION
@@ -77,7 +15,6 @@ ENV PATH=/usr/share/logstash/bin:$PATH
 
 WORKDIR /usr/share
 
-COPY --from=env2yaml /go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
 COPY scripts/config/* config/
 COPY scripts/pipeline/default.conf pipeline/logstash.conf
 COPY scripts/bin/docker-entrypoint /usr/local/bin/
@@ -103,6 +40,11 @@ RUN dnf -y upgrade && \
   chmod 0755 /usr/local/bin/docker-entrypoint && \
   rmdir config && \
   rm /tmp/logstash.tar.gz
+
+<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
+COPY --chown=logstash:root scripts/env2yaml/classes /usr/share/logstash/env2yaml/classes/
+COPY --chown=logstash:root scripts/env2yaml/lib /usr/share/logstash/env2yaml/lib/
+COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml
 <%# End image_flavor 'ironbank' %>
 <% else -%>
 <%# Start image_flavor 'full', oss', 'ubi8', 'wolfi', 'observability-sre' %>
@@ -215,24 +157,9 @@ RUN curl -Lo - <%= url_root %>/<%= tarball %> | \
   find /usr/share/logstash -type d -exec chmod g+s {} \; && \
   ln -s /usr/share/logstash /opt/logstash
 
-<<<<<<< HEAD
 WORKDIR /usr/share/logstash
 ENV ELASTIC_CONTAINER true
 ENV PATH=/usr/share/logstash/bin:$PATH
-=======
-<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
-COPY --chown=logstash:root env2yaml/classes /usr/share/logstash/env2yaml/classes/
-COPY --chown=logstash:root env2yaml/lib /usr/share/logstash/env2yaml/lib/
-COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
-COPY --chown=logstash:root config/pipelines.yml config/log4j2.properties config/log4j2.file.properties /usr/share/logstash/config/
-<% if image_flavor == 'oss' -%>
-COPY --chown=logstash:root config/logstash-oss.yml /usr/share/logstash/config/logstash.yml
-<% else -%><%# 'full', 'wolfi', 'observability-sre' -%>
-COPY --chown=logstash:root config/logstash-full.yml /usr/share/logstash/config/logstash.yml
-<% end -%>
-COPY --chown=logstash:root pipeline/default.conf /usr/share/logstash/pipeline/logstash.conf
-COPY --chmod=0755 bin/docker-entrypoint /usr/local/bin/
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
 
 <% if image_flavor == 'observability-sre' -%>
 <%# Add FIPS configuration for observability-sre image flavor %>
@@ -286,25 +213,10 @@ RUN chown --recursive logstash:root config/ pipeline/
 # Ensure Logstash gets the correct locale by default.
 ENV LANG=<%= locale %> LC_ALL=<%= locale %>
 
-<% if %w(wolfi observability-sre).include?(image_flavor) -%>
-COPY --from=builder-env2yaml /tmp/go/src/env2yaml/env2yaml /usr/local/bin/env2yaml
-<% else -%>
-COPY env2yaml/env2yaml-amd64 env2yaml/env2yaml-arm64 env2yaml/
-# Copy over the appropriate env2yaml artifact
-RUN set -eux; env2yamlarch="$(<%= arch_command %>)"; \
-  case "${env2yamlarch}" in \
-    'x86_64'|'amd64') \
-      env2yamlarch=amd64; \
-      ;; \
-    'aarch64'|'arm64') \
-      env2yamlarch=arm64; \
-      ;; \
-    *) echo >&2 "error: unsupported architecture '$env2yamlarch'"; exit 1 ;; \
-  esac; \
-  mkdir -p /usr/local/bin; \
-  cp env2yaml/env2yaml-${env2yamlarch} /usr/local/bin/env2yaml; \
-  rm -rf env2yaml
-<% end -%>
+<%# Copy env2yaml from tarball (pre-compiled by Gradle) %>
+COPY --chown=logstash:root env2yaml/classes /usr/share/logstash/env2yaml/classes/
+COPY --chown=logstash:root env2yaml/lib /usr/share/logstash/env2yaml/lib/
+COPY --chmod=0755 env2yaml/env2yaml /usr/local/bin/env2yaml
 # Place the startup wrapper script.
 COPY bin/docker-entrypoint /usr/local/bin/
 

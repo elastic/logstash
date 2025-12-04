@@ -198,14 +198,9 @@ namespace "artifact" do
   task "archives_docker" => ["prepare", "generate_build_metadata"] do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
-<<<<<<< HEAD
-    create_archive_pack(license_details, ARCH, "linux", "darwin")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
-=======
     @building_docker = true
-    create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
+    create_archive_pack(license_details, ARCH, "linux", "darwin")
+    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars
   end
 
   def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
@@ -273,13 +268,8 @@ namespace "artifact" do
     @bundles_jdk = true
     @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-<<<<<<< HEAD
     create_archive_pack(license_details, ARCH, "linux", "darwin")
-    safe_system("./gradlew bootstrap") # force the build of Logstash jars
-=======
-    create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
+    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars
   end
 
   desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"

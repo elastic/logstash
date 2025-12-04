@@ -22,11 +22,11 @@ DEFAULT_IMAGE_FLAVOR ?= full
 IMAGE_TAG := $(ELASTIC_REGISTRY)/logstash/logstash
 HTTPD ?= logstash-docker-artifact-server
 
-all: build-from-local-artifacts build-from-local-oss-artifacts build-from-local-observability-sre-artifacts public-dockerfiles
+all: build-from-local-full-artifacts build-from-local-oss-artifacts build-from-local-observability-sre-artifacts public-dockerfiles
 
 # Build from artifacts on the local filesystem, using an http server (running
 # in a container) to provide the artifacts to the Dockerfile.
-build-from-local-full-artifacts: dockerfile env2yaml
+build-from-local-full-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -36,7 +36,7 @@ build-from-local-full-artifacts: dockerfile env2yaml
 	docker tag $(IMAGE_TAG)-full:$(VERSION_TAG) $(IMAGE_TAG):$(VERSION_TAG);
 	docker kill $(HTTPD)
 
-build-from-local-oss-artifacts: dockerfile env2yaml
+build-from-local-oss-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -45,7 +45,7 @@ build-from-local-oss-artifacts: dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-build-from-local-ubi8-artifacts: dockerfile env2yaml
+build-from-local-ubi8-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -54,7 +54,7 @@ build-from-local-ubi8-artifacts: dockerfile env2yaml
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-build-from-local-observability-sre-artifacts: dockerfile env2yaml
+build-from-local-observability-sre-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
 	           python:3 bash -c 'cd /mnt && python3 -m http.server'
@@ -74,13 +74,8 @@ build-from-local-wolfi-artifacts: dockerfile
 
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
-<<<<<<< HEAD
-=======
 COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
 COPY_FILES += $(ARTIFACTS_DIR)/docker/pipeline/default.conf $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint
-COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64 
-COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64
 
 $(ARTIFACTS_DIR)/docker/config/pipelines.yml: data/logstash/config/pipelines.yml
 $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml: data/logstash/config/logstash-oss.yml
@@ -89,12 +84,7 @@ $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties: data/logstash/config/log4
 $(ARTIFACTS_DIR)/docker/config/log4j2.properties: data/logstash/config/log4j2.properties
 $(ARTIFACTS_DIR)/docker/pipeline/default.conf: data/logstash/pipeline/default.conf
 $(ARTIFACTS_DIR)/docker/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-<<<<<<< HEAD
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-arm64: data/logstash/env2yaml/env2yaml-arm64
-$(ARTIFACTS_DIR)/docker/env2yaml/env2yaml-amd64: data/logstash/env2yaml/env2yaml-amd64
-=======
 $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
->>>>>>> b15c6c50f (Rewrite Env2yaml in java instead of Go (#18423))
 
 $(ARTIFACTS_DIR)/docker/%:
 	cp -f $< $@
@@ -238,18 +228,6 @@ push:
 	docker push push.$(IMAGE_TAG):$(VERSION_TAG);
 	docker rmi push.$(IMAGE_TAG):$(VERSION_TAG);
 
-# Compile "env2yaml", the helper for configuring logstash.yml via environment
-# variables.
-env2yaml:
-	docker run --rm \
-	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
-		-e GOARCH=arm64 -e GOOS=linux \
-		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-arm64
-	docker run --rm \
-	  -v "$(PWD)/data/logstash/env2yaml:/usr/src/env2yaml" \
-		-e GOARCH=amd64 -e GOOS=linux \
-		-w /usr/src/env2yaml golang:1 go build -o /usr/src/env2yaml/env2yaml-amd64
-
 # Generate the Dockerfiles from ERB templates.
 dockerfile: templates/Dockerfile.erb
 	$(foreach FLAVOR, $(IMAGE_FLAVORS), \
@@ -264,7 +242,7 @@ dockerfile: templates/Dockerfile.erb
 	)
 
 clean:
-	rm -f ${ARTIFACTS_DIR}/env2yaml/env2yaml-* ${ARTIFACTS_DIR}/Dockerfile
+	rm -f ${ARTIFACTS_DIR}/Dockerfile
 
 
 .PHONY: clean push
