@@ -22,6 +22,10 @@ public class ManualAdvanceClock extends TestClock {
         this(currentInstant, null);
     }
 
+    public ManualAdvanceClock(final ZoneId zoneId) {
+        this(Instant.now(), zoneId);
+    }
+
     private ManualAdvanceClock(final Instant zeroInstant, final AtomicReference<Instant> currentInstant, final ZoneId zoneId) {
         this.zeroInstant = zeroInstant;
         this.currentInstant = currentInstant;

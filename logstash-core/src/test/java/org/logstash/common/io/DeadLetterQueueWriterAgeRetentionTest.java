@@ -222,7 +222,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(Instant.now(), ZoneId.of("Europe/Rome"));
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         long startTime = fakeClock.instant().toEpochMilli();
@@ -269,7 +269,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(Instant.now(), ZoneId.of("Europe/Rome"));
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         Duration flushInterval = Duration.ofSeconds(1);
@@ -314,7 +314,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(Instant.now(), ZoneId.of("Europe/Rome"));
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
