@@ -1,7 +1,7 @@
 package org.logstash.instrument.metrics.timer;
 
 import org.junit.Test;
-import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 import org.logstash.instrument.metrics.MetricType;
 
 import java.time.Duration;

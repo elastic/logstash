@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
+import org.logstash.testutils.time.ManualAdvanceClock;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -26,7 +27,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.FULL_SEGMENT_FILE_SIZE;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.GB;
 import static org.logstash.common.io.DeadLetterQueueTestUtils.MB;
@@ -38,35 +38,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
     // 319 events of 32Kb generates 10 Mb of data
     private static final int EVENTS_TO_FILL_A_SEGMENT = 319;
-    private ForwardableClock fakeClock;
-
-    static class ForwardableClock extends Clock {
-
-        private Clock currentClock;
-
-        ForwardableClock(Clock clock) {
-            this.currentClock = clock;
-        }
-
-        void forward(Duration period) {
-            currentClock = Clock.offset(currentClock, period);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return currentClock.getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return currentClock.withZone(zone);
-        }
-
-        @Override
-        public Instant instant() {
-            return currentClock.instant();
-        }
-    }
+    private ManualAdvanceClock fakeClock;
 
     private static class SynchronizedScheduledService implements DeadLetterQueueWriter.SchedulerService {
 
@@ -97,8 +69,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
     @Before
     public void setUp() throws Exception {
         dir = temporaryFolder.newFolder().toPath();
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
-        fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        fakeClock = new ManualAdvanceClock(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         synchScheduler = new SynchronizedScheduledService();
     }
 
@@ -107,8 +78,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final Event event = DeadLetterQueueReaderTest.createEventWithConstantSerializationOverhead(Collections.emptyMap());
         event.setField("message", DeadLetterQueueReaderTest.generateMessageContent(32500));
 
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
-        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(Instant.parse("2022-02-22T10:20:30.00Z"), ZoneId.of("Europe/Rome"));
         // given DLQ with first segment filled of expired events
         prepareDLQWithFirstSegmentOlderThanRetainPeriod(event, fakeClock, Duration.ofDays(2));
 
@@ -135,7 +105,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         assertEquals("Write should push off the age expired segments", VERSION_SIZE + BLOCK_SIZE, beheadedQueueSize);
     }
 
-    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event, ForwardableClock fakeClock, Duration retainedPeriod) throws IOException {
+    private void prepareDLQWithFirstSegmentOlderThanRetainPeriod(Event event, Clock fakeClock, Duration retainedPeriod) throws IOException {
         final Duration littleMoreThanRetainedPeriod = retainedPeriod.plusMinutes(1);
         long startTime = fakeClock.instant().minus(littleMoreThanRetainedPeriod).toEpochMilli();
         int messageSize = 0;
@@ -184,7 +154,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // Exercise
             // write an event that goes in second segment
-            fakeClock.forward(retention.plusSeconds(1));
+            fakeClock.advance(retention.plusSeconds(1));
             final long prevQueueSize = writeManager.getCurrentQueueSize();
             assertEquals("Queue size is composed of one full segment files", FULL_SEGMENT_FILE_SIZE, prevQueueSize);
 
@@ -228,7 +198,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
             // when the age expires the retention and a write is done
             // make the retention age to pass for the first 2 full segments
-            fakeClock.forward(retention.plusSeconds(1));
+            fakeClock.advance(retention.plusSeconds(1));
 
             // Exercise
             // write an event that goes in second segment
@@ -252,8 +222,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
-        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         long startTime = fakeClock.instant().toEpochMilli();
@@ -271,7 +240,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         assertEquals("Once closed the just written segment, only 1 file must be present", Set.of("1.log"), segments);
 
         // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
-        fakeClock.forward(Duration.ofDays(3));
+        fakeClock.advance(Duration.ofDays(3));
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
                 .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
@@ -300,8 +269,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
-        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         Duration flushInterval = Duration.ofSeconds(1);
@@ -319,7 +287,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         assertEquals("Once closed the just written segment, only 1 file must be present", Set.of("1.log"), segments);
 
         // move forward 3 days, so that the first segment becomes eligible to be deleted by the age retention policy
-        fakeClock.forward(Duration.ofDays(3));
+        fakeClock.advance(Duration.ofDays(3));
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
                 .newBuilderWithoutFlusher(dir, 10 * MB, 1 * GB)
                 .retentionTime(retainedPeriod)
@@ -346,8 +314,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                 Collections.singletonMap("message", "Not so important content"));
 
         // write some data in the new segment
-        final Clock pointInTimeFixedClock = Clock.fixed(Instant.now(), ZoneId.of("Europe/Rome"));
-        final ForwardableClock fakeClock = new ForwardableClock(pointInTimeFixedClock);
+        final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
@@ -376,7 +343,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
                     .until(()  -> Set.of("1.log", "2.log.tmp", ".lock").equals(listFileNames(dir)));
 
             // move forward the time so that the age policy is kicked in when the current head segment is empty
-            fakeClock.forward(retainedPeriod.plusMinutes(2));
+            fakeClock.advance(retainedPeriod.plusMinutes(2));
 
             triggerExecutionOfFlush();
 

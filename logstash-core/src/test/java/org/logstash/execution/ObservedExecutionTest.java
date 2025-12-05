@@ -8,7 +8,7 @@ import org.logstash.config.ir.CompiledPipeline;
 import org.logstash.config.ir.RubyEnvTestCase;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 import org.logstash.instrument.metrics.MetricExt;
 import org.logstash.instrument.metrics.MetricExtFactory;
 import org.logstash.instrument.metrics.MetricKeys;
