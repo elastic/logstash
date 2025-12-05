@@ -18,7 +18,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.logstash.DLQEntry;
 import org.logstash.Event;
-import org.logstash.instrument.metrics.ManualAdvanceClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;

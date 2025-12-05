@@ -1,13 +1,14 @@
 package org.logstash.instrument.metrics.timer;
 
 import org.logstash.instrument.metrics.TestClock;
+import org.logstash.testutils.time.ManualAdvanceClock;
 
 import java.util.function.LongSupplier;
 
 /**
  * This {@code TestTimerMetricFactory} provides factory methods for constructing implementations
  * of {@link TimerMetric} for use in test that are connected to a nano-time supplier (typically
- * {@link TestClock#nanoTime()} from {@link org.logstash.instrument.metrics.ManualAdvanceClock}).
+ * {@link TestClock#nanoTime()} from {@link ManualAdvanceClock}).
  *
  * <p>The factory methods use the package-private constructors provided by the respective
  * implementations, but are <em>public</em>, which makes them available to other test packages.

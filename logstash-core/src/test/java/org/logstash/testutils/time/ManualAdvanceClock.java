@@ -1,4 +1,6 @@
-package org.logstash.instrument.metrics;
+package org.logstash.testutils.time;
+
+import org.logstash.instrument.metrics.TestClock;
 
 import java.time.Duration;
 import java.time.Instant;

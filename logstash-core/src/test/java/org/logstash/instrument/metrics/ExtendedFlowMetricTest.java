@@ -2,8 +2,8 @@ package org.logstash.instrument.metrics;
 
 import org.junit.Test;
 import org.logstash.instrument.metrics.counter.LongCounter;
-import org.logstash.instrument.metrics.gauge.AbstractGaugeMetric;
 import org.logstash.instrument.metrics.gauge.NumberGauge;
+import org.logstash.testutils.time.ManualAdvanceClock;
 
 import java.time.Duration;
 import java.time.Instant;
