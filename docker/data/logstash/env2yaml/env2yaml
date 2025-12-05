@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Execute the env2yaml java program. Ensure the snakeyaml-engine jar is in the classpath.
+
+exec /usr/share/logstash/jdk/bin/java \
+    -XX:+UseSerialGC \
+    -Xms32m \
+    -Xmx32m \
+    -cp "/usr/share/logstash/env2yaml/classes:/usr/share/logstash/env2yaml/lib/*" \
+    org.logstash.env2yaml.Env2Yaml "$@"
+
+
