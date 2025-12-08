@@ -65,10 +65,17 @@ tags:
     # externalDocs:
     #   description:
     #   url:
+  - name: root
+    x-displayName: Metadata
+    description: |
+      Build and service metadata, including build info, pipeline info and the service's status.
+    # externalDocs:
+    #   description:
+    #   url:
 paths:
   /:
     get:
-      summary: Gets basic metadata
+      summary: Get build and service metadata
       description: |
         Shows basic metadata about the running logstash service. This includes build info, pipeline info and the service's status.
       operationId: root
@@ -94,39 +101,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  host:
-                    type: string
-                  version:
-                    type: string
-                  http_address:
-                    type: string
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  ephemeral_id:
-                    type: string
-                  snapshot:
-                    type: boolean
-                  status:
-                    type: string
-                  build_date:
-                    type: string
-                  build_sha:
-                    type: string
-                  build_snapshot:
-                    type: boolean
-                  pipeline:
-                    type: object
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
                     properties:
-                      workers:
-                        type: integer
-                      batch_size:
-                        type: integer
-                      batch_delay:
-                        type: integer
+                      build_date:
+                        type: string
+                        description: The timestamp when this Logstash build was created.
+                      build_sha:
+                        type: string
+                        description: The SHA-1 hash of the Logstash build.
+                      build_snapshot:
+                        type: boolean
+                        description: Whether this Logstash build is a snapshot build.
+                      pipeline:
+                        type: object
+                        properties:
+                          workers:
+                            type: integer
+                            description: The number of workers in the pipeline.
+                          batch_size:
+                            type: integer
+                            description: The batch size for the pipeline.
+                          batch_delay:
+                            type: integer
+                            description: The batch delay for the pipeline.
               examples:
                 basicMetadataExample1:
                   value:
