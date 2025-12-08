@@ -44,6 +44,13 @@ tags:
     # externalDocs:
     #   description:
     #   url:
+  - name: root
+    x-displayName: Metadata
+    description: |
+      Build and service metadata, including build info, pipeline info and the service's status.
+    # externalDocs:
+    #   description:
+    #   url:
   - name: node info
     x-displayName: Node info
     description: |
@@ -62,13 +69,6 @@ tags:
     x-displayName: Plugins info
     description: |
       Plugin info, including a list of installed plugins.
-    # externalDocs:
-    #   description:
-    #   url:
-  - name: root
-    x-displayName: Metadata
-    description: |
-      Build and service metadata, including build info, pipeline info and the service's status.
     # externalDocs:
     #   description:
     #   url:
