@@ -72,11 +72,11 @@ It is important that you secure the communication between Logstash instances. Us
 
 2. Configure the downstream (receiving) Logstash to use SSL. Add these settings to the HTTP Input configuration:
 
-    * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
+    * `ssl_enabled`: When set to `true`, it enables Logstash use of SSL/TLS
     * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
     * `ssl_certificate`: Specifies the certificate that Logstash uses to authenticate with the client.
     * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specified CA.
-    * `ssl_verify_mode`:  Specifies whether Logstash server verifies the client certificate against the CA.
+    * `ssl_client_authentication`:  Specifies whether Logstash server verifies the client certificate against the CA.
 
     For example:
 
@@ -85,11 +85,11 @@ It is important that you secure the communication between Logstash instances. Us
       http {
         ...
 
-        ssl => true
+        ssl_enabled => true
         ssl_key => "server.key.pk8"
         ssl_certificate => "server.crt"
         ssl_certificate_authorities => "ca.crt"
-        ssl_verify_mode => force_peer
+        ssl_client_authentication => required
       }
     }
     ```
