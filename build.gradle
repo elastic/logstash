@@ -301,8 +301,6 @@ tasks.register("bootstrap") {
   }
 }
 
-
-
 task dockerBootstrap {
     description = "Docker bootstrap ensures env2yaml java is compiled and staged for inclusion in tarballs"
     dependsOn bootstrap
@@ -323,10 +321,124 @@ tasks.register("installDevelopmentGems") {
   }
 }
 
+tasks.register("artifactDocker") {
+    description = "Build docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker')
+    }
+}
+
+tasks.register("artifactDockerOss") {
+    description = "Build OSS docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_oss')
+    }
+}
+
+tasks.register("artifactDockerWolfi") {
+    description = "Build Wolfi docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_wolfi')
+    }
+}
+
+tasks.register("artifactDockerfiles") {
+    description = "Generate all Dockerfiles and build contexts"
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:dockerfiles')
+    }
+}
+
+tasks.register("artifactAll") {
+    description = "Build all artifacts except docker"
+    dependsOn bootstrap
+
+    environment 'SKIP_DOCKER', '1'
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:all')
+    }
+}
+
+tasks.register("artifactDeb") {
+    description = "Build DEB package"
+    dependsOn bootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:deb')
+    }
+
+    finalizedBy deleteLocalJdk
+}
+
+tasks.register("artifactRpm") {
+    description = "Build RPM package"
+    dependsOn bootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:rpm')
+    }
+
+    finalizedBy deleteLocalJdk
+}
+
 tasks.register("compileGrammar") {
     dependsOn bootstrap
     doLast {
         rake(projectDir, buildDir, 'compile:grammar')
+    }
+}
+
+tasks.register("artifactDockerOnly") {
+    description = "Build docker image without OSS"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_only')
+    }
+
+    finalizedBy deleteLocalJdk
+}
+
+tasks.register("qaAcceptanceAll") {
+    description = "Run all acceptance tests"
+    dependsOn bootstrap
+
+    doLast {
+        rake(projectDir, buildDir, 'qa:acceptance:all')
+    }
+}
+
+tasks.register("generatePluginsVersion") {
+    description = "Generate plugins version documentation"
+    dependsOn bootstrap
+    dependsOn installDefaultGems
+
+    doLast {
+        rake(projectDir, buildDir, 'generate_plugins_version')
+    }
+}
+
+tasks.register("installCore") {
+    description = "Install core development dependencies"
+    dependsOn bootstrap
+
+    doLast {
+        rake(projectDir, buildDir, 'test:install-core')
     }
 }
 
@@ -671,13 +783,6 @@ tasks.register("generateLicenseReportInputs") {
             }
         }
     }
-}
-
-tasks.register("generatePluginsVersion") {
-  dependsOn installDefaultGems
-  doLast {
-      rake(projectDir, buildDir, 'generate_plugins_version')
-  }
 }
 
 bootstrap.dependsOn assemblyDeps

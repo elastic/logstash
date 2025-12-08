@@ -21,11 +21,6 @@
 require 'pathname'
 
 namespace "test" do
-  desc "run the java unit tests"
-  task "core-java" do
-    exit(1) unless system('./gradlew clean javaTests')
-  end
-
   desc "run the ruby unit tests"
   task "core-ruby" => "compliance" do
     exit 1 unless system(*default_spec_command)
@@ -36,16 +31,8 @@ namespace "test" do
     exit 1 unless system('bin/rspec', '-fd', '--patern', 'spec/compliance/**/*_spec.rb')
   end
 
-  desc "run all core specs"
-  task "core" => ["core-slow"]
-
   def default_spec_command
     ["bin/rspec", "-fd", "--pattern", "spec/unit/**/*_spec.rb,logstash-core/spec/**/*_spec.rb"]
-  end
-
-  desc "run all core specs"
-  task "core-slow" do
-    exit 1 unless system('./gradlew clean test')
   end
 
   desc "run core specs excluding slower tests like stress tests"
@@ -84,4 +71,4 @@ namespace "test" do
   task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
 end
 
-task "test" => ["test:core"]
+task "test" => ["test:core-ruby"]
