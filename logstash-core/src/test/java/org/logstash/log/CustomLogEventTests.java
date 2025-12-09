@@ -47,10 +47,12 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.junit.LoggerContextRule;
 import org.apache.logging.log4j.test.appender.ListAppender;
 import org.jruby.RubyHash;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.logstash.ObjectMappers;
@@ -59,7 +61,6 @@ import org.logstash.RubyUtil;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class CustomLogEventTests {
     private static final String CONFIG = "log4j2-test1.xml";
@@ -67,6 +68,11 @@ public class CustomLogEventTests {
 
     @ClassRule
     public static LoggerContextRule CTX = new LoggerContextRule(CONFIG);
+
+    @After
+    public void tearDown() {
+        ThreadContext.clearAll();
+    }
 
     @Test
     public void testPatternLayout() {
@@ -205,5 +211,30 @@ public class CustomLogEventTests {
         } else {
             System.setProperty(STRICT_JSON_PROPERTY_NAME, prevSetting);
         }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testJSONLayoutWithPipelineIdAndPluginIds() throws JsonProcessingException {
+        ListAppender appender = CTX.getListAppender("JSONEventLogger").clear();
+        Logger logger = LogManager.getLogger("JSONEventLogger");
+
+        ThreadContext.put("pipeline.id", "main-pipeline");
+        ThreadContext.put("plugin.id", "elasticsearch-output-xyz");
+        logger.debug("Both context fields test");
+        ThreadContext.remove("pipeline.id");
+        ThreadContext.remove("plugin.id");
+
+        List<String> messages = appender.getMessages();
+        assertEquals(1, messages.size());
+
+        Map<String, Object> result = ObjectMappers.JSON_MAPPER.readValue(messages.get(0), Map.class);
+
+        assertEquals("DEBUG", result.get("level"));
+        assertEquals("main-pipeline", result.get("pipeline.id"));
+        assertEquals("elasticsearch-output-xyz", result.get("plugin.id"));
+
+        Map<String, Object> logEvent = (Map<String, Object>) result.get("logEvent");
+        assertEquals("Both context fields test", logEvent.get("message"));
     }
 }

@@ -31,6 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.logstash.ObjectMappers.LOG4J_JSON_MAPPER;
 
@@ -48,6 +49,17 @@ public class CustomLogEventSerializer extends JsonSerializer<CustomLogEvent> {
         generator.writeObjectField("loggerName", event.getLoggerName());
         generator.writeObjectField("timeMillis", event.getTimeMillis());
         generator.writeObjectField("thread", event.getThreadName());
+
+        final String pipelineId = event.getContextData().getValue("pipeline.id");
+        if (Objects.nonNull(pipelineId) && !pipelineId.isEmpty()) {
+            generator.writeStringField("pipeline.id", pipelineId);
+        }
+
+        final String pluginId = event.getContextData().getValue("plugin.id");
+        if (Objects.nonNull(pluginId) && !pluginId.isEmpty()) {
+            generator.writeStringField("plugin.id", pluginId);
+        }
+
         generator.writeFieldName("logEvent");
         generator.writeStartObject();
 
