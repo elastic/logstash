@@ -202,6 +202,18 @@ describe LogStash::Api::Modules::Root do
 
           include_examples 'waits until the target status (or better) is reached and returns successfully'
         end
+
+        context 'the current status is unknown' do
+
+          let(:return_statuses) do
+            [
+              org.logstash.health.Status::UNKNOWN,
+              org.logstash.health.Status::GREEN
+            ]
+          end
+
+          include_examples 'waits until the target status (or better) is reached and returns successfully'
+        end
       end
 
       context 'target status is yellow' do

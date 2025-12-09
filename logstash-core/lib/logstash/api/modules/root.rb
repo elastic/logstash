@@ -83,7 +83,8 @@ module LogStash
 
           loop do
             current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
-            break if current_status <= HEALTH_STATUS.index(target_status)
+            # The current status could be "unknown", which isn't in the HEALTH_STATUS array.
+            break if current_status && current_status <= HEALTH_STATUS.index(target_status)
 
             time_remaining = deadline - Time.now
             if time_remaining <= 0
