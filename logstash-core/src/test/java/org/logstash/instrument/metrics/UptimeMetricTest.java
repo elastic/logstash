@@ -1,6 +1,7 @@
 package org.logstash.instrument.metrics;
 
 import org.junit.Test;
+import org.logstash.testutils.time.ManualAdvanceClock;
 
 import java.math.BigDecimal;
 import java.time.Duration;

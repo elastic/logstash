@@ -1,4 +1,6 @@
-package org.logstash.instrument.metrics;
+package org.logstash.testutils.time;
+
+import org.logstash.instrument.metrics.TestClock;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,6 +20,10 @@ public class ManualAdvanceClock extends TestClock {
 
     public ManualAdvanceClock(final Instant currentInstant) {
         this(currentInstant, null);
+    }
+
+    public ManualAdvanceClock(final ZoneId zoneId) {
+        this(Instant.now(), zoneId);
     }
 
     private ManualAdvanceClock(final Instant zeroInstant, final AtomicReference<Instant> currentInstant, final ZoneId zoneId) {
