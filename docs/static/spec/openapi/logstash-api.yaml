@@ -87,7 +87,7 @@ paths:
           required: false
           schema:
             type: string
-          description: One of green, yellow or red. Will wait (until the timeout provided) until the status of the service changes to the one provided or better, i.e. green > yellow > red. The query param, timeout, is required when this query param is provided.
+          description: Wait (until the timeout expires) for the service changes to a specific health status (or a better status). A green status is better than yellow and yellow is better than red. The `timeout` query parameter is required when you use this parameter.
         - name: timeout
           in: query
           required: false
