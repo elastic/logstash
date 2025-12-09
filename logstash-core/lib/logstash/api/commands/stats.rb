@@ -197,30 +197,14 @@ module LogStash
               }
             }
             # Enrich byte_size and event_count averages with the last 1, 5, 15 minutes averages if available
-            publish_average_count_flow_metric(event_count_average_flow_metric, result, :last_1_minute)
-            publish_average_count_flow_metric(event_count_average_flow_metric, result, :last_5_minutes)
-            publish_average_count_flow_metric(event_count_average_flow_metric, result, :last_15_minutes)
-            publish_average_size_flow_metric(byte_size_average_flow_metric, result, :last_1_minute)
-            publish_average_size_flow_metric(byte_size_average_flow_metric, result, :last_5_minutes)
-            publish_average_size_flow_metric(byte_size_average_flow_metric, result, :last_15_minutes)
+            [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+              key = window.to_s
+              result[:event_count][:average][window] = event_count_average_flow_metric[key]&.round if event_count_average_flow_metric[key]
+              result[:byte_size][:average][window] = byte_size_average_flow_metric[key]&.round if byte_size_average_flow_metric[key]
+            end
             result
           end
           private :refine_batch_metrics
-
-
-          def publish_average_count_flow_metric(average_flow_metric, result, time_window)
-            if average_flow_metric[time_window.to_s]
-              result[:event_count][:average][time_window] = average_flow_metric[time_window.to_s].round
-            end
-          end
-          private :publish_average_count_flow_metric
-
-          def publish_average_size_flow_metric(average_flow_metric, result, time_window)
-            if average_flow_metric[time_window.to_s]
-              result[:byte_size][:average][time_window] = average_flow_metric[time_window.to_s].round
-            end
-          end
-          private :publish_average_size_flow_metric
 
           def report(stats, extended_stats = nil, opts = {})
             ret = {
