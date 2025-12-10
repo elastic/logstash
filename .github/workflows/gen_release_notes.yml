@@ -25,6 +25,19 @@ jobs:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+    - name: Validate the supplied target branch and last release tag exist
+      run: |
+        git fetch --tags
+        
+        if ! git rev-parse --verify "origin/${{ github.event.inputs.branch }}" >/dev/null 2>&1; then
+          echo "Error: Branch ${{ github.event.inputs.branch }} does not exist"
+          exit 1
+        fi
+        
+        if ! git rev-parse --verify "v${{ github.event.inputs.last_release }}" >/dev/null 2>&1; then
+          echo "Error: Tag v${{ github.event.inputs.last_release }} does not exist"
+          exit 1
+        fi
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
