@@ -442,6 +442,7 @@ tasks.register("installCore") {
 
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
+    dependsOn "copyJdk"
     inputs.files fileTree("${projectDir}/rakelib")
     inputs.files fileTree("${projectDir}/bin")
     inputs.files fileTree("${projectDir}/config")
@@ -466,6 +467,7 @@ tasks.register("artifactDockerObservabilitySRE") {
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
     }
+    finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleTarDistribution") {
