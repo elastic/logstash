@@ -105,11 +105,6 @@ namespace "artifact" do
     @exclude_paths << 'docker/data/logstash/env2yaml/**/*.java'
     @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
     @exclude_paths << 'docker/data/logstash/env2yaml/settings.gradle'
-
-    # Exclude duplicated gems between jruby and bundler
-    @exclude_paths.concat(duplicated_gems_exclude_paths)
-    puts "Full exclude_paths list:"
-    @exclude_paths.each { |path| puts " - #{path}" }
     @exclude_paths.freeze
   end
 
