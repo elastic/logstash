@@ -23,21 +23,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.1.9 [logstash-9.1.9-release-notes]
 
-### Features and enhancements [logstash-9.1.9-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.9
-
-=== Logstash Commits between 9.1 and 9.1.9
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.9..9.1"
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.9..9.1 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
-### Plugins [logstash-plugin-9.1.9-changes]
+No user-facing changes in Logstash core and plugins.
 
 ## 9.1.8 [logstash-9.1.8-release-notes]
 
