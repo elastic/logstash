@@ -21,6 +21,30 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.3 [logstash-9.2.3-release-notes]
+
+### Features and enhancements [logstash-9.2.3-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.2.3
+
+=== Logstash Commits between 9.2 and 9.2.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.2..9.2"
+
+4eb0f3f18 - (HEAD -> 9.2, origin/9.2) Include pipeline and plugin IDs to the JSON logs. (#18470) (#18474) (28 hours ago) <mergify[bot]>
+7eadacd6f - Doc: Add elastic-integration filter tutorial (#18229) (#18466) (6 days ago) <mergify[bot]>
+89ca54dd0 - Rewrite Env2yaml in java instead of Go (#18423) (#18458) (8 days ago) <mergify[bot]>
+de748afc4 - Bump logstash version 9.2.3 (#18452) (8 days ago) <github-actions[bot]>
+88bf2b4a7 - Release notes for 9.2.2 (#18447) (8 days ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.2.2..9.2 *.release"
+Changed plugin versions:
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.2.3-changes]
+
 ## 9.2.2 [logstash-9.2.2-release-notes]
 
 No user-facing changes in Logstash core.
