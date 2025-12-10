@@ -364,8 +364,6 @@ tasks.register("artifactAll") {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
 
-    environment 'SKIP_DOCKER', '1'
-
     doLast {
         rake(projectDir, buildDir, 'artifact:all')
     }
@@ -472,6 +470,7 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
+  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -484,10 +483,12 @@ tasks.register("assembleTarDistribution") {
   doLast {
       rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
   }
+  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleOssTarDistribution") {
   dependsOn bootstrap
+  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -498,10 +499,12 @@ tasks.register("assembleOssTarDistribution") {
   doLast {
       rake(projectDir, buildDir, 'artifact:archives_oss')
   }
+  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleZipDistribution") {
   dependsOn bootstrap
+  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -514,10 +517,12 @@ tasks.register("assembleZipDistribution") {
   doLast {
       rake(projectDir, buildDir, 'artifact:archives')
   }
+  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleOssZipDistribution") {
   dependsOn bootstrap
+  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -528,8 +533,8 @@ tasks.register("assembleOssZipDistribution") {
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
       rake(projectDir, buildDir, 'artifact:archives_oss')
-
   }
+  finalizedBy "deleteLocalJdk"
 }
 
 project(":logstash-core") {
