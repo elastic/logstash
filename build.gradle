@@ -392,6 +392,7 @@ project(":logstash-core") {
     tasks.getByPath(":logstash-core:" + tsk).configure {
       dependsOn copyPluginTestAlias
       dependsOn installDevelopmentGems
+      dependsOn installDefaultGems
     }
   }
 }
@@ -956,6 +957,7 @@ if (System.getenv('OSS') != 'true') {
     ["rubyTests", "rubyIntegrationTests", "test"].each { tsk ->
       tasks.getByPath(":logstash-xpack:" + tsk).configure {
         dependsOn installDevelopmentGems
+        dependsOn installDefaultGems
       }
     }
   }

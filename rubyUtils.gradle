@@ -273,7 +273,11 @@ tasks.register("installCustomJRuby", Copy) {
     dependsOn buildCustomJRuby
     description "Install custom built JRuby in the vendor directory"
     inputs.file(customJRubyTar)
-    outputs.dir("${projectDir}/vendor/jruby")
+    // Don't re-extract if core JRuby is already installed. This works around
+    // gem deduplication when rake calls back in to gradle.
+    onlyIf {
+        !file("${projectDir}/vendor/jruby/bin/jruby").exists()
+    }
     from tarTree(customJRubyTar == "" ? jrubyTarPath : customJRubyTar)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${customJRubyVersion}", '')
@@ -288,7 +292,11 @@ tasks.register("downloadAndInstallJRuby", Copy) {
     dependsOn=[verifyFile, installCustomJRuby]
     description "Install JRuby in the vendor directory"
     inputs.file(jrubyTarPath)
-    outputs.dir("${projectDir}/vendor/jruby")
+    // Don't re-extract if core JRuby is already installed. This works around
+    // gem deduplication when rake calls back in to gradle.
+    onlyIf {
+        !file("${projectDir}/vendor/jruby/bin/jruby").exists()
+    }
     from tarTree(downloadJRuby.dest)
     eachFile { f ->
         f.path = f.path.replaceFirst("^jruby-${jRubyVersion}", '')

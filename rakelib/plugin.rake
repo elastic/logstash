@@ -57,12 +57,65 @@ namespace "plugin" do
     task.reenable # Allow this task to be run again
   end # task "install"
 
+
+  task "clean-duplicate-gems" do
+    shared_gems_path = File.join(LogStash::Environment::LOGSTASH_HOME,
+                                  'vendor/jruby/lib/ruby/gems/shared/gems')
+    default_gemspecs_path = File.join(LogStash::Environment::LOGSTASH_HOME,
+                                       'vendor/jruby/lib/ruby/gems/shared/specifications/default')
+    bundle_gems_path = File.join(LogStash::Environment::BUNDLE_DIR,
+                                  'jruby/*/gems')
+
+    # "bundled" gems in jruby
+    # https://github.com/jruby/jruby/blob/024123c29d73b672d50730117494f3e4336a0edb/lib/pom.rb#L108-L152
+    shared_gem_names = Dir.glob(File.join(shared_gems_path, '*')).map do |path|
+      match = File.basename(path).match(/^(.+?)-\d+/)
+      match ? match[1] : nil
+    end.compact
+
+    # "default" gems in jruby/ruby
+    # https://github.com/jruby/jruby/blob/024123c29d73b672d50730117494f3e4336a0edb/lib/pom.rb#L21-L106
+    default_gem_names = Dir.glob(File.join(default_gemspecs_path, '*.gemspec')).map do |path|
+      match = File.basename(path).match(/^(.+?)-\d+/)
+      match ? match[1] : nil
+    end.compact
+
+    # gems we explicitly manage with bundler (we always want these to take precedence)
+    bundle_gem_names = Dir.glob(File.join(bundle_gems_path, '*')).map do |path|
+      match = File.basename(path).match(/^(.+?)-\d+/)
+      match ? match[1] : nil
+    end.compact
+
+    shared_duplicates = shared_gem_names & bundle_gem_names
+    default_duplicates = default_gem_names & bundle_gem_names
+    all_duplicates = (shared_duplicates + default_duplicates).uniq
+
+    puts("[plugin:clean-duplicate-gems] Removing duplicate gems: #{all_duplicates.sort.join(', ')}")
+
+    # Remove shared/bundled gem duplicates
+    shared_duplicates.each do |gem_name|
+      FileUtils.rm_rf(Dir.glob("#{shared_gems_path}/#{gem_name}-*"))
+      FileUtils.rm_rf(Dir.glob("#{shared_gems_path}/../specifications/#{gem_name}-*.gemspec"))
+    end
+
+    # Remove default gem gemspecs only
+    default_duplicates.each do |gem_name|
+      # For stdlib default gems we only remove the gemspecs as removing the source code 
+      # files results in code loading errors and ruby warnings
+      FileUtils.rm_rf(Dir.glob("#{default_gemspecs_path}/#{gem_name}-*.gemspec"))
+    end
+    
+    task.reenable
+  end
+
   task "install-default" => "bootstrap" do
     puts("[plugin:install-default] Installing default plugins")
 
     remove_lockfile # because we want to use the release lockfile
     install_plugins("--no-verify", "--preserve", *LogStash::RakeLib::DEFAULT_PLUGINS)
 
+    # Clean duplicates after full gem resolution
+    Rake::Task["plugin:clean-duplicate-gems"].invoke
     task.reenable # Allow this task to be run again
   end
 

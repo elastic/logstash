@@ -101,18 +101,6 @@ namespace "artifact" do
     @exclude_paths << 'vendor/**/gems/**/Gemfile.lock'
     @exclude_paths << 'vendor/**/gems/**/Gemfile'
 
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rake-*'
-    # exclude ruby-maven-libs 3.3.9 jars until JRuby ships with >= 3.8.9
-    @exclude_paths << 'vendor/bundle/jruby/**/gems/ruby-maven-libs-3.3.9/**/*'
-
-    # remove this after JRuby includes rexml 3.3.x
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/rexml-3.2.5/**/*'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/rexml-3.2.5.gemspec'
-
-    # remove this after JRuby includes net-imap-0.2.4+
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/specifications/net-imap-0.2.3.gemspec'
-    @exclude_paths << 'vendor/jruby/lib/ruby/gems/shared/gems/net-imap-0.2.3/**/*'
-
     # Exclude env2yaml source files - only compiled classes should be in tarball
     @exclude_paths << 'docker/data/logstash/env2yaml/**/*.java'
     @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
