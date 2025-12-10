@@ -159,6 +159,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "org.logstash:jvm-options-parser:",http://github.com/elastic/logstash,Apache-2.0
 "org.reflections:reflections:",https://github.com/ronmamo/reflections,BSD-2-Clause
 "org.slf4j:slf4j-api:",http://www.slf4j.org/,MIT
+"org.snakeyaml:snakeyaml-engine:2.9",https://bitbucket.org/snakeyaml/snakeyaml-engine,Apache-2.0
 "org.yaml:snakeyaml:",https://bitbucket.org/snakeyaml/snakeyaml/src/master/,Apache-2.0
 "paquet:",https://github.com/elastic/logstash,Apache-2.0
 "pleaserun:",https://github.com/jordansissel/pleaserun,Apache-2.0
