@@ -104,25 +104,14 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-9]]
 === Logstash 8.19.9 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.9
+Updated logging in JSON format to include pipeline and plugin IDs. https://github.com/elastic/logstash/pull/18470[#18470]
 
-=== Logstash Commits between 8.19 and 8.19.8
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.8..8.19"
-
-19f7f492a - (HEAD -> 8.19, origin/8.19) [8.19] (backport #18423) Rewrite Env2yaml in java instead of Go (#18456) (14 hours ago) <mergify[bot]>
-782f04bb9 - Include pipeline and plugin IDs to the JSON logs. (#18470) (#18472) (23 hours ago) <mergify[bot]>
-76d785454 - Upgrade sinatra to 4.2.1 (#18468) (5 days ago) <Mashhur>
-3c069b37d - Bump logstash version 8.19.9 (#18454) (8 days ago) <github-actions[bot]>
-094ed5604 - Release notes for 8.19.8 (#18448) (8 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.8..8.19 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
+[[plugins-8-19-9]]
 ==== Plugins
+
+No user-facing changes in Logstash plugins.
+
 
 [[logstash-8-19-8]]
 === Logstash 8.19.8 Release Notes
