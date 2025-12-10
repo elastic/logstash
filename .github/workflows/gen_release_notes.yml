@@ -21,10 +21,26 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    env:
+      BRANCH: ${{ github.event.inputs.branch }}
+      LAST_RELEASE: ${{ github.event.inputs.last_release }}
+      ACTOR: ${{ github.actor }}
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+        fetch-tags: true
+    - name: Validate the supplied target branch and last release tag exist
+      run: |
+        if ! git rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
+          echo "Error: Branch ${BRANCH} does not exist"
+          exit 1
+        fi
+
+        if ! git rev-parse --verify "v${LAST_RELEASE}" >/dev/null 2>&1; then
+          echo "Error: Tag v${LAST_RELEASE} does not exist"
+          exit 1
+        fi
     - name: Set up Ruby
       uses: ruby/setup-ruby@v1
       with:
@@ -33,12 +49,12 @@ jobs:
     - run: git config --global user.name "logstashmachine"
     - name: Create Release Notes Draft
       run: |
-        if [[ "${{ github.event.inputs.branch }}" =~ ^([0-8])\.[0-9]+$ ]]; then
+        if [[ "${BRANCH}" =~ ^([0-8])\.[0-9]+$ ]]; then
           echo "Using Asciidoc generator"
           SCRIPT="./tools/release/generate_release_notes.rb"
         else
           echo "Using Markdown generator"
           SCRIPT="./tools/release/generate_release_notes_md.rb"
         fi
-        
-        $SCRIPT "${{ github.event.inputs.branch }}" "${{ github.event.inputs.last_release }}" "${{ github.actor }}" "${{ secrets.GITHUB_TOKEN }}"
+
+        $SCRIPT "${BRANCH}" "${LAST_RELEASE}" "${ACTOR}" "${{ secrets.GITHUB_TOKEN }}"
