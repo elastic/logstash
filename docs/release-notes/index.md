@@ -25,27 +25,12 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.1.9-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.1.9
-
-=== Logstash Commits between 9.1 and 9.1.8
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.1.8..9.1"
-
-33a62d1cc - (HEAD -> 9.1, origin/9.1) Include pipeline and plugin IDs to the JSON logs. (#18470) (#18473) (2 days ago) <mergify[bot]>
-7bc74ba61 - [9.1] (backport #18423) Rewrite Env2yaml in java instead of Go (#18457) (5 days ago) <mergify[bot]>
-26d47d588 - Upgrade sinatra to 4.2.1 (#18469) (5 days ago) <Mashhur>
-a2504c811 - Doc: Add elastic-integration filter tutorial (#18229) (#18461) (6 days ago) <mergify[bot]>
-7946f7cc9 - (origin/mergify/bp/9.1/pr-18446) Bump logstash version 9.1.9 (#18453) (9 days ago) <github-actions[bot]>
-e4d32ac42 - Release notes for 9.1.8 (#18446) (9 days ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.1.8..9.1 *.release"
-Changed plugin versions:
----------- GENERATED CONTENT ENDS HERE ------------
-
+Updated logging in JSON format to include pipeline and plugin IDs. https://github.com/elastic/logstash/pull/18470[#18470]
 
 ### Plugins [logstash-plugin-9.1.9-changes]
+
+No user-facing changes in Logstash plugins.
+
 
 ## 9.1.8 [logstash-9.1.8-release-notes]
 
