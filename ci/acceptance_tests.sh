@@ -57,4 +57,5 @@ cd $QA_DIR
 bundle install
 
 echo "--- Acceptance: Running the tests"
+cd $LS_HOME
 ./gradlew qaAcceptanceAll
