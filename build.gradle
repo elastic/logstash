@@ -376,9 +376,8 @@ tasks.register("artifactDeb") {
 
     doLast {
         rake(projectDir, buildDir, 'artifact:deb')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
-
-    finalizedBy deleteLocalJdk
 }
 
 tasks.register("artifactRpm") {
@@ -388,9 +387,8 @@ tasks.register("artifactRpm") {
 
     doLast {
         rake(projectDir, buildDir, 'artifact:rpm')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
-
-    finalizedBy deleteLocalJdk
 }
 
 tasks.register("compileGrammar") {
@@ -407,9 +405,8 @@ tasks.register("artifactDockerOnly") {
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_only')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
-
-    finalizedBy deleteLocalJdk
 }
 
 tasks.register("qaAcceptanceAll") {
@@ -466,8 +463,8 @@ tasks.register("artifactDockerObservabilitySRE") {
     }
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
-    finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleTarDistribution") {
@@ -484,8 +481,8 @@ tasks.register("assembleTarDistribution") {
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
       rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
+      tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
-  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleOssTarDistribution") {
@@ -500,8 +497,8 @@ tasks.register("assembleOssTarDistribution") {
   inputs.files fileTree("${projectDir}/logstash-core/src")
   doLast {
       rake(projectDir, buildDir, 'artifact:archives_oss')
+      tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
-  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleZipDistribution") {
@@ -518,8 +515,8 @@ tasks.register("assembleZipDistribution") {
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
       rake(projectDir, buildDir, 'artifact:archives')
+      tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
-  finalizedBy "deleteLocalJdk"
 }
 
 tasks.register("assembleOssZipDistribution") {
@@ -535,8 +532,8 @@ tasks.register("assembleOssZipDistribution") {
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
       rake(projectDir, buildDir, 'artifact:archives_oss')
+      tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
-  finalizedBy "deleteLocalJdk"
 }
 
 project(":logstash-core") {
