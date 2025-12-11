@@ -44,6 +44,13 @@ tags:
     # externalDocs:
     #   description:
     #   url:
+  - name: root
+    x-displayName: Metadata
+    description: |
+      Build and service metadata, including build info, pipeline info and the service's status.
+    # externalDocs:
+    #   description:
+    #   url:
   - name: node info
     x-displayName: Node info
     description: |
@@ -66,6 +73,80 @@ tags:
     #   description:
     #   url:
 paths:
+  /:
+    get:
+      summary: Get build and service metadata
+      description: |
+        Shows basic metadata about the running logstash service. This includes build info, pipeline info and the service's status.
+      operationId: root
+      tags:
+        - root
+      parameters:
+        - name: wait_for_status
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Wait (until the timeout expires) for the service changes to a specific health status (or a better status). A green status is better than yellow and yellow is better than red. The `timeout` query parameter is required when you use this parameter.
+        - name: timeout
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Period to wait for the status to reach the requested target status. Must be an integer with units, for example `3s`. If the target status is not reached before the timeout expires, the request returns status code 408.
+        - $ref: "#/components/parameters/pretty"
+      responses:
+        '200':
+          description: Indicates a successful call
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Common'
+                  - type: object
+                    properties:
+                      build_date:
+                        type: string
+                        description: The timestamp when this Logstash build was created.
+                      build_sha:
+                        type: string
+                        description: The SHA-1 hash of the Logstash build.
+                      build_snapshot:
+                        type: boolean
+                        description: Whether this Logstash build is a snapshot build.
+                      pipeline:
+                        type: object
+                        properties:
+                          workers:
+                            type: integer
+                            description: The number of workers in the pipeline.
+                          batch_size:
+                            type: integer
+                            description: The batch size for the pipeline.
+                          batch_delay:
+                            type: integer
+                            description: The batch delay for the pipeline.
+              examples:
+                basicMetadataExample1:
+                  value:
+                    host: "logstash-pipelines.example.com"
+                    version: "9.2.1"
+                    http_address: "127.0.0.1:9600"
+                    id: "58df6f7c-eb5c-5d42-bc20-c7b22779aa12"
+                    name: "logstash-pipelines"
+                    ephemeral_id: "59df6f6c-eb5c-4d42-bc20-c7b44779aa12"
+                    snapshot: true
+                    status: "green"
+                    build_date: "2025-11-20T01:18:55+00:00"
+                    build_sha: "ff3e87d66f10c05a74d0cef7bc2911d60cee1ebc"
+                    build_snapshot: true
+                    pipeline:
+                      workers: 10
+                      batch_size: 125
+                      batch_delay: 50
+      x-metaTags:
+        - content: Logstash
+          name: product_name
   /_node/jvm:
     get:
       summary: Gets node-level JVM info

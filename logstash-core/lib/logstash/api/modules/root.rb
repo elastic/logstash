@@ -19,9 +19,83 @@ module LogStash
   module Api
     module Modules
       class Root < ::LogStash::Api::Modules::Base
+
+        HEALTH_STATUS = [
+          Java::OrgLogstashHealth::Status::GREEN,
+          Java::OrgLogstashHealth::Status::YELLOW,
+          Java::OrgLogstashHealth::Status::RED
+        ].map(&:external_value)
+
+        INVALID_HEALTH_STATUS_MESSAGE = "Invalid status '%s' provided. The valid statuses are: green, yellow, red."
+        INVALID_TIMEOUT_MESSAGE = "Invalid timeout '%s' provided."
+        TIMEOUT_REQUIRED_WITH_STATUS_MESSAGE = "A timeout must be provided along with a status."
+        TIMED_OUT_WAITING_FOR_STATUS_MESSAGE = "Timed out waiting for status '%s'."
+
         get "/" do
+          input_status = params[:wait_for_status]
+          input_timeout = params[:timeout]
+
+          if input_status && !(target_status = parse_status(input_status))
+            return status_error_response(input_status)
+          end
+
+          if input_timeout && !(timeout_s = parse_timeout_s(input_timeout))
+            return timeout_error_response(input_timeout)
+          end
+
+          if target_status
+            return timeout_required_with_status_response unless timeout_s
+            wait_for_status_and_respond(target_status, timeout_s)
+          else
+            command = factory.build(:system_basic_info)
+            respond_with(command.run)
+          end
+        end
+
+        private
+        def parse_timeout_s(timeout)
+          # If we call #to_seconds directly, the value will be rounded. So call to_nanos, then convert
+          # to a float and divide by 1e9 to get the value in seconds.
+          LogStash::Util::TimeValue.from_value(timeout).to_nanos.to_f/1_000_000_000
+        rescue ArgumentError
+        end
+
+        def parse_status(input_status)
+          target_status = input_status.downcase
+          target_status if HEALTH_STATUS.include?(target_status)
+        end
+
+        def timeout_error_response(timeout)
+          respond_with(BadRequest.new(INVALID_TIMEOUT_MESSAGE % [timeout]))
+        end
+
+        def status_error_response(target_status)
+          respond_with(BadRequest.new(INVALID_HEALTH_STATUS_MESSAGE % [target_status]))
+        end
+
+        def timeout_required_with_status_response
+          respond_with(BadRequest.new(TIMEOUT_REQUIRED_WITH_STATUS_MESSAGE))
+        end
+
+        def wait_for_status_and_respond(target_status, timeout)
+          wait_interval = 0.2 # seconds
+          deadline = Time.now + timeout
+
+          loop do
+            current_status = HEALTH_STATUS.index(agent.health_observer.status.external_value)
+            # The current status could be "unknown", which isn't in the HEALTH_STATUS array.
+            break if current_status && current_status <= HEALTH_STATUS.index(target_status)
+
+            time_remaining = deadline - Time.now
+            if time_remaining <= 0
+              return respond_with(RequestTimeout.new(TIMED_OUT_WAITING_FOR_STATUS_MESSAGE % [target_status]))
+            end
+            sleep((time_remaining <= wait_interval) ? time_remaining : wait_interval)
+            wait_interval = wait_interval * 2
+          end
+
           command = factory.build(:system_basic_info)
-          respond_with command.run
+          respond_with(command.run)
         end
       end
     end
