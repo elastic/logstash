@@ -821,10 +821,16 @@ paths:
                         current: 78
                         average:
                           lifetime: 115
+                          last_1_minute: 120
+                          last_5_minutes: 110
+                          last_15_minutes: 112
                       byte_size:
                         current: 32767
                         average:
                           lifetime: 14820
+                          last_1_minute: 15234
+                          last_5_minutes: 14012
+                          last_15_minutes: 14567
                     events:
                       duration_in_millis: 365495
                       in: 216610

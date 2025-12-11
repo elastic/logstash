@@ -176,22 +176,34 @@ module LogStash
             # current is a tuple of [event_count, byte_size] store the reference locally to avoid repeatedly
             # reading and retrieve unrelated values
             current_data_point = stats[:batch][:current]
-            {
+# FlowMetric (from stats[:batch][:event_count][:average]) returns a composite object containing lifetime/last_1_minute/etc values. In order to get the map of sub-metrics we must use `.value`.
+# See: https://github.com/elastic/logstash/blob/279171b79c1f3be5fc85e6e2e4092281e504a6f9/logstash-core/src/main/java/org/logstash/instrument/metrics/ExtendedFlowMetric.java#L89
+            event_count_average_flow_metric = stats[:batch][:event_count][:average].value
+            event_count_average_lifetime = event_count_average_flow_metric["lifetime"] ? event_count_average_flow_metric["lifetime"].round : 0
+            byte_size_average_flow_metric = stats[:batch][:byte_size][:average].value
+            byte_size_average_lifetime = byte_size_average_flow_metric["lifetime"] ? byte_size_average_flow_metric["lifetime"].round : 0
+            result = {
               :event_count => {
                 # current_data_point is an instance of org.logstash.instrument.metrics.gauge.LazyDelegatingGauge so need to invoke getValue() to obtain the actual value
                 :current => current_data_point.value[0],
                 :average => {
-                  # average return a FlowMetric which and we need to invoke getValue to obtain the map with metric details.
-                  :lifetime => stats[:batch][:event_count][:average].value["lifetime"] ? stats[:batch][:event_count][:average].value["lifetime"].round : 0
+                  :lifetime => event_count_average_lifetime
                 }
               },
               :byte_size => {
                 :current => current_data_point.value[1],
                 :average => {
-                  :lifetime => stats[:batch][:byte_size][:average].value["lifetime"] ? stats[:batch][:byte_size][:average].value["lifetime"].round : 0
+                  :lifetime => byte_size_average_lifetime
                 }
               }
             }
+            # Enrich byte_size and event_count averages with the last 1, 5, 15 minutes averages if available
+            [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+              key = window.to_s
+              result[:event_count][:average][window] = event_count_average_flow_metric[key]&.round if event_count_average_flow_metric[key]
+              result[:byte_size][:average][window] = byte_size_average_flow_metric[key]&.round if byte_size_average_flow_metric[key]
+            end
+            result
           end
           private :refine_batch_metrics
 
