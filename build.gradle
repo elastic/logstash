@@ -375,7 +375,17 @@ tasks.register("artifactDeb") {
     dependsOn copyJdk
 
     doLast {
-        rakeExternal(projectDir, buildDir, 'artifact:deb')
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:deb'
+            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+
         tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
@@ -386,7 +396,17 @@ tasks.register("artifactRpm") {
     dependsOn copyJdk
 
     doLast {
-        rakeExternal(projectDir, buildDir, 'artifact:rpm')
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:rpm'
+            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+
         tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }

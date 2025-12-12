@@ -679,6 +679,7 @@ namespace "artifact" do
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
+    require "fpm/package/cpan"
 
     basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
