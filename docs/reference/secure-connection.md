@@ -22,7 +22,7 @@ Security is enabled by default on the {{es}} cluster (starting in 8.0). You must
 
 {{ls}} must establish a Secure Sockets Layer (SSL) connection before it can transfer data to a secured {{es}} cluster. {{ls}} must have a copy of the certificate authority (CA) that signed the {{es}} cluster’s certificates. When a new {{es}} cluster is started up *without* dedicated certificates, it generates its own default self-signed Certificate Authority at startup. See [Starting the Elastic Stack with security enabled](docs-content://deploy-manage/deploy/self-managed/installing-elasticsearch.md) for more info.
 
-{{ess}} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a cacert is not necessary.
+{{ess}} uses certificates signed by standard publicly trusted certificate authorities, and therefore setting a `ssl_certificate_authorities` value is not necessary.
 
 $$$serverless$$$
 
@@ -203,7 +203,7 @@ To access the indices Logstash creates, users need the `read` and `view_index_me
 
 ### Configuring Logstash to use TLS/SSL encryption [ls-http-ssl]
 
-If TLS encryption is enabled on an on premise {{es}} cluster, you need to configure the `ssl` and `cacert` options in your Logstash `.conf` file:
+If TLS encryption is enabled on an on premise {{es}} cluster, you need to configure the `ssl_enabled` and `ssl_certificate_authorities` options in your Logstash `.conf` file:
 
 ```js
 output {
@@ -289,7 +289,7 @@ Tips for creating API keys:
 
 * API keys are tied to the cluster they are created in. If you are sending output to different clusters, be sure to create the correct kind of API key.
 * {{ls}} can send both collected data and monitoring information to {{es}}. If you are sending both to the same cluster, you can use the same API key. For different clusters, you need an API key per cluster.
-* A single cluster can share a key for ingestion and monitoring purposes.
+* A single cluster can share a key for ingestion and monitoring.
 * A production cluster and a monitoring cluster require separate keys.
 * When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
   This option formats the API key in the correct `id:api_key` format required by {{ls}}.
