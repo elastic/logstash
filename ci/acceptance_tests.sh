@@ -57,5 +57,6 @@ cd $QA_DIR
 bundle install
 
 echo "--- Acceptance: Running the tests"
-cd $LS_HOME
-./gradlew qaAcceptanceAll
+# TODO: figure out how to encapsulate all this in gradle or at least ensure the bundler
+# used here ends up using the runtime managed with LS. 
+bundle exec rake qa:acceptance:all
