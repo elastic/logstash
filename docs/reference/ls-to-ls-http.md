@@ -72,11 +72,11 @@ It is important that you secure the communication between Logstash instances. Us
 
 2. Configure the downstream (receiving) Logstash to use SSL. Add these settings to the HTTP Input configuration:
 
-    * `ssl`: When set to `true`, it enables Logstash use of SSL/TLS
+    * `ssl_enabled`: When set to `true`, it enables Logstash use of SSL/TLS
     * `ssl_key`: Specifies the key that Logstash uses to authenticate with the client.
     * `ssl_certificate`: Specifies the certificate that Logstash uses to authenticate with the client.
     * `ssl_certificate_authorities`: Configures Logstash to trust any certificates signed by the specified CA.
-    * `ssl_verify_mode`:  Specifies whether Logstash server verifies the client certificate against the CA.
+    * `ssl_client_authentication`:  Specifies whether Logstash server verifies the client certificate against the CA.
 
     For example:
 
@@ -85,20 +85,20 @@ It is important that you secure the communication between Logstash instances. Us
       http {
         ...
 
-        ssl => true
+        ssl_enabled => true
         ssl_key => "server.key.pk8"
         ssl_certificate => "server.crt"
         ssl_certificate_authorities => "ca.crt"
-        ssl_verify_mode => force_peer
+        ssl_client_authentication => required
       }
     }
     ```
 
 3. Configure the upstream (sending) Logstash to use SSL. Add these settings to the HTTP output configuration:
 
-    * `cacert`: Configures the Logstash client to trust any certificates signed by the specified CA.
-    * `client_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
-    * `client_cert`: Specifies the certificate that the Logstash client uses to authenticate to the Logstash server.
+    * `ssl_certificate_authorities`: Configures the Logstash client to trust any certificates signed by the specified CA.
+    * `ssl_key`: Specifies the key the Logstash client uses to authenticate with the Logstash server.
+    * `ssl_certification`: Specifies the certificate that the Logstash client uses to authenticate to the Logstash server.
 
     For example:
 
@@ -107,9 +107,9 @@ It is important that you secure the communication between Logstash instances. Us
       http {
         ...
 
-        cacert => "ca.crt"
-        client_key => "client.key.pk8"
-        client_cert => "client.crt"
+        ssl_certificate_authorities => "ca.crt"
+        ssl_key => "client.key.pk8"
+        ssl_certificate => "client.crt"
       }
     }
     ```
