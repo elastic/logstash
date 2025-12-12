@@ -21,13 +21,13 @@ case "$WORKFLOW_TYPE" in
         ;;
 esac
 
-rake artifact:docker || error "artifact:docker build failed."
-rake artifact:docker_oss || error "artifact:docker_oss build failed."
-rake artifact:docker_wolfi || error "artifact:docker_wolfi build failed."
+./gradlew artifactDocker || error "artifactDocker build failed."
+./gradlew artifactDockerOss || error "artifactDockerOss build failed."
+./gradlew artifactDockerWolfi || error "artifactDockerWolfi build failed."
 
 # Generating public dockerfiles is the primary use case for NOT using local artifacts
 export LOCAL_ARTIFACTS=false
-rake artifact:dockerfiles || error "artifact:dockerfiles build failed."
+./gradlew artifactDockerfiles || error "artifactDockerfiles build failed."
 
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
 info "Build complete, setting STACK_VERSION to $STACK_VERSION."
