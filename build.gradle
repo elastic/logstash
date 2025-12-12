@@ -386,7 +386,7 @@ tasks.register("artifactRpm") {
     dependsOn copyJdk
 
     doLast {
-        rakeExternal(projectDir, buildDir, 'artifact:deb')
+        rakeExternal(projectDir, buildDir, 'artifact:rpm')
         tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
