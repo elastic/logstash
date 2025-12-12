@@ -414,7 +414,7 @@ tasks.register("qaAcceptanceAll") {
     dependsOn bootstrap
 
     doLast {
-        rake(projectDir, buildDir, 'qa:acceptance:all')
+        rake(new File(projectDir, 'qa'), buildDir, 'qa:acceptance:all')
     }
 }
 
