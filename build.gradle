@@ -362,6 +362,7 @@ tasks.register("artifactDockerfiles") {
 tasks.register("artifactAll") {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
+    dependsOn copyJdk
 
     doLast {
         rake(projectDir, buildDir, 'artifact:all')
