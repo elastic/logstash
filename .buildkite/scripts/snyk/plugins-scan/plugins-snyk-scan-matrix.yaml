@@ -1,0 +1,22 @@
+plugins:
+  - logstash-filter-date
+  - logstash-filter-dissect
+  - logstash-filter-geoip
+  - logstash-filter-jdbc_static
+  - logstash-filter-useragent
+  - logstash-input-azure_event_hubs
+  - logstash-input-dead_letter_queue
+  - logstash-input-file
+  - logstash-integration-jdbc
+  - logstash-integration-kafka
+  - logstash-integration-snmp
+  - logstash-output-aws
+  - logstash-input-http:
+    branches: [main, 3.x]
+  - logstash-input-tcp:
+    branches: [main, 6.x]
+  - logstash-input-beats:
+    branches: [main, 6.x]
+  - logstash-filter-elastic_integration:
+    branches: [main, 'use-release-branches']
+    ignore_branches: [7.x]

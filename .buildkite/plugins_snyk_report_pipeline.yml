@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Logstash Plugins Snyk report"
+    command: |
+      set -euo pipefail
+
+      python3 -m pip install pyyaml
+      python3 -m pip install requests
+
+      echo "--- Building dynamic pipeline steps"
+      python3 .buildkite/scripts/snyk/plugins-scan/generate-steps.py > steps.yml
+      echo "--- Printing dynamic pipeline steps"
+      cat steps.yml
+      echo "--- Uploading dynamic pipeline steps"
+      cat steps.yml | buildkite-agent pipeline upload
