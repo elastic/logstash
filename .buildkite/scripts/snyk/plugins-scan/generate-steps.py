@@ -156,7 +156,7 @@ git clone --depth 1 --branch {branch} https://github.com/logstash-plugins/{plugi
 cd {plugin_name}
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --project-name={plugin_name} --target-reference={branch} --org=logstash || true
+./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
 """
 
     return {
