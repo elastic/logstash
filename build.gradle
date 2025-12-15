@@ -324,39 +324,43 @@ tasks.register("installDevelopmentGems") {
 tasks.register("artifactDocker") {
     description = "Build docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:docker')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
 
 tasks.register("artifactDockerOss") {
     description = "Build OSS docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:docker_oss')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
 
 tasks.register("artifactDockerWolfi") {
     description = "Build Wolfi docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:docker_wolfi')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
 
 tasks.register("artifactDockerfiles") {
     description = "Generate all Dockerfiles and build contexts"
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:dockerfiles')
+        tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
 }
 
@@ -372,9 +376,9 @@ tasks.register("artifactAll") {
 tasks.register("artifactDeb") {
     description = "Build DEB package"
     dependsOn bootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         exec {
             workingDir projectDir
             executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
@@ -393,9 +397,9 @@ tasks.register("artifactDeb") {
 tasks.register("artifactRpm") {
     description = "Build RPM package"
     dependsOn bootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         exec {
             workingDir projectDir
             executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
@@ -421,9 +425,9 @@ tasks.register("compileGrammar") {
 tasks.register("artifactDockerOnly") {
     description = "Build docker image without OSS"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
 
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:docker_only')
         tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
@@ -459,7 +463,7 @@ tasks.register("installCore") {
 
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
-    dependsOn "copyJdk"
+
     inputs.files fileTree("${projectDir}/rakelib")
     inputs.files fileTree("${projectDir}/bin")
     inputs.files fileTree("${projectDir}/config")
@@ -482,6 +486,7 @@ tasks.register("artifactDockerObservabilitySRE") {
         }
     }
     doLast {
+        tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
         rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
         tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
     }
@@ -489,7 +494,6 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -500,6 +504,7 @@ tasks.register("assembleTarDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}-SNAPSHOT.tar.gz")
   doLast {
+      tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
       rake(projectDir, buildDir, 'artifact:bundle_jdk_tar')
       tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
@@ -507,7 +512,6 @@ tasks.register("assembleTarDistribution") {
 
 tasks.register("assembleOssTarDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -516,14 +520,14 @@ tasks.register("assembleOssTarDistribution") {
   inputs.files fileTree("${projectDir}/logstash-core/lib")
   inputs.files fileTree("${projectDir}/logstash-core/src")
   doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-      tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
+    tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
+    rake(projectDir, buildDir, 'artifact:archives_oss')
+    tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
 }
 
 tasks.register("assembleZipDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -534,6 +538,7 @@ tasks.register("assembleZipDistribution") {
   inputs.files fileTree("${projectDir}/x-pack")
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
+      tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
       rake(projectDir, buildDir, 'artifact:archives')
       tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
@@ -541,7 +546,6 @@ tasks.register("assembleZipDistribution") {
 
 tasks.register("assembleOssZipDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -551,6 +555,7 @@ tasks.register("assembleOssZipDistribution") {
   inputs.files fileTree("${projectDir}/logstash-core/src")
   outputs.files file("${buildDir}/logstash-${project.version}.zip")
   doLast {
+      tasks.named('copyJdk').get().actions.each { it.execute(tasks.named('copyJdk').get()) }
       rake(projectDir, buildDir, 'artifact:archives_oss')
       tasks.named('deleteLocalJdk').get().actions.each { it.execute(tasks.named('deleteLocalJdk').get()) }
   }
