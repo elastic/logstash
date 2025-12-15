@@ -353,7 +353,6 @@ tasks.register("artifactDockerWolfi") {
 
 tasks.register("artifactDockerfiles") {
     description = "Generate all Dockerfiles and build contexts"
-    dependsOn copyJdk
 
     doLast {
         rake(projectDir, buildDir, 'artifact:dockerfiles')
