@@ -365,7 +365,15 @@ tasks.register("artifactAll") {
     dependsOn copyJdk
 
     doLast {
-        rake(projectDir, buildDir, 'artifact:all')
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:all'
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
     }
 }
 
