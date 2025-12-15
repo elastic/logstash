@@ -48,7 +48,6 @@ ext {
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
-    rakeExternal = this.&rakeExternal
     setupJruby = this.&setupJruby
     generateRubySupportFilesForPlugin = this.&generateRubySupportFilesForPlugin
     validatePluginJar = this.&validatePluginJar

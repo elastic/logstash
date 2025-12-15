@@ -423,15 +423,6 @@ tasks.register("artifactDockerOnly") {
     }
 }
 
-tasks.register("qaAcceptanceAll") {
-    description = "Run all acceptance tests"
-    dependsOn bootstrap
-
-    doLast {
-        rake(new File(projectDir, 'qa'), buildDir, 'qa:acceptance:all')
-    }
-}
-
 tasks.register("generatePluginsVersion") {
     description = "Generate plugins version documentation"
     dependsOn bootstrap
