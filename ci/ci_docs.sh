@@ -4,9 +4,12 @@ set -e
 export JRUBY_OPTS="-J-Xmx2g"
 export GRADLE_OPTS="-Xmx2g -Dorg.gradle.daemon=false"
 
-./gradlew bootstrap
+rake bootstrap
 # needed to workaround `group => :development`
-./gradlew installCore
-./gradlew installDefaultGems
+rake test:install-core
+rake plugin:install-default
 echo "Generate json with plugins version"
-./gradlew generatePluginsVersion
+# Since we generate the lock file and we try to resolve dependencies we will need
+# to use the bundle wrapper to correctly find the rake cli. If we don't do this we
+# will get an activation error,
+./bin/bundle exec rake generate_plugins_version
