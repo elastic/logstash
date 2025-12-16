@@ -6,13 +6,13 @@ When you use Elasticsearch on Elastic Cloud Serverless you don’t need to worry
 
 .{ls} to {serverless-full}
 ****
-You'll use the {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> to send data to {serverless-full}.
+You'll use the {ls} link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html[{es} output plugin] to send data to {serverless-full}.
 Note these differences between {es-serverless} and both {ech} and self-managed {es}:
 
-* Use <<ls-api-keys,API keys>> to access {serverless-full} from {ls} as it does not support native user authentication.
-  Any user-based security settings in your {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* {serverless-full} uses **data streams** and {ref}/data-stream-lifecycle.html[{dlm} ({dlm-init})] instead of {ilm} ({ilm-init}). Any {ilm-init} settings in your {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* **{ls} monitoring** is available through the link:https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {observability-guide}/index.html[Elastic Observability] on {serverless-full}.
+* Use link:https://www.elastic.co/guide/en/logstash/8.19/ls-security.html#ls-api-keys[API keys] to access {serverless-full} from {ls} as it does not support native user authentication.
+  Any user-based security settings in your {ls} link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html[{es} output plugin] configuration are ignored and may cause errors.
+* {serverless-full} uses **data streams** and link:https://www.elastic.co/guide/en/elasticsearch/reference/8.19/data-stream-lifecycle.html[{dlm} ({dlm-init})] instead of {ilm} ({ilm-init}). Any {ilm-init} settings in your link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html[{es} output plugin] configuration are ignored and may cause errors.
+* **{ls} monitoring** is available through the link:https://github.com/elastic/integrations/blob/main/packages/logstash/docs/README.md[{ls} Integration] in link:https://www.elastic.co/guide/en/observability/8.19/index.html[Elastic Observability] on {serverless-full}.
 
 *Known issue for Logstash to Elasticsearch Serverless.* +
 The logstash-output-elasticsearch `hosts` setting defaults to port :9200. +
@@ -23,13 +23,13 @@ Set the value to port :443 instead.
 ==== Communication between {ls} and {es-serverless} 
 
 {es-serverless} simplifies safe, secure communication between {ls} and {es}.
-When you configure the Elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> and an <<plugins-outputs-elasticsearch-api_key,`api_key`>>, no additional SSL configuration is needed.
+When you configure the Elasticsearch output plugin to use link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-cloud_id[`cloud_id`] and an https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-api_key[`api_key`], no additional SSL configuration is needed.
 
 Example:
 
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-The value of the <<plugins-outputs-elasticsearch-api_key,`api_key` option>> is in the format `id:api_key`, where `id` and `api_key` are the values returned by the link:https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key[Create API key API].
+The value of the https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-api_key[`api_key` option] is in the format `id:api_key`, where `id` and `api_key` are the values returned by the link:https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key[Create API key API].
 
 [[cloud-id-serverless]]
 ===== Cloud ID 
@@ -48,10 +48,10 @@ This option formats the API key in the correct `id:api_key` format required by {
 
 The Elasticsearch input, output, and filter plugins, as well as the Elastic_integration filter plugin, support cloud_id in their configurations.
 
-* <<plugins-inputs-elasticsearch-cloud_id,{es} input plugin Cloud ID option>>
-* <<plugins-filters-elasticsearch-cloud_id,{es} filter plugin Cloud ID option>>
-* <<plugins-outputs-elasticsearch-cloud_id,{es} output plugin Cloud ID option>>
-* <<plugins-filters-elastic_integration-cloud_id,Elastic_integration filter plugin Cloud ID option>>
+* link:https://www.elastic.co/guide/en/logstash/8.19/plugins-inputs-elasticsearch.html#plugins-inputs-elasticsearch-cloud_id[{es} input plugin Cloud ID option]
+* link:https://www.elastic.co/guide/en/logstash/8.19/plugins-filters-elasticsearch.html#plugins-filters-elasticsearch-cloud_id[{es} filter plugin Cloud ID option]
+* link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outputs-elasticsearch.html#plugins-outputs-elasticsearch-cloud_id[{es} output plugin Cloud ID option]
+* link:https://www.elastic.co/guide/en/logstash/8.19/plugins-filters-elastic_integration.html#plugins-filters-elastic_integration-cloud_id[Elastic_integration filter plugin Cloud ID option]
 
 [cpm-serverless]
 ==== Using {ls} Central Pipeline Management with {es-serverless} 
