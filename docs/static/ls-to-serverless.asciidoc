@@ -12,7 +12,7 @@ Note these differences between {es-serverless} and both {ech} and self-managed {
 * Use <<ls-api-keys,API keys>> to access {serverless-full} from {ls} as it does not support native user authentication.
   Any user-based security settings in your {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
 * {serverless-full} uses **data streams** and {ref}/data-stream-lifecycle.html[{dlm} ({dlm-init})] instead of {ilm} ({ilm-init}). Any {ilm-init} settings in your {ls} <<plugins-outputs-elasticsearch,{es} output plugin>> configuration are ignored and may cause errors.
-* **{ls} monitoring** is available through the link:https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in link:docs-content://solutions/observability.md[Elastic Observability] on {serverless-full}.
+* **{ls} monitoring** is available through the link:https://github.com/elastic/integrations/blob/main/packages/logstash/_dev/build/docs/README.md[{ls} Integration] in {observability-guide}/index.html[Elastic Observability] on {serverless-full}.
 
 *Known issue for Logstash to Elasticsearch Serverless.* +
 The logstash-output-elasticsearch `hosts` setting defaults to port :9200. +
@@ -22,14 +22,14 @@ Set the value to port :443 instead.
 [[connecting-to-elasticsearch-serverless]]
 ==== Communication between {ls} and {es-serverless} 
 
-link:docs-content://solutions/search/serverless-elasticsearch-get-started.md[{es-serverless}] simplifies safe, secure communication between {ls} and {es}.
+{es-serverless} simplifies safe, secure communication between {ls} and {es}.
 When you configure the Elasticsearch output plugin to use <<plugins-outputs-elasticsearch-cloud_id,`cloud_id`>> and an <<plugins-outputs-elasticsearch-api_key,`api_key`>>, no additional SSL configuration is needed.
 
 Example:
 
 * `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
 
-The value of the <<plugins-outputs-elasticsearch-api_key,`api_key` option`>> is in the format `id:api_key`, where `id` and `api_key` are the values returned by the link:https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key[Create API key API].
+The value of the <<plugins-outputs-elasticsearch-api_key,`api_key` option>> is in the format `id:api_key`, where `id` and `api_key` are the values returned by the link:https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key[Create API key API].
 
 [[cloud-id-serverless]]
 ===== Cloud ID 
