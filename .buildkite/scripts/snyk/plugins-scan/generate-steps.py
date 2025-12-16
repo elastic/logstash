@@ -124,15 +124,7 @@ def parse_plugin_entry(entry) -> list:
                 if not should_ignore_branch(b, ignore_branches)
             ]
 
-        # Ignore duplicates branches
-        seen = set()
-        unique_branches = []
-        for b in resolved_branches:
-            if b not in seen:
-                seen.add(b)
-                unique_branches.append(b)
-
-        return [(plugin_name, branch) for branch in unique_branches]
+        return [(plugin_name, branch) for branch in set(resolved_branches)]
 
     return []
 
