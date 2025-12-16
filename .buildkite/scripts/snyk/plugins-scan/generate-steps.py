@@ -14,7 +14,7 @@ import yaml
 
 YAML_HEADER = '# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json\n'
 DEFAULT_BRANCH = "main"
-LOGSTASH_VERSIONS_URL = "https://raw.githubusercontent.com/logstash-plugins/.ci/refs/heads/1.x/logstash-versions.yml"
+RELEASE_BRANCHES_URL = "https://storage.googleapis.com/artifacts-api/snapshots/branches.json"
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MATRIX_FILE = os.path.join(SCRIPT_DIR, "plugins-snyk-scan-matrix.yaml")
@@ -38,27 +38,18 @@ def call_url_with_retry(url: str, max_retries: int = 5, delay: int = 1) -> reque
 
 def fetch_release_branches() -> list:
     """
-    Fetch release branches from logstash-versions.yml.
-    Extracts major.minor version from each release entry.
+    Fetch release branches from artifacts-api.
+    Returns list of branch names (e.g., ["7.17", "8.19", "9.1", "9.2", "9.3", "main"]).
     """
     global _release_branches_cache
     if _release_branches_cache is not None:
         return _release_branches_cache
 
     try:
-        response = call_url_with_retry(LOGSTASH_VERSIONS_URL)
+        response = call_url_with_retry(RELEASE_BRANCHES_URL)
         response.raise_for_status()
-        versions_config = yaml.safe_load(response.text)
-
-        releases = versions_config.get('releases', {})
-        branches = set()
-        for version in releases.values():
-            # Extract major.minor from version string like "8.19.8" -> "8.19"
-            parts = str(version).split('.')
-            if len(parts) >= 2:
-                branch = f"{parts[0]}.{parts[1]}"
-                branches.add(branch)
-        _release_branches_cache = sorted(branches)
+        data = response.json()
+        _release_branches_cache = data.get('branches', [])
         return _release_branches_cache
     except Exception as e:
         print(f"Warning: Failed to fetch release branches: {e}", file=sys.stderr)
@@ -96,7 +87,7 @@ def parse_plugin_entry(entry) -> list:
     - A simple string: "logstash-filter-date" -> uses default branch
     - A dict with branches as sibling key:
       {"logstash-input-http": None, "branches": ["main", "3.x"]}
-    - If branches contains "use-release-branches", fetches branches from logstash-versions.yml
+    - If branches contains "use-release-branches", fetches branches from artifacts-api
     """
     if isinstance(entry, str):
         return [(entry, DEFAULT_BRANCH)]
@@ -133,7 +124,7 @@ def parse_plugin_entry(entry) -> list:
                 if not should_ignore_branch(b, ignore_branches)
             ]
 
-        return [(plugin_name, branch) for branch in resolved_branches]
+        return [(plugin_name, branch) for branch in set(resolved_branches)]
 
     return []
 
@@ -147,9 +138,8 @@ set -euo pipefail
 
 echo "--- Downloading snyk..."
 curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
-chmod +x snyk
-SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
-./snyk auth "$SNYK_TOKEN"
+chmod +x ./snyk
+export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Cloning {plugin_name} (branch: {branch})"
 git clone --depth 1 --branch {branch} https://github.com/logstash-plugins/{plugin_name}.git

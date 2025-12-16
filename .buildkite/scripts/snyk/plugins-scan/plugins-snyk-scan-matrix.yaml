@@ -10,7 +10,7 @@ plugins:
   - logstash-integration-jdbc
   - logstash-integration-kafka
   - logstash-integration-snmp
-  - logstash-output-aws
+  - logstash-integration-aws
   - logstash-input-http:
     branches: [main, 3.x]
   - logstash-input-tcp:
