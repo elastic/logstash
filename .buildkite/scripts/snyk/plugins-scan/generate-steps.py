@@ -146,9 +146,8 @@ set -euo pipefail
 
 echo "--- Downloading snyk..."
 curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
-chmod +x snyk
-SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
-./snyk auth "$SNYK_TOKEN"
+chmod +x ./snyk
+export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Cloning {plugin_name} (branch: {branch})"
 git clone --depth 1 --branch {branch} https://github.com/logstash-plugins/{plugin_name}.git
