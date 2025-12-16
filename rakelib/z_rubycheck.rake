@@ -29,7 +29,7 @@ if ENV['USE_RUBY'] != '1'
 
     # Ignore Environment JAVA_OPTS
     ENV["JAVA_OPTS"] = ""
-    exec(jruby, "-J-Xmx1g", "-S", rake, *ARGV)
+    exec(jruby, "-S", rake, *ARGV)
   end
 end
 
