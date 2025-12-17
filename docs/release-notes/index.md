@@ -21,7 +21,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.2.1 [logstash-9.2.1-release-notes]
+=======
+# 9.1.9 [logstash-9.1.9-release-notes]
+
+### Features and enhancements [logstash-9.1.9-features-enhancements]
+
+Updated logging in JSON format to include pipeline and plugin IDs. [#18470](https://github.com/elastic/logstash/pull/18470)
+
+### Plugins [logstash-plugin-9.1.9-changes]
+
+No user-facing changes in Logstash plugins.
+
+
+## 9.1.8 [logstash-9.1.8-release-notes]
+>>>>>>> 68b2a3fd (Release notes for 9.1.9 (#18479))
 
 ### Features and enhancements [logstash-9.2.1-features-enhancements]
 
