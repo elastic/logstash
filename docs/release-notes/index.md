@@ -21,8 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
-=======
+
 ## 9.2.3 [logstash-9.2.3-release-notes]
 
 ### Features and enhancements [logstash-9.2.3-features-enhancements]
@@ -45,7 +44,7 @@ No user-facing changes in Logstash core.
 * Added trace log to track event size expansion [#49](https://github.com/logstash-plugins/logstash-filter-split/pull/49)
 * [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
 
->>>>>>> f1e3d226 (Release notes for 9.2.3 (#18480))
+
 ## 9.2.1 [logstash-9.2.1-release-notes]
 
 ### Features and enhancements [logstash-9.2.1-features-enhancements]
