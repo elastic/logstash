@@ -177,7 +177,17 @@ def generate_pipeline() -> dict:
             step = generate_snyk_step(plugin_name, branch)
             steps.append(step)
 
-    return {"steps": steps}
+
+    return {
+        "agents": {
+            "provider": "gcp",
+            "imageProject": "elastic-images-prod",
+            "image": "family/platform-ingest-logstash-multi-jdk-ubuntu-2204",
+            "machineType": "n2-standard-4",
+            "diskSizeGb": 32
+        },
+        "steps": steps
+    }
 
 
 if __name__ == "__main__":
