@@ -19,6 +19,7 @@
 
 package org.logstash.instrument.metrics;
 
+import co.elastic.logstash.api.UserMetric;
 import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
 import org.apache.logging.log4j.LogManager;
@@ -114,6 +115,8 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
 
     private static final Logger LOG = LogManager.getLogger(HdrHistogramFlowMetric.class);
 
+    public static UserMetric.Factory<HistogramFlowMetric> FACTORY = HistogramFlowMetric.PROVIDER.getFactory(HdrHistogramFlowMetric::new);
+
     private static final List<FlowMetricRetentionPolicy> SUPPORTED_POLICIES = List.of(
             FlowMetricRetentionPolicy.BuiltInRetentionPolicy.LAST_1_MINUTE,
             FlowMetricRetentionPolicy.BuiltInRetentionPolicy.LAST_5_MINUTES,
@@ -139,7 +142,6 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
         final long currentTimeNanos = System.nanoTime();
         histogramsWindows.forEach((policy, window) -> {
             window.recordWindow.baseline(currentTimeNanos).ifPresent(baseline -> {
-                LOG.info("getValue computing aggregated histogram");
                 result.put(policy.policyName().toLowerCase(), window.computeAggregatedHistogramData());
             });
         });

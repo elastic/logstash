@@ -6,6 +6,8 @@ import org.jruby.runtime.ThreadContext;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.HdrHistogramFlowMetric;
+import org.logstash.instrument.metrics.HistogramFlowMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 
@@ -23,6 +25,7 @@ class QueueReadClientBatchMetrics {
     private LongCounter pipelineMetricBatchCount;
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
+    private HistogramFlowMetric pipelineMetricBatchByteSizeFlowHistogram;
     private final SecureRandom random = new SecureRandom();
     private LazyDelegatingGauge currentBatchDimensions;
 
@@ -39,6 +42,9 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
             pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
             currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
+            pipelineMetricBatchByteSizeFlowHistogram = batchNamespace.asApiMetric()
+                    .namespace("batch_byte_size")
+                    .register("histogram", HdrHistogramFlowMetric.FACTORY);
         }
     }
 
@@ -75,6 +81,7 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
             pipelineMetricBatchByteSize.increment(totalByteSize);
             currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalByteSize));
+            pipelineMetricBatchByteSizeFlowHistogram.recordValue(totalByteSize);
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
