@@ -242,6 +242,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.javassist:javassist:3.30.2-GA'
+    implementation 'org.hdrhistogram:HdrHistogram:2.2.2'
     testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
