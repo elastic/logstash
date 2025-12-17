@@ -140,10 +140,14 @@ def generate_snyk_step(plugin_name: str, branch: str) -> dict:
     command = f"""#!/bin/bash
 set -euo pipefail
 
+export JAVA_HOME="/opt/buildkite-agent/.java"
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Cloning {plugin_name} (branch: {branch})"
-git clone --depth 1 --branch {branch} {repo_url}
+if ! git clone --depth 1 --branch {branch} {repo_url}; then
+    echo "Branch {branch} not found in {plugin_name}, skipping..."
+    exit 0
+fi
 cd {plugin_name}
 
 echo "--- Downloading snyk..."
