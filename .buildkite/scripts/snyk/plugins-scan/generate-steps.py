@@ -140,6 +140,7 @@ def generate_snyk_step(plugin_name: str, branch: str) -> dict:
     command = f"""#!/bin/bash
 set -euo pipefail
 
+export PATH="/opt/buildkite-agent/.java/bin:$PATH"
 export JAVA_HOME="/opt/buildkite-agent/.java"
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
