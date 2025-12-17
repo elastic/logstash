@@ -117,6 +117,30 @@ Related:
 
 * Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
 
+
+# 9.1.9 [logstash-9.1.9-release-notes]
+
+### Features and enhancements [logstash-9.1.9-features-enhancements]
+
+Updated logging in JSON format to include pipeline and plugin IDs. [#18470](https://github.com/elastic/logstash/pull/18470)
+
+### Plugins [logstash-plugin-9.1.9-changes]
+
+No user-facing changes in Logstash plugins.
+
+
+## 9.1.8 [logstash-9.1.8-release-notes]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.8-changes]
+
+**Split Filter - 3.1.10**
+
+* Added trace log to track event size expansion [#49](https://github.com/logstash-plugins/logstash-filter-split/pull/49)
+* [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
+
+
 ## 9.1.7 [logstash-9.1.7-release-notes]
 
 ### Features and enhancements [logstash-9.1.7-features-enhancements]
