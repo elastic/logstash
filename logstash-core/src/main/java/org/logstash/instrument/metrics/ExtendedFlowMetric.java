@@ -100,7 +100,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         this.retentionWindows.get()
                              .forEach(window -> window.baseline(currentCapture.nanoTime())
                                                       .or(() -> windowDefaultBaseline(window))
-                                                      .map((baseline) -> calculateRate(currentCapture, baseline))
+                                                      .map((baseline) -> calculateRate(currentCapture, (FlowCapture) baseline))
                                                       .orElseGet(OptionalDouble::empty)
                                                       .ifPresent((rate) -> rates.put(window.policy.policyName(), rate)));
 
@@ -135,7 +135,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     /**
      * Internal tooling to select the younger of two captures
      */
-    private static FlowCapture selectNewerCapture(final FlowCapture existing, final FlowCapture proposed) {
+    private static DatapointCapture selectNewerCapture(final DatapointCapture existing, final DatapointCapture proposed) {
         if (existing == null) { return proposed; }
         if (proposed == null) { return existing; }
 
@@ -182,7 +182,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     }
 
     /**
-     * A {@link RetentionWindow} efficiently holds sufficient {@link FlowCapture}s to
+     * A {@link RetentionWindow} efficiently holds sufficient {@link DatapointCapture}s to
      * meet its {@link FlowMetricRetentionPolicy}, providing access to the youngest capture
      * that is older than the policy's allowed retention (if any).
      * The implementation is similar to a singly-linked list whose youngest captures are at
@@ -191,12 +191,12 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
      * Both reads and writes are non-blocking and concurrency-safe.
      */
     private static class RetentionWindow {
-        private final AtomicReference<FlowCapture> stagedCapture = new AtomicReference<>();
+        private final AtomicReference<DatapointCapture> stagedCapture = new AtomicReference<>();
         private final AtomicReference<Node> tail;
         private final AtomicReference<Node> head;
         private final FlowMetricRetentionPolicy policy;
 
-        RetentionWindow(final FlowMetricRetentionPolicy policy, final FlowCapture zeroCapture) {
+        RetentionWindow(final FlowMetricRetentionPolicy policy, final DatapointCapture zeroCapture) {
             this.policy = policy;
             final Node zeroNode = new Node(zeroCapture);
             this.head = new AtomicReference<>(zeroNode);
@@ -204,20 +204,20 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         }
 
         /**
-         * Append the newest {@link FlowCapture} into this {@link RetentionWindow},
+         * Append the newest {@link DatapointCapture} into this {@link RetentionWindow},
          * while respecting our {@link FlowMetricRetentionPolicy}.
-         * We tolerate minor jitter in the provided {@link FlowCapture#nanoTime()}, but
+         * We tolerate minor jitter in the provided {@link DatapointCapture#nanoTime()}, but
          * expect callers of this method to minimize lag between instantiating the capture
          * and appending it.
          *
          * @param newestCapture the newest capture to stage
          */
-        private void append(final FlowCapture newestCapture) {
+        private void append(final DatapointCapture newestCapture) {
             final Node casTail = this.tail.getAcquire(); // for CAS
             final long newestCaptureNanoTime = newestCapture.nanoTime();
 
             // stage our newest capture unless it is older than the currently-staged capture
-            final FlowCapture previouslyStaged = stagedCapture.getAndAccumulate(newestCapture, ExtendedFlowMetric::selectNewerCapture);
+            final DatapointCapture previouslyStaged = stagedCapture.getAndAccumulate(newestCapture, ExtendedFlowMetric::selectNewerCapture);
 
             // promote our previously-staged capture IFF our newest capture is too far
             // ahead of the current tail to support policy's resolution.
@@ -256,11 +256,11 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
 
         /**
          * @param nanoTime the nanoTime of the capture for which we are retrieving a baseline.
-         * @return an {@link Optional} that contains the youngest {@link FlowCapture} that is older
+         * @return an {@link Optional} that contains the youngest {@link DatapointCapture} that is older
          *         than this window's {@link FlowMetricRetentionPolicy} allowed retention if one
          *         exists, and is otherwise empty.
          */
-        public Optional<FlowCapture> baseline(final long nanoTime) {
+        public Optional<DatapointCapture> baseline(final long nanoTime) {
             final long barrier = Math.subtractExact(nanoTime, policy.retentionNanos());
             final Node head = compactHead(barrier);
             if (head.captureNanoTime() <= barrier) {
@@ -309,7 +309,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         }
 
         /**
-         * A {@link Node} holds a single {@link FlowCapture} and
+         * A {@link Node} holds a single {@link DatapointCapture} and
          * may link ahead to the next {@link Node}.
          * It is an implementation detail of {@link RetentionWindow}.
          */
@@ -324,10 +324,10 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
                 }
             }
 
-            private final FlowCapture capture;
+            private final DatapointCapture capture;
             private volatile Node next;
 
-            Node(final FlowCapture capture) {
+            Node(final DatapointCapture capture) {
                 this.capture = capture;
             }
 
