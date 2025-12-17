@@ -132,18 +132,23 @@ def parse_plugin_entry(entry) -> list:
 def generate_snyk_step(plugin_name: str, branch: str) -> dict:
     """Generate a Buildkite step for running snyk monitor on a plugin."""
     step_key = slugify_bk_key(f"snyk-{plugin_name}-{branch}")
+    if plugin_name == 'logstash-filter-elastic_integration':
+        repo_url = f"https://github.com/elastic/{plugin_name}.git"
+    else:
+        repo_url = f"https://github.com/logstash-plugins/{plugin_name}.git"
 
     command = f"""#!/bin/bash
 set -euo pipefail
 
-echo "--- Downloading snyk..."
-curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
-chmod +x ./snyk
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Cloning {plugin_name} (branch: {branch})"
-git clone --depth 1 --branch {branch} https://github.com/logstash-plugins/{plugin_name}.git
+git clone --depth 1 --branch {branch} {repo_url}
 cd {plugin_name}
+
+echo "--- Downloading snyk..."
+curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
+chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
 ./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
