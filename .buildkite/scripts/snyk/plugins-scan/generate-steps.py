@@ -140,8 +140,8 @@ def generate_snyk_step(plugin_name: str, branch: str) -> dict:
     command = f"""#!/bin/bash
 set -euo pipefail
 
-export PATH="/opt/buildkite-agent/.java/bin:$PATH"
-export JAVA_HOME="/opt/buildkite-agent/.java"
+export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_21"
+export PATH="/opt/buildkite-agent/.java/bin:$JAVA_HOME:$PATH"
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Cloning {plugin_name} (branch: {branch})"
