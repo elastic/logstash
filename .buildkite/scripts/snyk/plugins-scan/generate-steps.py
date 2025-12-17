@@ -156,7 +156,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
+./snyk monitor --file=./build.gradle --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
 """
 
     return {
