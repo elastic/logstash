@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.ToLongFunction;
 
 /**
@@ -73,6 +74,18 @@ class RetentionWindow {
         }
     }
 
+    /**
+     * Iterate over all retained captures in this window, in order from oldest to newest.
+     * Used by client code to compute aggregate statistics.
+     * */
+    protected void forEachCapture(final Consumer<DatapointCapture> consumer) {
+        Node current = this.head.getPlain();
+        while (current != null) {
+            consumer.accept(current.capture);
+            current = current.getNext();
+        }
+    }
+
     @Override
     public String toString() {
         return "RetentionWindow{" +
@@ -116,6 +129,10 @@ class RetentionWindow {
      */
     int estimateSize() {
         return estimateSize(this.head.getPlain());
+    }
+
+    int countCaptures() {
+        return estimateSize();
     }
 
     /**
