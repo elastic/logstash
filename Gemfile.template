@@ -44,3 +44,4 @@ gem "thwait"
 gem "bigdecimal", "~> 3.1"
 gem "cgi", "~> 0.3.7" # Pins until a new jruby version with updated cgi is released (https://github.com/jruby/jruby/issues/8919)
 gem "jar-dependencies", "= 0.5.4" # Pin to avoid conflict with default
+gem 'psych', '~> 5.2.3' # Pins psych to minor version corresponding with jruby 9.4.13.0 to keep snakeyaml-engine dep in line (5.3 includes newer snakeyaml-engine dep)
