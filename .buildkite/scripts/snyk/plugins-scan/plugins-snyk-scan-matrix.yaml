@@ -19,3 +19,4 @@ plugins:
   - logstash-filter-elastic_integration:
     branches: [main, 'use-release-branches']
     ignore_branches: [7.x]
+    logstash_branches: ['match-with-plugin-branches']

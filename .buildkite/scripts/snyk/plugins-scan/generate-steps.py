@@ -82,23 +82,25 @@ def load_plugin_matrix() -> list:
 def parse_plugin_entry(entry) -> list:
     """
     Parse a plugin entry from the matrix.
-    Returns a list of (plugin_name, branch) tuples.
+    Returns a list of (plugin_name, branch, logstash_branch) tuples.
     Entries can be either:
     - A simple string: "logstash-filter-date" -> uses default branch
     - A dict with branches as sibling key:
       {"logstash-input-http": None, "branches": ["main", "3.x"]}
     - If branches contains "use-release-branches", fetches branches from artifacts-api
+    - If logstash_branches contains "match-with-plugin-branches", uses same branch as plugin
     """
     if isinstance(entry, str):
-        return [(entry, DEFAULT_BRANCH)]
+        return [(entry, DEFAULT_BRANCH, None)]
 
     if isinstance(entry, dict):
         plugin_name = None
         branches = entry.get('branches', [DEFAULT_BRANCH])
         ignore_branches = entry.get('ignore_branches', [])
+        logstash_branches = entry.get('logstash_branches', [])
 
         for key, value in entry.items():
-            if key not in ('branches', 'ignore_branches'):
+            if key not in ('branches', 'ignore_branches', 'logstash_branches'):
                 plugin_name = key
                 break
 
@@ -124,18 +126,39 @@ def parse_plugin_entry(entry) -> list:
                 if not should_ignore_branch(b, ignore_branches)
             ]
 
-        return [(plugin_name, branch) for branch in set(resolved_branches)]
+        # Determine logstash branch for each plugin branch
+        result = []
+        match_logstash = 'match-with-plugin-branches' in logstash_branches
+        for branch in set(resolved_branches):
+            logstash_branch = branch if match_logstash else None
+            result.append((plugin_name, branch, logstash_branch))
+        return result
 
     return []
 
 
-def generate_snyk_step(plugin_name: str, branch: str) -> dict:
+def generate_snyk_step(plugin_name: str, branch: str, logstash_branch: str = None) -> dict:
     """Generate a Buildkite step for running snyk monitor on a plugin."""
     step_key = slugify_bk_key(f"snyk-{plugin_name}-{branch}")
     if plugin_name == 'logstash-filter-elastic_integration':
         repo_url = f"https://github.com/elastic/{plugin_name}.git"
     else:
         repo_url = f"https://github.com/logstash-plugins/{plugin_name}.git"
+
+    # Build logstash clone and bootstrap command if logstash_branch is specified
+    logstash_clone_cmd = ""
+    if logstash_branch:
+        logstash_clone_cmd = f"""
+echo "--- Cloning logstash (branch: {logstash_branch})"
+if ! git clone --depth 1 --branch {logstash_branch} https://github.com/elastic/logstash.git; then
+    echo "Branch {logstash_branch} not found in logstash, skipping..."
+    rm -rf "$WORK_DIR"
+    exit 0
+fi
+
+echo "--- Building logstash"
+cd logstash && ./gradlew clean bootstrap installDefaultGems && cd ..
+"""
 
     command = f"""#!/bin/bash
 set -euo pipefail
@@ -147,7 +170,7 @@ export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-cred
 # Use isolated temp directory to avoid settings.gradle conflicts
 WORK_DIR=$(mktemp -d)
 cd "$WORK_DIR"
-
+{logstash_clone_cmd}
 echo "--- Cloning {plugin_name} (branch: {branch})"
 if ! git clone --depth 1 --branch {branch} {repo_url}; then
     echo "Branch {branch} not found in {plugin_name}, skipping..."
@@ -161,7 +184,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
+LOGSTASH_PATH=../logstash ./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
 
 # Cleanup
 rm -rf "$WORK_DIR"
@@ -181,8 +204,8 @@ def generate_pipeline() -> dict:
     steps = []
     for entry in plugins:
         plugin_branches = parse_plugin_entry(entry)
-        for plugin_name, branch in plugin_branches:
-            step = generate_snyk_step(plugin_name, branch)
+        for plugin_name, branch, logstash_branch in plugin_branches:
+            step = generate_snyk_step(plugin_name, branch, logstash_branch)
             steps.append(step)
 
 
