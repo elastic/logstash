@@ -117,6 +117,8 @@ module LogStash module Instrument
     end
 
     def clear(keypath)
+      puts "Clearing metrics at path #{keypath}"
+      puts ">>> call stack Compiler#compile_sources"; caller.each { |frame| puts "#{frame}"}
       @metric_store.prune(keypath)
     end
   end
