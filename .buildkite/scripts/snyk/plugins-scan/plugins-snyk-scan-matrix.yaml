@@ -2,7 +2,6 @@ plugins:
   - logstash-filter-date
   - logstash-filter-dissect
   - logstash-filter-geoip
-  - logstash-filter-jdbc_static
   - logstash-filter-useragent
   - logstash-input-azure_event_hubs
   - logstash-input-dead_letter_queue
