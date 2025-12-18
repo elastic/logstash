@@ -144,9 +144,14 @@ export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_21"
 export PATH="/opt/buildkite-agent/.java/bin:$JAVA_HOME:$PATH"
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
+# Use isolated temp directory to avoid settings.gradle conflicts
+WORK_DIR=$(mktemp -d)
+cd "$WORK_DIR"
+
 echo "--- Cloning {plugin_name} (branch: {branch})"
 if ! git clone --depth 1 --branch {branch} {repo_url}; then
     echo "Branch {branch} not found in {plugin_name}, skipping..."
+    rm -rf "$WORK_DIR"
     exit 0
 fi
 cd {plugin_name}
@@ -156,7 +161,10 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --file=./build.gradle --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
+./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
+
+# Cleanup
+rm -rf "$WORK_DIR"
 """
 
     return {
