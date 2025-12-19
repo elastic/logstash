@@ -132,3 +132,13 @@ pull_request_rules:
         branches:
           - main
         title: "[{{ destination_branch }}] (forwardport #{{ number }}) {{ title }}"
+
+  - name: backport patches to 9.3 branch
+    conditions:
+      - merged
+      - base=main
+      - label=backport-9.3
+    actions:
+      backport:
+        branches:
+          - "9.3"
