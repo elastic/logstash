@@ -124,9 +124,8 @@ def acceptance_linux_steps() -> list[typing.Any]:
 set -eo pipefail
 source .buildkite/scripts/common/vm-agent.sh
 echo "--- Building all artifacts"
-./gradlew clean bootstrap
 export ARCH="x86_64"
-rake artifact:deb artifact:rpm
+./gradlew clean bootstrap artifactDeb artifactRpm
 """),
         "artifact_paths": [
             "build/*rpm",
