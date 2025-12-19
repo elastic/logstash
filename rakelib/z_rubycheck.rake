@@ -19,8 +19,6 @@ if ENV['USE_RUBY'] != '1'
   if RUBY_ENGINE != "jruby" or Gem.ruby !~ /vendor\/jruby\/bin\/jruby/
     puts "Restarting myself under Vendored JRuby (currently #{RUBY_ENGINE} #{RUBY_VERSION})" if ENV['DEBUG']
 
-    # Make sure we have JRuby, then rerun ourselves under jruby.
-    Rake::Task["vendor:jruby"].invoke
     jruby = File.join("bin", "ruby")
     rake = File.join("vendor", "jruby", "bin", "rake")
 

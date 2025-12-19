@@ -299,8 +299,6 @@ tasks.register("bootstrap") {
   }
 }
 
-
-
 task dockerBootstrap {
     description = "Docker bootstrap ensures env2yaml java is compiled and staged for inclusion in tarballs"
     dependsOn bootstrap
@@ -321,6 +319,100 @@ tasks.register("installDevelopmentGems") {
   }
 }
 
+tasks.register("artifactDocker") {
+    description = "Build docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker')
+    }
+}
+
+tasks.register("artifactDockerOss") {
+    description = "Build OSS docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_oss')
+    }
+}
+
+tasks.register("artifactDockerWolfi") {
+    description = "Build Wolfi docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_wolfi')
+    }
+}
+
+tasks.register("artifactDockerfiles") {
+    description = "Generate all Dockerfiles and build contexts"
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:dockerfiles')
+    }
+}
+
+tasks.register("artifactAll") {
+    description = "Build all artifacts except docker"
+    dependsOn bootstrap
+    dependsOn copyJdk
+
+    doLast {
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:all'
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+    }
+}
+
+tasks.register("artifactDeb") {
+    description = "Build DEB package"
+    dependsOn bootstrap
+    dependsOn copyJdk
+
+    doLast {
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:deb'
+            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+    }
+}
+
+tasks.register("artifactRpm") {
+    description = "Build RPM package"
+    dependsOn bootstrap
+    dependsOn copyJdk
+
+    doLast {
+        exec {
+            workingDir projectDir
+            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
+            args 'artifact:rpm'
+            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+            standardOutput = System.out
+            errorOutput = System.err
+        }
+    }
+}
+
 tasks.register("compileGrammar") {
     dependsOn bootstrap
     doLast {
@@ -328,8 +420,38 @@ tasks.register("compileGrammar") {
     }
 }
 
+tasks.register("artifactDockerOnly") {
+    description = "Build docker image without OSS"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_only')
+    }
+}
+
+tasks.register("generatePluginsVersion") {
+    description = "Generate plugins version documentation"
+    dependsOn bootstrap
+    dependsOn installDefaultGems
+
+    doLast {
+        rake(projectDir, buildDir, 'generate_plugins_version')
+    }
+}
+
+tasks.register("installCore") {
+    description = "Install core development dependencies"
+    dependsOn bootstrap
+
+    doLast {
+        rake(projectDir, buildDir, 'test:install-core')
+    }
+}
+
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
+    dependsOn "copyJdk"
     inputs.files fileTree("${projectDir}/rakelib")
     inputs.files fileTree("${projectDir}/bin")
     inputs.files fileTree("${projectDir}/config")
@@ -358,6 +480,7 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
+  dependsOn "copyJdk"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -372,6 +495,57 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
+<<<<<<< HEAD
+=======
+tasks.register("assembleOssTarDistribution") {
+  dependsOn bootstrap
+  dependsOn "copyJdk"
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:archives_oss')
+  }
+}
+
+tasks.register("assembleZipDistribution") {
+  dependsOn bootstrap
+  dependsOn "copyJdk"
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  inputs.files fileTree("${projectDir}/x-pack")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:archives')
+  }
+}
+
+tasks.register("assembleOssZipDistribution") {
+  dependsOn bootstrap
+  dependsOn "copyJdk"
+  inputs.files fileTree("${projectDir}/rakelib")
+  inputs.files fileTree("${projectDir}/bin")
+  inputs.files fileTree("${projectDir}/config")
+  inputs.files fileTree("${projectDir}/lib")
+  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+  inputs.files fileTree("${projectDir}/logstash-core/lib")
+  inputs.files fileTree("${projectDir}/logstash-core/src")
+  outputs.files file("${buildDir}/logstash-${project.version}.zip")
+  doLast {
+      rake(projectDir, buildDir, 'artifact:archives_oss')
+  }
+}
+
+>>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
@@ -623,13 +797,6 @@ tasks.register("generateLicenseReportInputs") {
             }
         }
     }
-}
-
-tasks.register("generatePluginsVersion") {
-  dependsOn installDefaultGems
-  doLast {
-      rake(projectDir, buildDir, 'generate_plugins_version')
-  }
 }
 
 bootstrap.dependsOn assemblyDeps
@@ -951,6 +1118,7 @@ tasks.register("javaTests") {
 }
 
 clean {
+    dependsOn deleteLocalJdk
     String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
     delete "${projectDir}/${jdkVersionFilename}"
 }
