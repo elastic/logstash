@@ -43,7 +43,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1196.0)
+    aws-partitions (1.1197.0)
     aws-sdk-cloudfront (1.136.0)
       aws-sdk-core (~> 3, >= 3.239.1)
       aws-sigv4 (~> 1.5)
@@ -735,7 +735,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
       spoon (~> 0.0)
-    psych (5.2.6-java)
+    psych (5.3.1-java)
       date
       jar-dependencies (>= 0.1.7)
     public_suffix (5.1.1)
@@ -842,7 +842,7 @@ GEM
       tzinfo (>= 1.0.0)
     unicode-display_width (3.2.0)
       unicode-emoji (~> 4.1)
-    unicode-emoji (4.1.0)
+    unicode-emoji (4.2.0)
     uri (1.1.1)
     webhdfs (0.11.0)
       addressable
@@ -976,7 +976,6 @@ DEPENDENCIES
   paquet (~> 0.2)
   pleaserun (~> 0.0.28)
   polyglot
-  psych (~> 5.2.3)
   rack-test
   rake (~> 13)
   rspec (~> 3.5)
