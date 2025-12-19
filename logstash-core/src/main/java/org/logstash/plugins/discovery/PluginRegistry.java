@@ -83,12 +83,7 @@ public final class PluginRegistry {
                 continue;
             }
 
-            LogstashPlugin annotation = cls.getAnnotation(LogstashPlugin.class);
-            if (annotation == null) {
-                continue;
-            }
-
-            String name = annotation.name();
+            String name = cls.getAnnotation(LogstashPlugin.class).name();
             if (Filter.class.isAssignableFrom(cls)) {
                 filters.put(name, (Class<Filter>) cls);
             }

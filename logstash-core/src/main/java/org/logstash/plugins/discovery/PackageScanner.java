@@ -20,7 +20,16 @@ import java.util.jar.JarFile;
  */
 final class PackageScanner {
 
+    private static final String CLASS_SUFFIX = ".class";
+
     private PackageScanner() {
+    }
+
+    private static String toClassName(String resourcePath) {
+        return resourcePath
+            .substring(0, resourcePath.length() - CLASS_SUFFIX.length())
+            .replace('/', '.')
+            .replace('\\', '.');
     }
 
     static Set<Class<?>> scanForAnnotation(String basePackage, Class<? extends Annotation> annotation, ClassLoader loader) {
@@ -52,7 +61,9 @@ final class PackageScanner {
                 String protocol = resource.getProtocol();
                 if ("file".equals(protocol)) {
                     scanDirectory(resource, basePackage, classNames);
-                } else if ("jar".equals(protocol) || resource.toString().contains("!")) {
+                } else if ("jar".equals(protocol)) {
+                    scanJar(resource, resourcePath, classNames);
+                } else if (resource.openConnection() instanceof JarURLConnection) {
                     scanJar(resource, resourcePath, classNames);
                 }
             }
@@ -70,13 +81,10 @@ final class PackageScanner {
             }
             Files.walk(directory)
                 .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().endsWith(".class"))
+                .filter(path -> path.getFileName().toString().endsWith(CLASS_SUFFIX))
                 .forEach(path -> {
                     Path relative = directory.relativize(path);
-                    String className = basePackage + '.' + relative.toString()
-                        .replace('/', '.').replace('\\', '.');
-                    className = className.substring(0, className.length() - ".class".length());
-                    classNames.add(className);
+                    classNames.add(basePackage + '.' + toClassName(relative.toString()));
                 });
         } catch (IOException | URISyntaxException e) {
             throw new IllegalStateException("Failed to scan directory for classes: " + resource, e);
@@ -86,6 +94,8 @@ final class PackageScanner {
     private static void scanJar(URL resource, String resourcePath, Set<String> classNames) {
         try {
             JarURLConnection connection = (JarURLConnection) resource.openConnection();
+            // Disable caching to prevent file locking issues (especially on Windows)
+            // and ensure proper JAR file cleanup after scanning
             connection.setUseCaches(false);
             try (JarFile jarFile = connection.getJarFile()) {
                 String entryPrefix = connection.getEntryName();
@@ -102,12 +112,10 @@ final class PackageScanner {
                         continue;
                     }
                     String name = entry.getName();
-                    if (!name.endsWith(".class") || !name.startsWith(entryPrefix)) {
+                    if (!name.endsWith(CLASS_SUFFIX) || !name.startsWith(entryPrefix)) {
                         continue;
                     }
-                    String className = name.substring(0, name.length() - ".class".length())
-                        .replace('/', '.');
-                    classNames.add(className);
+                    classNames.add(toClassName(name));
                 }
             }
         } catch (IOException e) {
