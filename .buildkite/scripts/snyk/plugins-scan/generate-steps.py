@@ -88,7 +88,8 @@ def parse_plugin_entry(entry) -> list:
     - A dict with branches as sibling key:
       {"logstash-input-http": None, "branches": ["main", "3.x"]}
     - If branches contains "use-release-branches", fetches branches from artifacts-api
-    - If logstash_branches contains "match-with-plugin-branches", uses same branch as plugin
+    - If logstash_branch is "match-with-plugin-branches", uses same branch as plugin
+    - If logstash_branch is a specific branch (e.g., "main"), uses that branch for Logstash
     """
     if isinstance(entry, str):
         return [(entry, DEFAULT_BRANCH, None)]
@@ -97,10 +98,10 @@ def parse_plugin_entry(entry) -> list:
         plugin_name = None
         branches = entry.get('branches', [DEFAULT_BRANCH])
         ignore_branches = entry.get('ignore_branches', [])
-        logstash_branches = entry.get('logstash_branches', [])
+        logstash_branch_config = entry.get('logstash_branch')
 
         for key, value in entry.items():
-            if key not in ('branches', 'ignore_branches', 'logstash_branches'):
+            if key not in ('branches', 'ignore_branches', 'logstash_branch'):
                 plugin_name = key
                 break
 
@@ -128,9 +129,13 @@ def parse_plugin_entry(entry) -> list:
 
         # Determine logstash branch for each plugin branch
         result = []
-        match_logstash = 'match-with-plugin-branches' in logstash_branches
         for branch in set(resolved_branches):
-            logstash_branch = branch if match_logstash else None
+            if logstash_branch_config == 'match-with-plugin-branches':
+                logstash_branch = branch
+            elif logstash_branch_config:
+                logstash_branch = str(logstash_branch_config)
+            else:
+                logstash_branch = None
             result.append((plugin_name, branch, logstash_branch))
         return result
 
@@ -158,6 +163,11 @@ fi
 
 echo "--- Building logstash"
 cd logstash && ./gradlew clean bootstrap installDefaultGems && cd ..
+
+export LOGSTASH_PATH="$WORK_DIR/logstash"
+
+# Export Gradle property for plugins that need logstashCoreGemPath
+export ORG_GRADLE_PROJECT_logstashCoreGemPath="$WORK_DIR/logstash/logstash-core"
 """
 
     command = f"""#!/bin/bash
@@ -184,7 +194,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-LOGSTASH_PATH=../logstash ./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
+./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
 
 # Cleanup
 rm -rf "$WORK_DIR"

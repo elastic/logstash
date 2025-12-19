@@ -1,10 +1,13 @@
 plugins:
-  - logstash-filter-date
-  - logstash-filter-dissect
+  - logstash-filter-date:
+    logstash_branch: 'main'
+  - logstash-filter-dissect:
+    logstash_branch: 'main'
   - logstash-filter-geoip
   - logstash-filter-useragent
   - logstash-input-azure_event_hubs
-  - logstash-input-dead_letter_queue
+  - logstash-input-dead_letter_queue:
+    logstash_branch: 'main'
   - logstash-input-file
   - logstash-integration-jdbc
   - logstash-integration-kafka
@@ -19,4 +22,4 @@ plugins:
   - logstash-filter-elastic_integration:
     branches: [main, 'use-release-branches']
     ignore_branches: [7.x]
-    logstash_branches: ['match-with-plugin-branches']
+    logstash_branch: 'match-with-plugin-branches'
