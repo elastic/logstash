@@ -203,9 +203,28 @@ module LogStash
               result[:event_count][:average][window] = event_count_average_flow_metric[key]&.round if event_count_average_flow_metric[key]
               result[:byte_size][:average][window] = byte_size_average_flow_metric[key]&.round if byte_size_average_flow_metric[key]
             end
+
+            if stats[:batch][:batch_byte_size]
+              # stats[:batch][:batch_byte_size] is an instance of org.logstash.instrument.metrics.HdrHistogramFlowMetric
+              # so need to call "value" to grab the map of sub-metrics which contains the histogram percentiles
+              # as org.logstash.instrument.metrics.HistogramMetricData
+              byte_size_histogram = stats[:batch][:batch_byte_size][:histogram]
+              [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+                reshape_histogram_percentiles_for_window(:byte_size, byte_size_histogram, window, result) if byte_size_histogram.value[window.to_s]
+              end
+            end
             result
           end
           private :refine_batch_metrics
+
+          def reshape_histogram_percentiles_for_window(target_field, histogram_metric, window, result)
+            result[target_field][:p75] = {} if result[target_field][:p75].nil?
+            result[target_field][:p90] = {} if result[target_field][:p90].nil?
+
+            result[target_field][:p75][window] = histogram_metric.value[window.to_s].get75Percentile.round
+            result[target_field][:p90][window] = histogram_metric.value[window.to_s].get90Percentile.round
+          end
+          private :reshape_histogram_percentiles_for_window
 
           def report(stats, extended_stats = nil, opts = {})
             ret = {
@@ -225,8 +244,8 @@ module LogStash
                 :batch_delay => stats.dig(:config, :batch_delay),
               }
             }
-            # ret[:batch] = refine_batch_metrics(stats) if stats.include?(:batch)
-            ret[:batch] = stats[:batch] if stats.include?(:batch)
+            ret[:batch] = refine_batch_metrics(stats) if stats.include?(:batch)
+            # ret[:batch] = stats[:batch] if stats.include?(:batch)
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
             # if extended_stats were provided, enrich the return value

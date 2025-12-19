@@ -48,7 +48,7 @@ public class HistogramMetricData implements Serializable {
 
     @Override
     public String toString() {
-        return "HistogramSnapshot{" +
+        return "HistogramMetricData{" +
                 "percentile75=" + percentile75 +
                 ", percentile90=" + percentile90 +
                 '}';
