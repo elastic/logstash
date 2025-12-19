@@ -30,7 +30,11 @@ describe "Proxy support" do
   end
 
   after do
-    FileUtils.mv(settings_backup, settings) if File.exist?(settings_backup)
+    if File.exist?(settings_backup)
+      FileUtils.mv(settings_backup, settings)
+    elsif File.exist?(settings)
+      FileUtils.rm(settings)
+    end
     environments.each { |key, _| ENV[key] = nil }
   end
 
