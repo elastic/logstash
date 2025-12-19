@@ -548,6 +548,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       collector.clear("stats/pipelines/#{pipeline_id}/plugins")
       collector.clear("stats/pipelines/#{pipeline_id}/events")
       collector.clear("stats/pipelines/#{pipeline_id}/flow")
+      collector.clear("stats/pipelines/#{pipeline_id}/batch")
     end
   end
 
