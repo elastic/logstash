@@ -150,6 +150,8 @@ def generate_snyk_step(plugin_name: str, branch: str, logstash_branch: str = Non
     else:
         repo_url = f"https://github.com/logstash-plugins/{plugin_name}.git"
 
+    work_dir = "/opt/buildkite-agent/ls-plugins-snyk-scan"
+
     # Build logstash clone and bootstrap command if logstash_branch is specified
     logstash_clone_cmd = ""
     if logstash_branch:
@@ -157,17 +159,17 @@ def generate_snyk_step(plugin_name: str, branch: str, logstash_branch: str = Non
 echo "--- Cloning logstash (branch: {logstash_branch})"
 if ! git clone --depth 1 --branch {logstash_branch} https://github.com/elastic/logstash.git; then
     echo "Branch {logstash_branch} not found in logstash, skipping..."
-    rm -rf "$WORK_DIR"
+    rm -rf {work_dir}
     exit 0
 fi
 
 echo "--- Building logstash"
 cd logstash && ./gradlew clean bootstrap installDefaultGems && cd ..
 
-export LOGSTASH_PATH="$WORK_DIR/logstash"
+export LOGSTASH_PATH="{work_dir}/logstash"
 
 # Export Gradle property for plugins that need logstashCoreGemPath
-export ORG_GRADLE_PROJECT_logstashCoreGemPath="$WORK_DIR/logstash/logstash-core"
+export ORG_GRADLE_PROJECT_logstashCoreGemPath="{work_dir}/logstash/logstash-core"
 """
 
     command = f"""#!/bin/bash
@@ -177,14 +179,15 @@ export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_21"
 export PATH="/opt/buildkite-agent/.java/bin:$JAVA_HOME:$PATH"
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
-# Use isolated temp directory to avoid settings.gradle conflicts
-WORK_DIR=$(mktemp -d)
-cd "$WORK_DIR"
+# Use isolated directory to avoid settings.gradle conflicts
+rm -rf {work_dir}
+mkdir -p {work_dir}
+cd {work_dir}
 {logstash_clone_cmd}
 echo "--- Cloning {plugin_name} (branch: {branch})"
 if ! git clone --depth 1 --branch {branch} {repo_url}; then
     echo "Branch {branch} not found in {plugin_name}, skipping..."
-    rm -rf "$WORK_DIR"
+    rm -rf {work_dir}
     exit 0
 fi
 cd {plugin_name}
@@ -197,7 +200,7 @@ echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
 ./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch}
 
 # Cleanup
-rm -rf "$WORK_DIR"
+rm -rf {work_dir}
 """
 
     return {
