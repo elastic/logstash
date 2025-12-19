@@ -45,7 +45,14 @@ String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.17.2'
+String log4jVersion = '2.25.3'
+
+// Specifically call use of PluginProcessor to skip GraalVmProcessor (not needed)
+tasks.named('compileJava') {
+    options.compilerArgs.addAll([
+        "-processor", "org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor"
+    ])
+}
 
 tasks.register("sourcesJar", Jar) {
     dependsOn classes
@@ -242,7 +249,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation 'org.javassist:javassist:3.30.2-GA'
-    testImplementation "org.apache.logging.log4j:log4j-core:${log4jVersion}:tests"
+    testImplementation "org.apache.logging.log4j:log4j-core-test:${log4jVersion}"
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.hamcrest:hamcrest-library:2.2'
     testImplementation 'junit:junit:4.13.2'

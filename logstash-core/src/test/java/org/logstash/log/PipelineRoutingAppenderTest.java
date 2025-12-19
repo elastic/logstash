@@ -5,9 +5,9 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.AppenderControl;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.junit.LoggerContextRule;
+import org.apache.logging.log4j.core.test.junit.LoggerContextRule;
 import org.apache.logging.log4j.message.StructuredDataMessage;
-import org.apache.logging.log4j.test.appender.ListAppender;
+import org.apache.logging.log4j.core.test.appender.ListAppender;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,6 +38,7 @@ public class PipelineRoutingAppenderTest {
         this.loggerContextRule.getLoggerContext().stop();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void routingTest() {
         final String pipelineId = "test_pipeline";
