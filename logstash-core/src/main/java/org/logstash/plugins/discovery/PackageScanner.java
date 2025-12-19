@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -61,10 +62,12 @@ final class PackageScanner {
                 String protocol = resource.getProtocol();
                 if ("file".equals(protocol)) {
                     scanDirectory(resource, basePackage, classNames);
-                } else if ("jar".equals(protocol)) {
-                    scanJar(resource, resourcePath, classNames);
-                } else if (resource.openConnection() instanceof JarURLConnection) {
-                    scanJar(resource, resourcePath, classNames);
+                } else {
+                    // Open connection once to check type and reuse for scanning
+                    URLConnection connection = resource.openConnection();
+                    if (connection instanceof JarURLConnection) {
+                        scanJar((JarURLConnection) connection, resourcePath, classNames);
+                    }
                 }
             }
         } catch (IOException e) {
@@ -79,21 +82,21 @@ final class PackageScanner {
             if (!Files.exists(directory)) {
                 return;
             }
-            Files.walk(directory)
-                .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().endsWith(CLASS_SUFFIX))
-                .forEach(path -> {
-                    Path relative = directory.relativize(path);
-                    classNames.add(basePackage + '.' + toClassName(relative.toString()));
-                });
+            try (java.util.stream.Stream<Path> stream = Files.walk(directory)) {
+                stream.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(CLASS_SUFFIX))
+                    .forEach(path -> {
+                        Path relative = directory.relativize(path);
+                        classNames.add(basePackage + '.' + toClassName(relative.toString()));
+                    });
+            }
         } catch (IOException | URISyntaxException e) {
             throw new IllegalStateException("Failed to scan directory for classes: " + resource, e);
         }
     }
 
-    private static void scanJar(URL resource, String resourcePath, Set<String> classNames) {
+    private static void scanJar(JarURLConnection connection, String resourcePath, Set<String> classNames) {
         try {
-            JarURLConnection connection = (JarURLConnection) resource.openConnection();
             // Disable caching to prevent file locking issues (especially on Windows)
             // and ensure proper JAR file cleanup after scanning
             connection.setUseCaches(false);
@@ -119,7 +122,7 @@ final class PackageScanner {
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to scan jar for classes: " + resource, e);
+            throw new UncheckedIOException("Failed to scan jar for classes: " + connection.getURL(), e);
         }
     }
 }
