@@ -41,7 +41,7 @@ cd $LS_HOME
 if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
   echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
-  rake artifact:docker_oss
+  ./gradlew artifactDockerOss
   echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -51,7 +51,7 @@ if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
   echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
-  rake artifact:docker
+  ./gradlew artifactDocker
   echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -61,7 +61,7 @@ elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
   echo "--- Building $SELECTED_TEST_SUITE docker images"
   cd $LS_HOME
-  rake artifact:docker_wolfi
+  ./gradlew artifactDockerWolfi
   echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR
   bundle install
@@ -71,7 +71,7 @@ elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
 else
   echo "--- Building all docker images"
   cd $LS_HOME
-  rake artifact:docker_only
+  ./gradlew artifactDockerOnly
 
   echo "--- Acceptance: Installing dependencies"
   cd $QA_DIR

@@ -16,10 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-  task "jruby" do |task, args|
-    system('./gradlew bootstrap') unless File.exist?(File.join("vendor", "jruby"))
-  end # jruby
-
   namespace "force" do
     task "gems" => ["vendor:gems"]
   end
