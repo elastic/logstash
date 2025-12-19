@@ -3,7 +3,8 @@ plugins:
     logstash_branch: 'main'
   - logstash-filter-dissect:
     logstash_branch: 'main'
-  - logstash-filter-geoip
+  - logstash-filter-geoip:
+    logstash_branch: 'main'
   - logstash-filter-useragent
   - logstash-input-azure_event_hubs
   - logstash-input-dead_letter_queue:
