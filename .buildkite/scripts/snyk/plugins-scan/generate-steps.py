@@ -175,8 +175,7 @@ export ORG_GRADLE_PROJECT_logstashCoreGemPath="{work_dir}/logstash/logstash-core
     command = f"""#!/bin/bash
 set -euo pipefail
 
-export JAVA_HOME="/opt/buildkite-agent/.java/adoptiumjdk_21"
-export PATH="/opt/buildkite-agent/.java/bin:$JAVA_HOME:$PATH"
+source .buildkite/scripts/common/vm-agent-multi-jdk.sh
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 # Use isolated directory to avoid settings.gradle conflicts
@@ -197,7 +196,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --all-projects --exclude=Gemfile --org=logstash --project-name={plugin_name} --target-reference={branch}
+./snyk monitor --all-projects --exclude=Gemfile --org=logstash --target-reference={branch}
 
 # Cleanup
 rm -rf {work_dir}
