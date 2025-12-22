@@ -43,6 +43,7 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
         private final Recorder histogramRecorder;
         private final AtomicLong lastRecordTimeNanos;
         RetentionWindow recordWindow;
+        final long estimatedSizeInBytes;
 
         HistogramSnapshotsWindow(FlowMetricRetentionPolicy retentionPolicy) {
             this.retentionPolicy = retentionPolicy;
@@ -51,6 +52,14 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             lastRecordTimeNanos = new AtomicLong(actualTime);
             HistogramCapture initialCapture = new HistogramCapture(histogramRecorder.getIntervalHistogram(), actualTime);
             recordWindow = new RetentionWindow(retentionPolicy, initialCapture);
+            estimatedSizeInBytes = initEstimatedSize();
+        }
+
+        private long initEstimatedSize() {
+            Histogram snapshotHistogram = histogramRecorder.getIntervalHistogram();
+            int estimatedFootprintInBytes = snapshotHistogram.getEstimatedFootprintInBytes();
+
+            return recordWindow.policy.samplesCount() * estimatedFootprintInBytes;
         }
 
         void recordValue(long totalByteSize) {
@@ -78,8 +87,8 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             // giving that's a statistical approximation, doesn't really matter having exact numbers.
             if (updatedLast == currentTimeNanos) {
                 // an update of the lastRecordTimeNanos happened, we need to create a snapshot
-                Histogram snaspshotHistogram = histogramRecorder.getIntervalHistogram();
-                recordWindow.append(new HistogramCapture(snaspshotHistogram, currentTimeNanos));
+                Histogram snapshotHistogram = histogramRecorder.getIntervalHistogram();
+                recordWindow.append(new HistogramCapture(snapshotHistogram, currentTimeNanos));
             }
         }
 
@@ -131,9 +140,14 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
      */
     protected HdrHistogramFlowMetric(String name) {
         super(name);
+        long totalEstimatedSize = 0L;
         for (FlowMetricRetentionPolicy policy : SUPPORTED_POLICIES) {
-            histogramsWindows.put(policy, new HistogramSnapshotsWindow(policy));
+            HistogramSnapshotsWindow snapshotsWindow = new HistogramSnapshotsWindow(policy);
+            totalEstimatedSize += snapshotsWindow.estimatedSizeInBytes;
+            histogramsWindows.put(policy, snapshotsWindow);
         }
+
+        LOG.info("Estimated memory footprint for histogram metric is approximately {} bytes", totalEstimatedSize);
     }
 
     @Override
