@@ -26,6 +26,7 @@ class QueueReadClientBatchMetrics {
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
     private HistogramFlowMetric pipelineMetricBatchByteSizeFlowHistogram;
+    private HistogramFlowMetric pipelineMetricBatchEventCountFlowHistogram;
     private final SecureRandom random = new SecureRandom();
     private LazyDelegatingGauge currentBatchDimensions;
 
@@ -44,6 +45,9 @@ class QueueReadClientBatchMetrics {
             currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
             pipelineMetricBatchByteSizeFlowHistogram = batchNamespace.asApiMetric()
                     .namespace("batch_byte_size")
+                    .register("histogram", HdrHistogramFlowMetric.FACTORY);
+            pipelineMetricBatchEventCountFlowHistogram = batchNamespace.asApiMetric()
+                    .namespace("batch_event_count")
                     .register("histogram", HdrHistogramFlowMetric.FACTORY);
         }
     }
@@ -78,10 +82,12 @@ class QueueReadClientBatchMetrics {
                 totalByteSize += rubyEvent.getEvent().estimateMemory();
             }
             pipelineMetricBatchCount.increment();
-            pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
+            int batchEventsCount = batch.filteredSize();
+            pipelineMetricBatchTotalEvents.increment(batchEventsCount);
             pipelineMetricBatchByteSize.increment(totalByteSize);
-            currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalByteSize));
+            currentBatchDimensions.set(Arrays.asList(batchEventsCount, totalByteSize));
             pipelineMetricBatchByteSizeFlowHistogram.recordValue(totalByteSize);
+            pipelineMetricBatchEventCountFlowHistogram.recordValue(batchEventsCount);
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
