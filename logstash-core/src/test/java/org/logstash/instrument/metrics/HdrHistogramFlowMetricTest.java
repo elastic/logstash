@@ -10,11 +10,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class HdrHistogramFlowMetricTest {
 
@@ -44,9 +44,6 @@ public class HdrHistogramFlowMetricTest {
             referenceHistogram.recordValue(200);
             clock.advance(Duration.ofSeconds(1));
         }
-
-        System.out.println("Sample Histogram Percentiles:");
-        printPercentiles(referenceHistogram);
 
         // Retrieve histogram values
         Map<String, HistogramMetricData> histogramMap = sut.getValue();
@@ -86,7 +83,6 @@ public class HdrHistogramFlowMetricTest {
 
         // Retrieve histogram values and verify values for the time windows
         Map<String, HistogramMetricData> histogramMap = sut.getValue();
-        System.out.println(histogramMap);
 
         assertThat("contains just last 1 minute and 5 minutes histograms", histogramMap,
                 allOf(aMapWithSize(2), hasKey("last_1_minute"), hasKey("last_5_minutes")));
@@ -111,13 +107,12 @@ public class HdrHistogramFlowMetricTest {
             }
             clock.advance(Duration.ofSeconds(1));
         }
-        
+
         // Then for 1 minute record no values at all
         clock.advance(Duration.ofSeconds(60));
 
         // Retrieve histogram values and verify values for the time windows
         Map<String, HistogramMetricData> histogramMap = sut.getValue();
-        System.out.println(histogramMap);
 
         assertThat("contains just last 1 minute and 5 minutes histograms", histogramMap,
                 allOf(aMapWithSize(2), hasKey("last_1_minute"), hasKey("last_5_minutes")));
@@ -129,32 +124,5 @@ public class HdrHistogramFlowMetricTest {
         HistogramMetricData last5MinutesData = histogramMap.get("last_5_minutes");
         assertEquals(100, last5MinutesData.get75Percentile(), 10);
         assertEquals(200, last5MinutesData.get90Percentile(), 10);
-    }
-
-
-    private static void printPercentiles(Histogram sampleHistogram) {
-        System.out.println("P50: " + sampleHistogram.getValueAtPercentile(50));
-        System.out.println("P75: " + sampleHistogram.getValueAtPercentile(75));
-        System.out.println("P90: " + sampleHistogram.getValueAtPercentile(90));
-        System.out.println("P95: " + sampleHistogram.getValueAtPercentile(95));
-        System.out.println("P99: " + sampleHistogram.getValueAtPercentile(99));
-    }
-
-    @Test
-    public void testPlainHistogramVsSnapshots() {
-        Histogram histogram1 = new Histogram(1_000_000, 3);
-        for (int i=0; i < 20; i++) {
-            histogram1.recordValue(100);
-        }
-        Histogram histogram2 = new Histogram(1_000_000, 3);
-        for (int i=0; i < 2; i++) {
-            histogram2.recordValue(200);
-        }
-
-        Histogram aggregatedHistogram = new Histogram(1_000_000, 3);
-        aggregatedHistogram.add(histogram1);
-        aggregatedHistogram.add(histogram2);
-
-        printPercentiles(aggregatedHistogram);
     }
 }
