@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongSupplier;
 
 public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, HistogramMetricData>> implements HistogramFlowMetric {
 
@@ -40,15 +41,17 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
      * */
     private static final class HistogramSnapshotsWindow {
         private final FlowMetricRetentionPolicy retentionPolicy;
+        private final LongSupplier nanoTimeSupplier;
         private final Recorder histogramRecorder;
         private final AtomicLong lastRecordTimeNanos;
         RetentionWindow recordWindow;
         final long estimatedSizeInBytes;
 
-        HistogramSnapshotsWindow(FlowMetricRetentionPolicy retentionPolicy) {
+        HistogramSnapshotsWindow(FlowMetricRetentionPolicy retentionPolicy, LongSupplier nanoTimeSupplier) {
             this.retentionPolicy = retentionPolicy;
+            this.nanoTimeSupplier = nanoTimeSupplier;
             this.histogramRecorder = new Recorder(1_000_000, 3);
-            long actualTime = System.nanoTime();
+            long actualTime = nanoTimeSupplier.getAsLong();
             lastRecordTimeNanos = new AtomicLong(actualTime);
             HistogramCapture initialCapture = new HistogramCapture(histogramRecorder.getIntervalHistogram(), actualTime);
             recordWindow = new RetentionWindow(retentionPolicy, initialCapture);
@@ -66,7 +69,7 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             histogramRecorder.recordValue(totalByteSize);
 
             // Record on every call and create a snapshot iff we pass the flow metric policy resolution time
-            long currentTimeNanos = System.nanoTime();
+            long currentTimeNanos = nanoTimeSupplier.getAsLong();
             long updatedLast = lastRecordTimeNanos.accumulateAndGet(currentTimeNanos, (last, current) -> {
                 if (current - last > retentionPolicy.resolutionNanos()) {
                     return current;
@@ -88,13 +91,15 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             if (updatedLast == currentTimeNanos) {
                 // an update of the lastRecordTimeNanos happened, we need to create a snapshot
                 Histogram snapshotHistogram = histogramRecorder.getIntervalHistogram();
+                LOG.debug("Capturing new histogram snapshot p75: {}, p90: {}",
+                        snapshotHistogram.getValueAtPercentile(75), snapshotHistogram.getValueAtPercentile(90));
                 recordWindow.append(new HistogramCapture(snapshotHistogram, currentTimeNanos));
             }
         }
 
         HistogramMetricData computeAggregatedHistogramData() {
             final Histogram windowAggregated = new Histogram(1_000_000, 3);
-            final long currentTimeNanos = System.nanoTime();
+            final long currentTimeNanos = nanoTimeSupplier.getAsLong();
             recordWindow.forEachCapture(dpc -> {
                 // When all captures fall outside of the retention window, the list still holds the last capture,
                 // so have to check retention here again
@@ -132,6 +137,7 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             FlowMetricRetentionPolicy.BuiltInRetentionPolicy.LAST_15_MINUTES
     );
     private final ConcurrentMap<FlowMetricRetentionPolicy, HistogramSnapshotsWindow> histogramsWindows = new ConcurrentHashMap<>();
+    private final LongSupplier nanoTimeSupplier;
 
     /**
      * Constructor
@@ -139,10 +145,16 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
      * @param name The name of this metric. This value may be used for display purposes.
      */
     protected HdrHistogramFlowMetric(String name) {
+        this(name, System::nanoTime);
+    }
+
+    // Used in tests
+    protected HdrHistogramFlowMetric(String name, LongSupplier nanoTimeSupplier) {
         super(name);
+        this.nanoTimeSupplier = nanoTimeSupplier;
         long totalEstimatedSize = 0L;
         for (FlowMetricRetentionPolicy policy : SUPPORTED_POLICIES) {
-            HistogramSnapshotsWindow snapshotsWindow = new HistogramSnapshotsWindow(policy);
+            HistogramSnapshotsWindow snapshotsWindow = new HistogramSnapshotsWindow(policy, nanoTimeSupplier);
             totalEstimatedSize += snapshotsWindow.estimatedSizeInBytes;
             histogramsWindows.put(policy, snapshotsWindow);
         }
@@ -153,7 +165,7 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
     @Override
     public Map<String, HistogramMetricData> getValue() {
         final Map<String, HistogramMetricData> result = new HashMap<>();
-        final long currentTimeNanos = System.nanoTime();
+        final long currentTimeNanos = nanoTimeSupplier.getAsLong();
         histogramsWindows.forEach((policy, window) -> {
             window.recordWindow.baseline(currentTimeNanos).ifPresent(baseline -> {
                 result.put(policy.policyName().toLowerCase(), window.computeAggregatedHistogramData());
