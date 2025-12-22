@@ -11,7 +11,8 @@ plugins:
     logstash_branch: 'main'
   - logstash-input-file
   - logstash-integration-jdbc
-  - logstash-integration-kafka
+  - logstash-integration-kafka:
+    branches: [main, 11.x]
   - logstash-integration-snmp
   - logstash-integration-aws
   - logstash-input-http:
