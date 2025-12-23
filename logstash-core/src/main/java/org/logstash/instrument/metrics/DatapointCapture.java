@@ -50,7 +50,7 @@ abstract class DatapointCapture {
     /**
      * Internal tooling to select the younger of two captures
      */
-    static DatapointCapture selectNewerCapture(final DatapointCapture existing, final DatapointCapture proposed) {
+    static DatapointCapture selectNewestCaptureOf(final DatapointCapture existing, final DatapointCapture proposed) {
         if (existing == null) {
             return proposed;
         }

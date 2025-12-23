@@ -44,7 +44,7 @@ class RetentionWindow {
         final long newestCaptureNanoTime = newestCapture.nanoTime();
 
         // stage our newest capture unless it is older than the currently-staged capture
-        final DatapointCapture previouslyStaged = stagedCapture.getAndAccumulate(newestCapture, DatapointCapture::selectNewerCapture);
+        final DatapointCapture previouslyStaged = stagedCapture.getAndAccumulate(newestCapture, DatapointCapture::selectNewestCapture);
 
         // promote our previously-staged capture IFF our newest capture is too far
         // ahead of the current tail to support policy's resolution.
