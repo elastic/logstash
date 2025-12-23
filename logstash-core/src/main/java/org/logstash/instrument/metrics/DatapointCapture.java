@@ -39,6 +39,9 @@ abstract class DatapointCapture {
         return nanoTime;
     }
 
+    /**
+     * Internal tooling to select the younger capture between and this and proposed.
+     */
     DatapointCapture selectNewestCapture(final DatapointCapture proposed) {
         if (proposed == null) {
             return this;
@@ -48,7 +51,7 @@ abstract class DatapointCapture {
     }
 
     /**
-     * Internal tooling to select the younger of two captures
+     * Internal tooling to select the younger of two captures provided.
      */
     static DatapointCapture selectNewestCaptureOf(final DatapointCapture existing, final DatapointCapture proposed) {
         if (existing == null) {
