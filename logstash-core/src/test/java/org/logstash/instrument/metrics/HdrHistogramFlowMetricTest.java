@@ -81,7 +81,7 @@ public class HdrHistogramFlowMetricTest {
     @Test
     public void givenRunningMetricForMoreMinutesThenHistogramsHasToReflectTimeAndValues() {
         // Record values for 4 minutes, recording low values, 80% of the time 100, 20% of the time 200
-        for(int i = 0; i < 4 * 60; i++) {
+        for (int i = 0; i < 4 * 60; i++) {
             if (random.nextInt(100) < 80) {
                 sut.recordValue(100);
             } else {
