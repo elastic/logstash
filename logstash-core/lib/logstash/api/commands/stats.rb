@@ -251,7 +251,6 @@ module LogStash
               }
             }
             ret[:batch] = refine_batch_metrics(stats) if stats.include?(:batch)
-            # ret[:batch] = stats[:batch] if stats.include?(:batch)
             ret[:dead_letter_queue] = stats[:dlq] if stats.include?(:dlq)
 
             # if extended_stats were provided, enrich the return value
