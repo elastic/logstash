@@ -44,7 +44,7 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
         private final LongSupplier nanoTimeSupplier;
         private final Recorder histogramRecorder;
         private final AtomicLong lastRecordTimeNanos;
-        RetentionWindow recordWindow;
+        private final RetentionWindow recordWindow;
         final long estimatedSizeInBytes;
 
         HistogramSnapshotsWindow(FlowMetricRetentionPolicy retentionPolicy, LongSupplier nanoTimeSupplier) {
@@ -78,16 +78,16 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
                 }
             });
 
-            // If two threads race to update lastRecordTimeNanos, only one updates the variable. If two threads reads
-            // currentTimeNanos that are different but really close to the other, then only one succeed in updating the atomic long,
+            // If two threads race to update lastRecordTimeNanos, only one updates the variable. If two threads read
+            // currentTimeNanos that are different but really close to the other, then only one succeeds in updating the atomic long,
             // and will satisfy updatedLast == currentTimeNanos, so will create the snapshot. The other will read a different
             // updatedLast and the condition will fail.
-            // If two threads reads exactly the same nanosecond time, also in this case only one will update the atomic long, but both
+            // If two threads read exactly the same nanosecond time, also in this case only one will update the atomic long, but both
             // will satisfy the condition and create two histogram snapshots, one of which will be probably empty.
             // In this case the recordWindow.append prefer the newest, so in case of two snapshots created at the same time,
             // the latter will be kept. Depending on the interleaving of the threads it could be that the empty one is kept.
-            // Is this a problem? Probably not, because it concur to the calculation of the percentiles for a fraction, and
-            // giving that's a statistical approximation, doesn't really matter having exact numbers.
+            // Is this a problem? Probably not, because it contributes to the calculation of the percentiles for a fraction, and
+            // given that it's a statistical approximation, doesn't really matter having exact numbers.
             if (updatedLast == currentTimeNanos) {
                 // an update of the lastRecordTimeNanos happened, we need to create a snapshot
                 Histogram snapshotHistogram = histogramRecorder.getIntervalHistogram();

@@ -227,8 +227,9 @@ module LogStash
             result[target_field][:p50] = {} if result[target_field][:p50].nil?
             result[target_field][:p90] = {} if result[target_field][:p90].nil?
 
-            result[target_field][:p50][window] = histogram_metric.value[window.to_s].get50Percentile.round
-            result[target_field][:p90][window] = histogram_metric.value[window.to_s].get90Percentile.round
+            histogram_data = histogram_metric.value[window.to_s]
+            result[target_field][:p50][window] = histogram_data.get50Percentile.round
+            result[target_field][:p90][window] = histogram_data.get90Percentile.round
           end
           private :reshape_histogram_percentiles_for_window
 

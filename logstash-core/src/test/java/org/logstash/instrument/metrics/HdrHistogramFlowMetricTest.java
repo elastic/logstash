@@ -53,12 +53,12 @@ public class HdrHistogramFlowMetricTest {
         Histogram referenceHistogram = new Histogram(1_000_000, 3);
 
         // Record values for 60 seconds
-        for(int i = 0; i < 45; i++) {
+        for (int i = 0; i < 45; i++) {
             sut.recordValue(100);
             referenceHistogram.recordValue(100);
             clock.advance(Duration.ofSeconds(1));
         }
-        for(int i = 0; i < 15; i++) {
+        for (int i = 0; i < 15; i++) {
             sut.recordValue(200);
             referenceHistogram.recordValue(200);
             clock.advance(Duration.ofSeconds(1));
@@ -91,7 +91,7 @@ public class HdrHistogramFlowMetricTest {
         }
 
         // Then for 1 minute record a spike
-        for(int i = 0; i < 60; i++) {
+        for (int i = 0; i < 60; i++) {
             if (random.nextInt(100) < 80) {
                 sut.recordValue(1000);
             } else {
@@ -118,7 +118,7 @@ public class HdrHistogramFlowMetricTest {
     @Test
     public void givenRunningMetricWhenNoDataComesInForLastMinuteThenHistogramReflectsThisDrop() {
         // Record values for 4 minutes, recording low values, 80% of the time 100, 20% of the time 200
-        for(int i = 0; i < 4 * 60; i++) {
+        for (int i = 0; i < 4 * 60; i++) {
             if (random.nextInt(100) < 80) {
                 sut.recordValue(100);
             } else {

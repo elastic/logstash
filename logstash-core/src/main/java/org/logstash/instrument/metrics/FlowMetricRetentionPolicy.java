@@ -100,7 +100,7 @@ interface FlowMetricRetentionPolicy {
 
         @Override
         public long samplesCount() {
-            return retentionNanos/resolutionNanos;
+            return retentionNanos / resolutionNanos;
         }
     }
 }
