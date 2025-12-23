@@ -96,7 +96,15 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         this.retentionWindows.get()
                              .forEach(window -> window.baseline(currentCapture.nanoTime())
                                                       .or(() -> windowDefaultBaseline(window))
-                                                      .map((baseline) -> calculateRate(currentCapture, (FlowCapture) baseline))
+                                                      .map(b -> {
+                                                          if (b instanceof FlowCapture baseline) {
+                                                              return calculateRate(currentCapture, baseline);
+                                                          } else {
+                                                              LOGGER.warn("Retention window `{}` provided a non-FlowCapture baseline `{}`; skipping rate calculation",
+                                                                      window.policy.policyName(), b);
+                                                              return OptionalDouble.empty();
+                                                          }
+                                                      })
                                                       .orElseGet(OptionalDouble::empty)
                                                       .ifPresent((rate) -> rates.put(window.policy.policyName(), rate)));
 
