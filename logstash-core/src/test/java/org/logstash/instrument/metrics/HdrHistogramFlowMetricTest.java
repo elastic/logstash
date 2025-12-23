@@ -111,7 +111,7 @@ public class HdrHistogramFlowMetricTest {
         assertEquals(1000, last1MinuteData.get50Percentile(), 10);
         assertEquals(1500, last1MinuteData.get90Percentile(), 10);
         HistogramMetricData last5MinutesData = histogramMap.get("last_5_minutes");
-        assertEquals(200, last5MinutesData.get50Percentile(), 10);
+        assertEquals(100, last5MinutesData.get50Percentile(), 10);
         assertEquals(1000, last5MinutesData.get90Percentile(), 10);
     }
 
