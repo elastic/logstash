@@ -73,7 +73,7 @@ public class HdrHistogramFlowMetricTest {
 
         // Check against the reference histogram
         HistogramMetricData last1MinuteData = histogramMap.get("last_1_minute");
-        assertEquals(referenceHistogram.getValueAtPercentile(75), last1MinuteData.get75Percentile(), 0.1);
+        assertEquals(referenceHistogram.getValueAtPercentile(50), last1MinuteData.get50Percentile(), 0.1);
         assertEquals(referenceHistogram.getValueAtPercentile(90), last1MinuteData.get90Percentile(), 0.1);
     }
 
@@ -108,10 +108,10 @@ public class HdrHistogramFlowMetricTest {
 
         // Since values are uniformly distributed, we can check expected percentiles
         HistogramMetricData last1MinuteData = histogramMap.get("last_1_minute");
-        assertEquals(1000, last1MinuteData.get75Percentile(), 10);
+        assertEquals(1000, last1MinuteData.get50Percentile(), 10);
         assertEquals(1500, last1MinuteData.get90Percentile(), 10);
         HistogramMetricData last5MinutesData = histogramMap.get("last_5_minutes");
-        assertEquals(200, last5MinutesData.get75Percentile(), 10);
+        assertEquals(200, last5MinutesData.get50Percentile(), 10);
         assertEquals(1000, last5MinutesData.get90Percentile(), 10);
     }
 
@@ -138,10 +138,10 @@ public class HdrHistogramFlowMetricTest {
 
         // Since values are uniformly distributed, we can check expected percentiles
         HistogramMetricData last1MinuteData = histogramMap.get("last_1_minute");
-        assertEquals(0, last1MinuteData.get75Percentile(), 10);
+        assertEquals(0, last1MinuteData.get50Percentile(), 10);
         assertEquals(0, last1MinuteData.get90Percentile(), 10);
         HistogramMetricData last5MinutesData = histogramMap.get("last_5_minutes");
-        assertEquals(100, last5MinutesData.get75Percentile(), 10);
+        assertEquals(100, last5MinutesData.get50Percentile(), 10);
         assertEquals(200, last5MinutesData.get90Percentile(), 10);
     }
 }

@@ -91,8 +91,8 @@ public class HdrHistogramFlowMetric extends AbstractMetric<Map<String, Histogram
             if (updatedLast == currentTimeNanos) {
                 // an update of the lastRecordTimeNanos happened, we need to create a snapshot
                 Histogram snapshotHistogram = histogramRecorder.getIntervalHistogram();
-                LOG.debug("Capturing new histogram snapshot p75: {}, p90: {}",
-                        snapshotHistogram.getValueAtPercentile(75), snapshotHistogram.getValueAtPercentile(90));
+                LOG.debug("Capturing new histogram snapshot p50: {}, p90: {}",
+                        snapshotHistogram.getValueAtPercentile(50), snapshotHistogram.getValueAtPercentile(90));
                 recordWindow.append(new HistogramCapture(snapshotHistogram, currentTimeNanos));
             }
         }

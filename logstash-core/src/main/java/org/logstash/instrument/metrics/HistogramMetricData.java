@@ -28,17 +28,17 @@ import java.io.Serializable;
 public class HistogramMetricData implements Serializable {
     @Serial
     private static final long serialVersionUID = 4711735381843512566L;
-    private final long percentile75;
+    private final long percentile50;
     private final long percentile90;
 
     public HistogramMetricData(Histogram hdrHistogram) {
-        percentile75 = hdrHistogram.getValueAtPercentile(75);
+        percentile50 = hdrHistogram.getValueAtPercentile(50);
         percentile90 = hdrHistogram.getValueAtPercentile(90);
     }
 
-    @JsonProperty("p75")
-    public double get75Percentile() {
-        return percentile75;
+    @JsonProperty("p50")
+    public double get50Percentile() {
+        return percentile50;
     }
 
     @JsonProperty("p90")
@@ -49,7 +49,7 @@ public class HistogramMetricData implements Serializable {
     @Override
     public String toString() {
         return "HistogramMetricData{" +
-                "percentile75=" + percentile75 +
+                "percentile50=" + percentile50 +
                 ", percentile90=" + percentile90 +
                 '}';
     }

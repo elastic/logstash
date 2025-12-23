@@ -224,10 +224,10 @@ module LogStash
           private :refine_batch_metrics
 
           def reshape_histogram_percentiles_for_window(target_field, histogram_metric, window, result)
-            result[target_field][:p75] = {} if result[target_field][:p75].nil?
+            result[target_field][:p50] = {} if result[target_field][:p50].nil?
             result[target_field][:p90] = {} if result[target_field][:p90].nil?
 
-            result[target_field][:p75][window] = histogram_metric.value[window.to_s].get75Percentile.round
+            result[target_field][:p50][window] = histogram_metric.value[window.to_s].get50Percentile.round
             result[target_field][:p90][window] = histogram_metric.value[window.to_s].get90Percentile.round
           end
           private :reshape_histogram_percentiles_for_window
