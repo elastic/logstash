@@ -160,7 +160,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.14.7)
+    i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     jar-dependencies (0.5.4)
@@ -561,7 +561,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (12.0.1-java)
+    logstash-integration-kafka (12.0.2-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
