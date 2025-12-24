@@ -79,7 +79,7 @@ GEM
     aws-sigv4 (1.12.1)
       aws-eventstream (~> 1, >= 1.0.2)
     back_pressure (1.0.0)
-    backports (3.25.2)
+    backports (3.25.3)
     base64 (0.3.0)
     belzebuth (0.2.3)
       childprocess
@@ -165,7 +165,7 @@ GEM
       domain_name (~> 0.5)
     http-form_data (2.3.0)
     http_parser.rb (0.6.0-java)
-    i18n (1.14.7)
+    i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     insist (1.0.0)
     jar-dependencies (0.4.1)
@@ -395,7 +395,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.9.4-java)
+    logstash-input-beats (6.9.5-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -469,7 +469,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.10.3-java)
+    logstash-input-http (3.10.4-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -513,7 +513,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.4.7-java)
+    logstash-input-tcp (6.4.8-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -575,7 +575,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.6.4-java)
+    logstash-integration-kafka (11.8.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -716,7 +716,7 @@ GEM
     naught (1.1.0)
     net-http (0.6.0)
       uri
-    net-imap (0.5.12)
+    net-imap (0.5.13)
       date
       net-protocol
     net-pop (0.1.2)
@@ -853,7 +853,7 @@ GEM
       simple_oauth (~> 0.3.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    tzinfo-data (1.2025.2)
+    tzinfo-data (1.2025.3)
       tzinfo (>= 1.0.0)
     unicode-display_width (2.6.0)
     uri (0.12.5)
