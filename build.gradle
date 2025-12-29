@@ -771,7 +771,7 @@ tasks.register("runAcceptanceTests") {
     doLast {
         exec {
             workingDir "${projectDir}/qa"
-            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "acceptance/spec/lib"
+            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
         }
     }
 }
