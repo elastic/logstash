@@ -118,6 +118,24 @@ void bundleAcceptanceGems(File projectDir, String qaBuildPath) {
     }
 }
 
+void runQAAcceptanceTests(File projectDir, String qaVendorPath) {
+    def jruby = new ScriptingContainer()
+    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
+    def env = jruby.environment
+    env.put "GEM_HOME", qaVendorPath
+    env.put "GEM_PATH", qaVendorPath
+    try {
+        jruby.currentDirectory = "${projectDir}/qa"
+        jruby.runScriptlet("""
+                require 'rspec'
+                require 'rspec/core'
+                exit RSpec::Core::Runner.run(['acceptance/spec/lib'])
+                """)
+    } finally {
+        jruby.terminate()
+        Ruby.clearGlobalRuntime()
+    }
+}
 /**
  * Installs a Gem with the given version to the given path.
  * @param projectDir Gradle projectDir
