@@ -752,7 +752,46 @@ tasks.register("runIntegrationTests") {
     shouldRunAfter ":logstash-core:test"
 }
 
+def qaAcceptanceBuildPath = "${buildDir}/qa/acceptance"
+def qaAcceptanceVendorPath = "${qaAcceptanceBuildPath}/vendor"
 
+tasks.register("installAcceptanceTestGems") {
+    dependsOn bootstrap
+
+    inputs.files file("${projectDir}/qa/Gemfile")
+    outputs.dir(qaAcceptanceVendorPath)
+    outputs.file("${projectDir}/qa/Gemfile.lock")
+
+    doLast {
+        bundleAcceptanceGems(projectDir, qaAcceptanceBuildPath)
+    }
+}
+
+tasks.register("runAcceptanceTests") {
+    dependsOn installAcceptanceTestGems
+    
+    doLast {
+        def jruby = new ScriptingContainer()
+        jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
+
+        def env = jruby.environment
+        env.put "GEM_HOME", qaAcceptanceVendorPath
+        env.put "GEM_PATH", qaAcceptanceVendorPath
+
+        try {
+            jruby.currentDirectory = "${projectDir}/qa"
+            jruby.runScriptlet("""
+                require 'rspec'
+                require 'rspec/core'
+                exit_code = RSpec::Core::Runner.run(['acceptance/spec/lib'])
+                raise "RSpec failed with exit code \#{exit_code}" unless exit_code == 0
+            """)
+        } finally {
+            jruby.terminate()
+            Ruby.clearGlobalRuntime()
+        }
+    }
+}
 
 tasks.register("generateLicenseReport", JavaExec) {
     dependsOn generateLicenseReportInputs

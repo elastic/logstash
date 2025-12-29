@@ -102,6 +102,22 @@ void bundleQAGems(File projectDir, String qaBuildPath) {
     }
 }
 
+void bundleAcceptanceGems(File projectDir, String qaBuildPath) {
+    def jruby = new ScriptingContainer()
+    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
+    try {
+        jruby.currentDirectory = qaBuildPath
+        jruby.runScriptlet("""
+                require "bundler"
+                require "bundler/cli"
+                Bundler::CLI.start(['install', '--path', "${qaBuildPath}/vendor", '--gemfile', "${projectDir}/qa/Gemfile"])
+                """)
+    } finally {
+        jruby.terminate()
+        Ruby.clearGlobalRuntime()
+    }
+}
+
 /**
  * Installs a Gem with the given version to the given path.
  * @param projectDir Gradle projectDir
