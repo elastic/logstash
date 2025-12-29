@@ -45,8 +45,6 @@ ext {
     bundle = this.&bundle
     bundleWithEnv = this.&bundleWithEnv
     bundleQAGems = this.&bundleQAGems
-    bundleAcceptanceGems = this.&bundleAcceptanceGems
-    runQAAcceptanceTests = this.&runQAAcceptanceTests
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
@@ -104,43 +102,6 @@ void bundleQAGems(File projectDir, String qaBuildPath) {
     }
 }
 
-void bundleAcceptanceGems(File projectDir, String qaBuildPath) {
-    def jruby = new ScriptingContainer()
-    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
-    try {
-        jruby.currentDirectory = qaBuildPath
-        jruby.runScriptlet("""
-                require "bundler"
-                require "bundler/cli"
-                Bundler::CLI.start(['install', '--path', "${qaBuildPath}/vendor", '--gemfile', "${projectDir}/qa/Gemfile"])
-                """)
-    } finally {
-        jruby.terminate()
-        Ruby.clearGlobalRuntime()
-    }
-}
-
-void runQAAcceptanceTests(File projectDir, String qaVendorPath) {
-    def jruby = new ScriptingContainer()
-    jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
-    def env = jruby.environment
-    def gemPath = "${qaVendorPath}/jruby/3.1.0"
-    env.put "GEM_HOME", gemPath
-    env.put "GEM_PATH", gemPath
-    try {
-        jruby.currentDirectory = "${projectDir}/qa"
-        jruby.runScriptlet("""
-                require 'rubygems'
-                Gem.paths = { 'GEM_HOME' => '${gemPath}', 'GEM_PATH' => '${gemPath}' }
-                require 'rspec'
-                require 'rspec/core'
-                exit RSpec::Core::Runner.run(['acceptance/spec/lib'])
-                """)
-    } finally {
-        jruby.terminate()
-        Ruby.clearGlobalRuntime()
-    }
-}
 /**
  * Installs a Gem with the given version to the given path.
  * @param projectDir Gradle projectDir
