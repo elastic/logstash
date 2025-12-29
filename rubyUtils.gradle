@@ -124,8 +124,9 @@ void runQAAcceptanceTests(File projectDir, String qaVendorPath) {
     def jruby = new ScriptingContainer()
     jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     def env = jruby.environment
-    env.put "GEM_HOME", qaVendorPath
-    env.put "GEM_PATH", qaVendorPath
+    def gemPath = "${qaVendorPath}/jruby/3.1.0"
+    env.put "GEM_HOME", gemPath
+    env.put "GEM_PATH", gemPath
     try {
         jruby.currentDirectory = "${projectDir}/qa"
         jruby.runScriptlet("""
