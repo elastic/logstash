@@ -127,9 +127,11 @@ void runQAAcceptanceTests(File projectDir, String qaVendorPath) {
     def gemPath = "${qaVendorPath}/jruby/3.1.0"
     env.put "GEM_HOME", gemPath
     env.put "GEM_PATH", gemPath
+    env.put "BUNDLE_GEMFILE", "${projectDir}/qa/Gemfile"
     try {
         jruby.currentDirectory = "${projectDir}/qa"
         jruby.runScriptlet("""
+                require 'bundler/setup'
                 require 'rspec'
                 require 'rspec/core'
                 exit RSpec::Core::Runner.run(['acceptance/spec/lib'])
