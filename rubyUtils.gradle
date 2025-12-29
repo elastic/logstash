@@ -45,6 +45,8 @@ ext {
     bundle = this.&bundle
     bundleWithEnv = this.&bundleWithEnv
     bundleQAGems = this.&bundleQAGems
+    bundleAcceptanceGems = this.&bundleAcceptanceGems
+    runQAAcceptanceTests = this.&runQAAcceptanceTests
     gem = this.&gem
     buildGem = this.&buildGem
     rake = this.&rake
