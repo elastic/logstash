@@ -752,17 +752,16 @@ tasks.register("runIntegrationTests") {
     shouldRunAfter ":logstash-core:test"
 }
 
-def qaAcceptanceBuildPath = "${buildDir}/qa/acceptance"
-def qaAcceptanceVendorPath = "${qaAcceptanceBuildPath}/vendor"
-
 tasks.register("installAcceptanceTestGems") {
     dependsOn bootstrap
     inputs.files file("${projectDir}/qa/Gemfile")
-    outputs.dir(qaAcceptanceVendorPath)
     outputs.file("${projectDir}/qa/Gemfile.lock")
     
     doLast {
-        bundleAcceptanceGems(projectDir, qaAcceptanceBuildPath)
+        exec {
+            workingDir "${projectDir}/qa"
+            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
+        }
     }
 }
 
@@ -770,7 +769,10 @@ tasks.register("runAcceptanceTests") {
     dependsOn installAcceptanceTestGems
     
     doLast {
-        runQAAcceptanceTests(projectDir, qaAcceptanceVendorPath)
+        exec {
+            workingDir "${projectDir}/qa"
+            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "acceptance/spec/lib"
+        }
     }
 }
 
