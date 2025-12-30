@@ -760,6 +760,7 @@ tasks.register("installAcceptanceTestGems") {
     doLast {
         exec {
             workingDir "${projectDir}/qa"
+            environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
             commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
         }
     }
@@ -771,6 +772,7 @@ tasks.register("runAcceptanceTests") {
     doLast {
         exec {
             workingDir "${projectDir}/qa"
+            environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
             commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
         }
     }
