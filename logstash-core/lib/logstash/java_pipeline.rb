@@ -259,9 +259,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
-    @outputs_registered.make_false
+    # @outputs_registered.make_false
     begin
-      maybe_setup_out_plugins
+      worker_stage = lir_execution.worker_stage
+
+      register_plugins(worker_stage.outputs)
+      register_plugins(worker_stage.filters)
 
       pipeline_workers = safe_pipeline_worker_count
       @preserve_event_order = preserve_event_order?(pipeline_workers)
@@ -297,7 +300,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
       workers_init_start = Time.now
       worker_loops = pipeline_workers.times
-        .map { Thread.new { init_worker_loop } }
+        .map { Thread.new { init_worker_loop(worker_stage) } }
         .map(&:value)
       workers_init_elapsed = Time.now - workers_init_start
 
@@ -585,11 +588,11 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
-  def init_worker_loop
+  def init_worker_loop(worker_stage)
     begin
       org.logstash.execution.WorkerLoop.new(
         filter_queue_client,   # QueueReadClient
-        lir_execution,         # CompiledPipeline
+        worker_stage,          # CompiledPipeline.WorkerStage
         @worker_observer,      # WorkerObserver
         # pipeline reporter counters
         @events_consumed,      # LongAdder
