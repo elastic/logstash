@@ -752,30 +752,20 @@ tasks.register("runIntegrationTests") {
     shouldRunAfter ":logstash-core:test"
 }
 
-tasks.register("installAcceptanceTestGems") {
+tasks.register("installAcceptanceTestGems", Exec) {
     dependsOn bootstrap
     inputs.files file("${projectDir}/qa/Gemfile")
     outputs.file("${projectDir}/qa/Gemfile.lock")
-    
-    doLast {
-        exec {
-            workingDir "${projectDir}/qa"
-            environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
-            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
-        }
-    }
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
 }
 
-tasks.register("runAcceptanceTests") {
+tasks.register("runAcceptanceTests", Exec) {
     dependsOn installAcceptanceTestGems
-    
-    doLast {
-        exec {
-            workingDir "${projectDir}/qa"
-            environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
-            commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
-        }
-    }
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
 }
 
 tasks.register("generateLicenseReport", JavaExec) {
