@@ -56,23 +56,6 @@ def fetch_release_branches() -> list:
         return []
 
 
-def should_ignore_branch(branch: str, ignore_branches: list) -> bool:
-    """
-    Check if a branch should be ignored based on ignore_branches patterns.
-    Patterns like "7.x" will match branches starting with "7." (major version 7).
-    """
-    for pattern in ignore_branches:
-        pattern_str = str(pattern)
-        if pattern_str.endswith('.x'):
-            # Extract major version from pattern like "7.x" -> "7"
-            major_version = pattern_str[:-2]
-            if branch.startswith(f"{major_version}."):
-                return True
-        elif branch == pattern_str:
-            return True
-    return False
-
-
 def load_plugin_matrix() -> list:
     with open(MATRIX_FILE, 'r') as f:
         config = yaml.safe_load(f)
@@ -84,29 +67,34 @@ def parse_plugin_entry(entry) -> list:
     Parse a plugin entry from the matrix.
     Returns a list of (plugin_name, branch, logstash_branch) tuples.
     Entries can be either:
-    - A simple string: "logstash-filter-date" -> uses default branch
-    - A dict with branches as sibling key:
-      {"logstash-input-http": None, "branches": ["main", "3.x"]}
-    - If branches contains "use-release-branches", fetches branches from artifacts-api
-    - If logstash_branch is "match-with-plugin-branches", uses same branch as plugin
-    - If logstash_branch is a specific branch (e.g., "main"), uses that branch for Logstash
+    - A simple string: "logstash-filter-date" -> uses default branch, no logstash
+    - A dict with scan_branches: explicit list of {branch, logstash} pairs
+    - A dict with requires_logstash_core: true -> clones and builds logstash main
+    - A dict with branches: list of plugin branches
     """
     if isinstance(entry, str):
         return [(entry, DEFAULT_BRANCH, None)]
 
     if isinstance(entry, dict):
-        plugin_name = None
-        branches = entry.get('branches', [DEFAULT_BRANCH])
-        ignore_branches = entry.get('ignore_branches', [])
-        logstash_branch_config = entry.get('logstash_branch')
+        scan_branches = None
+        requires_logstash_core = False
+        branches = [DEFAULT_BRANCH]
 
         for key, value in entry.items():
-            if key not in ('branches', 'ignore_branches', 'logstash_branch'):
-                plugin_name = key
-                break
+            plugin_name = key
+            if isinstance(value, dict):
+                scan_branches = value.get('scan_branches')
+                requires_logstash_core = value.get('requires_logstash_core', False)
+                branches = value.get('branches') or branches
 
-        if plugin_name is None:
-            return []
+        # If scan_branches is defined, use it directly (explicit branch pairs)
+        if scan_branches:
+            result = []
+            for pair in scan_branches:
+                branch = str(pair.get('branch', DEFAULT_BRANCH))
+                logstash_branch = str(pair.get('logstash')) if pair.get('logstash') else None
+                result.append((plugin_name, branch, logstash_branch))
+            return result
 
         # Convert branch values to strings
         branches = [str(branch) for branch in branches]
@@ -120,22 +108,11 @@ def parse_plugin_entry(entry) -> list:
             else:
                 resolved_branches.append(branch)
 
-        # Filter out ignored branches
-        if ignore_branches:
-            resolved_branches = [
-                b for b in resolved_branches
-                if not should_ignore_branch(b, ignore_branches)
-            ]
-
         # Determine logstash branch for each plugin branch
         result = []
         for branch in set(resolved_branches):
-            if logstash_branch_config == 'match-with-plugin-branches':
-                logstash_branch = branch
-            elif logstash_branch_config:
-                logstash_branch = str(logstash_branch_config)
-            else:
-                logstash_branch = None
+            # If requires_logstash_core is true, use 'main' branch for logstash
+            logstash_branch = DEFAULT_BRANCH if requires_logstash_core else None
             result.append((plugin_name, branch, logstash_branch))
         return result
 
@@ -157,11 +134,7 @@ def generate_snyk_step(plugin_name: str, branch: str, logstash_branch: str = Non
     if logstash_branch:
         logstash_clone_cmd = f"""
 echo "--- Cloning logstash (branch: {logstash_branch})"
-if ! git clone --depth 1 --branch {logstash_branch} https://github.com/elastic/logstash.git; then
-    echo "Branch {logstash_branch} not found in logstash, skipping..."
-    rm -rf {work_dir}
-    exit 0
-fi
+git clone --depth 1 --branch {logstash_branch} https://github.com/elastic/logstash.git
 
 echo "--- Building logstash"
 cd logstash && ./gradlew clean bootstrap installDefaultGems && cd ..
