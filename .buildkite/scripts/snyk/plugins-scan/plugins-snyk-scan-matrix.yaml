@@ -1,22 +1,49 @@
 plugins:
-  - logstash-filter-date
-  - logstash-filter-dissect
-  - logstash-filter-geoip
-  - logstash-filter-jdbc_static
+  - logstash-filter-date:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-filter-dissect:
+      scan_branches:
+        - branch: main
+          logstash: main
+  - logstash-filter-geoip:
+      scan_branches:
+        - branch: main
+          logstash: main
   - logstash-filter-useragent
   - logstash-input-azure_event_hubs
-  - logstash-input-dead_letter_queue
+  - logstash-input-dead_letter_queue:
+      scan_branches:
+        - branch: main
+          logstash: main
   - logstash-input-file
   - logstash-integration-jdbc
-  - logstash-integration-kafka
+  - logstash-integration-kafka:
+      scan_branches:
+        - branch: main
+        - branch: 11.x
   - logstash-integration-snmp
   - logstash-integration-aws
   - logstash-input-http:
-    branches: [main, 3.x]
+      scan_branches:
+        - branch: main
+        - branch: 3.x
   - logstash-input-tcp:
-    branches: [main, 6.x]
+      scan_branches:
+        - branch: main
+        - branch: 6.x
   - logstash-input-beats:
-    branches: [main, 6.x]
+      scan_branches:
+        - branch: main
+        - branch: 6.x
   - logstash-filter-elastic_integration:
-    branches: [main, 'use-release-branches']
-    ignore_branches: [7.x]
+      scan_branches:
+        - branch: main
+          logstash: main
+        - branch: 9.3
+          logstash: 9.3
+        - branch: 9.2
+          logstash: 9.2
+        - branch: 8.19
+          logstash: 8.19

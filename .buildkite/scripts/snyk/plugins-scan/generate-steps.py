@@ -56,23 +56,6 @@ def fetch_release_branches() -> list:
         return []
 
 
-def should_ignore_branch(branch: str, ignore_branches: list) -> bool:
-    """
-    Check if a branch should be ignored based on ignore_branches patterns.
-    Patterns like "7.x" will match branches starting with "7." (major version 7).
-    """
-    for pattern in ignore_branches:
-        pattern_str = str(pattern)
-        if pattern_str.endswith('.x'):
-            # Extract major version from pattern like "7.x" -> "7"
-            major_version = pattern_str[:-2]
-            if branch.startswith(f"{major_version}."):
-                return True
-        elif branch == pattern_str:
-            return True
-    return False
-
-
 def load_plugin_matrix() -> list:
     with open(MATRIX_FILE, 'r') as f:
         config = yaml.safe_load(f)
@@ -82,28 +65,31 @@ def load_plugin_matrix() -> list:
 def parse_plugin_entry(entry) -> list:
     """
     Parse a plugin entry from the matrix.
-    Returns a list of (plugin_name, branch) tuples.
+    Returns a list of (plugin_name, branch, logstash_branch) tuples.
     Entries can be either:
-    - A simple string: "logstash-filter-date" -> uses default branch
-    - A dict with branches as sibling key:
-      {"logstash-input-http": None, "branches": ["main", "3.x"]}
-    - If branches contains "use-release-branches", fetches branches from artifacts-api
+    - A simple string: "logstash-filter-date" -> uses default branch, no logstash
+    - A dict with scan_branches: explicit list of {branch, logstash} pairs
+    - A dict with branches: list of plugin branches
     """
     if isinstance(entry, str):
-        return [(entry, DEFAULT_BRANCH)]
+        return [(entry, DEFAULT_BRANCH, None)]
 
     if isinstance(entry, dict):
-        plugin_name = None
-        branches = entry.get('branches', [DEFAULT_BRANCH])
-        ignore_branches = entry.get('ignore_branches', [])
+        scan_branches = None
 
         for key, value in entry.items():
-            if key not in ('branches', 'ignore_branches'):
-                plugin_name = key
-                break
+            plugin_name = key
+            if isinstance(value, dict):
+                scan_branches = value.get('scan_branches')
 
-        if plugin_name is None:
-            return []
+        # If scan_branches is defined, use it directly (explicit branch pairs)
+        if scan_branches:
+            result = []
+            for pair in scan_branches:
+                branch = str(pair.get('branch', DEFAULT_BRANCH))
+                logstash_branch = str(pair.get('logstash')) if pair.get('logstash') else None
+                result.append((plugin_name, branch, logstash_branch))
+            return result
 
         # Convert branch values to strings
         branches = [str(branch) for branch in branches]
@@ -117,36 +103,72 @@ def parse_plugin_entry(entry) -> list:
             else:
                 resolved_branches.append(branch)
 
-        # Filter out ignored branches
-        if ignore_branches:
-            resolved_branches = [
-                b for b in resolved_branches
-                if not should_ignore_branch(b, ignore_branches)
-            ]
-
-        return [(plugin_name, branch) for branch in set(resolved_branches)]
+        # Build result for each branch
+        result = []
+        for branch in set(resolved_branches):
+            result.append((plugin_name, branch, None))
+        return result
 
     return []
 
 
-def generate_snyk_step(plugin_name: str, branch: str) -> dict:
+def generate_snyk_step(plugin_name: str, branch: str, logstash_branch: str = None) -> dict:
     """Generate a Buildkite step for running snyk monitor on a plugin."""
     step_key = slugify_bk_key(f"snyk-{plugin_name}-{branch}")
+    if plugin_name == 'logstash-filter-elastic_integration':
+        repo_url = f"https://github.com/elastic/{plugin_name}.git"
+    else:
+        repo_url = f"https://github.com/logstash-plugins/{plugin_name}.git"
+
+    work_dir = "/opt/buildkite-agent/ls-plugins-snyk-scan"
+
+    # Build logstash clone and bootstrap command if logstash_branch is specified
+    logstash_clone_cmd = ""
+    if logstash_branch:
+        logstash_clone_cmd = f"""
+echo "--- Cloning logstash (branch: {logstash_branch})"
+git clone --depth 1 --branch {logstash_branch} https://github.com/elastic/logstash.git
+
+echo "--- Building logstash"
+cd logstash && ./gradlew clean bootstrap installDefaultGems && cd ..
+
+export LOGSTASH_PATH="{work_dir}/logstash"
+
+# Export Gradle property for plugins that need logstashCoreGemPath
+export ORG_GRADLE_PROJECT_logstashCoreGemPath="{work_dir}/logstash/logstash-core"
+"""
 
     command = f"""#!/bin/bash
 set -euo pipefail
 
+source .buildkite/scripts/common/vm-agent-multi-jdk.sh
+export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
+
+# Use isolated directory to avoid settings.gradle conflicts
+rm -rf {work_dir}
+mkdir -p {work_dir}
+cd {work_dir}
+{logstash_clone_cmd}
+echo "--- Cloning {plugin_name} (branch: {branch})"
+if ! git clone --depth 1 --branch {branch} {repo_url}; then
+    echo "Branch {branch} not found in {plugin_name}, skipping..."
+    rm -rf {work_dir}
+    exit 0
+fi
+cd {plugin_name}
+
 echo "--- Downloading snyk..."
 curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
 chmod +x ./snyk
-export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
-
-echo "--- Cloning {plugin_name} (branch: {branch})"
-git clone --depth 1 --branch {branch} https://github.com/logstash-plugins/{plugin_name}.git
-cd {plugin_name}
 
 echo "--- Running Snyk monitor for {plugin_name} on branch {branch}"
-./snyk monitor --gradle --package-manager=gradle --org=logstash --project-name={plugin_name} --target-reference={branch} || true
+# LS core resolves the gems so Gemfile needs to be excluded
+# .buildkite, .ci path may contain python/other projects not necessary to scan
+# eventually using --all-projects is good because snyk may detect CVEs through other package managers like maven, gradle, (ruby excluded) etc.. 
+./snyk monitor --all-projects --exclude=Gemfile,.buildkite,.ci,vendor.json --org=logstash --target-reference={branch}
+
+# Cleanup
+rm -rf {work_dir}
 """
 
     return {
@@ -163,11 +185,21 @@ def generate_pipeline() -> dict:
     steps = []
     for entry in plugins:
         plugin_branches = parse_plugin_entry(entry)
-        for plugin_name, branch in plugin_branches:
-            step = generate_snyk_step(plugin_name, branch)
+        for plugin_name, branch, logstash_branch in plugin_branches:
+            step = generate_snyk_step(plugin_name, branch, logstash_branch)
             steps.append(step)
 
-    return {"steps": steps}
+
+    return {
+        "agents": {
+            "provider": "gcp",
+            "imageProject": "elastic-images-prod",
+            "image": "family/platform-ingest-logstash-multi-jdk-ubuntu-2204",
+            "machineType": "n2-standard-4",
+            "diskSizeGb": 32
+        },
+        "steps": steps
+    }
 
 
 if __name__ == "__main__":
