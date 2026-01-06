@@ -69,7 +69,6 @@ def parse_plugin_entry(entry) -> list:
     Entries can be either:
     - A simple string: "logstash-filter-date" -> uses default branch, no logstash
     - A dict with scan_branches: explicit list of {branch, logstash} pairs
-    - A dict with requires_logstash_core: true -> clones and builds logstash main
     - A dict with branches: list of plugin branches
     """
     if isinstance(entry, str):
@@ -77,15 +76,11 @@ def parse_plugin_entry(entry) -> list:
 
     if isinstance(entry, dict):
         scan_branches = None
-        requires_logstash_core = False
-        branches = [DEFAULT_BRANCH]
 
         for key, value in entry.items():
             plugin_name = key
             if isinstance(value, dict):
                 scan_branches = value.get('scan_branches')
-                requires_logstash_core = value.get('requires_logstash_core', False)
-                branches = value.get('branches') or branches
 
         # If scan_branches is defined, use it directly (explicit branch pairs)
         if scan_branches:
@@ -108,12 +103,10 @@ def parse_plugin_entry(entry) -> list:
             else:
                 resolved_branches.append(branch)
 
-        # Determine logstash branch for each plugin branch
+        # Build result for each branch
         result = []
         for branch in set(resolved_branches):
-            # If requires_logstash_core is true, use 'main' branch for logstash
-            logstash_branch = DEFAULT_BRANCH if requires_logstash_core else None
-            result.append((plugin_name, branch, logstash_branch))
+            result.append((plugin_name, branch, None))
         return result
 
     return []
