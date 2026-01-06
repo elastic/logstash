@@ -32,6 +32,8 @@ interface FlowMetricRetentionPolicy {
 
     boolean reportBeforeSatisfied();
 
+    long samplesCount();
+
     enum BuiltInRetentionPolicy implements FlowMetricRetentionPolicy {
                               // MAX_RETENTION,  MIN_RESOLUTION
                 CURRENT(Duration.ofSeconds(10), Duration.ofSeconds(1), true),
@@ -94,6 +96,11 @@ interface FlowMetricRetentionPolicy {
         @Override
         public boolean reportBeforeSatisfied() {
             return this.reportBeforeSatisfied;
+        }
+
+        @Override
+        public long samplesCount() {
+            return retentionNanos / resolutionNanos;
         }
     }
 }

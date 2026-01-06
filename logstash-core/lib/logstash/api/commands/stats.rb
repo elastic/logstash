@@ -203,9 +203,35 @@ module LogStash
               result[:event_count][:average][window] = event_count_average_flow_metric[key]&.round if event_count_average_flow_metric[key]
               result[:byte_size][:average][window] = byte_size_average_flow_metric[key]&.round if byte_size_average_flow_metric[key]
             end
+
+            if stats[:batch][:batch_byte_size]
+              # stats[:batch][:batch_byte_size] is an instance of org.logstash.instrument.metrics.HdrHistogramFlowMetric
+              # so need to call "value" to grab the map of sub-metrics which contains the histogram percentiles
+              # as org.logstash.instrument.metrics.HistogramMetricData
+              byte_size_histogram = stats[:batch][:batch_byte_size][:histogram]
+              [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+                reshape_histogram_percentiles_for_window(:byte_size, byte_size_histogram, window, result) if byte_size_histogram.value[window.to_s]
+              end
+            end
+            if stats[:batch][:batch_event_count]
+              event_count_histogram = stats[:batch][:batch_event_count][:histogram]
+              [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+                reshape_histogram_percentiles_for_window(:event_count, event_count_histogram, window, result) if event_count_histogram.value[window.to_s]
+              end
+            end
             result
           end
           private :refine_batch_metrics
+
+          def reshape_histogram_percentiles_for_window(target_field, histogram_metric, window, result)
+            result[target_field][:p50] = {} if result[target_field][:p50].nil?
+            result[target_field][:p90] = {} if result[target_field][:p90].nil?
+
+            histogram_data = histogram_metric.value[window.to_s]
+            result[target_field][:p50][window] = histogram_data.get50Percentile.round
+            result[target_field][:p90][window] = histogram_data.get90Percentile.round
+          end
+          private :reshape_histogram_percentiles_for_window
 
           def report(stats, extended_stats = nil, opts = {})
             ret = {
