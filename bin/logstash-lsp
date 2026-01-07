@@ -1,0 +1,40 @@
+#!/bin/bash
+# Logstash Language Server Protocol (LSP) Server
+# Provides IDE features for Logstash configuration files
+#
+# Usage:
+#   bin/logstash-lsp
+#
+# The server communicates via stdin/stdout using JSON-RPC
+
+unset CDPATH
+
+# Handle symlinks
+if [ -L "$0" ]; then
+  RL="$(command -v readlink)"
+  if [ $? -eq 0 ]; then
+    SOURCEPATH="$(${RL} $0)"
+  else
+    SOURCEPATH="$0"
+  fi
+else
+  SOURCEPATH="$0"
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${SOURCEPATH}")" && pwd)"
+LOGSTASH_HOME="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Set environment variable to signal LSP mode (must be set before sourcing logstash.lib.sh)
+export LS_LSP_MODE=true
+
+. "${LOGSTASH_HOME}/bin/logstash.lib.sh"
+setup
+
+# Suppress log4j console output for LSP mode
+# The LSP protocol requires clean stdout for JSON-RPC messages
+LOG4J_LSP_CONFIG="file://${LOGSTASH_HOME}/config/log4j2-lsp.properties"
+export LS_JAVA_OPTS="${LS_JAVA_OPTS} -Dls.lsp.mode=true -Dlog4j.configurationFile=${LOG4J_LSP_CONFIG}"
+
+# Run the LSP server
+exec "${JAVACMD}" ${JAVA_OPTS} ${LS_JAVA_OPTS} -cp "${CLASSPATH}" \
+  org.logstash.Logstash --lsp "$@"

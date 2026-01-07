@@ -66,6 +66,7 @@ module LogStash
             Setting::StringSetting.new("log.level", "info", true, ["fatal", "error", "warn", "debug", "info", "trace"]),
            Setting::BooleanSetting.new("version", false),
            Setting::BooleanSetting.new("help", false),
+           Setting::BooleanSetting.new("lsp", false),
            Setting::BooleanSetting.new("enable-local-plugin-development", false),
             Setting::StringSetting.new("log.format", "plain", true, ["json", "plain"]),
            Setting::BooleanSetting.new("log.format.json.fix_duplicate_message_fields", true),

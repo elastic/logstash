@@ -166,6 +166,10 @@ class LogStash::Runner < Clamp::StrictCommand
   option ["-V", "--version"], :flag,
     I18n.t("logstash.runner.flag.version")
 
+  option ["--lsp"], :flag,
+    "Run the Language Server Protocol (LSP) server for IDE support",
+    :attribute_name => "lsp"
+
   option ["-t", "--config.test_and_exit"], :flag,
     I18n.t("logstash.runner.flag.configtest"),
     :attribute_name => "config.test_and_exit",
@@ -294,6 +298,13 @@ class LogStash::Runner < Clamp::StrictCommand
     if version?
       show_version
       return 0
+    end
+
+    # Run LSP server mode - check early before any logging
+    if lsp?
+      # Suppress all logging immediately for clean stdio communication
+      LogStash::Logging::Logger.configure_logging("OFF")
+      return run_lsp_server
     end
 
     logger.info("Starting Logstash", "logstash.version" => LOGSTASH_VERSION, "jruby.version" => RUBY_DESCRIPTION)
@@ -579,6 +590,21 @@ class LogStash::Runner < Clamp::StrictCommand
     else
       logger.warn("Ignoring 'pipeline.buffer.type' since the 'io.netty.noPreferDirect' Java property has already been set (check LS_JAVA_OPTS or jvm.options file.")
     end
+  end
+
+  def run_lsp_server
+    require "logstash/lsp/stdio_server"
+
+    # Suppress most logging to avoid interfering with LSP stdio communication
+    LogStash::Logging::Logger.configure_logging("ERROR")
+
+    server = LogStash::Lsp::StdioServer.new
+    server.run
+    0
+  rescue => e
+    $stderr.puts "LSP server error: #{e.message}"
+    $stderr.puts e.backtrace.first(10).join("\n")
+    1
   end
 
 end

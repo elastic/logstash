@@ -44,6 +44,13 @@ fi
 LOGSTASH_HOME="$(cd `dirname $SOURCEPATH`/..; pwd)"
 export LOGSTASH_HOME
 export LS_HOME="${LOGSTASH_HOME}"
+
+# Helper to echo only when not in LSP mode (LSP requires clean stdout for JSON-RPC)
+lsp_safe_echo() {
+  if [ -z "$LS_LSP_MODE" ]; then
+    echo "$@"
+  fi
+}
 SINCEDB_DIR="${LOGSTASH_HOME}"
 export SINCEDB_DIR
 LOGSTASH_JARS=${LOGSTASH_HOME}/logstash-core/lib/jars
@@ -96,7 +103,7 @@ setup_java() {
     setup_bundled_jdk_part
     JAVACMD_TEST=`command -v java`
     if [ -n "$LS_JAVA_HOME" ]; then
-      echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}."
+      lsp_safe_echo "Using LS_JAVA_HOME defined java: ${LS_JAVA_HOME}."
       if [ -x "$LS_JAVA_HOME/bin/java" ]; then
         JAVACMD="$LS_JAVA_HOME/bin/java"
         if [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
@@ -105,19 +112,19 @@ setup_java() {
             exit 1
           fi
           BUNDLED_JDK_VERSION=`cat "${LOGSTASH_HOME}/JDK_VERSION"`
-          echo "WARNING: Logstash comes bundled with the recommended JDK(${BUNDLED_JDK_VERSION}), but is overridden by the version defined in LS_JAVA_HOME. Consider clearing LS_JAVA_HOME to use the bundled JDK."
+          lsp_safe_echo "WARNING: Logstash comes bundled with the recommended JDK(${BUNDLED_JDK_VERSION}), but is overridden by the version defined in LS_JAVA_HOME. Consider clearing LS_JAVA_HOME to use the bundled JDK."
         fi
       else
         echo "Invalid LS_JAVA_HOME, doesn't contain bin/java executable."
       fi
     elif [ -d "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}" -a -x "${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java" ]; then
-      echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
+      lsp_safe_echo "Using bundled JDK: ${LOGSTASH_HOME}/${BUNDLED_JDK_PART}"
       JAVACMD="${LOGSTASH_HOME}/${BUNDLED_JDK_PART}/bin/java"
     elif [ -n "$JAVACMD_TEST" ]; then
       set +e
       JAVACMD=`command -v java`
       set -e
-      echo "Using system java: $JAVACMD"
+      lsp_safe_echo "Using system java: $JAVACMD"
     fi
   fi
 
@@ -128,15 +135,17 @@ setup_java() {
 
   # do not let JAVA_TOOL_OPTIONS slip in (as the JVM does by default)
   if [ ! -z "$JAVA_TOOL_OPTIONS" ]; then
-    echo "warning: ignoring JAVA_TOOL_OPTIONS=$JAVA_TOOL_OPTIONS"
+    lsp_safe_echo "warning: ignoring JAVA_TOOL_OPTIONS=$JAVA_TOOL_OPTIONS"
     unset JAVA_TOOL_OPTIONS
   fi
 
   # JAVA_OPTS is not a built-in JVM mechanism but some people think it is so we
   # warn them that we are not observing the value of $JAVA_OPTS
   if [ ! -z "$JAVA_OPTS" ]; then
-    echo -n "warning: ignoring JAVA_OPTS=$JAVA_OPTS; "
-    echo "pass JVM parameters via LS_JAVA_OPTS"
+    if [ -z "$LS_LSP_MODE" ]; then
+      echo -n "warning: ignoring JAVA_OPTS=$JAVA_OPTS; "
+      echo "pass JVM parameters via LS_JAVA_OPTS"
+    fi
   fi
 
   # Set a default GC log file for use by jvm.options _before_ it's called.

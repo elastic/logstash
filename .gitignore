@@ -63,3 +63,6 @@ spec/unit/plugin_manager/plugin_aliases.yml
 logstash-core/src/test/resources/org/logstash/plugins/plugin_aliases.yml
 qa/integration/fixtures/logs_rollover/log4j2.properties
 ci/serverless/config/*.log
+# VS Code extension
+editor-extensions/vscode-logstash/node_modules/
+editor-extensions/vscode-logstash/*.vsix
