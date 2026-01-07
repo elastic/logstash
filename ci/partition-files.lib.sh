@@ -43,7 +43,7 @@ partition_files() (
     for file in "${files[@]}"; do
       indexed+=("${file}"$'\t'"$(_find_split_estimate "${file}")")
     done
-    IFS=$'\n' indexed=($(printf "%s\n" "${indexed[@]}" | sort --numeric-sort -k2rn -k1)); unset IFS
+    IFS=$'\n' indexed=($(printf "%s\n" "${indexed[@]}" | sort -k2rn -k1)); unset IFS
 
     # assign our files to their partitions
     local costs=()
