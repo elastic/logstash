@@ -25,31 +25,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.4-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.2.4
-
-=== Logstash Commits between 9.2 and 9.2.3
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.3..9.2"
-
-a8e90a372 - (HEAD -> 9.2, origin/9.2) Change kafka integration dependency to 11.x (#18553) (2 minutes ago) <Rob Bavey>
-1e2ced918 - Update patch plugin versions in gemfile lock (#18545) (4 hours ago) <github-actions[bot]>
-2c81b90dc - bump lock file for 9.2 (#18532) (2 weeks ago) <github-actions[bot]>
-92b4078b1 - [Backport 9.2] Fix, clean batch metrics on pipeline shutdown (#18515) (#18520) (2 weeks ago) <mergify[bot]>
-e83280a5b - Stop tests from polluting maven settings (#18525) (#18529) (2 weeks ago) <mergify[bot]>
-8db97293a - [main] (backport #18479) Release notes for 9.1.9 (#18500) (#18519) (3 weeks ago) <mergify[bot]>
-877e7474c - Bump logstash version 9.2.4 (#18511) (3 weeks ago) <github-actions[bot]>
-f1e3d2260 - Release notes for 9.2.3 (#18480) (3 weeks ago) <github-actions[bot]>
-f496c74ea - Doc: Update Logstash security settings (#18356) (#18493) (4 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.2.3..9.2 *.release"
-Changed plugin versions:
-logstash-input-beats: 7.0.4 -> 7.0.5
-logstash-input-http: 4.1.3 -> 4.1.4
-logstash-input-tcp: 7.0.3 -> 7.0.4
-logstash-integration-kafka: 11.6.4 -> 11.8.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Fix to clean batch statistic metrics on pipeline shutdown [#18515](https://github.com/elastic/logstash/pull/18515)
 
 ### Plugins [logstash-plugin-9.2.4-changes]
 
@@ -68,10 +44,8 @@ logstash-integration-kafka: 11.6.4 -> 11.8.1
 **Kafka Integration - 11.8.1**
 
 * Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
-
 * Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
       Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
-
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
 
