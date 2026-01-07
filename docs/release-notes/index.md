@@ -21,6 +21,64 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.4 [logstash-9.2.4-release-notes]
+
+### Features and enhancements [logstash-9.2.4-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.2.4
+
+=== Logstash Commits between 9.2 and 9.2.3
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.3..9.2"
+
+1e2ced918 - (HEAD -> 9.2, origin/9.2) Update patch plugin versions in gemfile lock (#18545) (3 hours ago) <github-actions[bot]>
+2c81b90dc - bump lock file for 9.2 (#18532) (2 weeks ago) <github-actions[bot]>
+92b4078b1 - [Backport 9.2] Fix, clean batch metrics on pipeline shutdown (#18515) (#18520) (2 weeks ago) <mergify[bot]>
+e83280a5b - Stop tests from polluting maven settings (#18525) (#18529) (2 weeks ago) <mergify[bot]>
+8db97293a - [main] (backport #18479) Release notes for 9.1.9 (#18500) (#18519) (3 weeks ago) <mergify[bot]>
+877e7474c - Bump logstash version 9.2.4 (#18511) (3 weeks ago) <github-actions[bot]>
+f1e3d2260 - Release notes for 9.2.3 (#18480) (3 weeks ago) <github-actions[bot]>
+f496c74ea - Doc: Update Logstash security settings (#18356) (#18493) (4 weeks ago) <mergify[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.2.3..9.2 *.release"
+Changed plugin versions:
+logstash-input-beats: 7.0.4 -> 7.0.5
+logstash-input-http: 4.1.3 -> 4.1.4
+logstash-input-tcp: 7.0.3 -> 7.0.4
+logstash-integration-kafka: 11.6.4 -> 12.0.2
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.2.4-changes]
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 12.0.2**
+
+* Upgrade lz4 dependency [#212](https://github.com/logstash-plugins/logstash-integration-kafka/pull/212)
+
+* Remove duplicated deprecation log entry [#208](https://github.com/logstash-plugins/logstash-integration-kafka/pull/208)
+
+* Update kafka client to 4.1.0 and transitive dependencies [#205](https://github.com/logstash-plugins/logstash-integration-kafka/pull/205)
+* Breaking Change: partitioner options `default` and `uniform_sticky` are removed
+* `linger_ms` default value changed from 0 to 5
+* Add `group_protocols` options for configuring Kafka consumer rebalance protocol
+* Setting `group_protocols => consumer` opts in to the new consumer group protocol
+
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
+
+
 ## 9.2.3 [logstash-9.2.3-release-notes]
 
 ### Features and enhancements [logstash-9.2.3-features-enhancements]
