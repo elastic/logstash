@@ -23,6 +23,7 @@ require "logstash/devutils/rspec/spec_helper"
 require "socket"
 require "yaml"
 
+# SPLIT_ESTIMATE: 30
 describe "Test Logstash service when multiple pipelines are used" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

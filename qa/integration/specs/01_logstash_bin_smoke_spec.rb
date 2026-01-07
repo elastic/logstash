@@ -25,6 +25,7 @@ require "yaml"
 require 'json'
 require 'open-uri'
 
+# SPLIT_ESTIMATE: 98
 describe "Test Logstash instance" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

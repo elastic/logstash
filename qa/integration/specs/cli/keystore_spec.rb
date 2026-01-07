@@ -24,6 +24,7 @@ require "stud/temporary"
 require "fileutils"
 require "open3"
 
+# SPLIT_ESTIMATE: 10
 describe "CLI > logstash-keystore" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)

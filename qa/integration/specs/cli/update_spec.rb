@@ -22,6 +22,7 @@ require_relative "../../framework/helpers"
 require_relative "pluginmanager_spec_helper"
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 40
 describe "CLI > logstash-plugin update", :skip_fips do
 
   include_context "pluginmanager validation helpers"

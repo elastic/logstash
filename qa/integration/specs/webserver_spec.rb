@@ -22,6 +22,7 @@ require 'logstash/webserver'
 require "stud/try"
 require "manticore"
 
+# SPLIT_ESTIMATE: 5
 describe 'api webserver', :skip_fips do
   let!(:logger) { double("Logger").as_null_object }
   let!(:agent) { double("Agent").as_null_object }

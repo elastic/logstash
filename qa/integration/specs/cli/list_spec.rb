@@ -21,6 +21,7 @@ require_relative '../../services/logstash_service'
 require_relative '../../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 24
 describe "CLI > logstash-plugin remove" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
