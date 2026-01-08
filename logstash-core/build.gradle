@@ -45,7 +45,7 @@ String jacksonVersion = versionMap['jackson']
 String jacksonDatabindVersion = versionMap['jackson-databind']
 String jrubyVersion = versionMap['jruby']['version']
 
-String log4jVersion = '2.17.2'
+String log4jVersion = '2.25.3'
 
 tasks.register("sourcesJar", Jar) {
     dependsOn classes
