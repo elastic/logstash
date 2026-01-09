@@ -56,8 +56,9 @@ module LogStash
           ).reject {|_, v| v.nil?}
           if options.fetch(:graph, false)
             extended_stats = extract_metrics([:stats, :pipelines, pipeline_id.to_sym, :config], :graph)
-            decorated_vertices = extended_stats[:graph]["graph"]["vertices"].map { |vertex| decorate_with_cluster_uuids(vertex)  }
-            extended_stats[:graph]["graph"]["vertices"] = decorated_vertices
+            decorated_vertices = extended_stats[:graph][:graph][:vertices].map { |vertex| decorate_with_cluster_uuids(vertex)  }
+
+            extended_stats[:graph][:graph][:vertices] = decorated_vertices
             metrics.merge!(extended_stats)
           end
           metrics
