@@ -39,7 +39,7 @@ def call_url_with_retry(url: str, max_retries: int = 5, delay: int = 1) -> reque
 def fetch_release_branches() -> list:
     """
     Fetch release branches from artifacts-api.
-    Returns list of branch names (e.g., ["7.17", "8.19", "9.1", "9.2", "9.3", "main"]).
+    Returns list of branch names (e.g., ["8.19", "9.1", "9.2", "9.3", "main"]).
     """
     global _release_branches_cache
     if _release_branches_cache is not None:
