@@ -49,7 +49,8 @@ No user-facing changes in Logstash core.
   * Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
-# 9.1.9 [logstash-9.1.9-release-notes]
+
+## 9.1.9 [logstash-9.1.9-release-notes]
 
 ### Features and enhancements [logstash-9.1.9-features-enhancements]
 
