@@ -75,7 +75,7 @@ describe LogStash::Api::Commands::Node do
         allow(api_service).to receive(:extract_metrics).and_call_original
         expect(api_service).to receive(:extract_metrics)
                                 .with([:stats, :pipelines, :main, :config], any_args)
-                                .and_raise(LogStash::Instrument::MetricStore::MetricNotFound)
+                                .and_raise(org.logstash.instrument.metrics.MetricStore::MetricNotFound.new("Simulated MetricNotFound for testing"))
       end
 
       it 'does not contain the partially-constructed pipeline' do
