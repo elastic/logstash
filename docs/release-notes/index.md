@@ -44,7 +44,8 @@ No user-facing changes in Logstash core.
 **Kafka Integration - 11.8.1**
 
 * Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
-* Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+* Deprecate `default` and `uniform_sticky` options from the `partitioner` option in the Kafka output
+[#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
   * Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
