@@ -30,6 +30,7 @@ uniform sticky partitioner.
 the Kafka Output have been deprecated. While these options will work correctly for this version of the plugin, they
 be removed in a future version of this plugin.
 * For more information, check [PR 206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206).
+::::
 
 
 % ## 9.0.0 [logstash-900-deprecations]
