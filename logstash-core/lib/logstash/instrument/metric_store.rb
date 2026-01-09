@@ -71,7 +71,14 @@ module LogStash module Instrument
     #                         to the provided default_value_generator block will be stored.
     #   @return [Metric] the value as it exists in the tree after this operation
     def fetch_or_store(namespaces, key, default_value = nil)
-      return @java_store.fetch_or_store(namespaces.map(&:to_s), key.to_s, block_given? ? yield(key) : default_value) if @use_java_impl
+      if @use_java_impl
+        if !block_given?
+          return @java_store.fetch_or_store(namespaces.map(&:to_s), key.to_s, default_value)
+        else
+          block_wrapper = java.util.function.Supplier.impl { || yield(key) }
+          return @java_store.fetch_or_store(namespaces.map(&:to_s), key.to_s, block_wrapper)
+        end
+      end
 
       # We first check in the `@fast_lookup` store to see if we have already see that metrics before,
       # This give us a `o(1)` access, which is faster than searching through the structured
@@ -136,7 +143,10 @@ module LogStash module Instrument
       new_hash
     end
 
+    # Deeply convert map where keys are strings to symbols
     def remap_keys_to_sym(map)
+      return map unless map.is_a?(Hash)
+
       translated_map = {}
       map.each do |key, value|
         if value.is_a?(Hash)
@@ -289,6 +299,7 @@ module LogStash module Instrument
 
     private
     def get_all
+      # used only when java impl is disabled, so no need to provide a call to the java store.
       @fast_lookup.values
     end
 
