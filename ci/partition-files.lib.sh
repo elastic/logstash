@@ -47,6 +47,7 @@ partition_files() (
 
     # assign our files to their partitions
     local costs=()
+    local selected=()
     for index in "${!indexed[@]}"; do
       local file
       local cost
@@ -61,12 +62,16 @@ partition_files() (
       costs[$partition]=$(( costs[$partition] + $cost ))
 
       # output if it matches the selected partition index
-      (( $partition == $partition_index )) && echo "${file}"
+      (( $partition == $partition_index )) && selected+=("${file}")
     done
+
+    echo "${selected[@]}"
 
     # print a summary
     local total_cost="$((${costs[@]/%/ +} 0))"
-    >&2 echo "[PARTITION index=${partition_index}/${partition_count} cost=${costs[$partition_index]}/${total_cost}]"
+    >&2 echo "[PARTITION id=${partition_index}/${partition_count}"\
+                        "files=${#selected[@]}/${#files[@]}"\
+                        "cost=${costs[$partition_index]}/${total_cost}]"
 )
 
 if [[ "$0" == "${BASH_SOURCE[0]}" ]]; then
