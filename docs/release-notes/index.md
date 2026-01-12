@@ -29,6 +29,10 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Plugins [logstash-plugin-9.2.4-changes]
 
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information.
+::::
+
 **Beats Input - 7.0.5**
 
 * Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
