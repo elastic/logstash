@@ -29,6 +29,10 @@ No user-facing changes in Logstash core.
 
 ### Plugins [logstash-plugin-9.1.10-changes]
 
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information. 
+::::
+
 **Beats Input - 7.0.5**
 
 * Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
