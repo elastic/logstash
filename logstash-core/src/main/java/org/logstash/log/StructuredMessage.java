@@ -88,6 +88,7 @@ public class StructuredMessage implements Message {
         return formatted;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String getFormat() {
         return null;
