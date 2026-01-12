@@ -30,14 +30,3 @@ At version 4.x, the Kafka Client removes the `DefaultPartitioner` and `UniformSt
 It adds an improved [uniform sticky partitioner](https://cwiki.apache.org/confluence/display/KAFKA/KIP-794%3A+Strictly+Uniform+Sticky+Partitioner), which is the default. 
 ::::
 
-
-% ## 9.0.0 [logstash-900-deprecations]
-
-% ::::{dropdown} Deprecation title
-% Description of the deprecation.
-% For more information, check [PR #](PR link).
-% **Impact**<br> Impact of deprecation. 
-% **Action**<br> Steps for mitigating deprecation impact.
-% ::::
-
-None at this time
