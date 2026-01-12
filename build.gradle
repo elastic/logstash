@@ -757,14 +757,12 @@ tasks.register("installAcceptanceTestGems", Exec) {
     inputs.files file("${projectDir}/qa/Gemfile")
     outputs.file("${projectDir}/qa/Gemfile.lock")
     workingDir "${projectDir}/qa"
-    environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
-    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install", "--path", "vendor/bundle"
 }
 
 tasks.register("runAcceptanceTests", Exec) {
     dependsOn installAcceptanceTestGems
     workingDir "${projectDir}/qa"
-    environment "BUNDLE_PATH", "${projectDir}/qa/vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
 }
 
