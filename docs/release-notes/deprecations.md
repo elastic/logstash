@@ -19,11 +19,37 @@ While deprecations have no immediate impact, we strongly encourage you update yo
 
 % ## 9.0.0 [logstash-900-deprecations]
 
+<<<<<<< HEAD
 % ::::{dropdown} Deprecation title
 % Description of the deprecation.
 % For more information, check [PR #](PR link).
 % **Impact**<br> Impact of deprecation. 
 % **Action**<br> Steps for mitigating deprecation impact.
 % ::::
+=======
+::::{dropdown} Deprecation of partitioner settings in the Kafka Integration
+
+The `partitioner` configuration options `default` and `uniform_sticky` have been deprecated in the Kafka output. [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+
+These options will work correctly for the Kafka plugin version bundled with Logstash 9.2.x, but will be removed in a future release.
+
+The deprecations in the Kafka output were made to align with changes in the Kafka Client.
+At version 4.x, the Kafka Client removes the `DefaultPartitioner` and `UniformStickyPartitioner` partitioner implementations.
+It adds an improved [uniform sticky partitioner](https://cwiki.apache.org/confluence/display/KAFKA/KIP-794%3A+Strictly+Uniform+Sticky+Partitioner), which is the default.
+::::
+
+## 9.1.10 [logstash-deprecations-9.1.10]
+
+::::{dropdown} Deprecation of partitioner settings in the Kafka Integration
+
+The `partitioner` configuration options `default` and `uniform_sticky` have been deprecated in the Kafka output. [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+
+These options will work correctly for the Kafka plugin version bundled with Logstash 9.1.x, but will be removed in a future release.
+
+The deprecations in the Kafka output were made to align with changes in the Kafka Client. 
+At version 4.x, the Kafka Client removes the `DefaultPartitioner` and `UniformStickyPartitioner` partitioner implementations. 
+It adds an improved [uniform sticky partitioner](https://cwiki.apache.org/confluence/display/KAFKA/KIP-794%3A+Strictly+Uniform+Sticky+Partitioner), which is the default. 
+::::
+>>>>>>> a6a4c06c ([9.2] (manual backport #18549) Release notes for 9.1.10 (#18565))
 
 None at this time
