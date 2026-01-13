@@ -172,7 +172,40 @@ Related:
 * Add support for SNMPv3 `context engine ID` and `context name` to the `snmptrap` input [#76](https://github.com/logstash-plugins/logstash-integration-snmp/pull/76)
 
 
-# 9.1.9 [logstash-9.1.9-release-notes]
+## 9.1.10 [logstash-9.1.10-release-notes]
+
+### Features and enhancements [logstash-9.1.10-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.10-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information. 
+::::
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 11.8.1**
+
+* Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+* Deprecate `default` and `uniform_sticky` options from the `partitioner` option in the Kafka output
+[#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+  * Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
+
+
+## 9.1.9 [logstash-9.1.9-release-notes]
 
 ### Features and enhancements [logstash-9.1.9-features-enhancements]
 
@@ -193,7 +226,6 @@ No user-facing changes in Logstash core.
 
 * Added trace log to track event size expansion [#49](https://github.com/logstash-plugins/logstash-filter-split/pull/49)
 * [DOC] Added introductory statement to clarify purpose of the plugin [#43](https://github.com/logstash-plugins/logstash-filter-split/pull/43)
-
 
 ## 9.1.7 [logstash-9.1.7-release-notes]
 
@@ -267,7 +299,7 @@ No user-facing changes in Logstash core.
 ### Fixes [logstash-9.1.4-fixes]
 
 * Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards [#18090](https://github.com/elastic/logstash/pull/18090)
-* Improve logstash release artifacts file metadata: mtime is preserved when buiilding tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
+* Improve {{ls}} release artifacts file metadata: mtime is preserved when building tar archives [#18091](https://github.com/elastic/logstash/pull/18091)
 
 
 ### Plugins [logstash-plugin-9.1.4-changes]
@@ -412,6 +444,7 @@ The Elasticsearch Input now provides [support](https://github.com/logstash-plugi
 **Tcp Output - 7.0.1**
 
 * Call connection check after connect [#61](https://github.com/logstash-plugins/logstash-output-tcp/pull/61)
+
 ## 9.0.8 [logstash-9.0.8-release-notes]
 
 No user-facing changes in Logstash core.
@@ -427,7 +460,7 @@ No user-facing changes in Logstash core.
 
 ### Fixes [logstash-9.0.7-fixes]
 
-* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {{ls}} plugin activity on the {{ls}} Integration dashboards. [#18089](https://github.com/elastic/logstash/pull/18089)
+* Gauge type metrics, such as current and peak connection counts of Elastic Agent, are now available in the `_node/stats` API response when the `vertices=true` parameter is included. These metrics are particularly useful for monitoring {ls} plugin activity on the {ls} Integration dashboards. [#18089](https://github.com/elastic/logstash/pull/18089)
 * Improve logstash release artifacts file metadata: mtime is preserved when building tar archives. [#18111](https://github.com/elastic/logstash/pull/18111)
 
 ### Plugins [logstash-plugin-9.0.7-changes]
@@ -462,10 +495,6 @@ No change to the plugins in this release.
 
 ### Features and enhancements [logstash-9.0.5-features-enhancements]
 
-## 9.0.5 [logstash-9.0.5-release-notes]
-
-### Features and enhancements [logstash-9.0.5-features-enhancements]
-
 No user-facing changes in Logstash core.
 
 ### Plugins [logstash-plugin-9.0.5-changes]
@@ -487,11 +516,13 @@ No user-facing changes in Logstash core.
 * Updated JWT dependency [#101](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/101)
 
 **Snmp Integration - 4.0.7**
+
 * FIX: The `snmptrap` input now correctly enforces the user security level set by `security_level` config, and drops received events that do not match the configured value [#75](https://github.com/logstash-plugins/logstash-integration-snmp/pull/75)
 
 **Elasticsearch Output - 12.0.6**
 
 * Add headers reporting uncompressed size and doc count for bulk requests [#1217](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1217)
+* [DOC] Fix link to Logstash DLQ docs [#1214](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1214)
 
 ## 9.0.4 [logstash-9.0.4-release-notes]
 
