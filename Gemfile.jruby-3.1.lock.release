@@ -2,7 +2,7 @@ PATH
   remote: logstash-core-plugin-api
   specs:
     logstash-core-plugin-api (2.1.16-java)
-      logstash-core (= 9.2.4)
+      logstash-core (= 9.2.5)
 
 PATH
   remote: logstash-core
