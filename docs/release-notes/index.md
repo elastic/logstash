@@ -21,7 +21,40 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-# 9.1.9 [logstash-9.1.9-release-notes]
+## 9.1.10 [logstash-9.1.10-release-notes]
+
+### Features and enhancements [logstash-9.1.10-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.10-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information. 
+::::
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 11.8.1**
+
+* Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+* Deprecate `default` and `uniform_sticky` options from the `partitioner` option in the Kafka output
+[#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+  * Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
+
+
+## 9.1.9 [logstash-9.1.9-release-notes]
 
 ### Features and enhancements [logstash-9.1.9-features-enhancements]
 
