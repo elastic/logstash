@@ -561,7 +561,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (12.0.2-java)
+    logstash-integration-kafka (11.8.1-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
