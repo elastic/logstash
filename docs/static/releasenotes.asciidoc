@@ -110,6 +110,8 @@ No user-facing changes in Logstash core.
 
 ==== Plugins
 
+.Deprecations to Partitioner settings in Kafka output plugin
+****
 The `partitioner` configuration options `default` and `uniform_sticky` have been deprecated in the Kafka output. https://github.com/logstash-plugins/logstash-integration-kafka/pull/206[#206]
 
 These options will work correctly for the Kafka plugin version bundled with Logstash 8.19.x, but will be removed in a future release.
@@ -117,6 +119,7 @@ These options will work correctly for the Kafka plugin version bundled with Logs
 The deprecations in the Kafka output were made to align with changes in the Kafka Client. 
 At version 4.x, the Kafka Client removes the `DefaultPartitioner` and `UniformStickyPartitioner` partitioner implementations. 
 It adds an improved https://cwiki.apache.org/confluence/display/KAFKA/KIP-794%3A+Strictly+Uniform+Sticky+Partitioner[uniform sticky partitioner], which is the default. 
+****
 
 *Beats Input - 6.9.5*
 
