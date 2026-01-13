@@ -1,6 +1,6 @@
 ---
 # alpha and beta qualifiers are now added via VERSION_QUALIFIER environment var
-logstash: 9.2.4
+logstash: 9.2.5
 logstash-core: 9.2.4
 logstash-core-plugin-api: 2.1.16
 # Logstash release track corresponding to keys in https://github.com/logstash-plugins/.ci/blob/1.x/logstash-versions.yml
