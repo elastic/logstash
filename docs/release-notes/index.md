@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
 ### Features and enhancements [logstash-9.2.4-features-enhancements]
@@ -31,6 +32,18 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ::::{Deprecations to Kafka partitioner settings}
 The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information.
+=======
+## 9.1.10 [logstash-9.1.10-release-notes]
+
+### Features and enhancements [logstash-9.1.10-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.1.10-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information. 
+>>>>>>> e3e22b39 (Release notes for 9.1.10 (#18549))
 ::::
 
 **Beats Input - 7.0.5**
@@ -48,6 +61,7 @@ The Kafka integration plugin version bundled with this release introduces deprec
 **Kafka Integration - 11.8.1**
 
 * Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+<<<<<<< HEAD
 * Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
       Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
@@ -173,6 +187,15 @@ Related:
 
 
 # 9.1.9 [logstash-9.1.9-release-notes]
+=======
+* Deprecate `default` and `uniform_sticky` options from the `partitioner` option in the Kafka output
+[#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+  * Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
+
+
+## 9.1.9 [logstash-9.1.9-release-notes]
+>>>>>>> e3e22b39 (Release notes for 9.1.10 (#18549))
 
 ### Features and enhancements [logstash-9.1.9-features-enhancements]
 
