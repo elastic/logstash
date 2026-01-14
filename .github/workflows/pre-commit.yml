@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - 8.*
+      - "8.19"
       - 9.*
 
 permissions:

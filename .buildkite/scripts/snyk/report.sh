@@ -52,12 +52,6 @@ download_auth_snyk
 # clone Logstash repo, build and report
 for TARGET_BRANCH in "${TARGET_BRANCHES[@]}"
 do
-  if [ "$TARGET_BRANCH" == "7.17" ]; then
-    echo "Installing and configuring JDK11."
-    export OLD_PATH=$PATH
-    install_java_11
-    export PATH=$PWD/jdk-11.0.24+8/bin:$PATH
-  fi
   git reset --hard HEAD # reset if any generated files appeared
   # check if target branch exists
   echo "Checking out $TARGET_BRANCH branch."
@@ -66,11 +60,5 @@ do
     report "$TARGET_BRANCH"
   else
     echo "$TARGET_BRANCH branch doesn't exist."
-  fi
-  if [ "$TARGET_BRANCH" == "7.17" ]; then
-    # reset state
-    echo "Removing JDK11 installation."
-    rm -rf jdk-11.0.24+8
-    export PATH=$OLD_PATH
   fi
 done
