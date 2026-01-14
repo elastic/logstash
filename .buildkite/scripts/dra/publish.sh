@@ -36,6 +36,7 @@ esac
 
 info "Uploading artifacts for ${WORKFLOW_TYPE} workflow on branch: ${RELEASE_BRANCH} for version: ${STACK_VERSION} with version_qualifier: ${VERSION_QUALIFIER}"
 
+<<<<<<< HEAD
 if [ "$RELEASE_VER" != "7.17" ]; then
   # Version 7.17.x doesn't generates ARM artifacts for Darwin
   # TODO see if we need to do anything here
@@ -49,6 +50,8 @@ fi
 # TODO filter it out when uploading artifacts instead
 rm -f build/logstash-ubi8-${STACK_VERSION}-docker-image-arm64.tar.gz
 
+=======
+>>>>>>> 1d9eb5b1e (7.17 reached EoL (#18559))
 info "Downloaded ARTIFACTS sha report"
 for file in build/logstash-*; do shasum $file;done
 
