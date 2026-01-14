@@ -103,6 +103,12 @@ public final class CompiledPipeline {
      * */
     private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
 
+    /**
+     * Maximum batch size in bytes. If > 0, batches will be split during processing
+     * to ensure no single chunk exceeds this size.
+     */
+    private final long maxBatchBytes;
+
     public static final class NoopEvaluationListener implements AbstractPipelineExt.ConditionalEvaluationListener {
 
         @Override
@@ -115,7 +121,7 @@ public final class CompiledPipeline {
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener());
+        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener(), 0L);
     }
 
     public CompiledPipeline(
@@ -124,9 +130,20 @@ public final class CompiledPipeline {
             final SecretStore secretStore,
             final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
+        this(pipelineIR, pluginFactory, secretStore, conditionalErrListener, 0L);
+    }
+
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory,
+            final SecretStore secretStore,
+            final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener,
+            final long maxBatchBytes)
+    {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
         this.conditionalErrListener = conditionalErrListener;
+        this.maxBatchBytes = maxBatchBytes;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -360,8 +377,51 @@ public final class CompiledPipeline {
 
         @Override
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            // we know for now this comes from batch.collection() which returns a LinkedHashSet
-            final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
+            // If maxBatchBytes is set, split the batch into chunks by memory size
+            if (maxBatchBytes > 0 && !batch.isEmpty()) {
+                return computeWithMemoryChunking(batch, flush, shutdown);
+            }
+
+            return processChunk(batch, flush, shutdown);
+        }
+
+        /**
+         * Process the batch in memory-limited chunks to avoid memory pressure.
+         * Events are grouped into chunks that don't exceed maxBatchBytes, then
+         * each chunk is processed through filters and outputs separately.
+         */
+        private int computeWithMemoryChunking(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            int totalOutputCount = 0;
+            Collection<RubyEvent> currentChunk = new ArrayList<>();
+            long currentChunkBytes = 0;
+
+            for (RubyEvent event : batch) {
+                long eventBytes = event.getEvent().estimateMemory();
+
+                // If adding this event would exceed the limit, process current chunk first
+                if (currentChunkBytes + eventBytes > maxBatchBytes && !currentChunk.isEmpty()) {
+                    totalOutputCount += processChunk(currentChunk, false, false);
+                    currentChunk = new ArrayList<>();
+                    currentChunkBytes = 0;
+                }
+
+                currentChunk.add(event);
+                currentChunkBytes += eventBytes;
+            }
+
+            // Process the final chunk (with flush/shutdown flags)
+            if (!currentChunk.isEmpty()) {
+                totalOutputCount += processChunk(currentChunk, flush, shutdown);
+            } else if (flush || shutdown) {
+                // Handle flush/shutdown even if no events remain
+                totalOutputCount += processChunk(Collections.emptyList(), flush, shutdown);
+            }
+
+            return totalOutputCount;
+        }
+
+        private int processChunk(final Collection<RubyEvent> chunk, final boolean flush, final boolean shutdown) {
+            final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, chunk), flush, shutdown);
             @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
