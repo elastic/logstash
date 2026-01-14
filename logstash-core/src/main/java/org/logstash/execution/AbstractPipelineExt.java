@@ -222,6 +222,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
             throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
+        final long maxBatchBytes = getMaxBatchBytes(context);
         lirExecution = new CompiledPipeline(
                 lir,
                 new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
@@ -235,7 +236,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
                 getSecretStore(context),
-                new LogErrorEvaluationListener()
+                new LogErrorEvaluationListener(),
+                maxBatchBytes
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -247,6 +249,14 @@ public class AbstractPipelineExt extends RubyBasicObject {
             );
         }
         return this;
+    }
+
+    private long getMaxBatchBytes(final ThreadContext context) {
+        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_MAX_BYTES);
+        if (setting.isNil()) {
+            return 0L;
+        }
+        return setting.convertToInteger().getLongValue();
     }
 
     @JRubyMethod

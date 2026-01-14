@@ -32,6 +32,8 @@ public class SettingKeyDefinitions {
 
     public static final String PIPELINE_BATCH_SIZE = "pipeline.batch.size";
 
+    public static final String PIPELINE_BATCH_MAX_BYTES = "pipeline.batch.max_bytes";
+
     public static final String PATH_QUEUE = "path.queue";
 
     public static final String QUEUE_PAGE_CAPACITY = "queue.page_capacity";
