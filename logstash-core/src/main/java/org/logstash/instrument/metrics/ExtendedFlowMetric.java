@@ -142,7 +142,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
      * If a window's policy allows it to report before its retention has been reached,
      * use our lifetime baseline as a default.
      */
-    private Optional<FlowCapture> windowDefaultBaseline(final RetentionWindow window) {
+    private Optional<FlowCapture> windowDefaultBaseline(final RetentionWindow<FlowCapture> window) {
         if (window.policy.reportBeforeSatisfied()) {
             return this.lifetimeBaseline.asOptional();
         }
