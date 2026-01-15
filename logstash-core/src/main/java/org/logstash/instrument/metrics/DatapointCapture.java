@@ -38,26 +38,4 @@ abstract class DatapointCapture {
     public long nanoTime() {
         return nanoTime;
     }
-
-    /**
-     * Internal tooling to select the younger capture between and this and proposed.
-     */
-    DatapointCapture selectNewestCapture(final DatapointCapture proposed) {
-        if (proposed == null) {
-            return this;
-        }
-
-        return (this.nanoTime() > proposed.nanoTime()) ? this : proposed;
-    }
-
-    /**
-     * Internal tooling to select the younger of two captures provided.
-     */
-    static DatapointCapture selectNewestCaptureOf(final DatapointCapture existing, final DatapointCapture proposed) {
-        if (existing == null) {
-            return proposed;
-        }
-
-        return existing.selectNewestCapture(proposed);
-    }
 }

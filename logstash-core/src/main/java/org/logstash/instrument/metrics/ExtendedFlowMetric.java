@@ -50,7 +50,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     private final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies;
 
     // set-once atomic reference; see ExtendedFlowMetric#appendCapture(FlowCapture)
-    private final SetOnceReference<List<RetentionWindow>> retentionWindows = SetOnceReference.unset();
+    private final SetOnceReference<List<RetentionWindow<FlowCapture>>> retentionWindows = SetOnceReference.unset();
 
     public ExtendedFlowMetric(final String name,
                               final Metric<? extends Number> numeratorMetric,
@@ -94,23 +94,25 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         final Map<String, Double> rates = new LinkedHashMap<>();
 
         this.retentionWindows.get()
-                             .forEach(window -> window.baseline(currentCapture.nanoTime())
+                             .forEach(window -> baseline(window, currentCapture.nanoTime())
                                                       .or(() -> windowDefaultBaseline(window))
-                                                      .map(b -> {
-                                                          if (b instanceof FlowCapture baseline) {
-                                                              return calculateRate(currentCapture, baseline);
-                                                          } else {
-                                                              LOGGER.warn("Retention window `{}` provided a non-FlowCapture baseline `{}`; skipping rate calculation",
-                                                                      window.policy.policyName(), b);
-                                                              return OptionalDouble.empty();
-                                                          }
-                                                      })
+                                                      .map(b -> calculateRate(currentCapture, b))
                                                       .orElseGet(OptionalDouble::empty)
                                                       .ifPresent((rate) -> rates.put(window.policy.policyName(), rate)));
 
         injectLifetime(currentCapture, rates);
 
         return Collections.unmodifiableMap(rates);
+    }
+
+    /**
+     * @param nanoTime the nanoTime of the capture for which we are retrieving a baseline.
+     * @return an {@link Optional} that contains the youngest {@link DatapointCapture} that is older
+     * than this window's {@link FlowMetricRetentionPolicy} allowed retention if one
+     * exists, and is otherwise empty.
+     */
+    Optional<FlowCapture> baseline(RetentionWindow<FlowCapture> window, final long nanoTime) {
+        return window.returnHead(nanoTime);
     }
 
     /**
@@ -125,14 +127,14 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         );
     }
 
-    private static List<RetentionWindow> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
+    private static List<RetentionWindow<FlowCapture>> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
                                                               final FlowCapture capture) {
         return retentionPolicies.stream()
-                                .map((p) -> new RetentionWindow(p, capture))
+                                .map((p) -> new RetentionWindow<FlowCapture>(p, capture))
                                 .collect(Collectors.toUnmodifiableList());
     }
 
-    private static void injectIntoRetentionWindows(final List<RetentionWindow> retentionWindows, final FlowCapture capture) {
+    private static void injectIntoRetentionWindows(final List<RetentionWindow<FlowCapture>> retentionWindows, final FlowCapture capture) {
         retentionWindows.forEach((rw) -> rw.append(capture));
     }
 
