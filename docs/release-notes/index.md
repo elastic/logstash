@@ -78,24 +78,9 @@ The Kafka integration plugin version bundled with this release introduces deprec
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
-b3b3f02ee - Fix, clean batch metrics on pipeline shutdown (#18515) (#18521) (2 weeks ago) <mergify[bot]>
-dc83bda54 - Support wait_for_status and timeout query params on root endpoint (#18377) (5 weeks ago) <Emily S>
-e0acfe744 - Exposes average batch metrics at 1, 5 and 15 minutes time window. (#18460) (5 weeks ago) <Andrea Selva>
-cfa4fb9de - Validate supplied branch and tag exist for RN gen (#18481) (5 weeks ago) <Cas Donoghue>
-279171b79 - Include pipeline and plugin IDs to the JSON logs. (#18470) (5 weeks ago) <Mashhur>
-3659b6f9a - Moved Ruby ValidatedPassword setting to Java implementation (#18185) (6 weeks ago) <Andrea Selva>
-10c87a639 - Doc: Add elastic-integration filter tutorial (#18229) (6 weeks ago) <Karen Metts>
-b15c6c50f - Rewrite Env2yaml in java instead of Go (#18423) (6 weeks ago) <Cas Donoghue>
-934740bdf - Fix, an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down. (#18265) (8 weeks ago) <Rye Biesemeyer>
-84db0b012 - UBI image version updated to 9.7 (#18426) (8 weeks ago) <Victor Martinez>
-aaa532604 - Upgrade JDK to 21.0.9 (#18350) (2 months ago) <Mashhur>
-915b69fee - Modify logger config to link deprecation logger to root logger by default (#18326) (3 months ago) <Álex Cámara Lara>
-6c48e519f - make queue_max_bytes a long again allowing queues bigger than 2GB (#18366) (3 months ago) <João Duarte>
-391217abc - Fixes the NPE when stats info doesn't have queue type entry. (#18331) (3 months ago) <Mashhur>
-b6af3151f - Deprecate config.reload.* as pipeline-level settings (#18312) (3 months ago) <Emily S>
-15b4e05e3 - Move invokedynamic and log4j isThreadContextMapInheritable from jvm.options to code  (#18296) (3 months ago) <Emily S>
-8a92bbb62 - Downgrade gradle to continue testing on Windows server 2016 (#18263) (3 months ago) <Cas Donoghue>
-1356c668e - Rewrite Password setting class in Java (second attempt) (#18231) (4 months ago) <Andrea Selva>
+* Support `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+* Exposes average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+* Fix, an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
 
 ### Plugins [logstash-plugin-9.3.0-changes]
 
@@ -116,7 +101,7 @@ b6af3151f - Deprecate config.reload.* as pipeline-level settings (#18312) (3 mon
 
 **Cidr Filter - 3.2.0**
 
-* Feature: Add `address_field` config option to handle nested fields [#29]https://github.com/logstash-plugins/logstash-filter-cidr/pull/29
+* Feature: Add `address_field` config option to handle nested fields [#29](https://github.com/logstash-plugins/logstash-filter-cidr/pull/29)
 
 **Elastic_integration Filter - 9.3.0**
 
