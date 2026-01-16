@@ -73,6 +73,7 @@ namespace "artifact" do
       "Gemfile",
       "Gemfile.lock",
       "x-pack/lib/**/*",
+      "x-pack/modules/**/*",
     ]
     if @bundles_jdk
       res += [
