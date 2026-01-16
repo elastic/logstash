@@ -72,7 +72,8 @@ namespace "artifact" do
       "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
-      "x-pack/**/*",
+      "x-pack/lib/**/*",
+      "x-pack/modules/**/*",
     ]
     if @bundles_jdk
       res += [
@@ -285,9 +286,10 @@ namespace "artifact" do
     )
     license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
     create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
-      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
-      # copy additional files into the tarball
-      puts "HELLO(#{dedicated_directory_tar})"
+      Dir.glob("x-pack/distributions/internal/observabilitySRE/config/**/*").each do |source_file|
+        next if File.directory?(source_file)
+        dedicated_directory_tar.write(source_file)
+      end
     end
     safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
