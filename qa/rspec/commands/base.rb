@@ -39,11 +39,13 @@ class Command
   end
 
   def execute(cmdline)
-    Open3.popen3(cmdline) do |stdin, stdout, stderr, wait_thr|
-      @stdout = stdout.read.chomp
-      @stderr = stderr.read.chomp
-      @exit_status = wait_thr.value.exitstatus
-    end
+    # use of capture3 gives us strings instead of raw io objects
+    # this helps not having to deal with IO streams being full
+    # and requiring multi threaded reading to prevent tests being blocked
+    @stdout, @stderr, status = Open3.capture3(cmdline)
+    @stdout.chomp!
+    @stderr.chomp!
+    @exit_status = status.exitstatus
   end
 end
 
