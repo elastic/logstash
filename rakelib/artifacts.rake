@@ -70,7 +70,7 @@ namespace "artifact" do
       "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
-      "x-pack/**/*",
+      "x-pack/lib/**/*",
     ]
     if @bundles_jdk
       res += [
