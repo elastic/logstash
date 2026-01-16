@@ -58,6 +58,20 @@ build-from-local-wolfi-artifacts: dockerfile
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
+build-from-local-ironbank-artifacts: dockerfile_ironbank
+	docker run --rm -d --name=$(HTTPD) \
+	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
+	           python:3 bash -c 'cd /mnt && python3 -m http.server'
+	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
+	docker build --progress=plain --network=host \
+	  --build-arg BASE_REGISTRY=$(BASE_REGISTRY) \
+	  --build-arg BASE_IMAGE=$(BASE_IMAGE) \
+	  --build-arg BASE_TAG=$(BASE_TAG) \
+	  --build-arg ARCHITECTURE=$(ARCHITECTURE) \
+	  -t $(IMAGE_TAG)-ironbank:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ironbank $(ARTIFACTS_DIR) || \
+	  (docker kill $(HTTPD); false);
+	-docker kill $(HTTPD)
+
 build-from-local-observability-sre-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
 	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
@@ -93,34 +107,36 @@ docker_paths:
 	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/docker/env2yaml/
 	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/docker/env2yaml/
 
-COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml
-COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/ironbank/LICENSE $(ARTIFACTS_DIR)/ironbank/README.md
+COPY_IRONBANK_FILES := $(ARTIFACTS_DIR)/scripts/config/pipelines.yml $(ARTIFACTS_DIR)/scripts/config/logstash.yml
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/scripts/config/log4j2.file.properties $(ARTIFACTS_DIR)/scripts/config/log4j2.properties
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/scripts/pipeline/default.conf $(ARTIFACTS_DIR)/scripts/bin/docker-entrypoint
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/scripts/env2yaml/env2yaml
+COPY_IRONBANK_FILES += $(ARTIFACTS_DIR)/LICENSE $(ARTIFACTS_DIR)/README.md
 
-$(ARTIFACTS_DIR)/ironbank/scripts/config/pipelines.yml: data/logstash/config/pipelines.yml
-$(ARTIFACTS_DIR)/ironbank/scripts/config/logstash.yml: data/logstash/config/logstash-full.yml
-$(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.file.properties: data/logstash/config/log4j2.file.properties
-$(ARTIFACTS_DIR)/ironbank/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
-$(ARTIFACTS_DIR)/ironbank/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
-$(ARTIFACTS_DIR)/ironbank/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
-$(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
-$(ARTIFACTS_DIR)/ironbank/LICENSE: ironbank/LICENSE
-$(ARTIFACTS_DIR)/ironbank/README.md: ironbank/README.md
+$(ARTIFACTS_DIR)/scripts/config/pipelines.yml: data/logstash/config/pipelines.yml
+$(ARTIFACTS_DIR)/scripts/config/logstash.yml: data/logstash/config/logstash-full.yml
+$(ARTIFACTS_DIR)/scripts/config/log4j2.file.properties: data/logstash/config/log4j2.file.properties
+$(ARTIFACTS_DIR)/scripts/config/log4j2.properties: data/logstash/config/log4j2.properties
+$(ARTIFACTS_DIR)/scripts/pipeline/default.conf: data/logstash/pipeline/default.conf
+$(ARTIFACTS_DIR)/scripts/bin/docker-entrypoint: data/logstash/bin/docker-entrypoint
+$(ARTIFACTS_DIR)/scripts/env2yaml/env2yaml: data/logstash/env2yaml/env2yaml
+$(ARTIFACTS_DIR)/LICENSE: ironbank/LICENSE
+$(ARTIFACTS_DIR)/README.md: ironbank/README.md
 
-$(ARTIFACTS_DIR)/ironbank/%:
+$(ARTIFACTS_DIR)/%:
 	cp -f $< $@
 
+ironbank_files: $(COPY_IRONBANK_FILES)
+
 ironbank_docker_paths:
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/bin
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/config
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml
-	mkdir -p $(ARTIFACTS_DIR)/ironbank/scripts/pipeline
-	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
-	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/ironbank/scripts/env2yaml/
+	mkdir -p $(ARTIFACTS_DIR)
+	mkdir -p $(ARTIFACTS_DIR)/scripts
+	mkdir -p $(ARTIFACTS_DIR)/scripts/bin
+	mkdir -p $(ARTIFACTS_DIR)/scripts/config
+	mkdir -p $(ARTIFACTS_DIR)/scripts/env2yaml
+	mkdir -p $(ARTIFACTS_DIR)/scripts/pipeline
+	cp -r data/logstash/env2yaml/classes $(ARTIFACTS_DIR)/scripts/env2yaml/
+	cp -r data/logstash/env2yaml/lib $(ARTIFACTS_DIR)/scripts/env2yaml/
 
 public-dockerfiles: public-dockerfiles_oss public-dockerfiles_full public-dockerfiles_wolfi public-dockerfiles_observability-sre public-dockerfiles_ironbank
 
@@ -180,19 +196,11 @@ public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(CO
 	cp $(ARTIFACTS_DIR)/Dockerfile-observability-sre Dockerfile && \
 	tar -zcf ../logstash-observability-sre-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb
+	$(MAKE) ARTIFACTS_DIR=$(ARTIFACTS_DIR)/ironbank ironbank_docker_paths ironbank_files
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
-	../vendor/jruby/bin/jruby -S erb -T "-"\
-		created_date="${BUILD_DATE}" \
-		elastic_version="${ELASTIC_VERSION}" \
-		arch="${ARCHITECTURE}" \
-		version_tag="${VERSION_TAG}" \
-		release="${RELEASE}" \
-		image_flavor="ironbank" \
-		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
@@ -209,6 +217,18 @@ dockerfile: templates/Dockerfile.erb
 			local_artifacts="${LOCAL_ARTIFACTS}" \
 			templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-${FLAVOR}" ; \
 	)
+
+# Generate the Ironbank Dockerfile from ERB template.
+dockerfile_ironbank: templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+	../vendor/jruby/bin/jruby -S erb -T "-"\
+		created_date="${BUILD_DATE}" \
+		elastic_version="${ELASTIC_VERSION}" \
+		arch="${ARCHITECTURE}" \
+		version_tag="${VERSION_TAG}" \
+		release="${RELEASE}" \
+		image_flavor="ironbank" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
+		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank"
 
 clean:
 	rm -f ${ARTIFACTS_DIR}/env2yaml/env2yaml-* ${ARTIFACTS_DIR}/Dockerfile

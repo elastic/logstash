@@ -29,6 +29,12 @@ namespace "artifact" do
          else
            "arm64" # default for aarch64, arm64, or any other value (including nil)
          end
+  # Set base image parameters for Ironbank Dockerfile 
+  # (Default values for CI, investigate if we have a way to test original ironbank image in CI)
+  BASE_REGISTRY = ENV["BASE_REGISTRY"] || "docker.io"
+  BASE_IMAGE = ENV["BASE_IMAGE"] || "redhat/ubi9"
+  BASE_TAG = ENV["BASE_TAG"] || "9.7"
+  
   ## TODO: Install new service files
   def package_files
     res = [
@@ -161,7 +167,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_observabilitySRE"]
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ironbank", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
@@ -358,9 +364,15 @@ namespace "artifact" do
   end
 
   desc "Build wolfi docker image"
-  task "docker_wolfi" => %w(prepare generate_build_metadata archives_docker) do
+  task "docker_wolfi" => ["prepare", "generate_build_metadata", "archives_docker"]do
     puts("[docker_wolfi] Building Wolfi docker image")
     build_docker('wolfi')
+  end
+
+  desc "Build ironbank docker image"
+  task "docker_ironbank" => ["prepare", "generate_build_metadata", "archives_docker"] do
+    puts("[docker_ironbank] Building Ironbank docker image")
+    build_docker('ironbank')
   end
 
   desc "Generate Dockerfiles for full and oss images"
@@ -413,6 +425,7 @@ namespace "artifact" do
     unless ENV['SKIP_DOCKER'] == "1"
       Rake::Task["artifact:docker"].invoke
       Rake::Task["artifact:docker_wolfi"].invoke
+      Rake::Task["artifact:docker_ironbank"].invoke
       Rake::Task["artifact:dockerfiles"].invoke
       Rake::Task["artifact:docker_oss"].invoke
       Rake::Task["artifact:docker_observabilitySRE"].invoke
@@ -873,6 +886,12 @@ namespace "artifact" do
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
       "BUILD_DATE" => BUILD_DATE
     }
+
+    if flavor == "ironbank"
+      env["BASE_REGISTRY"] = BASE_REGISTRY
+      env["BASE_IMAGE"] = BASE_IMAGE
+      env["BASE_TAG"] = BASE_TAG
+    end
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
     end
