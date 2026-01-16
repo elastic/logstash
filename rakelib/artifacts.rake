@@ -70,7 +70,7 @@ namespace "artifact" do
       "vendor/jruby/bin/.jruby.module_opts",
       "Gemfile",
       "Gemfile.lock",
-      "x-pack/**/*",
+      "x-pack/lib/**/*",
     ]
     if @bundles_jdk
       res += [
@@ -267,7 +267,30 @@ namespace "artifact" do
     @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, ARCH, "linux")
+<<<<<<< HEAD
     safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
+=======
+  end
+
+  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
+  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
+    #with bundled JDKs
+    @bundles_jdk = true
+    @building_docker = true
+    exclude_paths = default_exclude_paths + %w(
+      bin/logstash-plugin
+      bin/logstash-plugin.bat
+      bin/logstash-keystore
+      bin/logstash-keystore.bat
+    )
+    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
+    create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
+      Dir.glob("x-pack/distributions/internal/observabilitySRE/config/**/*").each do |source_file|
+        next if File.directory?(source_file)
+        dedicated_directory_tar.write(source_file)
+      end
+    end
+>>>>>>> bd4cec07 (Only ship x-pack library code with artifacts (#18548))
   end
 
   desc "Build an RPM of logstash with all dependencies"
