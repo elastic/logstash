@@ -29,11 +29,6 @@ namespace "artifact" do
          else
            "arm64" # default for aarch64, arm64, or any other value (including nil)
          end
-  # Set base image parameters for Ironbank Dockerfile 
-  # (Default values for CI, investigate if we have a way to test original ironbank image in CI)
-  BASE_REGISTRY = ENV["BASE_REGISTRY"] || "docker.io"
-  BASE_IMAGE = ENV["BASE_IMAGE"] || "redhat/ubi9"
-  BASE_TAG = ENV["BASE_TAG"] || "9.7"
   
   ## TODO: Install new service files
   def package_files
@@ -364,7 +359,7 @@ namespace "artifact" do
   end
 
   desc "Build wolfi docker image"
-  task "docker_wolfi" => ["prepare", "generate_build_metadata", "archives_docker"]do
+  task "docker_wolfi" => ["prepare", "generate_build_metadata", "archives_docker"] do
     puts("[docker_wolfi] Building Wolfi docker image")
     build_docker('wolfi')
   end
@@ -888,9 +883,9 @@ namespace "artifact" do
     }
 
     if flavor == "ironbank"
-      env["BASE_REGISTRY"] = BASE_REGISTRY
-      env["BASE_IMAGE"] = BASE_IMAGE
-      env["BASE_TAG"] = BASE_TAG
+      env["BASE_REGISTRY"] = ENV["BASE_REGISTRY"]
+      env["BASE_IMAGE"] = ENV["BASE_IMAGE"]
+      env["BASE_TAG"] = ENV["BASE_TAG"]
     end
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
