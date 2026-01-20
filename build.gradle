@@ -432,6 +432,16 @@ tasks.register("artifactDockerOnly") {
     }
 }
 
+tasks.register("generatePluginsVersion") {
+    description = "Generate plugins version documentation"
+    dependsOn bootstrap
+    dependsOn installDefaultGems
+
+    doLast {
+        rake(projectDir, buildDir, 'generate_plugins_version')
+    }
+}
+
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
     dependsOn "copyJdk"
