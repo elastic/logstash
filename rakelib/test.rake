@@ -15,12 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# we need to call exit explicitly  in order to set the proper exit code, otherwise
-# most common CI systems can not know whats up with this tests.
-
-require 'pathname'
-
 namespace "test" do
+<<<<<<< HEAD
   desc "run the java unit tests"
   task "core-java" do
     exit(1) unless system('./gradlew clean javaTests')
@@ -78,10 +74,12 @@ namespace "test" do
   end
 
   desc "install dev dependencies"
+=======
+>>>>>>> 4c158701b (Remove unused/unreachable rake tasks (#18537))
   task "install-core" => ["bootstrap", "plugin:install-development-dependencies"]
-
-  desc "install default plugins and dev dependencies"
-  task "install-default" => ["bootstrap", "plugin:install-default", "plugin:install-development-dependencies"]
 end
+<<<<<<< HEAD
 
 task "test" => ["test:core"]
+=======
+>>>>>>> 4c158701b (Remove unused/unreachable rake tasks (#18537))
