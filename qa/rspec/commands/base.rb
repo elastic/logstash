@@ -65,7 +65,8 @@ module ServiceTester
   class Base
     LOCATION = ENV.fetch('LS_ARTIFACTS_PATH', LS_BUILD_PATH.freeze)
     LOGSTASH_PATH = "/usr/share/logstash/".freeze
-
+    # Clear Bundler/Ruby environment variables that could pollute tested Logstash instance
+    ENV_CLEANUP = "unset BUNDLE_PATH BUNDLE_GEMFILE BUNDLE_BIN_PATH BUNDLER_VERSION BUNDLER_SETUP GEM_HOME GEM_PATH RUBYLIB RUBYOPT;".freeze
     def start_service(service)
       service_manager(service, "start")
     end
@@ -75,11 +76,11 @@ module ServiceTester
     end
 
     def run_sudo_command(cmd)
-      sudo_exec!("JARS_SKIP='true' #{cmd}")
+      sudo_exec!("#{ENV_CLEANUP} JARS_SKIP='true' #{cmd}")
     end
 
     def run_command(cmd)
-      exec!("JARS_SKIP='true' #{cmd}")
+      exec!("#{ENV_CLEANUP} JARS_SKIP='true' #{cmd}")
     end
 
     def replace_in_gemfile(pattern, replace)
