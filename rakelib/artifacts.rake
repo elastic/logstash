@@ -199,12 +199,7 @@ namespace "artifact" do
     license_details = ['ELASTIC-LICENSE']
     @bundles_jdk = true
     @building_docker = true
-<<<<<<< HEAD
     create_archive_pack(license_details, ARCH, "linux", "darwin")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars
-=======
-    create_archive_pack(license_details, ARCH, "linux")
->>>>>>> ca1fe3761 (Make gradle the root of every dependency graph (#18471))
   end
 
   def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
@@ -267,12 +262,7 @@ namespace "artifact" do
     @bundles_jdk = true
     @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
-<<<<<<< HEAD
     create_archive_pack(license_details, ARCH, "linux", "darwin")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars
-=======
-    create_archive_pack(license_details, ARCH, "linux")
->>>>>>> ca1fe3761 (Make gradle the root of every dependency graph (#18471))
   end
 
   desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
