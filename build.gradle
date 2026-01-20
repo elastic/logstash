@@ -325,6 +325,58 @@ tasks.register("compileGrammar") {
     }
 }
 
+<<<<<<< HEAD
+=======
+tasks.register("artifactDockerOnly") {
+    description = "Build docker image without OSS"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_only')
+    }
+}
+
+tasks.register("generatePluginsVersion") {
+    description = "Generate plugins version documentation"
+    dependsOn bootstrap
+    dependsOn installDefaultGems
+
+    doLast {
+        rake(projectDir, buildDir, 'generate_plugins_version')
+    }
+}
+
+tasks.register("artifactDockerObservabilitySRE") {
+    dependsOn bootstrap
+    dependsOn "copyJdk"
+    inputs.files fileTree("${projectDir}/rakelib")
+    inputs.files fileTree("${projectDir}/bin")
+    inputs.files fileTree("${projectDir}/config")
+    inputs.files fileTree("${projectDir}/lib")
+    inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
+    inputs.files fileTree("${projectDir}/logstash-core/lib")
+    inputs.files fileTree("${projectDir}/logstash-core/src")
+    inputs.files fileTree("${projectDir}/x-pack")
+    outputs.files fileTree("${buildDir}") {
+        include "Dockerfile-observability-sre"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-linux-*.tar.gz"
+        include "logstash-observability-sre-${project.version}-SNAPSHOT-docker-build-context.tar.gz"
+        include "plugin_aliases_hashed.yml"
+        include "jdk-*-linux-*.tar.gz"
+    }
+    doFirst {
+        if (!fedrampHighMode) {
+            logger.error("NOT in Fedramp High mode. Aborting.")
+            throw new GradleException("cannot build docker artifact for observabilitySRE without `-PfedrampHighMode=true`")
+        }
+    }
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
+    }
+}
+
+>>>>>>> 28c810d7 (Remove unused gradle tasks (#18526))
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
@@ -341,6 +393,7 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
+<<<<<<< HEAD
 tasks.register("assembleOssTarDistribution") {
   dependsOn bootstrap
   inputs.files fileTree("${projectDir}/rakelib")
@@ -387,6 +440,8 @@ tasks.register("assembleOssZipDistribution") {
   }
 }
 
+=======
+>>>>>>> 28c810d7 (Remove unused gradle tasks (#18526))
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
