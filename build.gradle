@@ -330,29 +330,6 @@ tasks.register("compileGrammar") {
     }
 }
 
-<<<<<<< HEAD
-=======
-tasks.register("artifactDockerOnly") {
-    description = "Build docker image without OSS"
-    dependsOn dockerBootstrap
-    dependsOn copyJdk
-
-    doLast {
-        rake(projectDir, buildDir, 'artifact:docker_only')
-    }
-}
-
-tasks.register("generatePluginsVersion") {
-    description = "Generate plugins version documentation"
-    dependsOn bootstrap
-    dependsOn installDefaultGems
-
-    doLast {
-        rake(projectDir, buildDir, 'generate_plugins_version')
-    }
-}
-
->>>>>>> 28c810d7 (Remove unused gradle tasks (#18526))
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
     inputs.files fileTree("${projectDir}/rakelib")
@@ -397,55 +374,6 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
-<<<<<<< HEAD
-tasks.register("assembleOssTarDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-  }
-}
-
-tasks.register("assembleZipDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives')
-  }
-}
-
-tasks.register("assembleOssZipDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-
-  }
-}
-
-=======
->>>>>>> 28c810d7 (Remove unused gradle tasks (#18526))
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
