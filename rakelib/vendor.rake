@@ -16,14 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-  task "jruby" do |task, args|
-    system('./gradlew bootstrap') unless File.exist?(File.join("vendor", "jruby"))
-  end # jruby
-
-  namespace "force" do
-    task "gems" => ["vendor:gems"]
-  end
-
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
@@ -37,9 +29,4 @@ namespace "vendor" do
     end
   end # task gems
   task "all" => "gems"
-
-  desc "Clean the vendored files"
-  task :clean do
-    rm_rf('vendor')
-  end
 end
