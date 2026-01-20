@@ -17,13 +17,7 @@
 
 require_relative "default_plugins"
 require 'rubygems'
-<<<<<<< HEAD
-=======
-require 'shellwords'
 require 'yaml'
-
-require 'bootstrap/environment'
->>>>>>> 4c158701 (Remove unused/unreachable rake tasks (#18537))
 
 VERSION_FILE = "versions.yml"
 
