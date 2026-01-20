@@ -17,6 +17,24 @@
 
 require_relative "default_plugins"
 require 'rubygems'
+<<<<<<< HEAD
+=======
+require 'shellwords'
+require 'yaml'
+
+require 'bootstrap/environment'
+>>>>>>> 4c158701 (Remove unused/unreachable rake tasks (#18537))
+
+VERSION_FILE = "versions.yml"
+
+def get_versions
+  yaml_versions = YAML.safe_load(IO.read(VERSION_FILE))
+  {
+    "logstash" => yaml_versions["logstash"],
+    "logstash-core" =>  yaml_versions["logstash-core"],
+    "logstash-core-plugin-api" => yaml_versions["logstash-core-plugin-api"],
+  }
+end
 
 namespace "plugin" do
   def install_plugins(*args)

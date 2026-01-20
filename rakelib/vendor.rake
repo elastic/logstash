@@ -16,6 +16,7 @@
 # under the License.
 
 namespace "vendor" do
+<<<<<<< HEAD
   task "jruby" do |task, args|
     system('./gradlew bootstrap') unless File.exist?(File.join("vendor", "jruby"))
   end # jruby
@@ -24,6 +25,8 @@ namespace "vendor" do
     task "gems" => ["vendor:gems"]
   end
 
+=======
+>>>>>>> 4c158701 (Remove unused/unreachable rake tasks (#18537))
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
@@ -37,9 +40,4 @@ namespace "vendor" do
     end
   end # task gems
   task "all" => "gems"
-
-  desc "Clean the vendored files"
-  task :clean do
-    rm_rf('vendor')
-  end
 end
