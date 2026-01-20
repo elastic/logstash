@@ -341,52 +341,6 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
-tasks.register("assembleOssTarDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-  }
-}
-
-tasks.register("assembleZipDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives')
-  }
-}
-
-tasks.register("assembleOssZipDistribution") {
-  dependsOn bootstrap
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-
-  }
-}
-
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
