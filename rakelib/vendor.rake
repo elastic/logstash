@@ -16,10 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-  namespace "force" do
-    task "gems" => ["vendor:gems"]
-  end
-
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 
@@ -33,9 +29,4 @@ namespace "vendor" do
     end
   end # task gems
   task "all" => "gems"
-
-  desc "Clean the vendored files"
-  task :clean do
-    rm_rf('vendor')
-  end
 end
