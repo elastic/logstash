@@ -750,3 +750,4 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             return null;
         }
     }
+}
