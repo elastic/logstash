@@ -881,12 +881,7 @@ namespace "artifact" do
       "VERSION_QUALIFIER" => VERSION_QUALIFIER,
       "BUILD_DATE" => BUILD_DATE
     }
-
-    if flavor == "ironbank"
-      env["BASE_REGISTRY"] = ENV["BASE_REGISTRY"]
-      env["BASE_IMAGE"] = ENV["BASE_IMAGE"]
-      env["BASE_TAG"] = ENV["BASE_TAG"]
-    end
+    
     Dir.chdir("docker") do |dir|
       safe_system(env, "make build-from-local-#{flavor}-artifacts")
     end

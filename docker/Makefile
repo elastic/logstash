@@ -64,7 +64,6 @@ build-from-local-ironbank-artifacts: dockerfile_ironbank
 	  $(if $(BASE_REGISTRY),--build-arg BASE_REGISTRY=$(BASE_REGISTRY)) \
 	  $(if $(BASE_IMAGE),--build-arg BASE_IMAGE=$(BASE_IMAGE)) \
 	  $(if $(BASE_TAG),--build-arg BASE_TAG=$(BASE_TAG)) \
-	  --build-arg ARCHITECTURE=$(ARCHITECTURE) \
 	  -t $(IMAGE_TAG)-ironbank:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/ironbank/Dockerfile-ironbank $(ARTIFACTS_DIR)/ironbank
 
 build-from-local-observability-sre-artifacts: dockerfile
