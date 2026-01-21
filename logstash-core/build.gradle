@@ -240,6 +240,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     implementation "com.github.luben:zstd-jni:1.5.7-4"
     api "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}"
+    api "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
     api "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
     implementation 'org.codehaus.janino:janino:3.1.0'
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
