@@ -3641,5 +3641,5 @@ module LogStashConfig
   end
 end
 
-LogStashConfigParser = LogStashConfig::Parser
+(remove_const(:LogStashConfigParser) if const_defined?(:LogStashConfigParser)) rescue nil; LogStashConfigParser = LogStashConfig::Parser
 
