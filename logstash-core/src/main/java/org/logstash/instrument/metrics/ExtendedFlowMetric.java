@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.LongSupplier;
@@ -130,7 +131,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     private static List<RetentionWindow<FlowCapture>> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
                                                               final FlowCapture capture) {
         return retentionPolicies.stream()
-                                .map((p) -> new RetentionWindow<FlowCapture>(p, capture))
+                                .map((p) -> new FlowRetentionWindow(p, capture))
                                 .collect(Collectors.toUnmodifiableList());
     }
 
@@ -175,5 +176,31 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
                                      .mapToLong(Long::longValue)
                                      .sum();
         return Duration.ofNanos(cumulativeExcessRetained);
+    }
+
+    static class FlowRetentionWindow extends RetentionWindow<FlowCapture> {
+
+        FlowRetentionWindow(FlowMetricRetentionPolicy policy, FlowCapture zeroCapture) {
+            super(policy, zeroCapture);
+        }
+
+        @Override
+        RetentionWindow.CommitStagedPair<FlowCapture> mux(RetentionWindow.CommitStagedPair<FlowCapture> existing, FlowCapture newCapture) {
+            final FlowCapture committedCapture = existing.committed();
+            final FlowCapture stagedCapture = existing.staged();
+
+            // if we don't have a commit yet, just use our new datapoint
+            if (Objects.isNull(committedCapture)) {
+                return CommitStagedPair.commitOnly(newCapture);
+            }
+
+            // determine if our staged needs to be promoted
+            if (Objects.nonNull(stagedCapture) && Math.subtractExact(newCapture.nanoTime(), committedCapture.nanoTime()) > policy.resolutionNanos()) {
+                return new CommitStagedPair<>(stagedCapture, newCapture);
+            }
+
+            // otherwise merge our new capture into our stage
+            return new CommitStagedPair<>(committedCapture, RetentionWindow.selectNewestCaptureOf(stagedCapture, newCapture));
+        }
     }
 }

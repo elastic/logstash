@@ -36,9 +36,9 @@ import java.util.function.ToLongFunction;
  * Compaction is always done at read-time and occasionally at write-time.
  * Both reads and writes are non-blocking and concurrency-safe.
  */
-class RetentionWindow<T extends DatapointCapture> {
-    private final AtomicReference<T> stagedCapture = new AtomicReference<>();
-    private final AtomicReference<Node<T>> tail;
+abstract class RetentionWindow<T extends DatapointCapture> {
+//    private final AtomicReference<T> stagedCapture = new AtomicReference<>();
+    private final AtomicReference<Staging<T>> tail;
     private final AtomicReference<Node<T>> head;
     final FlowMetricRetentionPolicy policy;
 
@@ -46,13 +46,15 @@ class RetentionWindow<T extends DatapointCapture> {
         this.policy = policy;
         final Node<T> zeroNode = new Node<>(zeroCapture);
         this.head = new AtomicReference<>(zeroNode);
-        this.tail = new AtomicReference<>(zeroNode);
+        this.tail = new AtomicReference<>(Staging.ofNode(zeroNode));
     }
+
+    abstract CommitStagedPair<T> mux(CommitStagedPair<T> existing, T newCapture);
 
     /**
      * Internal tooling to select the younger of two captures provided.
      */
-    T selectNewestCaptureOf(final T existing, final T proposed) {
+    static <T extends DatapointCapture> T selectNewestCaptureOf(final T existing, final T proposed) {
         if (existing == null) {
             return proposed;
         }
@@ -73,35 +75,27 @@ class RetentionWindow<T extends DatapointCapture> {
      * @param newestCapture the newest capture to stage
      */
     void append(final T newestCapture) {
-        final Node<T> casTail = this.tail.getAcquire(); // for CAS
-        final long newestCaptureNanoTime = newestCapture.nanoTime();
+        final Staging<T> newTailWithStaging = new Staging<>();
 
-        // stage our newest capture unless it is older than the currently-staged capture
-        final T previouslyStaged = stagedCapture.getAndAccumulate(newestCapture, this::selectNewestCaptureOf);
+        Staging<T> oldTailWithStaging = this.tail.getAndAccumulate(newTailWithStaging, (committed, staging) -> {
+            final CommitStagedPair<T> result = mux(committed.asCommitStaged(), newestCapture);
+            Node<T> committedNode = Objects.equals(committed.committed.capture, result.committed) ? committed.committed : new Node<>(result.committed);
+            newTailWithStaging.set(committedNode, result.staged);
+            return newTailWithStaging;
+        });
 
-        // promote our previously-staged capture IFF our newest capture is too far
-        // ahead of the current tail to support policy's resolution.
-        if (previouslyStaged != null && Math.subtractExact(newestCaptureNanoTime, casTail.captureNanoTime()) > policy.resolutionNanos()) {
-            // attempt to set an _unlinked_ Node to our tail
-            final Node<T> proposedNode = new Node<T>(previouslyStaged);
-            if (this.tail.compareAndSet(casTail, proposedNode)) {
-                // if we succeeded at setting an unlinked node, link to it from our old tail
-                casTail.setNext(proposedNode);
+        // re-attach the tail if we severed it
+        if (oldTailWithStaging.committed != newTailWithStaging.committed) {
+            oldTailWithStaging.committed.setNext(newTailWithStaging.committed);
+        }
 
-                // perform a force-compaction of our head if necessary,
-                // detected using plain memory access
-                final Node<T> currentHead = head.getPlain();
-                final long headAgeNanos = Math.subtractExact(newestCaptureNanoTime, currentHead.captureNanoTime());
-                if (ExtendedFlowMetric.LOGGER.isTraceEnabled()) {
-                    ExtendedFlowMetric.LOGGER.trace("{} post-append result (captures: `{}` span: `{}` }", this, estimateSize(currentHead), Duration.ofNanos(headAgeNanos));
-                }
-                if (headAgeNanos > policy.forceCompactionNanos()) {
-                    final Node<T> compactHead = compactHead(Math.subtractExact(newestCaptureNanoTime, policy.retentionNanos()));
-                    if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
-                        final long compactHeadAgeNanos = Math.subtractExact(newestCaptureNanoTime, compactHead.captureNanoTime());
-                        ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
-                    }
-                }
+        // occasional force compaction
+        final Node<T> currentHead = this.head.get();
+        if (Math.subtractExact(newestCapture.nanoTime(), currentHead.captureNanoTime()) > policy.forceCompactionNanos()) {
+            final Node<T> compactHead = compactHead(Math.subtractExact(newestCapture.nanoTime(), policy.retentionNanos()));
+            if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
+                final long compactHeadAgeNanos = Math.subtractExact(newestCapture.nanoTime(), compactHead.captureNanoTime());
+                ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
             }
         }
     }
@@ -214,6 +208,32 @@ class RetentionWindow<T extends DatapointCapture> {
 
         Node<T> getNextPlain() {
             return (Node<T>) NEXT.get(this);
+        }
+    }
+
+    private static class Staging<T extends DatapointCapture> {
+        private Node<T> committed;
+        private T staged;
+
+        static <T extends DatapointCapture> Staging<T> ofNode(final Node<T> node) {
+            Staging<T> tStaging = new Staging<>();
+            tStaging.set(node, null);
+            return tStaging;
+        }
+
+        void set(final Node<T> committed, final T staged) {
+            this.committed = committed;
+            this.staged = staged;
+        }
+
+        CommitStagedPair<T> asCommitStaged() {
+            return new CommitStagedPair<>(committed.capture, staged);
+        }
+    }
+
+    record CommitStagedPair<T extends DatapointCapture>(T committed, T staged) {
+        static <T extends DatapointCapture> CommitStagedPair<T> commitOnly(final T committed) {
+            return new CommitStagedPair<>(committed, null);
         }
     }
 }
