@@ -348,6 +348,16 @@ tasks.register("artifactDockerWolfi") {
     }
 }
 
+tasks.register("artifactDockerUbi8") {
+    description = "Build UBI8 docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_ubi8')
+    }
+}
+
 tasks.register("artifactDockerfiles") {
     description = "Generate all Dockerfiles and build contexts"
 

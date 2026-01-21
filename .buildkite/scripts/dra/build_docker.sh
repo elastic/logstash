@@ -30,7 +30,7 @@ export LOCAL_ARTIFACTS=false
 ./gradlew artifactDockerfiles || error "artifactDockerfiles build failed."
 
 if [[ "$ARCH" != "aarch64" ]]; then
-  rake artifact:docker_ubi8 || error "artifact:docker_ubi8 build failed."
+  ./gradlew artifactDockerUbi8 || error "artifactDockerUbi8 build failed."
 fi
 
 STACK_VERSION="$(./$(dirname "$0")/../common/qualified-version.sh)"
