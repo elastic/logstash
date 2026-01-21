@@ -16,13 +16,6 @@
 # under the License.
 
 namespace "vendor" do
-<<<<<<< HEAD
-=======
-  namespace "force" do
-    task "gems" => ["vendor:gems"]
-  end
-
->>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
   task "gems", [:bundle] do |task, args|
     require "bootstrap/environment"
 

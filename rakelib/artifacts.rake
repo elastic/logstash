@@ -206,12 +206,7 @@ namespace "artifact" do
     end
   end
 
-<<<<<<< HEAD
   def create_single_archive_pack(os_name, arch, license_details)
-    safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
-=======
-  def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
->>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
     if arch == 'arm64'
       arch = 'aarch64'
     end
@@ -267,28 +262,6 @@ namespace "artifact" do
     create_archive_pack(license_details, ARCH, "linux")
   end
 
-<<<<<<< HEAD
-=======
-  desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
-  task "archives_docker_observabilitySRE" => ["prepare-observabilitySRE", "generate_build_metadata"] do
-    #with bundled JDKs
-    @bundles_jdk = true
-    @building_docker = true
-    exclude_paths = default_exclude_paths + %w(
-      bin/logstash-plugin
-      bin/logstash-plugin.bat
-      bin/logstash-keystore
-      bin/logstash-keystore.bat
-    )
-    license_details = ['ELASTIC-LICENSE','-observability-sre', exclude_paths]
-    create_archive_pack(license_details, ARCH, "linux") do |dedicated_directory_tar|
-      # injection point: Use `DedicatedDirectoryTarball#write(source_file, destination_path)` to
-      # copy additional files into the tarball
-      puts "HELLO(#{dedicated_directory_tar})"
-    end
-  end
-
->>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
   desc "Build an RPM of logstash with all dependencies"
   task "rpm" => ["prepare", "generate_build_metadata"] do
     #with bundled JDKs

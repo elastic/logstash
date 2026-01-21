@@ -417,67 +417,6 @@ tasks.register("compileGrammar") {
     }
 }
 
-<<<<<<< HEAD
-=======
-tasks.register("artifactDockerOnly") {
-    description = "Build docker image without OSS"
-    dependsOn dockerBootstrap
-    dependsOn copyJdk
-
-    doLast {
-        rake(projectDir, buildDir, 'artifact:docker_only')
-    }
-}
-
-tasks.register("generatePluginsVersion") {
-    description = "Generate plugins version documentation"
-    dependsOn bootstrap
-    dependsOn installDefaultGems
-
-    doLast {
-        rake(projectDir, buildDir, 'generate_plugins_version')
-    }
-}
-
-tasks.register("installCore") {
-    description = "Install core development dependencies"
-    dependsOn bootstrap
-
-    doLast {
-        rake(projectDir, buildDir, 'test:install-core')
-    }
-}
-
-tasks.register("artifactDockerObservabilitySRE") {
-    dependsOn bootstrap
-    dependsOn "copyJdk"
-    inputs.files fileTree("${projectDir}/rakelib")
-    inputs.files fileTree("${projectDir}/bin")
-    inputs.files fileTree("${projectDir}/config")
-    inputs.files fileTree("${projectDir}/lib")
-    inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-    inputs.files fileTree("${projectDir}/logstash-core/lib")
-    inputs.files fileTree("${projectDir}/logstash-core/src")
-    inputs.files fileTree("${projectDir}/x-pack")
-    outputs.files fileTree("${buildDir}") {
-        include "Dockerfile-observability-sre"
-        include "logstash-observability-sre-${project.version}-SNAPSHOT-linux-*.tar.gz"
-        include "logstash-observability-sre-${project.version}-SNAPSHOT-docker-build-context.tar.gz"
-        include "plugin_aliases_hashed.yml"
-        include "jdk-*-linux-*.tar.gz"
-    }
-    doFirst {
-        if (!fedrampHighMode) {
-            logger.error("NOT in Fedramp High mode. Aborting.")
-            throw new GradleException("cannot build docker artifact for observabilitySRE without `-PfedrampHighMode=true`")
-        }
-    }
-    doLast {
-        rake(projectDir, buildDir, 'artifact:docker_observabilitySRE')
-    }
-}
-
->>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
   dependsOn "copyJdk"
@@ -495,57 +434,6 @@ tasks.register("assembleTarDistribution") {
   }
 }
 
-<<<<<<< HEAD
-=======
-tasks.register("assembleOssTarDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-  }
-}
-
-tasks.register("assembleZipDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  inputs.files fileTree("${projectDir}/x-pack")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives')
-  }
-}
-
-tasks.register("assembleOssZipDistribution") {
-  dependsOn bootstrap
-  dependsOn "copyJdk"
-  inputs.files fileTree("${projectDir}/rakelib")
-  inputs.files fileTree("${projectDir}/bin")
-  inputs.files fileTree("${projectDir}/config")
-  inputs.files fileTree("${projectDir}/lib")
-  inputs.files fileTree("${projectDir}/logstash-core-plugin-api")
-  inputs.files fileTree("${projectDir}/logstash-core/lib")
-  inputs.files fileTree("${projectDir}/logstash-core/src")
-  outputs.files file("${buildDir}/logstash-${project.version}.zip")
-  doLast {
-      rake(projectDir, buildDir, 'artifact:archives_oss')
-  }
-}
-
->>>>>>> ca1fe376 (Make gradle the root of every dependency graph (#18471))
 project(":logstash-core") {
   ["rubyTests", "test"].each { tsk ->
     tasks.getByPath(":logstash-core:" + tsk).configure {
