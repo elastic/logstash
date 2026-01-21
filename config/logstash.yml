@@ -55,11 +55,11 @@
 #
 # pipeline.batch.metrics.sampling_mode: "minimal"
 #
-# Maximum memory size (in bytes) for a batch during filter/output processing.
-# If set, batches that exceed this size will be split into smaller chunks.
-# Accepts byte values like "10mb", "500kb", or numeric bytes. Default is 0 (unlimited).
+# Maximum number of events that are passed together as a chunk to the outputs after being filtered.
+# This is relevant when a filter can increase the number of events in a batchsignificantly.
+# Default is 0 (unlimited).
 #
-# pipeline.batch.max_bytes: 0
+# pipeline.batch.max_output_size: 0
 #
 # Force Logstash to exit during shutdown even if there are still inflight
 # events in memory. By default, logstash will refuse to quit until all
