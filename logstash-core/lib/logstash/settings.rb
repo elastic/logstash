@@ -470,17 +470,7 @@ module LogStash
       end
     end
 
-    class ExistingFilePath < Setting
-      def initialize(name, default = nil, strict = true)
-        super(name, ::String, default, strict) do |file_path|
-          if !::File.exist?(file_path)
-            raise ::ArgumentError.new("File \"#{file_path}\" must exist but was not found.")
-          else
-            true
-          end
-        end
-      end
-    end
+    java_import org.logstash.settings.ExistingFilePathSetting
 
     class WritableDirectory < Setting
       def initialize(name, default = nil, strict = false)
