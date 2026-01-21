@@ -56,7 +56,7 @@ module LogStash
       "path.dead_letter_queue",
       "path.queue",
       "pipeline.batch.delay",
-      "pipeline.batch.max_bytes",
+      "pipeline.batch.max_output_size",
       "pipeline.batch.metrics.sampling_mode",
       "pipeline.batch.size",
       "pipeline.id",
