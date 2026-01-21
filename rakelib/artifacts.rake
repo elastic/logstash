@@ -174,7 +174,6 @@ namespace "artifact" do
       create_archive_pack(license_details, "arm64", "linux", "darwin")
     end
     #without JDK
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     @bundles_jdk = false
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
@@ -186,7 +185,6 @@ namespace "artifact" do
     @bundles_jdk = true
     @building_docker = true
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   def create_archive_pack(license_details, arch, *oses, &tar_interceptor)
@@ -197,7 +195,6 @@ namespace "artifact" do
   end
 
   def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
-    safe_system("./gradlew copyJdk -Pjdk_bundle_os=#{os_name} -Pjdk_arch=#{arch}")
     if arch == 'arm64'
       arch = 'aarch64'
     end
@@ -209,15 +206,12 @@ namespace "artifact" do
     when "darwin"
       build_tar(*license_details, platform: "-darwin-#{arch}", &tar_interceptor)
     end
-    safe_system("./gradlew deleteLocalJdk -Pjdk_bundle_os=#{os_name}")
   end
 
   # Create an archive pack using settings appropriate for the running machine
   def create_local_archive_pack(bundle_jdk)
     @bundles_jdk = bundle_jdk
-    safe_system("./gradlew copyJdk") if bundle_jdk
     build_tar('ELASTIC-LICENSE')
-    safe_system("./gradlew deleteLocalJdk") if bundle_jdk
   end
 
   desc "Build a not JDK bundled tar.gz of default logstash plugins with all dependencies"
@@ -243,7 +237,6 @@ namespace "artifact" do
 
     #without JDK
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     build_tar(*license_details, platform: '-no-jdk')
     build_zip(*license_details, platform: '-no-jdk')
   end
@@ -255,7 +248,6 @@ namespace "artifact" do
     @building_docker = true
     license_details = ['APACHE-LICENSE-2.0', "-oss", oss_exclude_paths]
     create_archive_pack(license_details, ARCH, "linux")
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   desc "Build jdk bundled tar.gz of observabilitySRE logstash plugins with all dependencies for docker"
@@ -276,7 +268,6 @@ namespace "artifact" do
         dedicated_directory_tar.write(source_file)
       end
     end
-    safe_system("./gradlew dockerBootstrap") # force the build of Logstash jars + env2yaml
   end
 
   desc "Build an RPM of logstash with all dependencies"
@@ -288,7 +279,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos")
   end
 
@@ -301,7 +291,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("centos", :oss)
   end
 
@@ -314,7 +303,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu")
   end
 
@@ -327,7 +315,6 @@ namespace "artifact" do
 
     #without JDKs
     @bundles_jdk = false
-    safe_system("./gradlew bootstrap") #force the build of Logstash jars
     package("ubuntu", :oss)
   end
 
@@ -671,9 +658,7 @@ namespace "artifact" do
   end
 
   def package_with_jdk(platform, jdk_arch, variant = :standard)
-    safe_system("./gradlew copyJdk -Pjdk_bundle_os=linux -Pjdk_arch=#{jdk_arch}")
     package(platform, variant, true, jdk_arch)
-    safe_system('./gradlew deleteLocalJdk -Pjdk_bundle_os=linux')
   end
 
   def package(platform, variant = :standard, bundle_jdk = false, jdk_arch = 'x86_64')
@@ -683,6 +668,7 @@ namespace "artifact" do
     require "fpm/errors" # TODO(sissel): fix this in fpm
     require "fpm/package/dir"
     require "fpm/package/gem" # TODO(sissel): fix this in fpm; rpm needs it.
+    require "fpm/package/cpan"
 
     basedir = File.join(File.dirname(__FILE__), "..")
     dir = FPM::Package::Dir.new
