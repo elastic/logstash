@@ -155,8 +155,13 @@ ci/acceptance_tests.sh"""),
 
 def acceptance_docker_steps()-> list[typing.Any]:
     steps = []
+<<<<<<< HEAD
     for flavor in ["full", "oss", "ubi8", "wolfi"]:
         steps.append({
+=======
+    for flavor in ["full", "oss", "wolfi", "ironbank"]:
+        step = {
+>>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
             "label": f":docker: {flavor} flavor acceptance",
             "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
             "command": LiteralScalarString(f"""#!/usr/bin/env bash
@@ -165,7 +170,17 @@ source .buildkite/scripts/common/vm-agent.sh
 export ARCH="x86_64"
 ci/docker_acceptance_tests.sh {flavor}"""),
             "retry": {"automatic": [{"limit": 3}]},
-        })
+        }
+        
+        # Set base image env vars for ironbank to use public RedHat UBI (CI can't access registry1.dso.mil)
+        if flavor == "ironbank":
+            step["env"] = {
+                "BASE_REGISTRY": "docker.io",
+                "BASE_IMAGE": "redhat/ubi9",
+                "BASE_TAG": "9.7"
+            }
+        
+        steps.append(step)
 
     return steps
 

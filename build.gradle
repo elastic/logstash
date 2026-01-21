@@ -348,13 +348,22 @@ tasks.register("artifactDockerWolfi") {
     }
 }
 
+<<<<<<< HEAD
 tasks.register("artifactDockerUbi8") {
     description = "Build UBI8 docker image"
+=======
+tasks.register("artifactDockerIronbank") {
+    description = "Build Ironbank docker image"
+>>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
     dependsOn dockerBootstrap
     dependsOn copyJdk
 
     doLast {
+<<<<<<< HEAD
         rake(projectDir, buildDir, 'artifact:docker_ubi8')
+=======
+        rake(projectDir, buildDir, 'artifact:docker_ironbank')
+>>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
     }
 }
 
