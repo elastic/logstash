@@ -193,7 +193,6 @@ public-dockerfiles_observability-sre: templates/Dockerfile.erb docker_paths $(CO
 	cp $(ARTIFACTS_DIR)/Dockerfile-observability-sre Dockerfile && \
 	tar -zcf ../logstash-observability-sre-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-<<<<<<< HEAD
 public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
@@ -208,25 +207,10 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
 	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
-	../vendor/jruby/bin/jruby -S erb -T "-"\
-	  elastic_version="${ELASTIC_VERSION}" \
-	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
-	../vendor/jruby/bin/jruby -S erb -T "-"\
-		created_date="${BUILD_DATE}" \
-		elastic_version="${ELASTIC_VERSION}" \
-		arch="${ARCHITECTURE}" \
-		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
-		image_flavor="ironbank" \
-		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
-=======
 public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
->>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md

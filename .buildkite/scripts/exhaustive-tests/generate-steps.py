@@ -155,13 +155,8 @@ ci/acceptance_tests.sh"""),
 
 def acceptance_docker_steps()-> list[typing.Any]:
     steps = []
-<<<<<<< HEAD
-    for flavor in ["full", "oss", "ubi8", "wolfi"]:
-        steps.append({
-=======
-    for flavor in ["full", "oss", "wolfi", "ironbank"]:
+    for flavor in ["full", "oss", "ubi8", "wolfi", "ironbank"]:
         step = {
->>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
             "label": f":docker: {flavor} flavor acceptance",
             "agents": gcp_agent(vm_name="ubuntu-2204", image_prefix="family/platform-ingest-logstash"),
             "command": LiteralScalarString(f"""#!/usr/bin/env bash

@@ -177,11 +177,7 @@ namespace "artifact" do
 
   desc "Generate rpm, deb, tar and zip artifacts"
   task "all" => ["prepare", "build"]
-<<<<<<< HEAD
-  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ubi8", "docker_observabilitySRE"]
-=======
-  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ironbank", "docker_observabilitySRE"]
->>>>>>> e1684280d (Add Ironbank acceptance tests to CI (#18585))
+  task "docker_only" => ["prepare", "docker", "docker_oss", "docker_wolfi", "docker_ubi8", "docker_ironbank", "docker_observabilitySRE"]
 
   desc "Build all (jdk bundled and not) tar.gz and zip of default logstash plugins with all dependencies"
   task "archives" => ["prepare", "generate_build_metadata"] do
