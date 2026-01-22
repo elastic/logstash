@@ -25,19 +25,19 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.ToLongFunction;
+import java.util.function.BiFunction;
 
 /**
  * A {@link RetentionWindow} efficiently holds sufficient {@link DatapointCapture}s to
  * meet its {@link FlowMetricRetentionPolicy}, providing access to the youngest capture
- * that is older than the policy's allowed retention (if any).
+ * that is older than the policy's allowed retention (if any), and to the youngest capture.
  * The implementation is similar to a singly-linked list whose youngest captures are at
  * the tail and oldest captures are at the head, with an additional pre-tail stage.
  * Compaction is always done at read-time and occasionally at write-time.
  * Both reads and writes are non-blocking and concurrency-safe.
  */
-abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
-    private final AtomicReference<Staging<CAPTURE>> tail;
+abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
+    private final AtomicReference<NodeStagingPair<CAPTURE>> tail;
     private final AtomicReference<Node<CAPTURE>> head;
     final FlowMetricRetentionPolicy policy;
 
@@ -45,10 +45,20 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
         this.policy = policy;
         final Node<CAPTURE> zeroNode = new Node<>(zeroCapture);
         this.head = new AtomicReference<>(zeroNode);
-        this.tail = new AtomicReference<>(Staging.ofNode(zeroNode));
+        this.tail = new AtomicReference<>(NodeStagingPair.ofNode(zeroNode));
     }
 
-    abstract CAPTURE merge(final CAPTURE oldCapture, final CAPTURE newCapture);
+    /**
+     * @param oldCapture the base capture
+     * @param newCapture a new capture to apply on top of the base
+     * @return a {@link CAPTURE} representing both provided captures
+     */
+    abstract CAPTURE mergeCaptures(final CAPTURE oldCapture, final CAPTURE newCapture);
+
+    /**
+     * @return a calculated value
+     */
+    abstract Optional<VALUE> calculateValue();
 
     /**
      * Append the newest {@link DatapointCapture} into this {@link RetentionWindow},
@@ -60,19 +70,25 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
      * @param newestCapture the newest capture to stage
      */
     void append(final CAPTURE newestCapture) {
-        final Staging<CAPTURE> newTailWithStaging = new Staging<>();
+        final NodeStagingPair<CAPTURE> newTailWithStaging = new NodeStagingPair<>();
 
-        Staging<CAPTURE> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
-            final CAPTURE committedCapture = committedNodeStagePair.committed.capture;
+        NodeStagingPair<CAPTURE> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
+            final Node<CAPTURE> committedNode = committedNodeStagePair.committed;
+            final CAPTURE committedCapture = committedNode.capture;
             final CAPTURE stagedCapture = committedNodeStagePair.staged;
 
             final CAPTURE captureToCommit;
             final CAPTURE captureToStage;
 
             if (Objects.isNull(committedCapture)) {
-                // if we don't have a commit yet, just use our new capture
-                captureToCommit = merge(stagedCapture, newestCapture);
-                captureToStage = null;
+                // if we don't have a commit yet, commit.
+                if (Objects.nonNull(stagedCapture)) {
+                    captureToCommit = stagedCapture;
+                    captureToStage = newestCapture;
+                } else {
+                    captureToCommit = newestCapture;
+                    captureToStage = null;
+                }
             } else if (Objects.nonNull(stagedCapture) && committedCapture.nanoTime() < policy.commitBarrierNanos(newestCapture.nanoTime())) {
                 // if the gap between newest and committed is bigger than resolution, commit staged and stage new
                 captureToCommit = stagedCapture;
@@ -80,11 +96,13 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
             } else {
                 // otherwise merge into our stage
                 captureToCommit = committedCapture;
-                captureToStage = merge(stagedCapture, newestCapture);
+                captureToStage = mergeCaptures(stagedCapture, newestCapture);
             }
 
-            Node<CAPTURE> committedNode = Objects.equals(committedCapture, captureToCommit) ? committedNodeStagePair.committed : new Node<>(captureToCommit);
-            newTailWithStaging.set(committedNode, captureToStage);
+            // apply our changes, keeping the committed Node if we're committing its capture.
+            final Node<CAPTURE> nodeToCommit = (Objects.equals(committedCapture, captureToCommit) ? committedNode : new Node<>(captureToCommit));
+            newTailWithStaging.set(nodeToCommit, captureToStage);
+
             return newTailWithStaging;
         });
 
@@ -104,20 +122,6 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
         }
     }
 
-    /**
-     * Internal tooling to select the younger of two captures provided.
-     */
-    static <T extends DatapointCapture> T selectNewestCaptureOf(final T existing, final T proposed) {
-        if (existing == null) {
-            return proposed;
-        }
-        if (proposed == null) {
-            return existing;
-        }
-
-        return (existing.nanoTime() > proposed.nanoTime()) ? existing : proposed;
-    }
-
     @Override
     public String toString() {
         return "RetentionWindow{" +
@@ -126,15 +130,53 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
                 '}';
     }
 
-    public Optional<CAPTURE> returnHead(long nanoTime) {
-        final long barrier = policy.retentionBarrierNanos(nanoTime);
-        final RetentionWindow.Node<CAPTURE> head = compactHead(barrier);
-        CAPTURE capture = head.capture;
-        if (capture.nanoTime() <= barrier) {
-            return Optional.of(capture);
-        } else {
-            return Optional.empty();
+    /**
+     * @return the youngest capture, which might be uncommitted.
+     */
+    private CAPTURE youngestCapture() {
+        NodeStagingPair<CAPTURE> captureNodeStagingPair = this.tail.get();
+        if (Objects.nonNull(captureNodeStagingPair.staged)) {
+            return captureNodeStagingPair.staged;
         }
+        if (Objects.nonNull(captureNodeStagingPair.committed)) {
+            return captureNodeStagingPair.committed.capture;
+        }
+        return null;
+    }
+
+    /**
+     * @param referenceNanoTime the reference time
+     * @return the *youngest* capture that is older than this window's retention policy
+     */
+    private CAPTURE baselineCapture(long referenceNanoTime) {
+        final long barrier = policy.retentionBarrierNanos(referenceNanoTime);
+        final CAPTURE capture = compactHead(barrier).capture;
+
+        if (capture.nanoTime() <= barrier || policy.reportBeforeSatisfied()) {
+            return capture;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     *
+     * @param transform a {@link BiFunction}{@code (compareCapture, baselineCapture)}
+     * @return the transformed result
+     * @param <V> the {@code transform} return type
+     */
+    public <V> V calculateFromBaseline(final BaselineCompareFunction<CAPTURE, V> transform) {
+        final CAPTURE youngestCapture = youngestCapture();
+        if (youngestCapture == null) { return transform.apply(null, null); }
+
+        final CAPTURE baselineCapture = baselineCapture(youngestCapture.nanoTime());
+        return transform.apply(youngestCapture, baselineCapture);
+    }
+
+    @FunctionalInterface
+    public interface BaselineCompareFunction<CAPTURE, V> extends BiFunction<CAPTURE, CAPTURE, V> {
+        @Override
+        V apply(CAPTURE compareCapture, CAPTURE baselineCapture);
     }
 
     /**
@@ -172,11 +214,6 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
     /**
      * Internal testing support
      */
-    long excessRetained(final long currentNanoTime, final ToLongFunction<FlowMetricRetentionPolicy> retentionWindowFunction) {
-        final long barrier = Math.subtractExact(currentNanoTime, retentionWindowFunction.applyAsLong(this.policy));
-        return Math.max(0L, Math.subtractExact(barrier, this.head.getPlain().captureNanoTime()));
-    }
-
     long excessRetained(final long barrierNanos) {
         return Math.max(0L, Math.subtractExact(barrierNanos, this.head.getPlain().captureNanoTime()));
     }
@@ -186,7 +223,7 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
      * may link ahead to the next {@link Node}.
      * It is an implementation detail of {@link RetentionWindow}.
      */
-    private static class Node<T extends DatapointCapture> {
+    private static class Node<CAPTURE extends DatapointCapture> {
         private static final VarHandle NEXT;
 
         static {
@@ -198,16 +235,16 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
             }
         }
 
-        private final T capture;
-        private volatile Node<T> next;
+        private final CAPTURE capture;
+        private volatile Node<CAPTURE> next;
 
-        Node(final T capture) {
+        Node(final CAPTURE capture) {
             this.capture = capture;
         }
 
-        Node<T> seekWithoutCrossing(final long barrier) {
-            Node<T> newestOlderThanThreshold = null;
-            Node<T> candidate = this;
+        Node<CAPTURE> seekWithoutCrossing(final long barrier) {
+            Node<CAPTURE> newestOlderThanThreshold = null;
+            Node<CAPTURE> candidate = this;
 
             while (candidate != null && candidate.captureNanoTime() < barrier) {
                 newestOlderThanThreshold = candidate;
@@ -220,16 +257,16 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
             return this.capture.nanoTime();
         }
 
-        void setNext(final Node<T> nextNode) {
+        void setNext(final Node<CAPTURE> nextNode) {
             next = nextNode;
         }
 
-        Node<T> getNext() {
+        Node<CAPTURE> getNext() {
             return next;
         }
 
-        Node<T> getNextPlain() {
-            return (Node<T>) NEXT.get(this);
+        Node<CAPTURE> getNextPlain() {
+            return (Node<CAPTURE>) NEXT.get(this);
         }
 
         @Override
@@ -241,29 +278,19 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
         }
     }
 
-    private static class Staging<T extends DatapointCapture> {
-        private Node<T> committed;
-        private T staged;
+    private static class NodeStagingPair<CAPTURE extends DatapointCapture> {
+        private Node<CAPTURE> committed;
+        private CAPTURE staged;
 
-        static <T extends DatapointCapture> Staging<T> ofNode(final Node<T> node) {
-            Staging<T> tStaging = new Staging<>();
+        private static <T extends DatapointCapture> NodeStagingPair<T> ofNode(final Node<T> node) {
+            NodeStagingPair<T> tStaging = new NodeStagingPair<>();
             tStaging.set(node, null);
             return tStaging;
         }
 
-        void set(final Node<T> committed, final T staged) {
+        void set(final Node<CAPTURE> committed, final CAPTURE staged) {
             this.committed = committed;
             this.staged = staged;
-        }
-
-        CommitStagedPair<T> asCommitStaged() {
-            return new CommitStagedPair<>(committed.capture, staged);
-        }
-    }
-
-    record CommitStagedPair<T extends DatapointCapture>(T committed, T staged) {
-        static <T extends DatapointCapture> CommitStagedPair<T> commitOnly(final T committed) {
-            return new CommitStagedPair<>(committed, null);
         }
     }
 }

@@ -47,7 +47,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
     private final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies;
 
     // set-once atomic reference; see ExtendedFlowMetric#appendCapture(FlowCapture)
-    private final SetOnceReference<List<RetentionWindow<FlowCapture>>> retentionWindows = SetOnceReference.unset();
+    private final SetOnceReference<List<RetentionWindow<FlowCapture, Double>>> retentionWindows = SetOnceReference.unset();
 
     public ExtendedFlowMetric(final String name,
                               final Metric<? extends Number> numeratorMetric,
@@ -80,34 +80,17 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
 
     @Override
     public Map<String, Double> getValue() {
+        capture();
+
         if (!lifetimeBaseline.isSet()) { return Map.of(); }
         if (!retentionWindows.isSet()) { return Map.of(); }
 
-        final Optional<FlowCapture> possibleCapture = doCapture();
-        if (possibleCapture.isEmpty()) { return Map.of(); }
-
-        final FlowCapture currentCapture = possibleCapture.get();
-
         final Map<String, Double> rates = new LinkedHashMap<>();
-
-        this.retentionWindows.get()
-                             .forEach(window -> baseline(window, currentCapture.nanoTime())
-                                                      .or(() -> windowDefaultBaseline(window))
-                                                      .map(b -> calculateRate(currentCapture, b))
-                                                      .orElseGet(OptionalDouble::empty)
-                                                      .ifPresent((rate) -> rates.put(window.policy.policyName(), rate)));
+        for (RetentionWindow<FlowCapture, Double> window : this.retentionWindows.get()) {
+            window.calculateValue().ifPresent(value -> rates.put(window.policy.policyName(), value));
+        }
 
         return Collections.unmodifiableMap(rates);
-    }
-
-    /**
-     * @param nanoTime the nanoTime of the capture for which we are retrieving a baseline.
-     * @return an {@link Optional} that contains the youngest {@link DatapointCapture} that is older
-     * than this window's {@link FlowMetricRetentionPolicy} allowed retention if one
-     * exists, and is otherwise empty.
-     */
-    Optional<FlowCapture> baseline(RetentionWindow<FlowCapture> window, final long nanoTime) {
-        return window.returnHead(nanoTime);
     }
 
     /**
@@ -122,26 +105,15 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         );
     }
 
-    private static List<RetentionWindow<FlowCapture>> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
+    private static List<RetentionWindow<FlowCapture,Double>> initRetentionWindows(final Collection<? extends FlowMetricRetentionPolicy> retentionPolicies,
                                                               final FlowCapture capture) {
         return retentionPolicies.stream()
                                 .map((p) -> new FlowRetentionWindow(p, capture))
                                 .collect(Collectors.toUnmodifiableList());
     }
 
-    private static void injectIntoRetentionWindows(final List<RetentionWindow<FlowCapture>> retentionWindows, final FlowCapture capture) {
+    private static void injectIntoRetentionWindows(final List<RetentionWindow<FlowCapture, Double>> retentionWindows, final FlowCapture capture) {
         retentionWindows.forEach((rw) -> rw.append(capture));
-    }
-
-    /**
-     * If a window's policy allows it to report before its retention has been reached,
-     * use our lifetime baseline as a default.
-     */
-    private Optional<FlowCapture> windowDefaultBaseline(final RetentionWindow<FlowCapture> window) {
-        if (window.policy.reportBeforeSatisfied()) {
-            return this.lifetimeBaseline.asOptional();
-        }
-        return Optional.empty();
     }
 
     /**
@@ -172,15 +144,35 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         return Duration.ofNanos(cumulativeExcessRetained);
     }
 
-    static class FlowRetentionWindow extends RetentionWindow<FlowCapture> {
+    static class FlowRetentionWindow extends RetentionWindow<FlowCapture, Double> {
 
         FlowRetentionWindow(FlowMetricRetentionPolicy policy, FlowCapture zeroCapture) {
             super(policy, zeroCapture);
         }
 
         @Override
-        FlowCapture merge(FlowCapture oldCapture, FlowCapture newCapture) {
-            return RetentionWindow.selectNewestCaptureOf(oldCapture, newCapture);
+        FlowCapture mergeCaptures(FlowCapture oldCapture, FlowCapture newCapture) {
+            if (oldCapture == null) {
+                return newCapture;
+            }
+            if (newCapture == null) {
+                return oldCapture;
+            }
+
+            return (oldCapture.nanoTime() > newCapture.nanoTime()) ? oldCapture : newCapture;
+        }
+
+        @Override
+        Optional<Double> calculateValue() {
+            return calculateFromBaseline((compareCapture, baselineCapture) -> {
+                if (compareCapture == null) { return Optional.empty(); }
+                if (baselineCapture == null) { return Optional.empty(); }
+
+                final OptionalDouble rate = calculateRate(compareCapture, baselineCapture);
+
+                // convert from OptionalDouble to Optional<Double>
+                return rate.isPresent() ? Optional.of(rate.getAsDouble()) : Optional.empty();
+            });
         }
     }
 }
