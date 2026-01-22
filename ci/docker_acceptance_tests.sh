@@ -79,6 +79,16 @@ elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
 
   echo "--- Acceptance: Running the tests"
   bundle exec rspec docker/spec/wolfi/*_spec.rb
+elif [[ $SELECTED_TEST_SUITE == "ironbank" ]]; then
+  echo "--- Building $SELECTED_TEST_SUITE docker image with UBI base"
+  cd $LS_HOME
+  ./gradlew artifactDockerIronbank
+  echo "--- Acceptance: Installing dependencies"
+  cd $QA_DIR
+  bundle install
+
+  echo "--- Acceptance: Running the tests"
+  bundle exec rspec docker/spec/ironbank/*_spec.rb
 else
   echo "--- Building all docker images"
   cd $LS_HOME

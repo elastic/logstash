@@ -14,6 +14,10 @@ ifdef DOCKER_ARCHITECTURE
   ARCHITECTURE := $(DOCKER_ARCHITECTURE)
 else
   ARCHITECTURE := $(shell uname -m)
+  # For MacOS
+  ifeq ($(ARCHITECTURE), arm64)
+	ARCHITECTURE := aarch64
+  endif
 endif
 
 IMAGE_FLAVORS ?= oss full ubi8 wolfi observability-sre
@@ -53,6 +57,14 @@ build-from-local-ubi8-artifacts: dockerfile
 	docker build --progress=plain --network=host -t $(IMAGE_TAG)-ubi8:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-ubi8 data/logstash || \
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
+
+build-from-local-ironbank-artifacts: dockerfile_ironbank
+	cp $(ARTIFACTS_DIR)/logstash-$(VERSION_TAG)-linux-*.tar.gz $(ARTIFACTS_DIR)/ironbank/
+	docker build --progress=plain \
+	  $(if $(BASE_REGISTRY),--build-arg BASE_REGISTRY=$(BASE_REGISTRY)) \
+	  $(if $(BASE_IMAGE),--build-arg BASE_IMAGE=$(BASE_IMAGE)) \
+	  $(if $(BASE_TAG),--build-arg BASE_TAG=$(BASE_TAG)) \
+	  -t $(IMAGE_TAG)-ironbank:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/ironbank/Dockerfile-ironbank $(ARTIFACTS_DIR)/ironbank
 
 build-from-local-observability-sre-artifacts: dockerfile
 	docker run --rm -d --name=$(HTTPD) \
@@ -199,19 +211,10 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
 	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-public-dockerfiles_ironbank: templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
-	../vendor/jruby/bin/jruby -S erb -T "-"\
-		created_date="${BUILD_DATE}" \
-		elastic_version="${ELASTIC_VERSION}" \
-		arch="${ARCHITECTURE}" \
-		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
-		image_flavor="ironbank" \
-		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
@@ -240,6 +243,18 @@ dockerfile: templates/Dockerfile.erb
 			local_artifacts="true" \
 			templates/Dockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-${FLAVOR}" ; \
 	)
+
+# Generate the Ironbank Dockerfile from ERB template.
+dockerfile_ironbank: templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+	../vendor/jruby/bin/jruby -S erb -T "-"\
+		created_date="${BUILD_DATE}" \
+		elastic_version="${ELASTIC_VERSION}" \
+		arch="${ARCHITECTURE}" \
+		version_tag="${VERSION_TAG}" \
+		release="${RELEASE}" \
+		image_flavor="ironbank" \
+		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
+		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/ironbank/Dockerfile-ironbank"
 
 clean:
 	rm -f ${ARTIFACTS_DIR}/Dockerfile
