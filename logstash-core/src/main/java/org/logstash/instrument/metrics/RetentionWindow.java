@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BinaryOperator;
 import java.util.function.ToLongFunction;
 
 /**
@@ -49,7 +50,59 @@ abstract class RetentionWindow<T extends DatapointCapture> {
         this.tail = new AtomicReference<>(Staging.ofNode(zeroNode));
     }
 
-    abstract CommitStagedPair<T> mux(CommitStagedPair<T> existing, T newCapture);
+    abstract T merge(final T oldCapture, final T newCapture);
+
+    CommitStagedPair<T> mux(final T committedCapture, final T stagedCapture, T newCapture, BinaryOperator<T> merger) {
+        // if we don't have a commit yet, just use our new datapoint
+        if (Objects.isNull(committedCapture)) {
+            return CommitStagedPair.commitOnly(newCapture);
+        }
+
+        // determine if our staged needs to be promoted
+        if (Objects.nonNull(stagedCapture) && committedCapture.nanoTime() < policy.commitBarrierNanos(newCapture.nanoTime())) {
+            return new CommitStagedPair<>(stagedCapture, newCapture);
+        }
+
+        return new CommitStagedPair<>(committedCapture, merger.apply(stagedCapture, newCapture));
+    }
+
+    /**
+     * Append the newest {@link DatapointCapture} into this {@link RetentionWindow},
+     * while respecting our {@link FlowMetricRetentionPolicy}.
+     * We tolerate minor jitter in the provided {@link DatapointCapture#nanoTime()}, but
+     * expect callers of this method to minimize lag between instantiating the capture
+     * and appending it.
+     *
+     * @param newestCapture the newest capture to stage
+     */
+    void append(final T newestCapture) {
+        final Staging<T> newTailWithStaging = new Staging<>();
+
+        Staging<T> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
+            final T committedCapture = committedNodeStagePair.committed.capture;
+            final T stagedCapture = committedNodeStagePair.staged;
+            final CommitStagedPair<T> result = mux(committedCapture, stagedCapture, newestCapture, this::merge);
+
+            Node<T> committedNode = Objects.equals(committedNodeStagePair.committed.capture, result.committed) ? committedNodeStagePair.committed : new Node<>(result.committed);
+            newTailWithStaging.set(committedNode, result.staged);
+            return newTailWithStaging;
+        });
+
+        // re-attach the tail if we severed it
+        if (oldTailWithStaging.committed != newTailWithStaging.committed) {
+            oldTailWithStaging.committed.setNext(newTailWithStaging.committed);
+        }
+
+        // occasional force compaction
+        final Node<T> currentHead = this.head.get();
+        if (currentHead.captureNanoTime() > policy.forceCompactionBarrierNanos(newestCapture.nanoTime())) {
+            final Node<T> compactHead = compactHead(policy.retentionBarrierNanos(newestCapture.nanoTime()));
+            if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
+                final long compactHeadAgeNanos = Math.subtractExact(newestCapture.nanoTime(), compactHead.captureNanoTime());
+                ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
+            }
+        }
+    }
 
     /**
      * Internal tooling to select the younger of two captures provided.
@@ -65,41 +118,6 @@ abstract class RetentionWindow<T extends DatapointCapture> {
         return (existing.nanoTime() > proposed.nanoTime()) ? existing : proposed;
     }
 
-    /**
-     * Append the newest {@link DatapointCapture} into this {@link RetentionWindow},
-     * while respecting our {@link FlowMetricRetentionPolicy}.
-     * We tolerate minor jitter in the provided {@link DatapointCapture#nanoTime()}, but
-     * expect callers of this method to minimize lag between instantiating the capture
-     * and appending it.
-     *
-     * @param newestCapture the newest capture to stage
-     */
-    void append(final T newestCapture) {
-        final Staging<T> newTailWithStaging = new Staging<>();
-
-        Staging<T> oldTailWithStaging = this.tail.getAndAccumulate(newTailWithStaging, (committed, staging) -> {
-            final CommitStagedPair<T> result = mux(committed.asCommitStaged(), newestCapture);
-            Node<T> committedNode = Objects.equals(committed.committed.capture, result.committed) ? committed.committed : new Node<>(result.committed);
-            newTailWithStaging.set(committedNode, result.staged);
-            return newTailWithStaging;
-        });
-
-        // re-attach the tail if we severed it
-        if (oldTailWithStaging.committed != newTailWithStaging.committed) {
-            oldTailWithStaging.committed.setNext(newTailWithStaging.committed);
-        }
-
-        // occasional force compaction
-        final Node<T> currentHead = this.head.get();
-        if (Math.subtractExact(newestCapture.nanoTime(), currentHead.captureNanoTime()) > policy.forceCompactionNanos()) {
-            final Node<T> compactHead = compactHead(Math.subtractExact(newestCapture.nanoTime(), policy.retentionNanos()));
-            if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
-                final long compactHeadAgeNanos = Math.subtractExact(newestCapture.nanoTime(), compactHead.captureNanoTime());
-                ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
-            }
-        }
-    }
-
     @Override
     public String toString() {
         return "RetentionWindow{" +
@@ -109,7 +127,7 @@ abstract class RetentionWindow<T extends DatapointCapture> {
     }
 
     public Optional<T> returnHead(long nanoTime) {
-        final long barrier = Math.subtractExact(nanoTime, policy.retentionNanos());
+        final long barrier = policy.retentionBarrierNanos(nanoTime);
         final RetentionWindow.Node<T> head = compactHead(barrier);
         T capture = head.capture;
         if (capture.nanoTime() <= barrier) {
@@ -157,6 +175,10 @@ abstract class RetentionWindow<T extends DatapointCapture> {
     long excessRetained(final long currentNanoTime, final ToLongFunction<FlowMetricRetentionPolicy> retentionWindowFunction) {
         final long barrier = Math.subtractExact(currentNanoTime, retentionWindowFunction.applyAsLong(this.policy));
         return Math.max(0L, Math.subtractExact(barrier, this.head.getPlain().captureNanoTime()));
+    }
+
+    long excessRetained(final long barrierNanos) {
+        return Math.max(0L, Math.subtractExact(barrierNanos, this.head.getPlain().captureNanoTime()));
     }
 
     /**
@@ -208,6 +230,14 @@ abstract class RetentionWindow<T extends DatapointCapture> {
 
         Node<T> getNextPlain() {
             return (Node<T>) NEXT.get(this);
+        }
+
+        @Override
+        public String toString() {
+            return "Node{" +
+                    "capture=" + capture +
+                    ", next=" + next +
+                    '}';
         }
     }
 

@@ -26,18 +26,14 @@ import org.logstash.util.SetOnceReference;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.LongSupplier;
-import java.util.function.ToLongFunction;
+import java.util.function.ToLongBiFunction;
 import java.util.stream.Collectors;
-
-import static org.logstash.instrument.metrics.FlowMetricRetentionPolicy.BuiltInRetentionPolicy;
 
 /**
  * The {@link ExtendedFlowMetric} is an implementation of {@link FlowMetric} that produces
@@ -74,7 +70,7 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
                               final String name,
                               final Metric<? extends Number> numeratorMetric,
                               final Metric<? extends Number> denominatorMetric) {
-        this(nanoTimeSupplier, name, numeratorMetric, denominatorMetric, EnumSet.allOf(BuiltInRetentionPolicy.class));
+        this(nanoTimeSupplier, name, numeratorMetric, denominatorMetric, BuiltInFlowMetricRetentionPolicies.all());
     }
 
     @Override
@@ -100,8 +96,6 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
                                                       .map(b -> calculateRate(currentCapture, b))
                                                       .orElseGet(OptionalDouble::empty)
                                                       .ifPresent((rate) -> rates.put(window.policy.policyName(), rate)));
-
-        injectLifetime(currentCapture, rates);
 
         return Collections.unmodifiableMap(rates);
     }
@@ -167,14 +161,14 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
      * @param retentionWindowFunction given a policy, return a retention window, in nanos
      * @return the sum of over-retention durations.
      */
-    Duration estimateExcessRetained(final ToLongFunction<FlowMetricRetentionPolicy> retentionWindowFunction) {
+    Duration estimateExcessRetained(final ToLongBiFunction<FlowMetricRetentionPolicy, Long> retentionWindowFunction) {
         final long currentNanoTime = nanoTimeSupplier.getAsLong();
         final long cumulativeExcessRetained =
                 this.retentionWindows.orElse(Collections.emptyList())
-                                     .stream()
-                                     .map(s -> s.excessRetained(currentNanoTime, retentionWindowFunction))
-                                     .mapToLong(Long::longValue)
-                                     .sum();
+                        .stream()
+                        .map(s -> s.excessRetained(retentionWindowFunction.applyAsLong(s.policy, currentNanoTime)))
+                        .mapToLong(Long::longValue)
+                        .sum();
         return Duration.ofNanos(cumulativeExcessRetained);
     }
 
@@ -185,22 +179,8 @@ public class ExtendedFlowMetric extends BaseFlowMetric {
         }
 
         @Override
-        RetentionWindow.CommitStagedPair<FlowCapture> mux(RetentionWindow.CommitStagedPair<FlowCapture> existing, FlowCapture newCapture) {
-            final FlowCapture committedCapture = existing.committed();
-            final FlowCapture stagedCapture = existing.staged();
-
-            // if we don't have a commit yet, just use our new datapoint
-            if (Objects.isNull(committedCapture)) {
-                return CommitStagedPair.commitOnly(newCapture);
-            }
-
-            // determine if our staged needs to be promoted
-            if (Objects.nonNull(stagedCapture) && Math.subtractExact(newCapture.nanoTime(), committedCapture.nanoTime()) > policy.resolutionNanos()) {
-                return new CommitStagedPair<>(stagedCapture, newCapture);
-            }
-
-            // otherwise merge our new capture into our stage
-            return new CommitStagedPair<>(committedCapture, RetentionWindow.selectNewestCaptureOf(stagedCapture, newCapture));
+        FlowCapture merge(FlowCapture oldCapture, FlowCapture newCapture) {
+            return RetentionWindow.selectNewestCaptureOf(oldCapture, newCapture);
         }
     }
 }
