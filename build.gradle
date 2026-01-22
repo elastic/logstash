@@ -754,17 +754,18 @@ tasks.register("runIntegrationTests") {
 
 tasks.register("installAcceptanceTestGems", Exec) {
     dependsOn bootstrap
-    inputs.files file("${projectDir}/qa/Gemfile")
+    inputs.file("${projectDir}/qa/Gemfile")
     outputs.file("${projectDir}/qa/Gemfile.lock")
     workingDir "${projectDir}/qa"
-    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install", "--path", "vendor/bundle"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
 }
 
 tasks.register("runAcceptanceTests", Exec) {
     dependsOn installAcceptanceTestGems
     workingDir "${projectDir}/qa"
     // NOTE: We sub-process here to avoid issues in java 21+ with Jruby whereby access to some modules that
-    // are required for file descriptors to be properly inherieted when ruby does sub-processing. 
+    // are required for file descriptors to be properly inherited when ruby does sub-processing.
     // https://github.com/elastic/logstash/pull/18536#discussion_r2655013858
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
 }
