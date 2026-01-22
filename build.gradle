@@ -351,6 +351,16 @@ tasks.register("artifactDockerWolfi") {
     }
 }
 
+tasks.register("artifactDockerIronbank") {
+    description = "Build Ironbank docker image"
+    dependsOn dockerBootstrap
+    dependsOn copyJdk
+
+    doLast {
+        rake(projectDir, buildDir, 'artifact:docker_ironbank')
+    }
+}
+
 tasks.register("artifactDockerfiles") {
     description = "Generate all Dockerfiles and build contexts"
 
