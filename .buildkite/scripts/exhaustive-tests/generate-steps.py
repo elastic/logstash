@@ -171,8 +171,8 @@ ci/docker_acceptance_tests.sh {flavor}"""),
         if flavor == "ironbank":
             step["env"] = {
                 "BASE_REGISTRY": "docker.io",
-                "BASE_IMAGE": "redhat/ubi9",
-                "BASE_TAG": "9.7"
+                "BASE_IMAGE": "redhat/ubi10",
+                "BASE_TAG": "10.1"
             }
         
         steps.append(step)
