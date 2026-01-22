@@ -58,8 +58,6 @@ build-from-local-wolfi-artifacts: dockerfile
 	  (docker kill $(HTTPD); false);
 	-docker kill $(HTTPD)
 
-<<<<<<< HEAD
-=======
 build-from-local-ironbank-artifacts: dockerfile_ironbank
 	cp $(ARTIFACTS_DIR)/logstash-$(VERSION_TAG)-linux-*.tar.gz $(ARTIFACTS_DIR)/ironbank/
 	docker build --progress=plain \
@@ -68,16 +66,6 @@ build-from-local-ironbank-artifacts: dockerfile_ironbank
 	  $(if $(BASE_TAG),--build-arg BASE_TAG=$(BASE_TAG)) \
 	  -t $(IMAGE_TAG)-ironbank:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/ironbank/Dockerfile-ironbank $(ARTIFACTS_DIR)/ironbank
 
-build-from-local-observability-sre-artifacts: dockerfile
-	docker run --rm -d --name=$(HTTPD) \
-	           -p 8000:8000 --expose=8000 -v $(ARTIFACTS_DIR):/mnt \
-	           python:3 bash -c 'cd /mnt && python3 -m http.server'
-	timeout 120 bash -c 'until curl -s localhost:8000 > /dev/null; do sleep 1; done'
-	docker build --progress=plain --network=host -t $(IMAGE_TAG)-observability-sre:$(VERSION_TAG) -f $(ARTIFACTS_DIR)/Dockerfile-observability-sre data/logstash || \
-	  (docker kill $(HTTPD); false);
-	-docker kill $(HTTPD)
-
->>>>>>> e1684280 (Add Ironbank acceptance tests to CI (#18585))
 COPY_FILES := $(ARTIFACTS_DIR)/docker/config/pipelines.yml $(ARTIFACTS_DIR)/docker/config/logstash-oss.yml $(ARTIFACTS_DIR)/docker/config/logstash-full.yml
 COPY_FILES += $(ARTIFACTS_DIR)/docker/config/log4j2.file.properties $(ARTIFACTS_DIR)/docker/config/log4j2.properties
 COPY_FILES += $(ARTIFACTS_DIR)/docker/env2yaml/env2yaml
@@ -195,18 +183,6 @@ public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.ya
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
-<<<<<<< HEAD
-	../vendor/jruby/bin/jruby -S erb -T "-"\
-		created_date="${BUILD_DATE}" \
-		elastic_version="${ELASTIC_VERSION}" \
-		arch="${ARCHITECTURE}" \
-		version_tag="${VERSION_TAG}" \
-	  release="${RELEASE}" \
-		image_flavor="ironbank" \
-		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/Dockerfile-ironbank" && \
-=======
->>>>>>> e1684280 (Add Ironbank acceptance tests to CI (#18585))
 	cd $(ARTIFACTS_DIR)/ironbank && \
 	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
