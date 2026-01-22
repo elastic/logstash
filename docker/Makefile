@@ -14,6 +14,10 @@ ifdef DOCKER_ARCHITECTURE
   ARCHITECTURE := $(DOCKER_ARCHITECTURE)
 else
   ARCHITECTURE := $(shell uname -m)
+  # For MacOS
+  ifeq ($(ARCHITECTURE), arm64)
+	ARCHITECTURE := aarch64
+  endif
 endif
 
 IMAGE_FLAVORS ?= oss full ubi8 wolfi observability-sre
@@ -207,7 +211,7 @@ public-dockerfiles_wolfi: templates/Dockerfile.erb docker_paths $(COPY_FILES)
 	cp $(ARTIFACTS_DIR)/Dockerfile-wolfi Dockerfile && \
 	tar -zcf ../logstash-wolfi-$(VERSION_TAG)-docker-build-context.tar.gz Dockerfile bin config env2yaml pipeline
 
-public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.yaml.erb templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.yaml.erb templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
@@ -241,7 +245,7 @@ dockerfile: templates/Dockerfile.erb
 	)
 
 # Generate the Ironbank Dockerfile from ERB template.
-dockerfile_ironbank: templates/IronbankDockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
+dockerfile_ironbank: templates/Dockerfile.erb ironbank_docker_paths $(COPY_IRONBANK_FILES)
 	../vendor/jruby/bin/jruby -S erb -T "-"\
 		created_date="${BUILD_DATE}" \
 		elastic_version="${ELASTIC_VERSION}" \
@@ -250,7 +254,7 @@ dockerfile_ironbank: templates/IronbankDockerfile.erb ironbank_docker_paths $(CO
 		release="${RELEASE}" \
 		image_flavor="ironbank" \
 		local_artifacts="$(or $(LOCAL_ARTIFACTS),false)" \
-		templates/IronbankDockerfile.erb > "${ARTIFACTS_DIR}/ironbank/Dockerfile-ironbank"
+		templates/Dockerfile.erb > "${ARTIFACTS_DIR}/ironbank/Dockerfile-ironbank"
 
 clean:
 	rm -f ${ARTIFACTS_DIR}/Dockerfile

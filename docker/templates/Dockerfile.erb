@@ -18,7 +18,7 @@ WORKDIR /usr/share
 COPY scripts/config/* config/
 COPY scripts/pipeline/default.conf pipeline/logstash.conf
 COPY scripts/bin/docker-entrypoint /usr/local/bin/
-COPY logstash-${LOGSTASH_VERSION}-linux-x86_64.tar.gz /tmp/logstash.tar.gz
+COPY logstash-${LOGSTASH_VERSION}-linux-<%= arch %>.tar.gz /tmp/logstash.tar.gz
 
 RUN dnf -y upgrade && \
   dnf install -y procps findutils tar gzip which shadow-utils && \
