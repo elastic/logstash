@@ -764,6 +764,7 @@ tasks.register("installAcceptanceTestGems", Exec) {
 tasks.register("runAcceptanceTests", Exec) {
     dependsOn installAcceptanceTestGems
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     // NOTE: We sub-process here to avoid issues in java 21+ with Jruby whereby access to some modules that
     // are required for file descriptors to be properly inherited when ruby does sub-processing.
     // https://github.com/elastic/logstash/pull/18536#discussion_r2655013858
