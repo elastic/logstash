@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BinaryOperator;
 import java.util.function.ToLongFunction;
 
 /**
@@ -37,34 +36,19 @@ import java.util.function.ToLongFunction;
  * Compaction is always done at read-time and occasionally at write-time.
  * Both reads and writes are non-blocking and concurrency-safe.
  */
-abstract class RetentionWindow<T extends DatapointCapture> {
-//    private final AtomicReference<T> stagedCapture = new AtomicReference<>();
-    private final AtomicReference<Staging<T>> tail;
-    private final AtomicReference<Node<T>> head;
+abstract class RetentionWindow<CAPTURE extends DatapointCapture> {
+    private final AtomicReference<Staging<CAPTURE>> tail;
+    private final AtomicReference<Node<CAPTURE>> head;
     final FlowMetricRetentionPolicy policy;
 
-    RetentionWindow(final FlowMetricRetentionPolicy policy, final T zeroCapture) {
+    RetentionWindow(final FlowMetricRetentionPolicy policy, final CAPTURE zeroCapture) {
         this.policy = policy;
-        final Node<T> zeroNode = new Node<>(zeroCapture);
+        final Node<CAPTURE> zeroNode = new Node<>(zeroCapture);
         this.head = new AtomicReference<>(zeroNode);
         this.tail = new AtomicReference<>(Staging.ofNode(zeroNode));
     }
 
-    abstract T merge(final T oldCapture, final T newCapture);
-
-    CommitStagedPair<T> mux(final T committedCapture, final T stagedCapture, T newCapture, BinaryOperator<T> merger) {
-        // if we don't have a commit yet, just use our new datapoint
-        if (Objects.isNull(committedCapture)) {
-            return CommitStagedPair.commitOnly(newCapture);
-        }
-
-        // determine if our staged needs to be promoted
-        if (Objects.nonNull(stagedCapture) && committedCapture.nanoTime() < policy.commitBarrierNanos(newCapture.nanoTime())) {
-            return new CommitStagedPair<>(stagedCapture, newCapture);
-        }
-
-        return new CommitStagedPair<>(committedCapture, merger.apply(stagedCapture, newCapture));
-    }
+    abstract CAPTURE merge(final CAPTURE oldCapture, final CAPTURE newCapture);
 
     /**
      * Append the newest {@link DatapointCapture} into this {@link RetentionWindow},
@@ -75,16 +59,32 @@ abstract class RetentionWindow<T extends DatapointCapture> {
      *
      * @param newestCapture the newest capture to stage
      */
-    void append(final T newestCapture) {
-        final Staging<T> newTailWithStaging = new Staging<>();
+    void append(final CAPTURE newestCapture) {
+        final Staging<CAPTURE> newTailWithStaging = new Staging<>();
 
-        Staging<T> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
-            final T committedCapture = committedNodeStagePair.committed.capture;
-            final T stagedCapture = committedNodeStagePair.staged;
-            final CommitStagedPair<T> result = mux(committedCapture, stagedCapture, newestCapture, this::merge);
+        Staging<CAPTURE> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
+            final CAPTURE committedCapture = committedNodeStagePair.committed.capture;
+            final CAPTURE stagedCapture = committedNodeStagePair.staged;
 
-            Node<T> committedNode = Objects.equals(committedNodeStagePair.committed.capture, result.committed) ? committedNodeStagePair.committed : new Node<>(result.committed);
-            newTailWithStaging.set(committedNode, result.staged);
+            final CAPTURE captureToCommit;
+            final CAPTURE captureToStage;
+
+            if (Objects.isNull(committedCapture)) {
+                // if we don't have a commit yet, just use our new capture
+                captureToCommit = merge(stagedCapture, newestCapture);
+                captureToStage = null;
+            } else if (Objects.nonNull(stagedCapture) && committedCapture.nanoTime() < policy.commitBarrierNanos(newestCapture.nanoTime())) {
+                // if the gap between newest and committed is bigger than resolution, commit staged and stage new
+                captureToCommit = stagedCapture;
+                captureToStage = newestCapture;
+            } else {
+                // otherwise merge into our stage
+                captureToCommit = committedCapture;
+                captureToStage = merge(stagedCapture, newestCapture);
+            }
+
+            Node<CAPTURE> committedNode = Objects.equals(committedCapture, captureToCommit) ? committedNodeStagePair.committed : new Node<>(captureToCommit);
+            newTailWithStaging.set(committedNode, captureToStage);
             return newTailWithStaging;
         });
 
@@ -94,9 +94,9 @@ abstract class RetentionWindow<T extends DatapointCapture> {
         }
 
         // occasional force compaction
-        final Node<T> currentHead = this.head.get();
+        final Node<CAPTURE> currentHead = this.head.get();
         if (currentHead.captureNanoTime() > policy.forceCompactionBarrierNanos(newestCapture.nanoTime())) {
-            final Node<T> compactHead = compactHead(policy.retentionBarrierNanos(newestCapture.nanoTime()));
+            final Node<CAPTURE> compactHead = compactHead(policy.retentionBarrierNanos(newestCapture.nanoTime()));
             if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
                 final long compactHeadAgeNanos = Math.subtractExact(newestCapture.nanoTime(), compactHead.captureNanoTime());
                 ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
@@ -126,10 +126,10 @@ abstract class RetentionWindow<T extends DatapointCapture> {
                 '}';
     }
 
-    public Optional<T> returnHead(long nanoTime) {
+    public Optional<CAPTURE> returnHead(long nanoTime) {
         final long barrier = policy.retentionBarrierNanos(nanoTime);
-        final RetentionWindow.Node<T> head = compactHead(barrier);
-        T capture = head.capture;
+        final RetentionWindow.Node<CAPTURE> head = compactHead(barrier);
+        CAPTURE capture = head.capture;
         if (capture.nanoTime() <= barrier) {
             return Optional.of(capture);
         } else {
@@ -162,9 +162,9 @@ abstract class RetentionWindow<T extends DatapointCapture> {
      * @param barrier a nanoTime that will NOT be crossed during compaction
      * @return the head node after compaction up to the provided barrier.
      */
-    private Node<T> compactHead(final long barrier) {
+    private Node<CAPTURE> compactHead(final long barrier) {
         return this.head.updateAndGet((existingHead) -> {
-            final Node<T> proposedHead = existingHead.seekWithoutCrossing(barrier);
+            final Node<CAPTURE> proposedHead = existingHead.seekWithoutCrossing(barrier);
             return Objects.requireNonNullElse(proposedHead, existingHead);
         });
     }
