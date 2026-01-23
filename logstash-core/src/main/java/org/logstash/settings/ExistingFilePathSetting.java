@@ -28,11 +28,6 @@ public class ExistingFilePathSetting extends BaseSetting<String> {
         super(name, defaultValue, strict, new Predicate<String>() {
             @Override
             public boolean test(String filePath) {
-                // when path is null, we skip existence check
-                if (filePath == null) {
-                    return true;
-                }
-
                 if (!Files.exists(Paths.get(filePath))) {
                     throw new IllegalArgumentException(
                             String.format("File \"%s\" must exist but was not found.", filePath));
