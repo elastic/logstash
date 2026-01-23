@@ -706,6 +706,7 @@ tasks.register("runDockerOssTests", Exec) {
     dependsOn installAcceptanceTestGems
     dependsOn artifactDockerOss
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/oss"
 }
 
@@ -714,6 +715,7 @@ tasks.register("runDockerFullTests", Exec) {
     dependsOn installAcceptanceTestGems
     dependsOn artifactDocker
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/full"
 }
 
@@ -722,6 +724,7 @@ tasks.register("runDockerWolfiTests", Exec) {
     dependsOn installAcceptanceTestGems
     dependsOn artifactDockerWolfi
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/wolfi"
 }
 
@@ -730,6 +733,7 @@ tasks.register("runAllDockerTests", Exec) {
     dependsOn installAcceptanceTestGems
     dependsOn artifactDockerOnly
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec"
 }
 
@@ -738,6 +742,7 @@ tasks.register("runDockerIronbankTests", Exec) {
     dependsOn installAcceptanceTestGems
     dependsOn artifactDockerIronbank
     workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/ironbank"
 }
 
