@@ -16,10 +16,10 @@ if [ -n "$BUILD_JAVA_HOME" ]; then
 fi
 
 # Can run either a specific flavor, or all flavors -
-# eg `ci/acceptance_tests.sh oss` will run tests for open source container
-#    `ci/acceptance_tests.sh full` will run tests for the default container
-#    `ci/acceptance_tests.sh wolfi` will run tests for the wolfi based container
-#    `ci/acceptance_tests.sh` will run tests for all containers
+# eg `ci/docker_acceptance_tests.sh oss` will run tests for open source container
+#    `ci/docker_acceptance_tests.sh full` will run tests for the default container
+#    `ci/docker_acceptance_tests.sh wolfi` will run tests for the wolfi based container
+#    `ci/docker_acceptance_tests.sh` will run tests for all containers
 SELECTED_TEST_SUITE=$1
 
 # The acceptance test in our CI infrastructure doesn't clear the workspace between run
@@ -29,64 +29,19 @@ SELECTED_TEST_SUITE=$1
 [ -f Gemfile ] && rm Gemfile
 [ -f Gemfile.lock ] && rm Gemfile.lock
 
-LS_HOME="$PWD"
-QA_DIR="$PWD/qa"
-
-cd $QA_DIR
-bundle check || bundle install
-
-echo "Building Logstash artifacts"
-cd $LS_HOME
-
 if [[ $SELECTED_TEST_SUITE == "oss" ]]; then
-  echo "--- Building $SELECTED_TEST_SUITE docker images"
-  cd $LS_HOME
-  ./gradlew artifactDockerOss
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/oss/*_spec.rb
+  echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
+  ./gradlew runDockerOssTests
 elif [[ $SELECTED_TEST_SUITE == "full" ]]; then
-  echo "--- Building $SELECTED_TEST_SUITE docker images"
-  cd $LS_HOME
-  ./gradlew artifactDocker
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/full/*_spec.rb
+  echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
+  ./gradlew runDockerFullTests
 elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
-  echo "--- Building $SELECTED_TEST_SUITE docker images"
-  cd $LS_HOME
-  ./gradlew artifactDockerWolfi
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/wolfi/*_spec.rb
+  echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
+  ./gradlew runDockerWolfiTests
 elif [[ $SELECTED_TEST_SUITE == "ironbank" ]]; then
-  echo "--- Building $SELECTED_TEST_SUITE docker image with UBI base"
-  cd $LS_HOME
-  ./gradlew artifactDockerIronbank
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/ironbank/*_spec.rb
+  echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
+  ./gradlew runDockerIronbankTests
 else
-  echo "--- Building all docker images"
-  cd $LS_HOME
-  ./gradlew artifactDockerOnly
-
-  echo "--- Acceptance: Installing dependencies"
-  cd $QA_DIR
-  bundle install
-
-  echo "--- Acceptance: Running the tests"
-  bundle exec rspec docker/spec/**/*_spec.rb
+  echo "--- Building and testing all docker images"
+  ./gradlew runAllDockerTests
 fi
