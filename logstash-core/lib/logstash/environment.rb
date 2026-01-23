@@ -83,7 +83,7 @@ module LogStash
             Setting::StringSetting.new("api.auth.basic.password_policy.include.digit", "REQUIRED", true, %w[REQUIRED OPTIONAL]),
             Setting::StringSetting.new("api.auth.basic.password_policy.include.symbol", "OPTIONAL", true, %w[REQUIRED OPTIONAL]),
            Setting::BooleanSetting.new("api.ssl.enabled", false),
-  Setting::ExistingFilePath.new("api.ssl.keystore.path", nil, false).nullable,
+  Setting::ExistingFilePathSetting.new("api.ssl.keystore.path", nil, false).nullable,
           Setting::PasswordSetting.new("api.ssl.keystore.password", nil, false).nullable,
        Setting::StringArray.new("api.ssl.supported_protocols", nil, true, %w[TLSv1 TLSv1.1 TLSv1.2 TLSv1.3]),
            Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
