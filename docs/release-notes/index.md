@@ -21,6 +21,165 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.0 [logstash-9.3.0-release-notes]
+
+### Features and enhancements [logstash-9.3.0-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.3.0
+
+=== Logstash Commits between 9.3 and 9.2.4
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.4..9.3"
+
+0fb187ea5 - (HEAD -> 9.3, origin/9.3) Use gradle and bundled jruby for acceptance tests orchestration (#18536) (#18634) (79 minutes ago) <mergify[bot]>
+d7438aabe - test artifact upgrade from 8.19 instead of 7.17 (#18635) (#18637) (3 hours ago) <mergify[bot]>
+229179200 - Fix ironbank container build (#18625) (#18629) (11 hours ago) <mergify[bot]>
+1004ec721 - Add Ironbank acceptance tests to CI (#18585) (#18623) (21 hours ago) <mergify[bot]>
+d6b29147c - Update patch plugin versions in gemfile lock (#18618) (2 days ago) <github-actions[bot]>
+291df056c - bump lock file for 9.3 (#18611) (2 days ago) <github-actions[bot]>
+b586376a5 - [9.3] (backport #18471) Make gradle the root of every dependency graph (#18610) (3 days ago) <mergify[bot]>
+21755399b - [9.3] (backport #18537) Remove unused/unreachable rake tasks (#18606) (3 days ago) <mergify[bot]>
+6c8e5e1c0 - [9.3] (backport #18526) Remove unused gradle tasks (#18602) (3 days ago) <mergify[bot]>
+8f372456c - Only ship x-pack library code with artifacts (#18548) (#18594) (7 days ago) <mergify[bot]>
+e19723b83 - Upgrade Log4j to 2.25.3 (#18522) (#18590) (7 days ago) <mergify[bot]>
+a6f79a9e0 - Doc: Use new version syntax (#18580) (#18588) (7 days ago) <mergify[bot]>
+17ace268a - Forward port of release notes for 9.2.4 (#18555) and 9.1.10 (#18565) (#18575) (8 days ago) <Rob Bavey>
+269a0f4b2 - Downgrade kafka-integration to 11.8.1 to avoid breaking backward compatibility. (#18574) (10 days ago) <Mashhur>
+0c8b305b2 - Upgrade elastic_integration plugin after release. (#18535) (4 weeks ago) <Mashhur>
+b3b3f02ee - Fix, clean batch metrics on pipeline shutdown (#18515) (#18521) (4 weeks ago) <mergify[bot]>
+5b0b195fb - Update patch plugin versions in gemfile lock (#18531) (4 weeks ago) <github-actions[bot]>
+30c4a90c4 - Stop tests from polluting maven settings (#18525) (#18530) (5 weeks ago) <mergify[bot]>
+8302f8bfe - bump lock file for 9.3 (#18518) (5 weeks ago) <github-actions[bot]>
+55eb62bb8 - Revert "Keep psych minor version in line with jruby 9.4.13.0 (#18507) (#18508)" (#18517) (5 weeks ago) <Cas Donoghue>
+1be926e59 - [9.3 release] Copy gemfile.lock from 9.2 and upgrade dependencies (#18506) (5 weeks ago) <Mashhur>
+a55bc73ac - Keep psych minor version in line with jruby 9.4.13.0 (#18507) (#18508) (5 weeks ago) <mergify[bot]>
+016ec9dbf - [main] (backport #18480) Release notes for 9.2.3 (#18501) (5 weeks ago) <mergify[bot]>
+d174a5673 - [main] (backport #18479) Release notes for 9.1.9 (#18500) (5 weeks ago) <mergify[bot]>
+a540784be - Plugins snyk scanning followups (#18498) (5 weeks ago) <Mashhur>
+a89e530db - Logstash plugins snyk scan pipeline. (#18496) (5 weeks ago) <Mashhur>
+9d76738b1 - chore: deps(updatecli): Bump updatecli version to v0.112.0 (#18495) (6 weeks ago) <github-actions[bot]>
+3e3e75ddd - bk(pull-requests.json): run faster if unrelated changes to the CI project (#18490) (6 weeks ago) <Victor Martinez>
+abb0d1a7b - Bump anchore/scan-action in the github-actions group across 1 directory (#18494) (6 weeks ago) <dependabot[bot]>
+39cbdce70 - (origin/mergify/bp/main/pr-18493, origin/mergify/bp/main/pr-18492) Doc: Update Logstash security settings (#18356) (6 weeks ago) <Karen Metts>
+dc83bda54 - Support wait_for_status and timeout query params on root endpoint (#18377) (6 weeks ago) <Emily S>
+e0acfe744 - Exposes average batch metrics at 1, 5 and 15 minutes time window. (#18460) (6 weeks ago) <Andrea Selva>
+cfa4fb9de - Validate supplied branch and tag exist for RN gen (#18481) (6 weeks ago) <Cas Donoghue>
+e08abb8c0 - Remove duplicate gems when producting logstash artifacts (#18340) (6 weeks ago) <Cas Donoghue>
+279171b79 - Include pipeline and plugin IDs to the JSON logs. (#18470) (6 weeks ago) <Mashhur>
+4ef52c227 - Chore: spread use of ManualAdvanceClock to avoid similar test class creation (#18467) (6 weeks ago) <Andrea Selva>
+3659b6f9a - (origin/mergify/bp/main/pr-18466, origin/mergify/bp/main/pr-18461) Moved Ruby ValidatedPassword setting to Java implementation (#18185) (7 weeks ago) <Andrea Selva>
+10c87a639 - Doc: Add elastic-integration filter tutorial (#18229) (7 weeks ago) <Karen Metts>
+b15c6c50f - Rewrite Env2yaml in java instead of Go (#18423) (7 weeks ago) <Cas Donoghue>
+a69f5efba - chore: deps(updatecli): Bump updatecli version to v0.111.0 (#18450) (8 weeks ago) <github-actions[bot]>
+f7fbfbfb8 - Bump anchore/scan-action in the github-actions group across 1 directory (#18449) (8 weeks ago) <dependabot[bot]>
+88585c5cf - Bump the github-actions group across 1 directory with 2 updates (#18439) (9 weeks ago) <dependabot[bot]>
+934740bdf - management: confirm server-side filtering 404s (#18265) (9 weeks ago) <Rye Biesemeyer>
+4a1c7bf3e - updatecli: manage UBI and updatecli versions (#18427) (10 weeks ago) <Victor Martinez>
+f05d515e4 - chore: deps(updatecli): Bump updatecli version to v0.110.3 (#18431) (10 weeks ago) <github-actions[bot]>
+84db0b012 - bump: ubi 9.7 (#18426) (10 weeks ago) <Victor Martinez>
+4abb46c45 - Release notes for 9.2.1 (#18404) (#18418) (2 months ago) <mergify[bot]>
+b49d49bba - [main] (backport #18405) Release notes for 9.1.7 (#18417) (2 months ago) <mergify[bot]>
+4963c0b20 - Ensure java updator runs on all active branches (#18408) (3 months ago) <Cas Donoghue>
+3ca739501 - simplify x-pack/build.gradle (#18381) (3 months ago) <João Duarte>
+d9fda3795 - Use logstash-versions.yml for observabilitySRE stack versions (#18375) (3 months ago) <Cas Donoghue>
+aaa532604 - Upgrade JDK to 21.0.9 (#18350) (3 months ago) <Mashhur>
+90c447677 - [DOCS] Fix OpenAPI enum error (#18344) (3 months ago) <Lisa Cawley>
+bf89f43b7 - chore: remove test file for exhaustive tests and normalise github commands (#18384) (3 months ago) <Victor Martinez>
+02aa5e13e - bk(smart exhaustive tests): tune the steps to support GH comments and changesets (#18383) (3 months ago) <Victor Martinez>
+be64ebfdd - bk: fix regex and add new file (#18382) (3 months ago) <Victor Martinez>
+fc9ad7fd6 - feat(ci): support exhaustive tests for PRs (code changes or GH comment) (#18327) (3 months ago) <Victor Martinez>
+915b69fee - Modify logger config to link deprecation logger to root logger by default (#18326) (3 months ago) <Álex Cámara Lara>
+6a17987fa - Add PQ unable to start in `9.2.0` known issue (#18369) (3 months ago) <Rob Bavey>
+ee6813136 - Actually raise a PR when java-bump is detected (#18351) (3 months ago) <Cas Donoghue>
+c6dba082f - Set 45m timeout to exhaustive pipeline jobs. (#18362) (3 months ago) <Mashhur>
+6c48e519f - make queue_max_bytes a long again allowing queues bigger than 2GB (#18366) (3 months ago) <João Duarte>
+c10b871a2 - Bump anchore/scan-action in the github-actions group across 1 directory (#18365) (3 months ago) <dependabot[bot]>
+163bc72da - Logstash 9.2.0 release notes updates (#18360) (3 months ago) <Karen Metts>
+391217abc - Fixes the NPE when stats info doesn't have queue type entry. (#18331) (3 months ago) <Mashhur>
+458efabb8 - retry catalog queries and jdk downloads (#18345) (3 months ago) <João Duarte>
+21ac3d8dc - Release notes for 9.2.0 (#18313) (#18339) (3 months ago) <mergify[bot]>
+67c7386bd - Release notes for 9.1.6 (#18334) (#18338) (3 months ago) <mergify[bot]>
+b6af3151f - Deprecate config.reload.* as pipeline-level settings (#18312) (3 months ago) <Emily S>
+a83b7a4ff - Add encoded/non-encoded auth method to x-pack unit tests (#18307) (3 months ago) <Álex Cámara Lara>
+0b661d992 - Bump the github-actions group across 1 directory with 2 updates (#18320) (3 months ago) <dependabot[bot]>
+fc7ba9f25 - Handle GH org for elastic_integration plugin (#18315) (3 months ago) <Cas Donoghue>
+08f4c5270 - Adds integration test for the `_health_report` and `_node/plugins` APIs. (#18306) (3 months ago) <Mashhur>
+15b4e05e3 - Move invokedynamic and log4j isThreadContextMapInheritable from jvm.options to code  (#18296) (3 months ago) <Emily S>
+8f4014b44 - (origin/mergify/bp/main/pr-18292, origin/mergify/bp/main/pr-18291) Doc: Update docs for testing for boolean fields (#18271) (4 months ago) <Karen Metts>
+cbef0782e - ci: remove sonarqube (#18273) (4 months ago) <Victor Martinez>
+819474f8a - [main] (backport #18247) Release notes for 9.0.8 (#18270) (4 months ago) <mergify[bot]>
+a120ab874 - Release notes for 9.1.5 (#18248) (#18267) (4 months ago) <mergify[bot]>
+8a92bbb62 - Downgrade gradle to coninute testing on windows server 2016 (#18263) (4 months ago) <Cas Donoghue>
+1150f8899 - Bump logstash version 9.3.0 (#18241) (4 months ago) <github-actions[bot]>
+a3228e2dd - Ensure docs gen inserts at correct place in file (#18250) (4 months ago) <Cas Donoghue>
+1356c668e - Rewrite Password setting class in Java (second attempt) (#18231) (4 months ago) <Andrea Selva>
+a994c7cb6 - Remove redundant testing and circular dependency from docker acceptance testing (#18181) (4 months ago) <Cas Donoghue>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.2.4..9.3 *.release"
+Changed plugin versions:
+logstash-codec-avro: 3.4.1 -> 3.5.0
+logstash-codec-netflow: 4.3.2 -> 4.3.3
+logstash-filter-cidr: 3.1.3 -> 3.2.0
+logstash-filter-elastic_integration: 9.2.0 -> 9.3.0
+logstash-input-azure_event_hubs: 1.5.3 -> 1.5.4
+logstash-integration-kafka: 11.8.1 -> 11.8.2
+logstash-integration-snmp: 4.1.0 -> 4.2.1
+logstash-output-elasticsearch: 12.0.7 -> 12.1.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.3.0-changes]
+
+**Avro Codec - 3.5.0**
+
+* Add SSL/TLS support for HTTPS schema registry connections
+* Add `ssl_enabled` option to enable/disable SSL
+* Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+* Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+* Add `ssl_verification_mode` option to control SSL verification (full, none)
+* Add `ssl_cipher_suites` option to configure cipher suites
+* Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+* Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+* Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+* Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+* Add HTTP proxy support with `proxy` option
+* Add HTTP basic authentication support with `username` and `password` options
+
+**Netflow Codec - 4.3.3**
+
+* Fix NoMethodError when decode fails. [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Cidr Filter - 3.2.0**
+
+* feature: Add address_field config option to handle nested fields
+
+**Elastic_integration Filter - 9.3.0**
+
+* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+**Snmp Integration - 4.2.1**
+
+* Upgrade log4j dependency [#85](https://github.com/logstash-plugins/logstash-integration-snmp/pull/85)
+
+* Add AES256 with 3DES extension support for `priv_protocol` [#78](https://github.com/logstash-plugins/logstash-integration-snmp/pull/78)
+
+**Elasticsearch Output - 12.1.1**
+
+* Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
+
+* Add drop_error_types config option to not retry after certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
+
+
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
 ### Features and enhancements [logstash-9.2.4-features-enhancements]
