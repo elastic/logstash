@@ -41,7 +41,10 @@ public class CoercibleStringSettingTest {
 
         assertEquals("false", sut.value());
     }
-
+    @Test(expected = IllegalArgumentException.class)
+    public void givenInvalidValueWhenSetThenThrowsException() {
+        sut.set("invalid");
+    }
     @Test
     public void givenNativeBooleanTrueWhenSetThenValueIsCoercedToStringTrue() {
         sut.set(true);

@@ -52,8 +52,8 @@ public class CoercibleStringSetting extends Coercible<Object> {
     @Override
     public void validate(Object input) throws IllegalArgumentException {
         super.validate(input);
-
-        staticValidate(input.toString(), possibleStrings, this.getName());
+        String coerced = coerce(input);
+        staticValidate(coerced, possibleStrings, this.getName());
     }
 
     private static void staticValidate(String input, List<String> possibleStrings, String name) {
