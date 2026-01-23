@@ -376,60 +376,36 @@ tasks.register("artifactDockerfiles") {
     }
 }
 
-tasks.register("artifactAll") {
+tasks.register("artifactAll", Exec) {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
     dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:all'
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    workingDir projectDir
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    commandLine "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake", "artifact:all"
 }
 
-tasks.register("artifactDeb") {
+tasks.register("artifactDeb", Exec) {
     description = "Build DEB package"
     dependsOn bootstrap
     dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:deb'
-            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    workingDir projectDir
+    environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    commandLine "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake", "artifact:deb"
 }
 
-tasks.register("artifactRpm") {
+tasks.register("artifactRpm", Exec) {
     description = "Build RPM package"
     dependsOn bootstrap
     dependsOn copyJdk
-
-    doLast {
-        exec {
-            workingDir projectDir
-            executable "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake"
-            args 'artifact:rpm'
-            environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-            environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
-            standardOutput = System.out
-            errorOutput = System.err
-        }
-    }
+    workingDir projectDir
+    environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    commandLine "${projectDir}/vendor/bundle/jruby/3.1.0/bin/rake", "artifact:rpm"
 }
 
 tasks.register("compileGrammar") {
@@ -713,6 +689,73 @@ tasks.register("runAcceptanceTests", Exec) {
     // are required for file descriptors to be properly inherited when ruby does sub-processing.
     // https://github.com/elastic/logstash/pull/18536#discussion_r2655013858
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rake", "qa:acceptance:all"
+}
+
+// Docker acceptance tests - reuses installAcceptanceTestGems for gem installation
+tasks.register("runDockerOssTests", Exec) {
+    description = "Run OSS docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerOss
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/oss"
+}
+
+tasks.register("runDockerFullTests", Exec) {
+    description = "Run full docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDocker
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/full"
+}
+
+tasks.register("runDockerWolfiTests", Exec) {
+    description = "Run Wolfi docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerWolfi
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/wolfi"
+}
+
+tasks.register("runAllDockerTests", Exec) {
+    description = "Run all docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerOnly
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec"
+}
+
+tasks.register("runDockerIronbankTests", Exec) {
+    description = "Run Ironbank docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerIronbank
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/ironbank"
+}
+
+// Serverless integration tests
+tasks.register("installIntegrationTestGemsDevelopment", Exec) {
+    description = "Install integration test gems including development dependencies"
+    dependsOn bootstrap
+    workingDir "${projectDir}"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install", "--with", "development"
+}
+
+tasks.register("runServerlessDLQTests", Exec) {
+    description = "Run serverless DLQ integration tests"
+    dependsOn bootstrap
+    dependsOn installDefaultGems
+    dependsOn unpackTarDistribution
+    dependsOn ':logstash-core:copyGemjar'
+    dependsOn installIntegrationTestGemsDevelopment
+    workingDir "${projectDir}"
+    environment "SERVERLESS", "true"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec",
+        "-fd", "qa/integration/specs/dlq_spec.rb", "-e", "using pipelines.yml"
 }
 
 tasks.register("generateLicenseReport", JavaExec) {
