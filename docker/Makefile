@@ -193,7 +193,7 @@ public-dockerfiles_ironbank: dockerfile_ironbank templates/hardening_manifest.ya
 	  elastic_version="${ELASTIC_VERSION}" \
 	  templates/hardening_manifest.yaml.erb > $(ARTIFACTS_DIR)/ironbank/hardening_manifest.yaml && \
 	cd $(ARTIFACTS_DIR)/ironbank && \
-	cp $(ARTIFACTS_DIR)/Dockerfile-ironbank Dockerfile && \
+	cp $(ARTIFACTS_DIR)/ironbank/Dockerfile-ironbank Dockerfile && \
 	tar -zcf ../logstash-ironbank-$(VERSION_TAG)-docker-build-context.tar.gz scripts Dockerfile hardening_manifest.yaml LICENSE README.md
 
 # Generate the Dockerfiles from ERB templates.
