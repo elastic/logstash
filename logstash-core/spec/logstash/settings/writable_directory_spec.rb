@@ -21,7 +21,7 @@ require "tmpdir"
 require "socket" # for UNIXSocket
 require "fileutils"
 
-describe LogStash::Setting::WritableDirectory do
+describe LogStash::Setting::WritableDirectorySetting do
   # linux is 108, Macos is 104, so use a safe value
   # Stud::Temporary.pathname, will exceed that size without adding anything
   let(:parent) { File.join(Dir.tmpdir, Time.now.to_f.to_s) }
@@ -39,7 +39,7 @@ describe LogStash::Setting::WritableDirectory do
   end
 
   subject do
-    # Create a new WritableDirectory setting with no default value strict
+    # Create a new WritableDirectorySetting setting with no default value strict
     # disabled.
     described_class.new("fancy.path", "", false)
   end
@@ -61,7 +61,9 @@ describe LogStash::Setting::WritableDirectory do
       context "and the directory cannot be created" do
         it "should fail" do
           # using chmod does not work on Windows better mock and_raise("message")
-          expect(FileUtils).to receive(:mkdir_p).and_raise("foobar")
+          # expect(FileUtils).to receive(:mkdir_p).and_raise("foobar")
+          # To make fail directory creation create a file clashing with the path of directory
+          File.new(path, "w").close
           expect { subject.value }.to raise_error
         end
       end
@@ -77,15 +79,17 @@ describe LogStash::Setting::WritableDirectory do
         before { subject.set(path) }
         # assume this spec already created a directory that's writable... fair? :)
         it "should return true" do
-          expect(subject.validate_value).to be_truthy
+          expect { subject.validate_value }.not_to raise_error
         end
       end
 
       context "but is not writable" do
         # chmod does not work on Windows, mock writable? instead
-        before { expect(File).to receive(:writable?).and_return(false) }
+        # before { expect(File).to receive(:writable?).and_return(false) }
+        # Make it readonly
+        before { File.chmod(0444, path) }
         it_behaves_like "failure"
-      end
+      end unless LogStash::Environment.windows?
     end
 
     context "when the path exists" do
@@ -125,18 +129,22 @@ describe LogStash::Setting::WritableDirectory do
         end
 
         it "should return true" do
-          expect(subject.validate_value).to be_truthy
+          expect { subject.validate_value }.not_to raise_error
         end
       end
 
       context "and cannot be created" do
         before do
           # chmod does not work on Windows, mock writable? instead
-          expect(File).to receive(:writable?).and_return(false)
+          #expect(File).to receive(:writable?).and_return(false)
+          # Make it readonly
+          # File.chmod(0444, path)
+          File.new(path, "w+").close
+          File.chmod(0444, path)
         end
 
         it_behaves_like "failure"
-      end
+      end unless LogStash::Environment.windows?
     end
   end
 end
