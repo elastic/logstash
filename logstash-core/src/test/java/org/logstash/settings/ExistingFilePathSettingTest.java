@@ -47,12 +47,11 @@ public class ExistingFilePathSettingTest {
 
     @Test
     public void whenFileDoesNotExistThenValidationThrowsError() {
-        ExistingFilePathSetting sut = new ExistingFilePathSetting("my.file.path", null, true);
+        ExistingFilePathSetting sut = new ExistingFilePathSetting("my.file.path", null, false);
         String nonExistentPath = "/path/to/non/existent/file.txt";
+        sut.setSafely(nonExistentPath);
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
-            sut.setSafely(nonExistentPath);
-        });
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
 
         assertThat(ex.getMessage(), containsString("File \"/path/to/non/existent/file.txt\" must exist but was not found."));
     }
