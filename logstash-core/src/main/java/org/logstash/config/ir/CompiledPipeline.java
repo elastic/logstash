@@ -407,11 +407,9 @@ public final class CompiledPipeline {
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
 
-            final int totalSize = chunker(outputBatch, (chunk, isLastChunk) -> {
+            return chunker(outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
             });
-
-            return totalSize;
         }
     }
 
