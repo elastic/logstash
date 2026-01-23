@@ -59,7 +59,8 @@ module ServiceTester
   class Base
     LOCATION = ENV.fetch('LS_ARTIFACTS_PATH', LS_BUILD_PATH.freeze)
     LOGSTASH_PATH = "/usr/share/logstash/".freeze
-
+    # Clear Bundler/Ruby environment variables that could pollute tested Logstash instance
+    ENV_CLEANUP = "env -u BUNDLE_PATH -u BUNDLE_GEMFILE -u BUNDLE_BIN_PATH -u BUNDLER_VERSION -u BUNDLER_SETUP -u GEM_HOME -u GEM_PATH -u RUBYLIB -u RUBYOPT".freeze
     def start_service(service)
       service_manager(service, "start")
     end
@@ -68,10 +69,19 @@ module ServiceTester
       service_manager(service, "stop")
     end
 
+<<<<<<< HEAD
     def run_command(cmd)
       response = nil
       response = sudo_exec!("JARS_SKIP='true' #{cmd}")
       response
+=======
+    def run_sudo_command(cmd)
+      sudo_exec!("#{ENV_CLEANUP} JARS_SKIP='true' #{cmd}")
+    end
+
+    def run_command(cmd)
+      exec!("#{ENV_CLEANUP} JARS_SKIP='true' #{cmd}")
+>>>>>>> 7e9c38455 (Use gradle and bundled jruby for acceptance tests orchestration (#18536))
     end
 
     def replace_in_gemfile(pattern, replace)
