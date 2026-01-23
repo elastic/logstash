@@ -331,6 +331,21 @@ public final class CompiledPipeline {
         return outputs.containsKey(vertex.getId());
     }
 
+    @SuppressWarnings("unchecked")
+    private int chunker(RubyArray<RubyEvent> batch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
+        final int totalSize = batch.size();
+        final int maxChunkSize = (maxBatchOutputSize > 0) ? maxBatchOutputSize : totalSize;
+
+        // send to consumer in chunks
+        for (int offset = 0; offset < totalSize; offset += maxChunkSize) {
+            int end = Math.min(offset + maxChunkSize, totalSize);
+            boolean isLastChunk = (end == totalSize);
+            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(batch.subList(offset, end));
+            consumer.accept(chunk, isLastChunk);
+        }
+        return totalSize;
+    }
+
     public final class CompiledOrderedExecution extends CompiledExecution {
 
         @SuppressWarnings({"unchecked"}) private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
@@ -358,17 +373,9 @@ public final class CompiledPipeline {
                 return 0;
             }
 
-            // chunk the filtered batch
-            final int totalSize = outputBatch.size();
-            final int maxChunkSize = (maxBatchOutputSize > 0) ? maxBatchOutputSize : totalSize;
-
-            // send to compiledOutputs in chunks
-            for (int offset = 0; offset < totalSize; offset += maxChunkSize) {
-                int end = Math.min(offset + maxChunkSize, totalSize);
-                boolean isLastChunk = (end == totalSize);
-                RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(outputBatch.subList(offset, end));
+            final int totalSize = chunker(outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
-            }
+            });
 
             // Handle empty batch with flush/shutdown
             if (totalSize == 0 && (flush || shutdown)) {
@@ -400,17 +407,10 @@ public final class CompiledPipeline {
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
 
-            // chunk the filtered batch
-            final int totalSize = outputBatch.size();
-            final int maxChunkSize = (maxBatchOutputSize > 0) ? maxBatchOutputSize : totalSize;
-
-            // just send to compiledOutputs in chunks
-            for (int offset = 0; offset < totalSize; offset += maxChunkSize) {
-                int end = Math.min(offset + maxChunkSize, totalSize);
-                boolean isLastChunk = (end == totalSize);
-                RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(outputBatch.subList(offset, end));
+            final int totalSize = chunker(outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
-            }
+            });
+
             return totalSize;
         }
     }
