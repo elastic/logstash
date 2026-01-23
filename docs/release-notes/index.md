@@ -99,6 +99,10 @@ The Kafka integration plugin version bundled with this release introduces deprec
 * Add HTTP proxy support with `proxy` option
 * Add HTTP basic authentication support with `username` and `password` options
 
+**Netflow Codec - 4.3.3**
+
+* Fix `NoMethodError` when decode fails [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
 **Cidr Filter - 3.2.0**
 
 * Feature: Add `address_field` config option to handle nested fields [#29](https://github.com/logstash-plugins/logstash-filter-cidr/pull/29)
@@ -107,7 +111,18 @@ The Kafka integration plugin version bundled with this release introduces deprec
 
 * Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
 
-**Snmp Integration - 4.2.0**
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+**Snmp Integration - 4.2.1**
+
+* Upgrade log4j dependency [#85](https://github.com/logstash-plugins/logstash-integration-snmp/pull/85)
 
 * Add AES256 with 3DES extension support for `priv_protocol` [#78](https://github.com/logstash-plugins/logstash-integration-snmp/pull/78)
 
