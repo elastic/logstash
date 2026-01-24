@@ -719,6 +719,15 @@ tasks.register("runDockerWolfiTests", Exec) {
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/wolfi"
 }
 
+tasks.register("runDockerUbi8Tests", Exec) {
+    description = "Run UBI8 docker acceptance tests"
+    dependsOn installAcceptanceTestGems
+    dependsOn artifactDockerUbi8
+    workingDir "${projectDir}/qa"
+    environment "BUNDLE_PATH", "vendor/bundle"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec", "docker/spec/ubi8"
+}
+
 tasks.register("runAllDockerTests", Exec) {
     description = "Run all docker acceptance tests"
     dependsOn installAcceptanceTestGems
