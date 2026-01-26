@@ -48,7 +48,6 @@ public class WritableDirectorySetting extends BaseSetting<String> {
 
     @Override
     public void validate(String input) throws IllegalArgumentException {
-        System.out.println("DNADBG>> validating value: [" + input + "] for setting: " + getName());
         if (input == null || input.isEmpty()) {
             throw new IllegalArgumentException(
                     String.format("Setting \"%s\" must be a non-empty String path.", getName()));
