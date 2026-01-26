@@ -509,6 +509,7 @@ def qaVendorPath = "${qaBuildPath}/vendor"
 
 tasks.register("installIntegrationTestGems") {
   dependsOn assembleTarDistribution
+  dependsOn unpackTarDistribution
   def gemfilePath = file("${projectDir}/qa/integration/Gemfile")
   inputs.files gemfilePath
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
@@ -756,24 +757,16 @@ tasks.register("runDockerIronbankTests", Exec) {
 }
 
 // Serverless integration tests
-tasks.register("installIntegrationTestGemsDevelopment", Exec) {
-    description = "Install integration test gems including development dependencies"
-    dependsOn bootstrap
-    workingDir "${projectDir}"
-    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install", "--with", "development"
-}
-
 tasks.register("runServerlessDLQTests", Exec) {
     description = "Run serverless DLQ integration tests"
-    dependsOn bootstrap
-    dependsOn installDefaultGems
+    dependsOn installIntegrationTestGems
     dependsOn unpackTarDistribution
     dependsOn ':logstash-core:copyGemjar'
-    dependsOn installIntegrationTestGemsDevelopment
-    workingDir "${projectDir}"
+    workingDir "${projectDir}/qa/integration"
+    environment "BUNDLE_PATH", "${buildDir}/qa/integration/vendor"
     environment "SERVERLESS", "true"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec",
-        "-fd", "qa/integration/specs/dlq_spec.rb", "-e", "using pipelines.yml"
+        "-fd", "specs/dlq_spec.rb", "-e", "using pipelines.yml"
 }
 
 tasks.register("generateLicenseReport", JavaExec) {
