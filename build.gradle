@@ -500,6 +500,7 @@ def qaVendorPath = "${qaBuildPath}/vendor"
 
 tasks.register("installIntegrationTestGems") {
   dependsOn assembleTarDistribution
+  dependsOn unpackTarDistribution
   def gemfilePath = file("${projectDir}/qa/integration/Gemfile")
   inputs.files gemfilePath
   inputs.files file("${projectDir}/qa/integration/integration_tests.gemspec")
