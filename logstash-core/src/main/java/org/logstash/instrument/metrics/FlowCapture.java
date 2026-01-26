@@ -26,26 +26,16 @@ import java.math.BigDecimal;
  * point-in-time data for a pair of {@link Metric}s.
  * It is immutable.
  */
-class FlowCapture {
+class FlowCapture extends DatapointCapture {
     private final Number numerator;
     private final Number denominator;
-
-    private final long nanoTime;
 
     FlowCapture(final long nanoTime,
                 final Number numerator,
                 final Number denominator) {
+        super(nanoTime);
         this.numerator = numerator;
         this.denominator = denominator;
-        this.nanoTime = nanoTime;
-    }
-
-    /**
-     * @return the nanoTime of this capture, as provided at time
-     *         of capture by the {@link FlowMetric}.
-     */
-    public long nanoTime() {
-        return nanoTime;
     }
 
     /**
@@ -65,7 +55,7 @@ class FlowCapture {
     @Override
     public String toString() {
         return getClass().getSimpleName() +"{" +
-                "nanoTimestamp=" + nanoTime +
+                "nanoTimestamp=" + nanoTime() +
                 " numerator=" + numerator() +
                 " denominator=" + denominator() +
                 '}';
