@@ -747,26 +747,16 @@ tasks.register("runDockerIronbankTests", Exec) {
 }
 
 // Serverless integration tests
-tasks.register("installIntegrationTestGemsDevelopment", Exec) {
-    description = "Install integration test gems including development dependencies"
-    dependsOn bootstrap
-    workingDir "${projectDir}"
-    environment "BUNDLE_WITH", "development"
-    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
-}
-
 tasks.register("runServerlessDLQTests", Exec) {
     description = "Run serverless DLQ integration tests"
-    dependsOn bootstrap
-    dependsOn installDefaultGems
+    dependsOn installIntegrationTestGems
     dependsOn unpackTarDistribution
     dependsOn ':logstash-core:copyGemjar'
-    dependsOn installIntegrationTestGemsDevelopment
-    workingDir "${projectDir}"
-    environment "BUNDLE_PATH", "${projectDir}/vendor/bundle"
+    workingDir "${projectDir}/qa/integration"
+    environment "BUNDLE_PATH", "${buildDir}/qa/integration/vendor"
     environment "SERVERLESS", "true"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec",
-        "-fd", "qa/integration/specs/dlq_spec.rb", "-e", "using pipelines.yml"
+        "-fd", "specs/dlq_spec.rb", "-e", "using pipelines.yml"
 }
 
 tasks.register("generateLicenseReport", JavaExec) {
