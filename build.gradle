@@ -751,7 +751,8 @@ tasks.register("installIntegrationTestGemsDevelopment", Exec) {
     description = "Install integration test gems including development dependencies"
     dependsOn bootstrap
     workingDir "${projectDir}"
-    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install", "--with", "development"
+    environment "BUNDLE_WITH", "development"
+    commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "install"
 }
 
 tasks.register("runServerlessDLQTests", Exec) {
