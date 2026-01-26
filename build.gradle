@@ -763,6 +763,7 @@ tasks.register("runServerlessDLQTests", Exec) {
     dependsOn ':logstash-core:copyGemjar'
     dependsOn installIntegrationTestGemsDevelopment
     workingDir "${projectDir}"
+    environment "BUNDLE_PATH", "${projectDir}/vendor/bundle"
     environment "SERVERLESS", "true"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "bundle", "exec", "rspec",
         "-fd", "qa/integration/specs/dlq_spec.rb", "-e", "using pipelines.yml"
