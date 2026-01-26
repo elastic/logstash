@@ -41,6 +41,9 @@ elif [[ $SELECTED_TEST_SUITE == "wolfi" ]]; then
 elif [[ $SELECTED_TEST_SUITE == "ironbank" ]]; then
   echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
   ./gradlew runDockerIronbankTests
+elif [[ $SELECTED_TEST_SUITE == "ubi8" ]]; then
+  echo "--- Building and testing $SELECTED_TEST_SUITE docker images"
+  ./gradlew runDockerUbi8Tests
 else
   echo "--- Building and testing all docker images"
   ./gradlew runAllDockerTests
