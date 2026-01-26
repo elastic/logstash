@@ -78,30 +78,31 @@ The Kafka integration plugin version bundled with this release introduces deprec
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
-* Support `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
-* Exposes average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
-* Fix, an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
+* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+* Expose average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+* Fix an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
 
 ### Plugins [logstash-plugin-9.3.0-changes]
 
 **Avro Codec - 3.5.0**
 
-* Add SSL/TLS support for HTTPS schema registry connections
-* Add `ssl_enabled` option to enable/disable SSL
-* Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
-* Add `ssl_certificate_authorities` option for PEM-based server certificate validation
-* Add `ssl_verification_mode` option to control SSL verification (full, none)
-* Add `ssl_cipher_suites` option to configure cipher suites
-* Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
-* Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
-* Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
-* Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
-* Add HTTP proxy support with `proxy` option
-* Add HTTP basic authentication support with `username` and `password` options
+* Standardize SSL configurations, add proxy and basic auth supports [#47](https://github.com/logstash-plugins/logstash-codec-avro/pull/47)
+  * Add SSL/TLS support for HTTPS schema registry connections
+  * Add `ssl_enabled` option to enable/disable SSL
+  * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+  * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+  * Add `ssl_verification_mode` option to control SSL verification (full, none)
+  * Add `ssl_cipher_suites` option to configure cipher suites
+  * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+  * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+  * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+  * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+  * Add HTTP proxy support with `proxy` option
+  * Add HTTP basic authentication support with `username` and `password` options
 
 **Netflow Codec - 4.3.3**
 
-* Fix `NoMethodError` when decode fails [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+* Fix `NoMethodError` when decode fails [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
 
 **Cidr Filter - 3.2.0**
 
