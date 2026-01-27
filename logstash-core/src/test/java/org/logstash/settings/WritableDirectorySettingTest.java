@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.Duration;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,7 +78,7 @@ public class WritableDirectorySettingTest {
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
-        Awaitility.await("Until the directory is not read-only").until(() -> !dirFile.canWrite());
+        Awaitility.await("Until the directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !dirFile.canWrite());
 //        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
 
         sut.set(existingDir.toString());
@@ -170,7 +171,7 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+        Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
 //        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
@@ -189,7 +190,7 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+        Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
 //        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         sut.set(missingDir.toString());
@@ -256,7 +257,7 @@ public class WritableDirectorySettingTest {
         Set<PosixFilePermission> ownerWritable = PosixFilePermissions.fromString("r--r--r--");
         FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
         Files.createFile(missingDir, permissions);
-        Awaitility.await("until the file is created in read-only mode").until(() -> !missingFile.canWrite());
+        Awaitility.await("until the file is created in read-only mode").timeout(Duration.ofMinutes(1)).until(() -> !missingFile.canWrite());
 //        assertFalse("The directory is still writable after the mode change", missingFile.canWrite());
     }
 
@@ -285,7 +286,7 @@ public class WritableDirectorySettingTest {
         sut.set(missingDir.toString());
 
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+        Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
 //        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
