@@ -76,6 +76,7 @@ public class WritableDirectorySettingTest {
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
+        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
 
         sut.set(existingDir.toString());
 
@@ -167,6 +168,7 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
+        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> sut.validate(missingDir.toString()));
@@ -184,6 +186,7 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
+        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         sut.set(missingDir.toString());
 
@@ -277,6 +280,7 @@ public class WritableDirectorySettingTest {
         sut.set(missingDir.toString());
 
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
+        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
         assertThat(ex.getMessage(), containsString("does not exist, and I failed trying to create it"));
