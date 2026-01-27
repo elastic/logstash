@@ -19,6 +19,7 @@
 
 package org.logstash.settings;
 
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +77,8 @@ public class WritableDirectorySettingTest {
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
-        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
+        Awaitility.await("Until the directory is not read-only").until(() -> !dirFile.canWrite());
+//        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
 
         sut.set(existingDir.toString());
 
@@ -168,7 +170,8 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
+        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> sut.validate(missingDir.toString()));
@@ -186,7 +189,8 @@ public class WritableDirectorySettingTest {
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
+        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         sut.set(missingDir.toString());
 
@@ -252,7 +256,8 @@ public class WritableDirectorySettingTest {
         Set<PosixFilePermission> ownerWritable = PosixFilePermissions.fromString("r--r--r--");
         FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
         Files.createFile(missingDir, permissions);
-        assertFalse("The directory is still writable after the mode change", missingFile.canWrite());
+        Awaitility.await("until the file is created in read-only mode").until(() -> !missingFile.canWrite());
+//        assertFalse("The directory is still writable after the mode change", missingFile.canWrite());
     }
 
     @Test
@@ -280,7 +285,8 @@ public class WritableDirectorySettingTest {
         sut.set(missingDir.toString());
 
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
+        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
+//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
         assertThat(ex.getMessage(), containsString("does not exist, and I failed trying to create it"));
