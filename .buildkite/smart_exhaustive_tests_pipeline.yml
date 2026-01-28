@@ -3,7 +3,7 @@ steps:
     if: build.pull_request.id != null && build.env("GITHUB_PR_TRIGGER_COMMENT") != "run exhaustive tests"
     plugins:
       - monorepo-diff#v1.0.1:
-          diff: "git diff --name-only origin/${GITHUB_PR_TARGET_BRANCH}...HEAD"
+          diff: "git diff --name-only origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}...HEAD"
           interpolation: false
           watch:
             - path:
