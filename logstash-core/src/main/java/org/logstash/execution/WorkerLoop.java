@@ -52,7 +52,7 @@ public final class WorkerLoop implements Runnable {
 
     public WorkerLoop(
             final QueueReadClient readClient,
-            final CompiledPipeline compiledPipeline,
+            final CompiledPipeline.WorkerStage compiledPipeline,
             final WorkerObserver workerObserver,
             final LongAdder consumedCounter,
             final LongAdder filteredCounter,

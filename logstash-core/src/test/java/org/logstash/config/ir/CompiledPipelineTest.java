@@ -136,7 +136,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.emptyMap(),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -159,7 +159,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -192,7 +192,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -314,7 +314,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         Collections.singletonMap("mockaddfilter", () -> null),
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution()
+        ).workerStage().buildExecution()
                 .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(expectedEvents));
@@ -348,7 +348,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -374,7 +374,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -401,7 +401,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -436,7 +436,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).workerStage().buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -484,7 +484,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockaddfilter", () -> ADD_FIELD_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution()
+        ).workerStage().buildExecution()
             .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
@@ -591,9 +591,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         // actual test: compiling a pipeline with an extra filter should only create 1 extra class
         ComputeStepSyntaxElement.cleanClassCache();
-        cBaselinePipeline.buildExecution();
+        cBaselinePipeline.workerStage().buildExecution();
         final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
-        cPipelineWithDifferentId.buildExecution();
+        cPipelineWithDifferentId.workerStage().buildExecution();
         final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
 
         final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
@@ -627,9 +627,9 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         // test: compiling a much bigger pipeline and asserting no additional classes are generated
         ComputeStepSyntaxElement.cleanClassCache();
-        cBaselinePipeline.buildExecution();
+        cBaselinePipeline.workerStage().buildExecution();
         final int cachedBefore = ComputeStepSyntaxElement.classCacheSize();
-        cPipelineTwiceAsBig.buildExecution();
+        cPipelineTwiceAsBig.workerStage().buildExecution();
         final int cachedAfter = ComputeStepSyntaxElement.classCacheSize();
 
         final String message = String.format("unexpected cache size, cachedAfter: %d, cachedBefore: %d", cachedAfter, cachedBefore);
@@ -654,12 +654,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final CompiledPipeline testCompiledPipeline = new CompiledPipeline(testPipelineIR, pluginFactory);
 
         final long compilationBaseline = time(ChronoUnit.MILLIS, () -> {
-            final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.buildExecution();
+            final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.workerStage().buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
 
         final long compilationTest = time(ChronoUnit.MILLIS, () -> {
-            final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.buildExecution();
+            final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.workerStage().buildExecution();
             compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
         });
 
