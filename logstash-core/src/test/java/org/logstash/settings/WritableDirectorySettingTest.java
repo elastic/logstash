@@ -25,8 +25,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
@@ -77,6 +79,7 @@ public class WritableDirectorySettingTest {
 
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
+        assertFalse("Tests are run as root user", isRoot());
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
         Awaitility.await("Until the directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !dirFile.canWrite());
 //        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
@@ -86,6 +89,21 @@ public class WritableDirectorySettingTest {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
         assertThat(ex.getMessage(), containsString("must be a writable directory"));
         assertThat(ex.getMessage(), containsString("It is not writable"));
+    }
+
+    private boolean isRoot() {
+        boolean isRoot = false;
+        try {
+            Process p = new ProcessBuilder("id", "-u").start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(p.getInputStream()))) {
+                String uid = reader.readLine();
+                isRoot = "0".equals(uid);
+            }
+        } catch (IOException e) {
+            // Not Unix or command failed
+        }
+        return isRoot;
     }
 
     // ========== validate() tests for existing paths ==========
