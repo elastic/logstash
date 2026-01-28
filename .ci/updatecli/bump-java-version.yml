@@ -48,6 +48,37 @@ sources:
       file: 'https://jvm-catalog.elastic.co/jdk/latest_adoptiumjdk_{{ source "jdk_major" }}_linux'
       key: 'revision'
 
+conditions:
+  # Verify all platform builds are available before raising a PR
+  # The source checks linux-x86_64, these conditions check remaining platforms
+  linux_aarch64_available:
+    name: "Check linux-aarch64 JDK is available"
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-linux-aarch64'
+
+  darwin_x86_64_available:
+    name: "Check darwin-x86_64 JDK is available"
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin'
+
+  darwin_aarch64_available:
+    name: "Check darwin-aarch64 JDK is available"
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin-aarch64'
+
+  windows_x86_64_available:
+    name: "Check windows-x86_64 JDK is available"
+    kind: shell
+    disablesourceinput: true
+    spec:
+      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-windows'
+
 targets:
   update_jdk_revision:
     name: "Update JDK revision"
