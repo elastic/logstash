@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
+
+steps:
+  - label: ":pipeline: Logstash Artifact Scan"
+    command: |
+      set -euo pipefail
+      python3 -m pip install pyyaml requests
+      python3 .buildkite/scripts/snyk/artifact-scan/generate-steps.py > steps.yml
+      buildkite-agent pipeline upload < steps.yml
