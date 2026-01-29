@@ -76,12 +76,12 @@ public class WritableDirectorySettingTest {
     public void whenDirectoryExistsButNotWritableThenValidationFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
         assumeTrue(!isWindowsOS());
+        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
 
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
-        assertFalse("Tests are run as root user", isRoot());
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
-        Awaitility.await("Until the directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !dirFile.canWrite());
+        Awaitility.await("Until the directory is not read-only").until(() -> !dirFile.canWrite());
 //        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
 
         sut.set(existingDir.toString());
@@ -184,6 +184,7 @@ public class WritableDirectorySettingTest {
     public void whenDirectoryMissingAndParentNotWritableThenValidateFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
         assumeTrue(!isWindowsOS());
+        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("missing");
@@ -203,6 +204,7 @@ public class WritableDirectorySettingTest {
     public void whenDirectoryMissingAndParentNotWritableThenValidateValueFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
         assumeTrue(!isWindowsOS());
+        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("missing");
@@ -257,6 +259,8 @@ public class WritableDirectorySettingTest {
 
     @Test
     public void givenDirectoryMissingAndDirectoryCantBeCreatedThenValueInvocationThrowsError() throws IOException {
+        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("newdir");
 
@@ -295,6 +299,7 @@ public class WritableDirectorySettingTest {
     public void whenDirectoryCannotBeCreatedThenValueThrows() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
         assumeTrue(!isWindowsOS());
+        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("newdir");
