@@ -1131,7 +1131,6 @@ clean {
         include 'output*.csv'
         include 'output*.json'
     }
-    delete "${projectDir}/.buildkite/scripts/snyk/artifact-scan/Gemfile.lock"
     delete fileTree("${projectDir}/.buildkite/scripts/snyk/artifact-scan") {
         include 'output*.csv'
         include 'output*.json'

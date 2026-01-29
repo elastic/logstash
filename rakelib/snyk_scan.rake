@@ -38,16 +38,12 @@ namespace "extract" do
       raise "Error: extraction script not found at #{extract_script}"
     end
 
-    # Install dependencies using the current Ruby (JRuby via Gradle)
-    puts "Installing dependencies..."
-    Dir.chdir(script_dir) do
-      require 'bundler'
-      Bundler.with_unbundled_env do
-        system('bundle', 'install', '--quiet') || raise("Failed to install dependencies")
-      end
+    begin
+      require 'zip'
+    rescue LoadError => e
+      raise "Error: rubyzip gem not available. Ensure 'bootstrap' task has run. (#{e.message})"
     end
 
-    # Run the extraction script with the current Ruby (JRuby)
     puts "Extracting versions from #{artifact_dir}..."
     Dir.chdir(script_dir) do
       # Set ARGV for the script
