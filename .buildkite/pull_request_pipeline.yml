@@ -81,10 +81,12 @@ steps:
   - label: ":java: Java unit tests"
     key: "java-unit-tests"
     agents:
-      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci"
+      image: "docker.elastic.co/ci-agent-images/platform-ingest/buildkite-agent-logstash-ci-no-root"
       cpu: "8"
       memory: "16Gi"
       ephemeralStorage: "100Gi"
+      # Run as a non-root user
+      imageUID: "1002"
     retry:
       automatic:
         - limit: 3
