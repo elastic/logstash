@@ -103,6 +103,12 @@ public final class CompiledPipeline {
      * */
     private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
 
+    /**
+     * Maximum number of events sent together as a chunk to the outputs after being filtered.
+     * If > 0, batches will be split during processing into chunks to ensure no single chunk exceeds this size.
+     */
+    private final int maxBatchOutputSize;
+
     public static final class NoopEvaluationListener implements AbstractPipelineExt.ConditionalEvaluationListener {
 
         @Override
@@ -115,7 +121,7 @@ public final class CompiledPipeline {
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener());
+        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener(), 0);
     }
 
     public CompiledPipeline(
@@ -124,9 +130,20 @@ public final class CompiledPipeline {
             final SecretStore secretStore,
             final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
+        this(pipelineIR, pluginFactory, secretStore, conditionalErrListener, 0);
+    }
+
+    public CompiledPipeline(
+            final PipelineIR pipelineIR,
+            final RubyIntegration.PluginFactory pluginFactory,
+            final SecretStore secretStore,
+            final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener,
+            final int maxBatchOutputSize)
+    {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
         this.conditionalErrListener = conditionalErrListener;
+        this.maxBatchOutputSize = maxBatchOutputSize;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -314,9 +331,24 @@ public final class CompiledPipeline {
         return outputs.containsKey(vertex.getId());
     }
 
+    @SuppressWarnings("unchecked")
+    private int chunker(RubyArray<RubyEvent> batch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
+        final int totalSize = batch.size();
+        final int maxChunkSize = (maxBatchOutputSize > 0) ? maxBatchOutputSize : totalSize;
+
+        // send to consumer in chunks
+        for (int offset = 0; offset < totalSize; offset += maxChunkSize) {
+            int end = Math.min(offset + maxChunkSize, totalSize);
+            boolean isLastChunk = (end == totalSize);
+            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(batch.subList(offset, end));
+            consumer.accept(chunk, isLastChunk);
+        }
+        return totalSize;
+    }
+
     public final class CompiledOrderedExecution extends CompiledExecution {
 
-        @SuppressWarnings({"unchecked"})  private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
+        @SuppressWarnings({"unchecked"}) private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
 
         @Override
         public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
@@ -324,24 +356,33 @@ public final class CompiledPipeline {
         }
 
         @Override
+        @SuppressWarnings({"unchecked"})
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
+            final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
+
             if (!batch.isEmpty()) {
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
+                final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
                 // send batch one-by-one as single-element batches down the filters
                 for (final RubyEvent e : batch) {
                     filterBatch.set(0, e);
                     _compute(filterBatch, outputBatch, flush, shutdown);
                 }
-                compiledOutputs.compute(outputBatch, flush, shutdown);
-                return outputBatch.size();
             } else if (flush || shutdown) {
-                @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
                 _compute(EMPTY_ARRAY, outputBatch, flush, shutdown);
-                compiledOutputs.compute(outputBatch, flush, shutdown);
-                return outputBatch.size();
+            } else {
+                return 0;
             }
-            return 0;
+
+            final int totalSize = chunker(outputBatch, (chunk, isLastChunk) -> {
+                compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
+            });
+
+            // Handle empty batch with flush/shutdown
+            if (totalSize == 0 && (flush || shutdown)) {
+                compiledOutputs.compute(outputBatch, flush, shutdown);
+            }
+
+            return totalSize;
         }
 
         private void _compute(final RubyArray<RubyEvent> batch, final RubyArray<RubyEvent> outputBatch, final boolean flush, final boolean shutdown) {
@@ -359,14 +400,16 @@ public final class CompiledPipeline {
         }
 
         @Override
+        @SuppressWarnings({"unchecked"})
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            // we know for now this comes from batch.collection() which returns a LinkedHashSet
+            final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
             final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
-            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray(result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
-            compiledOutputs.compute(outputBatch, flush, shutdown);
-            return outputBatch.size();
+
+            return chunker(outputBatch, (chunk, isLastChunk) -> {
+                compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
+            });
         }
     }
 

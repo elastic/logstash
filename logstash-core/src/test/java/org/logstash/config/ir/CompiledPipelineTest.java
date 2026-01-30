@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -749,5 +750,154 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         public Codec buildRubyCodecWrapper(RubyObject rubyCodec) {
             return null;
         }
+    }
+
+    // ==================== Tests for maxBatchOutputSize feature ====================
+
+    private class OutputSpy implements Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> {
+
+		private final AtomicInteger invocationCount = new AtomicInteger(0);
+
+		@Override
+		public void accept(Collection<JrubyEventExtLibrary.RubyEvent> events) {
+			invocationCount.incrementAndGet();
+			events.forEach(
+				event -> EVENT_SINKS.get(runId).add(event)
+			);
+		}
+	}
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenDefaultMaxBatchOutputSizeWhenBatchIsFullThenItsNotChunked() throws Exception {
+        // When maxBatchOutputSize is 0, all events should be processed in a single batch
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        for (int i = 0; i < 10; i++) {
+            Event event = new Event();
+            event.setField("message", "test event " + i);
+            inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+        }
+
+        OutputSpy outputSpy = new OutputSpy();
+
+		final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+			() -> null,
+			() -> IDENTITY_FILTER,
+			() -> outputSpy
+		);
+
+		new CompiledPipeline(
+			pipelineIR,
+			pluginFactory,
+			null,
+			new CompiledPipeline.NoopEvaluationListener(),
+			0  // maxBatchOutputSize = 0 (disabled)
+		).buildExecution().compute(inputBatch, false, false);
+
+		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
+
+		assertEquals("A batch should not be chunked when maxBatchOutputSize is 0", outputSpy.invocationCount.get(), 1);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenMaxBatchOutputSizeSetWhenBatchIsFullThenItsChunked() throws Exception {
+        // When maxBatchOutputSize is set, batches should be split into smaller chunks
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        for (int i = 0; i < 10; i++) {
+            Event event = new Event();
+            event.setField("message", "test event " + i);
+            inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+        }
+
+        OutputSpy outputSpy = new OutputSpy();
+
+		final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+			() -> null,
+			() -> IDENTITY_FILTER,
+			() -> outputSpy
+		);
+
+        new CompiledPipeline(
+			pipelineIR,
+			pluginFactory,
+			null,
+			new CompiledPipeline.NoopEvaluationListener(),
+			3 // Set maxBatchOutputSize to 3 events per chunk
+		).buildExecution().compute(inputBatch, false, false);
+
+		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
+
+		assertEquals("When maxBatchOutputSize is set to 3, the batch should be split into chunks with max size 3", outputSpy.invocationCount.get(), 4);
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenMaxBatchOutputSizeSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
+        // Test that empty batches work correctly with maxBatchOutputSize set
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+
+        int outputCount = new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                ),
+                null,
+                new CompiledPipeline.NoopEvaluationListener(),
+                5
+        ).buildExecution().compute(emptyBatch, false, false);
+
+        MatcherAssert.assertThat(outputCount, CoreMatchers.is(0));
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(0));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenMaxBatchOutputSizeSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
+        // Test that a single event works correctly when maxBatchOutputSize is set > 1
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        Event event = new Event();
+        event.setField("message", "single event");
+        inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+
+        new CompiledPipeline(
+                pipelineIR,
+                new CompiledPipelineTest.MockPluginFactory(
+                        Collections.singletonMap("mockinput", () -> null),
+                        Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                        Collections.singletonMap("mockoutput", mockOutputSupplier())
+                ),
+                null,
+                new CompiledPipeline.NoopEvaluationListener(),
+                5  // maxBatchOutputSize larger than batch
+        ).buildExecution().compute(inputBatch, false, false);
+
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
     }
 }
