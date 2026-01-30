@@ -56,7 +56,7 @@
 # pipeline.batch.metrics.sampling_mode: "minimal"
 #
 # Maximum number of events that are passed together as a chunk to the outputs after being filtered.
-# This is relevant when a filter can increase the number of events in a batchsignificantly.
+# This is relevant when a filter can increase the number of events in a batch significantly.
 # Default is 0 (unlimited).
 #
 # pipeline.batch.max_output_size: 0

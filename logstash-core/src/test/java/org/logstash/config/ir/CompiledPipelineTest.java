@@ -791,7 +791,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			() -> outputSpy
 		);
 
-		// maxBatchOutputSize = 0 means unlimited (no chunking)
 		new CompiledPipeline(
 			pipelineIR,
 			pluginFactory,
@@ -830,13 +829,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			() -> outputSpy
 		);
 
-        // Set maxBatchOutputSize to 3 events per chunk
         new CompiledPipeline(
 			pipelineIR,
 			pluginFactory,
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
-			3
+			3 // Set maxBatchOutputSize to 3 events per chunk
 		).buildExecution().compute(inputBatch, false, false);
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
