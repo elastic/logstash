@@ -26,6 +26,8 @@ def generate_extraction_step(version: str, version_type: str) -> dict:
     command = f"""#!/bin/bash
 set -euo pipefail
 
+source .buildkite/scripts/common/vm-agent.sh
+
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Downloading Logstash {version}"
