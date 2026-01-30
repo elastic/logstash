@@ -25,56 +25,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.2.5
-
-=== Logstash Commits between 9.2 and 9.2.4
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.4..9.2"
-
-0acb36426 - (HEAD -> 9.2, origin/9.2) Bump requests in /.buildkite/scripts/health-report-tests (#17702) (#18673) (14 hours ago) <mergify[bot]>
-f08618907 - Only raise PR to bump java version when all artifacts are ready (#18668) (#18670) (35 hours ago) <mergify[bot]>
-5b6074ec8 - Revert "Update bundled JDK to 21.0.10 build 7 (#18648)" (#18663) (3 days ago) <Cas Donoghue>
-1256c1aa1 - Update patch plugin versions in gemfile lock (#18660) (3 days ago) <github-actions[bot]>
-82a51fb22 - Update bundled JDK to 21.0.10 build 7 (#18648) (3 days ago) <github-actions[bot]>
-da3b7133e - Dont persist bundler config state across ci tasks (#18655) (#18657) (4 days ago) <mergify[bot]>
-3b88fcc92 - Change the default logger level for licensereader (#18644) (#18653) (4 days ago) <mergify[bot]>
-f97b640db - [9.2] (backport #18615) Consistent bundled jruby across all CI tasks (#18641) (7 days ago) <mergify[bot]>
-f8b5dea5b - Use gradle and bundled jruby for acceptance tests orchestration (#18536) (#18633) (7 days ago) <mergify[bot]>
-e97c77a63 - test artifact upgrade from 8.19 instead of 7.17 (#18635) (#18636) (7 days ago) <mergify[bot]>
-4988b2a9e - Fix ironbank container build (#18625) (#18628) (7 days ago) <mergify[bot]>
-7d6e197d5 - Add Ironbank acceptance tests to CI (#18585) (#18622) (8 days ago) <mergify[bot]>
-6ee445b8e - [9.2] (backport #18471) Make gradle the root of every dependency graph (#18609) (9 days ago) <mergify[bot]>
-44df734a7 - [9.2] (backport #18537) Remove unused/unreachable rake tasks (#18605) (10 days ago) <mergify[bot]>
-c951bcfac - [9.2] (backport #18526) Remove unused gradle tasks (#18601) (10 days ago) <mergify[bot]>
-a99c4aa6d - Only ship x-pack library code with artifacts (#18548) (#18593) (2 weeks ago) <mergify[bot]>
-71ecfa80b - Doc: Use new version syntax (#18580) (#18587) (2 weeks ago) <mergify[bot]>
-6824cc212 - Bump logstash version 9.2.5 (#18568) (2 weeks ago) <github-actions[bot]>
-a6a4c06cd - [9.2] (manual backport #18549) Release notes for 9.1.10 (#18565) (2 weeks ago) <Rob Bavey>
-d64773794 - Release notes for 9.2.4 (#18555) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.2.4..9.2 *.release"
-Changed plugin versions:
-logstash-codec-netflow: 4.3.2 -> 4.3.3
-logstash-input-azure_event_hubs: 1.5.3 -> 1.5.4
-logstash-integration-kafka: 11.8.1 -> 11.8.2
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ### Plugins [logstash-plugin-9.2.5-changes]
 
 **Netflow Codec - 4.3.3**
 
-* Fix NoMethodError when decode fails. [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+* Made decoding more robust to malformed events [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
 
 **Azure_event_hubs Input - 1.5.4**
 
-* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
-* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
 
 **Kafka Integration - 11.8.2**
 
-* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
 
 
 ## 9.2.4 [logstash-9.2.4-release-notes]
