@@ -1137,6 +1137,37 @@ clean {
     dependsOn deleteLocalJdk
     String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
     delete "${projectDir}/${jdkVersionFilename}"
+    delete fileTree(projectDir) {
+        include 'output*.csv'
+        include 'output*.json'
+    }
+    delete fileTree("${projectDir}/.buildkite/scripts/snyk/artifact-scan") {
+        include 'output*.csv'
+        include 'output*.json'
+    }
+}
+
+tasks.register("extractArtifactVersions") {
+    description = "Extract versions from a Logstash artifact (generates SBOM for Snyk scanning)"
+    dependsOn bootstrap
+
+    doLast {
+        def artifactDir = project.findProperty('artifactDir')
+        def outputFile = project.findProperty('outputFile') ?: 'output.csv'
+
+        if (!artifactDir) {
+            throw new GradleException("artifactDir property required. Usage: ./gradlew extractArtifactVersions -PartifactDir=/path/to/logstash -PoutputFile=output.csv")
+        }
+
+        rake(projectDir, buildDir, 'extract:artifact_versions', artifactDir, outputFile)
+    }
+}
+
+tasks.register("cleanExtraction") {
+    description = "Clean artifact extraction output files"
+    doLast {
+        rake(projectDir, buildDir, 'extract:clean')
+    }
 }
 
 if (System.getenv('OSS') != 'true') {

@@ -27,6 +27,11 @@ spec:
   dependsOn:
     - resource:buildkite-logstash-serverless-integration-testing
     - resource:logstash-snyk-report
+<<<<<<< HEAD
+=======
+    - resource:logstash-plugins-snyk-report
+    - resource:logstash-artifact-snyk-scan
+>>>>>>> 63f19c395 (Add Snyk scanning for Logstash release artifacts (#18557))
     - resource:logstash-dra-snapshot-pipeline
     - resource:logstash-dra-staging-pipeline
     - resource:logstash-linux-jdk-matrix-pipeline
@@ -125,6 +130,101 @@ spec:
           message: "Run the Logstash Snyk report every day."
 
 # ***********************************
+<<<<<<< HEAD
+=======
+# Declare plugins-snyk-report pipeline
+# ***********************************
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-plugins-snyk-report
+  description: 'The logstash-plugins-snyk-report pipeline.'
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: platform-ingest
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-plugins-snyk-report-ci
+      description: ':logstash: The logstash-plugins-snyk-report :pipeline:'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/plugins_snyk_report_pipeline.yml"
+      maximum_timeout_in_minutes: 60
+      provider_settings:
+        trigger_mode: none # don't trigger jobs
+      env:
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+      schedules:
+        Daily Plugins Snyk scan:
+          branch: main
+          cronline: "@daily"
+          message: "Run the Logstash Plugins Snyk report every day."
+
+# ***********************************
+# Declare artifacts-snyk-report pipeline
+# ***********************************
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-artifact-snyk-scan
+  description: 'The logstash-artifacts-snyk-report pipeline.'
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: platform-ingest
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-artifacts-snyk-report-ci
+      description: ':logstash: The logstash-artifacts-snyk-report :pipeline:'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/logstash_artifact_scan_pipeline.yml"
+      maximum_timeout_in_minutes: 60
+      provider_settings:
+        trigger_mode: none # don't trigger jobs
+      env:
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+      schedules:
+        Daily Artifacts Snyk scan:
+          branch: main
+          cronline: "@daily"
+          message: "Run the Logstash Artifacts Snyk report every day."
+
+# ***********************************
+>>>>>>> 63f19c395 (Add Snyk scanning for Logstash release artifacts (#18557))
 # SECTION START: DRA pipelines
 # ***********************************
 
