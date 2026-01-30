@@ -48,7 +48,7 @@ curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cl
 chmod +x ./snyk
 
 echo "--- Running Snyk monitor for Logstash {version}"
-snyk sbom monitor --experimental --file=output_sbom.json --org=logstash --target-reference={version} --project-name="logstash-artifact-{version}"
+./snyk sbom monitor --experimental --file=output_sbom.json --org=logstash --target-reference={version} --project-name="logstash-artifact-{version}"
 echo "--- Uploading artifacts"
 buildkite-agent artifact upload "output*.csv"
 buildkite-agent artifact upload "output*.json"
