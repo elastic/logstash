@@ -104,8 +104,8 @@ public final class CompiledPipeline {
     private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
 
     /**
-     * Maximum batch size in bytes. If > 0, batches will be split during processing
-     * to ensure no single chunk exceeds this size.
+     * Maximum number of events sent together as a chunk to the outputs after being filtered.
+     * If > 0, batches will be split during processing into chunks to ensure no single chunk exceeds this size.
      */
     private final int maxBatchOutputSize;
 
