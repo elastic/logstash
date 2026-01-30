@@ -106,55 +106,22 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-11]]
 === Logstash 8.19.11 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.11
-
-=== Logstash Commits between 8.19 and 8.19.10
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.10..8.19"
-
-b6d4668b1 - (HEAD -> 8.19, origin/8.19) Bump requests in /.buildkite/scripts/health-report-tests (#17702) (#18672) (14 hours ago) <mergify[bot]>
-220f35697 - Only raise PR to bump java version when all artifacts are ready (#18668) (#18669) (35 hours ago) <mergify[bot]>
-804ec5962 - Revert "Update bundled JDK to 21.0.10 build 7 (#18650)" (#18664) (3 days ago) <Cas Donoghue>
-1ce539f26 - Update patch plugin versions in gemfile lock (#18659) (3 days ago) <github-actions[bot]>
-86458b5ed - Update bundled JDK to 21.0.10 build 7 (#18650) (3 days ago) <github-actions[bot]>
-5888214d6 - Dont persist bundler config state across ci tasks (#18655) (#18656) (4 days ago) <mergify[bot]>
-b839899a7 - Restore ubi8 docker acceptance tests (#18646) (4 days ago) <Álex Cámara Lara>
-96f572559 - Change the default logger level for licensereader (#18644) (#18652) (4 days ago) <mergify[bot]>
-4a7726967 - [8.19] (backport #18615) Consistent bundled jruby across all CI tasks (#18640) (7 days ago) <mergify[bot]>
-1dc535e33 - [8.19] (backport #18536) Use gradle and bundled jruby for acceptance tests orchestration (#18632) (7 days ago) <mergify[bot]>
-1d8ed2551 - Fix ironbank container build (#18625) (#18626) (7 days ago) <mergify[bot]>
-a14c3ddca - [8.19] (backport #18585) Add Ironbank acceptance tests to CI (#18620) (8 days ago) <mergify[bot]>
-3602416d9 - Ensure building ubi8 images for 8.19 follows orchestration pattern (#18612) (9 days ago) <Cas Donoghue>
-0e12ea9fe - [8.19] (backport #18471) Make gradle the root of every dependency graph (#18607) (9 days ago) <mergify[bot]>
-4460a0d14 - [8.19] (backport #18537) Remove unused/unreachable rake tasks (#18603) (10 days ago) <mergify[bot]>
-510995030 - [8.19] (backport #18526) Remove unused gradle tasks (#18599) (10 days ago) <mergify[bot]>
-46f6dabb9 - [8.19] (backport #18548) Only ship x-pack library code with artifacts (#18591) (2 weeks ago) <mergify[bot]>
-37e13540e - Bump logstash version 8.19.11 (#18570) (2 weeks ago) <github-actions[bot]>
-b10b374eb - Release notes for 8.19.10 (#18551) (2 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.10..8.19 *.release"
-Changed plugin versions:
-logstash-codec-netflow: 4.3.2 -> 4.3.3
-logstash-input-azure_event_hubs: 1.5.3 -> 1.5.4
-logstash-integration-kafka: 11.8.1 -> 11.8.2
----------- GENERATED CONTENT ENDS HERE ------------
+No user-facing changes in Logstash core.
 
 ==== Plugins
 
 *Netflow Codec - 4.3.3*
 
-* Fix NoMethodError when decode fails. [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+* Made decoding more robust to malformed events https://github.com/logstash-plugins/logstash-codec-netflow/pull/214[214]
 
 *Azure_event_hubs Input - 1.5.4*
 
-* Ensure full jar-dependency tree is shipped with gem artifact https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110[#110]
-* Remove unused `adal4j` dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107[#107]
+* Ensure gem artifact ship with all runtime dependencies https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110[#110]
+* Remove unused Azure Active Directory dependency https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107[#107]
 
 *Kafka Integration - 11.8.2*
 
-* Upgrade transitive `org.apache.commons:commons-lang3` dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/217[#217]
+* Upgrade transitive dependency used by Avro serializer https://github.com/logstash-plugins/logstash-integration-kafka/pull/217[#217]
 
 
 [[logstash-8-19-10]]
