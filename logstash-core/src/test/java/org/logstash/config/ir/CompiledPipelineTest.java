@@ -845,7 +845,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenMaxBatchOutputSizeSetWhenBatchIsEmptyThenItsChunked() throws Exception {
+    public void givenMaxBatchOutputSizeSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
         // Test that empty batches work correctly with maxBatchOutputSize set
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -873,8 +873,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenMaxBatchOutputSizeSetWhenBatchHasSingleEventThenItsNotChunked() throws Exception {
-        // Test that a single event works correctly when maxBatchOutputSize is set
+    public void givenMaxBatchOutputSizeSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
+        // Test that a single event works correctly when maxBatchOutputSize is set > 1
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
