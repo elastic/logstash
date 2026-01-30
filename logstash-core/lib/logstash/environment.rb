@@ -41,7 +41,7 @@ module LogStash
            Setting::BooleanSetting.new("allow_superuser", false),
             Setting::StringSetting.new("node.name", Socket.gethostname),
     Setting::NullableStringSetting.new("path.config", nil, false),
- Setting::WritableDirectory.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
+ Setting::WritableDirectorySetting.new("path.data", ::File.join(LogStash::Environment::LOGSTASH_HOME, "data")),
     Setting::NullableStringSetting.new("config.string", nil, false),
            Setting::BooleanSetting.new("config.test_and_exit", false),
            Setting::BooleanSetting.new("config.reload.automatic", false),
@@ -115,10 +115,10 @@ module LogStash
 
   # Compute the default queue path based on `path.data`
   default_queue_file_path = ::File.join(SETTINGS.get("path.data"), "queue")
-  SETTINGS.register Setting::WritableDirectory.new("path.queue", default_queue_file_path)
+  SETTINGS.register Setting::WritableDirectorySetting.new("path.queue", default_queue_file_path)
   # Compute the default dead_letter_queue path based on `path.data`
   default_dlq_file_path = ::File.join(SETTINGS.get("path.data"), "dead_letter_queue")
-  SETTINGS.register Setting::WritableDirectory.new("path.dead_letter_queue", default_dlq_file_path)
+  SETTINGS.register Setting::WritableDirectorySetting.new("path.dead_letter_queue", default_dlq_file_path)
 
   SETTINGS.on_post_process do |settings|
     # Configure Logstash logging facility. This needs to be done as early as possible to
