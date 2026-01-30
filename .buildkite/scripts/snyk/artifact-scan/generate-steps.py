@@ -37,7 +37,10 @@ wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 5 \\
 
 echo "--- Extracting tarball"
 tar -xzf logstash.tar.gz
-extracted_dir=$(tar -tzf logstash.tar.gz | head -1 | cut -f1 -d"/")
+extracted_dir=$(tar -tzf logstash.tar.gz 2>/dev/null | head -1 | cut -f1 -d"/" || true)
+if [[ -z "$extracted_dir" ]]; then
+  extracted_dir="logstash-{version}"
+fi
 
 echo "--- Running extraction via Gradle"
 ./gradlew extractArtifactVersions -PartifactDir="$PWD/${{extracted_dir}}" -PoutputFile="$PWD/.buildkite/scripts/snyk/artifact-scan/output.csv"
