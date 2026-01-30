@@ -2,10 +2,7 @@
 
 set -e
 
-# Look up corresponding LOGSTASH_RELEASE_TRACK from versions.yml
-LOGSTASH_RELEASE_TRACK=$(ruby -ryaml -e "puts YAML.load_file('versions.yml')['logstash-release-track']")
-# Use logstash stream to find the corresponding stack verstion from logstash-versions.yml
-STACK_VERSION=$(ruby -ryaml -ropen-uri -e "puts YAML.load(URI.open('https://raw.githubusercontent.com/logstash-plugins/.ci/1.x/logstash-versions.yml'))['snapshots']['${LOGSTASH_RELEASE_TRACK}']")
+STACK_VERSION=$(./gradlew -q printStackVersion)
 export OBSERVABILITY_SRE_IMAGE_VERSION="${OBSERVABILITY_SRE_IMAGE_VERSION:-$STACK_VERSION}"
 export ELASTICSEARCH_IMAGE_VERSION="${ELASTICSEARCH_IMAGE_VERSION:-$STACK_VERSION}"
 export FILEBEAT_IMAGE_VERSION="${FILEBEAT_IMAGE_VERSION:-$STACK_VERSION}"
