@@ -53,6 +53,96 @@ The Kafka integration plugin version bundled with this release introduces deprec
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
 
+## 9.3.0 [logstash-9.3.0-release-notes]
+
+### Features and enhancements [logstash-9.3.0-features-enhancements]
+
+* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+* Expose average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+* Fix an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
+
+### Plugins [logstash-plugin-9.3.0-changes]
+
+**Avro Codec - 3.5.0**
+
+* Standardize SSL configurations, add proxy and basic auth supports [#47](https://github.com/logstash-plugins/logstash-codec-avro/pull/47)
+  * Add SSL/TLS support for HTTPS schema registry connections
+  * Add `ssl_enabled` option to enable/disable SSL
+  * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+  * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+  * Add `ssl_verification_mode` option to control SSL verification (full, none)
+  * Add `ssl_cipher_suites` option to configure cipher suites
+  * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+  * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+  * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+  * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+  * Add HTTP proxy support with `proxy` option
+  * Add HTTP basic authentication support with `username` and `password` options
+
+**Netflow Codec - 4.3.3**
+
+* Fix `NoMethodError` when decode fails [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Cidr Filter - 3.2.0**
+
+* Feature: Add `address_field` config option to handle nested fields [#29](https://github.com/logstash-plugins/logstash-filter-cidr/pull/29)
+
+**Elastic_integration Filter - 9.3.0**
+
+* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+**Snmp Integration - 4.2.1**
+
+* Upgrade log4j dependency [#85](https://github.com/logstash-plugins/logstash-integration-snmp/pull/85)
+
+* Add AES256 with 3DES extension support for `priv_protocol` [#78](https://github.com/logstash-plugins/logstash-integration-snmp/pull/78)
+
+**Elasticsearch Output - 12.1.1**
+
+* Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
+
+* Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
+
+## 9.2.4 [logstash-9.2.4-release-notes]
+
+### Features and enhancements [logstash-9.2.4-features-enhancements]
+
+* Fix to clean batch statistic metrics on pipeline shutdown [#18515](https://github.com/elastic/logstash/pull/18515)
+
+### Plugins [logstash-plugin-9.2.4-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information.
+::::
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 11.8.1**
+
+* Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+* Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+  Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
+
 ## 9.2.3 [logstash-9.2.3-release-notes]
 
 ### Features and enhancements [logstash-9.2.3-features-enhancements]
