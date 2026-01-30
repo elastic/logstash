@@ -92,7 +92,7 @@ def generate_pipeline() -> dict:
         "agents": {
             "provider": "gcp",
             "imageProject": "elastic-images-prod",
-            "image": "family/platform-ingest-logstash-multi-jdk-ubuntu-2204",
+            "image": "family/platform-ingest-logstash-ubuntu-2204",
             "machineType": "n2-standard-2",
             "diskSizeGb": 20
         },
