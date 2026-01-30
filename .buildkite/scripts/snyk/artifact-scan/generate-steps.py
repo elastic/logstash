@@ -26,6 +26,8 @@ def generate_extraction_step(version: str, version_type: str) -> dict:
     command = f"""#!/bin/bash
 set -euo pipefail
 
+source .buildkite/scripts/common/vm-agent.sh
+
 export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
 
 echo "--- Downloading Logstash {version}"
@@ -37,7 +39,10 @@ wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 5 \\
 
 echo "--- Extracting tarball"
 tar -xzf logstash.tar.gz
-extracted_dir=$(tar -tzf logstash.tar.gz | head -1 | cut -f1 -d"/")
+extracted_dir=$(tar -tzf logstash.tar.gz 2>/dev/null | head -1 | cut -f1 -d"/" || true)
+if [[ -z "$extracted_dir" ]]; then
+  extracted_dir="logstash-{version}"
+fi
 
 echo "--- Running extraction via Gradle"
 ./gradlew extractArtifactVersions -PartifactDir="$PWD/${{extracted_dir}}" -PoutputFile="$PWD/.buildkite/scripts/snyk/artifact-scan/output.csv"
@@ -87,7 +92,7 @@ def generate_pipeline() -> dict:
         "agents": {
             "provider": "gcp",
             "imageProject": "elastic-images-prod",
-            "image": "family/platform-ingest-logstash-multi-jdk-ubuntu-2204",
+            "image": "family/platform-ingest-logstash-ubuntu-2204",
             "machineType": "n2-standard-2",
             "diskSizeGb": 20
         },
