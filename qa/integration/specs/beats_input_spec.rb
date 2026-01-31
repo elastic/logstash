@@ -23,6 +23,7 @@ require "rspec/wait"
 require "yaml"
 require "fileutils"
 
+# SPLIT_ESTIMATE: 80
 describe "Beat Input" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
