@@ -21,6 +21,58 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.2.5 [logstash-9.2.5-release-notes]
+
+### Features and enhancements [logstash-9.2.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.2.5-changes]
+
+**Netflow Codec - 4.3.3**
+
+* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+
+## 9.2.4 [logstash-9.2.4-release-notes]
+
+### Features and enhancements [logstash-9.2.4-features-enhancements]
+
+* Fix to clean batch statistic metrics on pipeline shutdown [#18515](https://github.com/elastic/logstash/pull/18515)
+
+### Plugins [logstash-plugin-9.2.4-changes]
+
+::::{Deprecations to Kafka partitioner settings}
+The Kafka integration plugin version bundled with this release introduces deprecations for `partitioner` settings in the Kafka output. Check out [Deprecations](/release-notes/deprecations.md) for more information.
+::::
+
+**Beats Input - 7.0.5**
+
+* Upgrade netty 4.1.129 [#525](https://github.com/logstash-plugins/logstash-input-beats/pull/525)
+
+**Http Input - 4.1.4**
+
+* Upgrade netty to 4.1.129 [#203](https://github.com/logstash-plugins/logstash-input-http/pull/203)
+
+**Tcp Input - 7.0.4**
+
+* Upgrade netty to 4.1.129 [#239](https://github.com/logstash-plugins/logstash-input-tcp/pull/239)
+
+**Kafka Integration - 11.8.1**
+
+* Upgrade lz4 dependency [#213](https://github.com/logstash-plugins/logstash-integration-kafka/pull/213)
+* Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
+      Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
+* Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
 
 ## 9.2.3 [logstash-9.2.3-release-notes]
 
