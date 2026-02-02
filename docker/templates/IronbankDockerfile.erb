@@ -2,7 +2,7 @@
 
 ARG BASE_REGISTRY=registry1.dso.mil
 ARG BASE_IMAGE=ironbank/redhat/ubi/ubi10
-ARG BASE_TAG=10.1
+ARG BASE_TAG
 ARG LOGSTASH_VERSION=<%= elastic_version %>
 
 FROM ${BASE_REGISTRY}/${BASE_IMAGE}:${BASE_TAG}
