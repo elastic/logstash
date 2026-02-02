@@ -60,9 +60,7 @@ describe LogStash::Setting::WritableDirectorySetting do
 
       context "and the directory cannot be created" do
         it "should fail" do
-          # using chmod does not work on Windows better mock and_raise("message")
-          # expect(FileUtils).to receive(:mkdir_p).and_raise("foobar")
-          # To make fail directory creation create a file clashing with the path of directory
+          # To make fail directory creation create a file clashing with the path of directory that trigger an error
           File.new(path, "w").close
           expect { subject.value }.to raise_error
         end
@@ -84,8 +82,6 @@ describe LogStash::Setting::WritableDirectorySetting do
       end
 
       context "but is not writable" do
-        # chmod does not work on Windows, mock writable? instead
-        # before { expect(File).to receive(:writable?).and_return(false) }
         # Make it readonly
         before { File.chmod(0444, path) }
         it_behaves_like "failure"
@@ -135,10 +131,7 @@ describe LogStash::Setting::WritableDirectorySetting do
 
       context "and cannot be created" do
         before do
-          # chmod does not work on Windows, mock writable? instead
-          #expect(File).to receive(:writable?).and_return(false)
           # Make it readonly
-          # File.chmod(0444, path)
           File.new(path, "w+").close
           File.chmod(0444, path)
         end
