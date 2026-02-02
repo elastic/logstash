@@ -88,7 +88,12 @@ public class WritableDirectorySetting extends BaseSetting<String> {
     @Override
     public String value() {
         String path = super.value();
-        if (path != null && !path.isEmpty()) {
+        if (path != null) {
+            if (path.isEmpty()) {
+                // path.isEmpty() is here for compatibility with previous behavior, where Ruby's File.directory?("") is false.
+                // So passing an empty string throws here an error instead of considering is as valid.
+                throw new IllegalArgumentException("Path \"\" does not exist, and  I failed trying to create it");
+            }
             Path dirPath = Paths.get(path);
             if (!Files.isDirectory(dirPath)) {
                 // Create the directory if it doesn't exist

@@ -117,8 +117,6 @@ public class WritableDirectorySettingTest {
         sut.validate("data");
     }
 
-
-
     // ========== validate() tests for existing paths ==========
 
     @Test
@@ -251,6 +249,14 @@ public class WritableDirectorySettingTest {
     }
 
     // ========== value() tests ==========
+
+    @Test
+    public void givenEmptyPathThenValueFails() {
+        sut.set("");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
+        assertThat(ex.getMessage(), containsString("Path <empty> does not exist, and failed trying to create it"));
+    }
 
     @Test
     public void givenDirectoryMissingAndParentIsWritableThenValueInvocationCreatesDirectory() throws IOException {
