@@ -78,8 +78,19 @@ The Kafka integration plugin version bundled with this release introduces deprec
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
-* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+
+#### Wait for status feature added to Logstash API [logstash-9.3.0-wait-status]
+
+We've added additional `wait_for_status` and `timeout` query parameters to the Logstash root endpoint `/`. When calling the endpoint with these parameters setup, the call will not return unless either the given status (or better), or the given timeout has elapsed before returning. 
+
+Related:
+* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377) 
+#### Additional features and enhancements [logstash-9.3.0-more-features]
+
 * Expose average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+
+### Fixes [logstash-9.3.0-fixes]
+
 * Fix an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
 
 ### Plugins [logstash-plugin-9.3.0-changes]
