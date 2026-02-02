@@ -7,3 +7,7 @@ pull_request:
   labels:
     - dependencies
     - backport-active-all
+
+# Ironbank UBI version to use, this should be provided by the Ironbank manifest policy
+# TODO: replace when https://github.com/elastic/oblt-updatecli-policies/pull/161 is merged and released
+ubi_version_path: https://repo1.dso.mil/dsop/redhat/ubi/10.x/ubi10
