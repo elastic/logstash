@@ -76,11 +76,11 @@ public class WritableDirectorySetting extends BaseSetting<String> {
                     String.format("Path \"%s\" must be a writable directory. It is not a directory.", input));
         }
         // Path doesn't exist - check if parent is writable so we can create it
-        Path parent = path.getParent();
+        Path parent = path.normalize().toAbsolutePath().getParent();
         if (parent == null || !Files.isWritable(parent)) {
             String parentPath = parent != null ? parent.toString() : "(no parent)";
             throw new IllegalArgumentException(
-                    String.format("Path \"%s\" does not exist and I cannot create it because the parent path \"%s\" is not writable.",
+                    String.format("Path \"%s\" does not exist and cannot create it because the parent path \"%s\" is not writable.",
                             input, parentPath));
         }
     }

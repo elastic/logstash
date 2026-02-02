@@ -105,6 +105,20 @@ public class WritableDirectorySettingTest {
         return isRoot;
     }
 
+    @Test
+    public void whenDirectoryIsRelativeThenValidationPasses() {
+        // Should not throw
+        sut.validate("../data");
+    }
+
+    @Test
+    public void whenDirectoryIsSingleSegmentThenValidationPasses() {
+        // Should not throw
+        sut.validate("data");
+    }
+
+
+
     // ========== validate() tests for existing paths ==========
 
     @Test
@@ -183,7 +197,7 @@ public class WritableDirectorySettingTest {
     public void whenDirectoryMissingAndParentNotWritableThenValidateFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
         assumeTrue(isNotWindowsOS());
-        assertFalse("Can't run as root since root can write anywhere noreal read-only files", isRoot());
+        assertFalse("Can't run as root since root can write anywhere no real read-only files", isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("missing");
@@ -193,7 +207,7 @@ public class WritableDirectorySettingTest {
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> sut.validate(missingDir.toString()));
-        assertThat(ex.getMessage(), containsString("does not exist and I cannot create it"));
+        assertThat(ex.getMessage(), containsString("does not exist and cannot create it"));
         assertThat(ex.getMessage(), containsString("parent path"));
         assertThat(ex.getMessage(), containsString("is not writable"));
     }
