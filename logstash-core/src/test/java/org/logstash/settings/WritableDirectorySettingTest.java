@@ -75,14 +75,13 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenDirectoryExistsButNotWritableThenValidationFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
-        assumeTrue(!isWindowsOS());
-        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+        assumeTrue(isNotWindowsOS());
+        assertFalse("Cannot run as root because root can write to read-only files", isRoot());
 
         Path existingDir = tempFolder.newFolder("readonly").toPath();
         File dirFile = existingDir.toFile();
         assertTrue("Could not set directory to read-only", dirFile.setWritable(false));
         Awaitility.await("Until the directory is not read-only").until(() -> !dirFile.canWrite());
-//        assertFalse("The directory is not read-only", Files.isWritable(existingDir));
 
         sut.set(existingDir.toString());
 
@@ -135,7 +134,7 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenPathIsSymlinkToNonExistentTargetThenValidationFails() throws IOException {
         // Skip on Windows where symlinks require special permissions
-        assumeTrue(!isWindowsOS());
+        assumeTrue(isNotWindowsOS());
 
         // Create symlink to non-existent target (like Ruby test does with "whatever")
         Path symlink = tempFolder.getRoot().toPath().resolve("symlink");
@@ -151,7 +150,7 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenPathIsSymlinkToExistingDirectoryThenValidationPasses() throws IOException {
         // Skip on Windows where symlinks require special permissions
-        assumeTrue(!isWindowsOS());
+        assumeTrue(isNotWindowsOS());
 
         // Symlink to existing directory - Files.isDirectory() follows symlinks
         // so this is treated as a valid directory (matching Ruby behavior where
@@ -183,15 +182,14 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenDirectoryMissingAndParentNotWritableThenValidateFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
-        assumeTrue(!isWindowsOS());
-        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+        assumeTrue(isNotWindowsOS());
+        assertFalse("Can't run as root since root can write anywhere noreal read-only files", isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
-//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
+        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> sut.validate(missingDir.toString()));
@@ -203,15 +201,14 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenDirectoryMissingAndParentNotWritableThenValidateValueFails() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
-        assumeTrue(!isWindowsOS());
-        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+        assumeTrue(isNotWindowsOS());
+        assertFalse("Can't run as root since root can write anywhere noreal read-only files", isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("missing");
         File parentFile = parentDir.toFile();
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
         Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
-//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
 
         sut.set(missingDir.toString());
 
@@ -259,7 +256,8 @@ public class WritableDirectorySettingTest {
 
     @Test
     public void givenDirectoryMissingAndDirectoryCantBeCreatedThenValueInvocationThrowsError() throws IOException {
-        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+        assumeTrue(isNotWindowsOS());
+        assertFalse("Can't run as root since root can write anywhere noreal read-only files", isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("newdir");
@@ -279,8 +277,7 @@ public class WritableDirectorySettingTest {
         Set<PosixFilePermission> ownerWritable = PosixFilePermissions.fromString("r--r--r--");
         FileAttribute<?> permissions = PosixFilePermissions.asFileAttribute(ownerWritable);
         Files.createFile(missingDir, permissions);
-        Awaitility.await("until the file is created in read-only mode").timeout(Duration.ofMinutes(1)).until(() -> !missingFile.canWrite());
-//        assertFalse("The directory is still writable after the mode change", missingFile.canWrite());
+        Awaitility.await("until the file is created in read-only mode").until(() -> !missingFile.canWrite());
     }
 
     @Test
@@ -298,8 +295,8 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenDirectoryCannotBeCreatedThenValueThrows() throws IOException {
         // Skip on Windows where chmod doesn't work the same way
-        assumeTrue(!isWindowsOS());
-        assertTrue("Can't run as root since root can write anywhere noreal read-only files", !isRoot());
+        assumeTrue(isNotWindowsOS());
+        assertFalse("Cannot run as root because root can write to read-only files", isRoot());
 
         Path parentDir = tempFolder.newFolder("parent").toPath();
         Path missingDir = parentDir.resolve("newdir");
@@ -309,8 +306,7 @@ public class WritableDirectorySettingTest {
         sut.set(missingDir.toString());
 
         assertTrue("Could not set parent directory to read-only", parentFile.setWritable(false));
-        Awaitility.await("Until the parent directory is not read-only").timeout(Duration.ofMinutes(1)).until(() -> !parentFile.canWrite());
-//        assertFalse("The parent directory is not read-only", Files.isWritable(parentDir));
+        Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
         assertThat(ex.getMessage(), containsString("does not exist, and I failed trying to create it"));
@@ -353,7 +349,7 @@ public class WritableDirectorySettingTest {
     @Test
     public void whenPathIsUnixSocketThenValidationFails() throws IOException {
         // Skip on Windows where UNIX sockets are not supported
-        assumeTrue(!isWindowsOS());
+        assumeTrue(isNotWindowsOS());
 
         Path socketPath = tempFolder.getRoot().toPath().resolve("test.sock");
 
@@ -373,7 +369,7 @@ public class WritableDirectorySettingTest {
         }
     }
 
-    private static boolean isWindowsOS() {
-        return System.getProperty("os.name").toLowerCase().contains("windows");
+    private static boolean isNotWindowsOS() {
+        return !System.getProperty("os.name").toLowerCase().contains("windows");
     }
 }
