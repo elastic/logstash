@@ -60,23 +60,28 @@ public class WritableDirectorySetting extends BaseSetting<String> {
                 throw new IllegalArgumentException(
                         String.format("Path \"%s\" must be a writable directory. It is not writable.", input));
             }
-        } else if (Files.isSymbolicLink(path)) {
+            // it's a writable directory
+            return;
+        }
+
+        // not a directory
+        if (Files.isSymbolicLink(path)) {
             // Reject symlinks for safety - it's easier and safer to just reject them
             throw new IllegalArgumentException(
                     String.format("Path \"%s\" must be a writable directory. It cannot be a symlink.", input));
-        } else if (Files.exists(path)) {
+        }
+        if (Files.exists(path)) {
             // Path exists but is not a directory (e.g., a file or socket)
             throw new IllegalArgumentException(
                     String.format("Path \"%s\" must be a writable directory. It is not a directory.", input));
-        } else {
-            // Path doesn't exist - check if parent is writable so we can create it
-            Path parent = path.getParent();
-            if (parent == null || !Files.isWritable(parent)) {
-                String parentPath = parent != null ? parent.toString() : "(no parent)";
-                throw new IllegalArgumentException(
-                        String.format("Path \"%s\" does not exist and I cannot create it because the parent path \"%s\" is not writable.",
-                                input, parentPath));
-            }
+        }
+        // Path doesn't exist - check if parent is writable so we can create it
+        Path parent = path.getParent();
+        if (parent == null || !Files.isWritable(parent)) {
+            String parentPath = parent != null ? parent.toString() : "(no parent)";
+            throw new IllegalArgumentException(
+                    String.format("Path \"%s\" does not exist and I cannot create it because the parent path \"%s\" is not writable.",
+                            input, parentPath));
         }
     }
 
