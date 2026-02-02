@@ -31,7 +31,7 @@ No user-facing changes in Logstash core.
 
 **Netflow Codec - 4.3.3**
 
-* Made decoding more robust to malformed events [214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
 
 **Azure_event_hubs Input - 1.5.4**
 
