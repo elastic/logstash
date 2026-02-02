@@ -24,8 +24,8 @@ describe LogStash::QueueFactory do
     [
       LogStash::Setting::WritableDirectorySetting.new("path.queue", Stud::Temporary.pathname),
       LogStash::Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
-      LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
-      LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),
+      LogStash::Setting::BytesSetting.new("queue.page_capacity", "8mb"),
+      LogStash::Setting::BytesSetting.new("queue.max_bytes", "64mb"),
       LogStash::Setting::NumericSetting.new("queue.max_events", 0),
       LogStash::Setting::NumericSetting.new("queue.checkpoint.acks", 1024),
       LogStash::Setting::NumericSetting.new("queue.checkpoint.writes", 1024),
