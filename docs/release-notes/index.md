@@ -21,8 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
-=======
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
@@ -75,8 +73,6 @@ The Kafka integration plugin version bundled with this release introduces deprec
 * Deprecate partitioner `default` and `uniform_sticky` options [#206](https://github.com/logstash-plugins/logstash-integration-kafka/pull/206)
       Both options are deprecated in Kafka client 3 and will be removed in the plugin 12.0.0.
 * Add `reconnect_backoff_max_ms` option for configuring kafka client [#204](https://github.com/logstash-plugins/logstash-integration-kafka/pull/204)
-
->>>>>>> 344069c4 (Release notes for 9.2.5 (#18678))
 
 ## 9.2.3 [logstash-9.2.3-release-notes]
 
