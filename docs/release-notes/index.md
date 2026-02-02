@@ -79,7 +79,7 @@ The Kafka integration plugin version bundled with this release introduces deprec
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
 #### Wait for status feature added to Logstash API [logstash-9.3.0-wait-status]
-We've added additional `wait_for_status` and `timeout` query parameters to the Logstash root endpoint `/`. When calling the endpoint with these parameters setup, the call will not return unless either the given status (or better), or the given timeout has elapsed before returning. 
+We've added additional `wait_for_status` and `timeout` query parameters to the Logstash root endpoint `/`. When calling the endpoint with these parameters set, the call will return when either the Logstash status matches (or improves on) the given status, or the given timeout has expired. 
 
 Related:
 * Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377) 
