@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
-public class BytesSettingTest/* extends RubyTestBase*/ {
+public class BytesSettingTest {
 
     @Test
     public void givenValidStringDefaultValue_whenInstantiated_thenParsesCorrectly() {
@@ -114,5 +114,30 @@ public class BytesSettingTest/* extends RubyTestBase*/ {
         BytesSetting setting1 = new BytesSetting("test.bytes", "64MB");
         BytesSetting setting2 = new BytesSetting("test.bytes", "64mb");
         assertEquals(setting1.value(), setting2.value());
+    }
+
+    @Test
+    public void givenValidInputNumberValidateSucceed() {
+        BytesSetting setting = new BytesSetting("test.bytes", "1mb");
+        // Should not throw - validation passes for positive values
+        setting.validate(1024L);
+    }
+
+    @Test
+    public void givenNullInputValidateThrowsWithSpecificMessage() {
+        BytesSetting setting = new BytesSetting("test.bytes", "1mb");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            setting.validate(null);
+        });
+        assertThat(ex.getMessage()).isEqualTo("Invalid byte value \"null\".");
+    }
+
+    @Test
+    public void givenNegativeNumberThenValidateThrowsWithSpecificMessage() {
+        BytesSetting setting = new BytesSetting("test.bytes", "1mb");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            setting.validate(-100L);
+        });
+        assertThat(ex.getMessage()).isEqualTo("Invalid byte value \"-100\".");
     }
 }
