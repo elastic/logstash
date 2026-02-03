@@ -54,6 +54,10 @@ module LogStash module Instrument module PeriodicPoller
     CPU_DIR = "/sys/fs/cgroup/cpu"
     CRITICAL_PATHS = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
 
+    CGROUP_V2_DIR = "/sys/fs/cgroup"
+    CGROUP_V2_CONTROLLERS_FILE = "/sys/fs/cgroup/cgroup.controllers"
+    CRITICAL_PATHS_V2 = [CGROUP_FILE, CGROUP_V2_CONTROLLERS_FILE]
+
     CONTROLLER_CPUACCT_LABEL = "cpuacct"
     CONTROLLER_CPU_LABEL = "cpu"
 
@@ -83,6 +87,27 @@ module LogStash module Instrument module PeriodicPoller
               response[controller] = UnimplementedResource.new(controller, matches[2])
             end
           end
+        end
+        response
+      end
+    end
+
+    class CgroupV2Resources
+      CGROUP_V2_PATH_RE = Regexp.compile("0::(/.*)")
+
+      def cgroup_available?
+        CRITICAL_PATHS_V2.all? {|path| ::File.exist?(path)}
+      end
+
+      def controller_groups
+        response = {}
+        IO.readlines(CGROUP_FILE).each do |line|
+          matches = CGROUP_V2_PATH_RE.match(line)
+          next if matches.nil?
+          path = matches[1]
+          response[CONTROLLER_CPU_LABEL] = CpuV2Resource.new(path)
+          response[CONTROLLER_CPUACCT_LABEL] = CpuAcctV2Resource.new(path)
+          break
         end
         response
       end
@@ -210,16 +235,106 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+    class CpuAcctV2Resource
+      include LogStash::Util::Loggable
+      include ControllerResource
+      def initialize(original_path)
+        common_initialize(CGROUP_V2_DIR, "ls.cgroup.cpuacct.path.override", original_path)
+      end
+
+      def to_hash
+        {:control_group => offset_path, :usage_nanos => cpuacct_usage}
+      end
+      private
+      def cpuacct_usage
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          if fields.first == "usage_usec"
+            return fields[1].to_i * 1000
+          end
+        end
+        -1
+      end
+    end
+
+    class CpuV2Resource
+      include LogStash::Util::Loggable
+      include ControllerResource
+      def initialize(original_path)
+        common_initialize(CGROUP_V2_DIR, "ls.cgroup.cpu.path.override", original_path)
+      end
+
+      def to_hash
+        quota, period = read_cpu_max
+        {
+          :control_group => offset_path,
+          :cfs_period_micros => period,
+          :cfs_quota_micros => quota,
+          :stat => build_cpu_stats_hash
+        }
+      end
+      private
+      def read_cpu_max
+        line = call_if_file_exists(:read_lines, "cpu.max", []).first
+        return [-1, -1] if line.nil?
+        fields = line.split(/\s+/)
+        quota = fields[0] == "max" ? -1 : fields[0].to_i
+        period = fields[1].to_i
+        [quota, period]
+      end
+
+      def build_cpu_stats_hash
+        stats = CpuV2Stats.new
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        stats.update(lines)
+        stats.to_hash
+      end
+    end
+
+    class CpuV2Stats
+      def initialize
+        @number_of_elapsed_periods = -1
+        @number_of_times_throttled = -1
+        @time_throttled_nanos = -1
+      end
+
+      def update(lines)
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          next unless fields.size > 1
+          case fields.first
+          when "nr_periods" then @number_of_elapsed_periods = fields[1].to_i
+          when "nr_throttled" then @number_of_times_throttled = fields[1].to_i
+          when "throttled_usec" then @time_throttled_nanos = fields[1].to_i * 1000
+          end
+        end
+      end
+
+      def to_hash
+        {
+          :number_of_elapsed_periods => @number_of_elapsed_periods,
+          :number_of_times_throttled => @number_of_times_throttled,
+          :time_throttled_nanos => @time_throttled_nanos
+        }
+      end
+    end
+
     CGROUP_RESOURCES = CGroupResources.new
+    CGROUP_V2_RESOURCES = CgroupV2Resources.new
 
     class << self
       def get_all
-        unless CGROUP_RESOURCES.cgroup_available?
-          logger.debug("One or more required cgroup files or directories not found: #{CRITICAL_PATHS.join(', ')}")
-          return
-        end
+        resources = if CGROUP_RESOURCES.cgroup_available?
+                      CGROUP_RESOURCES
+                    elsif CGROUP_V2_RESOURCES.cgroup_available?
+                      CGROUP_V2_RESOURCES
+                    else
+                      logger.debug("One or more required cgroup files or directories not found: #{CRITICAL_PATHS.join(', ')}")
+                      return
+                    end
 
-        groups = CGROUP_RESOURCES.controller_groups
+        groups = resources.controller_groups
 
         if groups.empty?
           logger.debug("The main cgroup file did not have any controllers: #{CGROUP_FILE}")

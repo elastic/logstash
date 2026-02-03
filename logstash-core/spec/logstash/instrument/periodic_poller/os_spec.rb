@@ -94,4 +94,71 @@ describe LogStash::Instrument::PeriodicPoller::Os do
       end
     end
   end
+
+  context "recorded cgroup v2 metrics (mocked cgroup v2 env)" do
+    subject { described_class.new(metric, {})}
+
+    let(:snapshot_store) { metric.collector.snapshot_metric.metric_store }
+    let(:os_metrics) { snapshot_store.get_shallow(:os) }
+
+    let(:relative_path) { "/user.slice/user-1000.slice/session-1.scope" }
+    let(:proc_self_cgroup_content) do
+      %W(0::#{relative_path})
+    end
+
+    let(:cpuacct_usage_usec) { 1982 }
+    let(:cpu_quota) { 98 }
+    let(:cpu_period) { 500 }
+    let(:cpu_stats_number_of_periods) { 1 }
+    let(:cpu_stats_number_of_time_throttled) { 2 }
+    let(:cpu_stats_time_throttled_usec) { 3 }
+
+    let(:cpu_stat_file_content) do
+      ["usage_usec #{cpuacct_usage_usec}", "user_usec 100", "system_usec 200", "nr_periods #{cpu_stats_number_of_periods}", "nr_throttled #{cpu_stats_number_of_time_throttled}", "throttled_usec #{cpu_stats_time_throttled_usec}"]
+    end
+
+    let(:cpu_max_file_content) do
+      ["#{cpu_quota} #{cpu_period}"]
+    end
+
+    before do
+      # v1 paths do not exist, v2 paths do
+      allow(::File).to receive(:exist?).and_return(false)
+      allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
+      allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
+      allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{relative_path}/cpu.stat").and_return(true)
+      allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{relative_path}/cpu.max").and_return(true)
+      allow(IO).to receive(:readlines).with("/sys/fs/cgroup#{relative_path}/cpu.stat").and_return(cpu_stat_file_content)
+      allow(IO).to receive(:readlines).with("/sys/fs/cgroup#{relative_path}/cpu.max").and_return(cpu_max_file_content)
+      allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(proc_self_cgroup_content)
+
+      subject.collect
+    end
+
+    def mval(*metric_path)
+      metric_path.reduce(os_metrics) {|acc, k| acc[k]}.value
+    end
+
+    it "should have a value for #{[:cgroup, :cpuacct, :control_group]} that is a String" do
+      expect(mval(:cgroup, :cpuacct, :control_group)).to be_a(String)
+    end
+
+    it "should have a value for #{[:cgroup, :cpu, :control_group]} that is a String" do
+      expect(mval(:cgroup, :cpu, :control_group)).to be_a(String)
+    end
+
+    [
+      [:cgroup, :cpuacct, :usage_nanos],
+      [:cgroup, :cpu, :cfs_period_micros],
+      [:cgroup, :cpu, :cfs_quota_micros],
+      [:cgroup, :cpu, :stat, :number_of_elapsed_periods],
+      [:cgroup, :cpu, :stat, :number_of_times_throttled],
+      [:cgroup, :cpu, :stat, :time_throttled_nanos]
+    ].each do |path|
+      path = Array(path)
+      it "should have a value for #{path} that is Numeric" do
+        expect(mval(*path)).to be_a(Numeric)
+      end
+    end
+  end
 end
