@@ -83,5 +83,10 @@ public class BytesSetting extends Coercible<Number> {
         return coerceToNumber(obj);
     }
 
-    // TODO missed validate redefinition
+    @Override
+    public void validate(Number input) throws IllegalArgumentException {
+        if (!isValid(input)) {
+            throw new IllegalArgumentException("Invalid byte value \"" + input + "\".");
+        }
+    }
 }
