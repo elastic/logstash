@@ -18,7 +18,7 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::Bytes do
+describe LogStash::Setting::BytesSetting do
   let(:multipliers) do
     {
       "b" => 1,
@@ -40,7 +40,8 @@ describe LogStash::Setting::Bytes do
     # Hard-coded test just to make sure at least one known case is working
     context "when given '10mb'" do
       it "returns 10485760" do
-        expect(subject.set("10mb")).to be == 10485760
+        subject.set("10mb")
+        expect(subject.value).to be == 10485760
       end
     end
 
