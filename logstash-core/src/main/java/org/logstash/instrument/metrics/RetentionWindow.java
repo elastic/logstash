@@ -19,6 +19,9 @@
 
 package org.logstash.instrument.metrics;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.time.Duration;
@@ -38,6 +41,8 @@ import java.util.function.BiFunction;
  * Both reads and writes are non-blocking and concurrency-safe.
  */
 abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
+    static final Logger LOGGER = LogManager.getLogger(RetentionWindow.class);
+
     private final AtomicReference<NodeStagingPair<CAPTURE>> tail;
     private final AtomicReference<Node<CAPTURE>> head;
     final FlowMetricRetentionPolicy policy;
@@ -89,9 +94,9 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
         final Node<CAPTURE> currentHead = this.head.get();
         if (currentHead.captureNanoTime() > policy.forceCompactionBarrierNanos(newestCapture.nanoTime())) {
             final Node<CAPTURE> compactHead = compactHead(policy.retentionBarrierNanos(newestCapture.nanoTime()));
-            if (ExtendedFlowMetric.LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 final long compactHeadAgeNanos = Math.subtractExact(newestCapture.nanoTime(), compactHead.captureNanoTime());
-                ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
+                LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
             }
         }
     }
