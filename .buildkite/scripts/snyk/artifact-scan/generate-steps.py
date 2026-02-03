@@ -23,47 +23,10 @@ def generate_extraction_step(version: str, version_type: str) -> dict:
     artifact_url = f"{base_url}/logstash-{version}-linux-aarch64.tar.gz"
     step_key = f"extract-{version}".replace('.', '-')
 
-    command = f"""#!/bin/bash
-set -euo pipefail
-
-export SNYK_TOKEN=$(vault read -field=token secret/ci/elastic-logstash/snyk-creds)
-
-echo "--- Downloading Logstash {version}"
-wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 5 \\
-  -O logstash.tar.gz "{artifact_url}" || {{
-  echo "Failed to download {version}, skipping..."
-  exit 0
-}}
-
-echo "--- Extracting tarball"
-tar -xzf logstash.tar.gz
-extracted_dir=$(tar -tzf logstash.tar.gz | head -1 | cut -f1 -d"/")
-
-echo "--- Running extraction via Gradle"
-./gradlew extractArtifactVersions -PartifactDir="$PWD/${{extracted_dir}}" -PoutputFile="$PWD/.buildkite/scripts/snyk/artifact-scan/output.csv"
-
-echo "--- Downloading snyk..."
-cd .buildkite/scripts/snyk/artifact-scan
-curl -sL --retry-max-time 60 --retry 3 --retry-delay 5 https://static.snyk.io/cli/latest/snyk-linux -o snyk
-chmod +x ./snyk
-
-echo "--- Running Snyk monitor for Logstash {version}"
-./snyk sbom monitor --experimental --file=output_sbom.json --org=logstash --target-reference={version} --project-name="logstash-artifact-{version}"
-echo "--- Uploading artifacts"
-buildkite-agent artifact upload "output*.csv"
-buildkite-agent artifact upload "output*.json"
-
-echo "--- Cleanup"
-cd ../../../..
-rm -rf "${{extracted_dir}}" logstash.tar.gz
-cd .buildkite/scripts/snyk/artifact-scan
-rm -f snyk output*.csv output*.json
-"""
-
     return {
         "label": f":mag: {version}",
         "key": step_key,
-        "command": command,
+        "command": f".buildkite/scripts/snyk/artifact-scan/scan-artifact.sh '{version}' '{artifact_url}'",
         "artifact_paths": [
             ".buildkite/scripts/snyk/artifact-scan/output*.csv",
             ".buildkite/scripts/snyk/artifact-scan/output*.json"
@@ -87,7 +50,7 @@ def generate_pipeline() -> dict:
         "agents": {
             "provider": "gcp",
             "imageProject": "elastic-images-prod",
-            "image": "family/platform-ingest-logstash-multi-jdk-ubuntu-2204",
+            "image": "family/platform-ingest-logstash-ubuntu-2204",
             "machineType": "n2-standard-2",
             "diskSizeGb": 20
         },
