@@ -21,6 +21,74 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.0 [logstash-9.3.0-release-notes]
+
+### Features and enhancements [logstash-9.3.0-features-enhancements]
+
+#### Wait for status feature added to Logstash API [logstash-9.3.0-wait-status]
+We've added additional `wait_for_status` and `timeout` query parameters to the Logstash root endpoint `/`. When calling the endpoint with these parameters set, the call will return when either the Logstash status matches (or improves on) the given status, or the given timeout has expired.
+
+Related:
+* Add `wait_for_status` and `timeout` query params for `_health_report` API [#18377](https://github.com/elastic/logstash/pull/18377)
+#### Additional features and enhancements [logstash-9.3.0-more-features]
+
+* Expose average batch metrics at 1, 5 and 15 minutes time window [#18460](https://github.com/elastic/logstash/pull/18460)
+
+### Fixes [logstash-9.3.0-fixes]
+
+* Fix an issue with Central Management where a spurious 404 when looking up pipeline definitions could cause the running pipelines to shut down [#18265](https://github.com/elastic/logstash/pull/18265)
+
+### Plugins [logstash-plugin-9.3.0-changes]
+
+**Avro Codec - 3.5.0**
+
+* Standardize SSL configurations, add proxy and basic auth supports [#47](https://github.com/logstash-plugins/logstash-codec-avro/pull/47)
+  * Add SSL/TLS support for HTTPS schema registry connections
+  * Add `ssl_enabled` option to enable/disable SSL
+  * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+  * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+  * Add `ssl_verification_mode` option to control SSL verification (full, none)
+  * Add `ssl_cipher_suites` option to configure cipher suites
+  * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+  * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+  * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+  * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+  * Add HTTP proxy support with `proxy` option
+  * Add HTTP basic authentication support with `username` and `password` options
+
+**Netflow Codec - 4.3.3**
+
+* Fix `NoMethodError` when decode fails [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Cidr Filter - 3.2.0**
+
+* Feature: Add `address_field` config option to handle nested fields [#29](https://github.com/logstash-plugins/logstash-filter-cidr/pull/29)
+
+**Elastic_integration Filter - 9.3.0**
+
+* Embeds Ingest Node components from Elasticsearch 9.3 [#378](https://github.com/elastic/logstash-filter-elastic_integration/pull/378)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure full jar-dependency tree is shipped with gem artifact [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused `adal4j` dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive `org.apache.commons:commons-lang3` dependency [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+**Snmp Integration - 4.2.1**
+
+* Upgrade log4j dependency [#85](https://github.com/logstash-plugins/logstash-integration-snmp/pull/85)
+
+* Add AES256 with 3DES extension support for `priv_protocol` [#78](https://github.com/logstash-plugins/logstash-integration-snmp/pull/78)
+
+**Elasticsearch Output - 12.1.1**
+
+* Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
+
+* Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
+
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
@@ -41,7 +109,6 @@ No user-facing changes in Logstash core.
 **Kafka Integration - 11.8.2**
 
 * Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
-
 
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
