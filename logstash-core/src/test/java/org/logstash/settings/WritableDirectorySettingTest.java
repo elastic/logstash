@@ -245,7 +245,7 @@ public class WritableDirectorySettingTest {
         sut.set("");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
-        assertThat(ex.getMessage(), containsString("must be a non-empty String path"));
+        assertThat(ex.getMessage(), containsString("Path \"\" does not exist, and I failed trying to create it"));
     }
 
     // ========== value() tests ==========
@@ -255,7 +255,7 @@ public class WritableDirectorySettingTest {
         sut.set("");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
-        assertThat(ex.getMessage(), containsString("Path <empty> does not exist, and failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("Path \"\" does not exist, and I failed trying to create it"));
     }
 
     @Test
