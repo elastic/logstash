@@ -55,12 +55,17 @@ public final class ByteValue {
      *
      * @param text the string to parse (e.g., "100mb", "1gb", "500kb")
      * @return the value in bytes as BigInteger
-     * @throws org.jruby.exceptions.ArgumentError if the text has an unknown unit
+     * @throws org.jruby.exceptions.ArgumentError if the text has an unknown unit or the numeric part of the string is not a number.
      */
     public static BigInteger parse(String text) {
         // Use Double.parseDouble to match Ruby's to_f behavior (including precision loss)
         String numericPart = text.replaceAll("[^0-9.\\-]", "");
-        double number = Double.parseDouble(numericPart);
+        double number;
+        try {
+            number = Double.parseDouble(numericPart);
+        } catch (NumberFormatException e) {
+            throw RubyUtil.RUBY.newArgumentError("Unknown bytes value '" + text + "'");
+        }
         long factor = multiplier(text);
         // Multiply as double (matches Ruby's Float * Integer)
         double result = number * factor;

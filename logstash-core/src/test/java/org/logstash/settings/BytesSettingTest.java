@@ -20,36 +20,38 @@
 package org.logstash.settings;
 
 import org.junit.Test;
-import org.logstash.RubyTestBase;
 
+import java.math.BigInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
-public class BytesSettingTest extends RubyTestBase {
+public class BytesSettingTest/* extends RubyTestBase*/ {
 
     @Test
-    public void testStringDefaultValueInBytes() {
-        BytesSetting setting = new BytesSetting("test.bytes", "100b");
-        assertEquals(100L, setting.value());
+    public void givenValidStringDefaultValue_whenInstantiated_thenParsesCorrectly() {
+        BytesSetting setting = new BytesSetting("test.bytes", "256mb");
+        assertEquals(256L * 1024 * 1024, setting.value());
     }
 
     @Test
-    public void testStringDefaultValueInKilobytes() {
-        BytesSetting setting = new BytesSetting("test.bytes", "64kb");
-        assertEquals(64L * 1024, setting.value());
+    public void givenValidStringWithHumongousValueDefaultValue_whenInstantiated_thenParsesCorrectly() {
+        // Test values that exceed Long.MAX_VALUE (matching Ruby's BigNum behavior)
+        BigInteger largeNumber = new BigInteger("100000000000"); // 10^11
+        BigInteger pbMultiplier = BigInteger.valueOf(1L << 50);
+        BigInteger expected = largeNumber.multiply(pbMultiplier);
+
+        BytesSetting setting = new BytesSetting("test.bytes", "100000000000pb");
+        assertEquals(expected, setting.value());
     }
 
     @Test
-    public void testStringDefaultValueInMegabytes() {
-        BytesSetting setting = new BytesSetting("test.bytes", "8mb");
-        assertEquals(8L * 1024 * 1024, setting.value());
-    }
-
-    @Test
-    public void testStringDefaultValueInGigabytes() {
-        BytesSetting setting = new BytesSetting("test.bytes", "1gb");
-        assertEquals(1L * 1024 * 1024 * 1024, setting.value());
+    public void givenInvalidStringDefaultValue_whenInstantiated_thenThrowsException() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            new BytesSetting("test.bytes", "abdce");
+        });
+        assertThat(ex.getMessage()).endsWith("Could not coerce 'abdce' into a bytes value");
     }
 
     @Test
