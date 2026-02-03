@@ -607,7 +607,7 @@ spec:
         build_tags: false
         filter_enabled: true
         filter_condition: >-
-          build.pull_request.id != null
+          build.creator.name == 'elasticmachine' && build.pull_request.id != null
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
       teams:
