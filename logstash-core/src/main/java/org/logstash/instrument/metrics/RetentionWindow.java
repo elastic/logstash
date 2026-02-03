@@ -25,6 +25,7 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
 /**
@@ -43,7 +44,7 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
 
     RetentionWindow(final FlowMetricRetentionPolicy policy, final CAPTURE zeroCapture) {
         this.policy = policy;
-        final Node<CAPTURE> zeroNode = new Node<>(zeroCapture);
+        final Node<CAPTURE> zeroNode = Node.detached(zeroCapture);
         this.head = new AtomicReference<>(zeroNode);
         this.tail = new AtomicReference<>(NodeStagingPair.ofNode(zeroNode));
     }
@@ -70,43 +71,16 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
      * @param newestCapture the newest capture to stage
      */
     void append(final CAPTURE newestCapture) {
-        final NodeStagingPair<CAPTURE> newTailWithStaging = new NodeStagingPair<>();
+        final NodeStagingPair.Mutable<CAPTURE> newTailWithStaging = new NodeStagingPair.Mutable<>();
 
+        // atomically replace our tail with our new capture applied
         NodeStagingPair<CAPTURE> oldTailWithStaging = this.tail.getAndUpdate((committedNodeStagePair) -> {
-            final Node<CAPTURE> committedNode = committedNodeStagePair.committed;
-            final CAPTURE committedCapture = committedNode.capture;
-            final CAPTURE stagedCapture = committedNodeStagePair.staged;
-
-            final CAPTURE captureToCommit;
-            final CAPTURE captureToStage;
-
-            if (Objects.isNull(committedCapture)) {
-                // if we don't have a commit yet, commit.
-                if (Objects.nonNull(stagedCapture)) {
-                    captureToCommit = stagedCapture;
-                    captureToStage = newestCapture;
-                } else {
-                    captureToCommit = newestCapture;
-                    captureToStage = null;
-                }
-            } else if (Objects.nonNull(stagedCapture) && committedCapture.nanoTime() < policy.commitBarrierNanos(newestCapture.nanoTime())) {
-                // if the gap between newest and committed is bigger than resolution, commit staged and stage new
-                captureToCommit = stagedCapture;
-                captureToStage = newestCapture;
-            } else {
-                // otherwise merge into our stage
-                captureToCommit = committedCapture;
-                captureToStage = mergeCaptures(stagedCapture, newestCapture);
-            }
-
-            // apply our changes, keeping the committed Node if we're committing its capture.
-            final Node<CAPTURE> nodeToCommit = (Objects.equals(committedCapture, captureToCommit) ? committedNode : new Node<>(captureToCommit));
-            newTailWithStaging.set(nodeToCommit, captureToStage);
-
+            newTailWithStaging.reset(); // after a lost race, our new tail-stage will be dirty
+            applyCaptureWithStaging(committedNodeStagePair, newestCapture, newTailWithStaging::set);
             return newTailWithStaging;
         });
 
-        // re-attach the tail if we severed it
+        // re-attach the tail to the previous tail if we severed it
         if (oldTailWithStaging.committed != newTailWithStaging.committed) {
             oldTailWithStaging.committed.setNext(newTailWithStaging.committed);
         }
@@ -120,6 +94,41 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
                 ExtendedFlowMetric.LOGGER.debug("{} forced-compaction result (captures: `{}` span: `{}`)", this, estimateSize(compactHead), Duration.ofNanos(compactHeadAgeNanos));
             }
         }
+    }
+
+    /**
+     * Applies a capture to the existing committed tail-with-staging, handling the details of committed vs staged.
+     * This method is expected to be side-effect free, since it may be run multiple times in the event of a lost race.
+     *
+     * @param committedTailWithStaging the currently-committed tail
+     * @param newestCapture            our newest capture, to be merged or promoted
+     * @param resultNodeStageConsumer  a consumer of the {@code nodeToCommit}/{@code captureToStage} pair
+     */
+    private void applyCaptureWithStaging(final NodeStagingPair<CAPTURE> committedTailWithStaging,
+                                         final CAPTURE newestCapture,
+                                         final BiConsumer<Node<CAPTURE>, CAPTURE> resultNodeStageConsumer) {
+        final Node<CAPTURE> committedNode = committedTailWithStaging.committed;
+        final CAPTURE committedCapture = committedNode.capture;
+        final CAPTURE stagedCapture = committedTailWithStaging.staged;
+
+        final Node<CAPTURE> nodeToCommit;
+        final CAPTURE captureToStage;
+
+        if (Objects.nonNull(stagedCapture) && (Objects.isNull(committedCapture) || committedCapture.nanoTime() < policy.commitBarrierNanos(newestCapture.nanoTime()))) {
+            // if we have a staged capture that is worth committing, rotate.
+            nodeToCommit = Node.detached(stagedCapture);
+            captureToStage = newestCapture;
+        } else if (Objects.isNull(committedCapture)) {
+            // if we don't have a commit yet, just commit what we have
+            nodeToCommit = Node.detached(newestCapture);
+            captureToStage = null;
+        } else {
+            // otherwise merge newest into our stage
+            nodeToCommit = committedNode;
+            captureToStage = mergeCaptures(stagedCapture, newestCapture);
+        }
+
+        resultNodeStageConsumer.accept(nodeToCommit, captureToStage);
     }
 
     @Override
@@ -235,6 +244,10 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
             }
         }
 
+        static <CAPTURE extends DatapointCapture> Node<CAPTURE> detached(final CAPTURE capture) {
+            return new Node<>(capture);
+        }
+
         private final CAPTURE capture;
         private volatile Node<CAPTURE> next;
 
@@ -279,18 +292,25 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
     }
 
     private static class NodeStagingPair<CAPTURE extends DatapointCapture> {
-        private Node<CAPTURE> committed;
-        private CAPTURE staged;
+        protected Node<CAPTURE> committed;
+        protected CAPTURE staged;
 
         private static <T extends DatapointCapture> NodeStagingPair<T> ofNode(final Node<T> node) {
-            NodeStagingPair<T> tStaging = new NodeStagingPair<>();
+            Mutable<T> tStaging = new Mutable<>();
             tStaging.set(node, null);
             return tStaging;
         }
 
-        void set(final Node<CAPTURE> committed, final CAPTURE staged) {
-            this.committed = committed;
-            this.staged = staged;
+        private static class Mutable<CAPTURE extends DatapointCapture> extends NodeStagingPair<CAPTURE> {
+            void set(final Node<CAPTURE> committed, final CAPTURE staged) {
+                this.committed = committed;
+                this.staged = staged;
+            }
+            void reset() {
+                this.committed = null;
+                this.staged = null;
+            }
         }
     }
+
 }
