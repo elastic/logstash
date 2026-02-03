@@ -52,7 +52,10 @@ module LogStash module Instrument module PeriodicPoller
     CGROUP_FILE = "/proc/self/cgroup"
     CPUACCT_DIR = "/sys/fs/cgroup/cpuacct"
     CPU_DIR = "/sys/fs/cgroup/cpu"
-    CRITICAL_PATHS = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
+    CGROUP2_DIR = "/sys/fs/cgroup"
+    CRITICAL_PATHS_V1 = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
+    CRITICAL_PATHS = CRITICAL_PATHS_V1 # backward compat for logging
+    CONTROL_GROUP_V2_RE = Regexp.compile("^0::(/.*)")
 
     CONTROLLER_CPUACCT_LABEL = "cpuacct"
     CONTROLLER_CPU_LABEL = "cpu"
@@ -63,12 +66,28 @@ module LogStash module Instrument module PeriodicPoller
 
       def cgroup_available?
         # don't cache to ivar, in case the files are mounted after logstash starts??
-        CRITICAL_PATHS.all? {|path| ::File.exist?(path)}
+        cgroup_v1_available? || cgroup_v2_available?
+      end
+
+      def cgroup_v1_available?
+        CRITICAL_PATHS_V1.all? { |path| ::File.exist?(path) }
+      end
+
+      def cgroup_v2_available?
+        ::File.exist?(CGROUP_FILE) &&
+          ::File.exist?(::File.join(CGROUP2_DIR, "cgroup.controllers"))
       end
 
       def controller_groups
         response = {}
+        v2_path = nil
         IO.readlines(CGROUP_FILE).each do |line|
+          # capture v2 unified hierarchy path (0::/path)
+          v2_match = CONTROL_GROUP_V2_RE.match(line)
+          if v2_match
+            v2_path = v2_match[1]
+          end
+
           matches = CONTROL_GROUP_RE.match(line)
           next if matches.nil?
           # multiples controls, same hierarchy
@@ -84,6 +103,15 @@ module LogStash module Instrument module PeriodicPoller
             end
           end
         end
+
+        # If cpu/cpuacct not found via v1, try v2 unified hierarchy
+        if v2_path && !response.key?(CONTROLLER_CPU_LABEL) && !response.key?(CONTROLLER_CPUACCT_LABEL)
+          if cgroup_v2_available?
+            response[CONTROLLER_CPU_LABEL] = CpuResourceV2.new(v2_path)
+            response[CONTROLLER_CPUACCT_LABEL] = CpuAcctResourceV2.new(v2_path)
+          end
+        end
+
         response
       end
     end
@@ -197,6 +225,93 @@ module LogStash module Instrument module PeriodicPoller
           when "nr_periods" then @number_of_elapsed_periods = fields[1].to_i
           when "nr_throttled" then @number_of_times_throttled = fields[1].to_i
           when "throttled_time" then @time_throttled_nanos = fields[1].to_i
+          end
+        end
+      end
+
+      def to_hash
+        {
+          :number_of_elapsed_periods => @number_of_elapsed_periods,
+          :number_of_times_throttled => @number_of_times_throttled,
+          :time_throttled_nanos => @time_throttled_nanos
+        }
+      end
+    end
+
+    class CpuAcctResourceV2
+      include LogStash::Util::Loggable
+      include ControllerResource
+
+      def initialize(original_path)
+        common_initialize(CGROUP2_DIR, "ls.cgroup.cpuacct.path.override", original_path)
+      end
+
+      def to_hash
+        {:control_group => offset_path, :usage_nanos => cpu_usage_nanos}
+      end
+
+      private
+      def cpu_usage_nanos
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          return fields[1].to_i * 1000 if fields.first == "usage_usec"
+        end
+        -1
+      end
+    end
+
+    class CpuResourceV2
+      include LogStash::Util::Loggable
+      include ControllerResource
+
+      def initialize(original_path)
+        common_initialize(CGROUP2_DIR, "ls.cgroup.cpu.path.override", original_path)
+      end
+
+      def to_hash
+        quota, period = read_cpu_max
+        {
+          :control_group => offset_path,
+          :cfs_period_micros => period,
+          :cfs_quota_micros => quota,
+          :stat => build_cpu_stats_hash
+        }
+      end
+
+      private
+      def read_cpu_max
+        content = call_if_file_exists(:read_lines, "cpu.max", [])
+        return [-1, -1] if content.empty?
+        parts = content.first.split(/\s+/)
+        quota = parts[0] == "max" ? -1 : parts[0].to_i
+        period = parts[1].to_i
+        [quota, period]
+      end
+
+      def build_cpu_stats_hash
+        stats = CpuStatsV2.new
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        stats.update(lines)
+        stats.to_hash
+      end
+    end
+
+    class CpuStatsV2
+      def initialize
+        @number_of_elapsed_periods = -1
+        @number_of_times_throttled = -1
+        @time_throttled_nanos = -1
+      end
+
+      def update(lines)
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          next unless fields.size > 1
+          case fields.first
+          when "nr_periods" then @number_of_elapsed_periods = fields[1].to_i
+          when "nr_throttled" then @number_of_times_throttled = fields[1].to_i
+          when "throttled_usec" then @time_throttled_nanos = fields[1].to_i * 1000
           end
         end
       end
