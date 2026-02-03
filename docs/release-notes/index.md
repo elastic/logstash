@@ -21,29 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
-## 9.2.5 [logstash-9.2.5-release-notes]
-
-### Features and enhancements [logstash-9.2.5-features-enhancements]
-
-No user-facing changes in Logstash core.
-
-### Plugins [logstash-plugin-9.2.5-changes]
-
-**Netflow Codec - 4.3.3**
-
-* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
-
-**Azure_event_hubs Input - 1.5.4**
-
-* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
-* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
-
-**Kafka Integration - 11.8.2**
-
-* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
-
-=======
 ## 9.3.0 [logstash-9.3.0-release-notes]
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
@@ -66,18 +43,18 @@ Related:
 **Avro Codec - 3.5.0**
 
 * Standardize SSL configurations, add proxy and basic auth supports [#47](https://github.com/logstash-plugins/logstash-codec-avro/pull/47)
-    * Add SSL/TLS support for HTTPS schema registry connections
-    * Add `ssl_enabled` option to enable/disable SSL
-    * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
-    * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
-    * Add `ssl_verification_mode` option to control SSL verification (full, none)
-    * Add `ssl_cipher_suites` option to configure cipher suites
-    * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
-    * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
-    * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
-    * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
-    * Add HTTP proxy support with `proxy` option
-    * Add HTTP basic authentication support with `username` and `password` options
+  * Add SSL/TLS support for HTTPS schema registry connections
+  * Add `ssl_enabled` option to enable/disable SSL
+  * Add `ssl_certificate` and `ssl_key` options for PEM-based client authentication (unencrypted keys only)
+  * Add `ssl_certificate_authorities` option for PEM-based server certificate validation
+  * Add `ssl_verification_mode` option to control SSL verification (full, none)
+  * Add `ssl_cipher_suites` option to configure cipher suites
+  * Add `ssl_supported_protocols` option to configure TLS protocol versions (TLSv1.1, TLSv1.2, TLSv1.3)
+  * Add `ssl_truststore_path` and `ssl_truststore_password` options for server certificate validation (JKS/PKCS12)
+  * Add `ssl_keystore_path` and `ssl_keystore_password` options for mutual TLS authentication (JKS/PKCS12)
+  * Add `ssl_truststore_type` and `ssl_keystore_type` options (JKS or PKCS12)
+  * Add HTTP proxy support with `proxy` option
+  * Add HTTP basic authentication support with `username` and `password` options
 
 **Netflow Codec - 4.3.3**
 
@@ -111,7 +88,27 @@ Related:
 * Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
->>>>>>> c9131eeb (9.3.0 release notes copied from #18581 (#18703))
+
+## 9.2.5 [logstash-9.2.5-release-notes]
+
+### Features and enhancements [logstash-9.2.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.2.5-changes]
+
+**Netflow Codec - 4.3.3**
+
+* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
 
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
