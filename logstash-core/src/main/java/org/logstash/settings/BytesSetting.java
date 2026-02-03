@@ -62,7 +62,12 @@ public class BytesSetting extends Coercible<Number> {
             return (Number) obj;
         }
         if (obj instanceof String) {
-            BigInteger parsed = ByteValue.parse((String) obj);
+            BigInteger parsed;
+            try {
+                parsed = ByteValue.parse((String) obj);
+            } catch (org.jruby.exceptions.ArgumentError e) {
+                throw new IllegalArgumentException("Could not coerce '" + obj + "' into a bytes value", e);
+            }
             // Return Long if it fits, otherwise return BigInteger
             if (parsed.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) <= 0 &&
                 parsed.compareTo(BigInteger.valueOf(Long.MIN_VALUE)) >= 0) {
@@ -77,4 +82,6 @@ public class BytesSetting extends Coercible<Number> {
     public Number coerce(Object obj) {
         return coerceToNumber(obj);
     }
+
+    // TODO missed validate redefinition
 }
