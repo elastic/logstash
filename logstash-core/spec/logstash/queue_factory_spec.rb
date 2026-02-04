@@ -22,7 +22,7 @@ describe LogStash::QueueFactory do
   let(:pipeline_id) { "my_pipeline" }
   let(:settings_array) do
     [
-      LogStash::Setting::WritableDirectory.new("path.queue", Stud::Temporary.pathname),
+      LogStash::Setting::WritableDirectorySetting.new("path.queue", Stud::Temporary.pathname),
       LogStash::Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
       LogStash::Setting::Bytes.new("queue.page_capacity", "8mb"),
       LogStash::Setting::Bytes.new("queue.max_bytes", "64mb"),

@@ -452,50 +452,7 @@ module LogStash
 
     java_import org.logstash.settings.ExistingFilePathSetting
 
-    class WritableDirectory < Setting
-      def initialize(name, default = nil, strict = false)
-        super(name, ::String, default, strict)
-      end
-
-      def validate(path)
-        super(path)
-
-        if ::File.directory?(path)
-          if !::File.writable?(path)
-            raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not writable.")
-          end
-        elsif ::File.symlink?(path)
-          # TODO(sissel): I'm OK if we relax this restriction. My experience
-          # is that it's usually easier and safer to just reject symlinks.
-          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It cannot be a symlink.")
-        elsif ::File.exist?(path)
-          raise ::ArgumentError.new("Path \"#{path}\" must be a writable directory. It is not a directory.")
-        else
-          parent = ::File.dirname(path)
-          if !::File.writable?(parent)
-            raise ::ArgumentError.new("Path \"#{path}\" does not exist and I cannot create it because the parent path \"#{parent}\" is not writable.")
-          end
-        end
-
-        # If we get here, the directory exists and is writable.
-        true
-      end
-
-      def value
-        super.tap do |path|
-          if !::File.directory?(path)
-            # Create the directory if it doesn't exist.
-            begin
-              logger.info("Creating directory", setting: name, path: path)
-              ::FileUtils.mkdir_p(path)
-            rescue => e
-              # TODO(sissel): Catch only specific exceptions?
-              raise ::ArgumentError.new("Path \"#{path}\" does not exist, and I failed trying to create it: #{e.class.name} - #{e}")
-            end
-          end
-        end
-      end
-    end
+    java_import org.logstash.settings.WritableDirectorySetting
 
     class Bytes < Coercible
       def initialize(name, default = nil, strict = true)
