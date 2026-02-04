@@ -8,6 +8,39 @@ Known issues are significant defects or limitations that may impact your impleme
 These issues are actively being worked on and will be addressed in a future release. 
 Review known issues to help you make informed decisions, such as upgrading to a new version.
 
+<<<<<<< HEAD
+=======
+## 9.3.0 [logstash-ki-9.3.0]
+
+**Logstash will not start with bundled JDK on aarch64 downloaded artifacts**
+
+Applies to: {{ls}} 9.3.0
+
+::::{dropdown} Details
+
+On `aarch64`, {{ls}} 9.3.0 fails to start when installed from .deb, .rpm, or .tar packages and using the bundled JDK.
+This is due to an incorrect JDK version being included in those packages.
+
+Using a JDK provided via `LS_JAVA_HOME` works as expected. Docker images and non-`aarch64` architectures are not affected.
+
+::::
+
+## 9.2.5 [logstash-ki-9.2.5]
+
+**Logstash will not start with bundled JDK on aarch64 downloaded artifacts**
+
+Applies to: {{ls}} 9.2.5
+
+::::{dropdown} Details
+
+On `aarch64`,{{ls}} 9.2.5 fails to start when installed from .deb, .rpm, or .tar packages and using the bundled JDK.
+This is due to an incorrect JDK version being included in those packages.
+
+Using a JDK provided via `LS_JAVA_HOME` works as expected. Docker images and non-`aarch64` architectures are not affected.
+
+::::
+
+>>>>>>> 708ab1e6 (Add known issues running 9.2.5 on aarch64 architectures (#18731) (#18735))
 ## 9.2.0 [logstash-ki-9.2.0]
 
 **Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**

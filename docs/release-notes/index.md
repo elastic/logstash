@@ -91,6 +91,15 @@ Related:
 
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
+
+::::{important}
+
+Do not upgrade to Logstash 9.2.5 if you need to run Logstash on `aarch64` architectures using the bundled JDK, and are
+not running on Docker.
+For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.2.5).
+
+::::
+
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
 
 No user-facing changes in Logstash core.
