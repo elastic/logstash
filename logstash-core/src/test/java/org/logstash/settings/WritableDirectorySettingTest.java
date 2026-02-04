@@ -140,7 +140,7 @@ public class WritableDirectorySettingTest {
         // validateValue() calls value() first which tries to create directory at file path
         // This fails with FileAlreadyExistsException wrapped in IllegalArgumentException
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
-        assertThat(ex.getMessage(), containsString("failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("does not exist and directory creation failed"));
     }
 
     @Test
@@ -226,7 +226,7 @@ public class WritableDirectorySettingTest {
         // validateValue() calls value() first which tries to create directory
         // and fails because parent is not writable
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
-        assertThat(ex.getMessage(), containsString("failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("does not exist and directory creation failed"));
     }
 
     // ========== validateValue() tests for null and empty ==========
