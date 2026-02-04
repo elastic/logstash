@@ -21,7 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
+
 ## 9.3.0 [logstash-9.3.0-release-notes]
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
@@ -90,8 +90,7 @@ Related:
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
-=======
->>>>>>> 344069c4 (Release notes for 9.2.5 (#18678))
+
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
@@ -113,10 +112,7 @@ No user-facing changes in Logstash core.
 
 * Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 344069c4 (Release notes for 9.2.5 (#18678))
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
 ### Features and enhancements [logstash-9.2.4-features-enhancements]
