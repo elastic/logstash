@@ -19,7 +19,7 @@ Applies to: {{ls}} 9.3.0
 On `aarch64`, Logstash 9.3.0 fails to start when installed from .deb, .rpm, or .tar packages when using the bundled JDK.
 This is due to an incorrect JDK version being included in those packages.
 
-Using a JDK provided via `JAVA_HOME` works as expected. Docker images and non-`aarch64` architectures are not affected.
+Using a JDK provided via `LS_JAVA_HOME` works as expected. Docker images and non-`aarch64` architectures are not affected.
 
 ::::
 
