@@ -106,6 +106,7 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-11]]
 === Logstash 8.19.11 Release Notes
 
+[[known-issues-8-19-11]]
 ==== Known issues
 Logstash will not start with bundled JDK on aarch64 downloaded artifacts
 
@@ -113,9 +114,6 @@ On aarch64, Logstash 8.19.11 fails to start when installed from .deb, .rpm, or .
 This is due to an incorrect JDK version being included in those packages.
 
 Using a JDK provided via `LS_JAVA_HOME` works as expected. Docker images and non-aarch64 architectures are not affected.
-
-
-No user-facing changes in Logstash core.
 
 ==== Plugins
 
