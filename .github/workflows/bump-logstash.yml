@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       logstash_version:
-        description: 'Logstash version (example: 9.1.4)'
+        description: 'Logstash version to update TO (example: 9.1.4)'
         required: true
         type: string
       logstash_branch:
