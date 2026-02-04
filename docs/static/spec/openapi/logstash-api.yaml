@@ -17,7 +17,7 @@ info:
 
     ## Documentation source and versions
 
-    This documentation is derived from the `main` branch of the [logstash](https://github.com/elastic/logstash) repository.
+    This documentation is derived from the `9.3` branch of the [logstash](https://github.com/elastic/logstash) repository.
     It is provided under license [Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
   version: '1.0'
   x-doc-license:
