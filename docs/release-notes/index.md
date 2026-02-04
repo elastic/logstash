@@ -97,6 +97,29 @@ Related:
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
+
+## 9.2.5 [logstash-9.2.5-release-notes]
+
+### Features and enhancements [logstash-9.2.5-features-enhancements]
+
+No user-facing changes in Logstash core.
+
+### Plugins [logstash-plugin-9.2.5-changes]
+
+**Netflow Codec - 4.3.3**
+
+* Made decoding more robust to malformed events [#214](https://github.com/logstash-plugins/logstash-codec-netflow/pull/214)
+
+**Azure_event_hubs Input - 1.5.4**
+
+* Ensure gem artifact ship with all runtime dependencies [#110](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/110)
+* Remove unused Azure Active Directory dependency [#107](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/107)
+
+**Kafka Integration - 11.8.2**
+
+* Upgrade transitive dependency used by Avro serializer [#217](https://github.com/logstash-plugins/logstash-integration-kafka/pull/217)
+
+
 ## 9.2.4 [logstash-9.2.4-release-notes]
 
 ### Features and enhancements [logstash-9.2.4-features-enhancements]
