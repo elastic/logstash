@@ -64,7 +64,7 @@ COPY --chmod=0755 scripts/env2yaml/env2yaml /usr/local/bin/env2yaml
     <%   license = 'Elastic License' -%>
   <% end -%>
   <% if image_flavor == 'ubi8' %>
-    <%   base_image = 'docker.elastic.co/ubi8/ubi-minimal' -%>
+    <%   base_image = 'redhat/ubi8-minimal:latest' -%>
     <%   package_manager = 'microdnf' -%>
     <%   arch_command = 'uname -m' -%>
     # Minimal distributions do not ship with en language packs.
