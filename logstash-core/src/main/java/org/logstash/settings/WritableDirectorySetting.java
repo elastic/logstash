@@ -92,7 +92,7 @@ public class WritableDirectorySetting extends BaseSetting<String> {
             if (path.isEmpty()) {
                 // path.isEmpty() is here for compatibility with previous behavior, where Ruby's File.directory?("") is false.
                 // So passing an empty string throws here an error instead of considering is as valid.
-                throw new IllegalArgumentException("Path \"\" does not exist, and I failed trying to create it");
+                throw new IllegalArgumentException("Path \"\" does not exist and directory creation failed");
             }
             Path dirPath = Paths.get(path);
             if (!Files.isDirectory(dirPath)) {
@@ -102,7 +102,7 @@ public class WritableDirectorySetting extends BaseSetting<String> {
                     Files.createDirectories(dirPath);
                 } catch (IOException e) {
                     throw new IllegalArgumentException(
-                            String.format("Path \"%s\" does not exist, and I failed trying to create it: %s - %s",
+                            String.format("Path \"%s\" does not exist and directory creation failed: %s - %s",
                                     path, e.getClass().getName(), e.getMessage()), e);
                 }
             }

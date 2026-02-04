@@ -245,7 +245,7 @@ public class WritableDirectorySettingTest {
         sut.set("");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::validateValue);
-        assertThat(ex.getMessage(), containsString("Path \"\" does not exist, and I failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("Path \"\" does not exist and directory creation failed"));
     }
 
     // ========== value() tests ==========
@@ -255,7 +255,7 @@ public class WritableDirectorySettingTest {
         sut.set("");
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
-        assertThat(ex.getMessage(), containsString("Path \"\" does not exist, and I failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("Path \"\" does not exist and directory creation failed"));
     }
 
     @Test
@@ -329,7 +329,7 @@ public class WritableDirectorySettingTest {
         Awaitility.await("Until the parent directory is not read-only").until(() -> !parentFile.canWrite());
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, sut::value);
-        assertThat(ex.getMessage(), containsString("does not exist, and I failed trying to create it"));
+        assertThat(ex.getMessage(), containsString("does not exist and directory creation failed"));
     }
 
     // ========== Constructor tests ==========
