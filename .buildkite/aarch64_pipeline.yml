@@ -157,3 +157,23 @@ steps:
       #         - "debian"
       #       distribution:
       #         - "ubuntu-2204"
+
+  - group: "Exhaustive Acceptance Tests (Built from source)"
+    key: "exhaustive-acceptance-built"
+    steps:
+      - label: ":package: Build & test ARM64 deb package"
+        key: "build-and-test-arm64-deb"
+        command: .buildkite/scripts/exhaustive-tests/run-acceptance-from-built.sh
+        retry:
+          automatic:
+            - limit: 3
+
+  - group: "Exhaustive Acceptance Tests (Released 9.3.0)"
+    key: "exhaustive-acceptance-released"
+    steps:
+      - label: ":arrow_down: Download & test released 9.3.0 ARM64 deb"
+        key: "download-and-test-released-deb"
+        command: .buildkite/scripts/exhaustive-tests/run-acceptance-from-released.sh
+        retry:
+          automatic:
+            - limit: 3
