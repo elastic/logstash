@@ -157,3 +157,29 @@ steps:
       #         - "debian"
       #       distribution:
       #         - "ubuntu-2204"
+
+  - group: "Exhaustive Acceptance Tests"
+    key: "exhaustive-acceptance"
+    steps:
+      - label: "Build ARM64 deb on x86_64 (mimics DRA)"
+        key: "build-arm64-deb-on-x86"
+        agents:
+          provider: gcp
+          imageProject: elastic-images-prod
+          image: family/platform-ingest-logstash-ubuntu-2204
+          machineType: "n2-standard-16"
+          diskSizeGb: 200
+        command: .buildkite/scripts/exhaustive-tests/build-on-x86.sh
+        artifact_paths:
+          - "build/*.deb"
+        retry:
+          automatic:
+            - limit: 3
+
+      - label: "Test ARM64 deb on ARM64"
+        key: "test-arm64-deb-on-arm"
+        depends_on: "build-arm64-deb-on-x86"
+        command: .buildkite/scripts/exhaustive-tests/test-on-arm.sh
+        retry:
+          automatic:
+            - limit: 3

@@ -29,6 +29,19 @@ namespace "artifact" do
          else
            "arm64" # default for aarch64, arm64, or any other value (including nil)
          end
+
+  def jdk_folder_for_platform(os_name, arch)
+    normalized_arch = (arch == "x86_64" || arch == "amd64") ? "x64" : "arm64"
+    "jdk-#{os_name}-#{normalized_arch}"
+  end
+
+  def transform_jdk_path(path)
+    return path unless @target_os && @target_arch
+    jdk_folder = jdk_folder_for_platform(@target_os, @target_arch)
+    return path unless path.start_with?("#{jdk_folder}/")
+    canonical_name = (@target_os == "darwin") ? "jdk.app" : "jdk"
+    path.sub(/^#{Regexp.escape(jdk_folder)}\//, "#{canonical_name}/")
+  end
   
   ## TODO: Install new service files
   def package_files
@@ -73,11 +86,11 @@ namespace "artifact" do
       "Gemfile.lock",
       "x-pack/lib/**/*",
     ]
-    if @bundles_jdk
+    if @bundles_jdk && @target_os && @target_arch
+      jdk_folder = jdk_folder_for_platform(@target_os, @target_arch)
       res += [
         "JDK_VERSION",
-        "jdk/**/*",
-        "jdk.app/**/*",
+        "#{jdk_folder}/**/*",
       ]
     end
     res
@@ -208,16 +221,16 @@ namespace "artifact" do
   end
 
   def create_single_archive_pack(os_name, arch, license_details, &tar_interceptor)
-    if arch == 'arm64'
-      arch = 'aarch64'
-    end
+    @target_os = os_name
+    @target_arch = arch
+    platform_arch = (arch == 'arm64') ? 'aarch64' : arch
     case os_name
     when "linux"
-      build_tar(*license_details, platform: "-linux-#{arch}", &tar_interceptor)
+      build_tar(*license_details, platform: "-linux-#{platform_arch}", &tar_interceptor)
     when "windows"
-      build_zip(*license_details, platform: "-windows-#{arch}")
+      build_zip(*license_details, platform: "-windows-#{platform_arch}")
     when "darwin"
-      build_tar(*license_details, platform: "-darwin-#{arch}", &tar_interceptor)
+      build_tar(*license_details, platform: "-darwin-#{platform_arch}", &tar_interceptor)
     end
   end
 
@@ -556,7 +569,8 @@ namespace "artifact" do
     Minitar::Writer.open(gz) do |tar|
       dedicated_directory_tarball = DedicatedDirectoryTarball.new(tar, "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}")
       files(exclude_paths).each do |path|
-        dedicated_directory_tarball.write(path)
+        dest_path = transform_jdk_path(path)
+        dedicated_directory_tarball.write(path, dest_path)
       end
 
       source_license_path = "licenses/#{license}.txt"
@@ -659,7 +673,8 @@ namespace "artifact" do
     File.unlink(zippath) if File.exist?(zippath)
     Zip::File.open(zippath, Zip::File::CREATE) do |zipfile|
       files(exclude_paths).each do |path|
-        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{path}"
+        dest_path = transform_jdk_path(path)
+        path_in_zip = "logstash-#{LOGSTASH_VERSION}#{PACKAGE_SUFFIX}/#{dest_path}"
         zipfile.add(path_in_zip, path)
       end
 
@@ -683,6 +698,9 @@ namespace "artifact" do
 
   def package(platform, variant = :standard, bundle_jdk = false, jdk_arch = 'x86_64')
     oss = variant == :oss
+    @target_os = "linux"
+    @target_arch = jdk_arch
+    @bundles_jdk = bundle_jdk
 
     require "stud/temporary"
     require "fpm/errors" # TODO(sissel): fix this in fpm
@@ -711,7 +729,8 @@ namespace "artifact" do
       # Omit any config dir from /usr/share/logstash for packages, since we're
       # using /etc/logstash below
       next if path.start_with?("config/")
-      dir.input("#{path}=/usr/share/logstash/#{path}")
+      dest_path = transform_jdk_path(path)
+      dir.input("#{path}=/usr/share/logstash/#{dest_path}")
     end
 
     if oss
