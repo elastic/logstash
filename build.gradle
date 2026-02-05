@@ -1022,49 +1022,12 @@ tasks.register("lint") {
     }
 }
 
-<<<<<<< HEAD
-tasks.register("downloadJdk", Download) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
-
-    project.ext.set("versionFound", true)
-    String osName = selectOsType()
-
-    String jdkArch = selectArch()
-
-    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
-
-    description "Download JDK ${jdkDetails.major}, OS: ${osName}"
-
-    // find url of build artifact
-    String artifactApiUrl = jdkDetails.createDownloadUrl()
-
-    project.ext.set("jdkURL", System.getenv("JDK_URL") ?: artifactApiUrl)
-    project.ext.set("jdkDownloadLocation", "${projectDir}/build/${jdkDetails.localPackageName}")
-    project.ext.set("jdkDirectory", "${projectDir}/build/${jdkDetails.unpackedJdkName}")
-
-    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
-    project.ext.set("jdkBundlingDirectory", "${projectDir}/${jdkFolderName}")
-
-    src project.ext.jdkURL
-    onlyIfNewer true
-    overwrite false
-    retries 3
-    quiet true
-    inputs.file("${projectDir}/versions.yml")
-    outputs.file(project.ext.jdkDownloadLocation)
-    dest new File(project.ext.jdkDownloadLocation)
-
-    doLast {
-        mkdir project.ext.jdkBundlingDirectory
-        println "Downloaded to ${project.ext.jdkDownloadLocation}"
-=======
 def getTargetPlatforms() {
     String arch = selectArch()
     if (arch == "x86_64") {
         return [[os: "linux", arch: "x86_64"], [os: "windows", arch: "x86_64"], [os: "darwin", arch: "x86_64"]]
     } else {
         return [[os: "linux", arch: "arm64"], [os: "darwin", arch: "arm64"]]
->>>>>>> 7f1ca8eea (Respect ARCH env var when downloading JDK via gradle (#18733))
     }
 }
 
