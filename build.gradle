@@ -43,7 +43,6 @@ apply from: "rubyUtils.gradle"
 import de.undercouch.gradle.tasks.download.Download
 import groovy.json.JsonSlurper
 import org.logstash.gradle.tooling.ListProjectDependencies
-import org.logstash.gradle.tooling.ExtractBundledJdkVersion
 import org.logstash.gradle.tooling.SignAliasDefinitions
 import org.logstash.gradle.tooling.ToolingUtils
 import org.logstash.gradle.tooling.SnapshotArtifactURLs
@@ -334,7 +333,7 @@ tasks.register("installDevelopmentGems") {
 tasks.register("artifactDocker") {
     description = "Build docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker')
@@ -344,7 +343,7 @@ tasks.register("artifactDocker") {
 tasks.register("artifactDockerOss") {
     description = "Build OSS docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_oss')
@@ -354,7 +353,7 @@ tasks.register("artifactDockerOss") {
 tasks.register("artifactDockerWolfi") {
     description = "Build Wolfi docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_wolfi')
@@ -364,7 +363,7 @@ tasks.register("artifactDockerWolfi") {
 tasks.register("artifactDockerIronbank") {
     description = "Build Ironbank docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_ironbank')
@@ -421,7 +420,7 @@ tasks.register("compileGrammar") {
 tasks.register("artifactDockerOnly") {
     description = "Build docker image without OSS"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_only')
@@ -440,7 +439,7 @@ tasks.register("generatePluginsVersion") {
 
 tasks.register("artifactDockerObservabilitySRE") {
     dependsOn bootstrap
-    dependsOn "copyJdk"
+    dependsOn "copyAllJdks"
     inputs.files fileTree("${projectDir}/rakelib")
     inputs.files fileTree("${projectDir}/bin")
     inputs.files fileTree("${projectDir}/config")
@@ -469,7 +468,7 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
-  dependsOn "copyJdk"
+  dependsOn "copyAllJdks"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
   inputs.files fileTree("${projectDir}/config")
@@ -825,23 +824,6 @@ bootstrap.dependsOn assemblyDeps
 //check.dependsOn runIntegrationTest
 
 
-def selectOsType() {
-    if (project.ext.has("jdk_bundle_os")) {
-        return project.ext.jdk_bundle_os
-    }
-    String osName = System.properties['os.name']
-    switch (osName.toLowerCase()) {
-        case ~/mac os x/:
-            return "darwin"
-        case ~/windows.*/:
-            return "windows"
-        case ~/linux/:
-            return "linux"
-        default:
-            throw new IllegalArgumentException("Can't determine OS type from name: $osName")
-    }
-}
-
 def selectArch() {
     // 1. Check Gradle project property (e.g., -Pjdk_arch=arm64)
     if (project.ext.has("jdk_arch")) {
@@ -1040,97 +1022,6 @@ tasks.register("lint") {
     }
 }
 
-tasks.register("downloadJdk", Download) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
-
-    project.ext.set("versionFound", true)
-    String osName = selectOsType()
-
-    String jdkArch = selectArch()
-
-    def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, jdkArch)
-
-    description = "Download JDK ${jdkDetails.major}, OS: ${osName}"
-
-    // find url of build artifact
-    String artifactApiUrl = jdkDetails.createDownloadUrl()
-
-    project.ext.set("jdkURL", System.getenv("JDK_URL") ?: artifactApiUrl)
-    project.ext.set("jdkDownloadLocation", "${projectDir}/build/${jdkDetails.localPackageName}")
-    project.ext.set("jdkDirectory", "${projectDir}/build/${jdkDetails.unpackedJdkName}")
-
-    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
-    project.ext.set("jdkBundlingDirectory", "${projectDir}/${jdkFolderName}")
-
-    src project.ext.jdkURL
-    onlyIfNewer true
-    overwrite false
-    retries 3
-    quiet true
-    inputs.file("${projectDir}/versions.yml")
-    outputs.file(project.ext.jdkDownloadLocation)
-    dest new File(project.ext.jdkDownloadLocation)
-
-    doLast {
-        mkdir project.ext.jdkBundlingDirectory
-        println "Downloaded to ${project.ext.jdkDownloadLocation}"
-    }
-}
-
-tasks.register("deleteLocalJdk", Delete) {
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin]
-    String osName = selectOsType()
-    String jdkFolderName = ToolingUtils.jdkFolderName(osName)
-    String jdkBundlingDirectory = "${projectDir}/${jdkFolderName}"
-    delete jdkBundlingDirectory
-}
-
-// Cannot use tarTree as it does not handle symlinks
-tasks.register("untarJdk", Exec) {
-    dependsOn downloadJdk
-    description = "unpack the downloaded JDK's tar.gz"
-    commandLine 'tar', 'xf', project.ext.jdkDownloadLocation, '-C', project.ext.jdkBundlingDirectory, '--strip-components', '1'
-    inputs.file(project.ext.jdkDownloadLocation)
-    outputs.dir(project.ext.jdkBundlingDirectory)
-}
-
-tasks.register("unzipJdk", Copy) {
-    dependsOn downloadJdk
-    description = "unpack the downloaded JDK's zip"
-    String rootName = null
-    from(zipTree("$project.ext.jdkDownloadLocation")) {
-        eachFile { fcd ->
-            rootName = rootName ?: fcd.relativePath.segments[0]
-            fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))
-        }
-    }
-    into project.ext.jdkBundlingDirectory
-    doLast {
-        delete "${project.ext.jdkBundlingDirectory}/$rootName"
-    }
-}
-
-tasks.register("decompressJdk") {
-    description = "unpack the downloaded JDK's (wrapper task for unzipJdk, untarJdk)"
-    String osName = selectOsType()
-    switch (osName) {
-        case "windows":
-            dependsOn ":unzipJdk"
-            break
-        default:
-            dependsOn ":untarJdk"
-    }
-}
-
-tasks.register("copyJdk", Copy) {
-    dependsOn = [extractBundledJdkVersion, decompressJdk, bootstrap]
-    description = "Download, unpack and copy the JDK"
-    // CLI project properties: -Pjdk_bundle_os=[windows|linux|darwin] -Pjdk_arch=[arm64|x86_64]
-    doLast {
-        System.out.println "Download location is ${project.ext.jdkDownloadLocation}, Decompressing ${project.ext.jdkDirectory} to \"${project.ext.jdkBundlingDirectory}\""
-    }
-}
-
 def getTargetPlatforms() {
     String arch = selectArch()
     if (arch == "x86_64") {
@@ -1148,7 +1039,8 @@ def getTargetPlatforms() {
 
         tasks.register("downloadJdk${taskSuffix}", Download) {
             def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
-            src System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl()
+            // Use provider for lazy evaluation - only resolve URL when task executes
+            src provider { System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl() }
             onlyIfNewer true
             overwrite false
             retries 3
@@ -1207,21 +1099,14 @@ tasks.register("deleteAllJdks", Delete) {
     delete fileTree(projectDir) { include 'jdk-*' }
 }
 
-tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
-    dependsOn "decompressJdk"
-    osName = selectOsType()
-}
-
 tasks.register("javaTests") {
     dependsOn ":logstash-core:javaTests"
     dependsOn ":jvm-options-parser:test"
 }
 
 clean {
-    dependsOn deleteLocalJdk
     dependsOn deleteAllJdks
-    String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
-    delete "${projectDir}/${jdkVersionFilename}"
+    delete "${projectDir}/JDK_VERSION"
     delete fileTree(projectDir) {
         include 'output*.csv'
         include 'output*.json'
