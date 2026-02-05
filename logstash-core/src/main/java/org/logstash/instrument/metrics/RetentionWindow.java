@@ -300,8 +300,8 @@ abstract class RetentionWindow<CAPTURE extends DatapointCapture, VALUE> {
         protected Node<CAPTURE> committed;
         protected CAPTURE staged;
 
-        private static <T extends DatapointCapture> NodeStagingPair<T> ofNode(final Node<T> node) {
-            Mutable<T> tStaging = new Mutable<>();
+        private static <CAPTURE extends DatapointCapture> NodeStagingPair<CAPTURE> ofNode(final Node<CAPTURE> node) {
+            NodeStagingPair<CAPTURE> tStaging = new NodeStagingPair<>();
             tStaging.set(node, null);
             return tStaging;
         }
