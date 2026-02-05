@@ -382,7 +382,7 @@ tasks.register("artifactDockerfiles") {
 tasks.register("artifactAll", Exec) {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
     workingDir projectDir
     environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
     environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
@@ -392,7 +392,7 @@ tasks.register("artifactAll", Exec) {
 tasks.register("artifactDeb", Exec) {
     description = "Build DEB package"
     dependsOn bootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
     environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
@@ -403,7 +403,7 @@ tasks.register("artifactDeb", Exec) {
 tasks.register("artifactRpm", Exec) {
     description = "Build RPM package"
     dependsOn bootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
     environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
@@ -1131,6 +1131,82 @@ tasks.register("copyJdk", Copy) {
     }
 }
 
+def getTargetPlatforms() {
+    String arch = selectArch()
+    if (arch == "x86_64") {
+        return [[os: "linux", arch: "x86_64"], [os: "windows", arch: "x86_64"], [os: "darwin", arch: "x86_64"]]
+    } else {
+        return [[os: "linux", arch: "arm64"], [os: "darwin", arch: "arm64"]]
+    }
+}
+
+["linux", "windows", "darwin"].each { osName ->
+    ["x86_64", "arm64"].each { archName ->
+        if (osName == "windows" && archName == "arm64") { return }
+        String taskSuffix = "${osName.capitalize()}${archName == 'x86_64' ? 'X64' : 'Arm64'}"
+        String jdkFolderName = ToolingUtils.jdkFolderName(osName, archName)
+
+        tasks.register("downloadJdk${taskSuffix}", Download) {
+            def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+            src System.getenv("JDK_URL") ?: jdkDetails.createDownloadUrl()
+            onlyIfNewer true
+            overwrite false
+            retries 3
+            quiet true
+            inputs.file("${projectDir}/versions.yml")
+            dest new File("${projectDir}/build/${jdkDetails.localPackageName}")
+            doFirst { mkdir "${projectDir}/${jdkFolderName}" }
+        }
+
+        if (osName == "windows") {
+            tasks.register("unpackJdk${taskSuffix}", Copy) {
+                dependsOn "downloadJdk${taskSuffix}"
+                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                String rootName = null
+                from(zipTree("${projectDir}/build/${jdkDetails.localPackageName}")) {
+                    eachFile { fcd ->
+                        rootName = rootName ?: fcd.relativePath.segments[0]
+                        fcd.relativePath = new RelativePath(true, fcd.relativePath.segments.drop(1))
+                    }
+                }
+                into "${projectDir}/${jdkFolderName}"
+                doLast { delete "${projectDir}/${jdkFolderName}/$rootName" }
+            }
+        } else {
+            tasks.register("unpackJdk${taskSuffix}", Exec) {
+                dependsOn "downloadJdk${taskSuffix}"
+                def jdkDetails = new JDKDetails(gradle.ext.versions.bundled_jdk, osName, archName)
+                commandLine 'tar', 'xf', "${projectDir}/build/${jdkDetails.localPackageName}", '-C', "${projectDir}/${jdkFolderName}", '--strip-components', '1'
+                doFirst { mkdir "${projectDir}/${jdkFolderName}" }
+            }
+        }
+    }
+}
+
+tasks.register("copyAllJdks") {
+    dependsOn bootstrap
+    getTargetPlatforms().each { platform ->
+        String taskSuffix = "${platform.os.capitalize()}${platform.arch == 'x86_64' ? 'X64' : 'Arm64'}"
+        dependsOn "unpackJdk${taskSuffix}"
+    }
+    doLast {
+        String arch = selectArch()
+        String jdkFolder = ToolingUtils.jdkFolderName("linux", arch)
+        File releaseFile = file("${projectDir}/${jdkFolder}/release")
+        if (releaseFile.exists()) {
+            def content = releaseFile.text
+            def matcher = content =~ /IMPLEMENTOR_VERSION="([^"]+)"/
+            if (matcher.find()) {
+                file("${projectDir}/JDK_VERSION").write(matcher.group(1))
+            }
+        }
+    }
+}
+
+tasks.register("deleteAllJdks", Delete) {
+    delete fileTree(projectDir) { include 'jdk-*' }
+}
+
 tasks.register("extractBundledJdkVersion", ExtractBundledJdkVersion) {
     dependsOn "decompressJdk"
     osName = selectOsType()
@@ -1143,6 +1219,7 @@ tasks.register("javaTests") {
 
 clean {
     dependsOn deleteLocalJdk
+    dependsOn deleteAllJdks
     String jdkVersionFilename = tasks.findByName("extractBundledJdkVersion").outputFilename
     delete "${projectDir}/${jdkVersionFilename}"
     delete fileTree(projectDir) {
