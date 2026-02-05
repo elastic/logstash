@@ -163,17 +163,7 @@ steps:
     steps:
       - label: ":package: Build & test ARM64 deb package"
         key: "build-and-test-arm64-deb"
-        command: |
-          set -euo pipefail
-          source .buildkite/scripts/common/vm-agent.sh
-
-          echo "--- Building ARM64 deb package"
-          export ARCH="aarch64"
-          ./gradlew clean bootstrap artifactDeb
-
-          echo "--- Running acceptance tests"
-          export LS_ARTIFACTS_PATH="$PWD/build"
-          ./gradlew runAcceptanceTests
+        command: .buildkite/scripts/exhaustive-tests/run-acceptance-from-built.sh
         retry:
           automatic:
             - limit: 3
@@ -183,27 +173,7 @@ steps:
     steps:
       - label: ":arrow_down: Download & test released 9.3.0 ARM64 deb"
         key: "download-and-test-released-deb"
-        command: |
-          set -euo pipefail
-          source .buildkite/scripts/common/vm-agent.sh
-
-          echo "--- Getting current source version"
-          LS_VERSION=$(grep '^logstash:' versions.yml | awk '{print $2}')
-          echo "Source version: $LS_VERSION"
-
-          echo "--- Downloading Logstash 9.3.0 ARM64 deb"
-          mkdir -p build
-          curl -fsSL -o build/logstash-9.3.0-arm64.deb \
-            "https://artifacts.elastic.co/downloads/logstash/logstash-9.3.0-arm64.deb"
-
-          echo "--- Renaming to match expected artifact name"
-          mv build/logstash-9.3.0-arm64.deb "build/logstash-${LS_VERSION}-SNAPSHOT-arm64.deb"
-          ls -la build/
-
-          echo "--- Running acceptance tests"
-          export LS_ARTIFACTS_PATH="$PWD/build"
-          ./gradlew clean bootstrap
-          ./gradlew runAcceptanceTests
+        command: .buildkite/scripts/exhaustive-tests/run-acceptance-from-released.sh
         retry:
           automatic:
             - limit: 3
