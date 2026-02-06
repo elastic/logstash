@@ -53,7 +53,7 @@ def package_arm_step(branch, workflow_type):
   command: |
     export WORKFLOW_TYPE="{workflow_type}"
     export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$PATH"
-    ARCH="aarch64"
+    export ARCH="aarch64"
     eval "$(rbenv init -)"
     .buildkite/scripts/dra/build_packages.sh
   artifact_paths:
