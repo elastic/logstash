@@ -41,7 +41,7 @@ import java.util.Set;
 
 /**
  * Registry for built-in Java plugins (not installed via logstash-plugin).
- * This is singleton ofr two reasons:
+ * This is singleton for two reasons:
  * <ul>
  *  <li>it's a registry so no need for multiple instances</li>
  *  <li>plugin discovery touches the classpath, so we keep it single-threaded</li>

@@ -1,12 +1,14 @@
 package org.logstash.plugins.discovery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,12 +17,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * Minimal package scanner to locate classes within Logstash's own packages.
  */
 final class PackageScanner {
 
+    private static final Logger LOGGER = LogManager.getLogger(PackageScanner.class);
     private static final String CLASS_SUFFIX = ".class";
 
     private PackageScanner() {
@@ -34,46 +38,48 @@ final class PackageScanner {
     }
 
     static Set<Class<?>> scanForAnnotation(String basePackage, Class<? extends Annotation> annotation, ClassLoader loader) {
-        Set<String> classNames = collectClassNames(basePackage, loader);
-        Set<Class<?>> result = new HashSet<>();
-        for (String className : classNames) {
-            if (className.contains("$")) {
-                continue;
-            }
-            try {
-                Class<?> candidate = Class.forName(className, false, loader);
-                if (candidate.isAnnotationPresent(annotation)) {
-                    result.add(candidate);
-                }
-            } catch (ClassNotFoundException | LinkageError e) {
-                throw new IllegalStateException("Unable to load class discovered during scanning: " + className, e);
-            }
+        return collectClassNames(basePackage, loader).stream()
+                .filter(className -> !isInnerClass(className))
+                .map(className -> loadClass(className, loader))
+                .filter(cls -> cls != null && cls.isAnnotationPresent(annotation))
+                .collect(Collectors.toSet());
+    }
+
+    // Inner classes use '$' as separator; they never carry @LogstashPlugin so skip them early
+    private static boolean isInnerClass(String className) {
+        return className.contains("$");
+    }
+
+    private static Class<?> loadClass(String className, ClassLoader loader) {
+        try {
+            return Class.forName(className, false, loader);
+        } catch (ClassNotFoundException | LinkageError e) {
+            LOGGER.warn("Unable to load class discovered during scanning: {}. Skipping.", className, e);
+            return null;
         }
-        return result;
     }
 
     private static Set<String> collectClassNames(String basePackage, ClassLoader loader) {
-        String resourcePath = basePackage.replace('.', '/');
+        String resourcePath = toJavaPackagePath(basePackage);
         Set<String> classNames = new HashSet<>();
         try {
             Enumeration<URL> resources = loader.getResources(resourcePath);
             while (resources.hasMoreElements()) {
                 URL resource = resources.nextElement();
-                String protocol = resource.getProtocol();
-                if ("file".equals(protocol)) {
+                if ("file".equals(resource.getProtocol())) {
                     scanDirectory(resource, basePackage, classNames);
-                } else {
-                    // Open connection once to check type and reuse for scanning
-                    URLConnection connection = resource.openConnection();
-                    if (connection instanceof JarURLConnection) {
-                        scanJar((JarURLConnection) connection, resourcePath, classNames);
-                    }
+                } else if ("jar".equals(resource.getProtocol())) {
+                    scanJar(resource, resourcePath, classNames);
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan package: " + basePackage, e);
         }
         return classNames;
+    }
+
+    private static String toJavaPackagePath(String basePackage) {
+        return basePackage.replace('.', '/');
     }
 
     private static void scanDirectory(URL resource, String basePackage, Set<String> classNames) {
@@ -95,8 +101,9 @@ final class PackageScanner {
         }
     }
 
-    private static void scanJar(JarURLConnection connection, String resourcePath, Set<String> classNames) {
+    private static void scanJar(URL resource, String resourcePath, Set<String> classNames) {
         try {
+            JarURLConnection connection = (JarURLConnection) resource.openConnection();
             // Disable caching to prevent file locking issues (especially on Windows)
             // and ensure proper JAR file cleanup after scanning
             connection.setUseCaches(false);
@@ -122,7 +129,7 @@ final class PackageScanner {
                 }
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to scan jar for classes: " + connection.getURL(), e);
+            throw new UncheckedIOException("Failed to scan jar for classes: " + resource, e);
         }
     }
 }
