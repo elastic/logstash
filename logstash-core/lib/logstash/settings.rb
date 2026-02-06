@@ -454,32 +454,7 @@ module LogStash
 
     java_import org.logstash.settings.WritableDirectorySetting
 
-    class Bytes < Coercible
-      def initialize(name, default = nil, strict = true)
-        super(name, ::Integer, default, strict = true) { |value| valid?(value) }
-      end
-
-      def valid?(value)
-        value.is_a?(::Integer) && value >= 0
-      end
-
-      def coerce(value)
-        case value
-        when ::Numeric
-          value
-        when ::String
-          LogStash::Util::ByteValue.parse(value)
-        else
-          raise ArgumentError.new("Could not coerce '#{value}' into a bytes value")
-        end
-      end
-
-      def validate(value)
-        unless valid?(value)
-          raise ArgumentError.new("Invalid byte value \"#{value}\".")
-        end
-      end
-    end
+    java_import org.logstash.settings.BytesSetting
 
     class TimeValue < Coercible
       include LogStash::Util::Loggable

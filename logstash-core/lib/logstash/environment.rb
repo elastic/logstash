@@ -89,8 +89,8 @@ module LogStash
            Setting::StringSetting.new("pipeline.batch.metrics.sampling_mode", "minimal", true, ["disabled", "minimal", "full"]),
             Setting::StringSetting.new("queue.type", "memory", true, ["persisted", "memory"]),
            Setting::BooleanSetting.new("queue.drain", false),
-             Setting::Bytes.new("queue.page_capacity", "64mb"),
-             Setting::Bytes.new("queue.max_bytes", "1024mb"),
+             Setting::BytesSetting.new("queue.page_capacity", "64mb"),
+             Setting::BytesSetting.new("queue.max_bytes", "1024mb"),
            Setting::NumericSetting.new("queue.max_events", 0), # 0 is unlimited
            Setting::NumericSetting.new("queue.checkpoint.acks", 1024), # 0 is unlimited
            Setting::NumericSetting.new("queue.checkpoint.writes", 1024), # 0 is unlimited
@@ -98,7 +98,7 @@ module LogStash
            Setting::BooleanSetting.new("queue.checkpoint.retry", true),
             Setting::StringSetting.new("queue.compression", "none", true, %w(none speed balanced size disabled)),
            Setting::BooleanSetting.new("dead_letter_queue.enable", false),
-             Setting::Bytes.new("dead_letter_queue.max_bytes", "1024mb"),
+             Setting::BytesSetting.new("dead_letter_queue.max_bytes", "1024mb"),
            Setting::NumericSetting.new("dead_letter_queue.flush_interval", 5000),
             Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
     Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
