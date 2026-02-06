@@ -370,7 +370,7 @@ tasks.register("artifactDockerIronbank") {
 tasks.register("artifactDockerUbi8") {
     description = "Build UBI8 docker image"
     dependsOn dockerBootstrap
-    dependsOn copyJdk
+    dependsOn copyAllJdks
 
     doLast {
         rake(projectDir, buildDir, 'artifact:docker_ubi8')
