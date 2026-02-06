@@ -68,6 +68,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency "i18n", "~> 1" #(MIT license)
 
   gem.add_runtime_dependency "thwait"
+  gem.add_runtime_dependency "observer", "~> 0.1"
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 1"
