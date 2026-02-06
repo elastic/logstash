@@ -46,9 +46,9 @@ module LogStash
       # it natively it would *fail* when a `.gem` file is not found. Instead of failing we force the cache to be
       # updated with a `.gem` file. This preserves the original patch behavior. There is still an open question of
       # *how* to potentially update the files we vendor or the way we set up bundler to avoid carrying this patch. 
-      # As of JRuby 9.4.13.0 rubygems (bundler) is at 3.6.3. There have been some releases and changes in bundler code
+      # As of JRuby 10.0.3.0 rubygems (bundler) is at 2.7.2. There have been some releases and changes in bundler code
       # since then but it does not seem to have changed the way it handles gem files. Obviously carrying a patch like this
-      # carries a maintenance burden so prioritizing a packaging solution may be 
+      # carries a maintenance burden so prioritizing a packaging solution may be worthwhile.
       ::Bundler::Source::Rubygems.module_exec do
         def fetch_gem_if_possible(spec, previous_spec = nil)
           path = if spec.remote
@@ -243,7 +243,7 @@ module LogStash
     end
 
     def specific_platforms(platforms = ::Gem.platforms)
-      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil?}
+      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil? && !plat.version.nil?}
     end
 
     def genericize_platform

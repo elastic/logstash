@@ -134,7 +134,7 @@ public final class NullNamespacedMetricExt extends AbstractNamespacedMetricExt {
     protected AbstractNamespacedMetricExt createNamespaced(final ThreadContext context,
         final IRubyObject name) {
         MetricExt.validateName(context, name, RubyUtil.METRIC_NO_NAMESPACE_PROVIDED_CLASS);
-        return create(this.metric, (RubyArray) namespaceName.op_plus(context,
+        return create(this.metric, (RubyArray) namespaceName.op_plus(
             name instanceof RubyArray ? name : RubyArray.newArray(context.runtime, name)
         ));
     }

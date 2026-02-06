@@ -384,8 +384,8 @@ tasks.register("artifactAll", Exec) {
     dependsOn bootstrap
     dependsOn copyAllJdks
     workingDir projectDir
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:all"
 }
 
@@ -395,8 +395,8 @@ tasks.register("artifactDeb", Exec) {
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:deb"
 }
 
@@ -406,8 +406,8 @@ tasks.register("artifactRpm", Exec) {
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
-    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.1.0"
-    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.1.0"
+    environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
+    environment 'GEM_PATH', "${projectDir}/vendor/bundle/jruby/3.4.0"
     commandLine "${projectDir}/vendor/jruby/bin/jruby", "-S", "rake", "artifact:rpm"
 }
 

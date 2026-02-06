@@ -187,7 +187,9 @@ describe LogStash::Bundler do
         end
 
         it "raise error when fetcher failed" do
-          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [StandardError.new("boom")]])
+          source = double("source")
+          error_problem = Gem::SourceFetchProblem.new(source, StandardError.new("boom"))
+          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [error_problem]])
           expect { bundler_arguments }.to raise_error(StandardError, /boom/)
         end
       end
