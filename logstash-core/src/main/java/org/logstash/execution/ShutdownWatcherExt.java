@@ -33,6 +33,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyThread;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -86,9 +87,9 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
         if (args.length >= 2) {
             cyclePeriod = org.jruby.RubyNumeric.num2long(args[1].convertToInteger());
             if (args.length >= 3) {
-                reportEvery = org.jruby.RubyNumeric.num2int(args[2].convertToInteger());
+                reportEvery = Convert.toInt(context, args[2].convertToInteger());
                 if (args.length >= 4) {
-                    abortThreshold = org.jruby.RubyNumeric.num2int(args[3].convertToInteger());
+                    abortThreshold = Convert.toInt(context, args[3].convertToInteger());
                 }
             }
         }
@@ -106,7 +107,7 @@ public final class ShutdownWatcherExt extends RubyBasicObject {
             return context.fals;
         }
         final int[] inflightCounts = reports.stream().mapToInt(
-            obj -> org.jruby.RubyNumeric.num2int(obj.callMethod(context, "inflight_count").convertToInteger())
+            obj -> Convert.toInt(context, obj.callMethod(context, "inflight_count").convertToInteger())
         ).toArray();
         boolean stalled = true;
         for (int i = 0; i < inflightCounts.length - 1; ++i) {

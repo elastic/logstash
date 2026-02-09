@@ -23,7 +23,9 @@ package org.logstash.config.ir;
 import com.google.common.io.Files;
 import org.hamcrest.MatcherAssert;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.common.EnvironmentVariableProvider;
@@ -198,7 +200,8 @@ public class IRHelpers {
 
     @SuppressWarnings("rawtypes")
     public static RubyArray toSourceWithMetadata(String config) throws IncompleteSourceWithMetadataException {
-        return RubyUtil.RUBY.newArray(JavaUtil.convertJavaToRuby(
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        return Create.newArray(context, JavaUtil.convertJavaToRuby(
                 RubyUtil.RUBY, new SourceWithMetadata("proto", "path", 1, 1, config)));
     }
 
@@ -227,6 +230,6 @@ public class IRHelpers {
             final SourceWithMetadata swm = new SourceWithMetadata("file", configFile.getPath(), 1, 1, String.join("\n", fileContent));
             rubySwms.add(JavaUtil.convertJavaToRuby(RubyUtil.RUBY, swm));
         }
-        return RubyUtil.RUBY.newArray(rubySwms);
+        return Create.newArray(RubyUtil.RUBY.getCurrentContext(), rubySwms);
     }
 }

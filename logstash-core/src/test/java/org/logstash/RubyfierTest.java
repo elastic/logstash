@@ -28,6 +28,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyString;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 
@@ -42,6 +43,8 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class RubyfierTest extends RubyTestBase {
+
+    private static final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
 
     @Test
     public void testDeepWithString() {
@@ -76,15 +79,15 @@ public class RubyfierTest extends RubyTestBase {
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
-        assertEquals(RubyString.class, rubyArray.toJavaArray()[0].getClass());
-        assertEquals("foo", rubyArray.toJavaArray()[0].toString());
+        assertEquals(RubyString.class, rubyArray.toJavaArray(context)[0].getClass());
+        assertEquals("foo", rubyArray.toJavaArray(context)[0].toString());
     }
 
     @Test
     public void testDeepWithInteger() {
         Object result = Rubyfier.deep(RubyUtil.RUBY, 1);
         assertEquals(RubyFixnum.class, result.getClass());
-        assertEquals(1L, ((RubyFixnum)result).getLongValue());
+        assertEquals(1L, ((RubyFixnum)result).asLong(context));
     }
 
     @Test
@@ -101,7 +104,7 @@ public class RubyfierTest extends RubyTestBase {
         Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(RubyUtil.RUBY, "foo"));
 
         assertEquals(RubyFixnum.class, result.getClass());
-        assertEquals(1L, ((RubyFixnum)result).getLongValue());
+        assertEquals(1L, ((RubyFixnum)result).asLong(context));
     }
 
     @Test
@@ -113,15 +116,15 @@ public class RubyfierTest extends RubyTestBase {
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
-        assertEquals(RubyFixnum.class, rubyArray.toJavaArray()[0].getClass());
-        assertEquals(1L, ((RubyFixnum)rubyArray.toJavaArray()[0]).getLongValue());
+        assertEquals(RubyFixnum.class, rubyArray.toJavaArray(context)[0].getClass());
+        assertEquals(1L, ((RubyFixnum)rubyArray.toJavaArray(context)[0]).asLong(context));
     }
 
     @Test
     public void testDeepWithFloat() {
         Object result = Rubyfier.deep(RubyUtil.RUBY, 1.0F);
         assertEquals(RubyFloat.class, result.getClass());
-        assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
+        assertEquals(1.0D, ((RubyFloat)result).asDouble(context), 0);
     }
 
     @Test
@@ -138,7 +141,7 @@ public class RubyfierTest extends RubyTestBase {
         Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(RubyUtil.RUBY, "foo"));
 
         assertEquals(RubyFloat.class, result.getClass());
-        assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
+        assertEquals(1.0D, ((RubyFloat)result).asDouble(context), 0);
     }
 
     @Test
@@ -150,15 +153,15 @@ public class RubyfierTest extends RubyTestBase {
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
-        assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
-        assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
+        assertEquals(RubyFloat.class, rubyArray.toJavaArray(context)[0].getClass());
+        assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray(context)[0]).asDouble(context), 0);
     }
 
     @Test
     public void testDeepWithDouble() {
         Object result = Rubyfier.deep(RubyUtil.RUBY, 1.0D);
         assertEquals(RubyFloat.class, result.getClass());
-        assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
+        assertEquals(1.0D, ((RubyFloat)result).asDouble(context), 0);
     }
 
     @Test
@@ -175,7 +178,7 @@ public class RubyfierTest extends RubyTestBase {
         Object result = internalGet.invoke(rubyHash, JavaUtil.convertJavaToUsableRubyObject(RubyUtil.RUBY, "foo"));
 
         assertEquals(RubyFloat.class, result.getClass());
-        assertEquals(1.0D, ((RubyFloat)result).getDoubleValue(), 0);
+        assertEquals(1.0D, ((RubyFloat)result).asDouble(context), 0);
     }
 
     @Test
@@ -187,8 +190,8 @@ public class RubyfierTest extends RubyTestBase {
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
-        assertEquals(RubyFloat.class, rubyArray.toJavaArray()[0].getClass());
-        assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray()[0]).getDoubleValue(), 0);
+        assertEquals(RubyFloat.class, rubyArray.toJavaArray(context)[0].getClass());
+        assertEquals(1.0D, ((RubyFloat)rubyArray.toJavaArray(context)[0]).asDouble(context), 0);
     }
 
     @Test
@@ -227,9 +230,9 @@ public class RubyfierTest extends RubyTestBase {
         RubyArray rubyArray = (RubyArray)Rubyfier.deep(RubyUtil.RUBY, data);
 
         // toJavaArray does not newFromRubyArray inner elements to Java types \o/
-        assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray()[0].getClass());
+        assertEquals(RubyBigDecimal.class, rubyArray.toJavaArray(context)[0].getClass());
         // JRuby 10: RubyBigDecimal.getValue() returns the underlying BigDecimal
-        assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray()[0]).getValue().doubleValue(), 0);
+        assertEquals(1.0D, ((RubyBigDecimal)rubyArray.toJavaArray(context)[0]).getValue().doubleValue(), 0);
     }
 
 
@@ -237,7 +240,7 @@ public class RubyfierTest extends RubyTestBase {
     public void testDeepWithBigInteger() {
         Object result = Rubyfier.deep(RubyUtil.RUBY, new BigInteger("1"));
         assertEquals(RubyBignum.class, result.getClass());
-        assertEquals(1L, ((RubyBignum)result).getLongValue());
+        assertEquals(1L, ((RubyBignum)result).asLong(context));
     }
 
 }

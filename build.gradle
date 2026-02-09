@@ -63,8 +63,7 @@ allprojects {
   tasks.withType(JavaCompile).configureEach {
       options.compilerArgs.add("-Xlint:all")
       options.compilerArgs.add("-Xlint:-processing")
-      // Temporarily disabled for JRuby 10 upgrade - TODO: fix remaining deprecation warnings
-      // options.compilerArgs.add("-Werror")
+      options.compilerArgs.add("-Werror")
   }
 
   tasks.withType(Javadoc).configureEach {

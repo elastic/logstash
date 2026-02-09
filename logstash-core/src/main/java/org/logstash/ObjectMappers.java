@@ -51,6 +51,7 @@ import org.jruby.RubyFloat;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.api.Convert;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.logstash.ext.JrubyTimestampExtLibrary;
 import org.logstash.jackson.StreamReadConstraintsUtil;
@@ -231,7 +232,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyFloat value, final JsonGenerator generator,
             final SerializerProvider provider) throws IOException {
-            generator.writeNumber(org.jruby.RubyNumeric.num2dbl(value));
+            generator.writeNumber(Convert.toDouble(RubyUtil.RUBY.getCurrentContext(), value));
         }
     }
 
@@ -336,7 +337,7 @@ public final class ObjectMappers {
         @Override
         public void serialize(final RubyBignum value, final JsonGenerator jgen,
             final SerializerProvider provider) throws IOException {
-            jgen.writeNumber(value.getBigIntegerValue());
+            jgen.writeNumber(value.asBigInteger(RubyUtil.RUBY.getCurrentContext()));
         }
     }
 

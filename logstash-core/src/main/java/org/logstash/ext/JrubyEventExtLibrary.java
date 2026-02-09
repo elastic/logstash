@@ -34,6 +34,8 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
+import org.jruby.api.Create;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
@@ -139,12 +141,12 @@ public final class JrubyEventExtLibrary {
 
         @JRubyMethod(name = "cancelled?")
         public IRubyObject ruby_cancelled(ThreadContext context) {
-            return RubyBoolean.newBoolean(context.runtime, this.event.isCancelled());
+            return Convert.asBoolean(context, this.event.isCancelled());
         }
 
         @JRubyMethod(name = "include?", required = 1)
         public IRubyObject ruby_includes(ThreadContext context, RubyString reference) {
-            return RubyBoolean.newBoolean(context.runtime, this.event.includes(extractFieldReference(reference)));
+            return Convert.asBoolean(context, this.event.includes(extractFieldReference(reference)));
         }
 
         @JRubyMethod(name = "remove", required = 1)
@@ -253,14 +255,14 @@ public final class JrubyEventExtLibrary {
 
             if (events.length == 1) {
                 // micro optimization for the 1 event more common use-case.
-                return context.runtime.newArray(RubyEvent.newRubyEvent(context.runtime, events[0]));
+                return Create.newArray(context, RubyEvent.newRubyEvent(context.runtime, events[0]));
             }
 
             IRubyObject[] rubyEvents = new IRubyObject[events.length];
             for (int i = 0; i < events.length; i++) {
                 rubyEvents[i] = RubyEvent.newRubyEvent(context.runtime, events[i]);
             }
-            return context.runtime.newArrayNoCopy(rubyEvents);
+            return Create.newArrayNoCopy(context, rubyEvents);
         }
 
         @JRubyMethod(name = "validate_value", required = 1, meta = true)
