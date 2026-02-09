@@ -18,7 +18,6 @@
 require "fileutils"
 require "delegate"
 
-require "logstash/util/byte_value"
 require "logstash/util/substitution_variables"
 require "logstash/util/time_value"
 require "i18n"
