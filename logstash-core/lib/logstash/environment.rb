@@ -54,7 +54,7 @@ module LogStash
    Setting::PositiveIntegerSetting.new("pipeline.workers", LogStash::Config::CpuCoreStrategy.maximum),
    Setting::PositiveIntegerSetting.new("pipeline.batch.size", 125),
            Setting::NumericSetting.new("pipeline.batch.delay", 50), # in milliseconds
-                    Setting::Bytes.new("pipeline.batch.max_output_size", 0), # 0 means unlimited
+           Setting::NumericSetting.new("pipeline.batch.max_output_size", 0), # 0 means unlimited
            Setting::BooleanSetting.new("pipeline.unsafe_shutdown", false),
            Setting::BooleanSetting.new("pipeline.reloadable", true),
            Setting::BooleanSetting.new("pipeline.plugin_classloaders", false),

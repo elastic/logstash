@@ -111,6 +111,11 @@ class LogStash::Runner < Clamp::StrictCommand
          :attribute_name => "pipeline.plugin_classloaders",
          :default => LogStash::SETTINGS.get_default("pipeline.plugin_classloaders")
 
+  option ["--pipeline.batch.max_output_size"], "SIZE",
+    I18n.t("logstash.runner.flag.pipeline-batch-max-output-size"),
+    :attribute_name => "pipeline.batch.max_output_size",
+    :default => LogStash::SETTINGS.get_default("pipeline.batch.max_output_size")
+
   option ["-b", "--pipeline.batch.size"], "SIZE",
     I18n.t("logstash.runner.flag.pipeline-batch-size"),
     :attribute_name => "pipeline.batch.size",
