@@ -1,6 +1,6 @@
 steps:
   - label: "Trigger logstash-exhaustive-tests-pipeline for PRs with qa/acceptance/ changes"
-    if: build.pull_request.id != null && build.env("GITHUB_PR_TRIGGER_COMMENT") !~ /(?i)^run\\s+exhaustive\\s+tests/
+    if: build.pull_request.id != null && build.env("GITHUB_PR_TRIGGER_COMMENT") !~ /(?i)^run\s+exhaustive\s+tests/
     plugins:
       - monorepo-diff#v1.0.1:
           diff: "git diff --name-only origin/${BUILDKITE_PULL_REQUEST_BASE_BRANCH}...HEAD"
