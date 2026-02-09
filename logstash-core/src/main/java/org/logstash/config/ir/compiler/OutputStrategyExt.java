@@ -29,6 +29,8 @@ import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
+import org.jruby.api.Convert;
+import org.jruby.api.Create;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -189,14 +191,14 @@ public final class OutputStrategyExt {
             if (workerCount.isNil()) {
                 workerCount = RubyFixnum.one(context.runtime);
             }
-            final int count = org.jruby.RubyNumeric.num2int(workerCount.convertToInteger());
+            final int count = Convert.toInt(context, workerCount.convertToInteger());
             workerQueue = new ArrayBlockingQueue<>(count);
-            workers = context.runtime.newArray(count);
+            workers = (RubyArray) Create.allocArray(context, count);
             for (int i = 0; i < count; ++i) {
                 final IRubyObject output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
                 initOutputCallsite(outputClass);
                 output.callMethod(context, "metric=", metric);
-                workers.append(output);
+                workers.append(context, output);
                 workerQueue.add(output);
             }
             return this;

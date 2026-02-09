@@ -13,6 +13,7 @@ import org.jruby.runtime.JavaInternalBlockBody;
 import org.jruby.runtime.Signature;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.api.Access;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -54,7 +55,8 @@ public class RubyCodecDelegator implements Codec {
     }
 
     public static boolean isRubyCodecSubclass(IRubyObject pluginInstance) {
-        final RubyClass codecBaseClass = RubyUtil.RUBY.getModule("LogStash").getModule("Codecs").getClass("Base");
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final RubyClass codecBaseClass = Access.getModule(context, "LogStash").getModule(context, "Codecs").getClass(context, "Base");
         return pluginInstance.getType().hasModuleInHierarchy(codecBaseClass);
     }
 

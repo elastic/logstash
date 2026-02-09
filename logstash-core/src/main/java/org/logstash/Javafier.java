@@ -87,13 +87,13 @@ public final class Javafier {
         // than having the JVM look up the type.
         converters.put(RubyString.class, value -> ((RubyString) value).toString());
         converters.put(RubySymbol.class, value -> ((RubySymbol) value).toString());
-        converters.put(RubyBignum.class, value -> ((RubyBignum) value).getBigIntegerValue());
+        converters.put(RubyBignum.class, value -> ((RubyBignum) value).asBigInteger(RubyUtil.RUBY.getCurrentContext()));
         converters.put(
             RubyBigDecimal.class, value -> ((RubyBigDecimal) value).getBigDecimalValue()
         );
         converters.put(RubyBoolean.class, value -> ((RubyBoolean) value).isTrue());
         converters.put(RubyFixnum.class, value -> org.jruby.RubyNumeric.num2long((RubyFixnum) value));
-        converters.put(RubyFloat.class, value -> org.jruby.RubyNumeric.num2dbl((RubyFloat) value));
+        converters.put(RubyFloat.class, value -> org.jruby.api.Convert.toDouble(RubyUtil.RUBY.getCurrentContext(), (RubyFloat) value));
         converters.put(ConvertedMap.class, value -> ((ConvertedMap) value).unconvert());
         converters.put(ConvertedList.class, value -> ((ConvertedList) value).unconvert());
         converters.put(

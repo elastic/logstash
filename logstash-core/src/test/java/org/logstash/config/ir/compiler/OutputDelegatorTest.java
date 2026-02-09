@@ -25,6 +25,8 @@ import org.jruby.RubyArray;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
+import org.jruby.api.Define;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
@@ -48,14 +50,15 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public static final RubyClass FAKE_OUT_CLASS;
 
     static {
-        FAKE_OUT_CLASS = RUBY.defineClass("FakeOutClass", RUBY.getObject(), FakeOutClass::new);
-        FAKE_OUT_CLASS.defineAnnotatedMethods(FakeOutClass.class);
+        final ThreadContext context = RUBY.getCurrentContext();
+        FAKE_OUT_CLASS = Define.defineClass(context, "FakeOutClass", RUBY.getObject(), FakeOutClass::new);
+        FAKE_OUT_CLASS.defineMethods(context, FakeOutClass.class);
     }
 
     @Before
     public void setup() {
         super.setup();
-        events = RUBY.newArray(EVENT_COUNT);
+        events = Create.allocArray(RUBY.getCurrentContext(), EVENT_COUNT);
         for (int k = 0; k < EVENT_COUNT; k++) {
             events.add(k, new Event());
         }
@@ -185,7 +188,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
             outputDelegator.doClose(RUBY.getCurrentContext());
             assertEquals(1, instance.getCloseCallCount());
 
-            outputDelegator.multiReceive(RUBY.newArray(0));
+            outputDelegator.multiReceive(Create.allocArray(RUBY.getCurrentContext(), 0));
             assertEquals(1, instance.getMultiReceiveCallCount());
         }
 
@@ -214,7 +217,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         Class klazz;
 
         StrategyPair(String symbolName, Class c) {
-            this.symbol = RUBY.newString(symbolName).intern();
+            this.symbol = RUBY.newString(symbolName).intern(RUBY.getCurrentContext());
             this.klazz = c;
         }
     }

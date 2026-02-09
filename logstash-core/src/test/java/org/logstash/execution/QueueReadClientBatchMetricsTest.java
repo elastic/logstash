@@ -2,6 +2,7 @@ package org.logstash.execution;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
@@ -39,7 +40,7 @@ public class QueueReadClientBatchMetricsTest {
         @SuppressWarnings("unchecked")
         public RubyArray<JrubyEventExtLibrary.RubyEvent> to_a() {
             List<IRubyObject> list = new ArrayList<>(events);
-            return (RubyArray<JrubyEventExtLibrary.RubyEvent>) RubyUtil.RUBY.newArray(list);
+            return (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newArray(RubyUtil.RUBY.getCurrentContext(), list);
         }
 
         @Override

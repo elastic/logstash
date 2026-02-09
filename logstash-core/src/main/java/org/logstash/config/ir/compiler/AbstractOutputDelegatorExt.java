@@ -128,7 +128,7 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         this.id = RubyString.newString(context.runtime, id);
         synchronized (metric) {
-            namespacedMetric = metric.namespace(context, context.runtime.newString(id).intern());
+            namespacedMetric = metric.namespace(context, context.runtime.newString(id).intern(context));
             metricEvents = namespacedMetric.namespace(context, MetricKeys.EVENTS_KEY);
             namespacedMetric.gauge(context, MetricKeys.NAME_KEY, configName(context));
             eventMetricOut = LongCounter.fromRubyBase(metricEvents, MetricKeys.OUT_KEY);

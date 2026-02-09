@@ -30,6 +30,8 @@ import org.jruby.RubySymbol;
 import org.jruby.RubyThread;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
+import org.jruby.api.Create;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -159,7 +161,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private RubyArray workerStates(final ThreadContext context, final RubyHash batchMap) {
-        final RubyArray result = context.runtime.newArray();
+        final RubyArray result = Create.newArray(context);
         ((Iterable<IRubyObject>) pipeline.callMethod(context, "worker_threads"))
             .forEach(thread -> {
 
@@ -210,7 +212,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
 
     @SuppressWarnings({"unchecked","rawtypes"})
     private RubyArray outputInfo(final ThreadContext context) {
-        final RubyArray result = context.runtime.newArray();
+        final RubyArray result = Create.newArray(context);
         final IRubyObject outputs = pipeline.callMethod(context, "outputs");
         final Iterable<IRubyObject> outputIterable;
         if (outputs instanceof Iterable) {
@@ -233,7 +235,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
     private static int calcInflightCount(final ThreadContext context,
         final Collection<?> workerStates) {
         return workerStates.stream().mapToInt(
-            state -> org.jruby.RubyNumeric.num2int(
+            state -> Convert.toInt(context,
                 ((RubyHash) state).op_aref(context, INFLIGHT_COUNT_KEY).convertToInteger()
             )
         ).sum();
@@ -281,7 +283,7 @@ public final class PipelineReporterExt extends RubyBasicObject {
         public RubyHash toSimpleHash(final ThreadContext context) {
             final RubyHash result = RubyHash.newHash(context.runtime);
             result.op_aset(
-                context, INFLIGHT_COUNT_KEY, data.op_aref(context, INFLIGHT_COUNT_KEY.intern())
+                context, INFLIGHT_COUNT_KEY, data.op_aref(context, INFLIGHT_COUNT_KEY.intern(context))
             );
             result.op_aset(context, STALLING_THREADS_KEY, formatThreadsByPlugin(context));
             return result;
@@ -306,16 +308,16 @@ public final class PipelineReporterExt extends RubyBasicObject {
         @SuppressWarnings("unchecked")
         public RubyHash formatThreadsByPlugin(final ThreadContext context) {
             final RubyHash result = RubyHash.newHash(context.runtime);
-            ((Iterable<?>) data.get(STALLING_THREADS_KEY.intern())).forEach(thr -> {
+            ((Iterable<?>) data.get(STALLING_THREADS_KEY.intern(context))).forEach(thr -> {
                 final RubyHash threadInfo = (RubyHash) thr;
                 IRubyObject key = threadInfo.delete(context, PLUGIN_KEY, Block.NULL_BLOCK);
                 if (key.isNil()) {
                     key = OTHER_KEY;
                 }
                 if (result.op_aref(context, key).isNil()) {
-                    result.op_aset(context, key, context.runtime.newArray());
+                    result.op_aset(context, key, Create.newArray(context));
                 }
-                ((RubyArray) result.op_aref(context, key)).append(threadInfo);
+                ((RubyArray) result.op_aref(context, key)).append(context, threadInfo);
             });
             return result;
         }

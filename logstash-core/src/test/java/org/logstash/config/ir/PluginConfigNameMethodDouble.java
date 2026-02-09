@@ -26,6 +26,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubyString;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Define;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 
@@ -43,9 +44,10 @@ public class PluginConfigNameMethodDouble extends RubyObject {
     private RubyString filterName;
 
     static {
-        RUBY_META_CLASS = RUBY.defineClass("PluginConfigNameMethodDouble", RUBY.getObject(),
+        final ThreadContext context = RUBY.getCurrentContext();
+        RUBY_META_CLASS = Define.defineClass(context, "PluginConfigNameMethodDouble", RUBY.getObject(),
                 PluginConfigNameMethodDouble::new);
-        RUBY_META_CLASS.defineAnnotatedMethods(org.logstash.config.ir.compiler.FakeOutClass.class);
+        RUBY_META_CLASS.defineMethods(context, org.logstash.config.ir.compiler.FakeOutClass.class);
     }
 
     PluginConfigNameMethodDouble(final Ruby runtime, final RubyClass metaClass) {
