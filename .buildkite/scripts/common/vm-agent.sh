@@ -7,6 +7,7 @@
 
 set -euo pipefail
 
-export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:/opt/buildkite-agent/.java/bin:$PATH"
-export JAVA_HOME="/opt/buildkite-agent/.java"
+source .ci/java-versions.properties
+export JAVA_HOME="/opt/buildkite-agent/.java/$LS_BUILD_JAVA"
+export PATH="/opt/buildkite-agent/.rbenv/bin:/opt/buildkite-agent/.pyenv/bin:$JAVA_HOME/bin:$PATH"
 eval "$(rbenv init -)"
