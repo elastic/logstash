@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jruby.RubyHash;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -56,7 +57,7 @@ public class LazyDelegatingGauge extends AbstractMetric<Object> implements Gauge
     public static LazyDelegatingGauge fromRubyBase(final AbstractNamespacedMetricExt metric, final RubySymbol key) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         // just initialize an empty gauge
-        final IRubyObject gauge = metric.gauge(context, key, context.runtime.newArray(context.runtime.newString("undefined"), context.runtime.newString("undefined")));
+        final IRubyObject gauge = metric.gauge(context, key, Create.newArray(context, context.runtime.newString("undefined"), context.runtime.newString("undefined")));
         final LazyDelegatingGauge javaGauge;
         if (LazyDelegatingGauge.class.isAssignableFrom(gauge.getJavaClass())) {
             javaGauge = gauge.toJava(LazyDelegatingGauge.class);

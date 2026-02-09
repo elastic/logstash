@@ -47,7 +47,7 @@ public final class LoggableExt {
     public static RubyModule included(final ThreadContext context, final IRubyObject recv,
         final IRubyObject clazz) {
         final RubyModule klass = (RubyModule) clazz;
-        klass.defineAnnotatedMethods(LoggableExt.ClassMethods.class);
+        klass.defineMethods(context, LoggableExt.ClassMethods.class);
         return klass;
     }
 

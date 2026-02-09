@@ -27,6 +27,7 @@ import java.util.concurrent.BlockingQueue;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyNumeric;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -72,7 +73,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
                             batchMetricMode));
         }
 
-        int typedSize = org.jruby.RubyNumeric.num2int(size);
+        int typedSize = Convert.toInt(context, size);
         this.queue = new ArrayBlockingQueue<>(typedSize);
         Objects.requireNonNull(batchMetricMode, "batchMetricMode setting must be non-null");
         this.batchMetricMode = JavaUtil.unwrapJavaObject(batchMetricMode);

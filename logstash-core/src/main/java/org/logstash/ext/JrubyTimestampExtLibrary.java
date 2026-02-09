@@ -31,6 +31,7 @@ import org.jruby.RubyString;
 import org.jruby.RubyTime;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
 import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
@@ -269,7 +270,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = ">=")
         public IRubyObject op_ge(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) >= 0);
+                return Convert.asBoolean(context, compare(context, other) >= 0);
             }
             return RubyComparable.op_ge(context, this, other);
         }
@@ -277,7 +278,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = ">")
         public IRubyObject op_gt(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) > 0);
+                return Convert.asBoolean(context, compare(context, other) > 0);
             }
             return RubyComparable.op_gt(context, this, other);
         }
@@ -285,7 +286,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "<=")
         public IRubyObject op_le(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) <= 0);
+                return Convert.asBoolean(context, compare(context, other) <= 0);
             }
             return RubyComparable.op_le(context, this, other);
         }
@@ -293,7 +294,7 @@ public final class JrubyTimestampExtLibrary {
         @JRubyMethod(name = "<")
         public IRubyObject op_lt(final ThreadContext context, final IRubyObject other) {
             if (other instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
-                return org.jruby.RubyBoolean.newBoolean(context.runtime, compare(context, other) < 0);
+                return Convert.asBoolean(context, compare(context, other) < 0);
             }
             return RubyComparable.op_lt(context, this, other);
         }
@@ -319,7 +320,7 @@ public final class JrubyTimestampExtLibrary {
         }
 
         private int compare(final ThreadContext context, final IRubyObject other) {
-            return org.jruby.RubyNumeric.num2int(op_cmp(context, other));
+            return Convert.toInt(context, op_cmp(context, other));
         }
 
         private static RubyTimestamp fromRString(final Ruby runtime, final RubyString string) {
