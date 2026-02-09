@@ -105,6 +105,14 @@ public class ByteValueTest {
     }
 
     @Test
+    public void testParseThrowsForNonParseableNumber() {
+        Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
+            ByteValue.parse("abcde");
+        });
+        assertThat(thrownException.getMessage(), containsString("Unknown bytes value 'abcde'"));
+    }
+
+    @Test
     public void testParseThrowsForNoUnit() {
         Exception thrownException = assertThrows(org.jruby.exceptions.ArgumentError.class, () -> {
             ByteValue.parse("100");
