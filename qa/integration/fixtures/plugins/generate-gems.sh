@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# Add jruby bin directory to the PATH after existing entries for gem executable
+# Add jruby bin directory to the PATH before existing entries so vendored gem takes priority over rbenv shims
 SCRIPT_DIR="$( dirname "$0" )"
-PATH="$PATH:$SCRIPT_DIR/../../../../vendor/jruby/bin"
+PATH="$SCRIPT_DIR/../../../../vendor/jruby/bin:$PATH"
 export PATH
 
 cd "$SCRIPT_DIR"
