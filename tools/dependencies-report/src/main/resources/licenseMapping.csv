@@ -197,6 +197,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "rdoc:",https://ruby.github.io/rdoc,Ruby
 "redis:",https://github.com/redis/redis-rb,MIT
 "reline:",https://github.com/ruby/reline,BSD-2-Clause
+"resolv:",https://github.com/ruby/resolv,BSD-2-Clause
 "resolv-replace:",https://github.com/ruby/resolv-replace,BSD-2-Clause
 "rexml:",https://github.com/ruby/rexml,MIT
 "rinda:",https://github.com/ruby/rinda,BSD-2-Clause
@@ -227,10 +228,13 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "stringio:",https://github.com/ruby/stringio,BSD-2-Clause
 "strscan:",https://github.com/ruby/strscan,BSD-2-Clause
 "stud:",https://github.com/jordansissel/ruby-stud,Apache-2.0
+"syntax_suggest:",https://github.com/ruby/syntax_suggest,MIT
+"syslog:",https://github.com/ruby/syslog,BSD-2-Clause
 "subspawn-posix:",https://github.com/byteit101/subspawn,EPL-2.0
 "subspawn:",https://github.com/byteit101/subspawn,EPL-2.0
 "thread_safe:",https://github.com/ruby-concurrency/thread_safe,Apache-2.0
 "thwait:",https://github.com/ruby/thwait,BSD-2-Clause
+"tempfile:",https://github.com/ruby/tempfile,BSD-2-Clause
 "tilt:",https://github.com/rtomayko/tilt,MIT
 "time:",https://github.com/ruby/time,BSD-2-Clause
 "timeout:",https://github.com/ruby/timeout,BSD-2-Clause
