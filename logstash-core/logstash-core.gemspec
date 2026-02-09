@@ -69,6 +69,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "thwait"
   gem.add_runtime_dependency "observer", "~> 0.1"
+  gem.add_runtime_dependency "csv", "~> 3.0"
 
   # filetools and rakelib
   gem.add_runtime_dependency "minitar", "~> 1"
