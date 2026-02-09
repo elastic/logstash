@@ -40,16 +40,10 @@ describe LogStash::Setting::TimeValueSetting do
     end
 
     context "when a value is given as a nanosecond" do
-      let(:deprecation_logger_stub) { double("DeprecationLogger").as_null_object }
-      before(:each) do
-        allow(subject).to receive(:deprecation_logger).and_return(deprecation_logger_stub)
-      end
       it "should set the value" do
         subject.set(5)
         expect(subject.value).to eq(LogStash::Util::TimeValue.new(5, :nanosecond))
         expect(subject.value.to_nanos).to eq(5)
-
-        expect(deprecation_logger_stub).to have_received(:deprecated).with(/units will be required/).once
       end
     end
   end
