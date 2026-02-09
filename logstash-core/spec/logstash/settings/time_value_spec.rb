@@ -18,7 +18,7 @@
 require "spec_helper"
 require "logstash/settings"
 
-describe LogStash::Setting::TimeValue do
+describe LogStash::Setting::TimeValueSetting do
   subject { described_class.new("option", "-1") }
   describe "#set" do
     it "should coerce the default correctly" do

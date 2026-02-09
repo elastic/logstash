@@ -455,25 +455,7 @@ module LogStash
 
     java_import org.logstash.settings.BytesSetting
 
-    class TimeValue < Coercible
-      include LogStash::Util::Loggable
-
-      def initialize(name, default, strict = true, &validator_proc)
-        super(name, Util::TimeValue, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        if value.is_a?(::Integer)
-          deprecation_logger.deprecated("Integer value for `#{name}` does not have a time unit and will be interpreted in nanoseconds. " +
-                                        "Time units will be required in a future release of Logstash. " +
-                                        "Acceptable unit suffixes are: `d`, `h`, `m`, `s`, `ms`, `micros`, and `nanos`.")
-
-          return Util::TimeValue.new(value, :nanosecond)
-        end
-
-        Util::TimeValue.from_value(value)
-      end
-    end
+    java_import org.logstash.settings.TimeValueSetting
 
     class ArrayCoercible < Coercible
       def initialize(name, klass, default, strict = true, &validator_proc)

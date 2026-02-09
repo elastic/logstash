@@ -45,7 +45,7 @@ module LogStash
     Setting::NullableStringSetting.new("config.string", nil, false),
            Setting::BooleanSetting.new("config.test_and_exit", false),
            Setting::BooleanSetting.new("config.reload.automatic", false),
-         Setting::TimeValue.new("config.reload.interval", "3s"), # in seconds
+         Setting::TimeValueSetting.new("config.reload.interval", "3s"), # in seconds
            Setting::BooleanSetting.new("config.support_escapes", false),
             Setting::StringSetting.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::BooleanSetting.new("metric.collect", true),
@@ -102,10 +102,10 @@ module LogStash
            Setting::NumericSetting.new("dead_letter_queue.flush_interval", 5000),
             Setting::StringSetting.new("dead_letter_queue.storage_policy", "drop_newer", true, ["drop_newer", "drop_older"]),
     Setting::NullableStringSetting.new("dead_letter_queue.retain.age"), # example 5d
-         Setting::TimeValue.new("slowlog.threshold.warn", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.info", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.debug", "-1"),
-         Setting::TimeValue.new("slowlog.threshold.trace", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.warn", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.info", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.debug", "-1"),
+         Setting::TimeValueSetting.new("slowlog.threshold.trace", "-1"),
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableStringSetting.new("monitoring.cluster_uuid"),

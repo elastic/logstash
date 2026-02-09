@@ -37,22 +37,17 @@ public class TimeValueSetting extends Coercible<TimeValue> {
         super(name, coerceStatic(name, defaultValue), true, noValidator());
     }
 
-    public TimeValueSetting(String name, String defaultValue, boolean strict) {
-        super(name, coerceStatic(name, defaultValue), strict, noValidator());
-    }
+//    public TimeValueSetting(String name, String defaultValue, boolean strict) {
+//        super(name, coerceStatic(name, defaultValue), strict, noValidator());
+//    }
 
     @Override
     public TimeValue coerce(Object value) {
         return coerceStatic(getName(), value);
     }
 
-    /**
-     * Static helper to coerce values for constructor use.
-     * If the value is an Integer or Long, it logs a deprecation warning and interprets it as nanoseconds.
-     * Otherwise, it delegates to TimeValue.fromValue() for string parsing.
-     */
     private static TimeValue coerceStatic(String name, Object value) {
-        if (value instanceof Integer || value instanceof Long) {
+        if (value instanceof Number) {
             DEPRECATION_LOGGER.deprecated(
                 "Integer value for `" + name + "` does not have a time unit and will be interpreted in nanoseconds. " +
                 "Time units will be required in a future release of Logstash. " +
