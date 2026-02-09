@@ -251,6 +251,9 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        pipeline-batch-max-output-size: |+
+          Maximum number of events that are passed together as a chunk to the outputs
+          after being filtered. The default is 0 (unlimited).
         path_settings: |+
           Directory containing logstash.yml file. This can also be
           set through the LS_SETTINGS_DIR environment variable.
