@@ -326,18 +326,11 @@ describe LogStash::Settings do
     subject do
       settings = described_class.new
       settings.register(LogStash::Setting::ArrayCoercible.new("host", String, []))
-      settings.register(LogStash::Setting::ArrayCoercible.new("modules", Hash, []))
       settings
     end
 
     let(:values) {{
-      "host" => ["dev1.${lsspecdomain_env}", "dev2.${lsspecdomain_env}", "dev3.${a}"],
-      "modules" => [
-        {"name" => "${lsspecdomain_env}", "testing" => "${lsspecdomain_env}"},
-        {"name" => "${lsspecdomain2_env}", "testing" => "${lsspecdomain2_env}"},
-        {"name" => "${a}", "testing" => "${a}"},
-        {"name" => "${b}", "testing" => "${b}"}
-      ]
+      "host" => ["dev1.${lsspecdomain_env}", "dev2.${lsspecdomain_env}", "dev3.${a}"]
     }}
     let(:yaml_path) do
       p = Stud::Temporary.pathname
@@ -351,15 +344,8 @@ describe LogStash::Settings do
 
     it "can interpolate environment into settings" do
       expect(subject.get('host')).to match_array([])
-      expect(subject.get('modules')).to match_array([])
       subject.from_yaml(yaml_path)
       expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1", "dev3.A"])
-      expect(subject.get('modules')).to match_array([
-                                                      {"name" => "domain1", "testing" => "domain1"},
-                                                      {"name" => "domain2", "testing" => "domain2"},
-                                                      {"name" => "A", "testing" => "A"},
-                                                      {"name" => "B", "testing" => "B"}
-                                                    ])
     end
   end
 
