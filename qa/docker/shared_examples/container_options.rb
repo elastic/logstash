@@ -33,6 +33,14 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     end
   end
 
+  context 'when setting pipeline batch max output size' do
+    let(:options) { { 'ENV' => ['pipeline.batch.max_output_size=125'] } }
+
+    it "should correctly set the batch max output size" do
+      expect(get_pipeline_setting(@container, 'batch_max_output_size')).to eql 125
+    end
+  end
+
   context 'when setting pipeline batch delay' do
     let(:options) { { 'ENV' => ['pipeline.batch.delay=36'] } }
 
