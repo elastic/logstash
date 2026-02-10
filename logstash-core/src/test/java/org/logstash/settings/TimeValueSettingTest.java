@@ -49,9 +49,15 @@ public class TimeValueSettingTest {
     }
 
     @Test
-    public void testInvalidValueThrowsArgumentError() {
+    public void testInvalidStringValueThrowsArgumentError() {
         TimeValueSetting setting = new TimeValueSetting("option", "-1");
         assertThrows(org.jruby.exceptions.ArgumentError.class, () -> setting.set("invalid"));
+    }
+
+    @Test
+    public void testInvalidFloatValueThrowsArgumentError() {
+        TimeValueSetting setting = new TimeValueSetting("option", "-1");
+        assertThrows(org.jruby.exceptions.ArgumentError.class, () -> setting.set(5.5));
     }
 
     @Test
