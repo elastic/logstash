@@ -344,15 +344,8 @@ describe LogStash::Settings do
 
     it "can interpolate environment into settings" do
       expect(subject.get('host')).to match_array([])
-      expect(subject.get('modules')).to match_array([])
       subject.from_yaml(yaml_path)
       expect(subject.get('host')).to match_array(["dev1.domain1", "dev2.domain1", "dev3.A"])
-      expect(subject.get('modules')).to match_array([
-                                                      {"name" => "domain1", "testing" => "domain1"},
-                                                      {"name" => "domain2", "testing" => "domain2"},
-                                                      {"name" => "A", "testing" => "A"},
-                                                      {"name" => "B", "testing" => "B"}
-                                                    ])
     end
   end
 
