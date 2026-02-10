@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.ToLongFunction;
 
 import co.elastic.logstash.api.Metric;
 import org.apache.logging.log4j.LogManager;
@@ -161,8 +162,7 @@ public final class Queue implements Closeable {
             if (headPage == null) {
                 size = 0L;
             } else {
-                size = headPage.getPageIO().getHead()
-                    + tailPages.stream().mapToLong(p -> p.getPageIO().getHead()).sum();
+                size = sumPages((page) -> page.getPageIO().getHead());
             }
             return size;
         } finally {
@@ -873,27 +873,20 @@ public final class Queue implements Closeable {
     }
 
     public long getAckedCount() {
-        lock.lock();
-        try {
-            long headPageCount = this.headPage.getPageNum();
-            long tailPagesCount = tailPages.stream()
-                    .mapToLong(Page::getAckedCount)
-                    .sum();
-
-            return headPageCount + tailPagesCount;
-        } finally {
-            lock.unlock();
-        }
+        return sumPages(Page::getAckedCount);
     }
 
     public long getUnackedCount() {
+        return sumPages(Page::getUnackedCount);
+    }
+
+    private long sumPages(final ToLongFunction<Page> valueGetter) {
         lock.lock();
         try {
-            long headPageCount = headPage.getUnackedCount();
-            long tailPagesCount = tailPages.stream()
-                .mapToLong(Page::getUnackedCount)
-                .sum();
-            return headPageCount + tailPagesCount;
+            final long headPageValue = valueGetter.applyAsLong(this.headPage);
+            final long tailPagesValue = this.tailPages.stream().mapToLong(valueGetter).sum();
+
+            return Long.sum(headPageValue, tailPagesValue);
         } finally {
             lock.unlock();
         }
