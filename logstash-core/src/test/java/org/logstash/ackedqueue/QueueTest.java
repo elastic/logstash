@@ -1003,8 +1003,8 @@ public class QueueTest {
             assertThat(q.getUnackedCount(), is(1L));
             assertThat(q.tailPages.size(), is(1));
             assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
-            assertThat(q.tailPages.get(0).elementCount, is(1));
-            assertThat(q.headPage.elementCount, is(0));
+            assertThat(q.tailPages.get(0).getElementCount(), is(1));
+            assertThat(q.headPage.getElementCount(), is(0));
         }
     }
 

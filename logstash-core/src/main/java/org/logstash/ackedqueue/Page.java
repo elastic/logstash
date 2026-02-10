@@ -33,21 +33,21 @@ import org.logstash.ackedqueue.io.PageIO;
  * the status of the page (writeable or not).
  * */
 public final class Page implements Closeable {
-    protected final int pageNum;
-    protected long minSeqNum; // TODO: see if we can make it final?
-    protected int elementCount;
-    protected long firstUnreadSeqNum;
-    protected final Queue queue;
-    protected PageIO pageIO;
+    final int pageNum;
+    private long minSeqNum; // TODO: see if we can make it final?
+    private int elementCount;
+    private long firstUnreadSeqNum;
+    private final Queue queue;
+    private final PageIO pageIO;
     private boolean writable;
 
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
     // TODO: https://github.com/elastic/elasticsearch/blob/feature/seq_no/core/src/main/java/org/elasticsearch/index/seqno/LocalCheckpointService.java
-    protected BitSet ackedSeqNums;
-    protected Checkpoint lastCheckpoint;
+    BitSet ackedSeqNums;
+    private Checkpoint lastCheckpoint;
 
-    public Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, @NotNull PageIO pageIO, boolean writable) {
+    Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, @NotNull PageIO pageIO, boolean writable) {
         this.pageNum = pageNum;
         this.queue = queue;
 
