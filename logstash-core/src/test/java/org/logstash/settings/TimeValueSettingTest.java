@@ -24,7 +24,9 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class TimeValueSettingTest {
 
@@ -60,9 +62,8 @@ public class TimeValueSettingTest {
     }
 
     @Test
-    public void testSetWithIntegerValueAsNanoseconds() {
+    public void testSetWithIntegerValueAsNanosecondsLogsADeprecationMessage() {
         TimeValueSetting setting = new TimeValueSetting("option", "-1");
-        // Integer value should be interpreted as nanoseconds (with deprecation warning logged)
         setting.set(5);
         assertEquals(5L, setting.value().toNanos());
 

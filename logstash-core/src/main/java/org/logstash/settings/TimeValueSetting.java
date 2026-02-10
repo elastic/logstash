@@ -37,10 +37,6 @@ public class TimeValueSetting extends Coercible<TimeValue> {
         super(name, coerceStatic(name, defaultValue), true, noValidator());
     }
 
-//    public TimeValueSetting(String name, String defaultValue, boolean strict) {
-//        super(name, coerceStatic(name, defaultValue), strict, noValidator());
-//    }
-
     @Override
     public TimeValue coerce(Object value) {
         return coerceStatic(getName(), value);
