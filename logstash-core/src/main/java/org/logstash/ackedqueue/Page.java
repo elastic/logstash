@@ -44,7 +44,7 @@ public final class Page implements Closeable {
     // bit 0 is minSeqNum
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
     // TODO: https://github.com/elastic/elasticsearch/blob/feature/seq_no/core/src/main/java/org/elasticsearch/index/seqno/LocalCheckpointService.java
-    BitSet ackedSeqNums;
+    private final BitSet ackedSeqNums;
     private Checkpoint lastCheckpoint;
 
     Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, @NotNull PageIO pageIO, boolean writable) {
@@ -119,6 +119,14 @@ public final class Page implements Closeable {
     public boolean isFullyRead() {
         return unreadCount() <= 0;
 //        return this.elementCount <= 0 || this.firstUnreadSeqNum > maxSeqNum();
+    }
+
+    public int getAckedCount() {
+        return ackedSeqNums.cardinality();
+    }
+
+    public long getUnackedCount() {
+        return this.elementCount - ackedSeqNums.cardinality();
     }
 
     public boolean isFullyAcked() {
