@@ -50,7 +50,7 @@
 # pipeline.batch.delay: 50
 #
 # Maximum number of events that are passed together as a chunk to the outputs after being filtered.
-# This is relevant when a filter can increase the number of events in a batch significantly.
+# This is useful to adjust when a filter significantly increases the number of events or size of a batch.
 # Default is 0 (unlimited).
 #
 # pipeline.batch.max_output_size: 125
