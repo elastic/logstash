@@ -5,7 +5,8 @@
         "debian": ["debian-13", "debian-12", "debian-11"],
         "rhel": ["rhel-9", "rhel-8"],
         "oraclelinux": ["oraclelinux-8", "oraclelinux-7"],
-        "rocky": ["rocky-linux-8"],
+        "rocky": ["rocky-linux-9", "rocky-linux-8"],
+        "almalinux": ["almalinux-9", "almalinux-8"],
         "amazonlinux": ["amazonlinux-2023"],
         "opensuse": ["opensuse-leap-15"]
     },
