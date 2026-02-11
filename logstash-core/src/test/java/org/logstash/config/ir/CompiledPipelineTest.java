@@ -756,16 +756,16 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     private class OutputSpy implements Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> {
 
-		private final AtomicInteger invocationCount = new AtomicInteger(0);
+        private final AtomicInteger invocationCount = new AtomicInteger(0);
 
-		@Override
-		public void accept(Collection<JrubyEventExtLibrary.RubyEvent> events) {
-			invocationCount.incrementAndGet();
-			events.forEach(
-				event -> EVENT_SINKS.get(runId).add(event)
-			);
-		}
-	}
+        @Override
+        public void accept(Collection<JrubyEventExtLibrary.RubyEvent> events) {
+            invocationCount.incrementAndGet();
+                events.forEach(
+                event -> EVENT_SINKS.get(runId).add(event)
+            );
+        }
+    }
 
     @Test
     @SuppressWarnings({"unchecked"})
