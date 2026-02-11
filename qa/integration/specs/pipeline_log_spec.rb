@@ -74,7 +74,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
-    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["config string"\]/).to be > 0
+    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"\s*=>\s*\["config string"\]/).to be > 0
   end
 
   it "write pipeline config in logs - source:config file" do
@@ -88,7 +88,7 @@ describe "Test Logstash Pipeline id" do
     wait_logstash_process_terminate(@ls)
     plainlog_file = "#{temp_dir}/logstash-plain.log"
     expect(File.exist?(plainlog_file)).to be true
-    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"=>\["#{initial_config_file}"\]/).to be > 0
+    expect(IO.read(plainlog_file) =~ /Starting pipeline.*"pipeline.sources"\s*=>\s*\["#{initial_config_file}"\]/).to be > 0
   end
 
   it "should separate pipeline output in its own log file" do
