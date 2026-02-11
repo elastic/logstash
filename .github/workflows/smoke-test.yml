@@ -31,23 +31,23 @@ jobs:
           echo "Workflow: ${{ github.workflow }}"
           echo "Run ID: ${{ github.run_id }}"
           echo "Run Number: ${{ github.run_number }}"
-          
+
       - name: Checkout code
         uses: actions/checkout@v6
-        
+
       - name: Verify checkout
         run: |
           echo "✅ Repository checked out successfully"
           echo "Current directory: $(pwd)"
           ls -la | head -10
-          
+
       - name: Test basic commands
         run: |
           echo "✅ Testing basic shell commands"
           echo "Hostname: $(hostname)"
           echo "User: $(whoami)"
           echo "Date: $(date)"
-          
+
       - name: Summary
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
