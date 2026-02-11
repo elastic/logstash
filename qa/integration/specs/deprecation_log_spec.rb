@@ -62,7 +62,7 @@ describe "Test Logstash Pipeline id" do
     deprecation_log_file = "#{temp_dir}/logstash-deprecation.log"
     expect(File.exist?(deprecation_log_file)).to be true
     deprecation_log_content = IO.read(deprecation_log_file)
-    expect(deprecation_log_content =~ /\[deprecation\.logstash\.filters\.ruby\s*\].*Teleport/).to be > 0
+    expect(deprecation_log_content =~ /\[deprecation\.ruby\s*\].*Teleport/).to be > 0
   end
 
   @private
