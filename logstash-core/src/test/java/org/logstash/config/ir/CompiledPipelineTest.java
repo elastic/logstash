@@ -752,7 +752,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
     }
 
-    // ==================== Tests for maxBatchOutputSize  with unordered execution ====================
+    // ==================== Tests for maxBatchOutputSize with unordered execution ====================
 
     private class OutputSpy implements Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> {
 
@@ -802,7 +802,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
 
-		assertEquals("A batch should not be chunked when maxBatchOutputSize is 0", outputSpy.invocationCount.get(), 1);
+		assertEquals("A batch should not be chunked when maxBatchOutputSize is 0", 1, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -840,7 +840,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
 
-		assertEquals("When maxBatchOutputSize is set to 3, the batch should be split into chunks with max size 3", outputSpy.invocationCount.get(), 4);
+		assertEquals("When maxBatchOutputSize is set to 3, the batch should be split into chunks with max size 3", 4, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -936,7 +936,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(3));
 
-		assertEquals("When maxBatchOutputSize is set to 5, and the batch size is 3, the batch should not be chunked", outputSpy.invocationCount.get(), 1);
+		assertEquals("When maxBatchOutputSize is set to 5, and the batch size is 3, the batch should not be chunked", 1, outputSpy.invocationCount.get());
     }
 
     // ==================== Tests for maxBatchOutputSize with orderedExecution ====================
@@ -976,7 +976,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
 
-        assertEquals("A batch should not be chunked when maxBatchOutputSize is 0", outputSpy.invocationCount.get(), 1);
+        assertEquals("A batch should not be chunked when maxBatchOutputSize is 0", 1, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -1014,7 +1014,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10));
 
-        assertEquals("When maxBatchOutputSize is set to 3, the batch should be split into chunks with max size 3", outputSpy.invocationCount.get(), 4);
+        assertEquals("When maxBatchOutputSize is set to 3, the batch should be split into chunks with max size 3", 4, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -1110,6 +1110,6 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(3));
 
-		assertEquals("When maxBatchOutputSize is set to 5, and the batch size is 3, the batch should not be chunked", outputSpy.invocationCount.get(), 1);
+		assertEquals("When maxBatchOutputSize is set to 5, and the batch size is 3, the batch should not be chunked", 1, outputSpy.invocationCount.get());
     }
 }
