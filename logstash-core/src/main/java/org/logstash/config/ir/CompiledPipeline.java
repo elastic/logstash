@@ -335,17 +335,18 @@ public final class CompiledPipeline {
     private int chunker(RubyArray<RubyEvent> batch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
         final int totalSize = batch.size();
 
-        if (maxBatchOutputSize > 0) {
-            // send to consumer in chunks
-            for (int offset = 0; offset < totalSize; offset += maxBatchOutputSize) {
-                int end = Math.min(offset + maxBatchOutputSize, totalSize);
-                boolean isLastChunk = (end == totalSize);
-                RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(batch.subList(offset, end));
-                consumer.accept(chunk, isLastChunk);
-            } 
-        }
-        else {
+        // no chunking needed, pass the original batch directly
+        if (maxBatchOutputSize <= 0) {
             consumer.accept(batch, true);
+            return totalSize;
+        }
+
+        // send to consumer in chunks
+        for (int offset = 0; offset < totalSize; offset += maxBatchOutputSize) {
+            int end = Math.min(offset + maxBatchOutputSize, totalSize);
+            boolean isLastChunk = (end == totalSize);
+            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(batch.subList(offset, end));
+            consumer.accept(chunk, isLastChunk);
         }
         return totalSize;
     }
