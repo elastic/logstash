@@ -758,6 +758,25 @@ public final class Queue implements Closeable {
         }
     }
 
+    public void unread(final long firstUnreadSeqNum, final int unreadCount) throws IOException {
+        lock.lock();
+        try {
+            if (containsSeq(headPage, firstUnreadSeqNum)) {
+                this.headPage.unread(firstUnreadSeqNum, unreadCount);
+            } else {
+                final int resultIndex = binaryFindPageForSeqnum(firstUnreadSeqNum);
+                final Page relevantTailPage = this.tailPages.get(resultIndex);
+                if (relevantTailPage.unread(firstUnreadSeqNum, unreadCount)) {
+                    this.unreadTailPages.add(0, relevantTailPage);
+                }
+                notEmpty.signalAll();
+            }
+            this.unreadCount -= unreadCount;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public CheckpointIO getCheckpointIO() {
         return this.checkpointIO;
     }
@@ -868,6 +887,10 @@ public final class Queue implements Closeable {
 
     public long getUnackedCount() {
         return sumPages(Page::getUnackedCount);
+    }
+
+    long getPageCount() {
+        return sumPages((page) -> 1L);
     }
 
     private long sumPages(final ToLongFunction<Page> valueGetter) {

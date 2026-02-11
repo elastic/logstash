@@ -36,7 +36,6 @@ public final class Page implements Closeable {
     final int pageNum;
     private long minSeqNum; // TODO: see if we can make it final?
     private int elementCount;
-    private long firstUnreadSeqNum;
     private final Queue queue;
     private final PageIO pageIO;
     private boolean writable;
@@ -45,16 +44,18 @@ public final class Page implements Closeable {
     // TODO: go steal LocalCheckpointService in feature/seq_no from ES
     // TODO: https://github.com/elastic/elasticsearch/blob/feature/seq_no/core/src/main/java/org/elasticsearch/index/seqno/LocalCheckpointService.java
     private final BitSet ackedSeqNums;
+    private final BitSet readSeqNums;
     private Checkpoint lastCheckpoint;
 
+    // Use {@link PageFactory}
     Page(int pageNum, Queue queue, long minSeqNum, int elementCount, long firstUnreadSeqNum, BitSet ackedSeqNums, @NotNull PageIO pageIO, boolean writable) {
         this.pageNum = pageNum;
         this.queue = queue;
 
         this.minSeqNum = minSeqNum;
         this.elementCount = elementCount;
-        this.firstUnreadSeqNum = firstUnreadSeqNum;
         this.ackedSeqNums = ackedSeqNums;
+        this.readSeqNums = readSeqNums(minSeqNum, firstUnreadSeqNum, elementCount);
         this.lastCheckpoint = new Checkpoint(0, 0, 0, 0, 0);
         this.pageIO = pageIO;
         this.writable = writable;
@@ -62,12 +63,23 @@ public final class Page implements Closeable {
         assert this.pageIO != null : "invalid null pageIO";
     }
 
+    private static BitSet readSeqNums(final long minSeqNum, final long firstUnreadSeqNum, final int elementCount) {
+        final BitSet bitSet = new BitSet(elementCount);
+        if (firstUnreadSeqNum > minSeqNum) {
+            bitSet.set(0, (int) (firstUnreadSeqNum - minSeqNum));
+        }
+        return bitSet;
+    }
+
     public String toString() {
-        return "pageNum=" + this.pageNum + ", minSeqNum=" + this.minSeqNum + ", elementCount=" + this.elementCount + ", firstUnreadSeqNum=" + this.firstUnreadSeqNum;
+        return "pageNum=" + this.pageNum +
+                ", minSeqNum=" + this.minSeqNum +
+                ", elementCount=" + this.elementCount +
+                ", firstUnreadSeqNum=" + (this.minSeqNum + this.readSeqNums.nextClearBit(0));
     }
 
     /**
-     * @param limit the maximum number of elements to read, actual number readcan be smaller
+     * @param limit the maximum number of elements to read, actual number read can be smaller
      * @return {@link SequencedList} collection of serialized elements read
      * @throws IOException if an IO error occurs
      */
@@ -75,11 +87,19 @@ public final class Page implements Closeable {
         // first make sure this page is activated, activating previously activated is harmless
         this.pageIO.activate();
 
-        SequencedList<byte[]> serialized = this.pageIO.read(this.firstUnreadSeqNum, limit);
-        assert serialized.getSeqNums().get(0) == this.firstUnreadSeqNum :
-            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", this.firstUnreadSeqNum, serialized.getSeqNums().get(0));
+        // determine where to begin our read
+        int firstUnreadOffset = this.readSeqNums.nextClearBit(0);
+        long firstUnreadSeqNum = this.minSeqNum + firstUnreadOffset;
 
-        this.firstUnreadSeqNum += serialized.getElements().size();
+        // determine how many contiguous events we can read without re-emitting any already-read events
+        int nextReadOffset = this.readSeqNums.nextSetBit(firstUnreadOffset);
+        int effectiveLimit = (nextReadOffset < 0) ? limit : Math.min(limit, nextReadOffset - firstUnreadOffset);
+
+        SequencedList<byte[]> serialized = this.pageIO.read(firstUnreadSeqNum, effectiveLimit);
+        assert serialized.getSeqNums().get(0) == firstUnreadSeqNum :
+            String.format("firstUnreadSeqNum=%d != first result seqNum=%d", firstUnreadSeqNum, serialized.getSeqNums().get(0));
+
+        this.readSeqNums.set(firstUnreadOffset, firstUnreadOffset + serialized.getElements().size());
 
         return serialized;
     }
@@ -93,7 +113,6 @@ public final class Page implements Closeable {
 
         if (this.minSeqNum <= 0) {
             this.minSeqNum = seqNum;
-            this.firstUnreadSeqNum = seqNum;
         }
         this.elementCount++;
 
@@ -136,7 +155,11 @@ public final class Page implements Closeable {
     }
 
     public long unreadCount() {
-        return this.elementCount <= 0 ? 0 : Math.max(0, (maxSeqNum() - this.firstUnreadSeqNum) + 1);
+        if (this.elementCount <= 0) {
+            return 0;
+        }
+
+        return this.elementCount - this.readSeqNums.cardinality();
     }
 
     /**
@@ -185,6 +208,14 @@ public final class Page implements Closeable {
             checkpoint();
         }
         return done;
+    }
+
+    public boolean unread(long firstSeqNum, int count) {
+        final boolean wasFullyRead = isFullyRead();
+        int unreadChunkFirstOffset = Ints.checkedCast(Math.subtractExact(firstSeqNum, this.minSeqNum));
+        this.readSeqNums.clear(unreadChunkFirstOffset, unreadChunkFirstOffset+count);
+
+        return wasFullyRead;
     }
 
     public void checkpoint() throws IOException {
