@@ -65,7 +65,7 @@ describe "Test Logstash buffer allocation setting" do
         last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
 
         # verify direct buffer are used while heap buffers remains at 0
-        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct pinned: (\d*) .*Heap pinned: (\d*)/).captures
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash\.filters\.ruby\s*\]\[main\].*Direct pinned:\s*(\d*)\s*.*Heap pinned:\s*(\d*)/).captures
         expect(direct_mem.to_i).to be > 0
         expect(heap_mem.to_i).to eq 0
       end
@@ -78,7 +78,7 @@ describe "Test Logstash buffer allocation setting" do
         last_dump_line = find_last_mem_dump_log_line("#{temp_dir}/logstash-plain.log")
 
         # verify java heap  buffer are used while direct buffers remains at 0
-        direct_mem, heap_mem = last_dump_line.match(/\[logstash.filters.ruby\s*\]\[main\].*Direct pinned: (\d*) .*Heap pinned: (\d*)/).captures
+        direct_mem, heap_mem = last_dump_line.match(/\[logstash\.filters\.ruby\s*\]\[main\].*Direct pinned:\s*(\d*)\s*.*Heap pinned:\s*(\d*)/).captures
         expect(direct_mem.to_i).to eq 0
         expect(heap_mem.to_i).to be > 0
       end
@@ -109,7 +109,7 @@ describe "Test Logstash buffer allocation setting" do
     log_content = load_log_file_content(log_file)
 
         # select just the log lines with memory dump
-    return log_content.split(/\n/).select { |line| line =~ /\[logstash.filters.ruby\s*\]\[main\].*Direct pinned/ }.last
+    return log_content.split(/\n/).select { |line| line =~ /\[logstash\.filters\.ruby\s*\]\[main\].*Direct pinned/ }.last
   end
 
   def load_log_file_content(log_file)
