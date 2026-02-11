@@ -660,58 +660,48 @@ public final class Queue implements Closeable {
      * @throws IOException if an IO error occurs
      */
     private SerializedBatchHolder readPageBatch(Page p, int limit, long timeout) throws IOException {
-        int left = limit;
-        final List<byte[]> elements = new ArrayList<>(limit);
-
-        // NOTE: the tricky thing here is that upon entering this method, if p is initially a head page
-        // it could become a tail page upon returning from the notEmpty.await call.
-        long firstSeqNum = -1L;
-        while (left > 0) {
-            if (isHeadPage(p) && p.isFullyRead()) {
-                boolean elapsed;
-                // a head page is fully read but can be written to so let's wait for more data
-                try {
-                    elapsed = !awaitReadDemand(timeout, left);
-                } catch (InterruptedException e) {
-                    // set back the interrupted flag
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-
-                if ((elapsed && p.isFullyRead()) || isClosed()) {
-                    break;
-                }
+        // if its fully-read and a head page, make a demand and wait
+        if (isHeadPage(p) && p.unreadCount() < limit) {
+            boolean elapsed;
+            try {
+                elapsed = !awaitReadDemand(timeout, limit);
+            } catch (InterruptedException e) {
+                // set back the interrupted flag
+                Thread.currentThread().interrupt();
+                return emptySerializedBatchHolder();
             }
-
-            if (! p.isFullyRead()) {
-                boolean wasFull = isMaxUnreadReached();
-
-                final SequencedList<byte[]> serialized = p.read(left);
-                int n = serialized.getElements().size();
-                assert n > 0 : "page read returned 0 elements";
-                elements.addAll(serialized.getElements());
-                if (firstSeqNum == -1L) {
-                    firstSeqNum = serialized.getSeqNums().get(0);
-                }
-
-                this.unreadCount -= n;
-                left -= n;
-
-                if (wasFull) {
-                    notFull.signalAll();
-                }
+            if ((elapsed && p.isFullyRead()) || isClosed()) {
+                return emptySerializedBatchHolder();
             }
+        }
 
-            if (isTailPage(p) && p.isFullyRead()) {
-                break;
-            }
+        if (p.isFullyRead()) {
+            return emptySerializedBatchHolder();
+        }
+
+        boolean wasFull = isMaxUnreadReached();
+
+        final SequencedList<byte[]> serialized = p.read(limit);
+        int n = serialized.getElements().size();
+        assert n > 0 : "page read returned 0 elements";
+
+        this.unreadCount -= n;
+
+        if (wasFull) {
+            notFull.signalAll();
         }
 
         if (isTailPage(p) && p.isFullyRead()) {
             removeUnreadPage(p);
         }
 
+        final List<byte[]> elements = new ArrayList<>(serialized.getElements());
+        final long firstSeqNum = (n > 0) ? serialized.getSeqNums().get(0) : -1L;
         return new SerializedBatchHolder(elements, firstSeqNum);
+    }
+
+    private SerializedBatchHolder emptySerializedBatchHolder() {
+        return new SerializedBatchHolder(List.of(), -1L);
     }
 
     /**
