@@ -1,0 +1,64 @@
+---
+name: smoke-test
+
+# This workflow serves as a simple verification that GitHub Actions is working
+# It can be manually triggered in forks to verify Actions are enabled
+# This is particularly useful since many workflows in this repo use triggers
+# that don't work in forks (pull_request_target, issues, schedule, etc.)
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Optional test message'
+        required: false
+        default: 'GitHub Actions is working!'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Actions is working
+        run: |
+          echo "✅ GitHub Actions is successfully enabled and working!"
+          echo "Message: ${{ inputs.message }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run Number: ${{ github.run_number }}"
+          
+      - name: Checkout code
+        uses: actions/checkout@v6
+        
+      - name: Verify checkout
+        run: |
+          echo "✅ Repository checked out successfully"
+          echo "Current directory: $(pwd)"
+          ls -la | head -10
+          
+      - name: Test basic commands
+        run: |
+          echo "✅ Testing basic shell commands"
+          echo "Hostname: $(hostname)"
+          echo "User: $(whoami)"
+          echo "Date: $(date)"
+          
+      - name: Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🎉 Smoke test completed successfully!"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo ""
+          echo "This confirms that:"
+          echo "  ✅ GitHub Actions is enabled in this repository"
+          echo "  ✅ Workflows can be triggered via workflow_dispatch"
+          echo "  ✅ Jobs can checkout code and run commands"
+          echo "  ✅ Basic CI/CD functionality is operational"
+          echo ""
+          echo "For fork users: If you see this message, Actions"
+          echo "is working correctly in your fork!"
