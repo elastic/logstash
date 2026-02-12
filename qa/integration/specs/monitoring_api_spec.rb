@@ -538,6 +538,7 @@ describe "Test Monitoring API" do
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do |k, v|
       next if k.eql?("logstash.agent")
+      next if k.eql?("logstash.licensechecker.licensereader")
       #since we explicitly set the logstash.agent logger above, the logger.logstash parent logger will not take precedence
       if k.start_with?("logstash") || k.start_with?("slowlog") || k.start_with?("deprecation")
         expect(v).to eq("ERROR")
