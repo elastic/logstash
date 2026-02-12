@@ -108,7 +108,7 @@ describe "Ruby codec when used in" do
     end
 
     it "should encode correctly without any ERROR log" do
-      logstash_service.spawn_logstash("-w", "1", "-e", config)
+      logstash_service.spawn_logstash("-w", "1", "-e", config, "--path.settings", logstash_service.application_settings_file)
       # Wait for process to complete (generator with count => 4 will finish quickly)
       sleep(10)
       logstash_service.teardown
