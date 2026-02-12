@@ -103,6 +103,9 @@ describe "Ruby codec when used in" do
 
   context "output Java plugin" do
     let(:config) { @fixture.config("output_encode") }
+    let(:settings) do
+      {"path.logs" => temp_dir }
+    end
 
     it "should encode correctly without any ERROR log" do
       logstash_service.spawn_logstash("-w", "1", "-e", config)
