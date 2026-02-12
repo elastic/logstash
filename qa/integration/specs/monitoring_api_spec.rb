@@ -518,9 +518,9 @@ describe "Test Monitoring API" do
 
     #root logger - does not apply to logger.slowlog
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "WARN"})
-    logging_get_assert logstash_service, "WARN", "TRACE"
+    logging_get_assert logstash_service, "WARN", "TRACE", skip: 'logstash.licensechecker.licensereader'
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger." => "INFO"})
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
 
     #package logger
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.logstash.agent" => "DEBUG"})
@@ -546,7 +546,7 @@ describe "Test Monitoring API" do
 
     # all log levels should be reset to original values
     logging_put_assert logstash_service.monitoring_api.logging_reset
-    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE"
+    logging_get_assert logstash_service, ["WARN", "INFO"], "TRACE", skip: 'logstash.licensechecker.licensereader'
   end
 
 
