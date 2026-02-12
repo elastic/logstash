@@ -1104,7 +1104,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			pluginFactory,
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
-			5 // Set maxBatchOutputSize to 3 events per chunk
+			5 // Set maxBatchOutputSize to 5 events per chunk
 		).buildExecution(true).compute(inputBatch, false, false);
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
