@@ -206,10 +206,18 @@ public final class Logstash implements Runnable, AutoCloseable {
     }
 
     // Tests whether the RubyException is of type `Bundler::ProductionError`
+    @SuppressWarnings("deprecation")
     private boolean isProductionError(RubyException re){
         if (re instanceof RubyStandardError){
             RubyClass metaClass = re.getMetaClass();
-            return (metaClass.getBaseName().equals("Bundler::ProductionError"));
+            // Use getName() to get the fully qualified name (e.g., "Bundler::ProductionError")
+            // instead of getBaseName() which may only return "ProductionError" in JRuby 10
+            String name = metaClass.getName();
+            if (name != null) {
+                return name.equals("Bundler::ProductionError");
+            }
+            // Fallback to getBaseName for compatibility
+            return (metaClass.getBaseName() != null && metaClass.getBaseName().equals("Bundler::ProductionError"));
         }
         return false;
     }

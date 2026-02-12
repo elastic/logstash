@@ -67,17 +67,26 @@ public final class LoggableExt {
         return self.getSingletonClass().callMethod(context, "deprecation_logger");
     }
 
+    @SuppressWarnings("deprecation")
     private static String log4jName(final RubyModule self) {
         String name;
-        if (self.getBaseName() == null) { // anonymous module/class
-            RubyModule real = self;
-            if (self instanceof RubyClass) {
-                real = ((RubyClass) self).getRealClass();
-            }
-            name = real.getBaseName() != null ? real.getBaseName() : real.toString(); // for anonymous: "#<Class:0xcafebabe>"
-        } else {
-            name = self.getBaseName();
+        RubyModule real = self;
+        if (self instanceof RubyClass) {
+            real = ((RubyClass) self).getRealClass();
         }
+
+        // Try to get the fully qualified name (with module nesting)
+        // In JRuby 10, we need to use getName() which returns the full path
+        if (real.getName() != null && !real.getName().startsWith("#")) {
+            name = real.getName();
+        } else if (real.getBaseName() == null) {
+            // Fallback for anonymous module/class
+            name = real.toString(); // e.g., "#<Class:0xcafebabe>"
+        } else {
+            // Fallback to baseName
+            name = real.getBaseName();
+        }
+
         return name.replace("::", ".").toLowerCase(Locale.ENGLISH);
     }
 
