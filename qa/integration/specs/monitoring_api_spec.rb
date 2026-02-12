@@ -533,7 +533,7 @@ describe "Test Monitoring API" do
     logging_put_assert logstash_service.monitoring_api.logging_put({"logger.slowlog" => "ERROR"})
 
     #deprecation package loggers
-    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation.logstash" => "ERROR"})
+    logging_put_assert logstash_service.monitoring_api.logging_put({"logger.deprecation" => "ERROR"})
 
     result = logstash_service.monitoring_api.logging_get
     result["loggers"].each do |k, v|
