@@ -44,7 +44,7 @@ class QueueReadClientBatchMetrics {
             currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
             pipelineMetricBatchByteSizeFlowHistogram = batchNamespace.asApiMetric()
                     .namespace("batch_byte_size")
-                    .register("histogram", LifetimeHistogramMetric.FACTORY);
+                    .register("lifetime_histogram", LifetimeHistogramMetric.FACTORY);
         }
     }
 

@@ -85,16 +85,10 @@ import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.health.PipelineIndicator;
-import org.logstash.instrument.metrics.AbstractMetricExt;
-import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
-import org.logstash.instrument.metrics.FlowMetric;
-import org.logstash.instrument.metrics.Metric;
-import org.logstash.instrument.metrics.MetricType;
-import org.logstash.instrument.metrics.NullMetricExt;
-import org.logstash.instrument.metrics.UpScaledMetric;
+import org.logstash.instrument.metrics.*;
 import org.logstash.instrument.metrics.gauge.TextGauge;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
-import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 import org.logstash.instrument.metrics.gauge.NumberGauge;
@@ -164,6 +158,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private QueueReadClientBase filterQueueClient;
 
     private transient final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
+    private transient BatchStructureMetric batchStructureMetric;
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
@@ -609,6 +604,11 @@ public class AbstractPipelineExt extends RubyBasicObject {
         final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
+
+        HistogramMetric histogramMetric = getHistogramMetric(context, buildNamespace(BATCH_KEY, RubyUtil.RUBY.newSymbol("batch_byte_size")),
+                RubyUtil.RUBY.newSymbol("lifetime_histogram"));
+        this.batchStructureMetric = new BatchStructureMetric("batch_structure_metric", histogramMetric);
+        storeMetric(context, batchSizeNamespace, batchStructureMetric);
     }
 
     private boolean isBatchMetricsEnabled(ThreadContext context) {
@@ -622,6 +622,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "collect_flow_metrics")
     public final IRubyObject collectFlowMetrics(final ThreadContext context) {
         this.scopedFlowMetrics.captureAll();
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "collect_batch_histogram_metrics")
+    public final IRubyObject collectBatchHistogramMetrics(final ThreadContext context) {
+        // TODO create a container class in case we have more histograms for the batch or there
+        // are many histogram not necessarily related to the batch in the future, this is to avoid
+        // having too many individual metrics for the batch structure
+        if (this.batchStructureMetric != null) {
+            // TODO put the capture in the RetainWindow metric
+            this.batchStructureMetric.capture();
+        }
         return context.nil;
     }
 
@@ -657,6 +669,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("counter")});
         return retrievedMetric.toJava(LongCounter.class);
+    }
+
+    private HistogramMetric getHistogramMetric(final ThreadContext context,
+                                               final RubySymbol[] subPipelineNamespacePath,
+                                               final RubySymbol metricName) {
+        final IRubyObject collector = this.metric.collector(context);
+        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
+
+        RubySymbol metricType = context.runtime.newSymbol("histogram");
+        final IRubyObject retrievedMetric = collector.callMethod(context, "get",
+                new IRubyObject[]{fullNamespace, metricName, metricType});
+        return retrievedMetric.toJava(HistogramMetric.class);
     }
 
     private TimerMetric initOrGetTimerMetric(final ThreadContext context,

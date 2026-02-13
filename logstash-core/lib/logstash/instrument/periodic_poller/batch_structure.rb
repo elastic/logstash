@@ -18,18 +18,15 @@
 require 'logstash/instrument/periodic_poller/base'
 
 module LogStash module Instrument module PeriodicPoller
-  class FlowRate < Base
+  class BatchStructure < Base
     def initialize(metric, agent, options = {})
       super(metric, options)
-      # @metric = metric
       @agent = agent
     end
 
     def collect
-      @agent.capture_flow_metrics
-
       pipelines = @agent.running_user_defined_pipelines
-      pipelines.values.compact.each(&:collect_flow_metrics)
+      pipelines.values.compact.each(&:collect_batch_histogram_metrics)
     end
   end
 end end end
