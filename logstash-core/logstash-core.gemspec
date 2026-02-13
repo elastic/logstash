@@ -81,7 +81,6 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "elasticsearch", '~> 8'
   gem.add_runtime_dependency "manticore", '~> 0.6'
-  gem.add_runtime_dependency "faraday", '< 3', '>= 2.14.1'
   # xpack geoip database service
   gem.add_development_dependency 'logstash-filter-geoip', '>= 7.2.1' # breaking change of DatabaseManager
   gem.add_dependency 'down', '~> 5.2.0' #(MIT license)
