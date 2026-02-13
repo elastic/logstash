@@ -8,7 +8,7 @@ notify:
         - "#test-channel-for-plugin"
       message: |
         🚦 Pipeline waiting for approval 🚦
-        Product: `${PRODUCT}`
+        Repo: `${REPO}`
 
         Ready to fetch DRA artifacts - please unblock when ready.
         New version: `${NEW_VERSION}`
@@ -18,6 +18,7 @@ notify:
     if: build.state == "blocked"
 
 steps:
+  # TODO: replace this block step by real version bump logic
   - block: "Ready to fetch for DRA artifacts?"
     prompt: |
       Unblock when your team is ready to proceed.
@@ -49,12 +50,12 @@ steps:
 
     plugins:
       - elastic/json-watcher#v1.0.0:
-          url: "${STAGING_URL}"
-          field: "${FIELD}"
+          url: "https://artifacts-staging.elastic.co/logstash/latest/${BRANCH}.json"
+          field: ".version"
           expected_value: "${NEW_VERSION}"
-          polling_interval: "${POLLING_INTERVAL}"
+          polling_interval: "30"
       - elastic/json-watcher#v1.0.0:
-          url: "${SNAPSHOT_URL}"
-          field: "${FIELD}"
+          url: "https://storage.googleapis.com/elastic-artifacts-snapshot/logstash/latest/${BRANCH}.json"
+          field: ".version"
           expected_value: "${NEW_VERSION}-SNAPSHOT"
-          polling_interval: "${POLLING_INTERVAL}"
+          polling_interval: "30"
