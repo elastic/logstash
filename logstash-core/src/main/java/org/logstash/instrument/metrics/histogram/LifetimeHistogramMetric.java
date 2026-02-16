@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implements HistogramMetric {
 
     private final Recorder recorder;
-    private volatile AtomicReference<Histogram> lifetimeSnapshotRef;
+    private final AtomicReference<Histogram> lifetimeSnapshotRef;
 
     public static UserMetric.Factory<HistogramMetric> FACTORY =
             HistogramMetric.PROVIDER.getFactory(LifetimeHistogramMetric::new);
