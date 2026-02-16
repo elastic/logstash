@@ -340,7 +340,7 @@ public final class CompiledPipeline {
         final int totalSize = batch.size();
 
         // no chunking needed, pass the original batch directly
-        if (maxBatchOutputSize <= 0) {
+        if (totalSize <= maxBatchOutputSize) {
             consumer.accept(batch, true);
             return totalSize;
         }
