@@ -167,6 +167,10 @@ public final class CompiledPipeline {
         return Collections.unmodifiableCollection(inputs);
     }
 
+    public int getMaxBatchOutputSize() {
+        return maxBatchOutputSize;
+    }
+
     /**
      * Perform the actual compilation of the {@link Dataset} representing the
      * underlying pipeline from the Queue to the outputs using the

@@ -1740,4 +1740,37 @@ describe LogStash::JavaPipeline do
       end
     end
   end
+
+  describe "max batch output size" do
+    let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
+
+    before :each do
+      allow(LogStash::Plugin).to receive(:lookup).with("input", "dummyinput").and_return(DummyInput)
+      allow(LogStash::Plugin).to receive(:lookup).with("codec", "plain").and_return(DummyCodec)
+      allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
+    end
+
+    context "when pipeline.batch.max_output_size is not set" do
+      let(:batch_size) { 200 }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size }) }
+
+      it "defaults to batch size" do
+        pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+        expect(pipeline.lir_execution.getMaxBatchOutputSize).to eq(batch_size)
+        pipeline.close
+      end
+    end
+
+    context "when pipeline.batch.max_output_size is explicitly set" do
+      let(:batch_size) { 200 }
+      let(:max_output_size) { 50 }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size, "pipeline.batch.max_output_size" => max_output_size }) }
+
+      it "uses the configured value" do
+        pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
+        expect(pipeline.lir_execution.getMaxBatchOutputSize).to eq(max_output_size)
+        pipeline.close
+      end
+    end
+  end
 end
