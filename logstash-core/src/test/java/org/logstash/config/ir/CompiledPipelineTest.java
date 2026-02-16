@@ -59,6 +59,12 @@ import org.logstash.config.ir.compiler.FilterDelegatorExt;
 import org.logstash.config.ir.compiler.RubyIntegration;
 import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.plugins.ConfigVariableExpander;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.test.appender.ListAppender;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -1111,5 +1117,64 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(3));
 
 		assertEquals("When maxBatchOutputSize is set to 5, and the batch size is 3, the batch should not be chunked", 1, outputSpy.invocationCount.get());
+    }
+
+    // ==================== Tests for debug logging ====================
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenDebugLevelLoggingThenChunkingIsLogged() throws Exception {
+        // Set up ListAppender to capture log messages
+        final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        final Configuration config = ctx.getConfiguration();
+        final ListAppender listAppender = new ListAppender("TestListAppender");
+        listAppender.start();
+        config.addAppender(listAppender);
+
+        // Get the logger for CompiledPipeline and set to DEBUG level
+        final LoggerConfig loggerConfig = config.getLoggerConfig(CompiledPipeline.class.getName());
+        final Level originalLevel = loggerConfig.getLevel();
+        loggerConfig.setLevel(Level.DEBUG);
+        loggerConfig.addAppender(listAppender, Level.DEBUG, null);
+        ctx.updateLoggers();
+
+        try {
+            final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+            final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                    IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                    false, cve);
+
+            final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+            for (int i = 0; i < 10; i++) {
+                Event event = new Event();
+                event.setField("message", "test event " + i);
+                inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+            }
+
+            new CompiledPipeline(
+                    pipelineIR,
+                    new CompiledPipelineTest.MockPluginFactory(
+                            Collections.singletonMap("mockinput", () -> null),
+                            Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
+                            Collections.singletonMap("mockoutput", mockOutputSupplier())
+                    ),
+                    null,
+                    new CompiledPipeline.NoopEvaluationListener(),
+                    3 // Set maxBatchOutputSize to 3 to trigger chunking
+            ).buildExecution().compute(inputBatch, false, false);
+
+            // Verify debug logging occurred
+            final java.util.List<String> messages = listAppender.getMessages();
+            boolean foundChunkingMessage = messages.stream()
+                    .anyMatch(msg -> msg.contains("Chunking batch") || msg.contains("chunk"));
+
+            assertTrue("Expected debug logging about chunking, but found: " + messages, foundChunkingMessage);
+        } finally {
+            // Restore original log level
+            loggerConfig.setLevel(originalLevel);
+            loggerConfig.removeAppender("TestListAppender");
+            listAppender.stop();
+            ctx.updateLoggers();
+        }
     }
 }

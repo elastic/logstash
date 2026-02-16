@@ -45,6 +45,8 @@ import org.logstash.execution.QueueBatch;
 import org.logstash.ext.JrubyEventExtLibrary.RubyEvent;
 import org.logstash.plugins.ConfigVariableExpander;
 import org.logstash.secret.store.SecretStore;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +69,8 @@ import static org.logstash.config.ir.compiler.Utils.copyNonCancelledEvents;
  * {@code filter}, {@code output} or an {@code if} condition.
  */
 public final class CompiledPipeline {
+
+    private static final Logger LOGGER = LogManager.getLogger(CompiledPipeline.class);
 
     /**
      * Compiler for conditional expressions that turn {@link IfVertex} into {@link EventCondition}.
@@ -343,6 +347,12 @@ public final class CompiledPipeline {
         if (totalSize <= maxBatchOutputSize) {
             consumer.accept(batch, true);
             return totalSize;
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            int numChunks = (int) Math.ceil((double) totalSize / maxBatchOutputSize);
+            LOGGER.debug("Chunking batch of {} events into {} chunk(s) with maxBatchOutputSize={}",
+                         totalSize, numChunks, maxBatchOutputSize);
         }
 
         // send to consumer in chunks
