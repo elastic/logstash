@@ -631,7 +631,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
         // are many histogram not necessarily related to the batch in the future, this is to avoid
         // having too many individual metrics for the batch structure
         if (this.batchStructureMetric != null) {
-            // TODO put the capture in the RetainWindow metric
             this.batchStructureMetric.capture();
         }
         return context.nil;
