@@ -87,6 +87,7 @@ import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.health.PipelineIndicator;
 import org.logstash.instrument.metrics.*;
 import org.logstash.instrument.metrics.histogram.HistogramMetric;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
@@ -605,15 +606,18 @@ public class AbstractPipelineExt extends RubyBasicObject {
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
 
-        HistogramMetric batchByteSizeHistogramMetric = getHistogramMetric(context,
-                buildNamespace(BATCH_KEY, BATCH_HISTOGRAM_BYTE_SIZE_KEY),
-                LIFETIME_HISTOGRAM_KEY);
+        HistogramMetric batchByteSizeHistogramMetric = metric.namespace(context,
+                pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                .namespace("batch_byte_size")
+                .register("lifetime_histogram", LifetimeHistogramMetric.FACTORY);
+
         this.batchStructureMetric = new BatchStructureMetric("batch_structure_metric", batchByteSizeHistogramMetric);
         storeMetric(context, batchSizeNamespace, batchStructureMetric);
 
-        HistogramMetric batchEventCountHistogramMetric = getHistogramMetric(context,
-                buildNamespace(BATCH_KEY, BATCH_HISTOGRAM_EVENT_COUNT_KEY),
-                LIFETIME_HISTOGRAM_KEY);
+        HistogramMetric batchEventCountHistogramMetric = metric.namespace(context,
+                        pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                .namespace("batch_event_count")
+                .register("lifetime_histogram", LifetimeHistogramMetric.FACTORY);
         this.batchEventCountStructureMetric = new BatchStructureMetric("batch_structure_metric", batchEventCountHistogramMetric);
         storeMetric(context, batchEventCountNamespace, batchEventCountStructureMetric);
     }
