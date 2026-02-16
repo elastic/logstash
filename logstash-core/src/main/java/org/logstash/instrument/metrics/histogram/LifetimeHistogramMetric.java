@@ -25,11 +25,12 @@ import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implements HistogramMetric {
 
     private final Recorder recorder;
-    private volatile Histogram lifetimeSnapshot;
+    private volatile AtomicReference<Histogram> lifetimeSnapshotRef;
 
     public static UserMetric.Factory<HistogramMetric> FACTORY =
             HistogramMetric.PROVIDER.getFactory(LifetimeHistogramMetric::new);
@@ -38,7 +39,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implement
         super(name);
         //TODO recorder should be provided as a parameter constructor or lazy-initialized by a supplier, but this is sufficient for now
         this.recorder = new Recorder(3);
-        this.lifetimeSnapshot = recorder.getIntervalHistogram();
+        this.lifetimeSnapshotRef = new AtomicReference<>(recorder.getIntervalHistogram());
     }
 
     @Override
@@ -51,10 +52,8 @@ public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implement
 
     @Override
     public Histogram getValue() {
-        // TODO use an AtomicReference for lifetimeSnapshot
         Histogram uncommitted = recorder.getIntervalHistogram();
-        lifetimeSnapshot = copyAdding(lifetimeSnapshot, uncommitted);
-        return lifetimeSnapshot;
+        return lifetimeSnapshotRef.accumulateAndGet(uncommitted, this::copyAdding);
     }
 
     private Histogram copyAdding(Histogram lifetime, Histogram other) {

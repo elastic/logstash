@@ -85,7 +85,7 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
             retentionWindow.calculateValue()
                     .ifPresent(histogram -> rates.put(retentionPolicy.policyName(), new HistogramMetricData(histogram)));
         });
-        
+
         return Collections.unmodifiableMap(rates);
     }
 
