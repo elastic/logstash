@@ -80,4 +80,4 @@ The `unzipGeolite` Gradle task downloads GeoLite2 test databases. Unit tests for
 - **Hook-based integration.** Config management intercepts bootstrap checks to swap the local config source with an Elasticsearch source. Monitoring adds an internal pipeline after the agent starts. Neither modifies core code directly.
 - **Singleton managers.** `GeoipDatabaseManagement::Manager` and `LicenseChecker::LicenseManager` are singletons with thread-safe initialization via Mutex.
 - **Observer pattern.** Database subscriptions and license managers notify observers on state changes, enabling features to react dynamically without polling.
-- **Internal pipelines.** Monitoring generates its pipeline config from an ERB template (`lib/monitoring/template.cfg.erb`) and injects it via `InternalPipelineSource`. These run alongside user pipelines but are hidden from the user-facing API.
+- **Internal pipelines.** Monitoring generates its pipeline config from an ERB template (`lib/template.cfg.erb`) and injects it via `InternalPipelineSource`. These run alongside user pipelines but are hidden from the user-facing API.
