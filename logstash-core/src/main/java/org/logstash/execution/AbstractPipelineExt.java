@@ -256,7 +256,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 0;
         }
-        return setting.convertToInteger().getIntValue();
+        int value = setting.convertToInteger().getIntValue();
+        return value < 0 ? 0 : value;
     }
 
     private int getBatchSize(final ThreadContext context) {
