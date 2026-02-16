@@ -128,6 +128,23 @@ When modifying code, don't just append to what's there — evaluate whether the 
 - **Pipeline lifecycle follows a strict ordering** in `JavaPipeline` (`logstash-core/lib/logstash/java_pipeline.rb`): outputs and filters register first, then workers start, then inputs start last. On shutdown the reverse applies: inputs stop first, workers drain, then filters and outputs close. Violating this ordering causes data loss or deadlocks.
 - **Use `Concurrent::AtomicBoolean` (Ruby) or `java.util.concurrent.atomic.AtomicBoolean` (Java) for cross-thread signaling.** Do not use plain boolean instance variables for state shared across threads — Ruby's GIL does not guarantee visibility, and JRuby runs without one.
 
+### Java Code Conventions
+
+- **Packages are organized by functional domain**, not architecture layers. Main packages under `org.logstash`: `execution` (pipeline/workers), `config.ir` (config compilation), `plugins` (plugin infrastructure), `ackedqueue` (persistent queue), `instrument.metrics` (metrics), `ext` (JRuby extensions), `settings` (configuration types), `log` (logging). Place new classes in the package matching their domain.
+- **Naming conventions:** JRuby extension classes use the `Ext` suffix (`LoggableExt`, `AbstractSimpleMetricExt`). Delegator classes use `Delegator` suffix. Abstract bases use the `Abstract` prefix. Most concrete classes are `public final class` — use plain `public class` only when subclassing is intended (e.g. `BaseSetting<T>`).
+- **Prefer unchecked exceptions.** Custom exceptions extend `RuntimeException` (e.g. `FieldReference.IllegalSyntaxException`, `Event.InvalidTagsTypeException`). Checked exceptions appear only when unavoidable (`IOException`, `InterruptedException`). Include descriptive messages and preserve exception chains via the `cause` parameter.
+- **Null handling:** Use `Objects.requireNonNull()` for constructor parameter validation. Use `@Nullable` annotation when null is an intentional part of the contract. Use `Optional` for parse/lookup chains that may fail (see `Timestamp.tryParse`), not as a general null replacement. Prefer explicit null checks before dereference over implicit assumptions.
+- **Logging uses Log4j 2.** Declare loggers as `private static final Logger LOGGER = LogManager.getLogger(MyClass.class)`. Use `TRACE` for diagnostic detail (parse attempts, fallback paths), `WARN` for recoverable issues, `ERROR` for uncaught exceptions, `FATAL` for unrecoverable system errors. Include context (thread name, field type, value) in messages.
+- **Thread safety:** Prefer immutable `final` fields as the primary safety mechanism. Use `ConcurrentHashMap` for thread-safe caches (see `FieldReference.CACHE`). Use `AtomicBoolean` for shutdown signaling. Document thread-safety guarantees in class-level JavaDoc when the class is shared across threads.
+
+### REST API Conventions
+
+- **API modules inherit from `LogStash::Api::Modules::Base`** (`logstash-core/lib/logstash/api/modules/base.rb`), which extends `Sinatra::Base`. Each module receives the `agent` reference and a `CommandFactory` in its constructor. Define routes using Sinatra's `get`/`put` DSL inside the module class.
+- **Routing uses rack namespace mapping.** Endpoints are mounted at path prefixes (`/_node`, `/_stats`, `/_node/stats`, `/_node/plugins`, `/_node/logging`, `/_health_report`) defined in `rack_namespaces` in `logstash-core/lib/logstash/api/rack_app.rb`. Add new endpoint namespaces there, not via ad-hoc Sinatra routing.
+- **All responses go through `respond_with`** (`logstash-core/lib/logstash/api/app_helpers.rb`). It automatically wraps JSON responses with default metadata (host, version, http_address, id) unless `exclude_default_metadata` is passed. Use `respond_with(data)` — do not write raw JSON responses.
+- **Errors use `ApiError` subclasses** (`logstash-core/lib/logstash/api/errors.rb`): `NotFoundError` (404), `BadRequest` (400), `RequestTimeout` (408). Raise these from route handlers; the base module catches them and formats a consistent error envelope with `path`, `status`, and `error` fields.
+- **Business logic lives in command classes**, not in route handlers. Commands inherit from `LogStash::Api::Commands::Base` (`logstash-core/lib/logstash/api/commands/base.rb`) and access metrics via `service.extract_metrics(path, *keys)`. Route handlers should only call `factory.build(:command_name)` and pass results to `respond_with`.
+
 ### Java/Ruby Boundary
 
 - **JRuby extensions use `@JRubyClass`/`@JRubyMethod` annotations.** Classes register in `RubyUtil` (`logstash-core/src/main/java/org/logstash/RubyUtil.java`) via `setupLogstashClass` or `defineClassUnder`. Follow existing patterns in `RubyUtil`'s static initializer when adding new Java-backed Ruby classes.
@@ -139,10 +156,12 @@ When modifying code, don't just append to what's there — evaluate whether the 
 
 - **Use `sample_one` helper for filter pipeline tests.** `PipelineHelpers#sample_one` (`logstash-core/spec/support/pipeline/pipeline_helpers.rb`) spins up a real pipeline, feeds events through a filter config, and captures results — preferred over manually constructing pipeline objects.
 - **Create dummy plugin classes inside spec files for isolation.** Define throwaway classes inheriting from the appropriate base, register with `LogStash::PLUGIN_REGISTRY.add`. See `pipeline_helpers.rb` for examples.
-- **Use `shared_examples` for interface contracts and `shared_context` for common setup.** Examples: `"metrics commons operations"` in `spec/support/shared_examples.rb`, `"execution_context"` in `spec/support/shared_contexts.rb`.
+- **Use `shared_examples` for interface contracts and `shared_context` for common setup.** Examples: `"metrics commons operations"` in `logstash-core/spec/support/shared_examples.rb`, `"execution_context"` in `logstash-core/spec/support/shared_contexts.rb`.
 - **Integration tests use the Fixture + Service pattern.** `Fixture` (`qa/integration/framework/fixture.rb`) bootstraps services and loads config from YAML fixture files under `qa/integration/fixtures/`.
 - **Test that existing rescue blocks catch new code paths.** When a method has a `rescue => e` that returns `nil`, verify that exceptions raised in newly added branches are caught by it. It is easy to accidentally add code outside the `begin...rescue` scope.
 - **Clean up JVM state in `after` blocks.** Any `java.lang.System.setProperty` call in a test must have a corresponding `clearProperty` in `after` to avoid leaking state to other specs.
+- **Prefer concrete test doubles over mocks.** The codebase uses purpose-built classes (`DummyInput`, `DummyFilter`, `DummyOutput` in `logstash-core/spec/support/mocks_classes.rb`) that inherit from real base classes with minimal implementations. Use these over RSpec `double()` when testing pipeline behavior — they exercise real plugin lifecycle methods.
+- **Reserve mocks for infrastructure boundaries.** `LogStash::Agent`, loggers, and `LogStash::SETTINGS` are commonly stubbed to prevent real pipeline startup. Use `allow(obj).to receive(:method).and_call_original` when you need the mock for setup but want to test real behavior. The codebase uses plain `double()` and `.as_null_object` — not `instance_double` or `class_double` — due to JRuby's dynamic method dispatch.
 
 ### Test Validity
 
@@ -242,7 +261,7 @@ Use dynamic IDs (`{type}`, `{plugin}`) to prevent ID duplication across plugin v
 ### Guidelines
 - All PRs must include documentation updates when applicable
 - Plugin documentation is required before merging
-- Follow [Elastic's documentation standards](https://github.com/elastic/docs#asciidoc-guide)
+- Follow Elastic documentation standards: one sentence per line in AsciiDoc, use `[id="..."]` anchors (not Markdown-style), prefer `[source,lang]` for code blocks, use `<<anchor>>` for cross-references, and keep titles in title case
 - Images go in `docs/reference/images/` (PNG format)
 
 ## See also
