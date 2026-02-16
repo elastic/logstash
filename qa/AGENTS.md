@@ -118,7 +118,7 @@ bundle exec rspec acceptance/spec/lib/artifact_operation_spec.rb
 Tests use RSpec `shared_examples` for reusable test sequences:
 - `"installable"` — Download, install, start, stop
 - `"installable_with_jdk"` — Install and verify bundled JDK
-- `"running"` — Verify process is running
+- `"runnable"` — Verify process is running
 - `"updated"` — Test upgrade from previous version
 
 Shared examples live in `qa/acceptance/spec/shared_examples/`.
