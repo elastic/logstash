@@ -215,6 +215,14 @@ module LogStash
                 end
               end
             end
+            if stats[:batch][:event_count][:batch_structure_metric]
+              event_count_histogram = stats[:batch][:event_count][:batch_structure_metric]
+              [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
+                if event_count_histogram.value[window.to_s]
+                  reshape_histogram_percentiles_for_window(:event_count, event_count_histogram, window, result)
+                end
+              end
+            end
             result
           end
           private :refine_batch_metrics

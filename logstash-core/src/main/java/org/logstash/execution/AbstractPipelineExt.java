@@ -86,7 +86,6 @@ import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.health.PipelineIndicator;
 import org.logstash.instrument.metrics.*;
-import org.logstash.instrument.metrics.gauge.TextGauge;
 import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
@@ -159,6 +158,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private transient final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
     private transient BatchStructureMetric batchStructureMetric;
+    private transient BatchStructureMetric batchEventCountStructureMetric;
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
@@ -592,23 +592,30 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private void initializeBatchMetrics(ThreadContext context) {
-        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+        final RubySymbol[] batchEventCountNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
         final LongCounter batchEventsInCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_EVENTS);
         final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
         final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, batchEventsInCounter, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
-        storeMetric(context, batchNamespace, documentsPerBatch);
+        storeMetric(context, batchEventCountNamespace, documentsPerBatch);
 
-        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, BATCH_BYTE_SIZE_KEY);
+        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, MetricKeys.BATCH_BYTE_SIZE_KEY);
         final LongCounter totalBytes = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_BYTES);
         final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
 
-        HistogramMetric histogramMetric = getHistogramMetric(context, buildNamespace(BATCH_KEY, RubyUtil.RUBY.newSymbol("batch_byte_size")),
-                RubyUtil.RUBY.newSymbol("lifetime_histogram"));
-        this.batchStructureMetric = new BatchStructureMetric("batch_structure_metric", histogramMetric);
+        HistogramMetric batchByteSizeHistogramMetric = getHistogramMetric(context,
+                buildNamespace(BATCH_KEY, BATCH_HISTOGRAM_BYTE_SIZE_KEY),
+                LIFETIME_HISTOGRAM_KEY);
+        this.batchStructureMetric = new BatchStructureMetric("batch_structure_metric", batchByteSizeHistogramMetric);
         storeMetric(context, batchSizeNamespace, batchStructureMetric);
+
+        HistogramMetric batchEventCountHistogramMetric = getHistogramMetric(context,
+                buildNamespace(BATCH_KEY, BATCH_HISTOGRAM_EVENT_COUNT_KEY),
+                LIFETIME_HISTOGRAM_KEY);
+        this.batchEventCountStructureMetric = new BatchStructureMetric("batch_structure_metric", batchEventCountHistogramMetric);
+        storeMetric(context, batchEventCountNamespace, batchEventCountStructureMetric);
     }
 
     private boolean isBatchMetricsEnabled(ThreadContext context) {
@@ -632,6 +639,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
         // having too many individual metrics for the batch structure
         if (this.batchStructureMetric != null) {
             this.batchStructureMetric.capture();
+        }
+        if (this.batchEventCountStructureMetric != null) {
+            this.batchEventCountStructureMetric.capture();
         }
         return context.nil;
     }
