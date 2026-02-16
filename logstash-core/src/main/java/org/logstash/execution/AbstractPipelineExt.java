@@ -85,7 +85,16 @@ import org.logstash.execution.queue.QueueWriter;
 import org.logstash.ext.JRubyAbstractQueueWriteClientExt;
 import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.health.PipelineIndicator;
-import org.logstash.instrument.metrics.*;
+import org.logstash.instrument.metrics.AbstractMetricExt;
+import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.BatchStructureMetric;
+import org.logstash.instrument.metrics.FlowMetric;
+import org.logstash.instrument.metrics.Metric;
+import org.logstash.instrument.metrics.MetricKeys;
+import org.logstash.instrument.metrics.MetricType;
+import org.logstash.instrument.metrics.NullMetricExt;
+import org.logstash.instrument.metrics.UpScaledMetric;
+import org.logstash.instrument.metrics.UptimeMetric;
 import org.logstash.instrument.metrics.histogram.HistogramMetric;
 import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
 import org.logstash.instrument.metrics.timer.TimerMetric;
@@ -638,9 +647,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     @JRubyMethod(name = "collect_batch_histogram_metrics")
     public final IRubyObject collectBatchHistogramMetrics(final ThreadContext context) {
-        // TODO create a container class in case we have more histograms for the batch or there
-        // are many histogram not necessarily related to the batch in the future, this is to avoid
-        // having too many individual metrics for the batch structure
         if (this.batchStructureMetric != null) {
             this.batchStructureMetric.capture();
         }

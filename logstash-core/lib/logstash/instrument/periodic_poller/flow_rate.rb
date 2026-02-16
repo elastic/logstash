@@ -21,7 +21,6 @@ module LogStash module Instrument module PeriodicPoller
   class FlowRate < Base
     def initialize(metric, agent, options = {})
       super(metric, options)
-      # @metric = metric
       @agent = agent
     end
 
