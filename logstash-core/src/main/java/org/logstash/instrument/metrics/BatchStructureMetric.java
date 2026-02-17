@@ -67,12 +67,16 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         HistogramCapture histogramCapture = new HistogramCapture(batchHistogram.getValue(), nanoTimeSupplier.getAsLong());
         LOG.trace("Captured batch structure metric: {}", histogramCapture);
 
-        // Append this capture to each retention window supported
         for (FlowMetricRetentionPolicy retentionPolicy : SUPPORTED_POLICIES) {
-            histogramsWindows.computeIfAbsent(retentionPolicy,
-                            policy -> new HistogramRetentionWindow(policy, histogramCapture))
-                    .append(histogramCapture);
+            appendToPolicyRetentionWindow(retentionPolicy, histogramCapture);
         }
+    }
+
+    private void appendToPolicyRetentionWindow(final FlowMetricRetentionPolicy retentionPolicy,
+                                               final HistogramCapture histogramCapture) {
+        histogramsWindows
+                .computeIfAbsent(retentionPolicy, policy -> new HistogramRetentionWindow(policy, histogramCapture))
+                .append(histogramCapture);
     }
 
     @Override

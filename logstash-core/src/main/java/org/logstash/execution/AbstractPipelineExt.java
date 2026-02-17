@@ -617,16 +617,16 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         HistogramMetric batchByteSizeHistogramMetric = metric.namespace(context,
                 pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
-                .namespace("batch_byte_size")
-                .register("lifetime_histogram", LifetimeHistogramMetric.FACTORY);
+                .namespace(BATCH_HISTOGRAM_BYTE_SIZE_KEY)
+                .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
 
-        this.batchStructureMetric = new BatchStructureMetric("batch_structure_metric", batchByteSizeHistogramMetric);
+        this.batchStructureMetric = new BatchStructureMetric(BATCH_STRUCTURE_METRIC_KEY, batchByteSizeHistogramMetric);
         storeMetric(context, batchSizeNamespace, batchStructureMetric);
 
         HistogramMetric batchEventCountHistogramMetric = metric.namespace(context,
                         pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
-                .namespace("batch_event_count")
-                .register("lifetime_histogram", LifetimeHistogramMetric.FACTORY);
+                .namespace(BATCH_HISTOGRAM_EVENT_COUNT_KEY)
+                .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
         this.batchEventCountStructureMetric = new BatchStructureMetric("batch_structure_metric", batchEventCountHistogramMetric);
         storeMetric(context, batchEventCountNamespace, batchEventCountStructureMetric);
     }
