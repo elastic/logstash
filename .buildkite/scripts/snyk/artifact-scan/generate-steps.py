@@ -36,15 +36,15 @@ def generate_extraction_step(version: str, version_type: str) -> dict:
 
 def generate_pipeline() -> dict:
     versions_data = fetch_logstash_versions()
+    seen = set()
     steps = []
 
-    if 'releases' in versions_data:
-        for version in versions_data['releases'].values():
-            steps.append(generate_extraction_step(version, 'release'))
-
-    if 'snapshots' in versions_data:
-        for version in versions_data['snapshots'].values():
-            steps.append(generate_extraction_step(version, 'snapshot'))
+    for version_type, key in [('releases', 'release'), ('snapshots', 'snapshot')]:
+        if version_type in versions_data:
+            for version in versions_data[version_type].values():
+                if version not in seen:
+                    seen.add(version)
+                    steps.append(generate_extraction_step(version, key))
 
     return {
         "agents": {
