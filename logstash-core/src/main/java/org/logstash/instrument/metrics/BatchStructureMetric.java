@@ -36,11 +36,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.LongSupplier;
 
 public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStructureMetric.HistogramMetricData>>{
     private static final Logger LOG = LogManager.getLogger(BatchStructureMetric.class);
 
     private final HistogramMetric batchHistogram;
+    private final LongSupplier nanoTimeSupplier;
 
     private static final List<FlowMetricRetentionPolicy> SUPPORTED_POLICIES = List.of(
             BuiltInFlowMetricRetentionPolicies.LAST_1_MINUTE,
@@ -49,14 +51,20 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
     );
     private final ConcurrentMap<FlowMetricRetentionPolicy, HistogramRetentionWindow> histogramsWindows = new ConcurrentHashMap<>();
 
-    // TODO accept a time provider to allow for testing
     public BatchStructureMetric(final String name, final HistogramMetric batchHistogram) {
+        this(name, batchHistogram, System::nanoTime);
+    }
+
+    public BatchStructureMetric(final String name,
+                                final HistogramMetric batchHistogram,
+                                final LongSupplier nanoTimeSupplier) {
         super(name);
         this.batchHistogram = batchHistogram;
+        this.nanoTimeSupplier = nanoTimeSupplier;
     }
 
     public void capture() {
-        HistogramCapture histogramCapture = new HistogramCapture(batchHistogram.getValue(), System.nanoTime());
+        HistogramCapture histogramCapture = new HistogramCapture(batchHistogram.getValue(), nanoTimeSupplier.getAsLong());
         LOG.trace("Captured batch structure metric: {}", histogramCapture);
 
         // Append this capture to each retention window supported
@@ -77,14 +85,16 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         capture();
 
         final Map<String, HistogramMetricData> rates = new LinkedHashMap<>();
-        histogramsWindows.forEach((retentionPolicy, retentionWindow) -> {
+        for (Map.Entry<FlowMetricRetentionPolicy, HistogramRetentionWindow> entry : histogramsWindows.entrySet()) {
+            FlowMetricRetentionPolicy retentionPolicy = entry.getKey();
+            HistogramRetentionWindow retentionWindow = entry.getValue();
             if (retentionWindow == null) {
-                return;
+                continue;
             }
 
             retentionWindow.calculateValue()
                     .ifPresent(histogram -> rates.put(retentionPolicy.policyName(), new HistogramMetricData(histogram)));
-        });
+        }
 
         return Collections.unmodifiableMap(rates);
     }
