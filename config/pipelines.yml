@@ -36,9 +36,9 @@
 #   pipeline.batch.delay: 50
 #
 #   # Maximum number of events that are passed together as a chunk to the outputs after being filtered.
-#   # This is useful to adjust when a filter significantly increases the number of events or size of a batch.
-#   # Default is 0 (unlimited).
-#   pipeline.batch.max_output_size: 125
+#   # When the ratio of filtered events to input events exceeds this factor, the batch is chunked.
+#   # Default is 1000 (effectively disabled). Set to a lower value like 2-10 to enable chunking.
+#   pipeline.batch.output_chunking_trigger_factor: 1000
 #
 #   Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
 #   "auto" automatically enables ordering if the 'pipeline.workers' setting

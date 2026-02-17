@@ -222,7 +222,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
             throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
-        final int maxBatchOutputSize = resolveMaxBatchOutputSize(context);
+        final int batchChunkingFactor = getBatchChunkingFactor(context);
+        final int batchSize = getBatchSize(context);
         lirExecution = new CompiledPipeline(
                 lir,
                 new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
@@ -237,7 +238,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 ),
                 getSecretStore(context),
                 new LogErrorEvaluationListener(),
-                maxBatchOutputSize
+                batchSize,
+                batchChunkingFactor
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -251,13 +253,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return this;
     }
 
-    private int getMaxBatchOutputSize(final ThreadContext context) {
-        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_MAX_OUTPUT_SIZE);
+    private int getBatchChunkingFactor(final ThreadContext context) {
+        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_OUTPUT_CHUNKING_TRIGGER_FACTOR);
         if (setting.isNil()) {
-            return 0;
+            return 1000; // default chunking factor
         }
         int value = setting.convertToInteger().getIntValue();
-        return value < 0 ? 0 : value;
+        return value <= 0 ? 1000 : value;
     }
 
     private int getBatchSize(final ThreadContext context) {
@@ -265,12 +267,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 125; // default batch size
         }
-        return setting.convertToInteger().getIntValue();
-    }
-
-    private int resolveMaxBatchOutputSize(final ThreadContext context) {
-        int configuredMaxBatchOutputSize = getMaxBatchOutputSize(context);
-        return configuredMaxBatchOutputSize > 0 ? configuredMaxBatchOutputSize : getBatchSize(context);
+        int value = setting.convertToInteger().getIntValue();
+        return value <= 0 ? 125 : value;
     }
 
     @JRubyMethod

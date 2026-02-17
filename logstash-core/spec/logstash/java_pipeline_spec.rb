@@ -1741,7 +1741,7 @@ describe LogStash::JavaPipeline do
     end
   end
 
-  describe "max batch output size" do
+  describe "output chunking trigger factor" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
 
     before :each do
@@ -1750,25 +1750,22 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-    context "when pipeline.batch.max_output_size is not set" do
-      let(:batch_size) { 200 }
-      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size }) }
+    context "when pipeline.batch.output_chunking_trigger_factor is not set" do
 
-      it "defaults to batch size" do
+      it "defaults to 1000" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getMaxBatchOutputSize).to eq(batch_size)
+        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(1000)
         pipeline.close
       end
     end
 
-    context "when pipeline.batch.max_output_size is explicitly set" do
-      let(:batch_size) { 200 }
-      let(:max_output_size) { 50 }
-      let(:pipeline_settings) { super().merge({ "pipeline.batch.size" => batch_size, "pipeline.batch.max_output_size" => max_output_size }) }
+    context "when pipeline.batch.output_chunking_trigger_factor is explicitly set" do
+      let(:chunking_trigger_factor) { 50 }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.output_chunking_trigger_factor" => chunking_trigger_factor }) }
 
       it "uses the configured value" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getMaxBatchOutputSize).to eq(max_output_size)
+        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(chunking_trigger_factor)
         pipeline.close
       end
     end
