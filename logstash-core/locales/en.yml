@@ -251,9 +251,10 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
-        pipeline-batch-max-output-size: |+
-          Maximum number of events that are passed together as a chunk to the outputs
-          after being filtered. The default is 0 (unlimited).
+        pipeline-batch-output-chunking-trigger-factor: |+
+          Controls when batches are split into smaller chunks and sent to the outputs. When the ratio of
+          filtered events to input events exceeds this factor, the batch is chunked.
+          Default is 1000 (effectively disabled). Set to a lower value like 2-10 to enable.
         path_settings: |+
           Directory containing logstash.yml file. This can also be
           set through the LS_SETTINGS_DIR environment variable.

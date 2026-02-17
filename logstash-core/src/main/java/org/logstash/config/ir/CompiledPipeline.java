@@ -108,10 +108,15 @@ public final class CompiledPipeline {
     private final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener;
 
     /**
+     * The pipeline batch size setting.
+     */
+    private final int configuredBatchSize;
+
+    /**
      * Maximum number of events sent together as a chunk to the outputs after being filtered.
      * If > 0, batches will be split during processing into chunks to ensure no single chunk exceeds this size.
      */
-    private final int maxBatchOutputSize;
+    private final int chunkingTriggerFactor;
 
     public static final class NoopEvaluationListener implements AbstractPipelineExt.ConditionalEvaluationListener {
 
@@ -125,7 +130,7 @@ public final class CompiledPipeline {
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
     {
-        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener(), 0);
+        this(pipelineIR, pluginFactory, null, new NoopEvaluationListener(), 125, 1000);
     }
 
     public CompiledPipeline(
@@ -134,7 +139,7 @@ public final class CompiledPipeline {
             final SecretStore secretStore,
             final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener)
     {
-        this(pipelineIR, pluginFactory, secretStore, conditionalErrListener, 0);
+        this(pipelineIR, pluginFactory, secretStore, conditionalErrListener, 125, 1000);
     }
 
     public CompiledPipeline(
@@ -142,12 +147,14 @@ public final class CompiledPipeline {
             final RubyIntegration.PluginFactory pluginFactory,
             final SecretStore secretStore,
             final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener,
-            final int maxBatchOutputSize)
+            final int configuredBatchSize,
+            final int chunkingTriggerFactor)
     {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
         this.conditionalErrListener = conditionalErrListener;
-        this.maxBatchOutputSize = maxBatchOutputSize;
+        this.configuredBatchSize = configuredBatchSize;
+        this.chunkingTriggerFactor = chunkingTriggerFactor;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -171,8 +178,12 @@ public final class CompiledPipeline {
         return Collections.unmodifiableCollection(inputs);
     }
 
-    public int getMaxBatchOutputSize() {
-        return maxBatchOutputSize;
+    public int getConfiguredBatchSize() {
+        return configuredBatchSize;
+    }
+
+    public int getChunkingTriggerFactor() {
+        return chunkingTriggerFactor;
     }
 
     /**
@@ -340,26 +351,27 @@ public final class CompiledPipeline {
     }
 
     @SuppressWarnings("unchecked")
-    private int chunker(RubyArray<RubyEvent> batch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
-        final int totalSize = batch.size();
+    private int chunker(int batchInputSize, RubyArray<RubyEvent> filteredBatch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
+        final int totalSize = filteredBatch.size();
 
+        System.out.println("totalSize: " + totalSize + ", batchInputSize: " + batchInputSize + ", chunkingTriggerFactor: " + chunkingTriggerFactor + ", configuredBatchSize: " + configuredBatchSize);
+        System.out.println("totalSize / batchInputSize: " + ((double) totalSize / batchInputSize));
         // no chunking needed, pass the original batch directly
-        if (totalSize <= maxBatchOutputSize) {
-            consumer.accept(batch, true);
+        if ((double) totalSize / batchInputSize <= chunkingTriggerFactor) {
+            consumer.accept(filteredBatch, true);
             return totalSize;
         }
 
         if (LOGGER.isDebugEnabled()) {
-            int numChunks = (int) Math.ceil((double) totalSize / maxBatchOutputSize);
-            LOGGER.debug("Chunking batch of {} events into {} chunk(s) with maxBatchOutputSize={}",
-                         totalSize, numChunks, maxBatchOutputSize);
+            LOGGER.debug("Chunking batch of {} events into chunks with size={}",
+                         totalSize, configuredBatchSize);
         }
 
         // send to consumer in chunks
-        for (int offset = 0; offset < totalSize; offset += maxBatchOutputSize) {
-            int end = Math.min(offset + maxBatchOutputSize, totalSize);
+        for (int offset = 0; offset < totalSize; offset += configuredBatchSize) {
+            int end = Math.min(offset + configuredBatchSize, totalSize);
             boolean isLastChunk = (end == totalSize);
-            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(batch.subList(offset, end));
+            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(filteredBatch.subList(offset, end));
             consumer.accept(chunk, isLastChunk);
         }
         return totalSize;
@@ -392,7 +404,7 @@ public final class CompiledPipeline {
                 return 0;
             }
 
-            final int totalSize = chunker(outputBatch, (chunk, isLastChunk) -> {
+            final int totalSize = chunker(batch.size(), outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
             });
 
@@ -426,7 +438,7 @@ public final class CompiledPipeline {
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
 
-            return chunker(outputBatch, (chunk, isLastChunk) -> {
+            return chunker(batch.size(), outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
             });
         }
