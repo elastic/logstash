@@ -58,7 +58,7 @@ public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implement
 
     private Histogram copyAdding(Histogram lifetime, Histogram other) {
         if (Objects.isNull(other) || other.getTotalCount()  == 0) {
-            return lifetime;
+            return lifetime.copy();
         }
 
         final Histogram result = lifetime.copy();

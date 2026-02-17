@@ -627,7 +627,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
                 .namespace(BATCH_HISTOGRAM_EVENT_COUNT_KEY)
                 .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
-        this.batchEventCountStructureMetric = new BatchStructureMetric("batch_structure_metric", batchEventCountHistogramMetric);
+        this.batchEventCountStructureMetric = new BatchStructureMetric(BATCH_STRUCTURE_METRIC_KEY, batchEventCountHistogramMetric);
         storeMetric(context, batchEventCountNamespace, batchEventCountStructureMetric);
     }
 
@@ -688,18 +688,6 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
         final IRubyObject retrievedMetric = collector.callMethod(context, "get", new IRubyObject[]{fullNamespace, metricName, context.runtime.newSymbol("counter")});
         return retrievedMetric.toJava(LongCounter.class);
-    }
-
-    private HistogramMetric getHistogramMetric(final ThreadContext context,
-                                               final RubySymbol[] subPipelineNamespacePath,
-                                               final RubySymbol metricName) {
-        final IRubyObject collector = this.metric.collector(context);
-        final IRubyObject fullNamespace = pipelineNamespacedPath(subPipelineNamespacePath);
-
-        RubySymbol metricType = context.runtime.newSymbol("histogram");
-        final IRubyObject retrievedMetric = collector.callMethod(context, "get",
-                new IRubyObject[]{fullNamespace, metricName, metricType});
-        return retrievedMetric.toJava(HistogramMetric.class);
     }
 
     private TimerMetric initOrGetTimerMetric(final ThreadContext context,

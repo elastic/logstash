@@ -118,12 +118,12 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         }
 
         @JsonProperty("p50")
-        public double get50Percentile() {
+        public long get50Percentile() {
             return percentile50;
         }
 
         @JsonProperty("p90")
-        public double get90Percentile() {
+        public long get90Percentile() {
             return percentile90;
         }
 

@@ -210,16 +210,18 @@ module LogStash
               # so need to call "value" to grab the map of sub-metrics which contains the histogram percentiles
               # as org.logstash.instrument.metrics.BatchStructureMetric$HistogramMetricData
               [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
-                if byte_size_histogram.value[window.to_s]
-                  reshape_histogram_percentiles_for_window(:byte_size, byte_size_histogram, window, result)
+                byte_size_histogram_value = byte_size_histogram.value
+                if byte_size_histogram_value[window.to_s]
+                  reshape_histogram_percentiles_for_window(:byte_size, byte_size_histogram_value, window, result)
                 end
               end
             end
             if stats[:batch][:event_count][:batch_structure_metric]
               event_count_histogram = stats[:batch][:event_count][:batch_structure_metric]
               [:last_1_minute, :last_5_minutes, :last_15_minutes].each do |window|
-                if event_count_histogram.value[window.to_s]
-                  reshape_histogram_percentiles_for_window(:event_count, event_count_histogram, window, result)
+                event_count_histogram_value = event_count_histogram.value
+                if event_count_histogram_value[window.to_s]
+                  reshape_histogram_percentiles_for_window(:event_count, event_count_histogram_value, window, result)
                 end
               end
             end
@@ -231,7 +233,7 @@ module LogStash
             result[target_field][:p50] = {} if result[target_field][:p50].nil?
             result[target_field][:p90] = {} if result[target_field][:p90].nil?
 
-            histogram_data = histogram_metric.value[window.to_s]
+            histogram_data = histogram_metric[window.to_s]
             result[target_field][:p50][window] = histogram_data.get50Percentile.round
             result[target_field][:p90][window] = histogram_data.get90Percentile.round
           end
