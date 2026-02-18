@@ -5,6 +5,11 @@ mapped_pages:
 
 # Tips and best practices [tips]
 
+This section covers system configuration and best practices for running Logstash:
+
+* [JVM settings](/reference/jvm-settings.md)
+* [File descriptors](/reference/file-descriptors.md)
+
 We are adding more tips and best practices, so please check back soon. If you have something to add, please:
 
 * create an issue at [https://github.com/elastic/logstash/issues](https://github.com/elastic/logstash/issues), or
