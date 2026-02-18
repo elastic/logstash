@@ -89,7 +89,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 **`-u, --pipeline.batch.delay DELAY_IN_MS`**
 :   When creating pipeline batches, how long to wait while polling for the next event. This option defines how long in milliseconds to wait while polling for the next event before dispatching an undersized batch to filters and outputs. The default is 50ms.
 
-**`--pipeline.batch.output_chunking_trigger_factor FACTOR`**
+**`--pipeline.batch.output_chunking.growth_threshold_factor FACTOR`**
 :   When the output batch size divided by the input batch size exceeds this factor, the output batch is chunked into smaller batches for processing. This helps manage memory when filters significantly expand the number of events. The default value is 1000 (effectively no chunking for most use cases).
 
 **`--pipeline.ecs_compatibility MODE`**

@@ -34,10 +34,10 @@ shared_examples_for 'it applies settings correctly' do |flavor|
   end
 
   context 'when setting pipeline batch output chunking trigger factor' do
-    let(:options) { { 'ENV' => ['pipeline.batch.output_chunking_trigger_factor=5'] } }
+    let(:options) { { 'ENV' => ['pipeline.batch.output_chunking.growth_threshold_factor=5'] } }
 
     it "should correctly set the batch output chunking trigger factor" do
-      expect(get_pipeline_setting(@container, 'batch_output_chunking_trigger_factor')).to eql 5
+      expect(get_pipeline_setting(@container, 'batch_output_chunking_growth_threshold_factor')).to eql 5
     end
   end
 

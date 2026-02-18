@@ -56,7 +56,7 @@ module LogStash
       "path.dead_letter_queue",
       "path.queue",
       "pipeline.batch.delay",
-      "pipeline.batch.output_chunking_trigger_factor",
+      "pipeline.batch.output_chunking.growth_threshold_factor",
       "pipeline.batch.metrics.sampling_mode",
       "pipeline.batch.size",
       "pipeline.id",
