@@ -200,7 +200,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
-    logstash-codec-collectd (3.1.0)
+    logstash-codec-collectd (3.1.1)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-event_support (~> 1.0)
       logstash-mixin-validator_support (~> 1.0)
@@ -258,7 +258,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-event_support (~> 1.0)
       logstash-patterns-core
-    logstash-codec-netflow (4.3.3)
+    logstash-codec-netflow (4.3.4)
       bindata (>= 1.5.0)
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-event_support (~> 1.0)
@@ -294,12 +294,11 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-validator_support (~> 1.0)
-    logstash-filter-date (3.1.15)
+    logstash-filter-date (3.1.16)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-filter-de_dot (1.1.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-filter-dissect (1.2.5)
-      jar-dependencies
+    logstash-filter-dissect (1.2.6)
       logstash-core-plugin-api (>= 2.1.1, <= 2.99)
     logstash-filter-dns (3.2.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -321,15 +320,15 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       murmurhash3 (= 0.1.6)
-    logstash-filter-geoip (7.3.2-java)
+    logstash-filter-geoip (7.3.4-java)
       logstash-core (>= 7.14.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
-    logstash-filter-grok (4.4.3)
+    logstash-filter-grok (4.4.4)
       jls-grok (~> 0.11.3)
       logstash-core (>= 5.6.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-      logstash-mixin-ecs_compatibility_support (~> 1.0)
+      logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-patterns-core (>= 4.3.0, < 5)
       stud (~> 0.0.22)
     logstash-filter-http (1.6.0)
@@ -395,7 +394,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (~> 2.0)
       stud (>= 0.0.22)
-    logstash-input-beats (6.9.5-java)
+    logstash-input-beats (6.9.6-java)
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (>= 2.0.5)
       logstash-codec-plain
@@ -410,7 +409,7 @@ GEM
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud (>= 0.0.22)
-    logstash-input-dead_letter_queue (2.0.1)
+    logstash-input-dead_letter_queue (2.0.2)
       logstash-codec-plain
       logstash-core (>= 8.4.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -439,7 +438,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.3)
       logstash-mixin-scheduler (~> 1.0)
       stud (~> 0.0.22)
-    logstash-input-file (4.4.6)
+    logstash-input-file (4.4.7)
       addressable
       concurrent-ruby (~> 1.0)
       logstash-codec-multiline (~> 3.0)
@@ -469,7 +468,7 @@ GEM
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       logstash-mixin-event_support (~> 1.0)
       stud
-    logstash-input-http (3.10.4-java)
+    logstash-input-http (3.10.5-java)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
@@ -513,7 +512,7 @@ GEM
       logstash-filter-grok (>= 4.4.1)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (>= 0.0.22, < 0.1.0)
-    logstash-input-tcp (6.4.8-java)
+    logstash-input-tcp (6.4.9-java)
       jruby-openssl (>= 0.12.2)
       logstash-codec-json
       logstash-codec-json_lines
@@ -538,7 +537,7 @@ GEM
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.2)
       stud (~> 0.0.22)
-    logstash-input-unix (3.1.2)
+    logstash-input-unix (3.1.3)
       logstash-codec-line
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ecs_compatibility_support (~> 1.3)
@@ -563,7 +562,7 @@ GEM
       logstash-core-plugin-api (~> 2.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
       manticore (~> 0.8)
-    logstash-integration-jdbc (5.6.1)
+    logstash-integration-jdbc (5.6.3)
       logstash-codec-plain
       logstash-core (>= 6.5.0)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
@@ -575,7 +574,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.2-java)
+    logstash-integration-kafka (11.8.3-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -656,7 +655,7 @@ GEM
       jls-lumberjack (>= 0.0.26)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       stud
-    logstash-output-nagios (3.0.6)
+    logstash-output-nagios (3.0.7)
       logstash-codec-plain
       logstash-core-plugin-api (>= 1.60, <= 2.99)
     logstash-output-null (3.0.5)
@@ -683,7 +682,7 @@ GEM
     logstash-output-udp (3.2.0)
       logstash-codec-json
       logstash-core-plugin-api (>= 1.60, <= 2.99)
-    logstash-output-webhdfs (3.1.0-java)
+    logstash-output-webhdfs (3.1.1-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       webhdfs
     logstash-patterns-core (4.3.4)
@@ -734,7 +733,7 @@ GEM
     openssl_pkcs8_pure (0.0.0.2)
     paquet (0.2.1)
     parallel (1.27.0)
-    parser (3.3.10.1)
+    parser (3.3.10.2)
       ast (~> 2.4.1)
       racc
     pleaserun (0.0.32)
@@ -757,7 +756,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1-java)
-    rack (3.1.19)
+    rack (3.1.20)
     rack-protection (4.2.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
@@ -784,7 +783,7 @@ GEM
     rspec-mocks (3.13.7)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-support (3.13.6)
+    rspec-support (3.13.7)
     rspec-wait (1.0.2)
       rspec (>= 3.4)
     rubocop (1.74.0)
