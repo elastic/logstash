@@ -23,6 +23,7 @@ require "logstash/devutils/rspec/spec_helper"
 
 require 'stud/temporary'
 
+# SPLIT_ESTIMATE: 40
 if ENV['FEATURE_FLAG'] == 'persistent_queues'
   describe "Test logstash queue draining" do
     before(:all) { @fixture = Fixture.new(__FILE__) }

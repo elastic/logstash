@@ -23,6 +23,7 @@ require_relative 'spec_helper.rb'
 
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 30
 describe "Test Dead Letter Queue" do
   # template with an ip field
   let(:template) { serverless? ? { "index_patterns": ["te*"], "template": {"mappings": { "properties": { "ip": { "type": "ip" }}}} } :

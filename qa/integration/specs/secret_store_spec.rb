@@ -30,6 +30,7 @@ require "logstash/devutils/rspec/spec_helper"
 # tag2 = mytag2
 # tag3 = mytag3
 ####################################
+# SPLIT_ESTIMATE: 41
 describe "Test that Logstash" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

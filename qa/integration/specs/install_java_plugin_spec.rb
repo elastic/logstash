@@ -21,6 +21,7 @@ require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/temporary"
 
+# SPLIT_ESTIMATE: 40
 describe "Install and run java plugin", :skip_fips do
   before(:all) do
     @fixture = Fixture.new(__FILE__)

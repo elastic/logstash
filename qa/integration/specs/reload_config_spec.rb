@@ -24,6 +24,7 @@ require "socket"
 require "json"
 require "logstash/util"
 
+# SPLIT_ESTIMATE: 20
 describe "Test Logstash service when config reload is enabled" do
   define_negated_matcher :exclude, :include
 

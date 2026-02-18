@@ -24,6 +24,7 @@ require "rspec/wait"
 require "yaml"
 require "fileutils"
 
+# SPLIT_ESTIMATE: 20
 describe "Java plugin API" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
