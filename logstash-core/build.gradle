@@ -181,22 +181,49 @@ artifacts {
     }
 }
 
-task generateVersionInfoResources(type: DefaultTask) {
-    ext.outDir = layout.buildDirectory.dir("generated-resources/version-info").get()
+
+task generateHealthcheckResources(type: DefaultTask) {
+    Directory outDir = layout.buildDirectory.dir("generated-resources/main/org/logstash/health").get()
+    File outFile = outDir.file("help.url").asFile
+
+    // builds are considered "snapshot" unless the env has
+    // either `WORKFLOW_TYPE=staging` OR `RELEASE=1`
+    boolean isSnapshot = !("${System.env.WORKFLOW_TYPE}" == "staging" || "${System.env.RELEASE}" == "1")
 
     inputs.property("version-info:logstash-core", logstashCoreVersion)
-    outputs.dir(ext.outDir)
+    inputs.property("BUILD_ENV:IS_SNAPSHOT", isSnapshot)
+    outputs.dir outDir
+
+    // don't reuse outputs if they are missing
+    outputs.upToDateWhen { outFile.exists() }
 
     doLast {
-        mkdir outDir;
-        def resourceFile = outDir.file('version-info.properties').asFile
-        resourceFile.text = "logstash-core: ${logstashCoreVersion}"
+        def (majorVersion, minorVersion, patchVersion) = logstashCoreVersion.tokenize('.').subList(0,3)
+
+        String versionAnchor;
+        if (isSnapshot && patchVersion == "0") {
+            // snapshot builds on unreleased minors
+            if (majorVersion == "9") {
+                versionAnchor = "master"
+            } else {
+                versionAnchor = "${majorVersion}.x"
+            }
+        } else {
+            // otherwise we target MAJOR.MINOR
+            versionAnchor = "${majorVersion}.${minorVersion}"
+        }
+        def helpUrl = "https://www.elastic.co/guide/en/logstash/${versionAnchor}/"
+
+        mkdir outDir
+        outFile.text = helpUrl
+
+        logger.info("Health API HelpUrl base: FOR(${logstashCoreVersion}${isSnapshot ? "-SNAPSHOT" : ""}) WRITE(${helpUrl}) TO(${outFile.path})")
     }
 }
 sourceSets {
-    main { output.dir(generateVersionInfoResources.outputs.files) }
+    main { resources { output.dir(generateHealthcheckResources.outputs.files) } }
 }
-processResources.dependsOn generateVersionInfoResources
+processResources.dependsOn generateHealthcheckResources
 
 configurations {
     provided
