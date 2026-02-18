@@ -254,7 +254,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private int getBatchChunkingFactor(final ThreadContext context) {
-        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_OUTPUT_CHUNKING_TRIGGER_FACTOR);
+        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_OUTPUT_CHUNKING_GROWTH_THRESHOLD_FACTOR);
         if (setting.isNil()) {
             return 1000; // default chunking factor
         }

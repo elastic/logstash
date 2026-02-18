@@ -41,7 +41,7 @@ public class Env2Yaml {
             String[] allowedConfigs = {
                 "api.enabled", "api.http.host", "api.http.port", "api.environment",
                 "node.name", "path.data", "pipeline.id", "pipeline.workers",
-                "pipeline.output.workers", "pipeline.batch.size", "pipeline.batch.delay", "pipeline.batch.output_chunking_trigger_factor",
+                "pipeline.output.workers", "pipeline.batch.size", "pipeline.batch.delay", "pipeline.batch.output_chunking.growth_threshold_factor",
                 "pipeline.unsafe_shutdown", "pipeline.ecs_compatibility", "pipeline.ordered",
                 "pipeline.plugin_classloaders", "pipeline.separate_logs", "path.config",
                 "config.string", "config.test_and_exit", "config.reload.automatic",

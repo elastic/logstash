@@ -32,7 +32,7 @@ public class SettingKeyDefinitions {
 
     public static final String PIPELINE_BATCH_SIZE = "pipeline.batch.size";
 
-    public static final String PIPELINE_BATCH_OUTPUT_CHUNKING_TRIGGER_FACTOR = "pipeline.batch.output_chunking_trigger_factor";
+    public static final String PIPELINE_BATCH_OUTPUT_CHUNKING_GROWTH_THRESHOLD_FACTOR = "pipeline.batch.output_chunking.growth_threshold_factor";
 
     public static final String PATH_QUEUE = "path.queue";
 

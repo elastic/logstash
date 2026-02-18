@@ -1750,7 +1750,7 @@ describe LogStash::JavaPipeline do
       allow(LogStash::Plugin).to receive(:lookup).with("output", "dummyoutput").and_return(::LogStash::Outputs::DummyOutput)
     end
 
-    context "when pipeline.batch.output_chunking_trigger_factor is not set" do
+    context "when pipeline.batch.output_chunking.growth_threshold_factor is not set" do
 
       it "defaults to 1000" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
@@ -1759,13 +1759,13 @@ describe LogStash::JavaPipeline do
       end
     end
 
-    context "when pipeline.batch.output_chunking_trigger_factor is explicitly set" do
-      let(:chunking_trigger_factor) { 50 }
-      let(:pipeline_settings) { super().merge({ "pipeline.batch.output_chunking_trigger_factor" => chunking_trigger_factor }) }
+    context "when pipeline.batch.output_chunking.growth_threshold_factor is explicitly set" do
+      let(:output_chunking_growth_threshold_factor) { 50 }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.output_chunking.growth_threshold_factor" => output_chunking_growth_threshold_factor }) }
 
       it "uses the configured value" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(chunking_trigger_factor)
+        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(output_chunking_growth_threshold_factor)
         pipeline.close
       end
     end
