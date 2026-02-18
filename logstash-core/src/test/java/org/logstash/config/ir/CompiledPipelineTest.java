@@ -1038,7 +1038,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         // Filter that triples each event (returns 3 events for every 1 input)
         // In ordered execution, filter is called once per event
-        // 4 input events processed one-by-one -> 4 * 3 = 12 output events
+        // 3 input events processed one-by-one -> 3 * 3 = 9 output events
         IRubyObject tripleFilter = RubyUtil.RUBY.evalScriptlet(
             String.join(
                 "\n",
