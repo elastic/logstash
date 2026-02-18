@@ -25,9 +25,16 @@ Set the value to port :443 instead.
 ## Communication between {{ls}} and {{es-serverless}} [connecting-to-elasticsearch-serverless]
 
 [{{es-serverless}}](docs-content://solutions/search/serverless-elasticsearch-get-started.md) simplifies safe, secure communication between {{ls}} and {{es}}.
-To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} output plugin to connect using the project's {{es}} endpoint URL and an API key.
+To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} output plugin to connect using the project's **{{es}} endpoint URL** and an **API key**.
 
-### Get your connection details [serverless-connection-details-ls]
+```ruby
+output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }
+```
+
+The value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
+
+
+### {{es}} endpoint URL 
 
 1. Log in to [Elastic Cloud](https://cloud.elastic.co/).
 
@@ -37,10 +44,13 @@ To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} outp
 
     Alternatively, open your project, select the help icon, then select **Connection details**.
 
-3. Create an **API key** with the appropriate privileges. Refer to [Create API key](docs-content://solutions/search/search-connection-details.md#create-an-api-key-serverless) for detailed steps. For information on the required privileges, refer to [Grant access using API keys](/reference/secure-connection.md#ls-create-api-key).
 
-    When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
-    This option formats the API key in the correct `id:api_key` format required by {{ls}}.
+### API key [api-key]    
+
+Create an **API key** with the appropriate privileges. Refer to [Create API key](docs-content://solutions/search/search-connection-details.md#create-an-api-key-serverless) for detailed steps. For information on the required privileges, refer to [Grant access using API keys](/reference/secure-connection.md#ls-create-api-key).
+
+When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
+This option formats the API key in the correct `id:api_key` format required by {{ls}}.
 
 :::{image} images/logstash_api_key_format.png
 :alt: API key format dropdown set to {{ls}}:
@@ -50,4 +60,4 @@ To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} outp
 
 ## Using {{ls}} Central Pipeline Management with {{es-serverless}} [cpm-serverless]
 
-To set up Central Pipeline management in {{es-serverless}}, update the `logstash.yml` config file to set the value for `xpack.management.elasticsearch.hosts` to your Elasticsearch endpoint URL.
+To set up Central Pipeline management in {{es-serverless}}, update the `logstash.yml` config file to provide the API key and set the value for `xpack.management.elasticsearch.hosts` to your Elasticsearch endpoint URL.
