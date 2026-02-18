@@ -866,7 +866,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		);
 
         // 4 input events -> 10 output events (4 original + 4 clones + 2 extra)
-        // configuredBatchSize = 4, chunkingTriggerFactor = 2 (default)
+        // configuredBatchSize = 4, chunkingTriggerFactor = 2
         // 10 / 4 = 2.5 > 2, so batch should be chunked
         new CompiledPipeline(
 			pipelineIR,
