@@ -54,6 +54,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,20 +76,18 @@ public final class CompiledPipeline {
      */
     private final EventCondition.Compiler conditionalCompiler = new EventCondition.Compiler();
 
-    /**
-     * Configured inputs.
-     */
-    private final Collection<IRubyObject> inputs;
+    private final InputStage inputStage;
 
-    /**
-     * Configured Filters, indexed by their ID as returned by {@link PluginVertex#getId()}.
-     */
-    private final Map<String, AbstractFilterDelegatorExt> filters;
+    private final WorkerStage workerStage;
 
-    /**
-     * Configured outputs.
-     */
-    private final Map<String, AbstractOutputDelegatorExt> outputs;
+    private final Lock workerStageReadLock;
+    private final Lock workerStageWriteLock;
+
+    {
+        final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+        workerStageReadLock = readWriteLock.readLock();
+        workerStageWriteLock = readWriteLock.writeLock();
+    }
 
     /**
      * Parsed pipeline configuration graph.
@@ -111,6 +112,50 @@ public final class CompiledPipeline {
         }
     }
 
+    public class InputStage {
+        final Collection<IRubyObject> inputs;
+
+        InputStage(final ConfigVariableExpander configVariableExpander) {
+            try {
+                this.inputs = setupInputs(configVariableExpander);
+            } catch (final Exception e) {
+                throw new IllegalStateException("Unable to configure plugins for input stage: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    public class WorkerStage {
+        final Map<String, AbstractFilterDelegatorExt> filters;
+        final Map<String, AbstractOutputDelegatorExt> outputs;
+
+        WorkerStage(final ConfigVariableExpander configVariableExpander) {
+            try {
+                this.filters = Map.copyOf(setupFilters(configVariableExpander));
+                this.outputs = Map.copyOf(setupOutputs(configVariableExpander));
+            } catch (final Exception e) {
+                throw new IllegalStateException("Unable to configure plugins for worker stage: " + e.getMessage(), e);
+            }
+        }
+
+        public Collection<AbstractOutputDelegatorExt> getOutputs() {
+            return outputs.values();
+        }
+
+        public Collection<AbstractFilterDelegatorExt> getFilters() {
+            return filters.values();
+        }
+
+        public CompiledExecution buildExecution() {
+            return buildExecution(false);
+        }
+
+        public CompiledExecution buildExecution(final boolean orderedExecution) {
+            return orderedExecution
+                    ? new CompiledPipeline.CompiledOrderedExecution(this)
+                    : new CompiledPipeline.CompiledUnorderedExecution(this);
+        }
+    }
+
     public CompiledPipeline(
             final PipelineIR pipelineIR,
             final RubyIntegration.PluginFactory pluginFactory)
@@ -130,24 +175,36 @@ public final class CompiledPipeline {
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
-            inputs = setupInputs(cve);
-            filters = setupFilters(cve);
-            outputs = setupOutputs(cve);
+            this.inputStage = new InputStage(cve);
+            this.workerStage = withLock(workerStageWriteLock, () -> new WorkerStage(cve));
         } catch (Exception e) {
             throw new IllegalStateException("Unable to configure plugins: " + e.getMessage(), e);
         }
     }
 
+    public WorkerStage workerStage() {
+        return withLock(workerStageReadLock, () -> workerStage);
+    }
+
+    static <T> T withLock(final Lock lock, final Supplier<T> supplier) {
+        lock.lock();
+        try {
+            return supplier.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public Collection<AbstractOutputDelegatorExt> outputs() {
-        return Collections.unmodifiableCollection(outputs.values());
+        return withLock(workerStageReadLock, () -> Collections.unmodifiableCollection(this.workerStage.outputs.values()));
     }
 
     public Collection<AbstractFilterDelegatorExt> filters() {
-        return Collections.unmodifiableCollection(filters.values());
+        return withLock(workerStageReadLock, () -> Collections.unmodifiableCollection(this.workerStage.filters.values()));
     }
 
     public Collection<IRubyObject> inputs() {
-        return Collections.unmodifiableCollection(inputs);
+        return Collections.unmodifiableCollection(this.inputStage.inputs);
     }
 
     /**
@@ -156,6 +213,7 @@ public final class CompiledPipeline {
      * unordered  execution model.
      * @return CompiledPipeline.CompiledExecution the compiled pipeline
      */
+    @Deprecated // use WorkerStage#buildExecution
     public CompiledPipeline.CompiledExecution buildExecution() {
         return buildExecution(false);
     }
@@ -167,10 +225,11 @@ public final class CompiledPipeline {
      * @param orderedExecution determines whether to build an execution that enforces order or not
      * @return CompiledPipeline.CompiledExecution the compiled pipeline
      */
+    @Deprecated // use WorkerStage#buildExecution
     public CompiledPipeline.CompiledExecution buildExecution(boolean orderedExecution) {
         return orderedExecution
-            ? new CompiledPipeline.CompiledOrderedExecution()
-            : new CompiledPipeline.CompiledUnorderedExecution();
+            ? new CompiledPipeline.CompiledOrderedExecution(this.workerStage)
+            : new CompiledPipeline.CompiledUnorderedExecution(this.workerStage);
     }
 
     /**
@@ -296,27 +355,13 @@ public final class CompiledPipeline {
         return expandConfigVariable(cve, valueToExpand, true);
     }
 
-    /**
-     * Checks if a certain {@link Vertex} represents a {@link AbstractFilterDelegatorExt}.
-     * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents a {@link AbstractFilterDelegatorExt}
-     */
-    private boolean isFilter(final Vertex vertex) {
-        return filters.containsKey(vertex.getId());
-    }
-
-    /**
-     * Checks if a certain {@link Vertex} represents an output.
-     * @param vertex Vertex to check
-     * @return True iff {@link Vertex} represents an output
-     */
-    private boolean isOutput(final Vertex vertex) {
-        return outputs.containsKey(vertex.getId());
-    }
-
     public final class CompiledOrderedExecution extends CompiledExecution {
 
         @SuppressWarnings({"unchecked"})  private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
+
+        CompiledOrderedExecution(WorkerStage workerStage) {
+            super(workerStage);
+        }
 
         @Override
         public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
@@ -352,6 +397,10 @@ public final class CompiledPipeline {
     }
 
     public final class CompiledUnorderedExecution extends CompiledExecution {
+
+        CompiledUnorderedExecution(WorkerStage workerStage) {
+            super(workerStage);
+        }
 
         @Override
         public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
@@ -396,10 +445,13 @@ public final class CompiledPipeline {
          */
         private final Map<String, Dataset> plugins = new HashMap<>(50);
 
+        private final WorkerStage workerStage;
+
         protected final Dataset compiledFilters;
         protected final Dataset compiledOutputs;
 
-        CompiledExecution() {
+        CompiledExecution(final WorkerStage workerStage) {
+            this.workerStage = workerStage;
             compiledFilters = compileFilters();
             compiledOutputs = compileOutputs();
         }
@@ -425,7 +477,7 @@ public final class CompiledPipeline {
          */
         private Dataset compileOutputs() {
             final Collection<Vertex> outputNodes = pipelineIR.getGraph()
-                .allLeaves().filter(CompiledPipeline.this::isOutput)
+                .allLeaves().filter(this::isOutput)
                 .collect(Collectors.toList());
             if (outputNodes.isEmpty()) {
                 return Dataset.IDENTITY;
@@ -450,7 +502,7 @@ public final class CompiledPipeline {
                 final ComputeStepSyntaxElement<Dataset> prepared =
                     DatasetCompiler.filterDataset(
                         flatten(datasets, vertex),
-                        filters.get(vertexId)
+                        workerStage.filters.get(vertexId)
                     );
 
                 plugins.put(vertexId, prepared.instantiate());
@@ -473,8 +525,8 @@ public final class CompiledPipeline {
                 final ComputeStepSyntaxElement<Dataset> prepared =
                     DatasetCompiler.outputDataset(
                         flatten(datasets, vertex),
-                        outputs.get(vertexId),
-                        outputs.size() == 1
+                            workerStage.outputs.get(vertexId),
+                            workerStage.outputs.size() == 1
                     );
 
                 plugins.put(vertexId, prepared.instantiate());
@@ -575,6 +627,24 @@ public final class CompiledPipeline {
                     }
                 }
             ).collect(Collectors.toList());
+        }
+
+        /**
+         * Checks if a certain {@link Vertex} represents a {@link AbstractFilterDelegatorExt}.
+         * @param vertex Vertex to check
+         * @return True iff {@link Vertex} represents a {@link AbstractFilterDelegatorExt}
+         */
+        private boolean isFilter(final Vertex vertex) {
+            return this.workerStage.filters.containsKey(vertex.getId());
+        }
+
+        /**
+         * Checks if a certain {@link Vertex} represents an output.
+         * @param vertex Vertex to check
+         * @return True iff {@link Vertex} represents an output
+         */
+        private boolean isOutput(final Vertex vertex) {
+            return this.workerStage.outputs.containsKey(vertex.getId());
         }
     }
 }
