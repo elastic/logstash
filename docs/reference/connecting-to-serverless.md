@@ -58,6 +58,18 @@ This option formats the API key in the correct `id:api_key` format required by {
 :width: 400px
 :::
 
+:::{note}
+The [Elasticsearch input](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-api_key), 
+[Elasticsearch output](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), and 
+[Elasticsearch filter](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-api_key) plugins, as well as the 
+[Elastic_integration filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-api_key) plugin, all support the `api_key` option in their configurations.
+:::
+
 ## Using {{ls}} Central Pipeline Management with {{es-serverless}} [cpm-serverless]
 
 To set up Central Pipeline management in {{es-serverless}}, update the `logstash.yml` config file to provide the API key and set the value for `xpack.management.elasticsearch.hosts` to your Elasticsearch endpoint URL.
+
+```ruby
+xpack.management.elasticsearch.hosts: "ELASTICSEARCH_ENDPOINT_URL"  # Use the `hosts` option with the Elasticsearch endpoint URL to send data to Elasticsearch Serverless
+xpack.management.elasticsearch.api_key: "<api_key>" # API key formatted for Logstash:  `id:api_key`
+```
