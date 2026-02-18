@@ -251,7 +251,7 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
-        pipeline-batch-output-chunking-trigger-factor: |+
+        pipeline-batch-output-chunking-growth-threshold-factor: |+
           Controls when batches are split into smaller chunks and sent to the outputs. When the ratio of
           filtered events to input events exceeds this factor, the batch is chunked.
           Default is 1000 (effectively disabled). Set to a lower value like 2-10 to enable.
