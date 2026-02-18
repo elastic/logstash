@@ -354,8 +354,6 @@ public final class CompiledPipeline {
     private int chunker(int batchInputSize, RubyArray<RubyEvent> filteredBatch, java.util.function.BiConsumer<RubyArray<RubyEvent>, Boolean> consumer) {
         final int totalSize = filteredBatch.size();
 
-        System.out.println("totalSize: " + totalSize + ", batchInputSize: " + batchInputSize + ", chunkingTriggerFactor: " + chunkingTriggerFactor + ", configuredBatchSize: " + configuredBatchSize);
-        System.out.println("totalSize / batchInputSize: " + ((double) totalSize / batchInputSize));
         // no chunking needed, pass the original batch directly
         if ((double) totalSize / batchInputSize <= chunkingTriggerFactor) {
             consumer.accept(filteredBatch, true);
