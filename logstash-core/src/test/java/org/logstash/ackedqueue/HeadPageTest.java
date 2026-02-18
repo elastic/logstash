@@ -77,7 +77,7 @@ public class HeadPageTest {
             Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
-            p.write(element.serialize(), 0, 1);
+            p.write(element, element.serialize(), 0, 1);
 
             assertThat(p.hasSpace(element.serialize().length), is(false));
             assertThat(p.isFullyRead(), is(false));
@@ -96,9 +96,9 @@ public class HeadPageTest {
             Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
-            p.write(element.serialize(), seqNum, 1);
+            p.write(element, element.serialize(), seqNum, 1);
 
-            Batch b = new Batch(p.read(1), q);
+            Batch b = q.createBatch(p.read(1));
 
             assertThat(b.getElements().size(), is(equalTo(1)));
             assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
@@ -119,7 +119,7 @@ public class HeadPageTest {
             Page p = q.headPage;
 
             assertThat(p.isEmpty(), is(true));
-            p.write(element.serialize(), 1, 1);
+            p.write(element, element.serialize(), 1, 1);
             assertThat(p.isEmpty(), is(false));
             Batch b = q.readBatch(1, TimeUnit.SECONDS.toMillis(1));
             assertThat(p.isEmpty(), is(false));
@@ -141,9 +141,9 @@ public class HeadPageTest {
             Page p = q.headPage;
 
             assertThat(p.hasSpace(element.serialize().length), is(true));
-            p.write(element.serialize(), seqNum, 1);
+            p.write(element, element.serialize(), seqNum, 1);
 
-            Batch b = new Batch(p.read(10), q);
+            Batch b = q.createBatch(p.read(10));
 
             assertThat(b.getElements().size(), is(equalTo(1)));
             assertThat(b.getElements().get(0).toString(), is(equalTo(element.toString())));
