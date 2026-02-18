@@ -12,7 +12,7 @@ The documentation that you write for your plugin will be generated and published
 ::::{admonition} Plugin listing in {{ls}} Reference
 :class: note
 
-We may list your plugin in the [Logstash Reference](/reference/index.md) if it meets our [requirements and quality standards](/extend/index.md#plugin-acceptance). When we list your plugin, we point to *your* documentation—​a readme.md, docs/index.asciidoc, or both—​in your plugin repo. For more info on this option, see [List your plugin](/extend/plugin-listing.md).
+We may list your plugin in the [Logstash Reference](/reference/index.md) if it meets our [requirements and quality standards](/extend/index.md#plugin-acceptance). When we list your plugin, we point to *your* documentation—​a readme.md, docs/index.asciidoc, or both-​in your plugin repo. For more info on this option, see [List your plugin](/extend/plugin-listing.md).
 
 ::::
 
