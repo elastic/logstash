@@ -451,6 +451,7 @@ namespace "artifact" do
 
     return if defined?(BUILD_METADATA_FILE)
     BUILD_METADATA_FILE = Tempfile.new('build.rb')
+    BUILD_METADATA_FILE.chmod(0644)
     BUILD_DATE = Time.now.iso8601
     build_info = {
       "build_date" => BUILD_DATE,
