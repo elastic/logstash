@@ -70,6 +70,6 @@ The [Elasticsearch input](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md
 To set up Central Pipeline management in {{es-serverless}}, update the `logstash.yml` config file to provide the API key and set the value for `xpack.management.elasticsearch.hosts` to your Elasticsearch endpoint URL.
 
 ```ruby
-xpack.management.elasticsearch.hosts: "ELASTICSEARCH_ENDPOINT_URL"  # Use the `hosts` option with the Elasticsearch endpoint URL to send data to Elasticsearch Serverless
+xpack.management.elasticsearch.hosts: "ELASTICSEARCH_ENDPOINT_URL"  # Use the `hosts` option with the Elasticsearch endpoint URL to connect to Elasticsearch Serverless
 xpack.management.elasticsearch.api_key: "<api_key>" # API key formatted for Logstash:  `id:api_key`
 ```
