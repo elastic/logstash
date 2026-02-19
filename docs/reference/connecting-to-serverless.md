@@ -25,21 +25,29 @@ Set the value to port :443 instead.
 ## Communication between {{ls}} and {{es-serverless}} [connecting-to-elasticsearch-serverless]
 
 [{{es-serverless}}](docs-content://solutions/search/serverless-elasticsearch-get-started.md) simplifies safe, secure communication between {{ls}} and {{es}}.
-When you configure the Elasticsearch output plugin to use [`cloud_id`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id) and an [`api_key`](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), no additional SSL configuration is needed.
+To send data to a {{serverless-short}} project, configure the {{ls}} {{es}} output plugin to connect using the project's **{{es}} endpoint URL** and an **API key**.
 
-Example:
+```ruby
+output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api key>" } }
+```
 
-* `output {elasticsearch { cloud_id => "<cloud id>" api_key => "<api key>" } }`
-
-Note that the value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
-
-
-### Cloud ID [cloud-id]
-
-{{ls}} uses the Cloud ID, found in the Elastic Cloud web console, to build the Elasticsearch and Kibana hosts settings. It is a base64 encoded text value of about 120 characters made up of upper and lower case letters and numbers. If you have several Cloud IDs, you can add a label, which is ignored internally, to help you tell them apart. To add a label, prefix your Cloud ID with a label and a `:` separator in this format "<label>:<cloud-id>".
+The value of the [`api_key` option](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key) is in the format `id:api_key`, where `id` and `api_key` are the values returned by the [Create API key API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-create-api-key).
 
 
-### API key [api-key]
+### {{es}} endpoint URL 
+
+1. Log in to [Elastic Cloud](https://cloud.elastic.co/).
+
+2. Find your **{{es}} endpoint URL**:
+
+    Select **Manage** next to your project. Then find the {{es}} endpoint under **Application endpoints, cluster and component IDs**. 
+
+    Alternatively, open your project, select the help icon, then select **Connection details**.
+
+
+### API key [api-key]    
+
+Create an **API key** with the appropriate privileges. Refer to [Create API key](docs-content://solutions/search/search-connection-details.md#create-an-api-key-serverless) for detailed steps. For information on the required privileges, refer to [Grant access using API keys](/reference/secure-connection.md#ls-create-api-key).
 
 When you create an API key for {{ls}}, select **Logstash** from the **API key format** dropdown.
 This option formats the API key in the correct `id:api_key` format required by {{ls}}.
@@ -50,24 +58,18 @@ This option formats the API key in the correct `id:api_key` format required by {
 :width: 400px
 :::
 
-The UI for API keys may look different depending on the deployment type.
-
-## Using Cloud ID with plugins [cloud-id-serverless]
-
-The Elasticsearch input, output, and filter plugins, as well as the Elastic_integration filter plugin, support cloud_id in their configurations.
-
-* [Elasticsearch input plugin](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-cloud_id)
-* [Elasticsearch filter plugin](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-cloud_id)
-* [Elasticsearch output plugin](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-cloud_id)
-* [Elastic_integration filter plugin](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-cloud_id)
-
-
+:::{note}
+The [Elasticsearch input](logstash-docs-md://lsr/plugins-inputs-elasticsearch.md#plugins-inputs-elasticsearch-api_key), 
+[Elasticsearch output](logstash-docs-md://lsr/plugins-outputs-elasticsearch.md#plugins-outputs-elasticsearch-api_key), and 
+[Elasticsearch filter](logstash-docs-md://lsr/plugins-filters-elasticsearch.md#plugins-filters-elasticsearch-api_key) plugins, as well as the 
+[Elastic_integration filter](logstash-docs-md://lsr/plugins-filters-elastic_integration.md#plugins-filters-elastic_integration-api_key) plugin, all support the `api_key` option in their configurations.
+:::
 
 ## Using {{ls}} Central Pipeline Management with {{es-serverless}} [cpm-serverless]
 
-This setting in the `logstash.yml` config file can help you get set up to use Central Pipeline management in Elastic Cloud:
+To set up Central Pipeline management in {{es-serverless}}, update the `logstash.yml` config file to provide the API key and set the value for `xpack.management.elasticsearch.hosts` to your Elasticsearch endpoint URL.
 
-* `xpack.management.elasticsearch.cloud_id`
-
-You can use the `xpack.management.elasticsearch.cloud_id` setting as an alternative to `xpack.management.elasticsearch.hosts`.
-
+```ruby
+xpack.management.elasticsearch.hosts: "ELASTICSEARCH_ENDPOINT_URL"  # Use the `hosts` option with the Elasticsearch endpoint URL to connect to Elasticsearch Serverless
+xpack.management.elasticsearch.api_key: "<api_key>" # API key formatted for Logstash:  `id:api_key`
+```
