@@ -752,7 +752,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         }
     }
 
-    // ==================== Tests for chunkingTriggerFactor with unordered execution ====================
+    // ==================== Tests for growthThresholdFactor with unordered execution ====================
 
     private class OutputSpy implements Consumer<Collection<JrubyEventExtLibrary.RubyEvent>> {
 
@@ -769,8 +769,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionDefaultChunkingTriggerFactorWhenBatchSizeDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
-        // When chunkingTriggerFactor is 1000 (default), no chunking should occur when the factor is less than 1000
+    public void givenUnorderedExecutionDefaultGrowthThresholdFactorWhenBatchSizeDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
+        // When growthThresholdFactor is 1000 (default), no chunking should occur when the growth threshold factor is less than 1000
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -808,7 +808,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		);
 
         // 4 input events -> 10 output events (4 original + 4 clones + 2 extra)
-        // configuredBatchSize = 4, chunkingTriggerFactor = 1000 (default)
+        // configuredBatchSize = 4, growthThresholdFactor = 1000 (default)
         // 10 / 4 = 2.5 <= 1000, so NO chunking should occur
 		new CompiledPipeline(
 			pipelineIR,
@@ -816,19 +816,19 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
             4,    // configured batch size
-            1000  // chunking trigger factor (default)
+            1000  // growth threshold factor (default)
 		).buildExecution().compute(inputBatch, false, false);
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10)); // 4*2 + 2 = 10 events
 
-		assertEquals("A batch should not be chunked when chunkingTriggerFactor is 1000 (default) and the batch size increase factor is less than 1000", 1, outputSpy.invocationCount.get());
+		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and the batch size increase factor is less than 1000", 1, outputSpy.invocationCount.get());
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionChunkingTriggerFactorSetWhenBatchSizeExceedsTriggerFactorThenItsChunked() throws Exception {
-        // When filter clones events and output exceeds chunkingTriggerFactor * batchSize, batches should be chunked
+    public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchSizeExceedsTriggerFactorThenItsChunked() throws Exception {
+        // When filter clones events and output exceeds growthThresholdFactor * batchSize, batches should be chunked
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -866,7 +866,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		);
 
         // 4 input events -> 10 output events (4 original + 4 clones + 2 extra)
-        // configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // configuredBatchSize = 4, growthThresholdFactor = 2
         // 10 / 4 = 2.5 > 2, so batch should be chunked
         new CompiledPipeline(
 			pipelineIR,
@@ -874,7 +874,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
             4, // configured batch size
-            2  // chunking trigger factor
+            2  // growth threshold factor
 		).buildExecution().compute(inputBatch, false, false);
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
@@ -886,8 +886,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionChunkingTriggerFactorSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
-        // Test that empty batches work correctly with chunkingTriggerFactor set
+    public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
+        // Test that empty batches work correctly with growthThresholdFactor set
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -903,14 +903,14 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             () -> outputSpy
         );
 
-        // Empty input batch, configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // Empty input batch, configuredBatchSize = 2, growthThresholdFactor = 2
         int outputCount = new CompiledPipeline(
             pipelineIR,
             pluginFactory,
             null,
             new CompiledPipeline.NoopEvaluationListener(),
-            4,  // configured batch size
-            2   // chunking trigger factor
+            2,  // configured batch size
+            2   // growth threshold factor
         ).buildExecution().compute(emptyBatch, false, false);
 
         MatcherAssert.assertThat(outputCount, CoreMatchers.is(0)); // empty input produces 0 output
@@ -918,13 +918,67 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(0));
 
         // 0 events, no chunking should occur
-        assertEquals("Empty batch should not be chunked", 0, outputSpy.invocationCount.get());
+        assertEquals("Empty batch should not be chunked", 1, outputSpy.invocationCount.get());
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionChunkingTriggerFactorSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
-        // Test that a single event works correctly with chunkingTriggerFactor set
+    public void givenUnorderedExecutionEmptyInputBatchWithFilterThatAddsEventsThenItsNotChunked() throws Exception {
+        // Test that empty input batch with a filter that adds events doesn't chunk
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+
+        OutputSpy outputSpy = new OutputSpy();
+
+        // Filter that adds 5 new events regardless of input
+        IRubyObject addingFilter = RubyUtil.RUBY.evalScriptlet(
+            String.join(
+                "\n",
+                "output = Object.new",
+                "output.define_singleton_method(:multi_filter) do |batch|",
+                "  result = batch.to_a",
+                "  5.times { |i| result << LogStash::Event.new({'message' => \"added_event_#{i}\"}) }",
+                "  result",
+                "end",
+                "output"
+            )
+        );
+
+        final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+            () -> null,
+            () -> addingFilter,
+            () -> outputSpy
+        );
+
+        // Empty input batch, filter adds 5 events
+        // configuredBatchSize = 4, growthThresholdFactor = 2
+        // Since input is 0, ratio is undefined - should not chunk (output sent in single batch)
+        int outputCount = new CompiledPipeline(
+            pipelineIR,
+            pluginFactory,
+            null,
+            new CompiledPipeline.NoopEvaluationListener(),
+            4,  // configured batch size
+            2   // growth threshold factor
+        ).buildExecution().compute(emptyBatch, false, false);
+
+        MatcherAssert.assertThat(outputCount, CoreMatchers.is(5)); // filter added 5 events
+
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(5));
+
+        // When input batch is empty but filter adds events, should not chunk (ratio undefined)
+        assertEquals("Empty input batch with filter-added events should not be chunked", 1, outputSpy.invocationCount.get());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
+        // Test that a single event works correctly with growthThresholdFactor set
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -943,7 +997,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             () -> outputSpy
         );
 
-        // 1 input event, configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // 1 input event, configuredBatchSize = 4, growthThresholdFactor = 2
         // 1 / 4 = 0.25 <= 2, so no chunking should occur
         new CompiledPipeline(
             pipelineIR,
@@ -951,7 +1005,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             null,
             new CompiledPipeline.NoopEvaluationListener(),
             4,  // configured batch size
-            2   // chunking trigger factor
+            2   // growth threshold factor
         ).buildExecution().compute(inputBatch, false, false);
 
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
@@ -960,12 +1014,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         assertEquals("Single event batch should not be chunked - unordered execution", 1, outputSpy.invocationCount.get());
     }
 
-    // ==================== Tests for chunkingTriggerFactor with orderedExecution ====================
+    // ==================== Tests for growthThresholdFactor with orderedExecution ====================
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionDefaultChunkingTriggerFactorWhenBatchDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
-        // When chunkingTriggerFactor is 1000 (default), no chunking should occur (ordered execution)
+    public void givenOrderedExecutionDefaultGrowthThresholdFactorWhenBatchDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
+        // When growthThresholdFactor is 1000 (default), no chunking should occur (ordered execution)
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1001,7 +1055,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		);
 
         // 4 input events -> 8 output events (4 original + 4 clones)
-        // configuredBatchSize = 4, chunkingTriggerFactor = 1000 (default)
+        // configuredBatchSize = 4, growthThresholdFactor = 1000 (default)
         // 8 / 4 = 2.0 <= 1000, so NO chunking should occur
 		new CompiledPipeline(
 			pipelineIR,
@@ -1009,19 +1063,19 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
             4,    // configured batch size
-            1000  // chunking trigger factor (default)
+            1000  // growth threshold factor (default)
 		).buildExecution(true).compute(inputBatch, false, false);  // orderedExecution = true
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(8)); // 4 * 2 = 8 events
 
-		assertEquals("A batch should not be chunked when chunkingTriggerFactor is 1000 (default) and batch size increase does not exceed the trigger factor - ordered execution", 1, outputSpy.invocationCount.get());
+		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and batch size increase does not exceed the trigger factor - ordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionChunkingTriggerFactorSetWhenBatchExceedsTriggerFactorThenItsChunked() throws Exception {
-        // When batch size increases beyond chunkingTriggerFactor, batches should be chunked (ordered execution)
+    public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchExceedsTriggerFactorThenItsChunked() throws Exception {
+        // When batch size increases beyond growthThresholdFactor, batches should be chunked (ordered execution)
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1057,7 +1111,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		);
 
         // 3 input events -> 9 output events (3 original + 3 clones + 3 clones)
-        // configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // configuredBatchSize = 4, growthThresholdFactor = 2
         // 9 / 3 = 3 > 2, so chunking should occur
         new CompiledPipeline(
 			pipelineIR,
@@ -1065,7 +1119,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 			null,
 			new CompiledPipeline.NoopEvaluationListener(),
             4, // configured batch size
-            2  // chunking trigger factor
+            2  // growth threshold factor
 		).buildExecution(true).compute(inputBatch, false, false);  // orderedExecution = true
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
@@ -1077,8 +1131,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionChunkingTriggerFactorSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
-        // Test that empty batches work correctly with chunkingTriggerFactor set (ordered execution)
+    public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
+        // Test that empty batches work correctly with growthThresholdFactor set (ordered execution)
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1094,14 +1148,14 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             () -> outputSpy
         );
 
-        // Empty input batch, configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // Empty input batch, configuredBatchSize = 2, growthThresholdFactor = 2
         int outputCount = new CompiledPipeline(
             pipelineIR,
             pluginFactory,
             null,
             new CompiledPipeline.NoopEvaluationListener(),
-            4,  // configured batch size
-            2   // chunking trigger factor
+            2,  // configured batch size
+            2   // growth threshold factor
         ).buildExecution(true).compute(emptyBatch, false, false);  // orderedExecution = true
 
         MatcherAssert.assertThat(outputCount, CoreMatchers.is(0)); // empty input produces 0 output
@@ -1109,13 +1163,67 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(0));
 
         // 0 events, no chunking should occur
-        assertEquals("Empty batch should not be chunked - ordered execution", 0, outputSpy.invocationCount.get());
+        assertEquals("Empty batch should not be chunked - ordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionChunkingTriggerFactorSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
-        // Test that a single event works correctly with chunkingTriggerFactor set (ordered execution)
+    public void givenOrderedExecutionEmptyInputBatchWithFilterThatAddsEventsThenItsNotChunked() throws Exception {
+        // Test that empty input batch with a filter that adds events doesn't chunk (ordered execution)
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+
+        OutputSpy outputSpy = new OutputSpy();
+
+        // Filter that adds 5 new events regardless of input
+        IRubyObject addingFilter = RubyUtil.RUBY.evalScriptlet(
+            String.join(
+                "\n",
+                "output = Object.new",
+                "output.define_singleton_method(:multi_filter) do |batch|",
+                "  result = batch.to_a",
+                "  5.times { |i| result << LogStash::Event.new({'message' => \"added_event_#{i}\"}) }",
+                "  result",
+                "end",
+                "output"
+            )
+        );
+
+        final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+            () -> null,
+            () -> addingFilter,
+            () -> outputSpy
+        );
+
+        // Empty input batch, filter adds 5 events
+        // configuredBatchSize = 2, growthThresholdFactor = 2
+        // Since input is 0, ratio is undefined - should not chunk (output sent in single batch)
+        int outputCount = new CompiledPipeline(
+            pipelineIR,
+            pluginFactory,
+            null,
+            new CompiledPipeline.NoopEvaluationListener(),
+            2,  // configured batch size
+            2   // growth threshold factor
+        ).buildExecution(true).compute(emptyBatch, false, false);  // orderedExecution = true
+
+        MatcherAssert.assertThat(outputCount, CoreMatchers.is(5)); // filter added 5 events
+
+        final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+        MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(5));
+
+        // When input batch is empty but filter adds events, should not chunk (ratio undefined)
+        assertEquals("Empty input batch with filter-added events should not be chunked - ordered execution", 1, outputSpy.invocationCount.get());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
+        // Test that a single event works correctly with growthThresholdFactor set (ordered execution)
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1134,7 +1242,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             () -> outputSpy
         );
 
-        // 1 input event, configuredBatchSize = 4, chunkingTriggerFactor = 2
+        // 1 input event, configuredBatchSize = 4, growthThresholdFactor = 2
         // 1 / 4 = 0.25 <= 2, so no chunking should occur
         new CompiledPipeline(
             pipelineIR,
@@ -1142,7 +1250,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             null,
             new CompiledPipeline.NoopEvaluationListener(),
             4,  // configured batch size
-            2   // chunking trigger factor
+            2   // growth threshold factor
         ).buildExecution(true).compute(inputBatch, false, false);  // orderedExecution = true
 
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
