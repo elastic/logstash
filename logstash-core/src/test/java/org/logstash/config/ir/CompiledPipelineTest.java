@@ -801,22 +801,22 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
             )
         );
 
-		final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
-			() -> null,
-			() -> cloneFilter,
-			() -> outputSpy
-		);
+        final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+            () -> null,
+            () -> cloneFilter,
+            () -> outputSpy
+        );
 
         // 4 input events -> 10 output events (4 original + 4 clones + 2 extra)
         // configuredBatchSize = 4, growthThresholdFactor = 1000 (default)
         // 10 / 4 = 2.5 <= 1000, so NO chunking should occur
 		new CompiledPipeline(
-			pipelineIR,
-			pluginFactory,
-			null,
-			new CompiledPipeline.NoopEvaluationListener(),
+            pipelineIR,
+            pluginFactory,
+            null,
+            new CompiledPipeline.NoopEvaluationListener(),
             4,    // configured batch size
-            1000  // growth threshold factor (default)
+            1000  // output chunking growth threshold factor (default)
 		).buildExecution().compute(inputBatch, false, false);
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
