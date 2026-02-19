@@ -761,7 +761,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         @Override
         public void accept(Collection<JrubyEventExtLibrary.RubyEvent> events) {
             invocationCount.incrementAndGet();
-                events.forEach(
+            events.forEach(
                 event -> EVENT_SINKS.get(runId).add(event)
             );
         }
