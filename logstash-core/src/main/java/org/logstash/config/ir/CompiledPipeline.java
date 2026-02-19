@@ -116,7 +116,7 @@ public final class CompiledPipeline {
      * Maximum number of events sent together as a chunk to the outputs after being filtered.
      * If > 0, batches will be split during processing into chunks to ensure no single chunk exceeds this size.
      */
-    private final int growthThresholdFactor;
+    private final int outputChunkingGrowthThresholdFactor;
 
     public static final class NoopEvaluationListener implements AbstractPipelineExt.ConditionalEvaluationListener {
 
@@ -148,13 +148,13 @@ public final class CompiledPipeline {
             final SecretStore secretStore,
             final AbstractPipelineExt.ConditionalEvaluationListener conditionalErrListener,
             final int configuredBatchSize,
-            final int growthThresholdFactor)
+            final int outputChunkingGrowthThresholdFactor)
     {
         this.pipelineIR = pipelineIR;
         this.pluginFactory = pluginFactory;
         this.conditionalErrListener = conditionalErrListener;
         this.configuredBatchSize = configuredBatchSize;
-        this.growthThresholdFactor = growthThresholdFactor;
+        this.outputChunkingGrowthThresholdFactor = outputChunkingGrowthThresholdFactor;
         try (ConfigVariableExpander cve = new ConfigVariableExpander(
                 secretStore,
                 EnvironmentVariableProvider.defaultProvider())) {
@@ -182,8 +182,8 @@ public final class CompiledPipeline {
         return configuredBatchSize;
     }
 
-    public int getgrowthThresholdFactor() {
-        return growthThresholdFactor;
+    public int getOutputChunkingGrowthThresholdFactor() {
+        return outputChunkingGrowthThresholdFactor;
     }
 
     /**
@@ -356,7 +356,7 @@ public final class CompiledPipeline {
 
         // When the input batch is empty or the growth threshold factor is not exceeded,
         // no chunking needed, pass the original batch directly
-        if (batchInputSize == 0 || (double) totalSize / batchInputSize <= growthThresholdFactor) {
+        if (batchInputSize == 0 || (double) totalSize / batchInputSize <= outputChunkingGrowthThresholdFactor) {
             consumer.accept(filteredBatch, true);
             return totalSize;
         }

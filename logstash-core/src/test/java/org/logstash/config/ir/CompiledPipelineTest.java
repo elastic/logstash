@@ -881,7 +881,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10)); // 4 * 2 + 2 = 10 events
 
         // 10 events / 4 per chunk = 3 chunks (ceil(10/4) = 3)
-		assertEquals("When batch size increase exceeds the trigger factor, batch should be chunked - unordered execution", 3, outputSpy.invocationCount.get());
+		assertEquals("When batch size increase exceeds the growth threshold factor, batch should be chunked - unordered execution", 3, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -1069,7 +1069,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(8)); // 4 * 2 = 8 events
 
-		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and batch size increase does not exceed the trigger factor - ordered execution", 1, outputSpy.invocationCount.get());
+		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and batch size increase does not exceed the growth threshold factor - ordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -1126,7 +1126,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(9)); // 4 * 3 = 12 events
 
         // 9 events / 4 per chunk = 3 chunks (ceil(9/4) = 3)
-		assertEquals("When batch size increase exceeds the trigger factor, batch should be chunked - ordered execution", 3, outputSpy.invocationCount.get());
+		assertEquals("When batch size increase exceeds the growth threshold factor, batch should be chunked - ordered execution", 3, outputSpy.invocationCount.get());
     }
 
     @Test

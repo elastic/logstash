@@ -1741,7 +1741,7 @@ describe LogStash::JavaPipeline do
     end
   end
 
-  describe "output chunking trigger factor" do
+  describe "output chunking growth threshold factor" do
     let(:config) { "input { dummyinput {} } output { dummyoutput {} }" }
 
     before :each do
@@ -1754,7 +1754,7 @@ describe LogStash::JavaPipeline do
 
       it "defaults to 1000" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(1000)
+        expect(pipeline.lir_execution.getOutputChunkingGrowthThresholdFactor).to eq(1000)
         pipeline.close
       end
     end
@@ -1765,7 +1765,7 @@ describe LogStash::JavaPipeline do
 
       it "uses the configured value" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getChunkingTriggerFactor).to eq(output_chunking_growth_threshold_factor)
+        expect(pipeline.lir_execution.getOutputChunkingGrowthThresholdFactor).to eq(output_chunking_growth_threshold_factor)
         pipeline.close
       end
     end
