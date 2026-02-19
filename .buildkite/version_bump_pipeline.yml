@@ -1,11 +1,11 @@
 notify:
   - slack:
       channels:
-        - "#test-channel-for-plugin"
+        - "#logstash-build"
     if: (build.branch == 'main' || build.branch =~ /^[0-9]+\.[0-9x]+\$/) && (build.state == 'passed' || build.state == 'failed')
   - slack:
       channels:
-        - "#test-channel-for-plugin"
+        - "#logstash-build"
       message: |
         🚦 Pipeline waiting for approval 🚦
         Repo: `${REPO}`
