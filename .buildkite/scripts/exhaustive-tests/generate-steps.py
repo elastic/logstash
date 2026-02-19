@@ -198,7 +198,7 @@ def arm64_crossbuild_steps() -> list[typing.Any]:
         "agents": gcp_agent("ubuntu-2204", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
         "command": LiteralScalarString("""#!/usr/bin/env bash
 set -eo pipefail
-.buildkite/scripts/exhaustive-tests/build-on-x86.sh
+.buildkite/scripts/exhaustive-tests/build-arm64-on-x86.sh
 """),
         "artifact_paths": ["build/*.deb", "build/*.rpm"],
         "retry": {"automatic": [{"limit": 3}]},
