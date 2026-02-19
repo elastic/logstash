@@ -90,7 +90,7 @@ Logstash has the following flags. You can use the `--help` flag to display this 
 :   When creating pipeline batches, how long to wait while polling for the next event. This option defines how long in milliseconds to wait while polling for the next event before dispatching an undersized batch to filters and outputs. The default is 50ms.
 
 **`--pipeline.batch.output_chunking.growth_threshold_factor FACTOR`**
-:   When the output batch size divided by the input batch size exceeds this factor, the output batch is chunked into smaller batches for processing. This helps manage memory when filters significantly expand the number of events. The default value is 1000 (effectively no chunking for most use cases).
+:   Controls how a batch is sent to outputs. If a batch increases in size after being passed through filters by a factor exceeding this growth threshold factor, the batch is split into chunks of the configured batch size and sent to the outputs. This helps manage memory when filters significantly increase the number of events. The default value is 1000 (effectively no chunking for most use cases).
 
 **`--pipeline.ecs_compatibility MODE`**
 :   Sets the process default value for  ECS compatibility mode. Can be an ECS version like `v1` or `v8`, or `disabled`. The default is `v8`. Pipelines defined before Logstash 8 operated without ECS in mind. To ensure a migrated pipeline continues to operate as it did in older releases of Logstash, opt-OUT of ECS for the individual pipeline by setting `pipeline.ecs_compatibility: disabled` in its `pipelines.yml` definition. Using the command-line flag will set the default for *all* pipelines, including new ones. See [ECS compatibility](/reference/ecs-ls.md#ecs-compatibility) for more info.

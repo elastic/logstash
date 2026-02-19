@@ -286,7 +286,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
-        "pipeline.batch.output_chunking_growth_threshold_factor" => batch_output_chunking_growth_threshold_factor,
+        "pipeline.batch.output_chunking.growth_threshold_factor" => batch_output_chunking_growth_threshold_factor,
         "pipeline.max_inflight" => max_inflight,
         "batch_metric_sampling" => batch_metric_sampling,
         "pipeline.sources" => pipeline_source_details)
