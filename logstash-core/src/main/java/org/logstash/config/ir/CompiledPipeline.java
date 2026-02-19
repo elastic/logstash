@@ -389,15 +389,15 @@ public final class CompiledPipeline {
         @SuppressWarnings({"unchecked"})
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
             final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-            final RubyArray<RubyEvent> filterBatch = RubyUtil.RUBY.newArray(1);
+            final RubyArray<RubyEvent> filteredBatch = RubyUtil.RUBY.newArray(1);
             final List<RubyEvent> result = new ArrayList<>();
 
             // send batch one-by-one as single-element batches down the filters
             if (!batch.isEmpty()) {
                 for (final RubyEvent e : batch) {
-                    filterBatch.set(0, e);
+                    filteredBatch.set(0, e);
                     result.clear();
-                    result.addAll(compiledFilters.compute(filterBatch, flush, shutdown));
+                    result.addAll(compiledFilters.compute(filteredBatch, flush, shutdown));
                     copyNonCancelledEvents(result, outputBatch);
                     compiledFilters.clear();
                 }

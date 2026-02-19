@@ -222,7 +222,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
             throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
-        final int batchChunkingFactor = getBatchChunkingFactor(context);
+        final int outputChunkingGrowthThresholdFactor = getOutputChunkingGrowthThresholdFactor(context);
         final int batchSize = getBatchSize(context);
         lirExecution = new CompiledPipeline(
                 lir,
@@ -239,7 +239,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
                 getSecretStore(context),
                 new LogErrorEvaluationListener(),
                 batchSize,
-                batchChunkingFactor
+                outputChunkingGrowthThresholdFactor
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -253,13 +253,13 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return this;
     }
 
-    private int getBatchChunkingFactor(final ThreadContext context) {
+    private int getOutputChunkingGrowthThresholdFactor(final ThreadContext context) {
         IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_OUTPUT_CHUNKING_GROWTH_THRESHOLD_FACTOR);
         if (setting.isNil()) {
-            return 1000; // default chunking factor
+            return 1000; // default growth threshold factor if not set
         }
         int value = setting.convertToInteger().getIntValue();
-        return value <= 0 ? 1000 : value;
+        return value <= 0 ? 1000 : value; // default growth threshold factor if invalid value
     }
 
     private int getBatchSize(final ThreadContext context) {

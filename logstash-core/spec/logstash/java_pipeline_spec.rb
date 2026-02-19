@@ -1760,12 +1760,12 @@ describe LogStash::JavaPipeline do
     end
 
     context "when pipeline.batch.output_chunking.growth_threshold_factor is explicitly set" do
-      let(:output_chunking_growth_threshold_factor) { 50 }
-      let(:pipeline_settings) { super().merge({ "pipeline.batch.output_chunking.growth_threshold_factor" => output_chunking_growth_threshold_factor }) }
+      let(:batch_output_chunking_growth_threshold_factor) { 50 }
+      let(:pipeline_settings) { super().merge({ "pipeline.batch.output_chunking.growth_threshold_factor" => batch_output_chunking_growth_threshold_factor }) }
 
       it "uses the configured value" do
         pipeline = mock_java_pipeline_from_string(config, pipeline_settings_obj)
-        expect(pipeline.lir_execution.getOutputChunkingGrowthThresholdFactor).to eq(output_chunking_growth_threshold_factor)
+        expect(pipeline.lir_execution.getOutputChunkingGrowthThresholdFactor).to eq(batch_output_chunking_growth_threshold_factor)
         pipeline.close
       end
     end
