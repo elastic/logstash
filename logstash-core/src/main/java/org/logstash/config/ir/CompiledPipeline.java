@@ -113,8 +113,8 @@ public final class CompiledPipeline {
     private final int configuredBatchSize;
 
     /**
-     * Maximum number of events sent together as a chunk to the outputs after being filtered.
-     * If > 0, batches will be split during processing into chunks to ensure no single chunk exceeds this size.
+     * After passing the batch through the filters, if it has increased in size by a factor exceeding this value,
+     * the batch is split into chunks of configured batch size and sent to the outputs.
      */
     private final int outputChunkingGrowthThresholdFactor;
 
