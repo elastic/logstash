@@ -1123,7 +1123,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		).buildExecution(true).compute(inputBatch, false, false);  // orderedExecution = true
 
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
-		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(9)); // 4 * 3 = 12 events
+		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(9)); // 3 * 3 = 9 events
 
         // 9 events / 4 per chunk = 3 chunks (ceil(9/4) = 3)
 		assertEquals("When batch size increase exceeds the growth threshold factor, batch should be chunked - ordered execution", 3, outputSpy.invocationCount.get());
