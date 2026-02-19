@@ -33,7 +33,7 @@ shared_examples_for 'it applies settings correctly' do |flavor|
     end
   end
 
-  context 'when setting pipeline batch output grwoth threshold factor' do
+  context 'when setting pipeline batch output growth threshold factor' do
     let(:options) { { 'ENV' => ['pipeline.batch.output_chunking.growth_threshold_factor=5'] } }
 
     it "should correctly set the batch output chunking growth threshold factor" do
