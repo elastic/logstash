@@ -34,7 +34,7 @@ steps:
     key: fetch-dra-artifacts
     depends_on: block-get-dra-artifacts
     agents:
-      image: docker.elastic.co/release-eng/ubuntu-build-essential-release-eng:latest
+      image: docker.elastic.co/release-eng/wolfi-build-essential-release-eng:latest
       cpu: 2
       memory: 4G
       ephemeralStorage: 10G
