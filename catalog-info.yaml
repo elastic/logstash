@@ -889,3 +889,50 @@ spec:
           branch: main
           cronline: 30 20 * * *
           message: Daily trigger of Health Report Tests Pipeline
+
+# ***********************************
+# SECTION START: DRA Version Bump 
+# ***********************************
+---
+# yaml-language-server: $schema=https://gist.githubusercontent.com/elasticmachine/988b80dae436cafea07d9a4a460a011d/raw/rre.schema.json
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-version-bump
+  description: 'Logstash Version Bump pipeline'
+  links:
+    - title: 'Logstash Version Bump pipeline'
+      url: https://buildkite.com/elastic/logstash-version-bump
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: platform-ingest
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-version-bump
+      description: 'Logstash Version Bump pipeline'
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/version_bump_pipeline.yml"
+      provider_settings:
+        build_branches: false
+        build_pull_requests: false
+        trigger_mode: none
+      cancel_intermediate_builds: true
+      skip_intermediate_builds: true
+      teams:
+        ingest-fp:
+          access_level: MANAGE_BUILD_AND_READ
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        release-eng:
+          access_level: BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+# *******************************
+# SECTION END: DRA Version Bump 
+# *******************************
