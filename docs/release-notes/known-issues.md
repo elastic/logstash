@@ -17,7 +17,7 @@ Applies to: {{ls}} 9.3.0
 ::::{dropdown} Details
 
 All {{ls}} 9.3.0 artifacts were bundled with Linux x86_64 JDK due to a bug in artifact generation.
-Starting {{ls}} on Windows or aarch64 Linux/MacOS with 9.3.0 artifacts will result in an fatal error as the bundled JDK will not execute on those platforms.
+Starting {{ls}} on Windows or aarch64 Linux/MacOS with 9.3.0 artifacts results in an fatal error as the bundled JDK is not compatible with those platforms.
 
 This issue affects:
 * logstash-9.3.0-linux-aarch64.tar.gz
