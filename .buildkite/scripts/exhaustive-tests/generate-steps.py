@@ -247,6 +247,39 @@ source .buildkite/scripts/common/vm-agent.sh
     }
     return step
 
+def artifact_acceptance_poc_steps() -> list[typing.Any]:
+    steps = []
+
+    steps.append({
+        "label": "POC: 9.4.0-SNAPSHOT / arm64 / deb",
+        "key": "poc-snapshot-arm64-deb",
+        "agents": aws_agent("ubuntu-2204-aarch64", instance_type="m6g.4xlarge", image_prefix="platform-ingest-logstash"),
+        "env": {
+            "LS_VERSION": "9.4.0-SNAPSHOT",
+            "ARTIFACT_TYPE": "snapshot",
+            "PKG_TYPE": "deb",
+            "ARCH": "arm64",
+        },
+        "command": ".buildkite/scripts/exhaustive-tests/run-acceptance-from-artifact.sh",
+        "retry": {"automatic": [{"limit": 3}]},
+    })
+
+    steps.append({
+        "label": "POC: 9.3.0 / arm64 / rpm",
+        "key": "poc-release-arm64-rpm",
+        "agents": aws_agent("almalinux-8-aarch64", instance_type="m6g.4xlarge", image_prefix="platform-ingest-logstash"),
+        "env": {
+            "LS_VERSION": "9.3.0",
+            "ARTIFACT_TYPE": "release",
+            "PKG_TYPE": "rpm",
+            "ARCH": "arm64",
+        },
+        "command": ".buildkite/scripts/exhaustive-tests/run-acceptance-from-artifact.sh",
+        "retry": {"automatic": [{"limit": 3}]},
+    })
+
+    return steps
+
 if __name__ == "__main__":
     LINUX_OS_ENV_VAR_OVERRIDE = os.getenv("LINUX_OS")
     WINDOWS_OS_ENV_VAR_OVERRIDE = os.getenv("WINDOWS_OS")
@@ -300,6 +333,12 @@ if __name__ == "__main__":
         "group": "ARM64 Cross-build Tests",
         "key": "arm64-crossbuild",
         "steps": arm64_crossbuild_steps(),
+    })
+
+    structure["steps"].append({
+        "group": "POC: Artifact Acceptance Tests",
+        "key": "poc-artifact-acceptance",
+        "steps": artifact_acceptance_poc_steps(),
     })
 
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')
