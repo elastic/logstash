@@ -35,6 +35,13 @@
 #   # before dispatching an undersized batch to filters+outputs
 #   pipeline.batch.delay: 50
 #
+#   # Controls how a batch is sent to outputs. If a batch increases in size after being passed
+#   # through filters by a factor exceeding this growth threshold factor, the batch is split into
+#   # chunks of the configured batch size and sent to the outputs. This helps manage memory use when
+#   # filters significantly increase the number of events.
+#   # Default is 1000 (effectively disabled). Set to a lower value to enable chunking.
+#   pipeline.batch.output_chunking.growth_threshold_factor: 1000
+#
 #   Set the pipeline event ordering. Options are "auto" (the default), "true" # #   or "false".
 #   "auto" automatically enables ordering if the 'pipeline.workers' setting
 #   is also set to '1', and disables otherwise.

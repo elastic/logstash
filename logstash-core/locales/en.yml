@@ -251,6 +251,12 @@ en:
         pipeline-batch-delay: |+
           When creating pipeline batches, how long to wait while polling
           for the next event.
+        pipeline-batch-output-chunking-growth-threshold-factor: |+
+          Controls how a batch is sent to outputs. If a batch increases in size after being passed
+          through filters by a factor exceeding this growth threshold factor, the batch is split into
+          chunks of the configured batch size and sent to the outputs. This helps manage memory use when
+          filters significantly increase the number of events.
+          Default is 1000 (effectively disabled). Set to a lower value to enable chunking.
         path_settings: |+
           Directory containing logstash.yml file. This can also be
           set through the LS_SETTINGS_DIR environment variable.

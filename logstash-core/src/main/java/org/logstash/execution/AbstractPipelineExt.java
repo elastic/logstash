@@ -222,6 +222,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     public AbstractPipelineExt initialize(final ThreadContext context, final IRubyObject[] args)
             throws IncompleteSourceWithMetadataException, NoSuchAlgorithmException {
         initialize(context, args[0], args[1], args[2]);
+        final int outputChunkingGrowthThresholdFactor = getOutputChunkingGrowthThresholdFactor(context);
+        final int batchSize = getBatchSize(context);
         lirExecution = new CompiledPipeline(
                 lir,
                 new PluginFactoryExt(context.runtime, RubyUtil.PLUGIN_FACTORY_CLASS).init(
@@ -235,7 +237,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
                         RubyUtil.FILTER_DELEGATOR_CLASS
                 ),
                 getSecretStore(context),
-                new LogErrorEvaluationListener()
+                new LogErrorEvaluationListener(),
+                batchSize,
+                outputChunkingGrowthThresholdFactor
         );
         inputs = RubyArray.newArray(context.runtime, lirExecution.inputs());
         filters = RubyArray.newArray(context.runtime, lirExecution.filters());
@@ -247,6 +251,24 @@ public class AbstractPipelineExt extends RubyBasicObject {
             );
         }
         return this;
+    }
+
+    private int getOutputChunkingGrowthThresholdFactor(final ThreadContext context) {
+        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_OUTPUT_CHUNKING_GROWTH_THRESHOLD_FACTOR);
+        if (setting.isNil()) {
+            return 1000; // default growth threshold factor if not set
+        }
+        int value = setting.convertToInteger().getIntValue();
+        return value <= 0 ? 1000 : value; // default growth threshold factor if invalid value
+    }
+
+    private int getBatchSize(final ThreadContext context) {
+        IRubyObject setting = getSetting(context, SettingKeyDefinitions.PIPELINE_BATCH_SIZE);
+        if (setting.isNil()) {
+            return 125; // default batch size
+        }
+        int value = setting.convertToInteger().getIntValue();
+        return value <= 0 ? 125 : value;
     }
 
     @JRubyMethod

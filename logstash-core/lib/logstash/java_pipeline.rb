@@ -267,6 +267,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       @preserve_event_order = preserve_event_order?(pipeline_workers)
       batch_size = settings.get("pipeline.batch.size")
       batch_delay = settings.get("pipeline.batch.delay")
+      batch_output_chunking_growth_threshold_factor = settings.get("pipeline.batch.output_chunking.growth_threshold_factor")
       batch_metric_sampling = settings.get("pipeline.batch.metrics.sampling_mode")
 
       max_inflight = batch_size * pipeline_workers
@@ -285,6 +286,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.workers" => pipeline_workers,
         "pipeline.batch.size" => batch_size,
         "pipeline.batch.delay" => batch_delay,
+        "pipeline.batch.output_chunking.growth_threshold_factor" => batch_output_chunking_growth_threshold_factor,
         "pipeline.max_inflight" => max_inflight,
         "batch_metric_sampling" => batch_metric_sampling,
         "pipeline.sources" => pipeline_source_details)
