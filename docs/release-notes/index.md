@@ -25,149 +25,81 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.3.1-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.3.1
+### Fixes [logstash-9.3.1-fixes]
 
-=== Logstash Commits between 9.3 and 9.3.0
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.0..9.3"
-
-75f5ddd69 - (HEAD -> 9.3, origin/9.3) Test rpm and deb packages on aarch64 in exhaustive test pipeline (#18780) (#18795) (14 hours ago) <mergify[bot]>
-96486d97b - Doc: Update svrless docs to use endpoint url (#18773) (#18792) (15 hours ago) <mergify[bot]>
-c2fc2fc39 - Update patch plugin versions in gemfile lock (#18777) (2 days ago) <github-actions[bot]>
-a6c72c15e - Avoid duplicate steps in snyk artifact scanning (#18768) (#18776) (3 days ago) <mergify[bot]>
-2ac816929 - [CI] Sync acceptance test OS matrix with JDK matrix pipeline (#18739) (#18744) (2 weeks ago) <mergify[bot]>
-dba7890b2 - Respect ARCH env var when downloading JDK via gradle (#18733) (#18750) (2 weeks ago) <mergify[bot]>
-708ab1e6d - Add known issues running 9.2.5 on aarch64 architectures (#18731) (#18735) (2 weeks ago) <Rob Bavey>
-56ce4f9f7 - [9.3] (backport #18678) Release notes for 9.2.5 (#18719) (2 weeks ago) <mergify[bot]>
-0de54db9d - Add known issues about aarch64 to release notes (#18730) (2 weeks ago) <Rob Bavey>
-4cb510990 - Clarify input param to bump LS version GHA (#18715) (#18727) (2 weeks ago) <mergify[bot]>
-1b736db2b - [DOCS] Update API docs branch detail (#18710) (2 weeks ago) <Lisa Cawley>
-5702bd040 - Add Debian 13 to linux matrix (#18698) (#18718) (2 weeks ago) <mergify[bot]>
-c468fe751 - [9.3] (backport #18557) Add Snyk scanning for Logstash release artifacts (#18689) (2 weeks ago) <mergify[bot]>
-1fad026a2 - Change the default logger level for licensereader (#18644) (#18654) (2 weeks ago) <mergify[bot]>
-c3c38ac64 - Bump logstash version 9.3.1 (#18524) (2 weeks ago) <github-actions[bot]>
-c9131eebf - 9.3.0 release notes copied from #18581 (#18703) (3 weeks ago) <Mashhur>
-18d0e2dc7 - Fix obserbabilitySRE DRA jobs after docker update on runners (#18699) (#18702) (3 weeks ago) <mergify[bot]>
-a9f841df0 - Ensure jruby managed with gradle bootstrap is used everywher in CI (#18676) (#18686) (3 weeks ago) <mergify[bot]>
-daea190f2 - Fix smart exhaustive test pipeline (#18661) (#18683) (3 weeks ago) <mergify[bot]>
-1e3831e8f - Bump requests in /.buildkite/scripts/health-report-tests (#17702) (#18674) (3 weeks ago) <mergify[bot]>
-c17b0ab81 - Only raise PR to bump java version when all artifacts are ready (#18668) (#18671) (3 weeks ago) <mergify[bot]>
-b592905eb - Dont persist bundler config state across ci tasks (#18655) (#18658) (4 weeks ago) <mergify[bot]>
-d84e13377 - [9.3] (backport #18615) Consistent bundled jruby across all CI tasks (#18642) (4 weeks ago) <mergify[bot]>
-0fb187ea5 - Use gradle and bundled jruby for acceptance tests orchestration (#18536) (#18634) (4 weeks ago) <mergify[bot]>
-d7438aabe - test artifact upgrade from 8.19 instead of 7.17 (#18635) (#18637) (4 weeks ago) <mergify[bot]>
-229179200 - Fix ironbank container build (#18625) (#18629) (4 weeks ago) <mergify[bot]>
-1004ec721 - Add Ironbank acceptance tests to CI (#18585) (#18623) (4 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.0..9.3 *.release"
-Changed plugin versions:
-logstash-codec-collectd: 3.1.0 -> 3.1.1
-logstash-codec-netflow: 4.3.3 -> 4.3.4
-logstash-filter-date: 3.1.15 -> 3.1.16
-logstash-filter-dissect: 1.2.5 -> 1.2.6
-logstash-filter-geoip: 7.3.2 -> 7.3.4
-logstash-filter-grok: 4.4.3 -> 4.4.4
-logstash-input-beats: 7.0.5 -> 7.0.7
-logstash-input-dead_letter_queue: 2.0.1 -> 2.0.2
-logstash-input-file: 4.4.6 -> 4.4.7
-logstash-input-http: 4.1.4 -> 4.1.6
-logstash-input-tcp: 7.0.4 -> 7.0.6
-logstash-input-unix: 3.1.2 -> 3.1.3
-logstash-integration-jdbc: 5.6.1 -> 5.6.3
-logstash-integration-kafka: 11.8.2 -> 11.8.3
-logstash-integration-snmp: 4.2.1 -> 4.2.2
-logstash-output-elasticsearch: 12.1.1 -> 12.1.2
-logstash-output-nagios: 3.0.6 -> 3.0.7
-logstash-output-webhdfs: 3.1.0 -> 3.1.1
----------- GENERATED CONTENT ENDS HERE ------------
+* Fixed the issue where Logstash packages on `aarch64` architectures were bundled with the wrong JDK architecture.[#18750](https://github.com/elastic/logstash/pull/18750)
 
 ### Plugins [logstash-plugin-9.3.1-changes]
 
 **Collectd Codec - 3.1.1**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#36](https://github.com/logstash-plugins/logstash-codec-collectd/pull/36)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#36](https://github.com/logstash-plugins/logstash-codec-collectd/pull/36)
 
 **Netflow Codec - 4.3.4**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#215](https://github.com/logstash-plugins/logstash-codec-netflow/pull/215)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#215](https://github.com/logstash-plugins/logstash-codec-netflow/pull/215)
 
 **Date Filter - 3.1.16**
 
-* Re-packaging the plugin [#163](https://github.com/logstash-plugins/logstash-filter-date/pull/163)
+* Ensure gem artifact ships with all runtime dependencies [#163](https://github.com/logstash-plugins/logstash-filter-date/pull/163)
 
 **Dissect Filter - 1.2.6**
 
-* Re-packaging the plugin [#93](https://github.com/logstash-plugins/logstash-filter-dissect/pull/93)
-* Removed `jar-dependencies` dependency [#91](https://github.com/logstash-plugins/logstash-filter-dissect/pull/91)
-  
+* Ensure gem artifact ships with all runtime dependencies [#93](https://github.com/logstash-plugins/logstash-filter-dissect/pull/93)
+* Removed unused runtime dependency [#91](https://github.com/logstash-plugins/logstash-filter-dissect/pull/91)
 
 **Geoip Filter - 7.3.4**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#239](https://github.com/logstash-plugins/logstash-filter-geoip/pull/239)
-
-* Re-packaging the plugin [#236](https://github.com/logstash-plugins/logstash-filter-geoip/pull/236)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#239](https://github.com/logstash-plugins/logstash-filter-geoip/pull/239)
+* Ensure gem artifact ships with all runtime dependencies [#236](https://github.com/logstash-plugins/logstash-filter-geoip/pull/236)
 
 **Grok Filter - 4.4.4**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#197](https://github.com/logstash-plugins/logstash-filter-grok/pull/197)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#197](https://github.com/logstash-plugins/logstash-filter-grok/pull/197)
 
 **Beats Input - 7.0.7**
 
-* Upgrade netty 4.1.131 [#531](https://github.com/logstash-plugins/logstash-input-beats/pull/531)
-
-* Re-packaging the plugin [#527](https://github.com/logstash-plugins/logstash-input-beats/pull/527)
+* Upgrade Netty version to 4.1.131 [#531](https://github.com/logstash-plugins/logstash-input-beats/pull/531)
+* Ensure gem artifact ships with all runtime dependencies [#527](https://github.com/logstash-plugins/logstash-input-beats/pull/527)
 
 **Dead_letter_queue Input - 2.0.2**
 
-* Re-packaging the plugin [#57](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/57)
+* Ensure gem artifact ships with all runtime dependencies [#57](https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/57)
 
 **File Input - 4.4.7**
 
-* Re-packaging the plugin [#331](https://github.com/logstash-plugins/logstash-input-file/pull/331)
+* Ensure gem artifact ships with all runtime dependencies [#331](https://github.com/logstash-plugins/logstash-input-file/pull/331)
 
 **Http Input - 4.1.6**
 
-* Upgrade netty to 4.1.131 [#207](https://github.com/logstash-plugins/logstash-input-http/pull/207)
-
-* Re-packaging the plugin [#206](https://github.com/logstash-plugins/logstash-input-http/pull/206)
+* Upgrade Netty version to 4.1.131 [#207](https://github.com/logstash-plugins/logstash-input-http/pull/207)
+* Ensure gem artifact ships with all runtime dependencies [#206](https://github.com/logstash-plugins/logstash-input-http/pull/206)
 
 **Tcp Input - 7.0.6**
 
-* Upgrade netty to 4.1.131 [#246](https://github.com/logstash-plugins/logstash-input-tcp/pull/246)
-
-* Re-packaging the plugin [#242](https://github.com/logstash-plugins/logstash-input-tcp/pull/242)
+* Upgrade Netty version to 4.1.131 [#246](https://github.com/logstash-plugins/logstash-input-tcp/pull/246)
+* Ensure gem artifact ships with all runtime dependencies [#242](https://github.com/logstash-plugins/logstash-input-tcp/pull/242)
 
 **Unix Input - 3.1.3**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#31](https://github.com/logstash-plugins/logstash-input-unix/pull/31)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#31](https://github.com/logstash-plugins/logstash-input-unix/pull/31)
 
 **Jdbc Integration - 5.6.3**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#192](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/192)
-
-* Re-packaging the plugin [#190](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/190)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#192](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/192)
+* Ensure gem artifact ships with all runtime dependencies [#190](https://github.com/logstash-plugins/logstash-integration-jdbc/pull/190)
 
 **Kafka Integration - 11.8.3**
 
-* Re-packaging the plugin [#223](https://github.com/logstash-plugins/logstash-integration-kafka/pull/223)
-
-**Snmp Integration - 4.2.2**
-
-* Re-packaging the plugin [#86](https://github.com/logstash-plugins/logstash-integration-snmp/pull/86)
-
-**Elasticsearch Output - 12.1.2**
-
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#1238](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1238)
+* Ensure gem artifact ships with all runtime dependencies [#223](https://github.com/logstash-plugins/logstash-integration-kafka/pull/223)
 
 **Nagios Output - 3.0.7**
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#11](https://github.com/logstash-plugins/logstash-output-nagios/pull/11)
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) [#11](https://github.com/logstash-plugins/logstash-output-nagios/pull/11)
 
 **Webhdfs Output - 3.1.1**
 
-* Re-packaging the plugin [#49](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49)
+* Ensure gem artifact ships with all runtime dependencies [#49](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49)
 
 
 ## 9.3.0 [logstash-9.3.0-release-notes]
