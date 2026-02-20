@@ -25,11 +25,11 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ::::{important}
 
-Do not upgrade to Logstash 9.3.0 if you are running on `aarch64` with the bundled JDK and are not using Docker.
+Do not upgrade to Logstash 9.3.0 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
 For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.3.0).
 
 ::::
-
 
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
@@ -99,11 +99,10 @@ Related:
 
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
-
 ::::{important}
 
-Do not upgrade to Logstash 9.2.5 if you need to run Logstash on `aarch64` architectures using the bundled JDK, and are
-not running on Docker.
+Do not upgrade to Logstash 9.2.5 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
 For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.2.5).
 
 ::::
