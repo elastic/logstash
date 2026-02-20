@@ -29,6 +29,7 @@ spec:
     - resource:logstash-snyk-report
     - resource:logstash-plugins-snyk-report
     - resource:logstash-artifact-snyk-scan
+    - resource:logstash-snapshot-release-acceptance
     - resource:logstash-dra-snapshot-pipeline
     - resource:logstash-dra-staging-pipeline
     - resource:logstash-linux-jdk-matrix-pipeline
@@ -217,6 +218,56 @@ spec:
           branch: main
           cronline: "@daily"
           message: "Run the Logstash Artifacts Snyk report every day."
+
+# ***********************************
+# Declare snapshot/release acceptance test pipeline
+# ***********************************
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: logstash-snapshot-release-acceptance
+  description: 'Acceptance tests for published snapshot and release artifacts'
+spec:
+  type: buildkite-pipeline
+  owner: group:logstash
+  system: platform-ingest
+  implementation:
+    apiVersion: buildkite.elastic.dev/v1
+    kind: Pipeline
+    metadata:
+      name: logstash-snapshot-release-acceptance
+    spec:
+      repository: elastic/logstash
+      pipeline_file: ".buildkite/snapshot_release_acceptance_pipeline.yml"
+      maximum_timeout_in_minutes: 120
+      provider_settings:
+        trigger_mode: none
+      env:
+        ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
+        SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
+        SLACK_NOTIFICATIONS_ON_SUCCESS: 'false'
+        SLACK_NOTIFICATIONS_SKIP_FOR_RETRIES: 'true'
+      teams:
+        logstash:
+          access_level: MANAGE_BUILD_AND_READ
+        ingest-eng-prod:
+          access_level: MANAGE_BUILD_AND_READ
+        everyone:
+          access_level: READ_ONLY
+      schedules:
+        Daily snapshot acceptance tests:
+          branch: main
+          cronline: "@daily"
+          message: "Test published snapshot artifacts"
+          env:
+            ARTIFACT_TYPE: "snapshot"
+        Weekly release acceptance tests:
+          branch: main
+          cronline: "@weekly"
+          message: "Test published release artifacts"
+          env:
+            ARTIFACT_TYPE: "release"
 
 # ***********************************
 # SECTION START: DRA pipelines
