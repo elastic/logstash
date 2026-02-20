@@ -22,25 +22,20 @@ package org.logstash.instrument.metrics;
 import java.time.Duration;
 
 interface FlowMetricRetentionPolicy {
+
     String policyName();
-
-    long resolutionNanos();
-
-    long retentionNanos();
-
-    long forceCompactionNanos();
 
     boolean reportBeforeSatisfied();
 
-    enum BuiltInRetentionPolicy implements FlowMetricRetentionPolicy {
-                              // MAX_RETENTION,  MIN_RESOLUTION
-                CURRENT(Duration.ofSeconds(10), Duration.ofSeconds(1), true),
-          LAST_1_MINUTE(Duration.ofMinutes(1),  Duration.ofSeconds(3)),
-         LAST_5_MINUTES(Duration.ofMinutes(5),  Duration.ofSeconds(15)),
-        LAST_15_MINUTES(Duration.ofMinutes(15), Duration.ofSeconds(30)),
-            LAST_1_HOUR(Duration.ofHours(1),    Duration.ofMinutes(1)),
-          LAST_24_HOURS(Duration.ofHours(24),   Duration.ofMinutes(15)),
-        ;
+    long retentionBarrierNanos(final long referenceNanos);
+
+    long forceCompactionBarrierNanos(final long referenceNanos);
+
+    long commitBarrierNanos(final long referenceNanos);
+
+    long maxAgeBarrierNanos(final long referenceNanos);
+
+    class RollingRetentionPolicy implements FlowMetricRetentionPolicy {
 
         final long resolutionNanos;
         final long retentionNanos;
@@ -51,7 +46,10 @@ interface FlowMetricRetentionPolicy {
 
         final transient String nameLower;
 
-        BuiltInRetentionPolicy(final Duration maximumRetention, final Duration minimumResolution, final boolean reportBeforeSatisfied) {
+        RollingRetentionPolicy(final String name,
+                               final Duration maximumRetention,
+                               final Duration minimumResolution,
+                               final boolean reportBeforeSatisfied) {
             this.retentionNanos = maximumRetention.toNanos();
             this.resolutionNanos = minimumResolution.toNanos();
             this.reportBeforeSatisfied = reportBeforeSatisfied;
@@ -64,11 +62,13 @@ interface FlowMetricRetentionPolicy {
                                                         Math.multiplyExact(resolutionNanos, 8));
             this.forceCompactionNanos = Math.addExact(retentionNanos, forceCompactionMargin);
 
-            this.nameLower = name().toLowerCase();
+            this.nameLower = name.toLowerCase();
         }
 
-        BuiltInRetentionPolicy(final Duration maximumRetention, final Duration minimumResolution) {
-            this(maximumRetention, minimumResolution, false);
+        RollingRetentionPolicy(final String name,
+                               final Duration maximumRetention,
+                               final Duration minimumResolution) {
+            this(name, maximumRetention, minimumResolution, false);
         }
 
         @Override
@@ -77,18 +77,24 @@ interface FlowMetricRetentionPolicy {
         }
 
         @Override
-        public long resolutionNanos() {
-            return this.resolutionNanos;
+        public long retentionBarrierNanos(final long referenceNanos) {
+            return Math.subtractExact(referenceNanos, retentionNanos);
         }
 
         @Override
-        public long retentionNanos() {
-            return this.retentionNanos;
+        public long forceCompactionBarrierNanos(final long referenceNanos) {
+            return Math.subtractExact(referenceNanos, forceCompactionNanos);
         }
 
         @Override
-        public long forceCompactionNanos() {
-            return this.forceCompactionNanos;
+        public long commitBarrierNanos(final long referenceNanos) {
+            return Math.subtractExact(referenceNanos, resolutionNanos);
+        }
+
+        @Override
+        public long maxAgeBarrierNanos(final long referenceNanos) {
+            final long maxAge = Math.addExact(retentionNanos, resolutionNanos);
+            return Math.subtractExact(referenceNanos, maxAge);
         }
 
         @Override

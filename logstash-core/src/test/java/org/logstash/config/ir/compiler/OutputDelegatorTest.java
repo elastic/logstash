@@ -20,7 +20,6 @@
 
 package org.logstash.config.ir.compiler;
 
-import javax.annotation.concurrent.NotThreadSafe;
 import org.assertj.core.data.Percentage;
 import org.jruby.RubyArray;
 import org.jruby.RubyClass;
@@ -41,7 +40,6 @@ import static org.logstash.RubyUtil.RUBY_OUTPUT_DELEGATOR_CLASS;
 import static org.logstash.instrument.metrics.MetricKeys.EVENTS_KEY;
 
 @SuppressWarnings("rawtypes")
-@NotThreadSafe
 public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
     private RubyHash pluginArgs;

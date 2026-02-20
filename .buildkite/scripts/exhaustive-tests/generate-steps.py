@@ -10,7 +10,16 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 VM_IMAGES_FILE = ".buildkite/scripts/common/vm-images.json"
 VM_IMAGE_PREFIX = "platform-ingest-logstash-multi-jdk-"
 
-ACCEPTANCE_LINUX_OSES = ["ubuntu-2404", "ubuntu-2204", "ubuntu-2004", "debian-11", "debian-12", "debian-13", "rhel-8", "oraclelinux-7", "rocky-linux-8", "opensuse-leap-15", "amazonlinux-2023"]
+ACCEPTANCE_LINUX_OSES = [
+    "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
+    "debian-11", "debian-12", "debian-13",
+    "rhel-8", "rhel-9",
+    "oraclelinux-7", "oraclelinux-8",
+    "rocky-linux-8", "rocky-linux-9",
+    "almalinux-8", "almalinux-9",
+    "opensuse-leap-15",
+    "amazonlinux-2023",
+]
 
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -179,6 +188,45 @@ ci/docker_acceptance_tests.sh {flavor}"""),
 
     return steps
 
+def arm64_crossbuild_steps() -> list[typing.Any]:
+    """Generate steps to build ARM64 artifacts on x86_64 and test on ARM64 machines."""
+    steps = []
+
+    build_step = {
+        "label": "Build ARM64 packages on x86_64 (mimics DRA)",
+        "key": "build-arm64-packages-on-x86",
+        "agents": gcp_agent("ubuntu-2204", instance_type="n2-standard-16", image_prefix="family/platform-ingest-logstash"),
+        "command": LiteralScalarString("""#!/usr/bin/env bash
+set -eo pipefail
+.buildkite/scripts/exhaustive-tests/build-arm64-on-x86.sh
+"""),
+        "artifact_paths": ["build/*.deb", "build/*.rpm"],
+        "retry": {"automatic": [{"limit": 3}]},
+    }
+    steps.append(build_step)
+
+    arm_test_vms = [
+        {"name": "ubuntu-2204-aarch64", "label": "Test ARM64 deb on Ubuntu ARM64", "pkg_type": "deb"},
+        {"name": "almalinux-8-aarch64", "label": "Test ARM64 rpm on Alma ARM64", "pkg_type": "rpm"},
+    ]
+
+    for vm in arm_test_vms:
+        test_step = {
+            "label": vm["label"],
+            "key": slugify_bk_key(f"test-arm64-{vm['pkg_type']}-{vm['name']}"),
+            "depends_on": "build-arm64-packages-on-x86",
+            "agents": aws_agent(vm["name"], instance_type="m6g.4xlarge", image_prefix="platform-ingest-logstash"),
+            "env": {"PKG_TYPE": vm["pkg_type"]},
+            "command": LiteralScalarString("""#!/usr/bin/env bash
+set -eo pipefail
+.buildkite/scripts/exhaustive-tests/test-on-arm.sh
+"""),
+            "retry": {"automatic": [{"limit": 3}]},
+        }
+        steps.append(test_step)
+
+    return steps
+
 def fips_test_runner_step() -> dict[str, typing.Any]:
     step = {
         "label": "Observability SRE Acceptance Tests",
@@ -246,6 +294,12 @@ if __name__ == "__main__":
         "group": "Observability SRE Acceptance Tests",
         "key": "acceptance-observability-sre",
         "steps": [fips_test_runner_step()],
+    })
+
+    structure["steps"].append({
+        "group": "ARM64 Cross-build Tests",
+        "key": "arm64-crossbuild",
+        "steps": arm64_crossbuild_steps(),
     })
 
     print('# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json')

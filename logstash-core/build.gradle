@@ -232,9 +232,6 @@ dependencies {
     runtimeOnly 'commons-logging:commons-logging:1.3.1'
     // also handle libraries relying on log4j 1.x to redirect their logs
     runtimeOnly "org.apache.logging.log4j:log4j-1.2-api:${log4jVersion}"
-    implementation('org.reflections:reflections:0.10.2') {
-        exclude group: 'com.google.guava', module: 'guava'
-    }
     implementation 'commons-codec:commons-codec:1.17.0' // transitively required by httpclient
     // Jackson version moved to versions.yml in the project root (the JrJackson version is there too)
     implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
