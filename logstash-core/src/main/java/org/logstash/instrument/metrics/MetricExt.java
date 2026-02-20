@@ -165,7 +165,7 @@ public final class MetricExt extends AbstractSimpleMetricExt {
         MetricExt.validateKey(context, null, key);
 
         final TimerMetric timer = timer(context, namespace, key).toJava(TimerMetric.class);
-        timer.reportUntrackedMillis(duration.convertToInteger().getLongValue());
+        timer.reportUntrackedMillis(org.jruby.RubyNumeric.num2long(duration.convertToInteger()));
         return context.nil;
     }
 

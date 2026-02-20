@@ -190,7 +190,7 @@ void setupJruby(File projectDir, File buildDir) {
 Object executeJruby(File projectDir, File buildDir, Closure<?> /* Object*/ block) {
     def jruby = new ScriptingContainer()
     def env = jruby.environment
-    def gemDir = "${projectDir}/vendor/bundle/jruby/3.1.0".toString()
+    def gemDir = "${projectDir}/vendor/bundle/jruby/3.4.0".toString()
     jruby.setLoadPaths(["${projectDir}/vendor/jruby/lib/ruby/stdlib".toString()])
     env.put "USE_RUBY", "1"
     env.put "GEM_HOME", gemDir

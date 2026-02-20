@@ -21,6 +21,7 @@
 package org.logstash.config.ir;
 
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
@@ -125,7 +126,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
         nonStringValue2.getEvent().setField("left", 42L);
         nonStringValue2.getEvent().setField("right", 43L);
 
-        RubyArray inputBatch = RubyUtil.RUBY.newArray(leftIsList, leftIsMap, leftIsString1, leftIsString2,
+        RubyArray inputBatch = Create.newArray(RubyUtil.RUBY.getCurrentContext(), leftIsList, leftIsMap, leftIsString1, leftIsString2,
                 rightIsList1, rightIsList2, nonStringValue1, nonStringValue2);
 
         new CompiledPipeline(
@@ -180,7 +181,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 ))
                 .buildExecution()
-                .compute(RubyUtil.RUBY.newArray(RubyEvent.newRubyEvent(RubyUtil.RUBY)), false, false);
+                .compute(Create.newArray(RubyUtil.RUBY.getCurrentContext(), RubyEvent.newRubyEvent(RubyUtil.RUBY)), false, false);
 
         final Collection<RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         assertThat(outputEvents.size(), is(expectedMatches));
@@ -215,7 +216,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
         RubyEvent leftIsString1 = RubyEvent.newRubyEvent(RubyUtil.RUBY);
         leftIsString1.getEvent().setField("left", "s3cr3t");
 
-        RubyArray inputBatch = RubyUtil.RUBY.newArray(leftIsString1);
+        RubyArray inputBatch = Create.newArray(RubyUtil.RUBY.getCurrentContext(), leftIsString1);
 
         new CompiledPipeline(
                 pipelineIR,

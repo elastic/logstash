@@ -58,7 +58,7 @@ public class MetricExtFactory {
     private RubyModule metricFactoryInterceptor(final String type, final Function<String,?> javaMetricFactory) {
         final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
 
-        final IRubyObject interceptType = context.runtime.newString(type).intern();
+        final IRubyObject interceptType = context.runtime.newString(type).intern(context);
         final IRubyObject metricFactory = JavaUtil.convertJavaToUsableRubyObject(context.runtime, MetricFactory.of(javaMetricFactory));
         final IRubyObject interceptorModule = INTERCEPTOR_MODULE_CLASS.newInstance(context, interceptType, metricFactory, Block.NULL_BLOCK);
 

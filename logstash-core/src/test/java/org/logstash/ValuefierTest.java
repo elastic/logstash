@@ -52,7 +52,7 @@ public class ValuefierTest extends RubyTestBase {
     public void testMapJavaProxy() {
         Map<IRubyObject, IRubyObject> map = new HashMap<>();
         map.put(RubyString.newString(RubyUtil.RUBY, "foo"), RubyString.newString(RubyUtil.RUBY, "bar"));
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, HashMap.class);
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY.getCurrentContext(), HashMap.class);
         MapJavaProxy mjp = new MapJavaProxy(RubyUtil.RUBY, proxyClass);
         mjp.setObject(map);
 
@@ -64,7 +64,7 @@ public class ValuefierTest extends RubyTestBase {
     @Test
     public void testArrayJavaProxy() {
         IRubyObject[] array = new IRubyObject[]{RubyString.newString(RubyUtil.RUBY, "foo")};
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, String[].class);
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY.getCurrentContext(), String[].class);
         ArrayJavaProxy ajp = new ArrayJavaProxy(RubyUtil.RUBY, proxyClass, array);
 
         Object result = Valuefier.convert(ajp);
@@ -76,7 +76,7 @@ public class ValuefierTest extends RubyTestBase {
     public void testConcreteJavaProxy() {
         List<IRubyObject> array = new ArrayList<>();
         array.add(RubyString.newString(RubyUtil.RUBY, "foo"));
-        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY, ArrayList.class);
+        RubyClass proxyClass = (RubyClass) Java.getProxyClass(RubyUtil.RUBY.getCurrentContext(), ArrayList.class);
         ConcreteJavaProxy cjp = new ConcreteJavaProxy(RubyUtil.RUBY, proxyClass, array);
         Object result = Valuefier.convert(cjp);
         assertEquals(ConvertedList.class, result.getClass());

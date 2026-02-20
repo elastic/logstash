@@ -247,7 +247,7 @@ public final class ConvertedMap extends IdentityHashMap<String, Object> {
         }
         if (o instanceof RubyBignum) {
             RubyBignum rbn = (RubyBignum) o;
-            return ((RubyFixnum) rbn.size()).getLongValue();
+            return rbn.asBigInteger(RubyUtil.RUBY.getCurrentContext()).bitLength() / 8 + 1;
         }
         if (o instanceof RubyBigDecimal) {
             RubyBigDecimal rbd = (RubyBigDecimal) o;

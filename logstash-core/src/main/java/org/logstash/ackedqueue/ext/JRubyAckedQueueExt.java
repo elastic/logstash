@@ -30,6 +30,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -157,7 +158,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
     public IRubyObject rubyReadBatch(ThreadContext context, IRubyObject limit, IRubyObject timeout) {
         AckedBatch batch;
         try {
-            batch = readBatch(RubyFixnum.num2int(limit), RubyFixnum.num2int(timeout));
+            batch = readBatch(Convert.toInt(context, limit), Convert.toInt(context, timeout));
         } catch (IOException e) {
             throw RubyUtil.newRubyIOError(context.runtime, e);
         }
@@ -171,7 +172,7 @@ public final class JRubyAckedQueueExt extends RubyObject {
 
     @JRubyMethod(name = "is_fully_acked?")
     public IRubyObject ruby_is_fully_acked(ThreadContext context) {
-        return RubyBoolean.newBoolean(context.runtime, this.queue.isFullyAcked());
+        return Convert.asBoolean(context, this.queue.isFullyAcked());
     }
 
     public boolean isEmpty() {

@@ -31,6 +31,7 @@ import org.jruby.RubyBasicObject;
 import org.jruby.RubyMethod;
 import org.jruby.RubyString;
 import org.jruby.exceptions.NameError;
+import org.jruby.runtime.ThreadContext;
 import org.logstash.RubyUtil;
 
 import java.io.IOException;
@@ -84,7 +85,7 @@ public final class RubyBasicObjectSerializer extends StdSerializer<RubyBasicObje
         }
 
         try {
-            gen.writeString(value.to_s().asJavaString());
+            gen.writeString(value.to_s(value.getRuntime().getCurrentContext()).asJavaString());
         } catch (Exception e) {
             LOGGER.debug("Failed to serialize value type {} using `RubyBasicObject#to_s()` method", value.getMetaClass(), e);
             gen.writeString(value.anyToString().asJavaString());
@@ -107,8 +108,9 @@ public final class RubyBasicObjectSerializer extends StdSerializer<RubyBasicObje
 
     private boolean isCustomInspectMethodDefined(final RubyBasicObject value) {
         try {
-            final Object candidate = value.method(RubyString.newString(RubyUtil.RUBY, METHOD_INSPECT));
-            return candidate instanceof RubyMethod && ((RubyMethod) candidate).owner(RubyUtil.RUBY.getCurrentContext()).toString().toLowerCase().startsWith("logstash");
+            final ThreadContext context = value.getRuntime().getCurrentContext();
+            final Object candidate = value.method(context, RubyString.newString(value.getRuntime(), METHOD_INSPECT), null);
+            return candidate instanceof RubyMethod && ((RubyMethod) candidate).owner(context).toString().toLowerCase().startsWith("logstash");
         } catch (NameError e) {
             return false;
         }

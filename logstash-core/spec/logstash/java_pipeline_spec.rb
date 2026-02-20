@@ -396,7 +396,7 @@ describe LogStash::JavaPipeline do
       context "when type of evaluation doesn't have same type" do
         sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
           expect(subject).to be nil
-          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion from nil to integer/)
         end
       end
 
@@ -433,7 +433,7 @@ describe LogStash::JavaPipeline do
 
         sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
           expect(subject).to be nil
-          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+          expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion from nil to integer/)
         end
       end
 
@@ -480,7 +480,7 @@ describe LogStash::JavaPipeline do
 
             it "should raise an error without killing the pipeline" do
               expect(subject).to be nil
-              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion from nil to integer/)
             end
           end
 
@@ -504,12 +504,12 @@ describe LogStash::JavaPipeline do
 
             it "should raise an error without killing the pipeline and insert the event into DLQ" do
               expect(subject).to be nil
-              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion of nil into Integer/)
+              expect(pipeline.last_error_evaluation_received).to match(/no implicit conversion from nil to integer/)
               dlq_path = java.nio.file.Paths.get(settings.get_value("path.dead_letter_queue"), "test_dlq")
               dlq_reader = org.logstash.common.io.DeadLetterQueueReader.new(dlq_path)
               entry = dlq_reader.pollEntry(40)
               expect(entry).to_not be_nil
-              expect(entry.reason).to match(/condition evaluation error.*no implicit conversion of nil into Integer/)
+              expect(entry.reason).to match(/condition evaluation error.*no implicit conversion from nil to integer/)
               expect(entry.plugin_id).to eq("if-statement")
               expect(entry.plugin_type).to eq("if-statement")
             end
