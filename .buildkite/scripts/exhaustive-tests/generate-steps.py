@@ -248,7 +248,36 @@ source .buildkite/scripts/common/vm-agent.sh
     return step
 
 def artifact_acceptance_poc_steps() -> list[typing.Any]:
+    """POC tests for snapshot/release artifact acceptance testing."""
     steps = []
+
+    steps.append({
+        "label": "POC: 9.4.0-SNAPSHOT / x86_64 / deb",
+        "key": "poc-snapshot-x86-deb",
+        "agents": gcp_agent("ubuntu-2204"),
+        "env": {
+            "LS_VERSION": "9.4.0-SNAPSHOT",
+            "ARTIFACT_TYPE": "snapshot",
+            "PKG_TYPE": "deb",
+            "ARCH": "x86_64",
+        },
+        "command": ".buildkite/scripts/exhaustive-tests/run-acceptance-from-artifact.sh",
+        "retry": {"automatic": [{"limit": 3}]},
+    })
+
+    steps.append({
+        "label": "POC: 9.3.0 / x86_64 / rpm",
+        "key": "poc-release-x86-rpm",
+        "agents": gcp_agent("almalinux-8"),
+        "env": {
+            "LS_VERSION": "9.3.0",
+            "ARTIFACT_TYPE": "release",
+            "PKG_TYPE": "rpm",
+            "ARCH": "x86_64",
+        },
+        "command": ".buildkite/scripts/exhaustive-tests/run-acceptance-from-artifact.sh",
+        "retry": {"automatic": [{"limit": 3}]},
+    })
 
     steps.append({
         "label": "POC: 9.4.0-SNAPSHOT / arm64 / deb",
