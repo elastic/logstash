@@ -27,7 +27,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Fixes [logstash-9.3.1-fixes]
 
-* Fixed the issue where Logstash packages on `aarch64` architectures were bundled with the wrong JDK architecture.[#18750](https://github.com/elastic/logstash/pull/18750)
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18750](https://github.com/elastic/logstash/pull/18750)
 
 ### Plugins [logstash-plugin-9.3.1-changes]
 
