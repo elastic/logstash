@@ -48,7 +48,7 @@ As a workaround, users can provide an external and compatible JDK via the `LS_JA
 
 ## 9.2.5 [logstash-ki-9.2.5]
 
-**Logstash will not start with bundled JDK on aarch64 Linux and x86_64 Windows**
+**Logstash does not start with bundled JDK on aarch64 Linux and x86_64 Windows**
 
 Applies to: {{ls}} 9.2.5
 
