@@ -80,7 +80,7 @@ This issue does NOT affect:
 
 For this reason the download links to the affected artifacts have been removed from the Download Page of {{ls}} 9.2.5.
 
-As a workaround, users can provide an external and compatible JDK via the `LS_JAVA_HOME` environment variable.
+As a workaround, users can provide an external and compatible JDK using the `LS_JAVA_HOME` environment variable.
 
 ::::
 
