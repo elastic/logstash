@@ -22,7 +22,7 @@ module LogStash
         logger.trace("Registering additionals settings")
 
         settings.register(LogStash::Setting::BooleanSetting.new("xpack.management.enabled", false))
-        settings.register(LogStash::Setting::TimeValue.new("xpack.management.logstash.poll_interval", "5s"))
+        settings.register(LogStash::Setting::TimeValueSetting.new("xpack.management.logstash.poll_interval", "5s"))
         settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.pipeline.id", String, ["main"]))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.username", "logstash_system"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.password"))

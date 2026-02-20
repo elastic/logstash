@@ -276,8 +276,8 @@ module LogStash
       end
       settings.register(LogStash::Setting::BooleanSetting.new("#{prefix}monitoring.enabled", false))
       settings.register(LogStash::Setting::ArrayCoercible.new("#{prefix}monitoring.elasticsearch.hosts", String, ["http://localhost:9200"]))
-      settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.interval", "10s"))
-      settings.register(LogStash::Setting::TimeValue.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
+      settings.register(LogStash::Setting::TimeValueSetting.new("#{prefix}monitoring.collection.interval", "10s"))
+      settings.register(LogStash::Setting::TimeValueSetting.new("#{prefix}monitoring.collection.timeout_interval", "10m"))
       settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.username", "logstash_system"))
       settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.password"))
       settings.register(LogStash::Setting::NullableStringSetting.new("#{prefix}monitoring.elasticsearch.proxy"))
