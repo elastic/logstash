@@ -8,8 +8,6 @@ Known issues are significant defects or limitations that may impact your impleme
 These issues are actively being worked on and will be addressed in a future release. 
 Review known issues to help you make informed decisions, such as upgrading to a new version.
 
-<<<<<<< HEAD
-=======
 ## 9.3.0 [logstash-ki-9.3.0]
 
 **Logstash will not start with bundled JDK on aarch64 Linux/MacOs and x86_64 Windows**
@@ -86,7 +84,6 @@ As a workaround, users can provide an external and compatible JDK using the `LS_
 
 ::::
 
->>>>>>> 6a310732 (Revise known issues for Logstash 9.3.0 and 9.2.5 (#18800))
 ## 9.2.0 [logstash-ki-9.2.0]
 
 **Logstash will not start if a Persistent Queue has been defined with a size greater than 2 GiB**

@@ -23,17 +23,14 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.3.0 [logstash-9.3.0-release-notes]
 
-<<<<<<< HEAD
-=======
 ::::{important}
 
 Do not upgrade to Logstash 9.3.0 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
 For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.3.0).
 
 ::::
 
-
->>>>>>> 6a310732 (Revise known issues for Logstash 9.3.0 and 9.2.5 (#18800))
 ### Features and enhancements [logstash-9.3.0-features-enhancements]
 
 #### Wait for status feature added to Logstash API [logstash-9.3.0-wait-status]
@@ -102,17 +99,14 @@ Related:
 
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
-<<<<<<< HEAD
-=======
-
 ::::{important}
 
 Do not upgrade to Logstash 9.2.5 if you are running on `aarch64` or Windows with the bundled JDK and are not using Docker.
+
 For more details please see the associated [known issue](/release-notes/known-issues.md#logstash-ki-9.2.5).
 
 ::::
 
->>>>>>> 6a310732 (Revise known issues for Logstash 9.3.0 and 9.2.5 (#18800))
 ### Features and enhancements [logstash-9.2.5-features-enhancements]
 
 No user-facing changes in Logstash core.
