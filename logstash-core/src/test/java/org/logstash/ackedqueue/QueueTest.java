@@ -39,6 +39,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -165,6 +167,52 @@ public class QueueTest {
                 }
             }
             assertThat(q.nonBlockReadBatch(1), nullValue());
+        }
+    }
+
+    @Test
+    public void unreadEvents() throws IOException {
+        final Settings queueSettings = TestSettings.fileSettingsBuilder(dataPath)
+                .compressionCodecFactory(CompressionCodec.fromConfigValue("disabled"))
+                .capacity(1024)
+                .build();
+        try (Queue q = new Queue(TestSettings.fileSettingsBuilder(dataPath).capacity(1024).build())) {
+            q.open();
+
+            final AtomicLong atomicLong = new AtomicLong();
+            Supplier<String> tenByteStringSupplier = () -> String.format("%010d", atomicLong.incrementAndGet());
+
+            // insert enough events to fill more than two pages
+            while (q.getPageCount() < 3) {
+                q.write(new StringElement(tenByteStringSupplier.get()));
+            }
+
+            // read batches until there is only one page in the quick-pick unreadTailPages
+            final ArrayList<Batch> batches = new ArrayList<>();
+            while (q.unreadTailPages.size() > 1) {
+                batches.add(q.readBatch(2, 500L));
+            }
+
+            // ack the first batch
+            final Batch ackBatch = batches.remove(0);
+            ackBatch.close();
+
+            // unread the next batch, validate that the page got put back on unreadTailPages
+            final Batch unreadBatch = batches.remove(0);
+            unreadBatch.unread();
+            assertThat(q.unreadTailPages.size(), is(2));
+
+            // read another batch, ensure it is the same as the one we previously unread
+            final long unreadBatchFirstSeqNum = unreadBatch.firstSeqNum();
+            final Batch nextReadBatch = q.readBatch(3, 500L); // ask for more than the known 2-event unread region
+            assertThat(q.unreadTailPages.size(), is(1));
+
+            assertThat(nextReadBatch.firstSeqNum(), is(unreadBatchFirstSeqNum));
+            assertThat(nextReadBatch.size(), is(2)); // even though we asked for more, we are getting the entire contiguously-unread region
+
+            // now read a new batch, and make sure it's newer than the previous batches
+            final Batch lastBatch = q.readBatch(2, 500L);
+            assertThat(lastBatch.firstSeqNum(), is(1 + batches.get(batches.size() - 1).firstSeqNum()));
         }
     }
 
@@ -1003,8 +1051,8 @@ public class QueueTest {
             assertThat(q.getUnackedCount(), is(1L));
             assertThat(q.tailPages.size(), is(1));
             assertThat(q.tailPages.get(0).isFullyAcked(), is(false));
-            assertThat(q.tailPages.get(0).elementCount, is(1));
-            assertThat(q.headPage.elementCount, is(0));
+            assertThat(q.tailPages.get(0).getElementCount(), is(1));
+            assertThat(q.headPage.getElementCount(), is(0));
         }
     }
 

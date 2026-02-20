@@ -65,6 +65,12 @@ public class Batch implements Closeable {
         }
     }
 
+    public void unread() throws IOException {
+        if (firstSeqNum >= 0L) {
+            this.queue.unread(firstSeqNum, elements.size());
+        }
+    }
+
     public int size() {
         return elements.size();
     }
@@ -75,6 +81,14 @@ public class Batch implements Closeable {
 
     public Queue getQueue() {
         return queue;
+    }
+
+    long firstSeqNum() {
+        return firstSeqNum;
+    }
+
+    long lastSeqNum() {
+        return firstSeqNum + elements.size();
     }
 
     /**
