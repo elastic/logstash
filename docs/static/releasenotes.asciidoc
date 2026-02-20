@@ -3,6 +3,7 @@
 
 This section summarizes the changes in the following releases:
 
+* <<logstash-8-19-12,Logstash 8.19.12>>
 * <<logstash-8-19-11,Logstash 8.19.11>>
 * <<logstash-8-19-10,Logstash 8.19.10>>
 * <<logstash-8-19-9,Logstash 8.19.9>>
@@ -102,6 +103,87 @@ This section summarizes the changes in the following releases:
 * <<logstash-8-0-0-beta1,Logstash 8.0.0-beta1>>
 * <<logstash-8-0-0-alpha2,Logstash 8.0.0-alpha2>>
 * <<logstash-8-0-0-alpha1,Logstash 8.0.0-alpha1>>
+
+[[logstash-8-19-12]]
+=== Logstash 8.19.12 Release Notes
+
+==== Notable issues fixed
+
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. https://github.com/elastic/logstash/pull/18748[#18748]
+
+==== Plugins
+
+*Collectd Codec - 3.1.1*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-codec-collectd/pull/36[#36]
+
+*Netflow Codec - 4.3.4*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-codec-netflow/pull/215[#215]
+
+*Date Filter - 3.1.16*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-filter-date/pull/163[#163]
+
+*Dissect Filter - 1.2.6*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-filter-dissect/pull/93[#93]
+* Removed unused runtime dependency `jar-dependencies` https://github.com/logstash-plugins/logstash-filter-dissect/pull/91[#91]
+
+*Geoip Filter - 7.3.4*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-filter-geoip/pull/239[#239]
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-filter-geoip/pull/236[#236]
+
+*Grok Filter - 4.4.4*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-filter-grok/pull/197[#197]
+
+*Beats Input - 6.9.6*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-input-beats/pull/529[#529]
+
+*Dead_letter_queue Input - 2.0.2*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-input-dead_letter_queue/pull/57[#57]
+
+*File Input - 4.4.7*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-input-file/pull/331[#331]
+
+*Http Input - 3.10.5*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-input-http/pull/209[#209]
+
+*Tcp Input - 6.4.9*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-input-tcp/pull/244[#244]
+
+*Unix Input - 3.1.3*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-input-unix/pull/31[#31]
+
+*Jdbc Integration - 5.6.3*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-integration-jdbc/pull/192[#192]
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-integration-jdbc/pull/190[#190]
+
+*Kafka Integration - 11.8.4*
+
+* Upgrade Avro serializer dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/225[#225]
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-integration-kafka/pull/223[#223]
+
+*Nagios Output - 3.0.7*
+
+* Replace deprecated File.exists? by File.exist? to ensure compatibility with Ruby 3.4 (JRuby 10) https://github.com/logstash-plugins/logstash-output-nagios/pull/11[#11]
+
+*Webhdfs Output - 3.1.1*
+
+* Ensure gem artifact ship with all runtime dependencies  https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49[#49]
+
 
 [[logstash-8-19-11]]
 === Logstash 8.19.11 Release Notes
