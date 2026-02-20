@@ -44,7 +44,7 @@ The value of the link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outp
 
 Create an **API key** with the appropriate privileges. 
 Refer to {kibana-ref}/search-space-connection-details.html#create-an-api-key-cloud-self-managed[Create API key] for detailed steps. 
-For information on the required privileges, refer to <<ls-create-api-key>>.
+For information on the required privileges, refer to <<ls-api-keys>>.
 
 When you create an API key for {ls}, select *Logstash* from the *API key format* dropdown.
 This option formats the API key in the correct `id:api_key` format required by {ls}.
