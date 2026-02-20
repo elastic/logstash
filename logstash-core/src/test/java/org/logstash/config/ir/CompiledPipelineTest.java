@@ -769,7 +769,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionDefaultGrowthThresholdFactorWhenBatchSizeDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
+    public void givenUnorderedExecutionDefaultGrowthThresholdFactorWhenBatchSizeDoesNotExceedFactorThenItsNotChunked() throws Exception {
         // When growthThresholdFactor is 1000 (default), no chunking should occur when the growth threshold factor is less than 1000
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -822,13 +822,13 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(10)); // 4*2 + 2 = 10 events
 
-		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and the batch size increase factor is less than 1000", 1, outputSpy.invocationCount.get());
+		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and the batch size increase factor is less than 1000 - unordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchSizeExceedsTriggerFactorThenItsChunked() throws Exception {
-        // When filter clones events and output exceeds growthThresholdFactor * batchSize, batches should be chunked
+    public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchSizeExceedsFactorThenItsChunked() throws Exception {
+        // When the batch after filters has grown by more than the growthThresholdFactor, the batch should be chunked
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -918,7 +918,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(0));
 
         // 0 events, no chunking should occur
-        assertEquals("Empty batch should not be chunked", 1, outputSpy.invocationCount.get());
+        assertEquals("Empty batch should not be chunked - unordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -972,7 +972,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(5));
 
         // When input batch is empty but filter adds events, should not chunk (ratio undefined)
-        assertEquals("Empty input batch with filter-added events should not be chunked", 1, outputSpy.invocationCount.get());
+        assertEquals("Empty input batch with filter-added events should not be chunked - unordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
@@ -1018,7 +1018,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionDefaultGrowthThresholdFactorWhenBatchDoesNotExceedTriggerFactorThenItsNotChunked() throws Exception {
+    public void givenOrderedExecutionDefaultGrowthThresholdFactorWhenBatchDoesNotExceedFactorThenItsNotChunked() throws Exception {
         // When growthThresholdFactor is 1000 (default), no chunking should occur (ordered execution)
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -1074,8 +1074,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchExceedsTriggerFactorThenItsChunked() throws Exception {
-        // When batch size increases beyond growthThresholdFactor, batches should be chunked (ordered execution)
+    public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchExceedsFactorThenItsChunked() throws Exception {
+        // When batch size increases beyond growthThresholdFactor, batches should be chunked
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1132,7 +1132,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     @SuppressWarnings({"unchecked"})
     public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchIsEmptyThenItsNotChunked() throws Exception {
-        // Test that empty batches work correctly with growthThresholdFactor set (ordered execution)
+        // Test that empty batches work correctly with growthThresholdFactor set
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1169,7 +1169,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     @SuppressWarnings({"unchecked"})
     public void givenOrderedExecutionEmptyInputBatchWithFilterThatAddsEventsThenItsNotChunked() throws Exception {
-        // Test that empty input batch with a filter that adds events doesn't chunk (ordered execution)
+        // Test that empty input batch with a filter that adds events doesn't chunk
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
@@ -1223,7 +1223,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
     @Test
     @SuppressWarnings({"unchecked"})
     public void givenOrderedExecutionGrowthThresholdFactorSetWhenBatchHasASingleEventThenItsNotChunked() throws Exception {
-        // Test that a single event works correctly with growthThresholdFactor set (ordered execution)
+        // Test that a single event works correctly with growthThresholdFactor set
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
