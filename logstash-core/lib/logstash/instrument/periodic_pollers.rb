@@ -20,6 +20,7 @@ require "logstash/instrument/periodic_poller/os"
 require "logstash/instrument/periodic_poller/jvm"
 require "logstash/instrument/periodic_poller/pq"
 require "logstash/instrument/periodic_poller/flow_rate"
+require "logstash/instrument/periodic_poller/batch_structure"
 
 module LogStash module Instrument
   # Each PeriodPoller manager his own thread to do the poller
@@ -34,7 +35,8 @@ module LogStash module Instrument
                            PeriodicPoller::JVM.new(metric),
                            PeriodicPoller::PersistentQueue.new(metric, queue_type, agent),
                            PeriodicPoller::DeadLetterQueue.new(metric, agent),
-                           PeriodicPoller::FlowRate.new(metric, agent)]
+                           PeriodicPoller::FlowRate.new(metric, agent),
+                           PeriodicPoller::BatchStructure.new(metric, agent)]
     end
 
     def start

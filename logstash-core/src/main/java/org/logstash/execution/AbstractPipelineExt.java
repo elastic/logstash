@@ -87,14 +87,17 @@ import org.logstash.ext.JRubyWrappedWriteClientExt;
 import org.logstash.health.PipelineIndicator;
 import org.logstash.instrument.metrics.AbstractMetricExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
+import org.logstash.instrument.metrics.BatchStructureMetric;
 import org.logstash.instrument.metrics.FlowMetric;
 import org.logstash.instrument.metrics.Metric;
+import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.MetricType;
 import org.logstash.instrument.metrics.NullMetricExt;
 import org.logstash.instrument.metrics.UpScaledMetric;
-import org.logstash.instrument.metrics.gauge.TextGauge;
-import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.UptimeMetric;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
+import org.logstash.instrument.metrics.timer.TimerMetric;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
 import org.logstash.instrument.metrics.gauge.NumberGauge;
@@ -164,6 +167,8 @@ public class AbstractPipelineExt extends RubyBasicObject {
     private QueueReadClientBase filterQueueClient;
 
     private transient final ScopedFlowMetrics scopedFlowMetrics = new ScopedFlowMetrics();
+    private transient BatchStructureMetric batchStructureMetric;
+    private transient BatchStructureMetric batchEventCountStructureMetric;
     private @SuppressWarnings("rawtypes") RubyArray inputs;
     private @SuppressWarnings("rawtypes") RubyArray filters;
     private @SuppressWarnings("rawtypes") RubyArray outputs;
@@ -597,18 +602,33 @@ public class AbstractPipelineExt extends RubyBasicObject {
     }
 
     private void initializeBatchMetrics(ThreadContext context) {
-        final RubySymbol[] batchNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
+        final RubySymbol[] batchEventCountNamespace = buildNamespace(BATCH_KEY, BATCH_EVENT_COUNT_KEY);
         final LongCounter batchEventsInCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_EVENTS);
         final LongCounter batchCounter = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_COUNT);
         final FlowMetric documentsPerBatch = createFlowMetric(BATCH_AVERAGE_KEY, batchEventsInCounter, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, documentsPerBatch);
-        storeMetric(context, batchNamespace, documentsPerBatch);
+        storeMetric(context, batchEventCountNamespace, documentsPerBatch);
 
-        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, BATCH_BYTE_SIZE_KEY);
+        final RubySymbol[] batchSizeNamespace = buildNamespace(BATCH_KEY, MetricKeys.BATCH_BYTE_SIZE_KEY);
         final LongCounter totalBytes = initOrGetCounterMetric(context, buildNamespace(BATCH_KEY), BATCH_TOTAL_BYTES);
         final FlowMetric byteSizePerBatch = createFlowMetric(BATCH_AVERAGE_KEY, totalBytes, batchCounter);
         this.scopedFlowMetrics.register(ScopedFlowMetrics.Scope.WORKER, byteSizePerBatch);
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
+
+        HistogramMetric batchByteSizeHistogramMetric = metric.namespace(context,
+                pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                .namespace(BATCH_HISTOGRAM_BYTE_SIZE_KEY)
+                .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
+
+        this.batchStructureMetric = new BatchStructureMetric(BATCH_STRUCTURE_METRIC_KEY, batchByteSizeHistogramMetric);
+        storeMetric(context, batchSizeNamespace, batchStructureMetric);
+
+        HistogramMetric batchEventCountHistogramMetric = metric.namespace(context,
+                        pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                .namespace(BATCH_HISTOGRAM_EVENT_COUNT_KEY)
+                .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
+        this.batchEventCountStructureMetric = new BatchStructureMetric(BATCH_STRUCTURE_METRIC_KEY, batchEventCountHistogramMetric);
+        storeMetric(context, batchEventCountNamespace, batchEventCountStructureMetric);
     }
 
     private boolean isBatchMetricsEnabled(ThreadContext context) {
@@ -622,6 +642,17 @@ public class AbstractPipelineExt extends RubyBasicObject {
     @JRubyMethod(name = "collect_flow_metrics")
     public final IRubyObject collectFlowMetrics(final ThreadContext context) {
         this.scopedFlowMetrics.captureAll();
+        return context.nil;
+    }
+
+    @JRubyMethod(name = "collect_batch_histogram_metrics")
+    public final IRubyObject collectBatchHistogramMetrics(final ThreadContext context) {
+        if (this.batchStructureMetric != null) {
+            this.batchStructureMetric.capture();
+        }
+        if (this.batchEventCountStructureMetric != null) {
+            this.batchEventCountStructureMetric.capture();
+        }
         return context.nil;
     }
 
