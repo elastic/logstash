@@ -109,7 +109,7 @@ This section summarizes the changes in the following releases:
 
 ==== Notable issues fixed
 
-* Fixed the issue where Logstash packages on `aarch64` architectures were bundled with the wrong JDK architecture. https://github.com/elastic/logstash/pull/18748[#18748]
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. https://github.com/elastic/logstash/pull/18748[#18748]
 
 ==== Plugins
 
