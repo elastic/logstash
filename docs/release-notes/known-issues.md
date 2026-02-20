@@ -10,7 +10,7 @@ Review known issues to help you make informed decisions, such as upgrading to a 
 
 ## 9.3.0 [logstash-ki-9.3.0]
 
-**Logstash will not start with bundled JDK on aarch64 Linux and x86_64 Windows**
+**Logstash will not start with bundled JDK on aarch64 Linux/MacOs and x86_64 Windows**
 
 Applies to: {{ls}} 9.3.0
 
@@ -25,11 +25,19 @@ This issue affects:
 * logstash-9.3.0-windows-x86_64.zip
 * logstash-9.3.0-arm64.deb
 * logstash-9.3.0-aarch64.rpm
+* logstash-oss-9.3.0-linux-aarch64.tar.gz
+* logstash-oss-9.3.0-darwin-aarch64.tar.gz
+* logstash-oss-9.3.0-windows-x86_64.zip
+* logstash-oss-9.3.0-arm64.deb
+* logstash-oss-9.3.0-aarch64.rpm
 
 This issue does NOT affect:
 * logstash-9.3.0-linux-x86_64.tar.gz
 * logstash-9.3.0-x86_64.deb
 * logstash-9.3.0-x86_64.rpm
+* logstash-oss-9.3.0-linux-x86_64.tar.gz
+* logstash-oss-9.3.0-x86_64.deb
+* logstash-oss-9.3.0-x86_64.rpm
 * Docker images
 
 For this reason the download links to the affected artifacts have been removed from the Download Page of {{ls}} 9.3.0.
@@ -55,11 +63,19 @@ This issue affects:
 * logstash-9.2.5-windows-x86_64.zip
 * logstash-9.2.5-arm64.deb
 * logstash-9.2.5-aarch64.rpm
+* logstash-oss-9.2.5-linux-aarch64.tar.gz
+* logstash-oss-9.2.5-darwin-aarch64.tar.gz
+* logstash-oss-9.2.5-windows-x86_64.zip
+* logstash-oss-9.2.5-arm64.deb
+* logstash-oss-9.2.5-aarch64.rpm
 
 This issue does NOT affect:
 * logstash-9.2.5-linux-x86_64.tar.gz
 * logstash-9.2.5-x86_64.deb
 * logstash-9.2.5-x86_64.rpm
+* logstash-oss-9.2.5-linux-x86_64.tar.gz
+* logstash-oss-9.2.5-x86_64.deb
+* logstash-oss-9.2.5-x86_64.rpm
 * Docker images
 
 For this reason the download links to the affected artifacts have been removed from the Download Page of {{ls}} 9.2.5.
