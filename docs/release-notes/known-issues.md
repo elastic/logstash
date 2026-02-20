@@ -40,7 +40,7 @@ This issue does NOT affect:
 * logstash-oss-9.3.0-x86_64.rpm
 * Docker images
 
-For this reason the download links to the affected artifacts have been removed from the Download Page of {{ls}} 9.3.0.
+For this reason the download links to the affected artifacts have been removed from the [{{ls}} Download page](https://www.elastic.co/downloads/logstash) for version 9.3.0.
 
 As a workaround, users can provide an external and compatible JDK via the `LS_JAVA_HOME` environment variable.
 
