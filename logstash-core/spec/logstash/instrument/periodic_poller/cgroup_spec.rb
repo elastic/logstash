@@ -291,5 +291,295 @@ describe "cgroup stats" do
       end
     end
   end
+
+  # --- cgroups v2 tests ---
+
+  describe Cgroup::CGroupResources do
+    subject(:cgroup_resources) { described_class.new }
+
+    context "cgroup v2 detection" do
+      context "cgroup_available? returns true when only v2 paths exist" do
+        before do
+          allow(::File).to receive(:exist?).and_return(false)
+          allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
+          allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
+        end
+
+        it "returns true" do
+          expect(cgroup_resources.cgroup_available?).to be_truthy
+        end
+      end
+
+      context "cgroup_available? returns false when neither v1 nor v2 paths exist" do
+        before do
+          allow(::File).to receive(:exist?).and_return(false)
+          allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
+          allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(false)
+        end
+
+        it "returns false" do
+          expect(cgroup_resources.cgroup_available?).to be_falsey
+        end
+      end
+
+      context "controller_groups returns v2 resources for v2-only /proc/self/cgroup" do
+        let(:v2_relative_path) { "/system.slice/docker-abc123.scope" }
+        let(:proc_self_cgroup_v2) { ["0::#{v2_relative_path}"] }
+
+        before do
+          allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(proc_self_cgroup_v2)
+          allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
+          allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
+        end
+
+        it "returns v2 cpu and cpuacct resources" do
+          controllers = cgroup_resources.controller_groups
+
+          controller = controllers["cpuacct"]
+          expect(controller).to be_a(Cgroup::CpuAcctResourceV2)
+          expect(controller.base_path).to eq("/sys/fs/cgroup")
+          expect(controller.offset_path).to eq(v2_relative_path)
+
+          controller = controllers["cpu"]
+          expect(controller).to be_a(Cgroup::CpuResourceV2)
+          expect(controller.base_path).to eq("/sys/fs/cgroup")
+          expect(controller.offset_path).to eq(v2_relative_path)
+        end
+      end
+
+      context "controller_groups returns v1 resources in hybrid mode (v1 takes priority)" do
+        let(:hybrid_cgroup_content) do
+          %W(4:cpuacct:#{relative_path}
+              3:cpu:#{relative_path}
+              0::/docker)
+        end
+
+        before do
+          allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(hybrid_cgroup_content)
+          allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
+        end
+
+        it "returns v1 resources, not v2" do
+          controllers = cgroup_resources.controller_groups
+
+          expect(controllers["cpuacct"]).to be_a(Cgroup::CpuAcctResource)
+          expect(controllers["cpu"]).to be_a(Cgroup::CpuResource)
+        end
+      end
+    end
+  end
+
+  describe Cgroup::CpuAcctResourceV2 do
+    subject(:cpuacct_resource_v2) { described_class.new("/bar") }
+
+    describe "method: to_hash, without override" do
+      context "when cpu.stat contains usage_usec" do
+        before do
+          allow(::File).to receive(:exist?).and_return(true)
+          allow(IO).to receive(:readlines).with("/sys/fs/cgroup/bar/cpu.stat").and_return(
+            ["usage_usec 378477588", "user_usec 340000000", "system_usec 38477588"]
+          )
+        end
+
+        it "returns usage_nanos converted from usage_usec (* 1000)" do
+          result = cpuacct_resource_v2.to_hash
+          expect(result[:control_group]).to eq("/bar")
+          expect(result[:usage_nanos]).to eq(378477588 * 1000)
+        end
+      end
+
+      context "when cpu.stat cannot be found" do
+        it "returns -1 for usage_nanos" do
+          expect(cpuacct_resource_v2.base_path).to eq("/sys/fs/cgroup")
+          expect(cpuacct_resource_v2.offset_path).to eq("/bar")
+          expect(cpuacct_resource_v2.to_hash).to eq({:control_group => "/bar", :usage_nanos => -1})
+        end
+      end
+    end
+
+    describe "method: to_hash, with override" do
+      before do
+        java.lang.System.setProperty("ls.cgroup.cpuacct.path.override", "/quux")
+      end
+      after do
+        java.lang.System.clearProperty("ls.cgroup.cpuacct.path.override")
+      end
+      context "when the files cannot be found" do
+        it "uses the overridden path" do
+          expect(cpuacct_resource_v2.base_path).to eq("/sys/fs/cgroup")
+          expect(cpuacct_resource_v2.offset_path).to eq("/quux")
+          expect(cpuacct_resource_v2.to_hash).to eq({:control_group => "/quux", :usage_nanos => -1})
+        end
+      end
+    end
+  end
+
+  describe Cgroup::CpuResourceV2 do
+    subject(:cpu_resource_v2) { described_class.new("/bar") }
+
+    describe "method: to_hash, without override" do
+      context "when cpu.max has a numeric quota" do
+        before do
+          allow(::File).to receive(:exist?).and_return(true)
+          allow(IO).to receive(:readlines).with("/sys/fs/cgroup/bar/cpu.max").and_return(["150000 100000"])
+          allow(IO).to receive(:readlines).with("/sys/fs/cgroup/bar/cpu.stat").and_return(
+            ["usage_usec 378477588", "nr_periods 4157", "nr_throttled 460", "throttled_usec 581617440"]
+          )
+        end
+
+        it "parses cpu.max correctly" do
+          result = cpu_resource_v2.to_hash
+          expect(result[:control_group]).to eq("/bar")
+          expect(result[:cfs_quota_micros]).to eq(150000)
+          expect(result[:cfs_period_micros]).to eq(100000)
+          expect(result[:stat][:number_of_elapsed_periods]).to eq(4157)
+          expect(result[:stat][:number_of_times_throttled]).to eq(460)
+          expect(result[:stat][:time_throttled_nanos]).to eq(581617440 * 1000)
+        end
+      end
+
+      context "when cpu.max has 'max' (unlimited) quota" do
+        before do
+          allow(::File).to receive(:exist?).and_return(true)
+          allow(IO).to receive(:readlines).with("/sys/fs/cgroup/bar/cpu.max").and_return(["max 100000"])
+          allow(IO).to receive(:readlines).with("/sys/fs/cgroup/bar/cpu.stat").and_return([])
+        end
+
+        it "returns -1 for quota" do
+          result = cpu_resource_v2.to_hash
+          expect(result[:cfs_quota_micros]).to eq(-1)
+          expect(result[:cfs_period_micros]).to eq(100000)
+        end
+      end
+
+      context "when files cannot be found" do
+        it "returns -1s" do
+          expect(cpu_resource_v2.base_path).to eq("/sys/fs/cgroup")
+          expect(cpu_resource_v2.offset_path).to eq("/bar")
+          expect(cpu_resource_v2.to_hash).to eq({
+            :cfs_period_micros => -1,
+            :cfs_quota_micros => -1,
+            :control_group => "/bar",
+            :stat => {
+              :number_of_elapsed_periods => -1,
+              :number_of_times_throttled => -1,
+              :time_throttled_nanos => -1
+            }
+          })
+        end
+      end
+    end
+
+    describe "method: to_hash, with override" do
+      before do
+        java.lang.System.setProperty("ls.cgroup.cpu.path.override", "/quux")
+      end
+      after do
+        java.lang.System.clearProperty("ls.cgroup.cpu.path.override")
+      end
+      context "when the files cannot be found" do
+        it "uses the overridden path" do
+          expect(cpu_resource_v2.base_path).to eq("/sys/fs/cgroup")
+          expect(cpu_resource_v2.offset_path).to eq("/quux")
+          expect(cpu_resource_v2.to_hash).to eq({
+            :cfs_period_micros => -1,
+            :cfs_quota_micros => -1,
+            :control_group => "/quux",
+            :stat => {
+              :number_of_elapsed_periods => -1,
+              :number_of_times_throttled => -1,
+              :time_throttled_nanos => -1
+            }
+          })
+        end
+      end
+    end
+  end
+
+  describe Cgroup do
+    describe "class method: get_all (v2)" do
+      let(:v2_relative_path) { "/system.slice/docker-abc123.scope" }
+      let(:proc_self_cgroup_v2) { ["0::#{v2_relative_path}"] }
+      let(:usage_usec) { 378477588 }
+      let(:cpu_max_content) { ["150000 100000"] }
+      let(:cpu_stats_number_of_periods) { 4157 }
+      let(:cpu_stats_number_of_time_throttled) { 460 }
+      let(:cpu_stats_throttled_usec) { 581617440 }
+      let(:cpu_stat_file_content) do
+        [
+          "usage_usec #{usage_usec}",
+          "nr_periods #{cpu_stats_number_of_periods}",
+          "nr_throttled #{cpu_stats_number_of_time_throttled}",
+          "throttled_usec #{cpu_stats_throttled_usec}"
+        ]
+      end
+
+      before do
+        allow(::File).to receive(:exist?).and_return(false)
+        allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
+        allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
+        # v2 file paths
+        allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{v2_relative_path}/cpu.stat").and_return(true)
+        allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{v2_relative_path}/cpu.max").and_return(true)
+        allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(proc_self_cgroup_v2)
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup#{v2_relative_path}/cpu.stat").and_return(cpu_stat_file_content)
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup#{v2_relative_path}/cpu.max").and_return(cpu_max_content)
+      end
+
+      it "returns all the stats with the same hash structure as v1" do
+        expect(described_class.get_all).to match(
+          :cpuacct => {
+            :control_group => v2_relative_path,
+            :usage_nanos => usage_usec * 1000,
+          },
+          :cpu => {
+            :control_group => v2_relative_path,
+            :cfs_period_micros => 100000,
+            :cfs_quota_micros => 150000,
+            :stat => {
+              :number_of_elapsed_periods => cpu_stats_number_of_periods,
+              :number_of_times_throttled => cpu_stats_number_of_time_throttled,
+              :time_throttled_nanos => cpu_stats_throttled_usec * 1000
+            }
+          }
+        )
+      end
+    end
+
+    describe "class method: get_all (hybrid mode, v1 takes priority)" do
+      let(:hybrid_cgroup_content) do
+        %W(4:cpuacct:#{relative_path}
+            3:cpu:#{relative_path}
+            0::/docker)
+      end
+      let(:cpuacct_usage) { 1982 }
+      let(:cfs_period_micros) { 500 }
+      let(:cfs_quota_micros) { 98 }
+      let(:cpu_stats_number_of_periods) { 1 }
+      let(:cpu_stats_number_of_time_throttled) { 2 }
+      let(:cpu_stats_time_throttled_nanos) { 3 }
+      let(:cpu_stat_file_content) do
+        ["nr_periods #{cpu_stats_number_of_periods}", "nr_throttled #{cpu_stats_number_of_time_throttled}", "throttled_time #{cpu_stats_time_throttled_nanos}"]
+      end
+
+      before do
+        allow(::File).to receive(:exist?).and_return(true)
+        allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(hybrid_cgroup_content)
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpuacct#{relative_path}/cpuacct.usage").and_return([cpuacct_usage])
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpu#{relative_path}/cpu.cfs_period_us").and_return([cfs_period_micros])
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpu#{relative_path}/cpu.cfs_quota_us").and_return([cfs_quota_micros])
+        allow(IO).to receive(:readlines).with("/sys/fs/cgroup/cpu#{relative_path}/cpu.stat").and_return(cpu_stat_file_content)
+      end
+
+      it "uses v1 resources, not v2" do
+        result = described_class.get_all
+        expect(result[:cpuacct][:control_group]).to eq(relative_path)
+        expect(result[:cpuacct][:usage_nanos]).to eq(cpuacct_usage)
+        expect(result[:cpu][:control_group]).to eq(relative_path)
+        expect(result[:cpu][:cfs_period_micros]).to eq(cfs_period_micros)
+        expect(result[:cpu][:cfs_quota_micros]).to eq(cfs_quota_micros)
+      end
+    end
+  end
 end
 end end end
