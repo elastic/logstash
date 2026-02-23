@@ -36,7 +36,7 @@ The value of the link:https://www.elastic.co/guide/en/logstash/8.19/plugins-outp
 1. Log in to https://cloud.elastic.co/[Elastic Cloud].
 2. Find your **{es} endpoint URL**:
 
-* Select **Manage** next to your project. Then find the {{es}} endpoint under **Application endpoints, cluster and component IDs**. 
+* Select **Manage** next to your project. Then find the {es} endpoint under **Application endpoints, cluster and component IDs**. 
 * Alternatively, open your project, select the help icon, then select **Connection details**.
 
 [[api-key-serverless]]
