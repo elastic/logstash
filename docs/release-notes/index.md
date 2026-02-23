@@ -23,8 +23,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.2.6 [logstash-9.2.6-release-notes]
 
-### Features and enhancements [logstash-9.2.6-features-enhancements]
-
 ### Fixes [logstash-9.2.6-fixes]
 
 * Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18749](https://github.com/elastic/logstash/pull/18749)
