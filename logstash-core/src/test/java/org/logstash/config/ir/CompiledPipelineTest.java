@@ -827,6 +827,62 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
+    public void givenUnorderedExecutionGrowthThresholdFactorExqualsActualGrowthFactorThenItsNotChunked() throws Exception {
+        // When growthThresholdFactor equals actual growth factor, no chunking should occur
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        for (int i = 0; i < 4; i++) {
+            Event event = new Event();
+            event.setField("message", "test event " + i);
+            inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+        }
+
+        OutputSpy outputSpy = new OutputSpy();
+
+        // Filter that clones each event
+        // 4 input -> 4 original + 4 clones
+        IRubyObject cloneFilter = RubyUtil.RUBY.evalScriptlet(
+            String.join(
+                "\n",
+                "output = Object.new",
+                "output.define_singleton_method(:multi_filter) do |batch|",
+                "  result = batch.flat_map { |e| [e, LogStash::Event.new(e.to_hash)] }",
+                "  result",
+                "end",
+                "output"
+            )
+        );
+
+        final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+            () -> null,
+            () -> cloneFilter,
+            () -> outputSpy
+        );
+
+        // 4 input events -> 8 output events (4 original + 4 clones)
+        // configuredBatchSize = 4, growthThresholdFactor = 2
+        // 8 / 4 = 2 == 2, so NO chunking should occur
+		new CompiledPipeline(
+            pipelineIR,
+            pluginFactory,
+            null,
+            new CompiledPipeline.NoopEvaluationListener(),
+            4,    // configured batch size
+            2  // output chunking growth threshold factor
+		).buildExecution().compute(inputBatch, false, false);
+
+		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(8)); // 4*2 = 8 events
+
+		assertEquals("A batch should not be chunked when the growth threshold factor equals actual growth factor - unordered execution", 1, outputSpy.invocationCount.get());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
     public void givenUnorderedExecutionGrowthThresholdFactorSetWhenBatchSizeExceedsFactorThenItsChunked() throws Exception {
         // When the batch after filters has grown by more than the growthThresholdFactor, the batch should be chunked
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
@@ -1070,6 +1126,62 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(8)); // 4 * 2 = 8 events
 
 		assertEquals("A batch should not be chunked when growthThresholdFactor is 1000 (default) and batch size increase does not exceed the growth threshold factor - ordered execution", 1, outputSpy.invocationCount.get());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked"})
+    public void givenOrderedExecutionGrowthThresholdFactorExqualsActualGrowthFactorThenItsNotChunked() throws Exception {
+        // When growthThresholdFactor equals actual growth factor, no chunking should occur
+        final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
+        final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
+                IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
+                false, cve);
+
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        for (int i = 0; i < 4; i++) {
+            Event event = new Event();
+            event.setField("message", "test event " + i);
+            inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
+        }
+
+        OutputSpy outputSpy = new OutputSpy();
+
+        // Filter that triples each event (returns 2 events for every 1 input)
+        // In ordered execution, filter is called once per event
+        // 4 input events processed one-by-one -> 4 * 2 = 8 output events
+        IRubyObject cloneFilter = RubyUtil.RUBY.evalScriptlet(
+            String.join(
+                "\n",
+                "output = Object.new",
+                "output.define_singleton_method(:multi_filter) do |batch|",
+                "  batch.flat_map { |e| [e, LogStash::Event.new(e.to_hash)] }",
+                "end",
+                "output"
+            )
+        );
+
+        final RubyIntegration.PluginFactory pluginFactory = new FixedPluginFactory(
+            () -> null,
+            () -> cloneFilter,
+            () -> outputSpy
+        );
+
+        // 4 input events -> 8 output events (4 original + 4 clones)
+        // configuredBatchSize = 4, growthThresholdFactor = 2
+        // 8 / 4 = 2 == 2, so NO chunking should occur
+		new CompiledPipeline(
+            pipelineIR,
+            pluginFactory,
+            null,
+            new CompiledPipeline.NoopEvaluationListener(),
+            4,    // configured batch size
+            2  // output chunking growth threshold factor
+		).buildExecution(true).compute(inputBatch, false, false);
+
+		final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
+		MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(8)); // 4*2 = 8 events
+
+		assertEquals("A batch should not be chunked when the growth threshold factor equals actual growth factor - ordered execution", 1, outputSpy.invocationCount.get());
     }
 
     @Test
