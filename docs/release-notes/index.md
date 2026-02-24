@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.3.1 [logstash-9.3.1-release-notes]
 
 ### Fixes [logstash-9.3.1-fixes]
@@ -28,6 +29,15 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18750](https://github.com/elastic/logstash/pull/18750)
 
 ### Plugins [logstash-plugin-9.3.1-changes]
+=======
+## 9.2.6 [logstash-9.2.6-release-notes]
+
+### Fixes [logstash-9.2.6-fixes]
+
+* Fixed an issue where some logstash artifacts were shipped with a JDK targeting the wrong platform/architecture. [#18749](https://github.com/elastic/logstash/pull/18749)
+
+### Plugins [logstash-plugin-9.2.6-changes]
+>>>>>>> ee812458 (Release notes for 9.2.6 (#18798))
 
 **Collectd Codec - 3.1.1**
 
@@ -100,6 +110,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * Ensure gem artifact ships with all runtime dependencies [#49](https://github.com/logstash-plugins/logstash-output-webhdfs/pull/49)
 
 
+<<<<<<< HEAD
 ## 9.3.0 [logstash-9.3.0-release-notes]
 
 ::::{important}
@@ -177,6 +188,8 @@ Related:
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
 
+=======
+>>>>>>> ee812458 (Release notes for 9.2.6 (#18798))
 ## 9.2.5 [logstash-9.2.5-release-notes]
 
 
