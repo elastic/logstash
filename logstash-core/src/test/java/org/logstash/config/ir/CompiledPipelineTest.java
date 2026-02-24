@@ -810,7 +810,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
         // 4 input events -> 10 output events (4 original + 4 clones + 2 extra)
         // configuredBatchSize = 4, growthThresholdFactor = 1000 (default)
         // 10 / 4 = 2.5 <= 1000, so NO chunking should occur
-		new CompiledPipeline(
+        new CompiledPipeline(
             pipelineIR,
             pluginFactory,
             null,
@@ -827,7 +827,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenUnorderedExecutionGrowthThresholdFactorExqualsActualGrowthFactorThenItsNotChunked() throws Exception {
+    public void givenUnorderedExecutionGrowthThresholdFactorEqualsActualGrowthFactorThenItsNotChunked() throws Exception {
         // When growthThresholdFactor equals actual growth factor, no chunking should occur
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -1130,7 +1130,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
     @Test
     @SuppressWarnings({"unchecked"})
-    public void givenOrderedExecutionGrowthThresholdFactorExqualsActualGrowthFactorThenItsNotChunked() throws Exception {
+    public void givenOrderedExecutionGrowthThresholdFactorEqualsActualGrowthFactorThenItsNotChunked() throws Exception {
         // When growthThresholdFactor equals actual growth factor, no chunking should occur
         final ConfigVariableExpander cve = ConfigVariableExpander.withoutSecret(EnvironmentVariableProvider.defaultProvider());
         final PipelineIR pipelineIR = ConfigCompiler.configToPipelineIR(
@@ -1146,7 +1146,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         OutputSpy outputSpy = new OutputSpy();
 
-        // Filter that triples each event (returns 2 events for every 1 input)
+        // Filter that doubles each event (returns 2 events for every 1 input)
         // In ordered execution, filter is called once per event
         // 4 input events processed one-by-one -> 4 * 2 = 8 output events
         IRubyObject cloneFilter = RubyUtil.RUBY.evalScriptlet(
