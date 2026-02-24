@@ -258,8 +258,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 1000; // default growth threshold factor if not set
         }
-        int value = setting.convertToInteger().getIntValue();
-        return value <= 0 ? 1000 : value; // default growth threshold factor if invalid value
+        return setting.convertToInteger().getIntValue();
     }
 
     private int getBatchSize(final ThreadContext context) {
@@ -267,8 +266,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 125; // default batch size
         }
-        int value = setting.convertToInteger().getIntValue();
-        return value <= 0 ? 125 : value;
+        return setting.convertToInteger().getIntValue();
     }
 
     @JRubyMethod
