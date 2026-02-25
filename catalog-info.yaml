@@ -917,8 +917,6 @@ spec:
       repository: elastic/logstash
       pipeline_file: ".buildkite/version_bump_pipeline.yml"
       provider_settings:
-        build_branches: false
-        build_pull_requests: false
         trigger_mode: none
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
