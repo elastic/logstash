@@ -2,6 +2,7 @@
 
 import os
 import requests
+from requests.adapters import HTTPAdapter, Retry
 import yaml
 
 YAML_HEADER = '# yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json\n'
@@ -16,7 +17,10 @@ TEST_MATRIX = [
 
 
 def fetch_logstash_versions():
-    response = requests.get(VERSIONS_URL, timeout=30)
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[408, 502, 503, 504])
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+    response = session.get(VERSIONS_URL, timeout=30)
     response.raise_for_status()
     return yaml.safe_load(response.text)
 
