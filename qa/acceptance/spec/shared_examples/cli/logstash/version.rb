@@ -18,6 +18,15 @@
 require_relative "../../../spec_helper"
 require "logstash/version"
 
+# When testing pre-built artifacts via the snapshot/release acceptance pipeline,
+# ARTIFACT_TYPE is set and LS_VERSION holds the artifact's version.
+# Derive the expected version from the artifact (stripping -SNAPSHOT suffix).
+EXPECTED_VERSION = if ENV['ARTIFACT_TYPE'] && ENV['LS_VERSION']
+                     ENV['LS_VERSION'].sub(/-SNAPSHOT$/, '')
+                   else
+                     LOGSTASH_VERSION
+                   end
+
 shared_examples "logstash version" do |logstash|
   describe "logstash --version" do
     before :all do
@@ -32,12 +41,12 @@ shared_examples "logstash version" do |logstash|
     context "on [#{logstash.human_name}]" do
       it "returns the right logstash version" do
         result = logstash.run_command_in_path("bin/logstash --version")
-        expect(result).to run_successfully_and_output(/#{LOGSTASH_VERSION}/)
+        expect(result).to run_successfully_and_output(/#{EXPECTED_VERSION}/)
       end
       context "when also using the --path.settings argument" do
         it "returns the right logstash version" do
           result = logstash.run_command_in_path("bin/logstash --path.settings=/etc/logstash --version")
-          expect(result).to run_successfully_and_output(/#{LOGSTASH_VERSION}/)
+          expect(result).to run_successfully_and_output(/#{EXPECTED_VERSION}/)
         end
       end
     end
