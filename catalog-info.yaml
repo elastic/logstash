@@ -552,8 +552,8 @@ spec:
         filter_condition: >-
           build.branch !~ /^backport.*$/ && build.branch !~ /^mergify\/bp\/.*$/
         filter_enabled: true
-      cancel_intermediate_builds: false
-      skip_intermediate_builds: false
+      cancel_intermediate_builds: true
+      skip_intermediate_builds: true
       env:
         ELASTIC_SLACK_NOTIFICATIONS_ENABLED: 'true'
         SLACK_NOTIFICATIONS_CHANNEL: '#logstash-build'
