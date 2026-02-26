@@ -362,7 +362,7 @@ public final class CompiledPipeline {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Chunking batch of {} events into chunks with size={}",
+            LOGGER.debug("Chunking filtered batch of {} events into chunks with size={} to be sent to outputs",
                          totalSize, configuredBatchSize);
         }
 
@@ -428,7 +428,6 @@ public final class CompiledPipeline {
             final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
-
             return chunker(batch.size(), outputBatch, (chunk, isLastChunk) -> {
                 compiledOutputs.compute(chunk, flush && isLastChunk, shutdown && isLastChunk);
             });
