@@ -7,4 +7,10 @@ setup
 # use faster starting JRuby options see https://github.com/jruby/jruby/wiki/Improving-startup-time
 export JRUBY_OPTS="${JRUBY_OPTS---dev}"
 
-ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/rspec.rb" "$@"
+for arg in "$@"; do
+  case "$arg" in
+    x-pack/*|*/x-pack/*) LOGSTASH_XPACK=1; break ;;
+  esac
+done
+
+LOGSTASH_XPACK="$LOGSTASH_XPACK" ruby_exec "${LOGSTASH_HOME}/lib/bootstrap/rspec.rb" "$@"
