@@ -19,6 +19,7 @@ require_relative "../framework/fixture"
 require_relative "../framework/settings"
 require_relative "../framework/helpers"
 
+# SPLIT_ESTIMATE: 12
 describe "CLI >" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)

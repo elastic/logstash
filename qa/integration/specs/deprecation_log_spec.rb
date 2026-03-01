@@ -22,6 +22,7 @@ require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 
+# SPLIT_ESTIMATE: 8
 describe "Test Logstash Pipeline id" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
