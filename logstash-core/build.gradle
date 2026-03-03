@@ -259,4 +259,12 @@ dependencies {
     api group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     api group: 'commons-codec', name: 'commons-codec', version: '1.17.0'
     api group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.4.16'
+
+    // OpenTelemetry SDK for metrics export
+    def otelVersion = '1.59.0'
+    implementation platform("io.opentelemetry:opentelemetry-bom:${otelVersion}")
+    implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-sdk'
+    implementation 'io.opentelemetry:opentelemetry-sdk-metrics'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
 }
