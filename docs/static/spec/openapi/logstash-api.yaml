@@ -905,6 +905,14 @@ paths:
                           last_1_minute: 120
                           last_5_minutes: 110
                           last_15_minutes: 112
+                        p50:
+                          last_1_minute: 125
+                          last_5_minutes: 105
+                          last_15_minutes: 108
+                        p90:
+                          last_1_minute: 125
+                          last_5_minutes: 112
+                          last_15_minutes: 116  
                       byte_size:
                         current: 32767
                         average:
@@ -912,6 +920,14 @@ paths:
                           last_1_minute: 15234
                           last_5_minutes: 14012
                           last_15_minutes: 14567
+                        p50:
+                          last_1_minute: 15240
+                          last_5_minutes: 14030
+                          last_15_minutes: 14600
+                        p90:
+                          last_1_minute: 15300
+                          last_5_minutes: 14050
+                          last_15_minutes: 14630   
                     events:
                       duration_in_millis: 365495
                       in: 216610
@@ -1188,11 +1204,35 @@ paths:
                       heartbeat-ruby-stdout:
                         batch:
                           event_count:
+                            current: 78
                             average:
                               lifetime: 115
+                              last_1_minute: 120
+                              last_5_minutes: 110
+                              last_15_minutes: 112
+                            p50:
+                              last_1_minute: 125
+                              last_5_minutes: 105
+                              last_15_minutes: 108
+                            p90:
+                              last_1_minute: 125
+                              last_5_minutes: 112
+                              last_15_minutes: 116  
                           byte_size:
+                            current: 32767
                             average:
                               lifetime: 14820
+                              last_1_minute: 15234
+                              last_5_minutes: 14012
+                              last_15_minutes: 14567
+                            p50:
+                              last_1_minute: 15240
+                              last_5_minutes: 14030
+                              last_15_minutes: 14600
+                            p90:
+                              last_1_minute: 15300
+                              last_5_minutes: 14050
+                              last_15_minutes: 14630 
                         events:
                           queue_push_duration_in_millis: 159
                           in: 45
