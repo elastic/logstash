@@ -59,6 +59,47 @@ If you plan to modify the default pipeline settings, take into account the follo
 * On Linux platforms, Logstash labels its threads with descriptive names. For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer. Where possible, other threads are also labeled to help you identify their purpose.
 
 
+{applies_to}`stack: preview 9.4.0`
+## Batch fulfillment investigation [batch-fulfillment-investigation]
+
+In a perfectly balanced pipeline, the input and output flow rates are equal. This equilibrium means that every batch read from the queue is completely full, and there is no accumulation within the queue.
+
+To gain better visibility into the composition of batches spooled from the queue, Logstash gathers and exposes statistical data about the batch structure within the `node_stats` metricset.
+A snippet of the information returned is:
+
+```json
+pipelines:
+  a-pipeline:
+    batch:
+      event_count:
+        current: 78
+        average:
+          lifetime: 115
+          last_1_minute: 120
+          last_5_minutes: 110
+          last_15_minutes: 112
+        p50:
+          last_1_minute: 125
+          last_5_minutes: 105
+          last_15_minutes: 108
+        p90:
+          last_1_minute: 125
+          last_5_minutes: 112
+          last_15_minutes: 116  
+```
+
+Using this data, one can analyze the batch fulfillment structure to verify if the `batch_size` is consistently met across different time periods.
+
+The ideal scenario is when the 50th and 90th percentiles for all time window metrics match the specified `batch_size`, indicating no queueing.
+
+If this condition is not met, the `batch_delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
+
+* An increase in `queue.events_count`, if a persistent queue is used.
+* An increment in `queue_push_duration_in_millis, if in memory queue is used.
+
+An increase in either of the latter two metrics signifies that the pipeline is applying backpressure to the upstream system, resulting in decreased overall pipeline performance.
+
+
 ## Profiling the heap [profiling-the-heap]
 
 When tuning Logstash you may have to adjust the heap size. You can use the [VisualVM](https://visualvm.github.io/) tool to profile the heap. The **Monitor** pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample **Monitor** panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
