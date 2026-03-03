@@ -111,6 +111,12 @@ module LogStash
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
             Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
+                # OpenTelemetry metrics export settings
+           Setting::BooleanSetting.new("otel.metrics.enabled", false),
+           Setting::StringSetting.new("otel.metrics.endpoint", "http://localhost:4317"),
+          Setting::NumericSetting.new("otel.metrics.interval", 10), # seconds
+           Setting::StringSetting.new("otel.metrics.protocol", "grpc", true, ["grpc", "http"]),
+   Setting::NullableStringSetting.new("otel.resource.attributes", nil, false) # key=value,key2=value2 format
   # post_process
   ].each {|setting| SETTINGS.register(setting) }
 
