@@ -484,26 +484,6 @@ module LogStash
       end
     end
 
-    class SplittableStringArray < ArrayCoercible
-      DEFAULT_TOKEN = ","
-
-      def initialize(name, klass, default, strict = true, tokenizer = DEFAULT_TOKEN, &validator_proc)
-        @element_class = klass
-        @token = tokenizer
-        super(name, klass, default, strict, &validator_proc)
-      end
-
-      def coerce(value)
-        if value.is_a?(Array)
-          value
-        elsif value.nil?
-          []
-        else
-          value.split(@token).map(&:strip)
-        end
-      end
-    end
-
     class StringArray < ArrayCoercible
       def initialize(name, default, strict = true, possible_strings = [], &validator_proc)
         @possible_strings = possible_strings
