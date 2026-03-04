@@ -24,19 +24,27 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Container for a set of events from queue to be processed by filters/outputs.
  * */
 public class Batch implements Closeable {
 
+    private enum State {
+        UNREAD,
+        READ,
+        ACKED,
+        ;
+    }
+
     private final List<Queueable> elements;
 
     private final long firstSeqNum;
 
     private final Queue queue;
-    private final AtomicBoolean closed;
+
+    private final AtomicReference<State> state;
 
     public Batch(SequencedList<byte[]> serialized, Queue q) {
         this(
@@ -49,25 +57,34 @@ public class Batch implements Closeable {
         this.elements = deserializeElements(elements, q);
         this.firstSeqNum = elements.isEmpty() ? -1L : firstSeqNum;
         this.queue = q;
-        this.closed = new AtomicBoolean(false);
+        this.state = new AtomicReference<>(State.READ);
     }
 
     // close acks the batch ackable events
     @Override
     public void close() throws IOException {
-        if (closed.getAndSet(true) == false) {
-            if (firstSeqNum >= 0L) {
-                this.queue.ack(firstSeqNum, elements.size());
+        switch(state.compareAndExchange(State.READ, State.ACKED)) {
+            case READ -> {
+                if (firstSeqNum >= 0L) {
+                    this.queue.ack(firstSeqNum, elements.size());
+                }
             }
-        } else {
-            // TODO: how should we handle double-closing?
-            throw new IOException("double closing batch");
+            // TODO: how should we handle illegal states?
+            case UNREAD -> throw new IOException("cannot ack batch that was previously un-read");
+            case ACKED -> throw new IOException("cannot double close batch");
         }
     }
 
     public void unread() throws IOException {
-        if (firstSeqNum >= 0L) {
-            this.queue.unread(firstSeqNum, elements.size());
+        switch (state.compareAndExchange(State.READ, State.UNREAD)) {
+            case READ -> {
+                if (firstSeqNum >= 0L) {
+                    this.queue.unread(firstSeqNum, elements.size());
+                }
+            }
+            // TODO: how should we handle illegal states?
+            case ACKED -> throw new IOException("cannot un-read batch that was previously acked");
+            case UNREAD -> Queue.LOGGER.warn(() -> String.format("cannot double un-read batch (dirpath=`%s` firstSeqNum=%s size=%s)", queue.getDirPath(), firstSeqNum, elements.size()));
         }
     }
 

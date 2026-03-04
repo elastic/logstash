@@ -172,10 +172,6 @@ public class QueueTest {
 
     @Test
     public void unreadEvents() throws IOException {
-        final Settings queueSettings = TestSettings.fileSettingsBuilder(dataPath)
-                .compressionCodecFactory(CompressionCodec.fromConfigValue("disabled"))
-                .capacity(1024)
-                .build();
         try (Queue q = new Queue(TestSettings.fileSettingsBuilder(dataPath).capacity(1024).build())) {
             q.open();
 
@@ -192,6 +188,7 @@ public class QueueTest {
             while (q.unreadTailPages.size() > 1) {
                 batches.add(q.readBatch(2, 500L));
             }
+            final long initialUnreadCount = q.getUnreadCount();
 
             // ack the first batch
             final Batch ackBatch = batches.remove(0);
@@ -201,6 +198,12 @@ public class QueueTest {
             final Batch unreadBatch = batches.remove(0);
             unreadBatch.unread();
             assertThat(q.unreadTailPages.size(), is(2));
+            assertThat(q.getUnreadCount(), is(equalTo(initialUnreadCount + unreadBatch.size())));
+
+            // unread it again, to ensure we're idempotent
+            unreadBatch.unread();
+            assertThat(q.unreadTailPages.size(), is(2));
+            assertThat(q.getUnreadCount(), is(equalTo(initialUnreadCount + unreadBatch.size())));
 
             // read another batch, ensure it is the same as the one we previously unread
             final long unreadBatchFirstSeqNum = unreadBatch.firstSeqNum();

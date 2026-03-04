@@ -97,7 +97,7 @@ public final class Queue implements Closeable {
     private FileLock dirLock;
     private final static String LOCK_NAME = ".lock";
 
-    private static final Logger LOGGER = LogManager.getLogger(Queue.class);
+    static final Logger LOGGER = LogManager.getLogger(Queue.class);
 
     private final Metric metric;
 
@@ -758,20 +758,22 @@ public final class Queue implements Closeable {
         }
     }
 
-    public void unread(final long firstUnreadSeqNum, final int unreadCount) throws IOException {
+    public void unread(final long firstUnreadSeqNum, final int eventCount) throws IOException {
         lock.lock();
         try {
             if (containsSeq(headPage, firstUnreadSeqNum)) {
-                this.headPage.unread(firstUnreadSeqNum, unreadCount);
+                this.headPage.unread(firstUnreadSeqNum, eventCount);
             } else {
                 final int resultIndex = binaryFindPageForSeqnum(firstUnreadSeqNum);
                 final Page relevantTailPage = this.tailPages.get(resultIndex);
-                if (relevantTailPage.unread(firstUnreadSeqNum, unreadCount)) {
+                if (relevantTailPage.unread(firstUnreadSeqNum, eventCount)) {
                     this.unreadTailPages.add(0, relevantTailPage);
                 }
                 notEmpty.signalAll();
             }
-            this.unreadCount -= unreadCount;
+            // guarded by lock
+            //noinspection NonAtomicOperationOnVolatileField
+            this.unreadCount += eventCount;
         } finally {
             lock.unlock();
         }
