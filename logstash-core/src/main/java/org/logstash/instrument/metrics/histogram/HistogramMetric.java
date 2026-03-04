@@ -22,8 +22,11 @@ package org.logstash.instrument.metrics.histogram;
 import co.elastic.logstash.api.UserMetric;
 import org.HdrHistogram.Histogram;
 import org.logstash.instrument.metrics.MetricType;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric.ValueHistogram;
 
-public interface HistogramMetric extends UserMetric<Histogram>, org.logstash.instrument.metrics.Metric<Histogram> {
+public interface HistogramMetric extends
+        UserMetric<ValueHistogram>,
+        org.logstash.instrument.metrics.Metric<ValueHistogram> {
 
      /**
       * Records a value in the histogram. The value must be non-negative.
@@ -45,9 +48,9 @@ public interface HistogramMetric extends UserMetric<Histogram>, org.logstash.ins
          }
 
          @Override
-         public Histogram getValue() {
+         public ValueHistogram getValue() {
              // small empty histogram to avoid null checks in consumers
-             return new Histogram(1);
+             return ValueHistogram.of(new Histogram(1));
          }
 
          @Override

@@ -19,9 +19,9 @@
 
 package org.logstash.instrument.metrics.histogram;
 
-import org.HdrHistogram.Histogram;
 import org.junit.Before;
 import org.junit.Test;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric.ValueHistogram;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -39,7 +39,7 @@ public class LifetimeHistogramMetricTest {
     @Test
     public void givenValueRecordedThen90thPercentileFromGetValueReflectsIt() {
         sut.recordValue(1000);
-        Histogram h = sut.getValue();
+        ValueHistogram h = sut.getValue();
         assertEquals(1, h.getTotalCount());
         assertEquals(1000L, h.getValueAtPercentile(90));
     }
@@ -53,12 +53,12 @@ public class LifetimeHistogramMetricTest {
     @Test
     public void givenLifetimeHistogramWhenRecordingSecondLargerValueThenP90IncreasesAndPreviousP90MovesToLowerPercentile() {
         sut.recordValue(100);
-        Histogram afterFirst = sut.getValue();
+        ValueHistogram afterFirst = sut.getValue();
         long p90AfterFirst = afterFirst.getValueAtPercentile(90);
         assertEquals(100L, p90AfterFirst);
 
         sut.recordValue(1000);
-        Histogram afterSecond = sut.getValue();
+        ValueHistogram afterSecond = sut.getValue();
         long p90AfterSecond = afterSecond.getValueAtPercentile(90);
         assertTrue("90th percentile should increase after recording a larger value", p90AfterSecond > p90AfterFirst);
         assertEquals(1000L, p90AfterSecond);

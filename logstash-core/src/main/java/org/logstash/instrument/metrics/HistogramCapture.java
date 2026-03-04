@@ -19,18 +19,18 @@
 
 package org.logstash.instrument.metrics;
 
-import org.HdrHistogram.Histogram;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric.ValueHistogram;
 
 public class HistogramCapture extends DatapointCapture {
 
-    private final Histogram hdrHistogram;
+    private final ValueHistogram hdrHistogram;
 
-    public HistogramCapture(Histogram histogram, long nanoTime) {
+    public HistogramCapture(ValueHistogram histogram, long nanoTime) {
         super(nanoTime);
         this.hdrHistogram = histogram;
     }
 
-    public Histogram getHdrHistogram() {
+    public ValueHistogram getValueHistogram() {
         return hdrHistogram;
     }
 }

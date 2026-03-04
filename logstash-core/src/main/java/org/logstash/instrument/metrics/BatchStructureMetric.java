@@ -21,10 +21,10 @@ package org.logstash.instrument.metrics;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.HdrHistogram.Histogram;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.logstash.instrument.metrics.histogram.HistogramMetric;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric.ValueHistogram;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -112,9 +112,9 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         private final long percentile50;
         private final long percentile90;
 
-        public HistogramMetricData(Histogram hdrHistogram) {
-            percentile50 = hdrHistogram.getValueAtPercentile(50);
-            percentile90 = hdrHistogram.getValueAtPercentile(90);
+        public HistogramMetricData(ValueHistogram histogram) {
+            percentile50 = histogram.getValueAtPercentile(50);
+            percentile90 = histogram.getValueAtPercentile(90);
         }
 
         @JsonProperty("p50")
@@ -136,7 +136,7 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         }
     }
 
-    static class HistogramRetentionWindow extends RetentionWindow<HistogramCapture, Histogram> {
+    static class HistogramRetentionWindow extends RetentionWindow<HistogramCapture, ValueHistogram> {
 
         private static final Comparator<HistogramCapture> HISTOGRAM_CAPTURE_COMPARATOR =
                 Comparator.comparingLong(HistogramCapture::nanoTime);
@@ -160,13 +160,14 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         }
 
         @Override
-        Optional<Histogram> calculateValue() {
+        Optional<ValueHistogram> calculateValue() {
             return calculateFromBaseline((compareCapture, baselineCapture) -> {
                 if (compareCapture == null) { return Optional.empty(); }
                 if (baselineCapture == null) { return Optional.empty(); }
 
-                var result = compareCapture.getHdrHistogram().copy();
-                result.subtract(baselineCapture.getHdrHistogram());
+//                var result = compareCapture.getValueHistogram();
+//                result.subtract(baselineCapture.getValueHistogram());
+                var result = compareCapture.getValueHistogram().subtract(baselineCapture.getValueHistogram());
                 return Optional.of(result);
             });
         }

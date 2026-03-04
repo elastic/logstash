@@ -25,9 +25,8 @@ import org.HdrHistogram.Histogram;
 import org.HdrHistogram.Recorder;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
-public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implements HistogramMetric {
+public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMetric.ValueHistogram> implements HistogramMetric {
 
     private final Recorder recorder;
     private Histogram lifetimeSnapshot;
@@ -51,10 +50,10 @@ public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implement
     }
 
     @Override
-    public synchronized Histogram getValue() {
+    public synchronized ValueHistogram getValue() {
         Histogram uncommitted = recorder.getIntervalHistogram();
         this.lifetimeSnapshot = copyAdding(lifetimeSnapshot, uncommitted);
-        return this.lifetimeSnapshot;
+        return ValueHistogram.of(this.lifetimeSnapshot);
     }
 
     private Histogram copyAdding(Histogram lifetime, Histogram other) {
@@ -66,5 +65,36 @@ public class LifetimeHistogramMetric extends AbstractMetric<Histogram> implement
         result.add(other);
 
         return result;
+    }
+
+    public static class ValueHistogram {
+        private final Histogram delegate;
+
+        public static ValueHistogram of(Histogram value) {
+            return new ValueHistogram(value);
+        }
+
+        private ValueHistogram(Histogram delegate) {
+            this.delegate = delegate;
+        }
+
+        public long getValueAtPercentile(double percentile) {
+            return delegate.getValueAtPercentile(percentile);
+        }
+
+        public long getTotalCount() {
+            return delegate.getTotalCount();
+        }
+
+        public ValueHistogram subtract(ValueHistogram other) {
+            if (Objects.isNull(other) || Objects.isNull(other.delegate) || other.delegate.getTotalCount() <= 0) {
+                return this;
+            }
+
+            final Histogram result = this.delegate.copy();
+            result.subtract(other.delegate);
+
+            return of(result);
+        }
     }
 }
