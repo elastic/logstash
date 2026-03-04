@@ -104,7 +104,7 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
     }
 
     /**
-     * Presentation class to render histogram data, leverage it's JSON serializability.
+     * Presentation class to render histogram data, leverage its JSON serializability.
      * */
     public static class HistogramMetricData implements Serializable {
         @Serial

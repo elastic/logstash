@@ -25,7 +25,6 @@ import org.junit.Test;
 import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
 import org.logstash.testutils.time.ManualAdvanceClock;
 
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -37,8 +36,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class BatchStructureMetricTest {
-
-    private final SecureRandom random = new SecureRandom();
 
     private ManualAdvanceClock clock;
     private LifetimeHistogramMetric lifetimeHistogram;
@@ -89,7 +86,7 @@ public class BatchStructureMetricTest {
 
         // Record values for 4 minutes, recording low values, 80% of the time 100, 20% of the time 200
         for (int i = 0; i < 4 * 60; i++) {
-            if (random.nextInt(100) < 80) {
+            if (i % 5 < 4) {
                 lifetimeHistogram.recordValue(100);
             } else {
                 lifetimeHistogram.recordValue(200);
@@ -100,7 +97,7 @@ public class BatchStructureMetricTest {
 
         // Then for 1 minute record a spike
         for (int i = 0; i < 60; i++) {
-            if (random.nextInt(100) < 80) {
+            if (i % 5 < 4) {
                 lifetimeHistogram.recordValue(1000);
             } else {
                 lifetimeHistogram.recordValue(1500);
@@ -131,7 +128,7 @@ public class BatchStructureMetricTest {
 
         // Record values for 4 minutes, recording low values, 80% of the time 100, 20% of the time 200
         for (int i = 0; i < 4 * 60; i++) {
-            if (random.nextInt(100) < 80) {
+            if (i % 5 < 4) {
                 lifetimeHistogram.recordValue(100);
             } else {
                 lifetimeHistogram.recordValue(200);
