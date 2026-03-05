@@ -29,8 +29,7 @@ import java.util.Objects;
 public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMetric.ValueHistogram> implements HistogramMetric {
 
     private final Recorder recorder;
-    private Histogram lifetimeSnapshot;
-
+    private volatile Histogram lifetimeSnapshot;
     public static UserMetric.Factory<HistogramMetric> FACTORY =
             HistogramMetric.PROVIDER.getFactory(LifetimeHistogramMetric::new);
 
