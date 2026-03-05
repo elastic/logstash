@@ -169,6 +169,7 @@ dependency,dependencyUrl,licenseOverride,copyright,sourceURL
 "org.eclipse.jdt:org.eclipse.jdt.core:",http://www.eclipse.org/jdt,EPL-1.0
 "org.eclipse.osgi:org.eclipse.osgi:",http://www.eclipse.org/jdt,EPL-1.0
 "org.eclipse.text:org.eclipse.text:",http://www.eclipse.org/jdt,EPL-1.0
+"org.hdrhistogram:HdrHistogram:",https://github.com/HdrHistogram/HdrHistogram,BSD-2-Clause
 "org.javassist:javassist:",https://github.com/jboss-javassist/javassist,Apache-2.0
 "org.jruby:jruby-core:",http://jruby.org/,EPL-2.0
 "org.logstash:jvm-options-parser:",http://github.com/elastic/logstash,Apache-2.0

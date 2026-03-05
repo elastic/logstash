@@ -8,6 +8,8 @@ import org.logstash.ext.JrubyEventExtLibrary;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.gauge.LazyDelegatingGauge;
+import org.logstash.instrument.metrics.histogram.HistogramMetric;
+import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -23,6 +25,8 @@ class QueueReadClientBatchMetrics {
     private LongCounter pipelineMetricBatchCount;
     private LongCounter pipelineMetricBatchByteSize;
     private LongCounter pipelineMetricBatchTotalEvents;
+    private HistogramMetric pipelineMetricBatchByteSizeFlowHistogram;
+    private HistogramMetric pipelineMetricBatchEventCountFlowHistogram;
     private final SecureRandom random = new SecureRandom();
     private LazyDelegatingGauge currentBatchDimensions;
 
@@ -39,6 +43,12 @@ class QueueReadClientBatchMetrics {
             pipelineMetricBatchTotalEvents = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_EVENTS);
             pipelineMetricBatchByteSize = LongCounter.fromRubyBase(batchNamespace, BATCH_TOTAL_BYTES);
             currentBatchDimensions = LazyDelegatingGauge.fromRubyBase(batchNamespace, BATCH_CURRENT_KEY);
+            pipelineMetricBatchByteSizeFlowHistogram = batchNamespace.asApiMetric()
+                    .namespace(BATCH_HISTOGRAM_BYTE_SIZE_KEY)
+                    .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
+            pipelineMetricBatchEventCountFlowHistogram = batchNamespace.asApiMetric()
+                    .namespace(BATCH_HISTOGRAM_EVENT_COUNT_KEY)
+                    .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
         }
     }
 
@@ -72,9 +82,12 @@ class QueueReadClientBatchMetrics {
                 totalByteSize += rubyEvent.getEvent().estimateMemory();
             }
             pipelineMetricBatchCount.increment();
-            pipelineMetricBatchTotalEvents.increment(batch.filteredSize());
+            int batchEventCount = batch.filteredSize();
+            pipelineMetricBatchTotalEvents.increment(batchEventCount);
             pipelineMetricBatchByteSize.increment(totalByteSize);
-            currentBatchDimensions.set(Arrays.asList(batch.filteredSize(), totalByteSize));
+            currentBatchDimensions.set(Arrays.asList(batchEventCount, totalByteSize));
+            pipelineMetricBatchByteSizeFlowHistogram.recordValue(totalByteSize);
+            pipelineMetricBatchEventCountFlowHistogram.recordValue(batchEventCount);
         } catch (IllegalArgumentException e) {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
