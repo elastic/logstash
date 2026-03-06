@@ -372,7 +372,8 @@ public final class CompiledPipeline {
         for (int offset = 0; offset < totalSize; offset += configuredBatchSize) {
             int end = Math.min(offset + configuredBatchSize, totalSize);
             boolean isLastChunk = (end == totalSize);
-            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(filteredBatch.subList(offset, end));
+            @SuppressWarnings("unchecked")
+            RubyArray<RubyEvent> chunk = (RubyArray<RubyEvent>) Create.newArray(RubyUtil.RUBY.getCurrentContext(), filteredBatch.subList(offset, end));
             consumer.accept(chunk, isLastChunk);
         }
         return totalSize;

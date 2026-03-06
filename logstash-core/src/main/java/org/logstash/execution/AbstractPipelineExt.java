@@ -265,7 +265,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 1000; // default growth threshold factor if not set
         }
-        return setting.convertToInteger().getIntValue();
+        return Convert.toInt(context, setting.convertToInteger());
     }
 
     private int getBatchSize(final ThreadContext context) {
@@ -273,7 +273,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         if (setting.isNil()) {
             return 125; // default batch size
         }
-        return setting.convertToInteger().getIntValue();
+        return Convert.toInt(context, setting.convertToInteger());
     }
 
     @JRubyMethod
@@ -638,7 +638,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         storeMetric(context, batchSizeNamespace, byteSizePerBatch);
 
         HistogramMetric batchByteSizeHistogramMetric = metric.namespace(context,
-                pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                pipelineNamespacedPath(context, BATCH_KEY)).asApiMetric()
                 .namespace(BATCH_HISTOGRAM_BYTE_SIZE_KEY)
                 .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
 
@@ -646,7 +646,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         storeMetric(context, batchSizeNamespace, batchStructureMetric);
 
         HistogramMetric batchEventCountHistogramMetric = metric.namespace(context,
-                        pipelineNamespacedPath(BATCH_KEY)).asApiMetric()
+                        pipelineNamespacedPath(context, BATCH_KEY)).asApiMetric()
                 .namespace(BATCH_HISTOGRAM_EVENT_COUNT_KEY)
                 .register(LIFETIME_HISTOGRAM_KEY, LifetimeHistogramMetric.FACTORY);
         this.batchEventCountStructureMetric = new BatchStructureMetric(BATCH_STRUCTURE_METRIC_KEY, batchEventCountHistogramMetric);
