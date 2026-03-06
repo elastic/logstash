@@ -145,21 +145,9 @@ module LogStash
       # in the context of calling Bundler::CLI this is not really required since Bundler::CLI will look at
       # Bundler.settings[:gemfile] unlike Bundler.setup. For the sake of consistency and defensive/future proofing, let's keep it here.
       ENV["BUNDLE_GEMFILE"] = LogStash::Environment::GEMFILE_PATH
-      # Disable bundler's self-manager auto-switching in JRuby 10 by setting BUNDLER_VERSION
-      ENV["BUNDLER_VERSION"] = "system"
 
       require "bundler"
       require "bundler/cli"
-
-      # JRuby 10 bundler includes a self-manager feature that tries to restart bundler.
-      # Disable it immediately after requiring bundler to prevent restart attempts.
-      if defined?(::Bundler::SelfManager)
-        ::Bundler::SelfManager.module_exec do
-          def self.restart_with_locked_bundler_if_needed(original_lockfile, **)
-            # No-op: don't attempt to restart with locked bundler
-          end
-        end
-      end
 
       require "fileutils"
       # create Gemfile from template iff it does not exist
