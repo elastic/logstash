@@ -262,6 +262,9 @@ class LogStash::Agent
     converge_state_with_resolved_actions([action])
   end
 
+  ##
+  # Reload a pipeline and wait for it to fully reload.
+  # @param pipeline_id [String]
   def reload_pipeline(pipeline_id)
     pipeline = get_pipeline(pipeline_id)
     return if pipeline.nil?
