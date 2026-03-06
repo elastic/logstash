@@ -16,6 +16,7 @@
 # under the License.
 
 require "logstash/util/loggable"
+require "logstash/instrument/periodic_poller/cgroup"
 
 java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
 java_import 'io.opentelemetry.api.common.Attributes'
@@ -24,10 +25,9 @@ java_import 'io.opentelemetry.api.common.AttributeKey'
 module LogStash module Instrument module PeriodicPoller
   # Exports Logstash metrics to an OpenTelemetry-compatible backend via OTLP.
   #
-  # This class does NOT extend Base because:
-  # - All metrics use observable callbacks that the OTel SDK invokes at export time
-  # - The OTel SDK handles its own export timing via PeriodicMetricReader
-  # - No periodic polling/TimerTask is needed from the Ruby side
+  # This class extends Base to use the periodic polling mechanism for collecting
+  # metrics into the metric store. The OTel SDK callbacks then read from the
+  # refreshed snapshot during export.
   #
   # Configuration in logstash.yml:
   #   otel.metrics.enabled: true
@@ -36,8 +36,7 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.metrics.protocol: "grpc"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #
-  class Otel
-    include LogStash::Util::Loggable
+  class OTel < Base
 
     def initialize(metric, agent, settings)
       @agent = agent
@@ -54,6 +53,12 @@ module LogStash module Instrument module PeriodicPoller
         settings.get("otel.resource.attributes")
       )
 
+      # Call Base initializer - sets up @metric and configures the TimerTask
+      super(metric, :polling_interval => settings.get("otel.metrics.interval"))
+
+      # Take initial snapshot
+      @snapshot = @metric_store.snapshot_metric
+
       # Register all metrics with callbacks - SDK invokes them at export time
       register_global_metrics
       register_pipeline_metrics
@@ -64,18 +69,59 @@ module LogStash module Instrument module PeriodicPoller
                   :interval => settings.get("otel.metrics.interval"))
     end
 
-    def start
-      # No-op: OTel SDK handles export timing via PeriodicMetricReader
-      logger.debug("OpenTelemetry metrics exporter active")
-    end
-
     def stop
       logger.info("Stopping OpenTelemetry metrics poller")
+      super
       @otel_service.flush
       @otel_service.shutdown
     end
 
+    def collect
+      collect_cgroup_metrics
+      collect_pipeline_metrics
+      collect_dlq_metrics
+      # Refresh snapshot after collecting metrics so OTel callbacks read fresh data
+      @snapshot = @metric_store.snapshot_metric
+    end
+
     private
+
+    def collect_cgroup_metrics
+      if stats = Cgroup.get
+        save_metric([:os], :cgroup, stats)
+      end
+    end
+
+    # Recursive function to save cgroup metrics to the metric store
+    def save_metric(namespace, k, v)
+      if v.is_a?(Hash)
+        v.each do |new_key, new_value|
+          n = namespace.dup
+          n << k.to_sym
+          save_metric(n, new_key, new_value)
+        end
+      else
+        metric.gauge(namespace, k.to_sym, v)
+      end
+    end
+
+    def collect_dlq_metrics
+      pipelines = @agent.running_user_defined_pipelines
+      pipelines.each do |_, pipeline|
+        unless pipeline.nil?
+          pipeline.collect_dlq_stats
+        end
+      end
+    end
+
+    def collect_pipeline_metrics
+      pipelines = @agent.running_user_defined_pipelines
+      pipelines.each do |_, pipeline|
+        unless pipeline.nil?
+          pipeline.collect_stats
+        end
+      end
+    end
 
     # Register Pipeline metrics from pipeline.rb
     def register_pipeline_metrics
@@ -311,8 +357,7 @@ module LogStash module Instrument module PeriodicPoller
 
     # Helper to get metric values from the store
     def get_metric_value(*path)
-      snapshot = @metric_store.snapshot_metric
-      store = snapshot.metric_store
+      store = @snapshot.metric_store
 
       result = store.get_shallow(*path)
       result.is_a?(Hash) ? nil : result&.value
