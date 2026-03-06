@@ -262,6 +262,28 @@ class LogStash::Agent
     converge_state_with_resolved_actions([action])
   end
 
+  def reload_pipeline(pipeline_id)
+    pipeline = get_pipeline(pipeline_id)
+    return if pipeline.nil?
+    converge_result = @convergence_lock.synchronize do
+      pipeline_config = pipeline.pipeline_config
+      converge_state([LogStash::PipelineAction::Reload.new(pipeline_config, metric)])
+    end
+
+    update_metrics(converge_result)
+
+    logger.info(
+      "Pipelines running",
+      :count => running_pipelines.size,
+      :running_pipelines => running_pipelines.keys,
+      :non_running_pipelines => non_running_pipelines.keys
+    ) if converge_result.success? && converge_result.total > 0
+
+    dispatch_events(converge_result)
+
+    converge_result
+  end
+
   # Calculate the Logstash uptime in milliseconds
   #
   # @return [Integer] Uptime in milliseconds
