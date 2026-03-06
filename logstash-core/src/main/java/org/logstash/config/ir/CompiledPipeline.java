@@ -21,6 +21,8 @@ package org.logstash.config.ir;
 
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
 import org.logstash.Rubyfier;
@@ -370,7 +372,8 @@ public final class CompiledPipeline {
         for (int offset = 0; offset < totalSize; offset += configuredBatchSize) {
             int end = Math.min(offset + configuredBatchSize, totalSize);
             boolean isLastChunk = (end == totalSize);
-            RubyArray<RubyEvent> chunk = RubyUtil.RUBY.newArray(filteredBatch.subList(offset, end));
+            @SuppressWarnings("unchecked")
+            RubyArray<RubyEvent> chunk = (RubyArray<RubyEvent>) Create.newArray(RubyUtil.RUBY.getCurrentContext(), filteredBatch.subList(offset, end));
             consumer.accept(chunk, isLastChunk);
         }
         return totalSize;
@@ -378,7 +381,7 @@ public final class CompiledPipeline {
 
     public final class CompiledOrderedExecution extends CompiledExecution {
 
-        @SuppressWarnings({"unchecked"}) private final RubyArray<RubyEvent> EMPTY_ARRAY = RubyUtil.RUBY.newEmptyArray();
+        @SuppressWarnings({"unchecked"}) private final RubyArray<RubyEvent> EMPTY_ARRAY = (RubyArray<RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
 
         @Override
         public int compute(final QueueBatch batch, final boolean flush, final boolean shutdown) {
@@ -388,8 +391,9 @@ public final class CompiledPipeline {
         @Override
         @SuppressWarnings({"unchecked"})
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-            final RubyArray<RubyEvent> filteredBatch = RubyUtil.RUBY.newArray(1);
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = (RubyArray<RubyEvent>) Create.newArray(context);
+            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> filteredBatch = (RubyArray<RubyEvent>) Create.allocArray(context, 1);
             final List<RubyEvent> result = new ArrayList<>();
 
             // send batch one-by-one as single-element batches down the filters
@@ -424,8 +428,10 @@ public final class CompiledPipeline {
         @Override
         @SuppressWarnings({"unchecked"})
         public int compute(final Collection<RubyEvent> batch, final boolean flush, final boolean shutdown) {
-            final RubyArray<RubyEvent> outputBatch = RubyUtil.RUBY.newArray();
-            final Collection<RubyEvent> result = compiledFilters.compute(RubyArray.newArray(RubyUtil.RUBY, batch), flush, shutdown);
+            final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+            // we know for now this comes from batch.collection() which returns a LinkedHashSet
+            final Collection<RubyEvent> result = compiledFilters.compute(Create.newArray(context, batch), flush, shutdown);
+            @SuppressWarnings({"unchecked"}) final RubyArray<RubyEvent> outputBatch = (RubyArray<RubyEvent>) Create.allocArray(context, result.size());
             copyNonCancelledEvents(result, outputBatch);
             compiledFilters.clear();
             return chunker(batch.size(), outputBatch, (chunk, isLastChunk) -> {
