@@ -50,13 +50,13 @@ import java.util.function.Supplier;
  * - Manages the lifecycle of the OTel exporter
  *
  * Usage from Ruby:
- *   java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
- *   service = OtelMetricsService.new(endpoint, node_id, node_name, interval_secs, "grpc", nil)
+ *   java_import 'org.logstash.instrument.metrics.otel.OTelMetricsService'
+ *   service = OTelMetricsService.new(endpoint, node_id, node_name, interval_secs, "grpc", nil)
  *   service.registerGauge("metric.name", "description", "unit", -> { get_value() }, Attributes.empty)
  */
-public class OtelMetricsService {
+public class OTelMetricsService {
 
-    private static final Logger LOGGER = LogManager.getLogger(OtelMetricsService.class);
+    private static final Logger LOGGER = LogManager.getLogger(OTelMetricsService.class);
 
     private final SdkMeterProvider meterProvider;
     private final Meter meter;
@@ -75,7 +75,7 @@ public class OtelMetricsService {
      * @param protocol          "grpc" or "http"
      * @param resourceAttributes Additional resource attributes (comma-separated key=value pairs)
      */
-    public OtelMetricsService(String endpoint, String nodeId, String nodeName,
+    public OTelMetricsService(String endpoint, String nodeId, String nodeName,
                               int intervalSeconds, String protocol, String resourceAttributes) {
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}s)",
                 endpoint, protocol, intervalSeconds);

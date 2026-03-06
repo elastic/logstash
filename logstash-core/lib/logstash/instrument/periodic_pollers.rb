@@ -40,7 +40,7 @@ module LogStash module Instrument
       # Add OpenTelemetry metrics exporter if enabled
       if otel_metrics_enabled?
         require "logstash/instrument/periodic_poller/otel"
-        @periodic_pollers << PeriodicPoller::Otel.new(metric, agent, @settings)
+        @periodic_pollers << PeriodicPoller::OTel.new(metric, agent, @settings)
         logger.info("OpenTelemetry metrics export enabled")
       end
     end
