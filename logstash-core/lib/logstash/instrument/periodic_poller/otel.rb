@@ -16,9 +16,9 @@
 # under the License.
 
 require "logstash/util/loggable"
-require "logstash/instrument/periodic_poller/cgroup"
+require "logstash/instrument/periodic_poller/os"
 
-java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
+java_import 'org.logstash.instrument.metrics.otel.OTelMetricsService'
 java_import 'io.opentelemetry.api.common.Attributes'
 java_import 'io.opentelemetry.api.common.AttributeKey'
 
@@ -44,7 +44,7 @@ module LogStash module Instrument module PeriodicPoller
       @metric_store = agent.metric.collector
 
       # Initialize the OTel service - SDK handles its own export timing
-      @otel_service = OtelMetricsService.new(
+      @otel_service = OTelMetricsService.new(
         settings.get("otel.metrics.endpoint"),
         agent.id,
         agent.name,
@@ -87,22 +87,7 @@ module LogStash module Instrument module PeriodicPoller
     private
 
     def collect_cgroup_metrics
-      if stats = Cgroup.get
-        save_metric([:os], :cgroup, stats)
-      end
-    end
-
-    # Recursive function to save cgroup metrics to the metric store
-    def save_metric(namespace, k, v)
-      if v.is_a?(Hash)
-        v.each do |new_key, new_value|
-          n = namespace.dup
-          n << k.to_sym
-          save_metric(n, new_key, new_value)
-        end
-      else
-        metric.gauge(namespace, k.to_sym, v)
-      end
+      Os.collect_cgroup(@metric)
     end
 
     def collect_dlq_metrics
