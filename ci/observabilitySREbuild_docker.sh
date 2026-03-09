@@ -2,6 +2,8 @@
 
 set -e
 
+export ARCH="${ARCH:-x86_64}"
+
 QUALIFIED_VERSION="$(.buildkite/scripts/common/qualified-version.sh)"
 IMAGE_NAME="docker.elastic.co/logstash/logstash-observability-sre:${QUALIFIED_VERSION}"
 TARBALL_BASE="build/logstash-observability-sre-${QUALIFIED_VERSION}-docker-image.tar"
