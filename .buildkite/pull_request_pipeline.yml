@@ -123,11 +123,11 @@ steps:
   - label: "Observability SRE container smoke test"
     key: "observability-sre-container-smoke-test"
     agents:
-      provider: gcp
-      imageProject: elastic-images-prod
-      image: family/platform-ingest-logstash-ubuntu-2204
-      machineType: "n2-standard-4"
-      diskSizeGb: 64
+      provider: aws
+      instanceType: m6i.xlarge
+      diskSizeGb: 60
+      instanceMaxAge: 1440
+      imagePrefix: platform-ingest-logstash-ubuntu-2204-fips
     retry:
       automatic:
         - limit: 3
