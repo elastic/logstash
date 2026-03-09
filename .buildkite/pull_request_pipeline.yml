@@ -120,8 +120,25 @@ steps:
       - "**/jacocoTestReport.xml"
       - "**/build/classes/**/*.*"
 
+  - label: "Observability SRE container build"
+    key: "observability-sre-container-build"
+    agents:
+      provider: gcp
+      imageProject: elastic-images-prod
+      image: family/platform-ingest-logstash-ubuntu-2204
+      machineType: "n2-standard-4"
+      diskSizeGb: 64
+    retry:
+      automatic:
+        - limit: 3
+    command: |
+      set -euo pipefail
+      source .buildkite/scripts/common/vm-agent.sh
+      ./ci/observabilitySREbuild_docker.sh
+
   - label: "Observability SRE container smoke test"
     key: "observability-sre-container-smoke-test"
+    depends_on: "observability-sre-container-build"
     agents:
       provider: aws
       instanceType: m6i.xlarge
@@ -134,7 +151,7 @@ steps:
     command: |
       set -euo pipefail
       source .buildkite/scripts/common/vm-agent.sh
-      export ARCH="x86_64"
+      ./ci/observabilitySREdownload_docker.sh
       ./ci/observabilitySREsmoke_tests.sh
 
   - label: ":lab_coat: Integration Tests - FIPS mode / part 1-of-6"
