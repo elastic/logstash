@@ -80,6 +80,7 @@ module LogStash module Instrument module PeriodicPoller
       collect_cgroup_metrics
       collect_pipeline_metrics
       collect_dlq_metrics
+      @agent.capture_flow_metrics
       # Refresh snapshot after collecting metrics so OTel callbacks read fresh data
       @snapshot = @metric_store.snapshot_metric
     end
