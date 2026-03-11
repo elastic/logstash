@@ -64,8 +64,9 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
         final JavaFilterDelegatorExt instance =
                 new JavaFilterDelegatorExt(RubyUtil.RUBY, RubyUtil.JAVA_FILTER_DELEGATOR_CLASS);
         instance.configName = RubyUtil.RUBY.newString(configName);
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
         AbstractNamespacedMetricExt scopedMetric =
-                metric.namespace(RubyUtil.RUBY.getCurrentContext(), RubyUtil.RUBY.newString(filter.getId()).intern());
+                metric.namespace(context, RubyUtil.RUBY.newString(filter.getId()).intern(context));
         instance.initMetrics(id, scopedMetric);
         instance.filter = filter;
         instance.initializeFilterMatchListener(pluginArgs);

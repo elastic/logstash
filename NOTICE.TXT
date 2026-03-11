@@ -90,6 +90,7 @@ Copyright © 2019 Red Hat, Inc. All rights reserved. “Red Hat,” is a registe
 All other trademarks are the property of their respective owners.
 
 ==========
+<<<<<<< HEAD
 Notice for: abbrev-0.1.0
 ----------
 
@@ -118,6 +119,9 @@ SUCH DAMAGE.
 
 ==========
 Notice for: addressable-2.9.0
+=======
+Notice for: addressable-2.8.8
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright © Bob Aman
@@ -325,6 +329,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
+<<<<<<< HEAD
 Notice for: amazing_print-1.8.1
 ----------
 
@@ -2837,6 +2842,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: base64-0.3.0
 ----------
 
@@ -2864,7 +2871,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: benchmark-0.2.0
+Notice for: benchmark-0.4.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -2891,7 +2898,11 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: bigdecimal-3.2.3
+=======
+Notice for: bigdecimal-3.3.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 # source: https://github.com/ruby/bigdecimal/blob/v3.1.4/LICENSE
@@ -2953,97 +2964,7 @@ You can redistribute it and/or modify it under either the terms of the
      WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
      PURPOSE.
 ==========
-Notice for: bindata-2.5.1
-----------
-
-Copyright (C) 2007-2012 Dion Mendel. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
-
-==========
-Notice for: buftok-0.2.0
-----------
-
-Copyright (c) 2006-2013 Tony Arcieri, Martin Emde, Erik Michaels-Ober. Distributed under the [Ruby license][license]. [license]: http://www.ruby-lang.org/en/LICENSE.txt
-
-Ruby is copyrighted free software by Yukihiro Matsumoto <matz@netlab.jp>.
-You can redistribute it and/or modify it under either the terms of the
-2-clause BSDL (see the file BSDL), or the conditions below:
-
-  1. You may make and give away verbatim copies of the source form of the
-     software without restriction, provided that you duplicate all of the
-     original copyright notices and associated disclaimers.
-
-  2. You may modify your copy of the software in any way, provided that
-     you do at least ONE of the following:
-
-       a) place your modifications in the Public Domain or otherwise
-          make them Freely Available, such as by posting said
-	  modifications to Usenet or an equivalent medium, or by allowing
-	  the author to include your modifications in the software.
-
-       b) use the modified software only within your corporation or
-          organization.
-
-       c) give non-standard binaries non-standard names, with
-          instructions on where to get the original software distribution.
-
-       d) make other distribution arrangements with the author.
-
-  3. You may distribute the software in object code or binary form,
-     provided that you do at least ONE of the following:
-
-       a) distribute the binaries and library files of the software,
-	  together with instructions (in the manual page or equivalent)
-	  on where to get the original distribution.
-
-       b) accompany the distribution with the machine-readable source of
-	  the software.
-
-       c) give non-standard binaries non-standard names, with
-          instructions on where to get the original software distribution.
-
-       d) make other distribution arrangements with the author.
-
-  4. You may modify and include the part of the software into any other
-     software (possibly commercial).  But some files in the distribution
-     are not written by the author, so that they are not under these terms.
-
-     For the list of those files and their copying conditions, see the
-     file LEGAL.
-
-  5. The scripts and library files supplied as input to or produced as
-     output from the software do not automatically fall under the
-     copyright of the software, but belong to whomever generated them,
-     and may be sold commercially, and may be aggregated with this
-     software.
-
-  6. THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
-     IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-     PURPOSE.
-
-==========
-Notice for: bundler-2.6.3
+Notice for: bundler-2.7.2
 ----------
 
 Portions copyright (c) 2010 Andre Arko  
@@ -3115,7 +3036,11 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: clamp-1.3.3
+=======
+Notice for: clamp-1.4.0
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (c) 2010 Mike Williams <mdub@dogbiscuit.org>
@@ -4276,6 +4201,36 @@ http://www.apache.org/licenses/LICENSE-2.0
    See the License for the specific language governing permissions and
    limitations under the License.
 ==========
+Notice for: com.github.luben:zstd-jni-1.5.7-4
+----------
+
+source: https://github.com/luben/zstd-jni/blob/v1.5.7-4/LICENSE
+
+Copyright (c) 2015-present, Luben Karavelov/ All rights reserved.
+
+BSD-2-Clause License https://opensource.org/license/bsd-2-clause
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice, this
+  list of conditions and the following disclaimer in the documentation and/or
+  other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+==========
 Notice for: com.google.googlejavaformat:google-java-format-1.22.0
 ----------
 
@@ -5220,7 +5175,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. 
 
 ==========
-Notice for: csv-3.2.5
+Notice for: csv-3.3.5
 ----------
 
 Copyright (C) 2005-2016 James Edward Gray II. All rights reserved.
@@ -5257,31 +5212,6 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: dalli-3.2.8
-----------
-
-Copyright (c) Peter M. Goldstein, Mike Perham
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-==========
 Notice for: date-3.3.3
 ----------
 
@@ -5308,34 +5238,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: debug-0.2.1
-----------
-
-Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
-
-==========
-Notice for: delegate-0.2.0
+Notice for: delegate-0.4.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -5362,7 +5265,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: did_you_mean-1.6.1
+Notice for: did_you_mean-2.0.0
 ----------
 
 Copyright (c) 2014-2016 Yuki Nishijima
@@ -5389,7 +5292,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: digest-3.1.0
+Notice for: digest-3.2.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -5417,6 +5320,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: domain_name-0.6.20240107
 ----------
 
@@ -5500,6 +5404,8 @@ This file is generated from the Public Suffix List
 https://mozilla.org/MPL/2.0/
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: dotenv-2.8.1
 ----------
 
@@ -5552,33 +5458,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ==========
-Notice for: drb-2.1.0
-----------
-
-Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
-
-==========
 Notice for: e2mmap-0.1.0
 ----------
 
@@ -5607,6 +5486,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: edn-1.1.1
 ----------
 
@@ -5843,6 +5723,9 @@ source: https://github.com/elastic/enterprise-search-ruby/blob/v8.19.0/LICENSE
    limitations under the License.
 ==========
 Notice for: elastic-transport-8.5.2
+=======
+Notice for: elastic-transport-8.4.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/elastic/elastic-transport-ruby/blob/v8.3.0/LICENSE
@@ -6090,7 +5973,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: english-0.7.1
+Notice for: english-0.8.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6117,6 +6000,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: equalizer-0.0.11
 ----------
 
@@ -6146,13 +6030,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 Notice for: erb-4.0.4.1
+=======
+Notice for: erb-4.0.4
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 All the files in this distribution are covered under either the Ruby's
 license (see the file COPYING) or BSD-2-Clause license (see the file BSDL).
 
 ==========
-Notice for: error_highlight-0.3.0
+Notice for: error_highlight-0.7.0
 ----------
 
 The MIT License (MIT)
@@ -6178,6 +6065,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: et-orbi-1.2.11
 ----------
 
@@ -6207,6 +6095,9 @@ THE SOFTWARE.
 Made in Japan
 ==========
 Notice for: faraday-2.14.3
+=======
+Notice for: faraday-2.14.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/lostisland/faraday/blob/v0.9.2/LICENSE.md
@@ -6220,7 +6111,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: faraday-net_http-3.4.4
+=======
+Notice for: faraday-net_http-3.4.2
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/lostisland/faraday-net_http/blob/v1.0.0/LICENSE.md
@@ -6237,7 +6132,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 ==========
+<<<<<<< HEAD
 Notice for: ffi-1.17.4
+=======
+Notice for: ffi-1.17.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/ffi/ffi/blob/1.9.23/LICENSE
@@ -6612,7 +6511,7 @@ version(s), and exceptions or additional permissions here}."
   You may add additional accurate notices of copyright ownership.
 
 ==========
-Notice for: fiddle-1.1.4
+Notice for: fiddle-1.1.6
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6665,7 +6564,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: fileutils-1.7.3
+Notice for: fileutils-1.8.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6691,7 +6590,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: find-0.1.1
+Notice for: find-0.2.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6718,7 +6617,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: forwardable-1.3.2
+Notice for: forwardable-1.3.3
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -6745,6 +6644,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: fugit-1.11.2
 ----------
 
@@ -6791,6 +6691,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: gems-1.3.0
 ----------
 
@@ -6805,6 +6707,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: gene_pool-1.5.0
 ----------
 
@@ -6995,6 +6898,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: i18n-1.14.8
 ----------
 
@@ -7042,7 +6947,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ==========
-Notice for: io-console-0.7.2
+Notice for: io-console-0.8.2
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -7068,7 +6973,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: io-wait-0.3.0
+Notice for: io-wait-0.3.2
 ----------
 
 Ruby is copyrighted free software by Yukihiro Matsumoto <matz@netlab.jp>.
@@ -7129,7 +7034,7 @@ You can redistribute it and/or modify it under either the terms of the
    PURPOSE.
 
 ==========
-Notice for: ipaddr-1.2.4
+Notice for: ipaddr-1.2.7
 ----------
 
 Copyright (c) 2002 Hajimu UMEMOTO <ume@mahoroba.org>
@@ -7157,7 +7062,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: irb-1.4.2
+Notice for: irb-1.14.3
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -7212,6 +7117,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ==========
+<<<<<<< HEAD
 Notice for: jls-grok-0.11.5
 ----------
 
@@ -7623,6 +7529,9 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
 ==========
 Notice for: jrjackson-0.5.2
+=======
+Notice for: jrjackson-0.4.20
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 https://github.com/guyboertje/jrjackson/blob/v0.5.2/README.md
@@ -10096,6 +10005,7 @@ Jean-loup Gailly        Mark Adler
 jloup@gzip.org          madler@alumni.caltech.edu
 
 ==========
+<<<<<<< HEAD
 Notice for: jruby-jms-1.3.0
 ----------
 
@@ -10115,6 +10025,9 @@ limitations under the License.
 
 ==========
 Notice for: jruby-openssl-0.16.1
+=======
+Notice for: jruby-openssl-0.15.5
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/jruby/jruby-openssl/blob/v0.9.21/LICENSE.txt
@@ -10184,24 +10097,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: jruby-stdin-channel-0.2.0
-----------
-
-source: https://github.com/colinsurprenant/jruby-stdin-channel/blob/v0.2.0/LICENSE.md
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==========
-Notice for: json-2.12.2
+Notice for: json-2.18.1
 ----------
 
 source: https://github.com/tmattia/json-generator/blob/v0.1.0/LICENSE.txt
@@ -10270,6 +10166,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: lru_redux-1.1.0
 ----------
 
@@ -10325,6 +10222,8 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: manticore-0.9.2
 ----------
 
@@ -10352,6 +10251,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: march_hare-4.8.0
 ----------
 
@@ -10406,6 +10306,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: method_source-1.1.0
 ----------
 
@@ -10433,59 +10335,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: metriks-0.9.9.8
-----------
-
-source: https://github.com/eric/metriks/blob/v0.9.9.8/LICENSE
-
-Copyright (c) 2012 Eric Lindvall
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-==========
-Notice for: mini_mime-1.1.5
-----------
-
-# source: https://github.com/discourse/mini_mime/blob/v1.1.5/LICENSE.txt
-
-The MIT License (MIT)
-
-Copyright (c) 2016 Discourse Construction Kit, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-==========
-Notice for: minitar-1.0.2
+Notice for: minitar-1.1.0
 ----------
 
 source: https://github.com/halostatue/minitar/blob/v0.6.1/Licence.md
@@ -10497,6 +10347,7 @@ terms of Ruby’s licence or the Simplified BSD licence.
 * Portions copyright 2004 Mauricio Julio Fernández Pradier.
 
 ==========
+<<<<<<< HEAD
 Notice for: msgpack-1.8.3
 ----------
 
@@ -10517,6 +10368,9 @@ source: https://github.com/msgpack/msgpack-ruby/blob/v1.2.4/ext/msgpack/
   limitations under the License.
 ==========
 Notice for: multi_json-1.15.0
+=======
+Notice for: multi_json-1.19.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/intridea/multi_json/blob/v1.13.1/LICENSE.md
@@ -10541,33 +10395,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-==========
-Notice for: multipart-post-2.4.1
-----------
-
-source: https://github.com/nicksieger/multipart-post/blob/v2.0.0/README.md#license
-
-Copyright (c) 2007-2013 Nick Sieger <nick@nicksieger.com>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 ==========
 Notice for: murmurhash3-0.1.6
 ----------
@@ -10653,7 +10480,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: mutex_m-0.1.1
+Notice for: net-http-0.9.1
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -10662,6 +10489,7 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
 1. Redistributions of source code must retain the above copyright
+<<<<<<< HEAD
    notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
@@ -10836,6 +10664,8 @@ Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
 are met:
 1. Redistributions of source code must retain the above copyright
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
 notice, this list of conditions and the following disclaimer in the
@@ -10879,6 +10709,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: net-smtp-0.5.1
 ----------
 
@@ -10907,6 +10738,8 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: nio4r-2.7.5
 ----------
 
@@ -10922,6 +10755,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: nkf-0.2.0
 ----------
 
@@ -10986,6 +10820,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 Notice for: observer-0.1.1
+=======
+Notice for: observer-0.1.2
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11012,7 +10849,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: open-uri-0.3.0
+Notice for: open-uri-0.5.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11039,7 +10876,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: open3-0.1.2
+Notice for: open3-0.2.1
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11093,7 +10930,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ==========
-Notice for: optparse-0.2.0
+Notice for: optparse-0.6.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11144,7 +10981,11 @@ This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
 ==========
+<<<<<<< HEAD
 Notice for: org.apache.logging.log4j:log4j-1.2-api-2.25.4
+=======
+Notice for: org.apache.logging.log4j:log4j-1.2-api-2.25.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/apache/logging-log4j2/blob/rel/2.14.0/NOTICE.txt
@@ -11167,7 +11008,11 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
+<<<<<<< HEAD
 Notice for: org.apache.logging.log4j:log4j-api-2.25.4
+=======
+Notice for: org.apache.logging.log4j:log4j-api-2.25.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -11190,7 +11035,11 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
+<<<<<<< HEAD
 Notice for: org.apache.logging.log4j:log4j-core-2.25.4
+=======
+Notice for: org.apache.logging.log4j:log4j-core-2.25.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -11213,7 +11062,11 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
+<<<<<<< HEAD
 Notice for: org.apache.logging.log4j:log4j-jcl-2.25.4
+=======
+Notice for: org.apache.logging.log4j:log4j-jcl-2.25.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://github.com/apache/logging-log4j2/blob/rel/2.14.0/NOTICE.txt
@@ -11236,7 +11089,11 @@ Copyright 2002-2012 Ramnivas Laddad, Juergen Hoeller, Chris Beams
 picocli (http://picocli.info)
 Copyright 2017 Remko Popma
 ==========
+<<<<<<< HEAD
 Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.25.4
+=======
+Notice for: org.apache.logging.log4j:log4j-slf4j-impl-2.25.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 source: https://git-wip-us.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=NOTICE.txt;h=bd95322f254fc6f691b47e77df8c21229f47b8d4;hb=HEAD
@@ -11303,7 +11160,11 @@ Copyright (C) 1999-2019 by Shigeru Chiba, All rights reserved.
 This software is distributed under the Mozilla Public License Version 1.1, the GNU Lesser General Public License Version 2.1 or later, or the Apache License Version 2.0.
 
 ==========
+<<<<<<< HEAD
 Notice for: org.jruby:jruby-core-9.4.15.0
+=======
+Notice for: org.jruby:jruby-core-10.0.3.0
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 JRuby is Copyright (c) 2007-2018 The JRuby project
@@ -11586,7 +11447,11 @@ Eclipse Public License - v 2.0
 
     You may add additional accurate notices of copyright ownership.
 ==========
+<<<<<<< HEAD
 Notice for: org.logstash:jvm-options-parser-8.19.18
+=======
+Notice for: org.logstash:jvm-options-parser-9.4.0
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (c) 2022 Elasticsearch B.V. <http://www.elastic.co>
@@ -11888,7 +11753,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==========
+<<<<<<< HEAD
 Notice for: pleaserun-0.0.34
+=======
+Notice for: pleaserun-0.0.33
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright 2014 Jordan Sissel contributors.
@@ -11930,7 +11799,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==========
-Notice for: pp-0.3.0
+Notice for: pp-0.6.2
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11957,7 +11826,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: prettyprint-0.1.1
+Notice for: prettyprint-0.2.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -11984,7 +11853,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: pry-0.15.2
+Notice for: pry-0.16.0
 ----------
 
 Copyright (c) 2016 John Mair (banisterfiend)
@@ -12009,7 +11878,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: pstore-0.1.1
+Notice for: pstore-0.1.4
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -12062,7 +11931,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ==========
-Notice for: public_suffix-5.1.1
+Notice for: public_suffix-7.0.2
 ----------
 
 Copyright (c) 2009-2018 Simone Carletti <weppos@weppos.net>
@@ -12089,7 +11958,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+<<<<<<< HEAD
 Notice for: puma-8.0.2
+=======
+Notice for: puma-6.6.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Some code copyright (c) 2005, Zed Shaw
@@ -12120,6 +11993,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: raabro-1.4.0
 ----------
 
@@ -12178,6 +12052,9 @@ SUCH DAMAGE.
 
 ==========
 Notice for: rack-3.1.21
+=======
+Notice for: rack-3.2.4
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 The MIT License (MIT)
@@ -12577,7 +12454,7 @@ party waives its rights to a jury trial in any resulting litigation.
 
 
 ==========
-Notice for: rdoc-6.4.1.1
+Notice for: rdoc-6.14.0
 ----------
 
 = License
@@ -12641,31 +12518,7 @@ version 2 (see the file GPL), or the conditions below:
    PURPOSE.
 
 ==========
-Notice for: redis-4.8.1
-----------
-
-Copyright (c) 2009 Ezra Zygmuntowicz
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-==========
-Notice for: reline-0.5.12
+Notice for: reline-0.6.3
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -12691,6 +12544,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: resolv-replace-0.1.0
 ----------
 
@@ -12747,6 +12601,9 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
 Notice for: rinda-0.1.1
+=======
+Notice for: resolv-0.6.3
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -12825,7 +12682,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ==========
-Notice for: rubygems-update-3.6.3
+Notice for: rubygems-update-3.7.2
 ----------
 
 RubyGems is copyrighted free software by Chad Fowler, Rich Kilmer, Jim
@@ -12954,33 +12811,7 @@ You can redistribute it and/or modify it under either the terms of the
      PURPOSE.
 
 ==========
-Notice for: rufus-scheduler-3.9.2
-----------
-
-
-Copyright (c) 2005-2014, John Mettraux, jmettraux@gmail.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-
-==========
-Notice for: securerandom-0.2.0
+Notice for: securerandom-0.4.1
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -13007,6 +12838,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: semantic_logger-3.4.1
 ----------
 
@@ -13050,6 +12882,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 Notice for: shellwords-0.1.0
+=======
+Notice for: shellwords-0.2.2
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -13076,6 +12911,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: simple_oauth-0.3.1
 ----------
 
@@ -13101,6 +12937,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
+=======
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 Notice for: sinatra-4.2.1
 ----------
 
@@ -13129,7 +12967,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: singleton-0.1.1
+Notice for: singleton-0.3.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -13305,7 +13143,7 @@ additional liability.
 END OF TERMS AND CONDITIONS
 
 ==========
-Notice for: stringio-3.1.5
+Notice for: stringio-3.1.9
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -13332,7 +13170,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: strscan-3.1.0
+Notice for: strscan-3.1.7
 ----------
 
 Copyright (C) 1999-2006 Minero Aoki. All rights reserved.
@@ -13941,6 +13779,85 @@ version(s), and exceptions or additional permissions here}."
   You may add additional accurate notices of copyright ownership.
 
 ==========
+Notice for: syntax_suggest-2.0.2
+----------
+
+Copyright (c) 2020 schneems
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+==========
+Notice for: syslog-0.4.0
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
+Notice for: tempfile-0.3.1
+----------
+
+Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+==========
 Notice for: thread_safe-0.3.6
 ----------
 
@@ -14118,7 +14035,11 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
+<<<<<<< HEAD
 Notice for: tilt-2.6.1
+=======
+Notice for: tilt-2.7.0
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (c) 2010-2016 Ryan Tomayko <http://tomayko.com/about>
@@ -14141,7 +14062,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
-Notice for: time-0.2.2
+Notice for: time-0.4.1
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14217,7 +14138,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: tsort-0.1.0
+Notice for: tsort-0.2.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14242,31 +14163,6 @@ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
-
-==========
-Notice for: twitter-6.2.0
-----------
-
-Copyright (c) 2006-2015 Erik Michaels-Ober, John Nunemaker, Wynn Netherland, Steve Richert, Steve Agalloco
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ==========
 Notice for: tzinfo-2.0.6
@@ -14317,7 +14213,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ==========
-Notice for: un-0.2.0
+Notice for: un-0.3.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14344,7 +14240,11 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
+<<<<<<< HEAD
 Notice for: uri-0.12.5
+=======
+Notice for: uri-1.1.1
+>>>>>>> ecadb4ac3a (Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4)
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14370,7 +14270,7 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 ==========
-Notice for: weakref-0.1.1
+Notice for: weakref-0.1.3
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
@@ -14397,41 +14297,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 ==========
-Notice for: webhdfs-0.11.0
-----------
-
-Copyright (C) 2012 Fluentd Project
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
-==========
-Notice for: xml-simple-1.1.9
-----------
-
-Readme.md: 
-
-XmlSimple is Copyright (c) 2003-2017 Maik Schmidt. It is free software, and may
-be redistributed under the terms specified in the COPYING file of the current
-Ruby distribution.
-
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-==========
-Notice for: yaml-0.2.0
+Notice for: yaml-0.4.0
 ----------
 
 Copyright (C) 1993-2013 Yukihiro Matsumoto. All rights reserved.
