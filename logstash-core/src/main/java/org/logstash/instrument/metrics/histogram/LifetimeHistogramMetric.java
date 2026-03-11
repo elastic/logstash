@@ -85,6 +85,10 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
             return delegate.getTotalCount();
         }
 
+        public long getMaxValue() {
+            return delegate.getMaxValue();
+        }
+
         public ValueHistogram subtract(ValueHistogram other) {
             if (Objects.isNull(other) || Objects.isNull(other.delegate) || other.delegate.getTotalCount() <= 0) {
                 return this;
