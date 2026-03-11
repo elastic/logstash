@@ -32,8 +32,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 **Geoip Filter - 8.0.0**
 
 * Upgraded the bundled MaxMind `geoip2` library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
-* Dropped support for Logstash 7.x — minimum supported version is now Logstash 8.0.0
-* Dropped support for Java 8 — minimum required version is now Java 11
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required version is now Java 11
 
 **Kafka Integration - 11.8.4**
 
