@@ -36,6 +36,7 @@ import org.jruby.RubyHash;
 import org.jruby.RubyNil;
 import org.jruby.RubyString;
 import org.jruby.RubySymbol;
+import org.jruby.api.Create;
 import org.jruby.ext.bigdecimal.RubyBigDecimal;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -84,7 +85,7 @@ public final class Rubyfier {
     @SuppressWarnings("rawtypes")
     private static RubyArray deepList(final Ruby runtime, final Collection<?> list) {
         final int length = list.size();
-        final RubyArray array = runtime.newArray(length);
+        @SuppressWarnings("rawtypes") final RubyArray array = (RubyArray) Create.allocArray(runtime.getCurrentContext(), length);
         for (final Object item : list) {
             array.add(deep(runtime, item));
         }

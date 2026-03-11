@@ -19,6 +19,20 @@ require "spec_helper"
 require "bundler/cli"
 
 describe LogStash::Bundler do
+  context "when patching bundler self-manager" do
+    let(:self_manager) { ::Bundler::SelfManager.new }
+
+    it "disables restart_with_locked_bundler_if_needed on instances" do
+      LogStash::Bundler.patch!
+
+      allow(self_manager).to receive(:find_restart_version).and_return(Gem::Version.new("2.7.2"))
+      allow(self_manager).to receive(:installed?).and_return(true)
+      expect(self_manager).not_to receive(:restart_with)
+
+      self_manager.restart_with_locked_bundler_if_needed
+    end
+  end
+
   context "capture_stdout" do
     it "should capture stdout from block" do
       original_stdout = $stdout
@@ -187,7 +201,9 @@ describe LogStash::Bundler do
         end
 
         it "raise error when fetcher failed" do
-          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [StandardError.new("boom")]])
+          source = double("source")
+          error_problem = Gem::SourceFetchProblem.new(source, StandardError.new("boom"))
+          allow(::Gem::SpecFetcher.fetcher).to receive("spec_for_dependency").with(anything).and_return([nil, [error_problem]])
           expect { bundler_arguments }.to raise_error(StandardError, /boom/)
         end
       end
