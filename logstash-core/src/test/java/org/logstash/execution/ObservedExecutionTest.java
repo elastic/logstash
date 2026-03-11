@@ -2,6 +2,7 @@ package org.logstash.execution;
 
 import org.jruby.Ruby;
 import org.jruby.RubyArray;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.junit.Test;
 import org.logstash.config.ir.CompiledPipeline;
@@ -100,7 +101,7 @@ public class ObservedExecutionTest extends RubyEnvTestCase {
         final Ruby runtime = metricExt.getRuntime();
         final ThreadContext context = runtime.getCurrentContext();
 
-        return metricExt.namespace(context, runtime.newArray(Arrays.stream(namespaces).map(runtime::newSymbol).collect(Collectors.toList())));
+        return metricExt.namespace(context, Create.newArray(context, Arrays.stream(namespaces).map(runtime::newSymbol).collect(Collectors.toList())));
     }
 
     /**

@@ -68,7 +68,8 @@ public class ListGaugeTest {
 
         ListGauge gauge = new ListGauge("bar");
         gauge.set(List.of(rubyHash));
-        assertThat(gauge.getValue().toString()).isEqualTo("[{\"k\"=>\"v\"}]");
+        // JRuby 10 changed hash formatting to include spaces around =>
+        assertThat(gauge.getValue().toString()).isEqualTo("[{\"k\" => \"v\"}]");
         assertThat(gauge.getType()).isEqualTo(MetricType.GAUGE_LIST);
     }
 

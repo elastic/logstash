@@ -30,6 +30,7 @@ import org.jruby.RubyObject;
 import org.jruby.RubySymbol;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Create;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.execution.queue.QueueWriter;
@@ -77,8 +78,9 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
                                                  final IRubyObject pluginId) {
         this.writeClient = queueWriteClientExt;
 
-        final RubySymbol pipelineIdSym = getRuntime().newString(pipelineId).intern();
-        final RubySymbol pluginIdSym = pluginId.asString().intern();
+        final ThreadContext context = getRuntime().getCurrentContext();
+        final RubySymbol pipelineIdSym = getRuntime().newString(pipelineId).intern(context);
+        final RubySymbol pluginIdSym = pluginId.asString().intern(context);
 
         // Synchronize on the metric since setting up new fields on it is not threadsafe
         synchronized (metric) {
@@ -134,7 +136,7 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
     @Deprecated
     @JRubyMethod(name = "get_new_batch")
     public IRubyObject newBatch(final ThreadContext context) {
-        return context.runtime.newArray();
+        return Create.newArray(context);
     }
 
     private void incrementCounters(final long count) {
@@ -154,7 +156,8 @@ public final class JRubyWrappedWriteClientExt extends RubyObject implements Queu
 
     private AbstractNamespacedMetricExt getMetric(final AbstractMetricExt base,
                                                   final RubySymbol... keys) {
-        return base.namespace(getRuntime().getCurrentContext(), getRuntime().newArray(keys));
+        final ThreadContext ctx = getRuntime().getCurrentContext();
+        return base.namespace(ctx, Create.newArrayNoCopy(ctx, keys));
     }
 
     @Override
