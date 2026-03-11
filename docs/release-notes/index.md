@@ -23,52 +23,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
-### Features and enhancements [logstash-9.2.7-features-enhancements]
+### Updates to dependencies [logstash-9.2.7-dependencies]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.2.7
-
-=== Logstash Commits between 9.2 and 9.2.6
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.6..9.2"
-
-22c3c6339 - (HEAD -> 9.2, origin/9.2) Update patch plugin versions in gemfile lock (#18842) (50 seconds ago) <github-actions[bot]>
-3d459b7d9 - Fix observabilitySRE tests (#18835) (#18837) (15 hours ago) <mergify[bot]>
-6ace943b7 - Improve x-pack RSpec support with automatic path detection (#18785) (#18787) (11 days ago) <mergify[bot]>
-930590deb - Periodically run exhaustive tests on artifacts prepared with DRA pipeline (#18803) (#18822) (12 days ago) <mergify[bot]>
-e64185f50 - Dont run exhaustive tests on *EVERY* commmit in a branch (#18817) (#18819) (12 days ago) <mergify[bot]>
-34a1c4b88 - Update bundled JDK to 21.0.10 build 7 (#18781) (12 days ago) <github-actions[bot]>
-f37e587e7 - [9.2] (backport #18522) Upgrade Log4j to 2.25.3 (#18805) (12 days ago) <mergify[bot]>
-d793d78ab - Bump logstash version 9.2.7 (#18815) (12 days ago) <github-actions[bot]>
-3e4d65519 - [9.2] Upgrades kafka-integration to 11.8.4 and geoip-filter to 8.0.0 (#18809) (2 weeks ago) <Mashhur>
-ee8124586 - Release notes for 9.2.6 (#18798) (2 weeks ago) <github-actions[bot]>
-9316f0a64 - Test rpm and deb packages on aarch64 in exhaustive test pipeline (#18780) (#18794) (3 weeks ago) <mergify[bot]>
-d7bdaa467 - Doc: Update svrless docs to use endpoint url (#18773) (#18791) (3 weeks ago) <mergify[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.2.6..9.2 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 9.2.0 -> 9.2.2
-logstash-filter-geoip: 7.3.4 -> 8.0.0
-logstash-integration-kafka: 11.8.3 -> 11.8.4
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated the bundled JDK to 21.0.10 build 7.
+* Upgraded Log4j to 2.25.3 [#18805](https://github.com/elastic/logstash/pull/18805)
 
 ### Plugins [logstash-plugin-9.2.7-changes]
 
-**Elastic_integration Filter - 9.2.2**
-
-404: Not Found
-
 **Geoip Filter - 8.0.0**
 
-* Upgrade maxmind `geoip2` to 4.4.0 version [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
-* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
-* Dropped support for Java 8. Minimum required version is now Java 11
+* Updated MaxMind GeoIP2 database library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0.
+* Dropped support for Java 8. Minimum required Java version is now Java 11.
 
 **Kafka Integration - 11.8.4**
 
-* Upgrade kafka-avro-serializer dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
-
+* Upgraded the kafka-avro-serializer dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
 
 ## 9.2.6 [logstash-9.2.6-release-notes]
 
