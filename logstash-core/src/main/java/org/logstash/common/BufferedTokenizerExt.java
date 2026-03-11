@@ -26,6 +26,7 @@ import org.jruby.RubyClass;
 import org.jruby.RubyEncoding;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.ThreadContext;
@@ -62,7 +63,7 @@ public class BufferedTokenizerExt extends RubyObject {
             this.delimiter = args[0].convertToString();
         }
         if (args.length == 2) {
-            final int sizeLimit = args[1].convertToInteger().getIntValue();
+            final int sizeLimit = Convert.toInt(context, args[1].convertToInteger());
             if (sizeLimit <= 0) {
                 throw new IllegalArgumentException("Size limit must be positive");
             }

@@ -22,6 +22,7 @@ package org.logstash.plugins.factory;
 import co.elastic.logstash.api.*;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.api.Create;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 import org.logstash.RubyUtil;
@@ -126,7 +127,7 @@ public final class PluginFactoryExtTest extends RubyEnvTestCase {
                         "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
 
         NamespacedMetricExt metric = new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
-                .initialize(RUBY.getCurrentContext(), metricWithCollector, RUBY.newEmptyArray());
+                .initialize(RUBY.getCurrentContext(), metricWithCollector, Create.newEmptyArray(RUBY.getCurrentContext()));
 
 
         PluginMetricsFactoryExt metricsFactory = new PluginMetricsFactoryExt(RubyUtil.RUBY, RubyUtil.PLUGIN_METRICS_FACTORY_CLASS);
