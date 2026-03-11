@@ -108,49 +108,21 @@ This section summarizes the changes in the following releases:
 [[logstash-8-19-13]]
 === Logstash 8.19.13 Release Notes
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v8.19.13
+==== Updates to dependencies
 
-=== Logstash Commits between 8.19 and 8.19.12
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v8.19.12..8.19"
-
-fde2a483b - (HEAD -> 8.19, origin/8.19) Update patch plugin versions in gemfile lock (#18839) (11 minutes ago) <github-actions[bot]>
-8f69a8954 - Fix observabilitySRE tests (#18835) (#18836) (14 hours ago) <mergify[bot]>
-53e322f26 - Improve x-pack RSpec support with automatic path detection (#18785) (#18786) (11 days ago) <mergify[bot]>
-7e66a9799 - Periodically run exhaustive tests on artifacts prepared with DRA pipeline (#18803) (#18821) (12 days ago) <mergify[bot]>
-035fcc8a0 - Dont run exhaustive tests on *EVERY* commmit in a branch (#18817) (#18818) (12 days ago) <mergify[bot]>
-97a95ef6e - Update bundled JDK to 21.0.10 build 7 (#18782) (12 days ago) <github-actions[bot]>
-048a8c244 - Bump logstash version 8.19.13 (#18814) (12 days ago) <github-actions[bot]>
-7fb40f79b - Upgrade geoip-filter to 8.0.0 (#18808) (2 weeks ago) <Mashhur>
-647797479 - Release notes for 8.19.12 (#18796) (2 weeks ago) <github-actions[bot]>
-aeeb79a74 - Doc: Update svrless docs to use endpoint url 8.19 (#18804) (2 weeks ago) <Karen Metts>
-8054df790 - Test rpm and deb packages on aarch64 in exhaustive test pipeline (#18780) (#18793) (3 weeks ago) <mergify[bot]>
-c8f1a166b - Update patch plugin versions in gemfile lock (#18789) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v8.19.12..8.19 *.release"
-Changed plugin versions:
-logstash-filter-elastic_integration: 8.19.1 -> 8.19.3
-logstash-filter-geoip: 7.3.4 -> 8.0.0
-logstash-integration-kafka: 11.8.3 -> 11.8.4
----------- GENERATED CONTENT ENDS HERE ------------
+* Updated the bundled JDK to 21.0.10 build 7.
 
 ==== Plugins
 
-*Elastic_integration Filter - 8.19.3*
-
-404: Not Found
-
 *Geoip Filter - 8.0.0*
 
-* Upgrade maxmind `geoip2` to 4.4.0 version https://github.com/logstash-plugins/logstash-filter-geoip/pull/238[#238]
-* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
-* Dropped support for Java 8. Minimum required version is now Java 11
+* Updated MaxMind GeoIP2 database library to version 4.4.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/238[#238]
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0.
+* Dropped support for Java 8. Minimum required Java version is now Java 11.
 
 *Kafka Integration - 11.8.4*
 
-* Upgrade kafka-avro-serializer dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/225[#225]
+* Upgraded the kafka-avro-serializer dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/225[#225]
 
 
 [[logstash-8-19-12]]
