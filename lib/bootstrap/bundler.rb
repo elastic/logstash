@@ -81,7 +81,7 @@ module LogStash
       # Disable it by making restart_with_locked_bundler_if_needed a no-op.
       if defined?(::Bundler::SelfManager)
         ::Bundler::SelfManager.module_exec do
-          def self.restart_with_locked_bundler_if_needed(original_lockfile, **)
+          def restart_with_locked_bundler_if_needed(*)
             # No-op: don't attempt to restart with locked bundler
           end
         end

@@ -73,10 +73,29 @@ module LogStash
             status 500
             respond_with({"error" => "Logstash loggers were not initialized properly"})
           else
-            # Get loggers from Configuration to include dynamically added loggers
             config = context.getConfiguration
-            loggers = config.getLoggers.map { |name, lgr_config| [name, lgr_config.getLevel.name] }.sort
-            respond_with({"loggers" => Hash[loggers]})
+            loggers = {}
+
+            root_logger = context.getRootLogger
+            unless root_logger.nil? || root_logger.getLevel.nil?
+              loggers[root_logger.getName] = root_logger.getLevel.name
+            end
+
+            context.getLoggers.each do |logger|
+              level = logger.getLevel
+              next if level.nil?
+
+              loggers[logger.getName] = level.name
+            end
+
+            config.getLoggers.each do |name, logger_config|
+              level = logger_config.getLevel
+              next if level.nil?
+
+              loggers[name] = level.name
+            end
+
+            respond_with({"loggers" => loggers.sort.to_h})
           end
         end
       end
