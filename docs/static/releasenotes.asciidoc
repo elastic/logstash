@@ -122,7 +122,7 @@ This section summarizes the changes in the following releases:
 
 *Kafka Integration - 11.8.4*
 
-* Upgraded the kafka-avro-serializer dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/225[#225]
+* Upgraded the `kafka-avro-serializer` dependency https://github.com/logstash-plugins/logstash-integration-kafka/pull/225[#225]
 
 
 [[logstash-8-19-12]]
