@@ -30,6 +30,7 @@ import org.jruby.Ruby;
 import org.jruby.RubyArray;
 import org.jruby.RubyHash;
 import org.jruby.RubySymbol;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Test;
 
@@ -74,9 +75,10 @@ public class RubyBasicObjectSerializerTest {
 
     @Test
     public void testSerializationWithRubyArrayValue() throws JsonProcessingException {
+        final ThreadContext context = RUBY.getCurrentContext();
         final RubyArray<RubySymbol> rubyArray = new RubyArray<>(RUBY, 2);
-        rubyArray.push(RubySymbol.newSymbol(RUBY, "one"));
-        rubyArray.push(RubySymbol.newSymbol(RUBY, "two"));
+        rubyArray.push(context, RubySymbol.newSymbol(RUBY, "one"));
+        rubyArray.push(context, RubySymbol.newSymbol(RUBY, "two"));
 
         final String listSerializedValue = mapper.writeValueAsString(rubyArray);
 

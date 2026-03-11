@@ -13,6 +13,7 @@ import org.jruby.runtime.JavaInternalBlockBody;
 import org.jruby.runtime.Signature;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.api.Access;
 import org.logstash.RubyUtil;
 import org.logstash.ext.JrubyEventExtLibrary;
 
@@ -54,7 +55,8 @@ public class RubyCodecDelegator implements Codec {
     }
 
     public static boolean isRubyCodecSubclass(IRubyObject pluginInstance) {
-        final RubyClass codecBaseClass = RubyUtil.RUBY.getModule("LogStash").getModule("Codecs").getClass("Base");
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final RubyClass codecBaseClass = Access.getModule(context, "LogStash").getModule(context, "Codecs").getClass(context, "Base");
         return pluginInstance.getType().hasModuleInHierarchy(codecBaseClass);
     }
 
@@ -72,7 +74,8 @@ public class RubyCodecDelegator implements Codec {
         }
 
         // setup the block callback bridge to invoke eventConsumer
-        final Block consumerWrapper = new Block(new JavaInternalBlockBody(currentContext.runtime, Signature.ONE_ARGUMENT) {
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final Block consumerWrapper = new Block(new JavaInternalBlockBody(context.runtime, Signature.ONE_ARGUMENT) {
             @Override
             @SuppressWarnings("unchecked")
             public IRubyObject yield(ThreadContext context, IRubyObject[] args) {
@@ -87,7 +90,7 @@ public class RubyCodecDelegator implements Codec {
         buffer.get(byteInput);
         final RubyString data = RubyUtil.RUBY.newString(new String(byteInput));
         IRubyObject[] methodParams = new IRubyObject[]{data};
-        pluginInstance.callMethod(this.currentContext, "decode", methodParams, consumerWrapper);
+        pluginInstance.callMethod(context, "decode", methodParams, consumerWrapper);
     }
 
     @Override
@@ -103,9 +106,10 @@ public class RubyCodecDelegator implements Codec {
             throw new IllegalStateException("The object to encode must be of type org.logstash.Event");
         }
 
-        final JrubyEventExtLibrary.RubyEvent rubyEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(currentContext.runtime, (org.logstash.Event) event);
-        final RubyArray param = RubyArray.newArray(currentContext.runtime, rubyEvent);
-        final RubyArray encoded = (RubyArray) pluginInstance.callMethod(this.currentContext, "multi_encode", param);
+        final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
+        final JrubyEventExtLibrary.RubyEvent rubyEvent = JrubyEventExtLibrary.RubyEvent.newRubyEvent(context.runtime, (org.logstash.Event) event);
+        final RubyArray param = RubyArray.newArray(context.runtime, rubyEvent);
+        final RubyArray encoded = (RubyArray) pluginInstance.callMethod(context, "multi_encode", param);
 
         // method return an nested array, the outer contains just one element
         // while the inner contains the original event and encoded event in form of String
@@ -115,7 +119,7 @@ public class RubyCodecDelegator implements Codec {
 
     @Override
     public Codec cloneCodec() {
-        return new RubyCodecDelegator(this.currentContext, this.pluginInstance);
+        return new RubyCodecDelegator(RubyUtil.RUBY.getCurrentContext(), this.pluginInstance);
     }
 
     @Override

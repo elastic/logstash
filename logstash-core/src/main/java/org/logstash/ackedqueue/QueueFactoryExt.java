@@ -29,6 +29,7 @@ import org.jruby.RubyBasicObject;
 import org.jruby.RubyClass;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.api.Convert;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.RubyUtil;
@@ -94,15 +95,17 @@ public final class QueueFactoryExt extends RubyBasicObject {
                     }
                 );
         } else if (MEMORY_TYPE.equals(type)) {
+            final int batchSize = Convert.toInt(context,
+                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE).convertToInteger()
+            );
+            final int workers = Convert.toInt(context,
+                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS).convertToInteger()
+            );
+            int queueSize = batchSize * workers;
             return new JrubyWrappedSynchronousQueueExt(
                 context.runtime, RubyUtil.WRAPPED_SYNCHRONOUS_QUEUE_CLASS
             ).initialize(
-                context, context.runtime.newFixnum(
-                    getSetting(context, settings, SettingKeyDefinitions.PIPELINE_BATCH_SIZE)
-                        .convertToInteger().getIntValue()
-                        * getSetting(context, settings, SettingKeyDefinitions.PIPELINE_WORKERS)
-                        .convertToInteger().getIntValue()
-                )
+                context, context.runtime.newFixnum(queueSize)
             );
         } else {
             throw context.runtime.newRaiseException(

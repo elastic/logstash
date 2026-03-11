@@ -47,7 +47,7 @@ public class RootMetricImpl implements Metric {
     public NamespacedMetric namespace(final String... key) {
         final IRubyObject[] rubyfiedKeys = Stream.of(key)
             .map(this.threadContext.getRuntime()::newString)
-            .map(RubyString::intern)
+            .map(s -> s.intern(this.threadContext))
             .toArray(IRubyObject[]::new);
 
         return new NamespacedMetricImpl(

@@ -25,6 +25,7 @@ import com.google.common.base.Joiner;
 import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyString;
+import org.jruby.api.Create;
 import org.jruby.java.proxies.ConcreteJavaProxy;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.Before;
@@ -47,7 +48,7 @@ public abstract class MetricTestCase extends RubyEnvTestCase {
                               "metricWithCollector = LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new)");
 
         metric = new NamespacedMetricExt(RUBY, NAMESPACED_METRIC_CLASS)
-            .initialize(RUBY.getCurrentContext(), metricWithCollector, RUBY.newEmptyArray());
+            .initialize(RUBY.getCurrentContext(), metricWithCollector, Create.newEmptyArray(RUBY.getCurrentContext()));
         executionContext = new ExecutionContextExt(RUBY, EXECUTION_CONTEXT_CLASS);
     }
 
@@ -64,21 +65,21 @@ public abstract class MetricTestCase extends RubyEnvTestCase {
 
         RubyHash rh = metricStore;
         for (String p : path) {
-            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern());
+            rh = (RubyHash) rh.op_aref(RUBY.getCurrentContext(), RUBY.newString(p).intern(RUBY.getCurrentContext()));
         }
         return rh;
     }
 
     protected String getMetricStringValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern(RUBY.getCurrentContext()));
         RubyString value = (RubyString) counter.callMethod("value");
         return value.asJavaString();
     }
 
     protected long getMetricLongValue(RubyHash metricStore, String symbolName) {
-        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern());
+        ConcreteJavaProxy counter = (ConcreteJavaProxy) metricStore.op_aref(RUBY.getCurrentContext(), RUBY.newString(symbolName).intern(RUBY.getCurrentContext()));
         RubyFixnum count = (RubyFixnum) counter.callMethod("value");
-        return count.getLongValue();
+        return count.asLong(RUBY.getCurrentContext());
     }
 
     protected Metric getInstance() {
