@@ -36,6 +36,7 @@ module LogStash
         raise CompressError.new("Directory #{target} exist") if ::File.exist?(target)
         ::Zip::File.open(source) do |zip_file|
           zip_file.each do |file|
+            raise CompressError.new("Extracting file outside target directory: #{file.name}") unless LogStash::Util.name_safe?(file.name)
             path = ::File.join(target, file.name)
             FileUtils.mkdir_p(::File.dirname(path))
             zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
@@ -72,6 +73,7 @@ module LogStash
         Zlib::GzipReader.open(file) do |gzip_file|
           ::Gem::Package::TarReader.new(gzip_file) do |tar_file|
             tar_file.each do |entry|
+              raise CompressError.new("Extracting file outside target directory: #{entry.full_name}") unless LogStash::Util.name_safe?(entry.full_name)
               target_path = ::File.join(target, entry.full_name)
 
               if entry.directory?
@@ -130,6 +132,18 @@ module LogStash
           gzip_file.close
         end
       end
+    end
+
+    # Is the name a relative path, free of `..` patterns that could lead to
+    # path traversal attacks? This does NOT handle symlinks; if the path
+    # contains symlinks, this check is NOT enough to guarantee safety.
+    # This is implementation is a copy of the one used by Zip::File to check the name of the file to be extracted.
+    def self.name_safe?(name)
+      cleanpath = Pathname.new(name).cleanpath
+      return false unless cleanpath.relative?
+      root = ::File::SEPARATOR
+      naive_expanded_path = ::File.join(root, cleanpath.to_s)
+      ::File.absolute_path(cleanpath.to_s, root) == naive_expanded_path
     end
   end
 end
