@@ -110,15 +110,15 @@ This section summarizes the changes in the following releases:
 
 ==== Updates to dependencies
 
-* Updated the bundled JDK to 21.0.10 build 7.
+* Updated the bundled JDK to 21.0.10 build 7
 
 ==== Plugins
 
 *Geoip Filter - 8.0.0*
 
 * Updated MaxMind GeoIP2 database library to version 4.4.0 https://github.com/logstash-plugins/logstash-filter-geoip/pull/238[#238]
-* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0.
-* Dropped support for Java 8. Minimum required Java version is now Java 11.
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required Java version is now Java 11
 
 *Kafka Integration - 11.8.4*
 
