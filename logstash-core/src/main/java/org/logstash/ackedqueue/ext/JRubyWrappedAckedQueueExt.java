@@ -27,6 +27,7 @@ import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
 import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
+import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.javasupport.JavaUtil;
@@ -147,7 +148,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
 
     @JRubyMethod(name = "is_empty?")
     public IRubyObject rubyIsEmpty(ThreadContext context) {
-        return RubyBoolean.newBoolean(context.runtime, this.queue.isEmpty());
+        return Convert.asBoolean(context, this.queue.isEmpty());
     }
 
     @Override

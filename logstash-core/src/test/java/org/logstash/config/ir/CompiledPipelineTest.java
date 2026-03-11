@@ -42,6 +42,8 @@ import org.hamcrest.MatcherAssert;
 import org.jruby.RubyArray;
 import org.jruby.RubyObject;
 import org.jruby.RubyString;
+import org.jruby.api.Create;
+import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.junit.After;
 import org.junit.Before;
@@ -67,6 +69,8 @@ import static org.junit.Assert.assertTrue;
  * Tests for {@link CompiledPipeline}.
  */
 public final class CompiledPipelineTest extends RubyEnvTestCase {
+
+    private static final ThreadContext context = RubyUtil.RUBY.getCurrentContext();
 
     /**
      * Globally accessible map of test run id to a queue of {@link JrubyEventExtLibrary.RubyEvent}
@@ -137,7 +141,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.emptyMap(),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -160,7 +164,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -193,7 +197,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -316,7 +320,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
         ).buildExecution()
-                .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+                .compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(expectedEvents));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(expectedEvents >= 1));
@@ -349,7 +353,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -375,7 +379,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                         filters,
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -402,7 +406,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -437,7 +441,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 filters,
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
-        ).buildExecution().compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+        ).buildExecution().compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -486,7 +490,7 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 Collections.singletonMap("mockoutput", mockOutputSupplier())
             )
         ).buildExecution()
-            .compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+            .compute(Create.newArray(context, testEvent), false, false);
         final Collection<JrubyEventExtLibrary.RubyEvent> outputEvents = EVENT_SINKS.get(runId);
         MatcherAssert.assertThat(outputEvents.size(), CoreMatchers.is(1));
         MatcherAssert.assertThat(outputEvents.contains(testEvent), CoreMatchers.is(true));
@@ -656,12 +660,12 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
 
         final long compilationBaseline = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = baselineCompiledPipeline.buildExecution();
-            compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+            compiledExecution.compute(Create.newArray(context, testEvent), false, false);
         });
 
         final long compilationTest = time(ChronoUnit.MILLIS, () -> {
             final CompiledPipeline.CompiledExecution compiledExecution = testCompiledPipeline.buildExecution();
-            compiledExecution.compute(RubyUtil.RUBY.newArray(testEvent), false, false);
+            compiledExecution.compute(Create.newArray(context, testEvent), false, false);
         });
 
         // sanity checks
@@ -776,7 +780,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 4; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -834,7 +839,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 4; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -890,7 +896,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 4; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -949,7 +956,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
 
         OutputSpy outputSpy = new OutputSpy();
 
@@ -986,7 +994,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
 
         OutputSpy outputSpy = new OutputSpy();
 
@@ -1040,7 +1049,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         Event event = new Event();
         event.setField("message", "single event");
         inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
@@ -1081,7 +1091,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 4; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -1137,7 +1148,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 4; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -1193,7 +1205,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         for (int i = 0; i < 3; i++) {
             Event event = new Event();
             event.setField("message", "test event " + i);
@@ -1250,7 +1263,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
 
         OutputSpy outputSpy = new OutputSpy();
 
@@ -1287,7 +1301,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> emptyBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
 
         OutputSpy outputSpy = new OutputSpy();
 
@@ -1341,7 +1356,8 @@ public final class CompiledPipelineTest extends RubyEnvTestCase {
                 IRHelpers.toSourceWithMetadata("input {mockinput{}} filter { mockfilter {} } output{mockoutput{}}"),
                 false, cve);
 
-        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = RubyUtil.RUBY.newArray();
+        @SuppressWarnings("unchecked")
+        final RubyArray<JrubyEventExtLibrary.RubyEvent> inputBatch = (RubyArray<JrubyEventExtLibrary.RubyEvent>) Create.newEmptyArray(RubyUtil.RUBY.getCurrentContext());
         Event event = new Event();
         event.setField("message", "single event");
         inputBatch.add(JrubyEventExtLibrary.RubyEvent.newRubyEvent(RubyUtil.RUBY, event));
