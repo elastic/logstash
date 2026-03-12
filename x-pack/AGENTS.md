@@ -36,7 +36,7 @@ Use `LogStash::Setting::*` classes in `additionals_settings`:
 ```ruby
 def additionals_settings(settings)
   settings.register(LogStash::Setting::BooleanSetting.new("xpack.feature.enabled", false))
-  settings.register(LogStash::Setting::TimeValue.new("xpack.feature.interval", "5s"))
+  settings.register(LogStash::Setting::TimeValueSetting.new("xpack.feature.interval", "5s"))
   settings.register(LogStash::Setting::ArrayCoercible.new("xpack.feature.hosts", String, ["localhost"]))
   settings.register(LogStash::Setting::NullableStringSetting.new("xpack.feature.password"))
 end
