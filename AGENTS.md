@@ -21,6 +21,8 @@ Run all build and test commands from the **repository root** (where `gradlew` an
 
 All commands require a JDK that meets the `sourceCompatibility` defined in `build.gradle` (currently 17+). JDK 21 is preferred and is the version bundled for distribution (see `bundled_jdk` in `versions.yml`). Ruby tests run via vendored JRuby — no external Ruby, rvm, or rbenv needed.
 
+Use Gradle tasks as the normal entry points from the repo root. Rake and bundle are used as leaf tools where the existing Gradle tasks or scripts already wire them up.
+
 ```bash
 # Initial setup (required once)
 ./gradlew bootstrap
@@ -141,7 +143,7 @@ When modifying code, don't just append to what's there — evaluate whether the 
 
 Logstash configs are compiled into executable Java classes at runtime through a multi-stage pipeline:
 
-1. **Parse:** Treetop grammar (`logstash-core/lib/logstash/config/grammar/lscl_grammar.treetop`) parses `.conf` files into an AST.
+1. **Parse:** Treetop grammar (`logstash-core/lib/logstash/compiler/lscl/lscl_grammar.treetop`) parses `.conf` files into an AST.
 2. **IR:** `ConfigCompiler` (`logstash-core/src/main/java/org/logstash/config/ir/ConfigCompiler.java`) converts the AST into a `PipelineIR` — a directed acyclic graph of plugins and conditionals.
 3. **Compile:** `DatasetCompiler` (`logstash-core/src/main/java/org/logstash/config/ir/compiler/DatasetCompiler.java`) generates Java source strings for each pipeline vertex. `ComputeStepSyntaxElement` (`logstash-core/src/main/java/org/logstash/config/ir/compiler/ComputeStepSyntaxElement.java`) compiles these sources into classes via Janino at runtime. Generated classes live under the `org.logstash.generated` package.
 4. **Execute:** `CompiledPipeline` (`logstash-core/src/main/java/org/logstash/execution/CompiledPipeline.java`) wires the compiled datasets into the worker loop.

@@ -29,7 +29,9 @@ Each suite has its own dependencies and execution workflow.
 ./gradlew installIntegrationTestGems  # build Logstash tarball + install test gems
 ./gradlew copyEs                      # download Elasticsearch (if spec needs it)
 ./gradlew copyFilebeat                # download Filebeat (if spec needs it)
-bundle exec rspec specs/dlq_spec.rb
+cd qa/integration
+BUNDLE_PATH=../../build/qa/integration/vendor \
+  ../../vendor/jruby/bin/jruby -S bundle exec rspec specs/dlq_spec.rb
 ```
 
 Which artifact tasks to run depends on the `services:` list in each spec's fixture YAML.
@@ -109,12 +111,19 @@ Defined in `qa/integration/integration_tests.gemspec`: `elasticsearch`, `childpr
 
 Verify that Logstash packages (`.deb`, `.rpm`) install, start, and upgrade correctly on target platforms. These test the artifact, not pipeline behavior.
 
+These tests assume a Linux environment with `/etc/os-release` and distro package tools; they are not meant to run natively on macOS.
+
 ### Running
 
 ```bash
-cd qa && bundle install && rake qa:acceptance:all
-# Or single test:
-bundle exec rspec acceptance/spec/lib/artifact_operation_spec.rb
+# All acceptance tests (from repo root; uses vendored JRuby)
+./gradlew runAcceptanceTests
+
+# Or install gems once, then run a single test directly
+./gradlew installAcceptanceTestGems
+cd qa
+BUNDLE_PATH=vendor/bundle \
+  ../vendor/jruby/bin/jruby -S bundle exec rspec acceptance/spec/lib/artifact_operation_spec.rb
 ```
 
 ### Architecture
@@ -135,11 +144,22 @@ Verify Docker image build correctness (labels, working directory, architecture),
 
 ### Running
 
-The tests find images by searching local Docker for `docker.elastic.co/logstash/logstash-{flavor}:{version}-SNAPSHOT`. Build the image first, then run tests:
+The tests find images by searching local Docker for `docker.elastic.co/logstash/logstash-{flavor}:{version}-SNAPSHOT`. Build the image first, then run tests. `ARCH` defaults to `x86_64`; set `ARCH=aarch64` when building arm64 images. If you run tests against an image whose architecture differs from the host, set `DOCKER_ARCHITECTURE=amd64|arm64` so the spec helpers compare against the correct target architecture.
 ```bash
-cd qa/docker && bundle install
-bundle exec rspec spec/              # All flavors
-bundle exec rspec spec/full/         # Specific flavor (full, oss, wolfi, ironbank)
+# Build images (from repo root)
+./gradlew artifactDocker         # full
+./gradlew artifactDockerOss      # oss
+./gradlew artifactDockerWolfi    # wolfi
+./gradlew artifactDockerIronbank # ironbank
+
+# Run tests through Gradle (build + vendored JRuby)
+./gradlew runAllDockerTests
+./gradlew runDockerFullTests     # or runDockerOssTests / runDockerWolfiTests / runDockerIronbankTests
+
+# Or run directly from qa after installAcceptanceTestGems
+cd qa
+BUNDLE_PATH=vendor/bundle \
+  ../vendor/jruby/bin/jruby -S bundle exec rspec docker/spec/full
 ```
 
 ### Architecture
@@ -151,7 +171,8 @@ Tests use shared examples across image flavors (`full`, `oss`, `wolfi`, `ironban
 ```bash
 # Integration: verbose output
 cd qa/integration
-VERBOSE=true bundle exec rspec specs/my_spec.rb -fd
+VERBOSE=true BUNDLE_PATH=../../build/qa/integration/vendor \
+  ../../vendor/jruby/bin/jruby -S bundle exec rspec specs/my_spec.rb -fd
 
 # Docker: inspect container
 docker run -it logstash-test /bin/bash
