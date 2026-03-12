@@ -22,7 +22,7 @@ All X-Pack features follow the same integration pattern. Each feature has an **e
 1. **`additionals_settings(settings)`** — Registers `xpack.*` configuration settings with the core settings registry.
 2. **`register_hooks(hooks)`** — Registers lifecycle callbacks with `LogStash::Runner` (e.g. `before_bootstrap_checks`, `after_bootstrap_checks`).
 
-**Entry point:** `lib/x-pack/logstash_registry.rb` registers all three extensions plus built-in input/output plugins with `PLUGIN_REGISTRY`.
+**Entry point:** `lib/x-pack/logstash_registry.rb` registers all three extensions plus built-in input/output plugins with `LogStash::PLUGIN_REGISTRY`.
 
 **Extension files:**
 - `lib/config_management/extension.rb`
