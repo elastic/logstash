@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ls-to-ls-native.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Logstash-to-Logstash: Output to Input [ls-to-ls-native]

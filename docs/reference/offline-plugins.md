@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/offline-plugins.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Offline Plugin Management [offline-plugins]

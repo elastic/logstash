@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Deploying and scaling Logstash [deploying-and-scaling]
