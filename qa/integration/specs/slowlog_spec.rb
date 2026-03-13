@@ -22,6 +22,7 @@ require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 
+# SPLIT_ESTIMATE: 12
 describe "Test Logstash Slowlog" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

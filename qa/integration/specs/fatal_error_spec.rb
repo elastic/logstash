@@ -21,6 +21,7 @@ require_relative '../framework/settings'
 require_relative '../services/logstash_service'
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 15
 describe "uncaught exception" do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
