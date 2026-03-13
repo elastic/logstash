@@ -103,7 +103,7 @@ end
 
 ### Dependencies
 
-Defined in `qa/integration/integration_tests.gemspec`: `elasticsearch`, `childprocess`, `rspec-wait`, `manticore`, `stud`, `logstash-devutils`, `flores`, `rubyzip`.
+Defined in `qa/integration/integration_tests.gemspec`.
 
 ## Acceptance Tests (qa/acceptance/)
 

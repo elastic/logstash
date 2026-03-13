@@ -96,7 +96,7 @@ bin/logstash -e 'input { stdin { } } output { stdout {} }'
 
 ### Dual Java/Ruby Runtime
 - **Java Core** (`logstash-core/src/main/java/org/logstash/`): Pipeline execution engine, event processing, persistent queue, configuration compilation
-- **Ruby Core** (`logstash-core/lib/logstash/`): Agent lifecycle, plugin coordination, REST API, configuration loading
+- **Ruby Core** (`logstash-core/lib/logstash/`): Agent lifecycle, plugin coordination, REST API, configuration loading, metric store, settings management
 
 ### Key Components
 - **Agent** (`logstash-core/lib/logstash/agent.rb`): Main orchestrator, manages pipeline lifecycle
@@ -124,7 +124,7 @@ When modifying code, don't just append to what's there — evaluate whether the 
 
 - **Inherit from the type-specific base class.** Each plugin type has a base in `logstash-core/lib/logstash/{type}s/base.rb` (inputs, filters, outputs, codecs). Override `register` for setup plus the type-specific entry point: `run` (inputs), `filter` (filters), `receive`/`multi_receive` (outputs), `decode`/`encode` (codecs).
 - **Declare configuration with the `config` DSL**, not raw `@params` access. Use `config :name, :validate => :type, :default => value` — defined in `logstash-core/lib/logstash/config/mixin.rb`. The framework handles validation, coercion, and documentation generation from these declarations.
-- **Set output concurrency at the class level** with `concurrency :shared` or `concurrency :single` in `logstash-core/lib/logstash/outputs/base.rb`. This determines which `OutputStrategy` the pipeline uses to wrap the plugin. Most new outputs should use `:shared`.
+- **Set output concurrency at the class level** with `concurrency :shared` or `concurrency :single` in `logstash-core/lib/logstash/outputs/base.rb`. This determines which `OutputStrategy` the pipeline uses to wrap the plugin: `:shared` means multiple worker threads can call the plugin simultaneously; `:single` serialises all calls so only one thread executes the plugin at a time. Most new outputs should use `:shared`.
 - **Plugin lookup goes through `LogStash::Plugins::Registry#lookup`** (`logstash-core/lib/logstash/plugins/registry.rb`). New built-in plugins register in `logstash-core/lib/logstash/plugins/builtin.rb`. External plugins are discovered as gems.
 
 ### Delegator and Metrics Patterns

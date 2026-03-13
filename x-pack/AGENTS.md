@@ -4,7 +4,7 @@ Guidance for coding agents working with X-Pack (Elastic-licensed) features. See 
 
 ## Overview
 
-X-Pack provides commercial features that integrate with the Logstash core via the **UniversalPlugin** extension pattern. It is a separate Ruby package under `x-pack/` with its own test suite. Build without X-Pack by setting `OSS=true`.
+X-Pack provides commercial features that extend the Logstash core. Most features integrate via the **UniversalPlugin** extension pattern; License Checking is a standalone library used by the other features. X-Pack is a separate Ruby package under `x-pack/` with its own test suite. Build without X-Pack by setting `OSS=true`.
 
 ## Features
 
@@ -17,7 +17,7 @@ X-Pack provides commercial features that integrate with the Logstash core via th
 
 ## Extension Pattern
 
-All X-Pack features follow the same integration pattern. Each feature has an **extension class** inheriting from `LogStash::UniversalPlugin` that implements two methods:
+Monitoring, Config Management, and GeoIP follow the same integration pattern. Each has an **extension class** inheriting from `LogStash::UniversalPlugin` that implements two methods:
 
 1. **`additionals_settings(settings)`** — Registers `xpack.*` configuration settings with the core settings registry.
 2. **`register_hooks(hooks)`** — Registers lifecycle callbacks with `LogStash::Runner` (e.g. `before_bootstrap_checks`, `after_bootstrap_checks`).
