@@ -231,12 +231,14 @@ module LogStash
     end
 
     def specific_platforms(platforms = ::Gem.platforms)
-      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil? && !plat.version.nil?}
+      # Keep generic `java` in lockfiles and remove more specific java variants.
+      # On JRuby 10, `universal-java` has nil version, so version is not a reliable discriminator.
+      platforms.find_all {|plat| plat.is_a?(::Gem::Platform) && plat.os == 'java' && !plat.cpu.nil?}
     end
 
     def genericize_platform
       output = LogStash::Bundler.invoke!({:add_platform => 'java'})
-      specific_platforms.each do |platform|
+      specific_platforms(::Bundler.definition.platforms).each do |platform|
         begin
           output << LogStash::Bundler.invoke!({:remove_platform => platform.to_s})
         rescue => e
