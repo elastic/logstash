@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/field-extraction.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Extracting Fields and Wrangling Data [field-extraction]

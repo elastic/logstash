@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/configuration-advanced.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Advanced Logstash configurations [configuration-advanced]

@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/multiple-input-output-plugins.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Stitching Together Multiple Input and Output Plugins [multiple-input-output-plugins]
