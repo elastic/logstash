@@ -42,7 +42,10 @@ module LogStash module Instrument module PeriodicPoller
     def initialize(metric, agent, settings)
       @agent = agent
       @settings = settings
-      @metric_store = agent.metric.collector
+
+      # Call Base initializer - sets up @metric and configures the TimerTask
+      super(metric, :polling_interval => settings.get("otel.metrics.interval"))
+      @metric_store = @metric.collector
 
       # Initialize the OTel service - SDK handles its own export timing
       @otel_service = OTelMetricsService.new(
@@ -54,13 +57,11 @@ module LogStash module Instrument module PeriodicPoller
         settings.get("otel.resource.attributes")
       )
 
-      # Call Base initializer - sets up @metric and configures the TimerTask
-      super(metric, :polling_interval => settings.get("otel.metrics.interval"))
-
       # Take initial snapshot
       @snapshot = @metric_store.snapshot_metric
 
-      # Track which pipelines and plugins have been registered to avoid duplicates
+      # Track which pipelines and plugins have been registered to avoid duplicates when
+      # adding new ones in #collect.
       @registered_pipelines = Set.new
       @registered_plugins = Set.new
 
@@ -87,6 +88,7 @@ module LogStash module Instrument module PeriodicPoller
       # Register metrics for any new plugins (they appear after processing first event)
       register_new_plugin_metrics
 
+      # Note: plugin metrics are pushed automatically during event processing, no need to collect them here.
       collect_cgroup_metrics
       collect_pipeline_metrics
       collect_dlq_metrics
@@ -94,6 +96,8 @@ module LogStash module Instrument module PeriodicPoller
       # Refresh snapshot after collecting metrics so OTel callbacks read fresh data
       @snapshot = @metric_store.snapshot_metric
     end
+
+    private
 
     def register_new_plugin_metrics
       @agent.pipelines_registry.running_pipelines.each do |pipeline_id, _pipeline|
@@ -112,8 +116,6 @@ module LogStash module Instrument module PeriodicPoller
         @registered_pipelines.add(pipeline_id)
       end
     end
-
-    private
 
     def collect_cgroup_metrics
       Os.collect_cgroup(@metric)
@@ -134,6 +136,27 @@ module LogStash module Instrument module PeriodicPoller
         unless pipeline.nil?
           pipeline.collect_stats
         end
+      end
+    end
+
+    # Register observable counters - SDK computes deltas from cumulative values
+    def register_global_metrics
+      # Global event counters
+      register_observable_counter("logstash.events.in", "Total events received", "{event}") do
+        get_metric_value(:stats, :events, :in)
+      end
+
+      register_observable_counter("logstash.events.out", "Total events output", "{event}") do
+        get_metric_value(:stats, :events, :out)
+      end
+
+      register_observable_counter("logstash.events.filtered", "Total events filtered", "{event}") do
+        get_metric_value(:stats, :events, :filtered)
+      end
+
+      # Global queue gauge (total across all pipelines)
+      register_gauge("logstash.queue.events", "Total events in queues", "{event}") do
+        get_total_queue_events
       end
     end
 
@@ -271,27 +294,6 @@ module LogStash module Instrument module PeriodicPoller
         attrs
       ) do
         get_pipeline_metric_value(pipeline_id, :queue, :data, :free_space_in_bytes)
-      end
-    end
-
-    # Register observable counters - SDK computes deltas from cumulative values
-    def register_global_metrics
-      # Global event counters
-      register_observable_counter("logstash.events.in", "Total events received", "{event}") do
-        get_metric_value(:stats, :events, :in)
-      end
-
-      register_observable_counter("logstash.events.out", "Total events output", "{event}") do
-        get_metric_value(:stats, :events, :out)
-      end
-
-      register_observable_counter("logstash.events.filtered", "Total events filtered", "{event}") do
-        get_metric_value(:stats, :events, :filtered)
-      end
-
-      # Global queue gauge (total across all pipelines)
-      register_gauge("logstash.queue.events", "Total events in queues", "{event}") do
-        get_total_queue_events
       end
     end
 
