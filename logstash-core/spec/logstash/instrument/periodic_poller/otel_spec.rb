@@ -68,7 +68,7 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
   end
 
   before do
-    allow(OTelMetricsService).to receive(:new).and_return(otel_service)
+    allow(OtelMetricsService).to receive(:new).and_return(otel_service)
   end
 
   subject(:otel_poller) { described_class.new(metric, agent, settings) }
@@ -78,8 +78,8 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       expect { otel_poller }.not_to raise_error
     end
 
-    it "creates an OTelMetricsService with correct parameters" do
-      expect(OTelMetricsService).to receive(:new).with(
+    it "creates an OtelMetricsService with correct parameters" do
+      expect(OtelMetricsService).to receive(:new).with(
         "http://localhost:4317",
         "test-node-id",
         "test-node-name",

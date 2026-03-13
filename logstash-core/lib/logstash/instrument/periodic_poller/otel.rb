@@ -19,7 +19,7 @@ require "logstash/util/loggable"
 require "logstash/instrument/periodic_poller/os"
 require "set"
 
-java_import 'org.logstash.instrument.metrics.otel.OTelMetricsService'
+java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
 java_import 'io.opentelemetry.api.common.Attributes'
 java_import 'io.opentelemetry.api.common.AttributeKey'
 
@@ -48,7 +48,7 @@ module LogStash module Instrument module PeriodicPoller
       @metric_store = @metric.collector
 
       # Initialize the OTel service - SDK handles its own export timing
-      @otel_service = OTelMetricsService.new(
+      @otel_service = OtelMetricsService.new(
         settings.get("otel.metrics.endpoint"),
         agent.id,
         agent.name,
