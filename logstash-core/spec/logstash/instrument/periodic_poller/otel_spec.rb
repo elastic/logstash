@@ -101,6 +101,9 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.events.filtered", anything, anything, anything, anything
       )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.queue.events", anything, anything, anything, anything
+      )
 
       otel_poller
     end
@@ -115,11 +118,21 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       expect(otel_service).to receive(:registerGauge).with(
         "logstash.os.cgroup.cpu.cfs_quota", anything, anything, anything, anything
       )
+      expect(otel_service).to receive(:registerObservableCounter).with(
+        "logstash.os.cgroup.cpu.stat.elapsed_periods", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerObservableCounter).with(
+        "logstash.os.cgroup.cpu.stat.nr_times_throttled", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerObservableCounter).with(
+        "logstash.os.cgroup.cpu.stat.time_throttled", anything, anything, anything, anything
+      )
 
       otel_poller
     end
 
-    it "registers pipeline metrics for each running pipeline" do
+    it "registers pipeline metrics for each running pipeline on first collect" do
+      # Pipeline event counters
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.pipeline.events.in", anything, anything, anything, anything
       )
@@ -130,7 +143,41 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
         "logstash.pipeline.events.filtered", anything, anything, anything, anything
       )
 
-      otel_poller
+      # Pipeline queue gauges
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.events", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.capacity.page_capacity", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.capacity.max_size", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.capacity.max_unread_events", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.capacity.size", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.queue.data.free_space", anything, anything, anything, anything
+      )
+
+      # Pipeline DLQ gauges
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.dlq.queue_size", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.dlq.max_queue_size", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.dlq.dropped_events", anything, anything, anything, anything
+      )
+      expect(otel_service).to receive(:registerGauge).with(
+        "logstash.pipeline.dlq.expired_events", anything, anything, anything, anything
+      )
+
+      otel_poller.collect
     end
   end
 
@@ -164,6 +211,62 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       otel_poller.collect
       new_snapshot = otel_poller.instance_variable_get(:@snapshot)
       expect(new_snapshot).not_to be(initial_snapshot)
+    end
+
+    context "with plugins" do
+      let(:metric_store) do
+        double("metric_store").tap do |store|
+          allow(store).to receive(:get_shallow).and_return(nil)
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :filters)
+            .and_return({ :mutate_abc123 => {} })
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :outputs)
+            .and_return({ :elasticsearch_def456 => {} })
+          allow(store).to receive(:get_shallow)
+            .with(:stats, :pipelines, :main, :plugins, :inputs)
+            .and_return({ :beats_ghi789 => {} })
+        end
+      end
+
+      let(:snapshot) do
+        double("snapshot", :metric_store => metric_store)
+      end
+
+      before do
+        # First collect registers pipeline metrics
+        otel_poller.collect
+        # Stub snapshot and set it on the poller so plugin discovery works
+        allow(collector).to receive(:snapshot_metric).and_return(snapshot)
+        otel_poller.instance_variable_set(:@snapshot, snapshot)
+      end
+
+      it "registers plugin metrics for filters, outputs, and inputs" do
+        # Expect 3 metrics per plugin (in, out, duration) x 3 plugins = 9 calls
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.events.in", anything, anything, anything, anything
+        ).exactly(3).times
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.events.out", anything, anything, anything, anything
+        ).exactly(3).times
+        expect(otel_service).to receive(:registerObservableCounter).with(
+          "logstash.plugin.events.duration", anything, anything, anything, anything
+        ).exactly(3).times
+
+        otel_poller.collect
+      end
+
+      it "only registers each plugin once across multiple collects" do
+        # First collect in this test registers plugins
+        otel_poller.collect
+
+        # Second collect should not register the same plugins again
+        expect(otel_service).not_to receive(:registerObservableCounter).with(
+          "logstash.plugin.events.in", anything, anything, anything, anything
+        )
+
+        otel_poller.collect
+      end
     end
   end
 
@@ -212,6 +315,58 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       it "returns nil for missing pipeline metrics" do
         value = otel_poller.send(:get_pipeline_metric_value, :nonexistent_pipeline, :events, :in)
         expect(value).to be_nil
+      end
+
+      it "returns nil for missing plugin metrics" do
+        value = otel_poller.send(:get_plugin_metric_value, :main, :filters, :nonexistent_plugin, :events, :in)
+        expect(value).to be_nil
+      end
+    end
+
+    context "#get_total_queue_events" do
+      let(:pipeline2) { double("pipeline2", :system? => false) }
+      let(:system_pipeline) { double("system_pipeline", :system? => true) }
+
+      before do
+        metric.gauge([:stats, :pipelines, :main, :queue], :events, 10)
+        metric.gauge([:stats, :pipelines, :secondary, :queue], :events, 20)
+        metric.gauge([:stats, :pipelines, :monitoring, :queue], :events, 100)
+
+        allow(pipelines_registry).to receive(:running_pipelines).and_return({
+          :main => pipeline,
+          :secondary => pipeline2,
+          :monitoring => system_pipeline
+        })
+
+        otel_poller.collect
+      end
+
+      it "sums queue events across all user pipelines" do
+        total = otel_poller.send(:get_total_queue_events)
+        expect(total).to eq(30)
+      end
+
+      it "excludes system pipelines from the total" do
+        total = otel_poller.send(:get_total_queue_events)
+        expect(total).not_to eq(130)
+      end
+    end
+
+    context "#get_plugin_metric_value" do
+      before do
+        metric.gauge([:stats, :pipelines, :main, :plugins, :filters, :mutate_abc, :events], :in, 500)
+        metric.gauge([:stats, :pipelines, :main, :plugins, :filters, :mutate_abc, :events], :out, 450)
+        otel_poller.collect
+      end
+
+      it "retrieves plugin metric values" do
+        value = otel_poller.send(:get_plugin_metric_value, :main, :filters, :mutate_abc, :events, :in)
+        expect(value).to eq(500)
+      end
+
+      it "retrieves different plugin metric paths" do
+        value = otel_poller.send(:get_plugin_metric_value, :main, :filters, :mutate_abc, :events, :out)
+        expect(value).to eq(450)
       end
     end
   end
@@ -299,14 +454,39 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
     end
   end
 
-  describe "create_pipeline_attributes" do
+  describe "attribute creation" do
     before do
       otel_poller
     end
 
-    it "creates Attributes with pipeline.id" do
-      attrs = otel_poller.send(:create_pipeline_attributes, :main)
-      expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
+    describe "#create_pipeline_attributes" do
+      it "creates Attributes with pipeline.id" do
+        attrs = otel_poller.send(:create_pipeline_attributes, :main)
+        expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
+      end
+
+      it "converts symbol pipeline_id to string" do
+        attrs = otel_poller.send(:create_pipeline_attributes, :my_pipeline)
+        expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("my_pipeline")
+      end
+    end
+
+    describe "#create_plugin_attributes" do
+      it "creates Attributes with pipeline.id, plugin.type, and plugin.id" do
+        attrs = otel_poller.send(:create_plugin_attributes, :main, :filters, :mutate_abc123)
+
+        expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
+        expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("filters")
+        expect(attrs.get(AttributeKey.stringKey("plugin.id"))).to eq("mutate_abc123")
+      end
+
+      it "converts all symbol arguments to strings" do
+        attrs = otel_poller.send(:create_plugin_attributes, :secondary, :outputs, :elasticsearch_xyz)
+
+        expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("secondary")
+        expect(attrs.get(AttributeKey.stringKey("plugin.type"))).to eq("outputs")
+        expect(attrs.get(AttributeKey.stringKey("plugin.id"))).to eq("elasticsearch_xyz")
+      end
     end
   end
 end
