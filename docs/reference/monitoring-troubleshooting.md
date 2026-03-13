@@ -2,6 +2,9 @@
 navigation_title: "Troubleshooting"
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-troubleshooting.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Troubleshooting monitoring in Logstash [monitoring-troubleshooting]
