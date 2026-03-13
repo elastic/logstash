@@ -458,6 +458,8 @@ module LogStash
 
     java_import org.logstash.settings.TimeValueSetting
 
+    java_import org.logstash.settings.ArrayCoercibleSetting
+
     class ArrayCoercible < Coercible
       def initialize(name, klass, default, strict = true, &validator_proc)
         @element_class = klass

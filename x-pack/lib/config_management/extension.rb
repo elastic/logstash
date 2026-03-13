@@ -23,10 +23,10 @@ module LogStash
 
         settings.register(LogStash::Setting::BooleanSetting.new("xpack.management.enabled", false))
         settings.register(LogStash::Setting::TimeValueSetting.new("xpack.management.logstash.poll_interval", "5s"))
-        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.pipeline.id", String, ["main"]))
+        settings.register(LogStash::Setting::ArrayCoercibleSetting.new("xpack.management.pipeline.id", java.lang.String.java_class, ["main"]))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.username", "logstash_system"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.password"))
-        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.hosts", String, ["https://localhost:9200"]))
+        settings.register(LogStash::Setting::ArrayCoercibleSetting.new("xpack.management.elasticsearch.hosts", java.lang.String.java_class, ["https://localhost:9200"]))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.cloud_id"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.cloud_auth"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.api_key"))
@@ -39,7 +39,7 @@ module LogStash
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.ssl.keystore.password"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.ssl.certificate"))
         settings.register(LogStash::Setting::NullableStringSetting.new("xpack.management.elasticsearch.ssl.key"))
-        settings.register(LogStash::Setting::ArrayCoercible.new("xpack.management.elasticsearch.ssl.cipher_suites", String, []))
+        settings.register(LogStash::Setting::ArrayCoercibleSetting.new("xpack.management.elasticsearch.ssl.cipher_suites", java.lang.String.java_class, []))
         settings.register(LogStash::Setting::StringSetting.new("xpack.management.elasticsearch.ssl.verification_mode", "full", true, %w[none certificate full]))
         settings.register(LogStash::Setting::BooleanSetting.new("xpack.management.elasticsearch.sniffing", false))
       rescue => e
