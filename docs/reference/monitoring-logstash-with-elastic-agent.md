@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-with-ea.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Monitoring Logstash with Elastic Agent [monitoring-with-ea]
