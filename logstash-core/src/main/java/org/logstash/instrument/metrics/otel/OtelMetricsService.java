@@ -22,7 +22,6 @@ package org.logstash.instrument.metrics.otel;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
-import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.api.metrics.ObservableLongCounter;
 import io.opentelemetry.api.metrics.ObservableLongGauge;
@@ -50,20 +49,19 @@ import java.util.function.Supplier;
  * - Manages the lifecycle of the OTel exporter
  *
  * Usage from Ruby:
- *   java_import 'org.logstash.instrument.metrics.otel.OTelMetricsService'
- *   service = OTelMetricsService.new(endpoint, node_id, node_name, interval_secs, "grpc", nil)
+ *   java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
+ *   service = OtelMetricsService.new(endpoint, node_id, node_name, interval_secs, "grpc", nil)
  *   service.registerGauge("metric.name", "description", "unit", -> { get_value() }, Attributes.empty)
  */
-public class OTelMetricsService {
+public class OtelMetricsService {
 
-    private static final Logger LOGGER = LogManager.getLogger(OTelMetricsService.class);
+    private static final Logger LOGGER = LogManager.getLogger(OtelMetricsService.class);
 
     private final SdkMeterProvider meterProvider;
     private final Meter meter;
-    private final Map<String, LongCounter> counters = new ConcurrentHashMap<>();
+    // Keep references to prevent garbage collection of observable instruments
     private final Map<String, ObservableLongGauge> gauges = new ConcurrentHashMap<>();
     private final Map<String, ObservableLongCounter> observableCounters = new ConcurrentHashMap<>();
-    private volatile boolean running = false;
 
     /**
      * Creates a new OTel metrics service.
@@ -75,7 +73,7 @@ public class OTelMetricsService {
      * @param protocol          "grpc" or "http"
      * @param resourceAttributes Additional resource attributes (comma-separated key=value pairs)
      */
-    public OTelMetricsService(String endpoint, String nodeId, String nodeName,
+    public OtelMetricsService(String endpoint, String nodeId, String nodeName,
                               int intervalSeconds, String protocol, String resourceAttributes) {
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}s)",
                 endpoint, protocol, intervalSeconds);
@@ -111,7 +109,6 @@ public class OTelMetricsService {
 
         // Get meter for creating instruments
         this.meter = meterProvider.get("logstash");
-        this.running = true;
 
         LOGGER.info("OpenTelemetry metrics service initialized successfully");
     }
@@ -137,38 +134,6 @@ public class OTelMetricsService {
             if (keyValue.length == 2) {
                 builder.put(AttributeKey.stringKey(keyValue[0].trim()), keyValue[1].trim());
             }
-        }
-    }
-
-    /**
-     * Gets or creates a Counter instrument.
-     * Counters are for monotonically increasing values (events processed, bytes sent, etc.)
-     *
-     * @param name        Metric name (e.g., "logstash.events.in")
-     * @param description Human-readable description
-     * @param unit        Unit of measurement (e.g., "{events}", "By")
-     * @return The counter instrument
-     */
-    public LongCounter getOrCreateCounter(String name, String description, String unit) {
-        return counters.computeIfAbsent(name, n ->
-                meter.counterBuilder(n)
-                        .setDescription(description)
-                        .setUnit(unit)
-                        .build()
-        );
-    }
-
-    /**
-     * Increments a counter by the specified amount.
-     *
-     * @param name       Metric name
-     * @param amount     Amount to increment by
-     * @param attributes Attributes/labels for this measurement
-     */
-    public void incrementCounter(String name, long amount, Attributes attributes) {
-        LongCounter counter = counters.get(name);
-        if (counter != null && amount > 0) {
-            counter.add(amount, attributes);
         }
     }
 
@@ -232,62 +197,6 @@ public class OTelMetricsService {
     }
 
     /**
-     * Registers an observable double gauge with a callback.
-     *
-     * @param name          Metric name
-     * @param description   Human-readable description
-     * @param unit          Unit of measurement
-     * @param valueSupplier Callback that returns the current value
-     * @param attributes    Attributes/labels for this gauge
-     */
-    public void registerDoubleGauge(String name, String description, String unit,
-                                    Supplier<Double> valueSupplier, Attributes attributes) {
-        meter.gaugeBuilder(name)
-                .setDescription(description)
-                .setUnit(unit)
-                .buildWithCallback(measurement -> {
-                    try {
-                        Double value = valueSupplier.get();
-                        if (value != null && !value.isNaN()) {
-                            measurement.record(value, attributes);
-                        }
-                    } catch (Exception e) {
-                        LOGGER.debug("Error collecting gauge {}: {}", name, e.getMessage());
-                    }
-                });
-    }
-
-    /**
-     * Creates Attributes from a map of key-value pairs.
-     * Convenience method for Ruby callers.
-     *
-     * @param attributeMap Map of attribute names to values
-     * @return Attributes object
-     */
-    public static Attributes createAttributes(Map<String, String> attributeMap) {
-        if (attributeMap == null || attributeMap.isEmpty()) {
-            return Attributes.empty();
-        }
-        AttributesBuilder builder = Attributes.builder();
-        attributeMap.forEach((key, value) -> builder.put(AttributeKey.stringKey(key), value));
-        return builder.build();
-    }
-
-    /**
-     * Gets the raw Meter for advanced use cases.
-     */
-    public Meter getMeter() {
-        return meter;
-    }
-
-    /**
-     * Returns whether the service is running.
-     */
-    public boolean isRunning() {
-        return running;
-    }
-
-    /**
      * Forces an immediate flush of pending metrics.
      */
     public void flush() {
@@ -302,7 +211,6 @@ public class OTelMetricsService {
      */
     public void shutdown() {
         LOGGER.info("Shutting down OpenTelemetry metrics service");
-        running = false;
         if (meterProvider != null) {
             meterProvider.close();
         }
