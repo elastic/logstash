@@ -213,6 +213,8 @@ module LogStash
                 byte_size_histogram_value = byte_size_histogram.value
                 if byte_size_histogram_value[window.to_s]
                   reshape_histogram_percentiles_for_window(:byte_size, byte_size_histogram_value, window, result)
+                  result[:byte_size][:max] ||= {}
+                  result[:byte_size][:max][window] = byte_size_histogram_value[window.to_s].max_value.round
                 end
               end
             end

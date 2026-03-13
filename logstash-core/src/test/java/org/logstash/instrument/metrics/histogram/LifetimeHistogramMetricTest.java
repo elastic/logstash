@@ -42,6 +42,7 @@ public class LifetimeHistogramMetricTest {
         ValueHistogram h = sut.getValue();
         assertEquals(1, h.getTotalCount());
         assertEquals(1000L, h.getValueAtPercentile(90));
+        assertEquals(1000L, h.getMaxValue());
     }
 
     @Test
@@ -56,14 +57,24 @@ public class LifetimeHistogramMetricTest {
         ValueHistogram afterFirst = sut.getValue();
         long p90AfterFirst = afterFirst.getValueAtPercentile(90);
         assertEquals(100L, p90AfterFirst);
+        assertEquals(100L, afterFirst.getMaxValue());
 
         sut.recordValue(1000);
         ValueHistogram afterSecond = sut.getValue();
         long p90AfterSecond = afterSecond.getValueAtPercentile(90);
         assertTrue("90th percentile should increase after recording a larger value", p90AfterSecond > p90AfterFirst);
         assertEquals(1000L, p90AfterSecond);
+        assertEquals(1000L, afterSecond.getMaxValue());
 
         long p50AfterSecond = afterSecond.getValueAtPercentile(50);
         assertEquals("previous 90th percentile value (100) should now be at 50th percentile", 100L, p50AfterSecond);
+    }
+
+    @Test
+    public void givenValuesRecordedThenGetMaxValueReturnsLargestRecordedValue() {
+        sut.recordValue(100);
+        sut.recordValue(1000);
+        ValueHistogram h = sut.getValue();
+        assertEquals(1000L, h.getMaxValue());
     }
 }
