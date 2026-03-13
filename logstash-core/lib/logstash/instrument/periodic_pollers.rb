@@ -27,6 +27,7 @@ module LogStash module Instrument
   # of the stats, this class encapsulate the starting and stopping of the poller
   # if the unique timer uses too much resource we can refactor this behavior here.
   class PeriodicPollers
+    include LogStash::Util::Loggable
     attr_reader :metric
 
     def initialize(metric, settings, agent)
