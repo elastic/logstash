@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Structure of a pipeline [configuration-file-structure]
