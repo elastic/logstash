@@ -134,16 +134,21 @@ module LogStash
       end
     end
 
-    # Is the name a relative path, free of `..` patterns that could lead to
-    # path traversal attacks? This does NOT handle symlinks; if the path
-    # contains symlinks, this check is NOT enough to guarantee safety.
-    # This is implementation is a copy of the one used by Zip::File to check the name of the file to be extracted.
+    #TODO handle symlink case, this is a bit more complex as we need to check the real path of the file
+    # to be extracted and make sure it is still in the target directory. This is not handled by Zip::File and is a known security issue:
+    #
+    # Returns true if the path string is safe (no path traversal, no absolute path).
+    # A path is safe when it is relative and does not contain `..` segments that
+    # could escape the target directory. Works on both Unix and Windows.
+    # @param path [String] path string to validate
+    # @return [Boolean] true if safe, false if absolute or relative-with-escape
     def self.name_safe?(name)
-      cleanpath = Pathname.new(name).cleanpath
-      return false unless cleanpath.relative?
-      root = ::File::SEPARATOR
-      naive_expanded_path = ::File.join(root, cleanpath.to_s)
-      ::File.absolute_path(cleanpath.to_s, root) == naive_expanded_path
+      return false if name.nil? || name.to_s.strip.empty?
+      pn = Pathname.new(name)
+      cleanpath = pn.cleanpath
+      return false if cleanpath.absolute?
+      return false if cleanpath.each_filename.to_a.include?("..")
+      true
     end
   end
 end
