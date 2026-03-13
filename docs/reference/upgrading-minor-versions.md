@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/upgrading-minor-versions.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Upgrading between minor versions [upgrading-minor-versions]
