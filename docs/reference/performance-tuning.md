@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/performance-tuning.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Performance tuning [performance-tuning]
