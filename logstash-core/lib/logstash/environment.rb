@@ -110,8 +110,7 @@ module LogStash
             Setting::StringSetting.new("keystore.classname", "org.logstash.secret.store.backend.JavaKeyStore"),
             Setting::StringSetting.new("keystore.file", ::File.join(::File.join(LogStash::Environment::LOGSTASH_HOME, "config"), "logstash.keystore"), false), # will be populated on
     Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
-            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"])
-                # OpenTelemetry metrics export settings
+            Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"]),
            Setting::BooleanSetting.new("otel.metrics.enabled", false),
            Setting::StringSetting.new("otel.metrics.endpoint", "http://localhost:4317"),
           Setting::NumericSetting.new("otel.metrics.interval", 10), # seconds
