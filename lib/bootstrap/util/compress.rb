@@ -36,6 +36,7 @@ module LogStash
         raise CompressError.new("Directory #{target} exist") if ::File.exist?(target)
         ::Zip::File.open(source) do |zip_file|
           zip_file.each do |file|
+            LogStash::Util.verify_name_safe!(file.name)
             path = ::File.join(target, file.name)
             FileUtils.mkdir_p(::File.dirname(path))
             zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
@@ -72,6 +73,7 @@ module LogStash
         Zlib::GzipReader.open(file) do |gzip_file|
           ::Gem::Package::TarReader.new(gzip_file) do |tar_file|
             tar_file.each do |entry|
+              LogStash::Util.verify_name_safe!(entry.full_name)
               target_path = ::File.join(target, entry.full_name)
 
               if entry.directory?
@@ -129,6 +131,24 @@ module LogStash
           gzip_file.write(target_file.read)
           gzip_file.close
         end
+      end
+    end
+
+    # Verifies that a path string is safe for extraction (relative, no `..` traversal).
+    # Raises CompressError with a specific message if the path is nil/empty, absolute, or
+    # contains `..`. Does NOT handle symlinks. Works on both Unix and Windows.
+    # @param name [String] path string to validate
+    # @raise [CompressError] if path is nil, empty, absolute, or traverses with `..`
+    def self.verify_name_safe!(name)
+      if name.nil? || name.to_s.strip.empty?
+        raise CompressError.new("Refusing to extract file to unsafe path. Path cannot be nil or empty.")
+      end
+      cleanpath = Pathname.new(name).cleanpath
+      if cleanpath.absolute?
+        raise CompressError.new("Refusing to extract file to unsafe path: #{name}. Absolute paths are not allowed.")
+      end
+      if cleanpath.each_filename.to_a.include?("..")
+        raise CompressError.new("Refusing to extract file to unsafe path: #{name}. Files may not traverse with `..`")
       end
     end
   end
