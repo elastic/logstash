@@ -87,6 +87,21 @@ shared_examples_for 'the container is configured correctly' do |flavor|
       expect(java_process(@container)["args"]).to match /-Dls.cgroup.cpuacct.path.override=/
     end
 
+    it 'should report cgroup cpu and cpuacct stats via the monitoring API' do
+      node_stats = get_node_stats(@container)
+      cgroup = node_stats.dig('os', 'cgroup')
+      expect(cgroup).not_to be_nil, "Expected cgroup stats in /_node/stats response"
+
+      expect(cgroup.dig('cpuacct', 'control_group')).to be_a(String)
+      expect(cgroup.dig('cpuacct', 'usage_nanos')).to be >= 0
+
+      expect(cgroup.dig('cpu', 'control_group')).to be_a(String)
+      expect(cgroup.dig('cpu', 'cfs_period_micros')).to be > 0
+      expect(cgroup.dig('cpu', 'stat', 'number_of_elapsed_periods')).to be >= -1
+      expect(cgroup.dig('cpu', 'stat', 'number_of_times_throttled')).to be >= -1
+      expect(cgroup.dig('cpu', 'stat', 'time_throttled_nanos')).to be >= -1
+    end
+
     it 'should have a pid of 1' do
       expect(java_process(@container)["pid"]).to eql '1'
     end
