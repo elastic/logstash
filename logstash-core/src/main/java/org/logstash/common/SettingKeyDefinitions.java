@@ -30,6 +30,8 @@ public class SettingKeyDefinitions {
 
     public static final String PIPELINE_BATCH_METRICS = "pipeline.batch.metrics.sampling_mode";
 
+    public static final String PIPELINE_BATCH_DELAY = "pipeline.batch.delay";
+
     public static final String PIPELINE_BATCH_SIZE = "pipeline.batch.size";
 
     public static final String PIPELINE_BATCH_OUTPUT_CHUNKING_GROWTH_THRESHOLD_FACTOR = "pipeline.batch.output_chunking.growth_threshold_factor";

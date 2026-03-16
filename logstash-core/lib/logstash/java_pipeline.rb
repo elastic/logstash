@@ -296,8 +296,6 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.sources" => pipeline_source_details)
       @logger.info("Starting pipeline", pipeline_log_params)
 
-      filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
-
       # First launch WorkerLoop initialization in separate threads which concurrently
       # compiles and initializes the worker pipelines
 

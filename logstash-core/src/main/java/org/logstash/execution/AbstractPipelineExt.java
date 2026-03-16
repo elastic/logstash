@@ -337,6 +337,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
         inputQueueClient = queue.writeClient();
         filterQueueClient = queue.readClient();
 
+        filterQueueClient.setBatchDimensions(QueueFactoryExt.extractQueueReadClientSettings(settings));
         filterQueueClient.setEventsMetric(metric.namespace(context, EVENTS_METRIC_NAMESPACE));
         filterQueueClient.setPipelineMetric(
             metric.namespace(
