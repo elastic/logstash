@@ -73,5 +73,17 @@ describe LogStash::PluginManager::PackInstaller::Local do
         expect { subject.execute }.not_to raise_error
       end
     end
+
+    context "when the pack is valid tar.gz with symlink" do
+      let(:local_file) { ::File.join(::File.dirname(__FILE__), "..", "..", "..", "support", "pack", "pack_with_symlink.tar.gz") }
+
+      it "extracts the archive including the symlink and installs the gems" do
+        skip("Fixture not found") unless ::File.exist?(local_file)
+        expect(::Bundler::LogstashInjector).to receive(:inject!).with(be_kind_of(LogStash::PluginManager::PackInstaller::Pack)).and_return([])
+        expect(::LogStash::PluginManager::GemInstaller).to receive(:install).with(/logstash-input-packtest-0\.1\.0\.gem/, anything).and_return(nil)
+
+        expect { subject.execute }.not_to raise_error
+      end
+    end
   end
 end

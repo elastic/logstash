@@ -24,7 +24,7 @@ require "bootstrap/util/compress"
 
 module LogStash module PluginManager module PackInstaller
   class Local
-    PACK_EXTENSION = ".zip"
+    PACK_EXTENSIONS = [".zip", ".tar.gz"].freeze
     LOGSTASH_PATTERN_RE = /logstash\/?/
 
     attr_reader :local_file
@@ -35,7 +35,7 @@ module LogStash module PluginManager module PackInstaller
 
     def execute
       raise PluginManager::FileNotFoundError, "Can't file local file #{local_file}" unless ::File.exist?(local_file)
-      raise PluginManager::InvalidPackError, "Invalid format, the pack must be in zip format" unless valid_format?(local_file)
+      raise PluginManager::InvalidPackError, "Invalid format, the pack must be in zip or tar.gz format" unless valid_format?(local_file)
 
       PluginManager.ui.info("Installing file: #{local_file}")
       uncompressed_path = uncompress(local_file)
@@ -69,16 +69,23 @@ module LogStash module PluginManager module PackInstaller
     private
     def uncompress(source)
       temporary_directory = Stud::Temporary.pathname
-      LogStash::Util::Zip.extract(source, temporary_directory, LOGSTASH_PATTERN_RE)
+      if source.downcase.end_with?(".tar.gz")
+        LogStash::Util::Tar.extract(source, temporary_directory)
+      else
+        LogStash::Util::Zip.extract(source, temporary_directory, LOGSTASH_PATTERN_RE)
+      end
       temporary_directory
     rescue Zip::Error => e
       # OK Zip's handling of file is bit weird, if the file exist but is not a valid zip, it will raise
       # a `Zip::Error` exception with a file not found message...
       raise InvalidPackError, "Cannot uncompress the zip: #{source}"
+    rescue LogStash::CompressError => e
+      raise InvalidPackError, "Cannot uncompress the archive: #{e.message}"
     end
 
     def valid_format?(local_file)
-      ::File.extname(local_file).downcase == PACK_EXTENSION
+      path = local_file.to_s.downcase
+      PACK_EXTENSIONS.any? { |ext| path.end_with?(ext) }
     end
   end
 end end end

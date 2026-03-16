@@ -54,7 +54,7 @@ def list_files(target)
 end
 
 describe LogStash::Util do
-  describe ".verify_name_safe!" do
+  context "verify entry files destinations" do
     it "raises CompressError for nil or empty path" do
       expect { LogStash::Util.verify_name_safe!(nil) }.to raise_error(LogStash::CompressError, /Path cannot be nil or empty/)
       expect { LogStash::Util.verify_name_safe!("") }.to raise_error(LogStash::CompressError, /Path cannot be nil or empty/)
@@ -217,6 +217,26 @@ describe LogStash::Util::Tar do
       allow(Gem::Package::TarReader).to receive(:new).with(gzip_file).and_yield(tar_with_evil)
       expect(FileUtils).to receive(:mkdir).with(target)
       expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract file to unsafe path.*Files may not traverse with `..`/)
+    end
+
+    it "extracts a tar.gz containing a symlink and creates the symlink" do
+      fixture = ::File.join(::File.dirname(__FILE__), "..", "..", "support", "pack", "pack_with_symlink.tar.gz")
+      skip("Fixture not found") unless ::File.exist?(fixture)
+      target_dir = Stud::Temporary.pathname
+      subject.extract(fixture, target_dir)
+      symlink_path = ::File.join(target_dir, "logstash", "link_to_somefile")
+      expect(::File.symlink?(symlink_path)).to be true
+      expect(::File.readlink(symlink_path)).to eq("somefile.txt")
+    end
+
+    it "raises CompressError when a symlink target would escape the extraction directory" do
+      header = OpenStruct.new(:typeflag => "2", :linkname => "../../etc/passwd")
+      entry = OpenStruct.new(:full_name => "logstash/link_evil", :directory? => false, :symlink? => true, :header => header, :read => nil)
+      tar_with_evil_symlink = [entry]
+      allow(Zlib::GzipReader).to receive(:open).with(source).and_yield(gzip_file)
+      allow(Gem::Package::TarReader).to receive(:new).with(gzip_file).and_yield(tar_with_evil_symlink)
+      expect(FileUtils).to receive(:mkdir).with(target)
+      expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink with unsafe target/)
     end
   end
 

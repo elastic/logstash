@@ -78,6 +78,13 @@ module LogStash
 
               if entry.directory?
                 FileUtils.mkdir_p(target_path)
+              elsif entry.symlink?
+                linkname = entry.header.linkname
+                unless LogStash::Util.symlink_target_safe?(linkname, target_path, target)
+                  raise CompressError.new("Refusing to extract symlink with unsafe target: #{entry.full_name} -> #{linkname}. Symlink target must remain inside extraction directory.")
+                end
+                FileUtils.mkdir_p(::File.dirname(target_path))
+                ::File.symlink(linkname, target_path)
               else # is a file to be extracted
                 ::File.open(target_path, "wb") { |f| f.write(entry.read) }
               end
@@ -134,14 +141,32 @@ module LogStash
       end
     end
 
-    # Verifies that a path string is safe for extraction (relative, no `..` traversal).
+    # Returns true if a symlink target (linkname) would resolve to a path under extraction_root
+    # when the symlink is created at symlink_path. Works on both Unix and Windows.
+    # @param linkname [String] symlink target (relative or absolute)
+    # @param symlink_path [String] full path where the symlink will be created
+    # @param extraction_root [String] root directory all paths must stay under
+    # @return [Boolean] true if resolved path is under extraction_root
+    def self.symlink_target_safe?(linkname, symlink_path, extraction_root)
+      return false if linkname.nil? || linkname.to_s.strip.empty?
+      symlink_dir = ::File.dirname(symlink_path)
+      resolved = Pathname.new(::File.expand_path(linkname, symlink_dir)).cleanpath
+      root = Pathname.new(::File.expand_path(extraction_root)).cleanpath
+      !resolved.relative_path_from(root).to_s.start_with?("..")
+    rescue ArgumentError
+      # relative_path_from raises if resolved is not under root
+      false
+    end
+
+    # Verifies that a path string is safe for extraction (relative, no parents traversal).
     # Raises CompressError with a specific message if the path is nil/empty, absolute, or
-    # contains `..`. Does NOT handle symlinks. Works on both Unix and Windows.
+    # contains `..`. Does NOT handle symlinks, symlinks should be handled on per archive type basis.
+    # Works on both Unix and Windows.
     # @param name [String] path string to validate
     # @raise [CompressError] if path is nil, empty, absolute, or traverses with `..`
     def self.verify_name_safe!(name)
       if name.nil? || name.to_s.strip.empty?
-        raise CompressError.new("Refusing to extract file to unsafe path. Path cannot be nil or empty.")
+        raise CompressError.new("Refusing to extract file. Path cannot be nil or empty.")
       end
       cleanpath = Pathname.new(name).cleanpath
       if cleanpath.absolute?
