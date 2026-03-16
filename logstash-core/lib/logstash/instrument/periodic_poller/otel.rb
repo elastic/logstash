@@ -35,6 +35,7 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.metrics.endpoint: "http://localhost:4317"
   #   otel.metrics.interval: 10
   #   otel.metrics.protocol: "grpc"
+  #   otel.metrics.authorization_header: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #
   class OTel < Base
@@ -54,7 +55,8 @@ module LogStash module Instrument module PeriodicPoller
         agent.name,
         settings.get("otel.metrics.interval"),
         settings.get("otel.metrics.protocol"),
-        settings.get("otel.resource.attributes")
+        settings.get("otel.resource.attributes"),
+        settings.get("otel.metrics.authorization_header")
       )
 
       # Take initial snapshot

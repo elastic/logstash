@@ -55,6 +55,7 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
       allow(s).to receive(:get).with("otel.metrics.protocol").and_return("grpc")
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+      allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
     end
   end
 
@@ -85,10 +86,63 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
         "test-node-name",
         10,
         "grpc",
+        nil,
         nil
       ).and_return(otel_service)
 
       otel_poller
+    end
+
+    context "with authorization header" do
+      let(:settings) do
+        double("settings").tap do |s|
+          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
+          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("ApiKey my-secret-key")
+        end
+      end
+
+      it "passes authorization_header to OtelMetricsService" do
+        expect(OtelMetricsService).to receive(:new).with(
+          "https://apm.example.com",
+          "test-node-id",
+          "test-node-name",
+          10,
+          "http",
+          nil,
+          "ApiKey my-secret-key"
+        ).and_return(otel_service)
+
+        otel_poller
+      end
+    end
+
+    context "with Bearer token authorization" do
+      let(:settings) do
+        double("settings").tap do |s|
+          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
+          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("Bearer my-bearer-token")
+        end
+      end
+
+      it "passes Bearer token to OtelMetricsService" do
+        expect(OtelMetricsService).to receive(:new).with(
+          "https://apm.example.com",
+          "test-node-id",
+          "test-node-name",
+          10,
+          "http",
+          nil,
+          "Bearer my-bearer-token"
+        ).and_return(otel_service)
+
+        otel_poller
+      end
     end
 
     it "registers global metrics" do
