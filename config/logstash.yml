@@ -303,6 +303,11 @@
 #
 # otel.metrics.protocol: "grpc"
 #
+# Authorization header for authenticated OTLP endpoints.
+# Examples: "ApiKey xxx" or "Bearer xxx"
+#
+# otel.metrics.authorization_header:
+#
 # Additional resource attributes as comma-separated key=value pairs.
 # These are attached to all exported metrics to identify this Logstash instance.
 # Example: "environment=production,cluster=us-west,team=platform"

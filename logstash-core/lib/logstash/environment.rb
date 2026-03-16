@@ -115,6 +115,7 @@ module LogStash
            Setting::StringSetting.new("otel.metrics.endpoint", "http://localhost:4317"),
           Setting::NumericSetting.new("otel.metrics.interval", 10), # seconds
            Setting::StringSetting.new("otel.metrics.protocol", "grpc", true, ["grpc", "http"]),
+   Setting::NullableStringSetting.new("otel.metrics.authorization_header", nil, false), # e.g., "ApiKey xxx" or "Bearer xxx"
    Setting::NullableStringSetting.new("otel.resource.attributes", nil, false) # key=value,key2=value2 format
   # post_process
   ].each {|setting| SETTINGS.register(setting) }

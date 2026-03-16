@@ -63,20 +63,25 @@ public class OtelMetricsService {
     private final Map<String, ObservableLongGauge> gauges = new ConcurrentHashMap<>();
     private final Map<String, ObservableLongCounter> observableCounters = new ConcurrentHashMap<>();
 
+    private final String authorizationHeader;
+
     /**
      * Creates a new OTel metrics service.
      *
-     * @param endpoint          OTLP endpoint (e.g., "http://localhost:4317")
-     * @param nodeId            Logstash node ID
-     * @param nodeName          Logstash node name
-     * @param intervalSeconds   Export interval in seconds
-     * @param protocol          "grpc" or "http"
-     * @param resourceAttributes Additional resource attributes (comma-separated key=value pairs)
+     * @param endpoint             OTLP endpoint (e.g., "http://localhost:4317")
+     * @param nodeId               Logstash node ID
+     * @param nodeName             Logstash node name
+     * @param intervalSeconds      Export interval in seconds
+     * @param protocol             "grpc" or "http"
+     * @param resourceAttributes   Additional resource attributes (comma-separated key=value pairs)
+     * @param authorizationHeader  Authorization header value (e.g., "ApiKey xxx" or "Bearer xxx"), or null
      */
     public OtelMetricsService(String endpoint, String nodeId, String nodeName,
-                              int intervalSeconds, String protocol, String resourceAttributes) {
+                              int intervalSeconds, String protocol, String resourceAttributes,
+                              String authorizationHeader) {
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}s)",
                 endpoint, protocol, intervalSeconds);
+        this.authorizationHeader = authorizationHeader;
 
         // Build resource attributes
         AttributesBuilder resourceAttrsBuilder = Attributes.builder()
@@ -115,16 +120,22 @@ public class OtelMetricsService {
 
     private MetricExporter createExporter(String endpoint, String protocol) {
         if ("http".equalsIgnoreCase(protocol)) {
-            return OtlpHttpMetricExporter.builder()
+            var builder = OtlpHttpMetricExporter.builder()
                     .setEndpoint(endpoint + "/v1/metrics")
-                    .setTimeout(Duration.ofSeconds(10))
-                    .build();
+                    .setTimeout(Duration.ofSeconds(10));
+            if (authorizationHeader != null && !authorizationHeader.isEmpty()) {
+                builder.addHeader("Authorization", authorizationHeader);
+            }
+            return builder.build();
         } else {
             // Default to gRPC
-            return OtlpGrpcMetricExporter.builder()
+            var builder = OtlpGrpcMetricExporter.builder()
                     .setEndpoint(endpoint)
-                    .setTimeout(Duration.ofSeconds(10))
-                    .build();
+                    .setTimeout(Duration.ofSeconds(10));
+            if (authorizationHeader != null && !authorizationHeader.isEmpty()) {
+                builder.addHeader("Authorization", authorizationHeader);
+            }
+            return builder.build();
         }
     }
 
