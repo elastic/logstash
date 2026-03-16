@@ -334,7 +334,7 @@ public class AbstractPipelineExt extends RubyBasicObject {
             LOGGER.error("Logstash failed to create queue.", ex);
             throw new IllegalStateException(ex);
         }
-        inputQueueClient = queue.writeClient(context);
+        inputQueueClient = queue.writeClient();
         filterQueueClient = queue.readClient();
 
         filterQueueClient.setEventsMetric(metric.namespace(context, EVENTS_METRIC_NAMESPACE));

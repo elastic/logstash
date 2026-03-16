@@ -25,7 +25,6 @@ import java.util.Objects;
 
 import co.elastic.logstash.api.Metric;
 import org.jruby.Ruby;
-import org.jruby.RubyBoolean;
 import org.jruby.RubyClass;
 import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
@@ -152,7 +151,7 @@ public final class JRubyWrappedAckedQueueExt extends AbstractWrappedQueueExt {
     }
 
     @Override
-    protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
+    protected JRubyAbstractQueueWriteClientExt getWriteClient() {
         return JrubyAckedWriteClientExt.create(queue);
     }
 

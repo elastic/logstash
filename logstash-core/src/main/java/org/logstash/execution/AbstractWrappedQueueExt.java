@@ -42,8 +42,8 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
     }
 
     @JRubyMethod(name = "write_client")
-    public final JRubyAbstractQueueWriteClientExt writeClient(final ThreadContext context) {
-        return getWriteClient(context);
+    public final JRubyAbstractQueueWriteClientExt writeClient() {
+        return getWriteClient();
     }
 
     @JRubyMethod(name = "read_client")
@@ -58,7 +58,7 @@ public abstract class AbstractWrappedQueueExt extends RubyBasicObject {
 
     protected abstract IRubyObject doClose(ThreadContext context);
 
-    protected abstract JRubyAbstractQueueWriteClientExt getWriteClient(ThreadContext context);
+    protected abstract JRubyAbstractQueueWriteClientExt getWriteClient();
 
     protected abstract QueueReadClientBase getReadClient();
 }
