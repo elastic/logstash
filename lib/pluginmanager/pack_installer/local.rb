@@ -24,7 +24,7 @@ require "bootstrap/util/compress"
 
 module LogStash module PluginManager module PackInstaller
   class Local
-    PACK_EXTENSIONS = ".zip"
+    PACK_EXTENSION = ".zip"
     LOGSTASH_PATTERN_RE = /logstash\/?/
 
     attr_reader :local_file

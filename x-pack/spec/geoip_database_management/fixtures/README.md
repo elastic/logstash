@@ -2,7 +2,7 @@
 
 ## Recreating `sample_with_symlink.tgz`
 
-This archive is the same as `sample.tgz` plus a symbolic link `GeoLite2-City-alias.mmdb` → `GeoLite2-City.mmdb` at the archive root. Run from this directory (Unix/macOS):
+This archive is the same as `sample.tgz` plus a symbolic link `GeoLite2-City-alias.mmdb` → `GeoLite2-City.mmdb` at the archive root. `LogStash::Util::Tar.extract` rejects symlink entries, so this fixture is only for specs that assert that behavior. Run from this directory (Unix/macOS):
 
 ```bash
 cd "$(dirname "$0")"  # or: cd x-pack/spec/geoip_database_management/fixtures

@@ -189,18 +189,11 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
       expect(::File.exist?(folder_less_path)).to be_truthy
     end
 
-    it "extracts tarball containing a symlink and preserves the symlink" do
+    it "raises when tarball contains a symlink entry" do
       zip_path = ::File.expand_path("./fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
       skip("sample_with_symlink.tgz not found") unless ::File.exist?(zip_path)
 
-      new_db_path = downloader.send(:unzip, database_type, dirname, zip_path)
-
-      expect(new_db_path).to match /GeoLite2-#{database_type}\.mmdb/
-      expect(::File.exist?(new_db_path)).to be_truthy
-
-      alias_path = data_path.resolve(dirname, "GeoLite2-City-alias.mmdb")
-      expect(::File.symlink?(alias_path)).to be true
-      expect(::File.readlink(alias_path)).to eq("GeoLite2-City.mmdb")
+      expect { downloader.send(:unzip, database_type, dirname, zip_path) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry/)
     end
   end
 

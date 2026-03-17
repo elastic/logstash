@@ -78,6 +78,17 @@ describe LogStash::Util do
       expect { LogStash::Util.verify_name_safe!("single") }.not_to raise_error
     end
   end
+
+  context "#verify_tar_link_entry!" do
+    def tar_entry(full_name, symlink: false, directory: false)
+      OpenStruct.new(:full_name => full_name, :symlink? => symlink, :directory? => directory)
+    end
+
+    it "raises CompressError for symlink entries without path validation" do
+      entry = tar_entry("logstash/link", symlink: true)
+      expect { LogStash::Util.verify_tar_link_entry!(entry) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry: logstash\/link/)
+    end
+  end
 end
 
 describe LogStash::Util::Zip do
@@ -197,7 +208,7 @@ describe LogStash::Util::Tar do
 
     let(:tar_file) do
       ["foo", "bar", "zoo"].inject([]) do |acc, name|
-        acc << OpenStruct.new(:full_name => name)
+        acc << OpenStruct.new(:full_name => name, :symlink? => false, :directory? => false)
         acc
       end
     end
@@ -212,31 +223,18 @@ describe LogStash::Util::Tar do
     end
 
     it "raises CompressError when an entry path traverses with .." do
-      tar_with_evil = [OpenStruct.new(:full_name => "../evil", :directory? => false, :read => "")]
+      tar_with_evil = [OpenStruct.new(:full_name => "../evil", :directory? => false, :symlink? => false, :read => "")]
       allow(Zlib::GzipReader).to receive(:open).with(source).and_yield(gzip_file)
       allow(Gem::Package::TarReader).to receive(:new).with(gzip_file).and_yield(tar_with_evil)
       expect(FileUtils).to receive(:mkdir).with(target)
       expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract file to unsafe path.*Files may not traverse with `..`/)
     end
 
-    it "extracts a tar.gz containing a symlink and creates the symlink" do
-      fixture = ::File.join(::File.dirname(__FILE__), "..", "..", "support", "pack", "pack_with_symlink.tar.gz")
+    it "raises CompressError when tarball contains a symlink entry" do
+      fixture = ::File.expand_path("../../../x-pack/spec/geoip_database_management/fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
       skip("Fixture not found") unless ::File.exist?(fixture)
       target_dir = Stud::Temporary.pathname
-      subject.extract(fixture, target_dir)
-      symlink_path = ::File.join(target_dir, "logstash", "link_to_somefile")
-      expect(::File.symlink?(symlink_path)).to be true
-      expect(::File.readlink(symlink_path)).to eq("somefile.txt")
-    end
-
-    it "raises CompressError when a symlink target would escape the extraction directory" do
-      header = OpenStruct.new(:typeflag => "2", :linkname => "../../etc/passwd")
-      entry = OpenStruct.new(:full_name => "logstash/link_evil", :directory? => false, :symlink? => true, :header => header, :read => nil)
-      tar_with_evil_symlink = [entry]
-      allow(Zlib::GzipReader).to receive(:open).with(source).and_yield(gzip_file)
-      allow(Gem::Package::TarReader).to receive(:new).with(gzip_file).and_yield(tar_with_evil_symlink)
-      expect(FileUtils).to receive(:mkdir).with(target)
-      expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink with unsafe target/)
+      expect { subject.extract(fixture, target_dir) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry:.*GeoLite2-City-alias\.mmdb/)
     end
   end
 

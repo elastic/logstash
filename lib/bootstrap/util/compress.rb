@@ -74,18 +74,12 @@ module LogStash
           ::Gem::Package::TarReader.new(gzip_file) do |tar_file|
             tar_file.each do |entry|
               LogStash::Util.verify_name_safe!(entry.full_name)
+              LogStash::Util.verify_tar_link_entry!(entry)
               target_path = ::File.join(target, entry.full_name)
 
               if entry.directory?
                 FileUtils.mkdir_p(target_path)
-              elsif entry.symlink?
-                linkname = entry.header.linkname
-                unless LogStash::Util.symlink_target_safe?(linkname, target_path, target)
-                  raise CompressError.new("Refusing to extract symlink with unsafe target: #{entry.full_name} -> #{linkname}. Symlink target must remain inside extraction directory.")
-                end
-                FileUtils.mkdir_p(::File.dirname(target_path))
-                ::File.symlink(linkname, target_path)
-              else # is a file to be extracted
+              else # is a file to be extracted (symlinks rejected in verify_tar_entry_safe!)
                 ::File.open(target_path, "wb") { |f| f.write(entry.read) }
               end
             end
@@ -141,32 +135,12 @@ module LogStash
       end
     end
 
-    # Returns true if a symlink target (linkname) would resolve to a path under extraction_root
-    # when the symlink is created at symlink_path. Works on both Unix and Windows.
-    # @param linkname [String] symlink target (relative or absolute)
-    # @param symlink_path [String] full path where the symlink will be created
-    # @param extraction_root [String] root directory all paths must stay under
-    # @return [Boolean] true if resolved path is under extraction_root
-    def self.symlink_target_safe?(linkname, symlink_path, extraction_root)
-      return false if linkname.nil? || linkname.to_s.strip.empty?
-      symlink_dir = ::File.dirname(symlink_path)
-      resolved = Pathname.new(::File.expand_path(linkname, symlink_dir)).cleanpath
-      root = Pathname.new(::File.expand_path(extraction_root)).cleanpath
-      !resolved.relative_path_from(root).to_s.start_with?("..")
-    rescue ArgumentError
-      # relative_path_from raises if resolved is not under root
-      false
-    end
-
-    # Verifies that a path string is safe for extraction (relative, no parents traversal).
-    # Raises CompressError with a specific message if the path is nil/empty, absolute, or
-    # contains `..`. Does NOT handle symlinks, symlinks should be handled on per archive type basis.
-    # Works on both Unix and Windows.
-    # @param name [String] path string to validate
-    # @raise [CompressError] if path is nil, empty, absolute, or traverses with `..`
+    # Verifies a path string is safe for zip or tar entry names (relative, no `..` traversal).
+    # @param name [String] archive entry path (e.g. Zip entry name or tar full_name)
+    # @raise [CompressError] if name is nil, empty, absolute, or traverses with `..`
     def self.verify_name_safe!(name)
       if name.nil? || name.to_s.strip.empty?
-        raise CompressError.new("Refusing to extract file. Path cannot be nil or empty.")
+        raise CompressError.new("Refusing to extract file to unsafe path. Path cannot be nil or empty.")
       end
       cleanpath = Pathname.new(name).cleanpath
       if cleanpath.absolute?
@@ -176,5 +150,15 @@ module LogStash
         raise CompressError.new("Refusing to extract file to unsafe path: #{name}. Files may not traverse with `..`")
       end
     end
+
+    # Tar.gz-only: rejects symlink entries
+    # @param entry [Gem::Package::TarReader::Entry]
+    # @raise [CompressError] if entry is a symlink or path is unsafe
+    def self.verify_tar_link_entry!(entry)
+      if entry.symlink?
+        raise CompressError.new("Refusing to extract symlink entry: #{entry.full_name}")
+      end
+    end
+    #private :verify_tar_link_entry!
   end
 end
