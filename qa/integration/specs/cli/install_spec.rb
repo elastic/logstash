@@ -40,6 +40,7 @@ INSTALLATION_SUCCESS_RE = /IB?nstallation successful/
 
 INSTALLATION_ABORTED_RE = /Installation aborted/
 
+# SPLIT_ESTIMATE: 284
 describe "CLI > logstash-plugin install" do
   before(:each) do
     @fixture = Fixture.new(__FILE__)

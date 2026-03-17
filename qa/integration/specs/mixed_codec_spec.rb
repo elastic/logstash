@@ -24,6 +24,7 @@ require "yaml"
 require "fileutils"
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 26
 describe "Ruby codec when used in" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
