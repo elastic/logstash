@@ -38,7 +38,7 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.metrics.authorization_header: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #
-  class OTel < Base
+  class Otel < Base
 
     def initialize(metric, agent, settings)
       @agent = agent

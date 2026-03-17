@@ -66,7 +66,7 @@ public class OtelMetricsService {
     private final String authorizationHeader;
 
     /**
-     * Creates a new OTel metrics service.
+     * Creates a new Otel metrics service.
      *
      * @param endpoint             OTLP endpoint (e.g., "http://localhost:4317")
      * @param nodeId               Logstash node ID
