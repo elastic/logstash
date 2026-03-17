@@ -19,7 +19,7 @@ require "spec_helper"
 require "logstash/instrument/periodic_poller/otel"
 require "logstash/instrument/collector"
 
-describe LogStash::Instrument::PeriodicPoller::OTel do
+describe LogStash::Instrument::PeriodicPoller::Otel do
   let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
   let(:agent_metric) { double("agent_metric", :collector => collector) }
@@ -329,7 +329,7 @@ describe LogStash::Instrument::PeriodicPoller::OTel do
       otel_poller
     end
 
-    it "flushes and shuts down the OTel service" do
+    it "flushes and shuts down the Otel service" do
       expect(otel_service).to receive(:flush)
       expect(otel_service).to receive(:shutdown)
       otel_poller.stop
