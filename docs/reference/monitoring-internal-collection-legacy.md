@@ -4,7 +4,6 @@ mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-internal-collection-legacy.html
 applies_to:
   stack: ga
-  serverless: ga
 ---
 
 # Collect {{ls}} monitoring data using legacy collectors [monitoring-internal-collection-legacy]
