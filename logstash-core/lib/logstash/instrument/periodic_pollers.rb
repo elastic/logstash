@@ -39,7 +39,6 @@ module LogStash module Instrument
                            PeriodicPoller::DeadLetterQueue.new(metric, agent),
                            PeriodicPoller::FlowRate.new(metric, agent),
                            PeriodicPoller::BatchStructure.new(metric, agent)]
-                           PeriodicPoller::FlowRate.new(metric, agent)]
 
       # Add OpenTelemetry metrics exporter if enabled
       if otel_metrics_enabled?
