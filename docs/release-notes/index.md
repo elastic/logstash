@@ -175,6 +175,25 @@ Related:
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
+## 9.2.7 [logstash-9.2.7-release-notes]
+
+### Updates to dependencies [logstash-9.2.7-dependencies]
+
+* Updated the bundled JDK to 21.0.10 build 7
+* Upgraded Log4j to 2.25.3 [#18805](https://github.com/elastic/logstash/pull/18805)
+
+### Plugins [logstash-plugin-9.2.7-changes]
+
+**Geoip Filter - 8.0.0**
+
+* Updated MaxMind GeoIP2 database library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required Java version is now Java 11
+
+**Kafka Integration - 11.8.4**
+
+* Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
+
 ## 9.2.6 [logstash-9.2.6-release-notes]
 
 ### Fixes [logstash-9.2.6-fixes]
