@@ -21,6 +21,25 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.2 [logstash-9.3.2-release-notes]
+
+### Updates to dependencies [logstash-9.3.2-dependencies]
+
+* Updated the bundled JDK to 21.0.10 build 7
+
+### Plugins [logstash-plugin-9.3.2-changes]
+
+**Geoip Filter - 8.0.0**
+
+* Upgraded the bundled MaxMind `geoip2` library to version 4.4.0 [#238](https://github.com/logstash-plugins/logstash-filter-geoip/pull/238)
+* Dropped support for Logstash 7.x. Minimum supported version is now Logstash 8.0.0
+* Dropped support for Java 8. Minimum required version is now Java 11
+
+**Kafka Integration - 11.8.4**
+
+* Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
+
+
 ## 9.3.1 [logstash-9.3.1-release-notes]
 
 ### Fixes [logstash-9.3.1-fixes]
