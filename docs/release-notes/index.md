@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.3.1 [logstash-9.3.1-release-notes]
 
 ### Fixes [logstash-9.3.1-fixes]
@@ -175,7 +174,7 @@ Related:
 * Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
-=======
+
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
 ### Updates to dependencies [logstash-9.2.7-dependencies]
@@ -194,7 +193,6 @@ Related:
 **Kafka Integration - 11.8.4**
 
 * Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
->>>>>>> c28ed6e2 (Release notes for 9.2.7 (#18843))
 
 ## 9.2.6 [logstash-9.2.6-release-notes]
 
