@@ -60,14 +60,13 @@ If you plan to modify the default pipeline settings, take into account the follo
 
 
 {applies_to}`stack: preview 9.4.0`
-## Batch fulfillment investigation [batch-fulfillment-investigation]
+## Optimizing Batch Sizes [batch-size-optimization]
 
 In a perfectly balanced pipeline, the input and output flow rates are equal. This equilibrium means that every batch read from the queue is completely full, and there is no accumulation within the queue.
 
 To gain better visibility into the composition of batches spooled from the queue, Logstash gathers and exposes statistical data about the batch structure within the `node_stats` metricset.
 A snippet of the information returned is:
 
-```json
 pipelines:
   a-pipeline:
     batch:
@@ -95,7 +94,7 @@ The ideal scenario is when the 50th and 90th percentiles for all time window met
 If this condition is not met, the `batch_delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
 
 * An increase in `queue.events_count`, if a persistent queue is used.
-* An increment in `queue_push_duration_in_millis, if in memory queue is used.
+* An increment in `queue_push_duration_in_millis`, if in memory queue is used.
 
 An increase in either of the latter two metrics signifies that the pipeline is applying backpressure to the upstream system, resulting in decreased overall pipeline performance.
 
