@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/advanced-pipeline.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Parsing Logs with Logstash [advanced-pipeline]

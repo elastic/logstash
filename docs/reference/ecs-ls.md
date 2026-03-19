@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ecs-ls.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # ECS in Logstash [ecs-ls]
