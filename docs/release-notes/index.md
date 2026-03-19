@@ -213,6 +213,7 @@ Related:
 **Kafka Integration - 11.8.4**
 
 * Upgraded the `kafka-avro-serializer` dependency [#225](https://github.com/logstash-plugins/logstash-integration-kafka/pull/225)
+
 ## 9.2.6 [logstash-9.2.6-release-notes]
 
 ### Fixes [logstash-9.2.6-fixes]
