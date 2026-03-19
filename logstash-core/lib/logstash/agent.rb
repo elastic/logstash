@@ -49,7 +49,7 @@ class LogStash::Agent
   include LogStash::Util::Loggable
   STARTED_AT = Time.now.freeze
 
-  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus
+  attr_reader :metric, :name, :settings, :dispatcher, :ephemeral_id, :pipeline_bus, :pipelines_registry
   attr_accessor :logger
 
   attr_reader :health_observer
@@ -518,7 +518,7 @@ class LogStash::Agent
       LogStash::Instrument::NullMetric.new(@collector)
     end
 
-    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings.get("queue.type"), self)
+    @periodic_pollers = LogStash::Instrument::PeriodicPollers.new(@metric, settings, self)
     @periodic_pollers.start
   end
 

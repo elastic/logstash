@@ -282,6 +282,38 @@
 #
 # path.dead_letter_queue:
 #
+# ------------ OpenTelemetry Metrics Settings --------------
+# Export Logstash metrics to an OpenTelemetry-compatible backend via OTLP.
+# This allows you to send Logstash metrics to any OTLP-compatible collector
+# or observability platform (e.g., Jaeger, Prometheus via OTel Collector, Grafana Cloud).
+#
+# Enable OpenTelemetry metrics export (default: false)
+#
+# otel.metrics.enabled: false
+#
+# OTLP endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318.
+#
+# otel.metrics.endpoint: "http://localhost:4317"
+#
+# Export interval in seconds (default: 10)
+#
+# otel.metrics.interval: 10
+#
+# Protocol to use for OTLP export: "grpc" (default) or "http"
+#
+# otel.metrics.protocol: "grpc"
+#
+# Authorization header for authenticated OTLP endpoints.
+# Examples: "ApiKey xxx" or "Bearer xxx"
+#
+# otel.metrics.authorization_header:
+#
+# Additional resource attributes as comma-separated key=value pairs.
+# These are attached to all exported metrics to identify this Logstash instance.
+# Example: "environment=production,cluster=us-west,team=platform"
+#
+# otel.resource.attributes:
+#
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:
