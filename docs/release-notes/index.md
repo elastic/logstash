@@ -194,6 +194,7 @@ Related:
 * Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
+
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
 ### Updates to dependencies [logstash-9.2.7-dependencies]
