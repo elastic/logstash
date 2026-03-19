@@ -1,6 +1,8 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/logstash-pipeline-viewer.html
+applies_to:
+  stack: ga
 ---
 
 # Pipeline Viewer UI [logstash-pipeline-viewer]

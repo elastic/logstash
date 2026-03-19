@@ -1,6 +1,8 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/configuring-logstash.html
+applies_to:
+  stack: ga
 ---
 
 # Monitoring Logstash (Legacy) [configuring-logstash]

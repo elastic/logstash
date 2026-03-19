@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/geoip-database-management.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Managing GeoIP databases [geoip-database-management]

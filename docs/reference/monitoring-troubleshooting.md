@@ -2,13 +2,15 @@
 navigation_title: "Troubleshooting"
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-troubleshooting.html
+applies_to:
+  stack: ga
 ---
 
 # Troubleshooting monitoring in Logstash [monitoring-troubleshooting]
 
 
 
-## Logstash Monitoring Not Working After Upgrade [_logstash_monitoring_not_working_after_upgrade]
+## Logstash monitoring not working after upgrade [_logstash_monitoring_not_working_after_upgrade]
 
 When upgrading from older versions, the built-in `logstash_system` user is disabled for security reasons. To resume monitoring:
 
