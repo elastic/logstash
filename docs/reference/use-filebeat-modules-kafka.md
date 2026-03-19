@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/use-filebeat-modules-kafka.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Example: Set up Filebeat modules to work with Kafka and Logstash [use-filebeat-modules-kafka]

@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/use-ingest-pipelines.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Use ingest pipelines for parsing [use-ingest-pipelines]

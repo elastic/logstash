@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/ls-to-ls-http.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Logstash-to-Logstash: HTTP output to HTTP input [ls-to-ls-http]
