@@ -1,6 +1,8 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/connecting-to-cloud.html
+applies_to:
+  serverless: ga
 ---
 
 # Sending data to {{es-serverless}} [logstash-to-elasticsearch-serverless]

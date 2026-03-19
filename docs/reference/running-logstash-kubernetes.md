@@ -1,6 +1,11 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/running-logstash-kubernetes.html
+applies_to:
+  deployment:
+    eck: all
+products:
+  - id: cloud-kubernetes
 ---
 
 # Running Logstash on Kubernetes [running-logstash-kubernetes]
