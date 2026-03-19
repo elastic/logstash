@@ -111,10 +111,12 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         private static final long serialVersionUID = 4711735381843512566L;
         private final long percentile50;
         private final long percentile90;
+        private final long maxValue;
 
         public HistogramMetricData(ValueHistogram histogram) {
             percentile50 = histogram.getValueAtPercentile(50);
             percentile90 = histogram.getValueAtPercentile(90);
+            maxValue = histogram.getMaxValue();
         }
 
         @JsonProperty("p50")
@@ -127,11 +129,17 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
             return percentile90;
         }
 
+        @JsonProperty("max")
+        public long getMaxValue() {
+            return maxValue;
+        }
+
         @Override
         public String toString() {
             return "HistogramMetricData{" +
                     "percentile50=" + percentile50 +
                     ", percentile90=" + percentile90 +
+                    ", maxValue=" + maxValue +
                     '}';
         }
     }
@@ -165,8 +173,6 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
                 if (compareCapture == null) { return Optional.empty(); }
                 if (baselineCapture == null) { return Optional.empty(); }
 
-//                var result = compareCapture.getValueHistogram();
-//                result.subtract(baselineCapture.getValueHistogram());
                 var result = compareCapture.getValueHistogram().subtract(baselineCapture.getValueHistogram());
                 return Optional.of(result);
             });
