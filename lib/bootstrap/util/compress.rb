@@ -20,6 +20,7 @@ require "rubygems/package"
 require "fileutils"
 require "zlib"
 require "stud/temporary"
+require "pathname"
 
 module LogStash
   class CompressError < StandardError; end
@@ -79,7 +80,7 @@ module LogStash
 
               if entry.directory?
                 FileUtils.mkdir_p(target_path)
-              else # is a file to be extracted (symlinks rejected in verify_tar_entry_safe!)
+              else # is a file to be extracted (symlinks rejected in verify_tar_link_entry!)
                 ::File.open(target_path, "wb") { |f| f.write(entry.read) }
               end
             end
