@@ -66,7 +66,7 @@ In a perfectly balanced pipeline, the input and output flow rates are equal. Thi
 
 To gain better visibility into the composition of batches spooled from the queue, Logstash gathers and exposes statistical data about the batch structure within the `node_stats` metricset.
 A snippet of the information returned is:
-
+```yaml
 pipelines:
   a-pipeline:
     batch:
