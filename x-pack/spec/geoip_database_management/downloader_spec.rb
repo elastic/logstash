@@ -191,7 +191,7 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
 
     it "raises when tarball contains a symlink entry" do
       zip_path = ::File.expand_path("./fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
-      skip("sample_with_symlink.tgz not found") unless ::File.exist?(zip_path)
+      expect(::File.exist?(zip_path)).to be_truthy
 
       expect { downloader.send(:unzip, database_type, dirname, zip_path) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry/)
     end
