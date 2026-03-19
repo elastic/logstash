@@ -376,6 +376,34 @@ describe LogStash::Agent do
       end
     end
 
+    describe "#reload_pipeline" do
+      let(:config_string) { "input { generator { id => 'old'} } output { }" }
+      let(:mock_config_pipeline) { mock_pipeline_config(:main, config_string, pipeline_settings) }
+      let(:source_loader) { TestSourceLoader.new(mock_config_pipeline) }
+      subject { described_class.new(agent_settings, source_loader) }
+
+      before(:each) do
+        expect(subject.converge_state_and_update).to be_a_successful_converge
+        expect(subject.get_pipeline('main').running?).to be_truthy
+      end
+
+      after(:each) do
+        subject.shutdown
+      end
+
+      context "when agent reloads the pipeline" do
+        it "should reload successfully", :aggregate_failures do
+          pipeline_before_reload = subject.get_pipeline('main')
+          converge_result = subject.reload_pipeline('main')
+          pipeline_after_reload = subject.get_pipeline('main')
+
+          expect(converge_result).to be_a_successful_converge
+          expect(pipeline_after_reload.running?).to be_truthy
+          expect(pipeline_before_reload.object_id).not_to eq(pipeline_after_reload.object_id)
+        end
+      end
+    end
+
     context "#started_at" do
       it "return the start time when the agent is started" do
         expect(described_class::STARTED_AT).to be_kind_of(Time)
