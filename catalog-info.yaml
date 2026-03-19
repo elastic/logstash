@@ -918,8 +918,8 @@ spec:
       pipeline_file: ".buildkite/version_bump_pipeline.yml"
       provider_settings:
         trigger_mode: none
-      cancel_intermediate_builds: true
-      skip_intermediate_builds: true
+      cancel_intermediate_builds: false
+      skip_intermediate_builds: false
       teams:
         ingest-fp:
           access_level: MANAGE_BUILD_AND_READ
