@@ -89,7 +89,29 @@ pipelines:
 
 Using this data, one can analyze the batch fulfillment structure to verify if the `batch_size` is consistently met across different time periods.
 
-The ideal scenario is when the 50th and 90th percentiles for all time window metrics match the specified `batch_size`, indicating no queueing.
+Using this data, you can evaluate whether the configured `batch_size` is being effectively utilized across time periods.
+
+Ideally, the 50th and 90th percentiles should be close to `batch_size`, indicating that batches are consistently filled without queueing delays.
+
+Interpretation guidelines:
+
+- **Consistently full batches (P50/P90 ≈ `batch_size`)**  
+  Indicates steady throughput. If CPU and memory have headroom, increasing `pipeline.batch.size` may improve efficiency by reducing per-batch overhead.
+
+- **Underfilled batches (P50/P90 < `batch_size`)**  
+  Suggests insufficient input volume. Increasing batch size is unlikely to help and may increase latency.
+
+- **Mixed percentiles (e.g., P90 ≈ `batch_size`, P50 lower)**  
+  Indicates bursty traffic. Larger batches may improve throughput but can increase latency.
+
+- **Queue backpressure context**:
+  - Low backpressure + full batches → healthy pipeline; safe to consider increasing batch size or workers.
+  - High backpressure + full batches → downstream bottleneck; consider increasing number of workers or resources instead of batch size.
+  - Low backpressure + underfilled batches → underutilized pipeline; no tuning needed.
+
+Always validate changes against CPU, memory, and I/O to avoid resource contention.
+
+In general, tune `pipeline.batch.size` to balance throughput (larger batches) against latency (smaller batches), while keeping backpressure minimal.
 
 If this condition is not met, the `batch_delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
 
