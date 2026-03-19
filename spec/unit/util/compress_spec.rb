@@ -232,7 +232,7 @@ describe LogStash::Util::Tar do
 
     it "raises CompressError when tarball contains a symlink entry" do
       fixture = ::File.expand_path("../../../x-pack/spec/geoip_database_management/fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
-      skip("Fixture not found") unless ::File.exist?(fixture)
+      expect(::File).to exist(fixture)
       target_dir = Stud::Temporary.pathname
       expect { subject.extract(fixture, target_dir) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry:.*GeoLite2-City-alias\.mmdb/)
     end
