@@ -136,7 +136,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(inputBatch, false, false);
+        ).workerStage().buildExecution().compute(inputBatch, false, false);
         final RubyEvent[] outputEvents = EVENT_SINKS.get(runId).toArray(new RubyEvent[0]);
 
         assertThat(outputEvents.length, is(3));
@@ -180,6 +180,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         Collections.singletonMap("mockfilter", () -> IDENTITY_FILTER),
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 ))
+                .workerStage()
                 .buildExecution()
                 .compute(Create.newArray(RubyUtil.RUBY.getCurrentContext(), RubyEvent.newRubyEvent(RubyUtil.RUBY)), false, false);
 
@@ -225,7 +226,7 @@ public final class EventConditionTest extends RubyEnvTestCase {
                         Collections.emptyMap(), // no filters
                         Collections.singletonMap("mockoutput", mockOutputSupplier())
                 )
-        ).buildExecution().compute(inputBatch, false, false);
+        ).workerStage().buildExecution().compute(inputBatch, false, false);
         final RubyEvent[] outputEvents = EVENT_SINKS.get(runId).toArray(new RubyEvent[0]);
 
         assertThat(outputEvents.length, is(1));
