@@ -53,6 +53,44 @@ def list_files(target)
   Dir.glob(::File.join(target, "**", "*")).select { |f| ::File.file?(f) }.size
 end
 
+describe LogStash::Util do
+  context "verify entry files destinations" do
+    it "raises CompressError for nil or empty path" do
+      expect { LogStash::Util.verify_name_safe!(nil) }.to raise_error(LogStash::CompressError, /Path cannot be nil or empty/)
+      expect { LogStash::Util.verify_name_safe!("") }.to raise_error(LogStash::CompressError, /Path cannot be nil or empty/)
+      expect { LogStash::Util.verify_name_safe!("   ") }.to raise_error(LogStash::CompressError, /Path cannot be nil or empty/)
+    end
+
+    it "raises CompressError for absolute paths" do
+      expect { LogStash::Util.verify_name_safe!("/etc/passwd") }.to raise_error(LogStash::CompressError, /Absolute paths are not allowed/)
+      expect { LogStash::Util.verify_name_safe!("/foo/bar") }.to raise_error(LogStash::CompressError, /Absolute paths are not allowed/)
+    end
+
+    it "raises CompressError for relative paths that traverse with .." do
+      expect { LogStash::Util.verify_name_safe!("../foo") }.to raise_error(LogStash::CompressError, /Files may not traverse with `..`/)
+      expect { LogStash::Util.verify_name_safe!("..") }.to raise_error(LogStash::CompressError, /Files may not traverse with `..`/)
+      expect { LogStash::Util.verify_name_safe!("a/../../etc") }.to raise_error(LogStash::CompressError, /Files may not traverse with `..`/)
+    end
+
+    it "does not raise for safe relative paths" do
+      expect { LogStash::Util.verify_name_safe!("foo/bar") }.not_to raise_error
+      expect { LogStash::Util.verify_name_safe!("a/b/c") }.not_to raise_error
+      expect { LogStash::Util.verify_name_safe!("single") }.not_to raise_error
+    end
+  end
+
+  context "#verify_tar_link_entry!" do
+    def tar_entry(full_name, symlink: false, directory: false)
+      OpenStruct.new(:full_name => full_name, :symlink? => symlink, :directory? => directory)
+    end
+
+    it "raises CompressError for symlink entries without path validation" do
+      entry = tar_entry("logstash/link", symlink: true)
+      expect { LogStash::Util.verify_tar_link_entry!(entry) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry: logstash\/link/)
+    end
+  end
+end
+
 describe LogStash::Util::Zip do
   subject { Class.new { extend LogStash::Util::Zip } }
 
@@ -77,6 +115,12 @@ describe LogStash::Util::Zip do
       expect(FileUtils).to receive(:mkdir_p).exactly(3).times
       expect(zip_file).to receive(:extract).exactly(3).times
       subject.extract(source, target)
+    end
+
+    it "raises CompressError when an entry path traverses with .." do
+      zip_with_evil = [OpenStruct.new(:name => "../evil")]
+      allow(Zip::File).to receive(:open).with(source).and_yield(zip_with_evil)
+      expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract file to unsafe path.*Files may not traverse with `..`/)
     end
 
     context "patterns" do
@@ -164,7 +208,7 @@ describe LogStash::Util::Tar do
 
     let(:tar_file) do
       ["foo", "bar", "zoo"].inject([]) do |acc, name|
-        acc << OpenStruct.new(:full_name => name)
+        acc << OpenStruct.new(:full_name => name, :symlink? => false, :directory? => false)
         acc
       end
     end
@@ -176,6 +220,21 @@ describe LogStash::Util::Tar do
       expect(FileUtils).to receive(:mkdir).with(target)
       expect(File).to receive(:open).exactly(3).times
       subject.extract(source, target)
+    end
+
+    it "raises CompressError when an entry path traverses with .." do
+      tar_with_evil = [OpenStruct.new(:full_name => "../evil", :directory? => false, :symlink? => false, :read => "")]
+      allow(Zlib::GzipReader).to receive(:open).with(source).and_yield(gzip_file)
+      allow(Gem::Package::TarReader).to receive(:new).with(gzip_file).and_yield(tar_with_evil)
+      expect(FileUtils).to receive(:mkdir).with(target)
+      expect { subject.extract(source, target) }.to raise_error(LogStash::CompressError, /Refusing to extract file to unsafe path.*Files may not traverse with `..`/)
+    end
+
+    it "raises CompressError when tarball contains a symlink entry" do
+      fixture = ::File.expand_path("../../../x-pack/spec/geoip_database_management/fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
+      expect(::File).to exist(fixture)
+      target_dir = Stud::Temporary.pathname
+      expect { subject.extract(fixture, target_dir) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry:.*GeoLite2-City-alias\.mmdb/)
     end
   end
 

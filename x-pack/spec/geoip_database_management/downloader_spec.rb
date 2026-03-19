@@ -188,6 +188,13 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
       expect(::File.exist?(folder_more_path)).to be_truthy
       expect(::File.exist?(folder_less_path)).to be_truthy
     end
+
+    it "raises when tarball contains a symlink entry" do
+      zip_path = ::File.expand_path("./fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
+      expect(::File.exist?(zip_path)).to be_truthy
+
+      expect { downloader.send(:unzip, database_type, dirname, zip_path) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry/)
+    end
   end
 
   context "assert_database!" do

@@ -20,6 +20,7 @@ require "rubygems/package"
 require "fileutils"
 require "zlib"
 require "stud/temporary"
+require "pathname"
 
 module LogStash
   class CompressError < StandardError; end
@@ -36,6 +37,7 @@ module LogStash
         raise CompressError.new("Directory #{target} exist") if ::File.exist?(target)
         ::Zip::File.open(source) do |zip_file|
           zip_file.each do |file|
+            LogStash::Util.verify_name_safe!(file.name)
             path = ::File.join(target, file.name)
             FileUtils.mkdir_p(::File.dirname(path))
             zip_file.extract(file, path) if pattern.nil? || pattern =~ file.name
@@ -72,11 +74,13 @@ module LogStash
         Zlib::GzipReader.open(file) do |gzip_file|
           ::Gem::Package::TarReader.new(gzip_file) do |tar_file|
             tar_file.each do |entry|
+              LogStash::Util.verify_name_safe!(entry.full_name)
+              LogStash::Util.verify_tar_link_entry!(entry)
               target_path = ::File.join(target, entry.full_name)
 
               if entry.directory?
                 FileUtils.mkdir_p(target_path)
-              else # is a file to be extracted
+              else # is a file to be extracted (symlinks rejected in verify_tar_link_entry!)
                 ::File.open(target_path, "wb") { |f| f.write(entry.read) }
               end
             end
@@ -131,5 +135,31 @@ module LogStash
         end
       end
     end
+
+    # Verifies a path string is safe for zip or tar entry names (relative, no `..` traversal).
+    # @param name [String] archive entry path (e.g. Zip entry name or tar full_name)
+    # @raise [CompressError] if name is nil, empty, absolute, or traverses with `..`
+    def self.verify_name_safe!(name)
+      if name.nil? || name.to_s.strip.empty?
+        raise CompressError.new("Refusing to extract file to unsafe path. Path cannot be nil or empty.")
+      end
+      cleanpath = Pathname.new(name).cleanpath
+      if cleanpath.absolute?
+        raise CompressError.new("Refusing to extract file to unsafe path: #{name}. Absolute paths are not allowed.")
+      end
+      if cleanpath.each_filename.to_a.include?("..")
+        raise CompressError.new("Refusing to extract file to unsafe path: #{name}. Files may not traverse with `..`")
+      end
+    end
+
+    # Tar.gz-only: rejects symlink entries
+    # @param entry [Gem::Package::TarReader::Entry]
+    # @raise [CompressError] if entry is a symlink or path is unsafe
+    def self.verify_tar_link_entry!(entry)
+      if entry.symlink?
+        raise CompressError.new("Refusing to extract symlink entry: #{entry.full_name}")
+      end
+    end
+    #private :verify_tar_link_entry!
   end
 end
