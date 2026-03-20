@@ -21,6 +21,14 @@ require "logstash/instrument/collector"
 describe LogStash::Instrument::PeriodicPoller::Os do
   let(:metric) { LogStash::Instrument::Metric.new(LogStash::Instrument::Collector.new) }
 
+  before(:each) do
+    # Reset cached cgroup resolution so each test context can mock independently
+    LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@resolved, false)
+    LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@active_resources, nil)
+    LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@active_label, nil)
+    LogStash::Instrument::PeriodicPoller::Cgroup.instance_variable_set(:@logged_empty, false)
+  end
+
   context "recorded cgroup metrics (mocked cgroup env)" do
     subject { described_class.new(metric, {})}
 
@@ -127,7 +135,6 @@ describe LogStash::Instrument::PeriodicPoller::Os do
     before do
       allow(::File).to receive(:exist?).and_return(false)
       allow(::File).to receive(:exist?).with("/proc/self/cgroup").and_return(true)
-      allow(::File).to receive(:exist?).with("/sys/fs/cgroup/cgroup.controllers").and_return(true)
       allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{v2_relative_path}/cpu.stat").and_return(true)
       allow(::File).to receive(:exist?).with("/sys/fs/cgroup#{v2_relative_path}/cpu.max").and_return(true)
       allow(IO).to receive(:readlines).with("/proc/self/cgroup").and_return(proc_self_cgroup_v2)
