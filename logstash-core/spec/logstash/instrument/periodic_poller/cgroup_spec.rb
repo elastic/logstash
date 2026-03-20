@@ -464,6 +464,14 @@ describe "cgroup stats" do
   end
 
   describe Cgroup do
+    before(:each) do
+      # Reset cached resolution state so each test can set up its own mocks
+      described_class.instance_variable_set(:@resolved, false)
+      described_class.instance_variable_set(:@active_resources, nil)
+      described_class.instance_variable_set(:@active_label, nil)
+      described_class.instance_variable_set(:@logged_empty, false)
+    end
+
     describe "class method: get_all" do
       let(:cpuacct_usage) { 1982 }
       let(:cfs_period_micros) { 500 }
@@ -596,9 +604,8 @@ describe "cgroup stats" do
 
     context "when an exception is raised in v1" do
       before do
-        allow(::File).to receive(:exist?).and_return(true)
+        allow(Cgroup::CGROUP_RESOURCES).to receive(:cgroup_available?).and_return(true)
         allow(Cgroup::CGROUP_RESOURCES).to receive(:controller_groups).and_raise("Something went wrong")
-        allow(Cgroup::CGROUP_V2_RESOURCES).to receive(:cgroup_available?).and_return(false)
       end
 
       it "method: get_all returns nil" do
@@ -615,6 +622,20 @@ describe "cgroup stats" do
 
       it "method: get_all returns nil" do
         expect(described_class.get_all).to be_nil
+      end
+    end
+
+    context "when resolution is cached" do
+      it "does not re-resolve on subsequent calls" do
+        allow(Cgroup::CGROUP_RESOURCES).to receive(:cgroup_available?).and_return(true)
+        allow(Cgroup::CGROUP_RESOURCES).to receive(:controller_groups).and_return(
+          "cpu" => double("cpu", implemented?: true, to_hash: {:control_group => "/v1"}),
+          "cpuacct" => double("cpuacct", implemented?: true, to_hash: {:control_group => "/v1"})
+        )
+        described_class.get_all
+        expect(Cgroup::CGROUP_RESOURCES).to have_received(:cgroup_available?).once
+        described_class.get_all
+        expect(Cgroup::CGROUP_RESOURCES).to have_received(:cgroup_available?).once
       end
     end
   end

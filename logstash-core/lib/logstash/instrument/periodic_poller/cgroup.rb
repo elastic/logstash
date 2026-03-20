@@ -347,25 +347,14 @@ module LogStash module Instrument module PeriodicPoller
 
     class << self
       def get_all
-        get_from(CGROUP_RESOURCES, "cgroupv1") || get_from(CGROUP_V2_RESOURCES, "cgroupv2")
-      end
+        resolve_resources unless @resolved
+        return nil if @active_resources.nil?
 
-      def get
-        get_all
-      end
-
-      private
-
-      def get_from(resources, label)
-        unless resources.cgroup_available?
-          logger.debug("#{label}: required cgroup files or directories not found")
-          return
-        end
-
-        groups = resources.controller_groups
+        groups = @active_resources.controller_groups
 
         if groups.empty?
-          logger.debug("#{label}: no controllers found")
+          logger.debug("#{@active_label}: no controllers found") unless @logged_empty
+          @logged_empty = true
           return
         end
 
@@ -376,8 +365,30 @@ module LogStash module Instrument module PeriodicPoller
         end
         cgroups_stats.empty? ? nil : cgroups_stats
       rescue => e
-        logger.debug("Error, cannot retrieve #{label} cgroups information", :exception => e.class.name, :message => e.message, :backtrace => e.backtrace.take(4)) if logger.debug?
+        logger.debug("Error, cannot retrieve #{@active_label} cgroups information", :exception => e.class.name, :message => e.message, :backtrace => e.backtrace.take(4)) if logger.debug?
         nil
+      end
+
+      def get
+        get_all
+      end
+
+      private
+
+      def resolve_resources
+        @resolved = true
+        if CGROUP_RESOURCES.cgroup_available?
+          @active_resources = CGROUP_RESOURCES
+          @active_label = "cgroupv1"
+          logger.debug("using cgroupv1")
+        elsif CGROUP_V2_RESOURCES.cgroup_available?
+          @active_resources = CGROUP_V2_RESOURCES
+          @active_label = "cgroupv2"
+          logger.debug("using cgroupv2")
+        else
+          @active_resources = nil
+          logger.debug("no cgroup support detected (neither v1 nor v2)")
+        end
       end
     end
   end
