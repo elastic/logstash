@@ -38,24 +38,26 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     ## `/proc/self/cgroup` contents look like this
-    # 5:cpu,cpuacct:/
-    # 4:cpuset:/
-    # 2:net_cls,net_prio:/
-    # 0::/user.slice/user-1000.slice/session-932.scope
-    ## e.g. N:controller:/path-to-info
-    # we find the controller and path
-    # we skip the line without a controller e.g. 0::/path
-    # we assume there are these symlinks:
-    # `/sys/fs/cgroup/cpu` -> `/sys/fs/cgroup/cpu,cpuacct
-    # `/sys/fs/cgroup/cpuacct` -> `/sys/fs/cgroup/cpu,cpuacct
+    # cgroupv1 (per-controller hierarchies):
+    #   5:cpu,cpuacct:/
+    #   4:cpuset:/
+    #   2:net_cls,net_prio:/
+    #   0::/user.slice/user-1000.slice/session-932.scope
+    # cgroupv2 (unified hierarchy):
+    #   0::/path
+    #
+    # For v1, we find the controller and path from lines matching N:controller:/path.
+    # We assume these symlinks exist:
+    #   `/sys/fs/cgroup/cpu` -> `/sys/fs/cgroup/cpu,cpuacct`
+    #   `/sys/fs/cgroup/cpuacct` -> `/sys/fs/cgroup/cpu,cpuacct`
+    # For v2, the 0::/path line identifies the cgroup path under the unified
+    # hierarchy at /sys/fs/cgroup. Data files (cpu.stat, cpu.max) live there.
 
     CGROUP_FILE = "/proc/self/cgroup"
     CPUACCT_DIR = "/sys/fs/cgroup/cpuacct"
     CPU_DIR = "/sys/fs/cgroup/cpu"
-    CGROUP2_DIR = "/sys/fs/cgroup"
-    CRITICAL_PATHS_V1 = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
-    CRITICAL_PATHS = CRITICAL_PATHS_V1 # backward compat for logging
-    CONTROL_GROUP_V2_RE = Regexp.compile("^0::(/.*)")
+    CRITICAL_PATHS = [CGROUP_FILE, CPUACCT_DIR, CPU_DIR]
+    CGROUP_V2_DIR = "/sys/fs/cgroup"
 
     CONTROLLER_CPUACCT_LABEL = "cpuacct"
     CONTROLLER_CPU_LABEL = "cpu"
@@ -66,28 +68,12 @@ module LogStash module Instrument module PeriodicPoller
 
       def cgroup_available?
         # don't cache to ivar, in case the files are mounted after logstash starts??
-        cgroup_v1_available? || cgroup_v2_available?
-      end
-
-      def cgroup_v1_available?
-        CRITICAL_PATHS_V1.all? { |path| ::File.exist?(path) }
-      end
-
-      def cgroup_v2_available?
-        ::File.exist?(CGROUP_FILE) &&
-          ::File.exist?(::File.join(CGROUP2_DIR, "cgroup.controllers"))
+        CRITICAL_PATHS.all? {|path| ::File.exist?(path)}
       end
 
       def controller_groups
         response = {}
-        v2_path = nil
         IO.readlines(CGROUP_FILE).each do |line|
-          # capture v2 unified hierarchy path (0::/path)
-          v2_match = CONTROL_GROUP_V2_RE.match(line)
-          if v2_match
-            v2_path = v2_match[1]
-          end
-
           matches = CONTROL_GROUP_RE.match(line)
           next if matches.nil?
           # multiples controls, same hierarchy
@@ -103,16 +89,39 @@ module LogStash module Instrument module PeriodicPoller
             end
           end
         end
-
-        # If cpu/cpuacct not found via v1, try v2 unified hierarchy
-        if v2_path && !response.key?(CONTROLLER_CPU_LABEL) && !response.key?(CONTROLLER_CPUACCT_LABEL)
-          if cgroup_v2_available?
-            response[CONTROLLER_CPU_LABEL] = CpuResourceV2.new(v2_path)
-            response[CONTROLLER_CPUACCT_LABEL] = CpuAcctResourceV2.new(v2_path)
-          end
-        end
-
         response
+      end
+    end
+
+    class CGroupV2Resources
+      CGROUP_V2_RE = Regexp.compile("^0::(/.*)")
+
+      def cgroup_available?
+        path = resolve_v2_path
+        return false if path.nil?
+        cpu_override = Override.new("ls.cgroup.cpu.path.override")
+        resolved = cpu_override.override(path)
+        ::File.exist?(::File.join(CGROUP_V2_DIR, resolved, "cpu.stat"))
+      end
+
+      def controller_groups
+        path = resolve_v2_path
+        return {} if path.nil?
+        {
+          CONTROLLER_CPU_LABEL => CpuResourceV2.new(path),
+          CONTROLLER_CPUACCT_LABEL => CpuAcctResourceV2.new(path)
+        }
+      end
+
+      private
+
+      def resolve_v2_path
+        return nil unless ::File.exist?(CGROUP_FILE)
+        IO.readlines(CGROUP_FILE).each do |line|
+          match = CGROUP_V2_RE.match(line.strip)
+          return match[1] if match
+        end
+        nil
       end
     end
 
@@ -166,6 +175,27 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
+    class CpuAcctResourceV2
+      include LogStash::Util::Loggable
+      include ControllerResource
+      def initialize(original_path)
+        common_initialize(CGROUP_V2_DIR, "ls.cgroup.cpuacct.path.override", original_path)
+      end
+
+      def to_hash
+        {:control_group => offset_path, :usage_nanos => cpuacct_usage}
+      end
+      private
+      def cpuacct_usage
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        lines.each do |line|
+          fields = line.split(/\s+/)
+          return fields[1].to_i * 1000 if fields.first == "usage_usec"
+        end
+        -1
+      end
+    end
+
     class CpuResource
       include LogStash::Util::Loggable
       include ControllerResource
@@ -192,6 +222,52 @@ module LogStash module Instrument module PeriodicPoller
 
       def build_cpu_stats_hash
         stats = CpuStats.new
+        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
+        stats.update(lines)
+        stats.to_hash
+      end
+    end
+
+    class CpuResourceV2
+      include LogStash::Util::Loggable
+      include ControllerResource
+      def initialize(original_path)
+        common_initialize(CGROUP_V2_DIR, "ls.cgroup.cpu.path.override", original_path)
+      end
+
+      def to_hash
+        {
+          :control_group => offset_path,
+          :cfs_period_micros => cfs_period_us,
+          :cfs_quota_micros => cfs_quota_us,
+          :stat => build_cpu_stats_hash
+        }
+      end
+      private
+      def cfs_period_us
+        read_cpu_max[1]
+      end
+
+      def cfs_quota_us
+        read_cpu_max[0]
+      end
+
+      def read_cpu_max
+        @cpu_max ||= begin
+          line = call_if_file_exists(:read_lines, "cpu.max", []).first
+          if line.nil?
+            [-1, -1]
+          else
+            parts = line.split(/\s+/)
+            quota = parts[0] == "max" ? -1 : parts[0].to_i
+            period = parts[1].to_i
+            [quota, period]
+          end
+        end
+      end
+
+      def build_cpu_stats_hash
+        stats = CpuStatsV2.new
         lines = call_if_file_exists(:read_lines, "cpu.stat", [])
         stats.update(lines)
         stats.to_hash
@@ -238,65 +314,6 @@ module LogStash module Instrument module PeriodicPoller
       end
     end
 
-    class CpuAcctResourceV2
-      include LogStash::Util::Loggable
-      include ControllerResource
-
-      def initialize(original_path)
-        common_initialize(CGROUP2_DIR, "ls.cgroup.cpuacct.path.override", original_path)
-      end
-
-      def to_hash
-        {:control_group => offset_path, :usage_nanos => cpu_usage_nanos}
-      end
-
-      private
-      def cpu_usage_nanos
-        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
-        lines.each do |line|
-          fields = line.split(/\s+/)
-          return fields[1].to_i * 1000 if fields.first == "usage_usec"
-        end
-        -1
-      end
-    end
-
-    class CpuResourceV2
-      include LogStash::Util::Loggable
-      include ControllerResource
-
-      def initialize(original_path)
-        common_initialize(CGROUP2_DIR, "ls.cgroup.cpu.path.override", original_path)
-      end
-
-      def to_hash
-        quota, period = read_cpu_max
-        {
-          :control_group => offset_path,
-          :cfs_period_micros => period,
-          :cfs_quota_micros => quota,
-          :stat => build_cpu_stats_hash
-        }
-      end
-
-      private
-      def read_cpu_max
-        content = call_if_file_exists(:read_lines, "cpu.max", [])
-        return [-1, -1] if content.empty?
-        parts = content.first.split(/\s+/)
-        quota = parts[0] == "max" ? -1 : parts[0].to_i
-        period = parts[1].to_i
-        [quota, period]
-      end
-
-      def build_cpu_stats_hash
-        stats = CpuStatsV2.new
-        lines = call_if_file_exists(:read_lines, "cpu.stat", [])
-        stats.update(lines)
-        stats.to_hash
-      end
-    end
-
     class CpuStatsV2
       def initialize
         @number_of_elapsed_periods = -1
@@ -326,18 +343,29 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     CGROUP_RESOURCES = CGroupResources.new
+    CGROUP_V2_RESOURCES = CGroupV2Resources.new
 
     class << self
       def get_all
-        unless CGROUP_RESOURCES.cgroup_available?
-          logger.debug("One or more required cgroup files or directories not found: #{CRITICAL_PATHS.join(', ')}")
+        get_from(CGROUP_RESOURCES, "cgroupv1") || get_from(CGROUP_V2_RESOURCES, "cgroupv2")
+      end
+
+      def get
+        get_all
+      end
+
+      private
+
+      def get_from(resources, label)
+        unless resources.cgroup_available?
+          logger.debug("#{label}: required cgroup files or directories not found")
           return
         end
 
-        groups = CGROUP_RESOURCES.controller_groups
+        groups = resources.controller_groups
 
         if groups.empty?
-          logger.debug("The main cgroup file did not have any controllers: #{CGROUP_FILE}")
+          logger.debug("#{label}: no controllers found")
           return
         end
 
@@ -346,14 +374,10 @@ module LogStash module Instrument module PeriodicPoller
           next unless controller.implemented?
           cgroups_stats[name.to_sym] = controller.to_hash
         end
-        cgroups_stats
+        cgroups_stats.empty? ? nil : cgroups_stats
       rescue => e
-        logger.debug("Error, cannot retrieve cgroups information", :exception => e.class.name, :message => e.message, :backtrace => e.backtrace.take(4)) if logger.debug?
+        logger.debug("Error, cannot retrieve #{label} cgroups information", :exception => e.class.name, :message => e.message, :backtrace => e.backtrace.take(4)) if logger.debug?
         nil
-      end
-
-      def get
-        get_all
       end
     end
   end
