@@ -60,6 +60,7 @@ import org.jruby.api.Convert;
 import org.jruby.api.Create;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.javasupport.Java;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.Visibility;
@@ -109,6 +110,7 @@ import org.logstash.plugins.factory.PluginFactoryExt;
 import org.logstash.plugins.factory.PluginMetricsFactoryExt;
 import org.logstash.secret.store.SecretStore;
 import org.logstash.secret.store.SecretStoreExt;
+import org.logstash.util.SetOnceReference;
 
 import static org.logstash.instrument.metrics.MetricKeys.*;
 import static org.logstash.instrument.metrics.UptimeMetric.ScaleUnits.MILLISECONDS;
@@ -177,6 +179,9 @@ public class AbstractPipelineExt extends RubyBasicObject {
 
     private String lastErrorEvaluationReceived = "";
     private transient DeadLetterQueueWriter javaDlqWriter;
+
+    private transient final PipelineControlState controlState = new PipelineControlState();
+    private transient final SetOnceReference<IRubyObject> rubyControlState = SetOnceReference.unset();
 
     public AbstractPipelineExt(final Ruby runtime, final RubyClass metaClass) {
         super(runtime, metaClass);
@@ -354,6 +359,15 @@ public class AbstractPipelineExt extends RubyBasicObject {
         );
 
         return context.nil;
+    }
+
+    PipelineControlState getControlState() {
+        return this.controlState;
+    }
+
+    @JRubyMethod(name = "control_state")
+    public final IRubyObject controlState(final ThreadContext context) {
+        return rubyControlState.offerAndGet(() -> Java.getInstance(context.runtime, this.controlState));
     }
 
     @JRubyMethod(name = "process_events_namespace_metric")

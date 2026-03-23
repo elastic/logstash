@@ -137,12 +137,12 @@ public final class PipelineReporterExt extends RubyBasicObject {
         result.op_aset(
             context,
             EVENTS_FILTERED_KEY,
-            pipeline.callMethod(context, "events_filtered").callMethod(context, "sum")
+            pipeline.callMethod(context, "events_filtered")
         );
         result.op_aset(
             context,
             EVENTS_CONSUMED_KEY,
-            pipeline.callMethod(context, "events_consumed").callMethod(context, "sum")
+            pipeline.callMethod(context, "events_consumed")
         );
         result.op_aset(context, OUTPUT_INFO_KEY, outputInfo(context));
         result.op_aset(
