@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/upgrading-using-package-managers.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Upgrading using package managers [upgrading-using-package-managers]

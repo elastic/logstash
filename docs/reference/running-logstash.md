@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/running-logstash.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Running Logstash as a Service on Debian or RPM [running-logstash]
