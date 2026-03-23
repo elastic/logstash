@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/dir-layout.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Logstash Directory Layout [dir-layout]
