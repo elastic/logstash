@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/configuring-centralized-pipelines.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Configure Centralized Pipeline Management [configuring-centralized-pipelines]
