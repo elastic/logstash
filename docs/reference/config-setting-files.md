@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/config-setting-files.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Logstash Configuration Files [config-setting-files]

@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/configuration.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Creating a Logstash Pipeline [configuration]

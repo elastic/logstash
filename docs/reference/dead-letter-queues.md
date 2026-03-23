@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/dead-letter-queues.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Dead letter queues (DLQ) [dead-letter-queues]

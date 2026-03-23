@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/resiliency.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Queues and data resiliency [resiliency]
