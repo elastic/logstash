@@ -2,6 +2,8 @@
 navigation_title: "{{metricbeat}} collection"
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/monitoring-with-metricbeat.html
+applies_to:
+  stack: ga
 ---
 
 # Collect {{ls}} monitoring data with {{metricbeat}} [monitoring-with-metricbeat]
