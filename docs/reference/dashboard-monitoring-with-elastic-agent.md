@@ -2,6 +2,9 @@
 navigation_title: "Collect monitoring data for dashboards"
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/dashboard-monitoring-with-elastic-agent.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Collect {{ls}} monitoring data for dashboards [dashboard-monitoring-with-elastic-agent]

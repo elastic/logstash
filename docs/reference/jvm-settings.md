@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/jvm-settings.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # JVM settings [jvm-settings]
