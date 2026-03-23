@@ -2,6 +2,9 @@
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/event-dependent-configuration.html
   - https://www.elastic.co/guide/en/logstash/current/field-references-deepdive.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Accessing event data and fields [event-dependent-configuration]
