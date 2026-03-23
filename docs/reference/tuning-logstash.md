@@ -87,8 +87,6 @@ pipelines:
           last_15_minutes: 116  
 ```
 
-Using this data, one can analyze the batch fulfillment structure to verify if the `batch_size` is consistently met across different time periods.
-
 Using this data, you can evaluate whether the configured `batch_size` is being effectively utilized across time periods.
 
 Ideally, the 50th and 90th percentiles should be close to `batch_size`, indicating that batches are consistently filled without queueing delays.
@@ -113,7 +111,7 @@ Always validate changes against CPU, memory, and I/O to avoid resource contentio
 
 In general, tune `pipeline.batch.size` to balance throughput (larger batches) against latency (smaller batches), while keeping backpressure minimal.
 
-If this condition is not met, the `batch_delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
+If this condition is not met, `pipeline.batch.delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
 
 * An increase in `queue.events_count`, if a persistent queue is used.
 * An increment in `queue_push_duration_in_millis`, if in memory queue is used.
