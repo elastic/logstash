@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/tips.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Tips and best practices [tips]
