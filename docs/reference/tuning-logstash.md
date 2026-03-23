@@ -87,19 +87,19 @@ pipelines:
           last_15_minutes: 116  
 ```
 
-Using this data, you can evaluate whether the configured `batch_size` is being effectively utilized across time periods.
+Using this data, you can evaluate whether the configured `pipeline.batch.size` is being effectively utilized across time periods.
 
-Ideally, the 50th and 90th percentiles should be close to `batch_size`, indicating that batches are consistently filled without queueing delays.
+Ideally, the 50th and 90th percentiles should be close to `pipeline.batch.size`, indicating that batches are consistently filled without queueing delays.
 
 Interpretation guidelines:
 
-- **Consistently full batches (P50/P90 ≈ `batch_size`)**  
+- **Consistently full batches (P50/P90 ≈ `pipeline.batch.size`)**  
   Indicates steady throughput. If CPU and memory have headroom, increasing `pipeline.batch.size` may improve efficiency by reducing per-batch overhead.
 
-- **Underfilled batches (P50/P90 < `batch_size`)**  
+- **Underfilled batches (P50/P90 < `pipeline.batch.size`)**  
   Suggests insufficient input volume. Increasing batch size is unlikely to help and may increase latency.
 
-- **Mixed percentiles (e.g., P90 ≈ `batch_size`, P50 lower)**  
+- **Mixed percentiles (e.g., P90 ≈ `pipeline.batch.size`, P50 lower)**  
   Indicates bursty traffic. Larger batches may improve throughput but can increase latency.
 
 - **Queue backpressure context**:
