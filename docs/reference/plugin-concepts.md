@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/plugin-concepts.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Cross-plugin concepts and features [plugin-concepts]

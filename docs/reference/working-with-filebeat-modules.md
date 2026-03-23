@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/filebeat-modules.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Working with Filebeat modules [filebeat-modules]
