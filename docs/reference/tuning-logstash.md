@@ -59,6 +59,66 @@ If you plan to modify the default pipeline settings, take into account the follo
 * On Linux platforms, Logstash labels its threads with descriptive names. For example, inputs show up as `[base]<inputname`, and pipeline workers show up as `[base]>workerN`, where N is an integer. Where possible, other threads are also labeled to help you identify their purpose.
 
 
+{applies_to}`stack: preview 9.4.0`
+## Optimizing Batch Sizes [batch-size-optimization]
+
+In a perfectly balanced pipeline, the input and output flow rates are equal. This equilibrium means that every batch read from the queue is completely full, and there is no accumulation within the queue.
+
+To gain better visibility into the composition of batches spooled from the queue, Logstash gathers and exposes statistical data about the batch structure within the `node_stats` metricset.
+A snippet of the information returned is:
+```yaml
+pipelines:
+  a-pipeline:
+    batch:
+      event_count:
+        current: 78
+        average:
+          lifetime: 115
+          last_1_minute: 120
+          last_5_minutes: 110
+          last_15_minutes: 112
+        p50:
+          last_1_minute: 125
+          last_5_minutes: 105
+          last_15_minutes: 108
+        p90:
+          last_1_minute: 125
+          last_5_minutes: 112
+          last_15_minutes: 116  
+```
+
+Using this data, you can evaluate whether the configured `pipeline.batch.size` is being effectively utilized across time periods.
+
+Ideally, the 50th and 90th percentiles should be close to `pipeline.batch.size`, indicating that batches are consistently filled without queueing delays.
+
+Interpretation guidelines:
+
+- **Consistently full batches (P50/P90 ≈ `pipeline.batch.size`)**  
+  Indicates steady throughput. If CPU and memory have headroom, increasing `pipeline.batch.size` may improve efficiency by reducing per-batch overhead.
+
+- **Underfilled batches (P50/P90 < `pipeline.batch.size`)**  
+  Suggests insufficient input volume. Increasing batch size is unlikely to help and may increase latency.
+
+- **Mixed percentiles (e.g., P90 ≈ `pipeline.batch.size`, P50 lower)**  
+  Indicates bursty traffic. Larger batches may improve throughput but can increase latency.
+
+- **Queue backpressure context**:
+  - Low backpressure + full batches → healthy pipeline; safe to consider increasing batch size or workers.
+  - High backpressure + full batches → downstream bottleneck; consider increasing number of workers or resources instead of batch size.
+  - Low backpressure + underfilled batches → underutilized pipeline; no tuning needed.
+
+Always validate changes against CPU, memory, and I/O to avoid resource contention.
+
+In general, tune `pipeline.batch.size` to balance throughput (larger batches) against latency (smaller batches), while keeping backpressure minimal.
+
+If this condition is not met, `pipeline.batch.delay` can be increased to attempt optimization. However, this adjustment must be made carefully to prevent:
+
+* An increase in `queue.events_count`, if a persistent queue is used.
+* An increment in `queue_push_duration_in_millis`, if in memory queue is used.
+
+An increase in either of the latter two metrics signifies that the pipeline is applying backpressure to the upstream system, resulting in decreased overall pipeline performance.
+
+
 ## Profiling the heap [profiling-the-heap]
 
 When tuning Logstash you may have to adjust the heap size. You can use the [VisualVM](https://visualvm.github.io/) tool to profile the heap. The **Monitor** pane in particular is useful for checking whether your heap allocation is sufficient for the current workload. The screenshots below show sample **Monitor** panes. The first pane examines a Logstash instance configured with too many inflight events. The second pane examines a Logstash instance configured with an appropriate amount of inflight events. Note that the specific batch sizes used here are most likely not applicable to your specific workload, as the memory demands of Logstash vary in large part based on the type of messages you are sending.
