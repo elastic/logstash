@@ -1,6 +1,9 @@
 ---
 mapped_pages:
   - https://www.elastic.co/guide/en/logstash/current/lookup-enrichment.html
+applies_to:
+  stack: ga
+  serverless: ga
 ---
 
 # Enriching Data with Lookups [lookup-enrichment]
