@@ -4,8 +4,14 @@
         "ubuntu": ["ubuntu-2404", "ubuntu-2204", "ubuntu-2004"],
         "debian": ["debian-13", "debian-12", "debian-11"],
         "rhel": ["rhel-9", "rhel-8"],
+<<<<<<< HEAD
         "oraclelinux": ["oraclelinux-8", "oraclelinux-7"],
         "rocky": ["rocky-linux-8"],
+=======
+        "oraclelinux": ["oraclelinux-9", "oraclelinux-8", "oraclelinux-7"],
+        "rocky": ["rocky-linux-9", "rocky-linux-8"],
+        "almalinux": ["almalinux-9", "almalinux-8"],
+>>>>>>> 3b59fb59d (Add tests for Oracle Linux 9 (#18891))
         "amazonlinux": ["amazonlinux-2023"],
         "opensuse": ["opensuse-leap-15"]
     },

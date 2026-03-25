@@ -34,6 +34,8 @@ steps:
             value: "rhel-9"
           - label: "RHEL 8"
             value: "rhel-8"
+          - label: "Oracle Linux 9"
+            value: "oraclelinux-9"
           - label: "Oracle Linux 8"
             value: "oraclelinux-8"
           - label: "Oracle Linux 7"
