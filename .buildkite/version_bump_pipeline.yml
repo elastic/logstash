@@ -22,8 +22,8 @@ steps:
     if: build.env("WORKFLOW") == "minor"
     plugins:
       - elastic/vault-github-token#v0.1.0:
-      - elastic/gh-cli#v0.1.0:
-          version: "2.62.0"
+      - elastic/gh-cli#v0.1.1:
+          version: "2.88.1"
           wait: true
           workflow-file: "version_bumps.yml"
           workflow-ref: "main"
@@ -35,8 +35,8 @@ steps:
     if: build.env("WORKFLOW") == "patch"
     plugins:
       - elastic/vault-github-token#v0.1.0:
-      - elastic/gh-cli#v0.1.0:
-          version: "2.62.0"
+      - elastic/gh-cli#v0.1.1:
+          version: "2.88.1"
           wait: true
           workflow-file: "version_bumps.yml"
           workflow-ref: "main"
