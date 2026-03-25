@@ -14,7 +14,7 @@ ACCEPTANCE_LINUX_OSES = [
     "ubuntu-2404", "ubuntu-2204", "ubuntu-2004",
     "debian-11", "debian-12", "debian-13",
     "rhel-8", "rhel-9",
-    "oraclelinux-7", "oraclelinux-8",
+    "oraclelinux-7", "oraclelinux-8", "oraclelinux-9",
     "rocky-linux-8", "rocky-linux-9",
     "almalinux-8", "almalinux-9",
     "opensuse-leap-15",
