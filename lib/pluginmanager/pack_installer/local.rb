@@ -75,6 +75,8 @@ module LogStash module PluginManager module PackInstaller
       # OK Zip's handling of file is bit weird, if the file exist but is not a valid zip, it will raise
       # a `Zip::Error` exception with a file not found message...
       raise InvalidPackError, "Cannot uncompress the zip: #{source}"
+    rescue LogStash::CompressError => e
+      raise InvalidPackError, "Cannot uncompress the zip #{source}: #{e.message}"
     end
 
     def valid_format?(local_file)

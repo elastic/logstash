@@ -154,10 +154,10 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
 
     context "with matching md5 checksum" do
       let(:md5_hash) { LogStash::GeoipDatabaseManagement::Util.md5(sample_city_db_gz) }
-      it "should download file and return zip path" do
-        new_zip_path = downloader.send(:download_database, database_type, dirname, db_info)
-        expect(new_zip_path).to match /GeoLite2-City\.tgz/
-        expect(::File.exist?(new_zip_path)).to be_truthy
+      it "should download file and return tgz path" do
+        new_tgz_path = downloader.send(:download_database, database_type, dirname, db_info)
+        expect(new_tgz_path).to match /GeoLite2-City\.tgz/
+        expect(::File.exist?(new_tgz_path)).to be_truthy
       end
     end
   end
@@ -176,8 +176,8 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
     end
 
     it "should extract all files in tarball" do
-      zip_path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
-      new_db_path = downloader.send(:unzip, database_type, dirname, zip_path)
+      tgz_path = ::File.expand_path("./fixtures/sample.tgz", ::File.dirname(__FILE__))
+      new_db_path = downloader.send(:unzip, database_type, dirname, tgz_path)
 
       expect(new_db_path).to match /GeoLite2-#{database_type}\.mmdb/
       expect(::File.exist?(new_db_path)).to be_truthy
@@ -187,6 +187,13 @@ describe LogStash::GeoipDatabaseManagement::Downloader, aggregate_failures: true
       expect(::File.directory?(folder_path)).to be_truthy
       expect(::File.exist?(folder_more_path)).to be_truthy
       expect(::File.exist?(folder_less_path)).to be_truthy
+    end
+
+    it "raises when tarball contains a symlink entry" do
+      tgz_path = ::File.expand_path("./fixtures/sample_with_symlink.tgz", ::File.dirname(__FILE__))
+      expect(::File.exist?(tgz_path)).to be_truthy
+
+      expect { downloader.send(:unzip, database_type, dirname, tgz_path) }.to raise_error(LogStash::CompressError, /Refusing to extract symlink entry/)
     end
   end
 
