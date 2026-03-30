@@ -539,6 +539,26 @@ public class AbstractPipelineExt extends RubyBasicObject {
         return result;
     }
 
+    @JRubyMethod(name = "configured_queue_type")
+    public final IRubyObject configuredQueueType(final ThreadContext context) {
+        return getSetting(context, "queue.type");
+    }
+
+    @JRubyMethod(name = "configured_as_recoverable?")
+    public final IRubyObject isConfiguredAsRecoverable(final ThreadContext context) {
+        final String recoverableSettingValue = getSetting(context, "pipeline.recoverable").asJavaString();
+        final boolean result = switch (recoverableSettingValue) {
+            case "true" -> true;
+            case "false" -> false;
+            case "auto" -> getSetting(context, "queue.type").asJavaString().equals(QueueFactoryExt.PERSISTED_TYPE);
+            default -> {
+                LOGGER.warn("Unsupported `pipeline.recoverable` value {}; defaulting to `false`", recoverableSettingValue);
+                yield false;
+            }
+        };
+        return result ? context.tru : context.fals;
+    }
+
     @JRubyMethod(name = "collect_stats")
     public final IRubyObject collectStats(final ThreadContext context) throws IOException {
         final AbstractNamespacedMetricExt pipelineMetric =

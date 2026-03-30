@@ -60,6 +60,7 @@ module LogStash
       "pipeline.batch.size",
       "pipeline.id",
       "pipeline.reloadable",
+      "pipeline.recoverable",
       "pipeline.system",
       "pipeline.workers",
       "pipeline.ordered",
