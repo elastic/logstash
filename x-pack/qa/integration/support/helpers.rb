@@ -9,6 +9,7 @@ require "fileutils"
 require "stud/try"
 require "open3"
 require "time"
+require_relative "../../../../qa/integration/framework/cert_helpers"
 
 VERSIONS_YML_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "..", "versions.yml")
 VERSION_PATH = File.join(File.dirname(__FILE__), "..", "..", "..", "VERSION")
@@ -181,5 +182,62 @@ end
 def verify_response!(cmd, response)
   unless response.successful?
     raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresponse: #{response}"
+  end
+end
+
+# Starts Elasticsearch with HTTP/TLS enabled.
+# Returns the Belzebuth process object.
+def elasticsearch_with_tls(server_cert_pem, server_key_pem, ca_pem)
+  es_config_dir = File.join(get_elasticsearch_path, "config")
+  File.write(File.join(es_config_dir, "test-ca.crt"),     ca_pem)
+  File.write(File.join(es_config_dir, "test-server.crt"), server_cert_pem)
+  File.write(File.join(es_config_dir, "test-server.key"), server_key_pem)
+
+  temporary_path_data = Stud::Temporary.directory
+  settings = {
+    "path.data"                                       => temporary_path_data,
+    "discovery.type"                                  => "single-node",
+    "xpack.monitoring.collection.enabled"             => true,
+    "xpack.security.enabled"                          => true,
+    "xpack.security.http.ssl.enabled"                 => true,
+    "xpack.security.http.ssl.certificate"             => "test-server.crt",
+    "xpack.security.http.ssl.key"                     => "test-server.key",
+    "xpack.security.http.ssl.certificate_authorities" => "test-ca.crt",
+    "action.destructive_requires_name"                => false
+  }
+  settings_args = settings.map { |k, v| "-E#{k}=#{v}" }
+
+  bootstrap_elastic_password unless bootstrap_password_exists?
+
+  cmd = "bin/elasticsearch #{settings_args.join(' ')}"
+  puts "Running elasticsearch with TLS: #{cmd}"
+  response = Belzebuth.run(cmd, {
+    :directory     => get_elasticsearch_path,
+    :wait_condition => /ClusterStateLicenseService.*license.*valid/,
+    :timeout        => 15 * 60
+  })
+  raise "Could not start Elasticsearch with TLS: #{response}" unless response.successful?
+
+  tls_client = elasticsearch_client_tls
+  if tls_client.perform_request(:get, '_license').body['license']['type'] != 'trial'
+    resp = tls_client.perform_request(:post, '_license/start_trial', "acknowledge" => true)
+    raise "Trial not started: #{resp.body}" if resp.body["trial_was_started"] != true
+  end
+
+  response
+end
+
+# This ES client is only used for test. SSL verification is disabled.
+def elasticsearch_client_tls
+  Elasticsearch::Client.new(
+    :url               => "https://elastic:#{elastic_password}@localhost:9200",
+    :transport_options => { :ssl => { :verify => false } }
+  )
+end
+
+def cleanup_tls_certs_from_es_config
+  es_config_dir = File.join(get_elasticsearch_path, "config")
+  %w[test-ca.crt test-server.crt test-server.key].each do |f|
+    FileUtils.rm_f(File.join(es_config_dir, f))
   end
 end
