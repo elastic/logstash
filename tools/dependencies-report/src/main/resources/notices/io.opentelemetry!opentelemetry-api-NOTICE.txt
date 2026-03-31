@@ -1,0 +1,7 @@
+OpenTelemetry Java
+Copyright The OpenTelemetry Authors
+
+This product includes software developed at
+The OpenTelemetry Authors (https://opentelemetry.io/).
+
+Licensed under the Apache License, Version 2.0.
