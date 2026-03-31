@@ -21,6 +21,7 @@ require_relative '../services/logstash_service'
 require "rspec/wait"
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 8
 describe "Test Kafka Input" do
   let(:num_retries) { 60 }
   let(:num_events) { 37 }

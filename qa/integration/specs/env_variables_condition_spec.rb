@@ -30,6 +30,7 @@ require "logstash/devutils/rspec/spec_helper"
 # tag2 = mytag2
 # tag3 = mytag3
 ####################################
+# SPLIT_ESTIMATE: 19
 describe "Support environment variable in condition" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

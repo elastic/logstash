@@ -23,6 +23,7 @@ require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 require "manticore"
 
+# SPLIT_ESTIMATE: 40
 describe "Test Logstash buffer allocation setting" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

@@ -21,6 +21,7 @@ require_relative '../services/logstash_service'
 require_relative '../framework/helpers'
 require "logstash/devutils/rspec/spec_helper"
 
+# SPLIT_ESTIMATE: 21
 # reserved tags should accept string and array of string only
 describe "Guard reserved tags field against incorrect use" do
   before(:all) {

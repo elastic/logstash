@@ -23,6 +23,7 @@ require "logstash/devutils/rspec/spec_helper"
 require "yaml"
 require "fileutils"
 
+# SPLIT_ESTIMATE: 50
 describe "Test Logstash Pipeline id" do
   before(:all) {
     @fixture = Fixture.new(__FILE__)

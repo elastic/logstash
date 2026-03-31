@@ -34,7 +34,46 @@ require "rspec/core"
 RSpec.clear_examples
 
 RSpec.configure do |c|
-    c.filter_run_excluding skip_fips: true if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
+  timer = Class.new do
+    def initialize
+      @timings = Hash.new(0)
+      @mutex = Mutex.new
+    end
+
+    def record(example)
+      start_time = now_millis
+      example.run
+    ensure
+      duration_millis = (now_millis - start_time)
+      spec_path = Pathname.new(example.file_path).cleanpath.to_s
+      @mutex.synchronize { @timings[spec_path] += duration_millis }
+    end
+
+    def write
+      @mutex.synchronize do
+        @timings.sort.each do |filename, time_millis|
+          $stderr.puts("[TIME #{filename}](#{(time_millis/1000.0).ceil})")
+        end
+      end
+    end
+
+    private
+
+    ##
+    # Get the current time in millis directly from Java,
+    # bypassing any ruby time-mocking libs
+    # @return [Integer]
+    def now_millis
+      java.lang.System.currentTimeMillis()
+    end
+  end.new
+
+  c.around(:example) { |example| timer.record(example) }
+  c.after(:suite) { timer.write }
+end
+
+RSpec.configure do |c|
+  c.filter_run_excluding skip_fips: true if java.lang.System.getProperty("org.bouncycastle.fips.approved_only") == "true"
 end
 
 return RSpec::Core::Runner.run($JUNIT_ARGV).to_i

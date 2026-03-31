@@ -23,6 +23,7 @@ require_relative '../services/logstash_service'
 require 'stud/temporary'
 require 'logstash/devutils/rspec/spec_helper'
 
+# SPLIT_ESTIMATE: 20
 describe "Logstash to Logstash communication Integration test" do
 
   before(:all) {
