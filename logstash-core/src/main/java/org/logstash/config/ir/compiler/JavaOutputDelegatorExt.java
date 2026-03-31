@@ -126,6 +126,11 @@ public final class JavaOutputDelegatorExt extends AbstractOutputDelegatorExt {
     }
 
     @Override
+    protected IRubyObject getRubyPlugin(final ThreadContext context) {
+        return context.nil;
+    }
+
+    @Override
     protected IRubyObject reloadable(final ThreadContext context) {
         return context.tru;
     }

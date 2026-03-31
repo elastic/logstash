@@ -120,6 +120,13 @@ public abstract class AbstractFilterDelegatorExt extends RubyObject {
 
     protected abstract IRubyObject getConfigName(ThreadContext context);
 
+    @JRubyMethod(name = "ruby_plugin")
+    public IRubyObject rubyPlugin(final ThreadContext context) {
+        return getRubyPlugin(context);
+    }
+
+    protected abstract IRubyObject getRubyPlugin(final ThreadContext context);
+
     @JRubyMethod(name = "id")
     public IRubyObject getId() {
         return id;

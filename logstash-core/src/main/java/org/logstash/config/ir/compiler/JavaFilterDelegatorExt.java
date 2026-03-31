@@ -88,6 +88,11 @@ public class JavaFilterDelegatorExt extends AbstractFilterDelegatorExt {
     }
 
     @Override
+    protected IRubyObject getRubyPlugin(final ThreadContext context) {
+        return context.nil;
+    }
+
+    @Override
     protected void doRegister(ThreadContext context) {
     }
 

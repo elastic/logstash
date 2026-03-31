@@ -166,6 +166,11 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
 
             // test that metrics are properly set on the instance
             assertEquals(outputDelegator.namespacedMetric(), FakeOutClass.latestInstance.getMetricArgs());
+
+            // test that rubyPlugin returns the inner plugin instance
+            IRubyObject rubyPlugin = outputDelegator.rubyPlugin(RUBY.getCurrentContext());
+            assertThat(rubyPlugin).isInstanceOf(FakeOutClass.class);
+            assertThat(rubyPlugin.isNil()).isFalse();
         }
     }
 

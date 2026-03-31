@@ -137,6 +137,13 @@ public abstract class AbstractOutputDelegatorExt extends RubyObject {
         }
     }
 
+    @JRubyMethod(name = "ruby_plugin")
+    public IRubyObject rubyPlugin(final ThreadContext context) {
+        return getRubyPlugin(context);
+    }
+
+    protected abstract IRubyObject getRubyPlugin(ThreadContext context);
+
     protected abstract IRubyObject getConfigName(ThreadContext context);
 
     protected abstract IRubyObject getConcurrency(ThreadContext context);
