@@ -190,7 +190,9 @@ class LogStash::Agent
                else                             PipelineIndicator::Status::UNKNOWN
                end
 
-      PipelineIndicator::Details.new(status, sync_state.pipeline&.to_java.collectWorkerUtilizationFlowObservation)
+      PipelineIndicator::Details.new(status,
+                                     sync_state.pipeline&.to_java.collectWorkerUtilizationFlowObservation,
+                                     sync_state.recovery_log)
     end
   end
 

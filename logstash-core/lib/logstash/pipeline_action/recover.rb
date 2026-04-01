@@ -72,6 +72,7 @@ module LogStash module PipelineAction
         # return success and new_pipeline to registry reload_pipeline
         [success, new_pipeline]
       end
+      pipelines_registry.states.get(pipeline_id)&.mark_recovery if success
 
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end

@@ -24,6 +24,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.logstash.instrument.metrics.MetricKeys;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalDouble;
@@ -42,6 +47,7 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
         PipelineIndicator pipelineIndicator = new PipelineIndicator(new DetailsSupplier(pipelineId, pipelineDetailsProvider));
         pipelineIndicator.attachProbe("status", new StatusProbe());
         pipelineIndicator.attachProbe("flow:worker_utilization", new FlowWorkerUtilizationProbe());
+        pipelineIndicator.attachProbe("recovery", new RecoveryProbe());
         return pipelineIndicator;
     }
 
@@ -87,20 +93,35 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
     public static class Details implements Observation {
         private final Status status;
         private final FlowObservation flow;
-
-        public Details(Status status, FlowObservation flow) {
-            this.status = Objects.requireNonNull(status, "status cannot be null");
-            this.flow = Objects.requireNonNullElse(flow, FlowObservation.EMPTY);
-        }
+        private final List<Instant> recoveryLog;
 
         public Details(final Status status) {
             this(status, null);
         }
 
+        public Details(Status status, FlowObservation flow) {
+            this(status, flow, List.of());
+        }
+
+        public Details(final Status status,
+                       final FlowObservation flow,
+                       final List<Instant> recoveryLog) {
+            this.status = Objects.requireNonNull(status, "status cannot be null");
+            this.flow = Objects.requireNonNullElse(flow, FlowObservation.EMPTY);
+            this.recoveryLog = List.copyOf(recoveryLog);
+        }
+
         public Status getStatus() {
             return this.status;
         }
-        public FlowObservation getFlow() { return this.flow; }
+
+        public FlowObservation getFlow() {
+            return this.flow;
+        }
+
+        public List<Instant> getRecoveryLog() {
+            return this.recoveryLog;
+        }
 
         public static class JsonSerializer extends com.fasterxml.jackson.databind.JsonSerializer<Details> {
             @Override
@@ -112,6 +133,15 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
                 FlowObservation flow = details.getFlow();
                 if (flow != null && !flow.isEmpty()) {
                     jsonGenerator.writeObjectField("flow", flow);
+                }
+                List<Instant> recoveryLog = details.getRecoveryLog();
+                if (recoveryLog != null && !recoveryLog.isEmpty()) {
+                    jsonGenerator.writeArrayFieldStart("recovery_log");
+                    final ZoneId zoneId = ZoneId.systemDefault();
+                    for (Instant instant : recoveryLog) {
+                        jsonGenerator.writeString(OffsetDateTime.ofInstant(instant, zoneId).toString());
+                    }
+                    jsonGenerator.writeEndArray();
                 }
                 jsonGenerator.writeEndObject();
             }
@@ -331,6 +361,67 @@ public class PipelineIndicator extends ProbeIndicator<PipelineIndicator.Details>
 
         static String impactId(final String state) {
             return String.format("logstash:health:pipeline:flow:impact:%s", state);
+        }
+    }
+
+    static class RecoveryProbe implements Probe<Details> {
+        static final HelpUrl HELP_URL = new HelpUrl("health-report-pipeline-recovery");
+
+
+        static final Impact.Builder INTERMITTENT_PROCESSING = Impact.builder()
+                .withId(impactId("intermittent_processing"))
+                .withDescription("pipeline recently recovered from a crash")
+                .withAdditionalImpactArea(ImpactArea.PIPELINE_EXECUTION);
+
+        @Override
+        public Analysis analyze(Details observation) {
+            final List<Instant> recoveryLog = observation.recoveryLog;
+            if (Objects.nonNull(recoveryLog) && !recoveryLog.isEmpty()) {
+                // if we've recovered more than 5 times in 5 minutes, set status to red
+                final Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
+                final long recoveriesLastFiveMinutes = recoveryLog.stream().filter(fiveMinutesAgo::isBefore).count();
+                if (recoveriesLastFiveMinutes >= 5) {
+                    return Analysis.builder().withStatus(RED)
+                            .withDiagnosis(db -> db
+                                    .withId(diagnosisId("5m-recovery-repeated"))
+                                    .withCause(diagnosisCause(recoveriesLastFiveMinutes, "5 minutes"))
+                                    .withAction("inspect logs to determine source of crash")
+                                    .withHelpUrl(HELP_URL.withAnchor("recovery-5m").toString())
+                            )
+                            .withImpact(INTERMITTENT_PROCESSING.withSeverity(1).build())
+                            .build();
+                }
+                if (recoveriesLastFiveMinutes >= 1) {
+                    return Analysis.builder().withStatus(YELLOW)
+                            .withDiagnosis(db -> db
+                                    .withId(diagnosisId("5m-recovery-recent"))
+                                    .withCause(diagnosisCause(recoveriesLastFiveMinutes, "5 minutes"))
+                                    .withAction("inspect logs to determine source of crash")
+                                    .withHelpUrl(HELP_URL.withAnchor("recovery-5m").toString())
+                            )
+                            .withImpact(INTERMITTENT_PROCESSING.withSeverity(2).build())
+                            .build();
+                }
+            }
+
+            return Analysis.builder().build();
+        }
+
+        static String diagnosisCause(long recoveryCount, String period) {
+            return new StringBuilder()
+                    .append("pipeline has recovered from crashes ")
+                    .append(recoveryCount).append(recoveryCount == 1 ? " time " : " times " )
+                    .append("in the last ")
+                    .append(period)
+                    .toString();
+        }
+
+        static String diagnosisId(final String state) {
+            return String.format("logstash:health:pipeline:recovery:diagnosis:%s", state);
+        }
+
+        static String impactId(final String state) {
+            return String.format("logstash:health:pipeline:recovery:impact:%s", state);
         }
     }
 }

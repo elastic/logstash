@@ -23,6 +23,7 @@ module LogStash
       @pipeline_id = pipeline_id
       @pipeline = pipeline
       @loading = Concurrent::AtomicBoolean.new(false)
+      @recovery_log = java.util.ArrayList.new
 
       # this class uses a reentrant lock to ensure thread safe visibility.
       @lock = Monitor.new
@@ -73,6 +74,19 @@ module LogStash
       @lock.synchronize do
         raise(ArgumentError, "invalid nil pipeline") if pipeline.nil?
         @pipeline = pipeline
+      end
+    end
+
+    def mark_recovery
+      @lock.synchronize do
+        @recovery_log.add(java.time.Instant.now)
+      end
+    end
+
+    def recovery_log
+      @lock.synchronize do
+        # returns an immutable copy of the recovery log
+        java.util.List::copyOf(@recovery_log)
       end
     end
 

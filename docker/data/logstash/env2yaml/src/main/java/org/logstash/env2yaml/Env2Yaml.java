@@ -43,6 +43,7 @@ public class Env2Yaml {
                 "node.name", "path.data", "pipeline.id", "pipeline.workers",
                 "pipeline.output.workers", "pipeline.batch.size", "pipeline.batch.delay", "pipeline.batch.output_chunking.growth_threshold_factor",
                 "pipeline.unsafe_shutdown", "pipeline.ecs_compatibility", "pipeline.ordered",
+                "pipeline.recoverable", "pipeline.reloadable",
                 "pipeline.plugin_classloaders", "pipeline.separate_logs", "path.config",
                 "config.string", "config.test_and_exit", "config.reload.automatic",
                 "config.reload.interval", "config.debug", "config.support_escapes",
