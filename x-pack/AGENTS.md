@@ -62,6 +62,10 @@ The `LicenseManager` (`lib/license_checker/license_manager.rb`) polls Elasticsea
 
 # Integration tests (requires running Elasticsearch)
 ./gradlew :logstash-xpack:rubyIntegrationTests
+
+# Single integration spec
+./gradlew :logstash-xpack:rubyIntegrationTests \
+  -PrubyIntegrationSpecs=qa/integration/management/multiple_pipelines_spec.rb
 ```
 
 ### Test Structure
