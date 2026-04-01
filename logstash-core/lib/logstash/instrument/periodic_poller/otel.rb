@@ -48,7 +48,7 @@ module LogStash module Instrument module PeriodicPoller
       super(metric, :polling_interval => settings.get("otel.metrics.interval"))
       @metric_store = @metric.collector
 
-      # Initialize the OTel service - SDK handles its own export timing
+      # Initialize the Otel service - SDK handles its own export timing
       @otel_service = OtelMetricsService.new(
         settings.get("otel.metrics.endpoint"),
         agent.id,
@@ -95,7 +95,7 @@ module LogStash module Instrument module PeriodicPoller
       collect_pipeline_metrics
       collect_dlq_metrics
       @agent.capture_flow_metrics
-      # Refresh snapshot after collecting metrics so OTel callbacks read fresh data
+      # Refresh snapshot after collecting metrics so Otel callbacks read fresh data
       @snapshot = @metric_store.snapshot_metric
     end
 
@@ -111,7 +111,7 @@ module LogStash module Instrument module PeriodicPoller
       @agent.pipelines_registry.running_pipelines.each do |pipeline_id, _pipeline|
         next if @registered_pipelines.include?(pipeline_id)
 
-        logger.debug("Registering OTel metrics for pipeline", :pipeline_id => pipeline_id)
+        logger.debug("Registering Otel metrics for pipeline", :pipeline_id => pipeline_id)
         register_pipeline_counters_for(pipeline_id)
         register_pipeline_gauges_for(pipeline_id)
         register_dlq_metrics_for(pipeline_id)
@@ -405,7 +405,7 @@ module LogStash module Instrument module PeriodicPoller
           plugin_key = "#{pipeline_id}:#{plugin_type}:#{plugin_id}"
           next if @registered_plugins.include?(plugin_key)
 
-          logger.debug("Registering OTel metrics for plugin",
+          logger.debug("Registering Otel metrics for plugin",
                        :pipeline_id => pipeline_id,
                        :plugin_type => plugin_type,
                        :plugin_id => plugin_id)
