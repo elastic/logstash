@@ -101,3 +101,13 @@ The `logstash.yml` file includes these settings.
 | `path.plugins` | Where to find custom plugins. You can specify this setting multiple times to include  multiple paths. Plugins are expected to be in a specific directory hierarchy:  `PATH/logstash/TYPE/NAME.rb` where `TYPE` is `inputs`, `filters`, `outputs`, or `codecs`,  and `NAME` is the name of the plugin. | Platform-specific. See [Logstash Directory Layout](/reference/dir-layout.md). |
 | `allow_superuser` | Setting to `true` to allow or `false` to block running Logstash as a superuser. | `false` |
 | `pipeline.buffer.type` | Determine where to allocate memory buffers, for plugins that leverage them.Defaults to `heap` but can be switched to `direct` to instruct Logstash to prefer allocation of buffers in direct memory. | `heap` Check out [Buffer Allocation types](/reference/jvm-settings.md#off-heap-buffers-allocation) for more info. |
+<<<<<<< HEAD
+=======
+| `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. See [Monitoring with OpenTelemetry](/reference/monitoring-with-opentelemetry.md). | `false` |
+| `otel.metrics.endpoint` | The OTLP endpoint URL for metrics export. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
+| `otel.metrics.interval` | Export interval in seconds. Controls how frequently metrics are sent to the OTLP endpoint. | `10` |
+| `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
+| `otel.metrics.authorization_header` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
+| `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
+
+>>>>>>> bd159bd54 (Add documentation)

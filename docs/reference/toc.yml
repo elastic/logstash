@@ -108,6 +108,7 @@ toc:
       - file: logstash-pipeline-viewer.md
       - file: monitoring-troubleshooting.md
   - file: monitoring-logstash.md
+  - file: monitoring-with-opentelemetry.md
   - file: working-with-plugins.md
     children:
       - file: plugin-concepts.md
