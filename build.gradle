@@ -589,7 +589,7 @@ tasks.register("checkEsSHA") {
         String remoteSHA
 
         def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-        remoteSHA = res.packageShaUrl
+        remoteSHA = res.packageShaUrl.toURL().text
 
         def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
         if (localESArchive.exists()) {
@@ -603,6 +603,8 @@ tasks.register("checkEsSHA") {
             if (localESCalculatedSHA != remoteSHACode) {
                 println "ES package calculated fingerprint is different from remote, deleting local archive"
                 delete(localESArchive)
+            } else {
+                println "Local ES package is already the latest"
             }
         }/* else {
             mkdir project.buildDir
