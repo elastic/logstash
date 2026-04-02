@@ -538,6 +538,23 @@ tasks.register("prepareFilebeatDownload") {
     }
 }
 
+def verifyPackageSHA(String artifactProject, String version, String packageName, String label) {
+    def res = SnapshotArtifactURLs.packageUrls(artifactProject, version, packageName)
+    String remoteSHACode = res.packageShaUrl.toURL().text.split(' ')[0]
+
+    def localArchive = new File("${projectDir}/build/${packageName}.tar.gz")
+    if (localArchive.exists()) {
+        ant.checksum(file: localArchive, algorithm: "SHA-512", forceoverwrite: true)
+        String localSHA = new File("${projectDir}/build/${packageName}.tar.gz.SHA-512").text.trim()
+        if (localSHA != remoteSHACode) {
+            println "${label} package calculated fingerprint is different from remote, deleting local archive"
+            delete(localArchive)
+        } else {
+            println "Local ${label} package is already the latest"
+        }
+    }
+}
+
 tasks.register("checkFilebeatSHA") {
     dependsOn configureArtifactInfo
 
@@ -547,26 +564,7 @@ tasks.register("checkFilebeatSHA") {
     doLast {
         String beatsVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
-        String remoteSHA
-
-        def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-        remoteSHA = res.packageShaUrl.toURL().text
-
-        def localFilebeatArchive = new File("${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-        if (localFilebeatArchive.exists()) {
-            ant.checksum(file: localFilebeatArchive, algorithm: "SHA-512", forceoverwrite: true)
-
-            File localFilebeatCalculatedSHAFile = new File("${projectDir}/build/${downloadedFilebeatName}.tar.gz.SHA-512")
-            String localFilebeatCalculatedSHA = localFilebeatCalculatedSHAFile.text.trim()
-            def splitted = remoteSHA.split(' ')
-            String remoteSHACode = splitted[0]
-            if (localFilebeatCalculatedSHA != remoteSHACode) {
-                println "Filebeat package calculated fingerprint is different from remote, deleting local archive"
-                delete(localFilebeatArchive)
-            } else {
-                println "Local Filebeat package is already the latest"
-            }
-        }
+        verifyPackageSHA("beats", beatsVersion, downloadedFilebeatName, "Filebeat")
     }
 }
 
@@ -620,34 +618,7 @@ tasks.register("checkEsSHA") {
     doLast {
         String esVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
-        String remoteSHA
-
-        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-        remoteSHA = res.packageShaUrl.toURL().text
-
-        def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-        if (localESArchive.exists()) {
-            // this create a file named localESArchive with ".SHA-512" postfix
-            ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
-
-            File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
-            String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
-            def splitted = remoteSHA.split(' ')
-            String remoteSHACode = splitted[0]
-            if (localESCalculatedSHA != remoteSHACode) {
-                println "ES package calculated fingerprint is different from remote, deleting local archive"
-                delete(localESArchive)
-            } else {
-                println "Local ES package is already the latest"
-            }
-        }/* else {
-            mkdir project.buildDir
-            // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
-            new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter { w ->
-                w << "${downloadedElasticsearchName} not yet downloaded"
-                w.close()
-            }
-        }*/
+        verifyPackageSHA("elasticsearch", esVersion, downloadedElasticsearchName, "ES")
     }
 }
 
