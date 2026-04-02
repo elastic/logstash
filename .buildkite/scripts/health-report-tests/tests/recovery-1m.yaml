@@ -10,7 +10,7 @@ config:
           'code' => 'event.set("[@metadata][poison]", ::Time.now > @crash_time)'
         }
         if [@metadata][poison] {
-          failure_injector { crash_at => [filter] }
+          failure_injector { crash_at => filter }
         }
       }
       output { stdout {} }
