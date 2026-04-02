@@ -538,8 +538,40 @@ tasks.register("prepareFilebeatDownload") {
     }
 }
 
+tasks.register("checkFilebeatSHA") {
+    dependsOn configureArtifactInfo
+
+    description = "Download Filebeat version remote's fingerprint file"
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        String remoteSHA
+
+        def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
+        remoteSHA = res.packageShaUrl.toURL().text
+
+        def localFilebeatArchive = new File("${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+        if (localFilebeatArchive.exists()) {
+            ant.checksum(file: localFilebeatArchive, algorithm: "SHA-512", forceoverwrite: true)
+
+            File localFilebeatCalculatedSHAFile = new File("${projectDir}/build/${downloadedFilebeatName}.tar.gz.SHA-512")
+            String localFilebeatCalculatedSHA = localFilebeatCalculatedSHAFile.text.trim()
+            def splitted = remoteSHA.split(' ')
+            String remoteSHACode = splitted[0]
+            if (localFilebeatCalculatedSHA != remoteSHACode) {
+                println "Filebeat package calculated fingerprint is different from remote, deleting local archive"
+                delete(localFilebeatArchive)
+            } else {
+                println "Local Filebeat package is already the latest"
+            }
+        }
+    }
+}
+
 tasks.register("downloadFilebeat", Download) {
-    dependsOn prepareFilebeatDownload
+    dependsOn prepareFilebeatDownload, checkFilebeatSHA
     description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
