@@ -70,6 +70,10 @@ tasks.register("rubyIntegrationTests", Test) {
   inputs.files fileTree("${rootProject.projectDir}/Gemfile.lock")
   inputs.files fileTree("${rootProject.projectDir}/logstash-core/lib")
   systemProperty 'logstash.root.dir', projectDir.parent
+  if (project.hasProperty('rubyIntegrationSpecs')) {
+    systemProperty 'org.logstash.xpack.integration.specs', project.property('rubyIntegrationSpecs')
+  }
+  outputs.upToDateWhen { false }
   include '/org/logstash/xpack/test/RSpecIntegrationTests.class'
 }
 
