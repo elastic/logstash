@@ -4,6 +4,7 @@ A class to execute the given scenario for Logstash Health Report integration tes
 import time
 import re
 from typing import Any
+from types import MappingProxyType
 from logstash_health_report import LogstashHealthReport
 
 
@@ -11,6 +12,7 @@ class ScenarioExecutor:
     logstash_health_report_api = LogstashHealthReport()
 
     def __init__(self):
+        self.matcher = self.GrokLite()
         pass
 
     def __get_difference(self, expect: Any, actual: Any, path: str | None = None) -> list:
@@ -19,9 +21,14 @@ class ScenarioExecutor:
         differences = []
 
         match expect:
+            # $include is a substring matcher
             case {"$include": inclusion} if isinstance(expect, dict) and len(expect) == 1 and isinstance(actual, str):
                 if inclusion not in actual:
                     differences.append(f"Value at path `{path}` does not include:`{inclusion}`; got:`{actual}`")
+            # $match is a grok-like matcher that anchors the pattern at both ends
+            case {"$match": pattern_spec} if isinstance(expect, dict) and len(expect) == 1 and isinstance(actual, str):
+                if not self.matcher.is_match(pattern_spec, actual):
+                    differences.append(f"Value at path `{path}` does not match pattern `{pattern_spec}`; got:`{actual}`")
             case dict():
                 if not isinstance(actual, dict):
                     differences.append(f"Structure differs at `{path}`, expected:`{expect}` got:`{actual}`")
@@ -41,6 +48,21 @@ class ScenarioExecutor:
                     differences.append(f"Value not match at path `{path}`; expected:`{expect}`, got:`{actual}`")
 
         return differences
+
+    def __build_match_pattern(self, pattern_spec: str) -> str:
+        def replacer(match):
+            repl = self.MATCHER_MAPPINGS.get(match.group(1)) or match.group(0)
+            print(f"replaced `{match.group(0)}` with `{repl}`")
+            return repl
+
+        return re.sub(r"[{]([A-Z0-9_]+)[}]", replacer, pattern_spec)
+
+    def __value_match(self, pattern_spec: str, actual: str) -> bool:
+        pattern = self.__build_match_pattern(pattern_spec)
+        print(f"pattern_spec:`{pattern_spec}` pattern({type(pattern)}):`{pattern}`` actual:`{actual}`")
+        isMatch = bool(re.search(pattern, actual))
+        print(f"spec:`{pattern_spec}` pattern:`{pattern}` value:`{actual}` isMatch:`{isMatch}`")
+        return isMatch
 
     def __is_expected(self, expectations: dict) -> None:
         reports = self.logstash_health_report_api.get()
@@ -66,3 +88,27 @@ class ScenarioExecutor:
             raise Exception(f"{scenario_name} failed.")
         else:
             print(f"Scenario `{scenario_name}` expectation meets the health report stats.")
+
+
+    # GrokLite is a *LITE* implementation of Grok.
+    # The idea is to allow you to use named patterns inside of regular expressions.
+    # It does NOT support named captures, and mapping definitions CANNOT reference named patterns.
+    class GrokLite:
+        MAPPINGS = MappingProxyType({
+            "ISO8601" : "[0-9]{4}-(?:0[0-9]|1[12])-(?:[0-2][0-9]|3[01])T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:[.][0-9]+)?(?:Z|[+-](?:2[0-3]|[01][0-9])(?::?[0-5][0-9])?)",
+        })
+
+        def __init__(self):
+            self.pattern_cache = {}
+            pass
+
+        def is_match(self, pattern_spec: str, value: str) -> bool:
+            pattern = self.pattern_cache.get(pattern_spec)
+            if pattern is None:
+                replaced = re.sub(r"[{]([A-Z0-9_]+)[}]",
+                                  lambda match: (self.MAPPINGS.get(match.group(1)) or match.group(0)),
+                                  pattern_spec)
+                pattern = re.compile(replaced)
+                self.pattern_cache[pattern_spec] = pattern
+
+            return bool(re.search(pattern, value))
