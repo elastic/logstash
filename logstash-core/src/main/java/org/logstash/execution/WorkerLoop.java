@@ -38,38 +38,25 @@ public final class WorkerLoop implements Runnable {
 
     private final QueueReadClient readClient;
 
-    private final AtomicBoolean flushRequested;
+    private final WorkerObserver workerObserver;
 
-    private final AtomicBoolean flushing;
-
-    private final AtomicBoolean shutdownRequested;
-
-    private final LongAdder consumedCounter;
-
-    private final LongAdder filteredCounter;
+    private final PipelineControlState controlState;
 
     private final boolean drainQueue;
 
     public WorkerLoop(
             final QueueReadClient readClient,
-            final CompiledPipeline compiledPipeline,
+            final CompiledPipeline.WorkerStage compiledPipeline,
             final WorkerObserver workerObserver,
-            final LongAdder consumedCounter,
-            final LongAdder filteredCounter,
-            final AtomicBoolean flushRequested,
-            final AtomicBoolean flushing,
-            final AtomicBoolean shutdownRequested,
+            final PipelineControlState pipelineControlState,
             final boolean drainQueue,
             final boolean preserveEventOrder)
     {
+        this.workerObserver = workerObserver;
         this.execution = workerObserver.ofExecution(compiledPipeline.buildExecution(preserveEventOrder));
         this.readClient = readClient;
-        this.consumedCounter = consumedCounter;
-        this.filteredCounter = filteredCounter;
+        this.controlState = pipelineControlState;
         this.drainQueue = drainQueue;
-        this.flushRequested = flushRequested;
-        this.flushing = flushing;
-        this.shutdownRequested = shutdownRequested;
     }
 
     @Override
@@ -78,18 +65,18 @@ public final class WorkerLoop implements Runnable {
             boolean isShutdown = false;
             boolean isNackBatch = false;
             do {
-                isShutdown = isShutdown || shutdownRequested.get();
+                isShutdown = isShutdown || controlState.isShutdownRequested();
                 final QueueBatch batch = readClient.readBatch();
-                final boolean isFlush = flushRequested.compareAndSet(true, false);
+                final boolean isFlush = controlState.consumeFlushRequested();
                 if (batch.filteredSize() > 0 || isFlush) {
-                    consumedCounter.add(batch.filteredSize());
+                    workerObserver.incrementEventsConsumed(batch.filteredSize());
                     isNackBatch = abortableCompute(batch, isFlush, false);
                     if (!isNackBatch) {
-                        filteredCounter.add(batch.filteredSize());
+                        workerObserver.incrementEventsFiltered(batch.filteredSize());
                         readClient.closeBatch(batch);
 
                         if (isFlush) {
-                            flushing.set(false);
+                            controlState.setFlushing(false);
                         }
                     }
                 }

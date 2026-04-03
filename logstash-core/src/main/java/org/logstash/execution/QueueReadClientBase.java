@@ -23,7 +23,6 @@ package org.logstash.execution;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -32,6 +31,7 @@ import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
+import org.logstash.QueueReadClientSettings;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.QueueFactoryExt;
 import org.logstash.instrument.metrics.AbstractNamespacedMetricExt;
@@ -117,6 +117,10 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
         setBatchDimensions(Convert.toInt(context, batchSize),
                 Convert.toInt(context, waitForMillis));
         return this;
+    }
+
+    public void setBatchDimensions(QueueReadClientSettings settings) {
+        setBatchDimensions(settings.batchSize(), settings.batchDelay());
     }
 
     public void setBatchDimensions(int batchSize, int waitForMillis) {

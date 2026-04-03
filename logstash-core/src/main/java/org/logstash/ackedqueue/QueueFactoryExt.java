@@ -37,6 +37,7 @@ import org.jruby.api.Convert;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.logstash.Event;
+import org.logstash.QueueReadClientSettings;
 import org.logstash.RubyUtil;
 import org.logstash.ackedqueue.ext.JRubyWrappedAckedQueueExt;
 import org.logstash.common.SettingKeyDefinitions;
@@ -166,6 +167,14 @@ public final class QueueFactoryExt extends RubyBasicObject {
                 .queueMaxBytes(getSetting(context, settings, QUEUE_MAX_BYTES).toJava(Long.class))
                 .compressionCodecFactory(extractConfiguredCodec(settings))
                 .build();
+    }
+
+    public static QueueReadClientSettings extractQueueReadClientSettings(final IRubyObject settings) {
+        final ThreadContext context = settings.getRuntime().getCurrentContext();
+        return QueueReadClientSettings.build((builder) -> {
+            builder.setBatchSize(getSetting(context, settings, PIPELINE_BATCH_SIZE).toJava(Integer.class));
+            builder.setBatchDelay(getSetting(context, settings, PIPELINE_BATCH_DELAY).toJava(Integer.class));
+        });
     }
 
     private static CompressionCodec.Factory extractConfiguredCodec(final IRubyObject settings) {

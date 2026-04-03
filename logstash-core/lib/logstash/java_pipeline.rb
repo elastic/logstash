@@ -34,8 +34,6 @@ module LogStash; class JavaPipeline < AbstractPipeline
   attr_reader \
     :worker_threads,
     :input_threads,
-    :events_consumed,
-    :events_filtered,
     :started_at,
     :thread
 
@@ -61,27 +59,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
     @drain_queue = settings.get_value("queue.drain") || settings.get("queue.type") == MEMORY
 
-    @events_filtered = java.util.concurrent.atomic.LongAdder.new
-    @events_consumed = java.util.concurrent.atomic.LongAdder.new
-
     @input_threads = []
-    # @ready requires thread safety since it is typically polled from outside the pipeline thread
-    @ready = Concurrent::AtomicBoolean.new(false)
-    @running = Concurrent::AtomicBoolean.new(false)
-    @flushing = java.util.concurrent.atomic.AtomicBoolean.new(false)
-    @flushRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
-    @shutdownRequested = java.util.concurrent.atomic.AtomicBoolean.new(false)
-    @crash_detected = Concurrent::AtomicBoolean.new(false)
-    @outputs_registered = Concurrent::AtomicBoolean.new(false)
-
-    # @finished_execution signals that the pipeline thread has finished its execution
-    # regardless of any exceptions; it will always be true when the thread completes
-    @finished_execution = Concurrent::AtomicBoolean.new(false)
-
-    # @finished_run signals that the run methods called in the pipeline thread was completed
-    # without errors and it will NOT be set if the run method exits from an exception; this
-    # is by design and necessary for the wait_until_started semantic
-    @finished_run = Concurrent::AtomicBoolean.new(false)
 
     @logger.info(I18n.t('logstash.pipeline.effective_ecs_compatibility',
                         :pipeline_id       => pipeline_id,
@@ -91,15 +69,23 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end # def initialize
 
   def finished_execution?
-    @finished_execution.true?
+    control_state.isFinishedExecution()
   end
 
   def finished_run?
-    @finished_run.true?
+    control_state.isFinishedRun()
   end
 
   def ready?
-    @ready.value
+    control_state.isReady()
+  end
+
+  def events_consumed
+    @worker_observer.getEventsConsumed()
+  end
+
+  def events_filtered
+    @worker_observer.getEventsFiltered()
   end
 
   def safe_pipeline_worker_count
@@ -141,8 +127,9 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
     @logger.debug("Starting pipeline", default_logging_keys)
 
-    @finished_execution.make_false
-    @finished_run.make_false
+    # reset to base state (TODO: cleanup smell)
+    control_state.setFinishedExecution(false)
+    control_state.setFinishedRun(false)
 
     @thread = Thread.new do
       error_log_params = ->(e) {
@@ -155,7 +142,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         LogStash::Util.set_thread_name("pipeline.#{pipeline_id}")
         ThreadContext.put("pipeline.id", pipeline_id)
         run
-        @finished_run.make_true
+        control_state.setFinishedRun(true)
       rescue => e
         logger.error("Pipeline error", error_log_params.call(e))
       ensure
@@ -166,7 +153,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
         rescue => e
           logger.error("Pipeline close error, ignoring", error_log_params.call(e))
         end
-        @finished_execution.make_true
+        control_state.setFinishedExecution(true)
         @logger.info("Pipeline terminated", "pipeline.id" => pipeline_id)
       end
     end
@@ -182,7 +169,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
   def wait_until_started
     while true do
-      if @finished_run.true?
+      if finished_run?
         # it completed run without exception
         return true
       elsif thread.nil? || !thread.alive?
@@ -225,23 +212,23 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   def transition_to_running
-    @running.make_true
+    control_state.setRunning(true)
   end
 
   def transition_to_stopped
-    @running.make_false
+    control_state.setRunning(false)
   end
 
   def running?
-    @running.true?
+    control_state.isRunning()
   end
 
   def stopped?
-    @running.false?
+    !running?
   end
 
   def crashed?
-    @crash_detected.true?
+    control_state.isCrashDetected()
   end
 
   # register_plugins calls #register_plugin on the plugins list and upon exception will call Plugin#do_close on all registered plugins
@@ -259,9 +246,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
 
   def start_workers
     @worker_threads.clear # In case we're restarting the pipeline
-    @outputs_registered.make_false
+    # @outputs_registered.make_false
     begin
-      maybe_setup_out_plugins
+      worker_stage = lir_execution.worker_stage
+
+      register_plugins(worker_stage.outputs)
+      register_plugins(worker_stage.filters)
 
       pipeline_workers = safe_pipeline_worker_count
       @preserve_event_order = preserve_event_order?(pipeline_workers)
@@ -293,14 +283,12 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.sources" => pipeline_source_details)
       @logger.info("Starting pipeline", pipeline_log_params)
 
-      filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
-
       # First launch WorkerLoop initialization in separate threads which concurrently
       # compiles and initializes the worker pipelines
 
       workers_init_start = Time.now
       worker_loops = pipeline_workers.times
-        .map { Thread.new { init_worker_loop } }
+        .map { Thread.new { init_worker_loop(worker_stage) } }
         .map(&:value)
       workers_init_elapsed = Time.now - workers_init_start
 
@@ -319,7 +307,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
           rescue => e
             # WorkerLoop.run() catches all Java Exception class and re-throws as IllegalStateException with the
             # original exception as the cause
-            @crash_detected.make_true
+            control_state.setCrashDetected(true)
             @logger.error(
               "Pipeline worker error, the pipeline will be stopped",
               exception_logging_keys(e.cause)
@@ -334,7 +322,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       begin
         start_inputs
       rescue => e
-        @crash_detected.make_true
+        control_state.setCrashDetected(true)
         # if there is any exception in starting inputs, make sure we shutdown workers.
         # exception will already by logged in start_inputs
         shutdown_workers
@@ -343,7 +331,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     ensure
       # it is important to guarantee @ready to be true after the startup sequence has been completed
       # to potentially unblock the shutdown method which may be waiting on @ready to proceed
-      @ready.make_true
+      control_state.setReady(true)
     end
   end
 
@@ -482,7 +470,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
   # tell the worker threads to stop and then block until they've fully stopped
   # This also stops all filter and output plugins
   def shutdown_workers
-    @shutdownRequested.set(true)
+    control_state.setShutdownRequested(true)
 
     @worker_threads.each do |t|
       @logger.debug("Shutdown waiting for worker thread", default_logging_keys(:thread => t.inspect))
@@ -506,7 +494,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
   def start_flusher
     # Invariant to help detect improper initialization
     raise "Attempted to start flusher on a stopped pipeline!" if stopped?
-    @flusher_thread = org.logstash.execution.PeriodicFlush.new(@flushRequested, @flushing)
+    @flusher_thread = control_state.createPeriodicFlush()
     @flusher_thread.start
   end
 
@@ -562,14 +550,14 @@ module LogStash; class JavaPipeline < AbstractPipeline
     {
       :pipeline_id => pipeline_id,
       :settings => settings.inspect,
-      :ready => @ready,
-      :running => @running,
-      :flushing => @flushing
+      :ready => control_state.isReady(),
+      :running => control_state.isRunning(),
+      :flushing => control_state.isFlushing(),
     }
   end
 
   def shutdown_requested?
-    @shutdownRequested.get
+    control_state.isShutdownRequested()
   end
 
   def worker_threads_draining?
@@ -589,19 +577,13 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   # @return [WorkerLoop] a new WorkerLoop instance or nil upon construction exception
-  def init_worker_loop
+  def init_worker_loop(worker_stage)
     begin
       org.logstash.execution.WorkerLoop.new(
         filter_queue_client,   # QueueReadClient
-        lir_execution,         # CompiledPipeline
+        worker_stage,          # CompiledPipeline.WorkerStage
         @worker_observer,      # WorkerObserver
-        # pipeline reporter counters
-        @events_consumed,      # LongAdder
-        @events_filtered,      # LongAdder
-        # signaling channels
-        @flushRequested,       # AtomicBoolean
-        @flushing,             # AtomicBoolean
-        @shutdownRequested,    # AtomicBoolean
+        control_state,        # PipelineControlState
         # behaviour config pass-through
         @drain_queue,          # boolean
         @preserve_event_order) # boolean
@@ -619,7 +601,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
   end
 
   def maybe_setup_out_plugins
-    if @outputs_registered.make_true
+    if control_state.claimOutputsRegistration()
       register_plugins(outputs)
       register_plugins(filters)
     end

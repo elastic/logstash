@@ -6,6 +6,8 @@ import org.logstash.instrument.metrics.MetricKeys;
 import org.logstash.instrument.metrics.counter.LongCounter;
 import org.logstash.instrument.metrics.timer.TimerMetric;
 
+import java.util.concurrent.atomic.LongAdder;
+
 public class WorkerObserver {
     private final transient LongCounter processEventsFilteredMetric;
     private final transient LongCounter processEventsOutMetric;
@@ -14,6 +16,9 @@ public class WorkerObserver {
     private final transient LongCounter pipelineEventsFilteredMetric;
     private final transient LongCounter pipelineEventsOutMetric;
     private final transient TimerMetric pipelineEventsDurationMetric;
+
+    private final transient LongAdder eventsConsumedCounter = new LongAdder();
+    private final transient LongAdder eventsFilteredCounter = new LongAdder();
 
     public WorkerObserver(final AbstractNamespacedMetricExt processEventsMetric,
                           final AbstractNamespacedMetricExt pipelineEventsMetric) {
@@ -60,4 +65,19 @@ public class WorkerObserver {
         this.pipelineEventsFilteredMetric.increment(amount);
     }
 
+    public void incrementEventsConsumed(final long amount) {
+        this.eventsConsumedCounter.add(amount);
+    }
+
+    public long getEventsConsumed() {
+        return this.eventsConsumedCounter.sum();
+    }
+
+    public void incrementEventsFiltered(final long amount) {
+        this.eventsFilteredCounter.add(amount);
+    }
+
+    public long getEventsFiltered() {
+        return this.eventsFilteredCounter.sum();
+    }
 }

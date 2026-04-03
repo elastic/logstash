@@ -26,7 +26,6 @@ import java.util.concurrent.BlockingQueue;
 
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
-import org.jruby.RubyNumeric;
 import org.jruby.api.Convert;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -86,7 +85,7 @@ public final class JrubyWrappedSynchronousQueueExt extends AbstractWrappedQueueE
     }
 
     @Override
-    protected JRubyAbstractQueueWriteClientExt getWriteClient(final ThreadContext context) {
+    protected JRubyAbstractQueueWriteClientExt getWriteClient() {
         return JrubyMemoryWriteClientExt.create(queue);
     }
 
