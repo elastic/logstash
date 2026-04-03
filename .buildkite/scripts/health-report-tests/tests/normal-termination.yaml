@@ -23,6 +23,7 @@ expectation:
           diagnosis:
             - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
               action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - impact_areas: ["pipeline_execution"]
           details:

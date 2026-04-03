@@ -23,13 +23,17 @@ def git_check_out_branch(branch_name: str) -> None:
     run_or_raise_error(["git", "checkout", branch_name],
                        "Error occurred while checking out the " + branch_name + " branch")
 
-
 def run_or_raise_error(commands: list, error_message):
     f"""
     Executes the {list} commands and raises an {Exception} if operation fails.
     """
-    result = subprocess.run(commands, env=os.environ.copy(), universal_newlines=True, stdout=subprocess.PIPE)
+    myEnv = os.environ.copy()
+    result = subprocess.run(commands, env=myEnv, universal_newlines=True, stdout=subprocess.PIPE)
     if result.returncode != 0:
+        print("ENV")
+        for k, v in myEnv.items():
+            print(f"  {k}={v}")
+        print("---")
         full_error_message = (error_message + ", output: " + result.stdout) \
             if result.stdout else error_message
         raise Exception(f"{full_error_message}")

@@ -25,6 +25,7 @@ expectation:
             - id: "logstash:health:pipeline:flow:worker_utilization:diagnosis:1m-blocked"
               cause: "pipeline workers have been completely blocked for at least one minute"
               action: "address bottleneck or add resources"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - id: "logstash:health:pipeline:flow:impact:blocked_processing"
               severity: 2
