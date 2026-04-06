@@ -21,6 +21,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+<<<<<<< HEAD
 ## 9.3.3 [logstash-9.3.3-release-notes]
 
 ### Plugins [logstash-plugin-9.3.3-changes]
@@ -227,6 +228,8 @@ Related:
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
+=======
+>>>>>>> 76550261 (Release notes for 9.2.8 (#18945))
 ## 9.2.8 [logstash-9.2.8-release-notes]
 
 ### Plugins [logstash-plugin-9.2.8-changes]
@@ -259,6 +262,10 @@ Related:
 
 * [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 76550261 (Release notes for 9.2.8 (#18945))
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
 ### Updates to dependencies [logstash-9.2.7-dependencies]
