@@ -23,41 +23,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ## 9.2.8 [logstash-9.2.8-release-notes]
 
-### Features and enhancements [logstash-9.2.8-features-enhancements]
-
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.2.8
-
-=== Logstash Commits between 9.2 and 9.2.7
-
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.2.7..9.2"
-
-c68f0acc0 - (HEAD -> 9.2, origin/9.2) Fix comparison of ES SHA, (#18923) (#18927) (4 days ago) <mergify[bot]>
-3e2bf2d3b - Update patch plugin versions in gemfile lock (#18921) (6 days ago) <github-actions[bot]>
-307526713 - Removes ruby-maven-libs maven dependency, which doesn't exits. (#18913) (#18917) (7 days ago) <mergify[bot]>
-6f9ea197d - Adds verification of the file name (#18848) (#18909) (10 days ago) <mergify[bot]>
-feeab0419 - [9.2] (backport #18891) Add tests for Oracle Linux 9 (#18902) (11 days ago) <mergify[bot]>
-e7cb77744 - Bump requests in /.buildkite/scripts/health-report-tests (#18904) (#18906) (11 days ago) <mergify[bot]>
-0e48d468d - [9.2] (backport #18853) Bump https://github.com/pre-commit/pre-commit-hooks from v4.6.0 to 6.0.0 (#18888) (12 days ago) <mergify[bot]>
-3548fe531 - Doc: Add page-level applies_to tags to Logstash content Group 4 (#18861) (#18881) (2 weeks ago) <mergify[bot]>
-3b3ccc6b2 - Doc: Add page-level applies_to tags to Logstash content (Group 3) (#18860) (#18879) (2 weeks ago) <mergify[bot]>
-8eea6de90 - Doc: Add page-level applies_to tags to Logstash content Group 2 (#18859) (#18877) (2 weeks ago) <mergify[bot]>
-6e96050d3 - Doc: Add page-level applies_to tags to Logstash docs (Group 1) (#18858) (#18875) (2 weeks ago) <mergify[bot]>
-772ae3f00 - Update patch plugin versions in gemfile lock (#18867) (3 weeks ago) <github-actions[bot]>
-dbd1b59f9 - Bump logstash version 9.2.8 (#18869) (3 weeks ago) <github-actions[bot]>
-c28ed6e26 - Release notes for 9.2.7 (#18843) (3 weeks ago) <github-actions[bot]>
-
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.2.7..9.2 *.release"
-Changed plugin versions:
-logstash-input-azure_event_hubs: 1.5.4 -> 1.5.5
-logstash-input-beats: 7.0.7 -> 7.0.8
-logstash-input-http: 4.1.6 -> 4.1.7
-logstash-input-tcp: 7.0.6 -> 7.0.7
-logstash-integration-kafka: 11.8.4 -> 11.8.7
-logstash-output-http: 6.0.0 -> 6.0.1
----------- GENERATED CONTENT ENDS HERE ------------
-
 ### Plugins [logstash-plugin-9.2.8-changes]
 
 **Azure_event_hubs Input - 1.5.5**
