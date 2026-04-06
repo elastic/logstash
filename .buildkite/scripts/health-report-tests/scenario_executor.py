@@ -49,21 +49,6 @@ class ScenarioExecutor:
 
         return differences
 
-    def __build_match_pattern(self, pattern_spec: str) -> str:
-        def replacer(match):
-            repl = self.MATCHER_MAPPINGS.get(match.group(1)) or match.group(0)
-            print(f"replaced `{match.group(0)}` with `{repl}`")
-            return repl
-
-        return re.sub(r"[{]([A-Z0-9_]+)[}]", replacer, pattern_spec)
-
-    def __value_match(self, pattern_spec: str, actual: str) -> bool:
-        pattern = self.__build_match_pattern(pattern_spec)
-        print(f"pattern_spec:`{pattern_spec}` pattern({type(pattern)}):`{pattern}`` actual:`{actual}`")
-        isMatch = bool(re.search(pattern, actual))
-        print(f"spec:`{pattern_spec}` pattern:`{pattern}` value:`{actual}` isMatch:`{isMatch}`")
-        return isMatch
-
     def __is_expected(self, expectations: dict) -> None:
         reports = self.logstash_health_report_api.get()
         differences = self.__get_difference(expect=expectations, actual=reports)
