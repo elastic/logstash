@@ -32,6 +32,8 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are disabled by default due to their lack of forward secrecy; connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
+::::
+
 ### Plugins [logstash-plugin-9.2.7-changes]
 
 **Geoip Filter - 8.0.0**
