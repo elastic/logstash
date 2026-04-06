@@ -25,8 +25,12 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Updates to dependencies [logstash-9.2.7-dependencies]
 
-* Updated the bundled JDK to 21.0.10 build 7
 * Upgraded Log4j to 2.25.3 [#18805](https://github.com/elastic/logstash/pull/18805)
+* Updated the bundled JDK to 21.0.10 build 7
+
+::::{important}
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are disabled by default due to their lack of forward secrecy; connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
 ### Plugins [logstash-plugin-9.2.7-changes]
 
