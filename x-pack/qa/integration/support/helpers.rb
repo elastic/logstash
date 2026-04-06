@@ -53,8 +53,14 @@ def elasticsearch(options = {})
     raise "Could not start Elasticsearch, response: #{response}"
   end
 
-  start_es_xpack_trial
-
+  begin
+    start_es_xpack_trial
+  rescue => e
+    # if something goes wrong in connecting, stop the service and propagate the error, else it
+    # could create many ES instances, one per failed tests, if this function is invoked in a test setup
+    response.stop
+    raise e
+  end
   response
 end
 
@@ -75,7 +81,7 @@ def bootstrap_elastic_password
     status
   end
   unless result.success?
-    raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresponse: #{response}"
+    raise "Something went wrong when installing xpack,\ncmd: #{cmd}\nresponse: #{result}"
   end
 end
 

@@ -538,8 +538,38 @@ tasks.register("prepareFilebeatDownload") {
     }
 }
 
+def verifyPackageSHA(String artifactProject, String version, String packageName) {
+    def res = SnapshotArtifactURLs.packageUrls(artifactProject, version, packageName)
+    String remoteSHACode = res.packageShaUrl.toURL().text.split(' ')[0]
+
+    def localArchive = new File("${projectDir}/build/${packageName}.tar.gz")
+    if (localArchive.exists()) {
+        ant.checksum(file: localArchive, algorithm: "SHA-512", forceoverwrite: true)
+        String localSHA = new File("${projectDir}/build/${packageName}.tar.gz.SHA-512").text.trim()
+        if (localSHA != remoteSHACode) {
+            println "${artifactProject} package calculated fingerprint is different from remote, deleting local archive"
+            delete(localArchive)
+        } else {
+            println "Local ${artifactProject} package is already the latest"
+        }
+    }
+}
+
+tasks.register("checkFilebeatSHA") {
+    dependsOn configureArtifactInfo
+
+    description = "Download Filebeat version remote's fingerprint file"
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        verifyPackageSHA("beats", beatsVersion, downloadedFilebeatName)
+    }
+}
+
 tasks.register("downloadFilebeat", Download) {
-    dependsOn prepareFilebeatDownload
+    dependsOn prepareFilebeatDownload, checkFilebeatSHA
     description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
@@ -564,16 +594,18 @@ tasks.register("deleteLocalFilebeat", Delete) {
 }
 
 tasks.register("copyFilebeat") {
-    dependsOn = [downloadFilebeat, deleteLocalFilebeat]
+    dependsOn downloadFilebeat
+    inputs.files(tasks.named("downloadFilebeat"))
+    outputs.dir('./build/filebeat')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
+        delete('./build/filebeat')
         copy {
             from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
             into "./build/"
         }
         file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         System.out.println "Unzipped ${project.ext.filebeatDownloadLocation} to ./build/filebeat"
-        System.out.println "Deleting ${project.ext.filebeatDownloadLocation}"
-        delete(project.ext.filebeatDownloadLocation)
     }
 }
 
@@ -586,34 +618,7 @@ tasks.register("checkEsSHA") {
     doLast {
         String esVersion = projectRef.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
-        String remoteSHA
-
-        def res = SnapshotArtifactURLs.packageUrls("elasticsearch", esVersion, downloadedElasticsearchName)
-        remoteSHA = res.packageShaUrl.toURL().text
-
-        def localESArchive = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz")
-        if (localESArchive.exists()) {
-            // this create a file named localESArchive with ".SHA-512" postfix
-            ant.checksum(file: localESArchive, algorithm: "SHA-512", forceoverwrite: true)
-
-            File localESCalculatedSHAFile = new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512")
-            String localESCalculatedSHA = localESCalculatedSHAFile.text.trim()
-            def splitted = remoteSHA.split(' ')
-            String remoteSHACode = splitted[0]
-            if (localESCalculatedSHA != remoteSHACode) {
-                println "ES package calculated fingerprint is different from remote, deleting local archive"
-                delete(localESArchive)
-            } else {
-                println "Local ES package is already the latest"
-            }
-        }/* else {
-            mkdir project.buildDir
-            // touch the SHA file else downloadEs task doesn't start, this file his input for the other task
-            new File("${projectDir}/build/${downloadedElasticsearchName}.tar.gz.SHA-512").withWriter { w ->
-                w << "${downloadedElasticsearchName} not yet downloaded"
-                w.close()
-            }
-        }*/
+        verifyPackageSHA("elasticsearch", esVersion, downloadedElasticsearchName)
     }
 }
 
@@ -659,17 +664,19 @@ tasks.register("deleteLocalEs", Delete) {
 }
 
 tasks.register("copyEs") {
-    dependsOn = [downloadEs, deleteLocalEs]
+    dependsOn downloadEs
+    inputs.files(tasks.named("downloadEs"))
+    outputs.dir('./build/elasticsearch')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
         println "copyEs executing.."
+        delete('./build/elasticsearch')
         copy {
             from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
             into "./build/"
         }
-
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 

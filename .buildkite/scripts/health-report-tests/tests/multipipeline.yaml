@@ -37,6 +37,7 @@ expectation:
           diagnosis:
             - cause: "pipeline is loading"
               action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - impact_areas: ["pipeline_execution"]
           details:
@@ -48,6 +49,7 @@ expectation:
           diagnosis:
             - cause: "pipeline has finished running because its inputs have been closed and events have been processed"
               action: "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - impact_areas: [ "pipeline_execution" ]
           details:
@@ -59,6 +61,7 @@ expectation:
           diagnosis:
             - cause: "pipeline is not running, likely because it has encountered an error"
               action: "view logs to determine the cause of abnormal pipeline shutdown"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - description: "the pipeline is not currently processing"
               impact_areas: [ "pipeline_execution" ]

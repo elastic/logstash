@@ -24,6 +24,7 @@ expectation:
           diagnosis:
             - cause: "pipeline is loading"
               action: "if pipeline does not come up quickly, you may need to check the logs to see if it is stalled"
+              help_url: { $include: "health-report-pipeline-" }
           impacts:
             - impact_areas: ["pipeline_execution"]
           details:

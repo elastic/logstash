@@ -167,11 +167,11 @@ spec:
           access_level: MANAGE_BUILD_AND_READ
         everyone:
           access_level: READ_ONLY
-      schedules:
-        Daily Plugins Snyk scan:
-          branch: main
-          cronline: "@daily"
-          message: "Run the Logstash Plugins Snyk report every day."
+      #schedules:
+      #  Daily Plugins Snyk scan:
+      #    branch: main
+      #    cronline: "@daily"
+      #    message: "Run the Logstash Plugins Snyk report every day."
 
 # ***********************************
 # Declare artifacts-snyk-report pipeline
