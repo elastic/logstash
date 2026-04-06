@@ -112,6 +112,8 @@ This section summarizes the changes in the following releases:
 
 * Updated the bundled JDK to 21.0.10 build 7
 
+IMPORTANT: As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are disabled by default due to their lack of forward secrecy; connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
 ==== Plugins
 
 *Geoip Filter - 8.0.0*
