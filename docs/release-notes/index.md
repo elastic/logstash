@@ -21,7 +21,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.3.2 [logstash-9.3.2-release-notes]
 
 ### Updates to dependencies [logstash-9.3.2-dependencies]
@@ -194,7 +193,7 @@ Related:
 * Remove duplicated deprecation log entry [#1232](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1232)
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
-=======
+
 ## 9.2.8 [logstash-9.2.8-release-notes]
 
 ### Plugins [logstash-plugin-9.2.8-changes]
@@ -226,8 +225,6 @@ Related:
 **Http Output - 6.0.1**
 
 * [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
-
->>>>>>> 76550261 (Release notes for 9.2.8 (#18945))
 
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
