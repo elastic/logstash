@@ -2,7 +2,6 @@
 A class to execute the given scenario for Logstash Health Report integration test
 """
 import time
-import re
 from logstash_health_report import LogstashHealthReport
 
 
@@ -32,10 +31,7 @@ class ScenarioExecutor:
                 return differences
 
             if isinstance(expectations.get(key), str):
-                if expectations.get(key) == "$ISO8601$":
-                    if not re.search("^[-0-9TZ.:]+$", reports.get(key)): # naive ISO8601 pattern
-                        differences.append({key: {"expected": expectations.get(key), "got": reports.get(key)}})
-                elif expectations.get(key) != reports.get(key):
+                if expectations.get(key) != reports.get(key):
                     differences.append({key: {"expected": expectations.get(key), "got": reports.get(key)}})
                 continue
             elif isinstance(expectations.get(key), dict):
