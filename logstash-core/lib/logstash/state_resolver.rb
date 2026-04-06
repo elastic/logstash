@@ -36,7 +36,7 @@ module LogStash
           actions << LogStash::PipelineAction::Create.new(pipeline_config, @metric)
         elsif pipeline_config != pipeline.pipeline_config
           actions << LogStash::PipelineAction::Reload.new(pipeline_config, @metric)
-        elsif pipeline.crashed? && pipeline.configured_as_recoverable?
+        elsif pipeline.crashed? && !pipeline.running? && pipeline.configured_as_recoverable?
           actions << LogStash::PipelineAction::Recover.new(pipeline_config, @metric)
         end
       end

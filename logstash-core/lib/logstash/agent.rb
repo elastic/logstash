@@ -566,7 +566,7 @@ class LogStash::Agent
         # When a pipeline is successfully created we create the metric
         # place holder related to the lifecycle of the pipeline
         initialize_pipeline_metrics(action)
-      when LogStash::PipelineAction::Reload
+      when LogStash::PipelineAction::Reload, LogStash::PipelineAction::Recover
         update_successful_reload_metrics(action, action_result)
     end
   end
