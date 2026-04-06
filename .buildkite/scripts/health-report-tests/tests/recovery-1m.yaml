@@ -32,6 +32,7 @@ expectation:
             - id: "logstash:health:pipeline:recovery:diagnosis:5m-recovery-recent"
               cause: "pipeline has recovered from crashes 1 time in the last 5 minutes"
               action: "inspect logs to determine source of crash"
+              help_url: { $include: "health-report-pipeline-recovery" }
           impacts:
             - id: "logstash:health:pipeline:recovery:impact:intermittent_processing"
               severity: 2
@@ -41,4 +42,4 @@ expectation:
             status:
               state: "RUNNING"
             recovery_log:
-              - "$ISO8601$"
+              - { $match: "{ISO8601}" }
