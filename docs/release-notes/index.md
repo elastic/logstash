@@ -21,6 +21,75 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.3 [logstash-9.3.3-release-notes]
+
+### Features and enhancements [logstash-9.3.3-features-enhancements]
+
+---------- GENERATED CONTENT STARTS HERE ------------
+=== Logstash Pull Requests with label v9.3.3
+
+=== Logstash Commits between 9.3 and 9.3.2
+
+Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.2..9.3"
+
+c8f4f7dd2 - (HEAD -> 9.3, origin/mergify/bp/9.3/pr-18522, origin/9.3) Fix comparison of ES SHA, (#18923) (#18928) (4 days ago) <mergify[bot]>
+b37afd173 - bump lock file for 9.3 (#18922) (6 days ago) <github-actions[bot]>
+99d7a914f - Removes ruby-maven-libs maven dependency, which doesn't exits. (#18913) (#18918) (7 days ago) <mergify[bot]>
+2514551e3 - Adds verification of the file name (#18848) (#18910) (10 days ago) <mergify[bot]>
+11a3e0360 - [9.3] (backport #18891) Add tests for Oracle Linux 9 (#18903) (11 days ago) <mergify[bot]>
+c968f3c45 - Bump requests in /.buildkite/scripts/health-report-tests (#18904) (#18907) (11 days ago) <mergify[bot]>
+2fb085c8a - [9.3] (backport #18853) Bump https://github.com/pre-commit/pre-commit-hooks from v4.6.0 to 6.0.0 (#18889) (12 days ago) <mergify[bot]>
+28147cd06 - Doc: Add page-level applies_to tags to Logstash content Group 4 (#18861) (#18882) (2 weeks ago) <mergify[bot]>
+2ef5e8028 - Doc: Add page-level applies_to tags to Logstash content (Group 3) (#18860) (#18880) (2 weeks ago) <mergify[bot]>
+2a49320fe - Doc: Add page-level applies_to tags to Logstash content Group 2 (#18859) (#18878) (2 weeks ago) <mergify[bot]>
+d33886b0a - Doc: Add page-level applies_to tags to Logstash docs (Group 1) (#18858) (#18876) (2 weeks ago) <mergify[bot]>
+5e20c6bdd - Forward port 9.2.7 release notes to 9.3 (#18871) (3 weeks ago) <Kaise>
+1d1b63a4f - Update patch plugin versions in gemfile lock (#18866) (3 weeks ago) <github-actions[bot]>
+836e23701 - Bump logstash version 9.3.3 (#18870) (3 weeks ago) <github-actions[bot]>
+3bbc7cc6a - Release notes for 9.3.2 (#18845) (3 weeks ago) <github-actions[bot]>
+
+=== Logstash Plugin Release Changelogs ===
+Computed from "git diff v9.3.2..9.3 *.release"
+Changed plugin versions:
+logstash-input-azure_event_hubs: 1.5.4 -> 1.5.5
+logstash-input-beats: 7.0.7 -> 7.0.8
+logstash-input-http: 4.1.6 -> 4.1.7
+logstash-input-tcp: 7.0.6 -> 7.0.7
+logstash-integration-kafka: 11.8.4 -> 11.8.7
+logstash-output-http: 6.0.0 -> 6.0.1
+---------- GENERATED CONTENT ENDS HERE ------------
+
+### Plugins [logstash-plugin-9.3.3-changes]
+
+**Azure_event_hubs Input - 1.5.5**
+
+* Upgrades kotlin-stdlib dependency [#114](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/114)
+
+**Beats Input - 7.0.8**
+
+* Update Netty dependency to 4.1.132.Final [#535](https://github.com/logstash-plugins/logstash-input-beats/pull/535)
+
+**Http Input - 4.1.7**
+
+* Update Netty dependency to 4.1.132.Final [#214](https://github.com/logstash-plugins/logstash-input-http/pull/214)
+
+**Tcp Input - 7.0.7**
+
+* Update Netty dependency to 4.1.132.Final [#249](https://github.com/logstash-plugins/logstash-input-tcp/pull/249)
+
+**Kafka Integration - 11.8.7**
+
+* Upgrade Avro dependency to 1.11.5 [#242](https://github.com/logstash-plugins/logstash-integration-kafka/pull/242)
+
+* [DOC] Add info about Kafka timestamp behavior  [#241](https://github.com/logstash-plugins/logstash-integration-kafka/pull/241)
+
+* Redact `sasl_jaas_config` to prevent credentials from appearing in debug logs. [#237](https://github.com/logstash-plugins/logstash-integration-kafka/pull/237)
+
+**Http Output - 6.0.1**
+
+* [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
+
+
 ## 9.3.2 [logstash-9.3.2-release-notes]
 
 ### Updates to dependencies [logstash-9.3.2-dependencies]
