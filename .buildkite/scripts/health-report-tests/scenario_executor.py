@@ -49,7 +49,7 @@ class ScenarioExecutor:
 
         return differences
 
-    def __is_expected(self, expectations: dict) -> None:
+    def __is_expected(self, expectations: dict) -> bool:
         reports = self.logstash_health_report_api.get()
         differences = self.__get_difference(expect=expectations, actual=reports)
         if differences:
