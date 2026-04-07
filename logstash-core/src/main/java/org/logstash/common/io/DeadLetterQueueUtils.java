@@ -37,8 +37,13 @@ class DeadLetterQueueUtils {
 
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueUtils.class);
 
-    static int extractSegmentId(Path p) {
-        return Integer.parseInt(p.getFileName().toString().split("\\.log")[0]);
+    static int extractSegmentId(final Path p) {
+        final String fileName = p.getFileName().toString();
+        final int dotIndex = fileName.indexOf(".log");
+        if (dotIndex <= 0) {
+            throw new IllegalArgumentException("Invalid segment file name: " + fileName);
+        }
+        return Integer.parseInt(fileName.substring(0, dotIndex));
     }
 
     static Stream<Path> listFiles(Path path, String suffix) throws IOException {
