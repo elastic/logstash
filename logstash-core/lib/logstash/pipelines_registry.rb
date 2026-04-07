@@ -79,7 +79,10 @@ module LogStash
 
     def mark_recovery
       @lock.synchronize do
-        @recovery_log.add(java.time.Instant.now)
+        now = java.time.Instant.now()
+        five_minutes_ago = now.minus(java.time.Duration::ofMinutes(5))
+        @recovery_log.remove(0) until @recovery_log.isEmpty() || @recovery_log.get(0).isAfter(five_minutes_ago)
+        @recovery_log.add(now)
       end
     end
 
