@@ -45,7 +45,7 @@ GEM
     avro (1.10.2)
       multi_json (~> 1)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1235.0)
+    aws-partitions (1.1236.0)
     aws-sdk-cloudfront (1.143.0)
       aws-sdk-core (~> 3, >= 3.244.0)
       aws-sigv4 (~> 1.5)
@@ -66,7 +66,7 @@ GEM
     aws-sdk-resourcegroups (1.95.0)
       aws-sdk-core (~> 3, >= 3.244.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.218.0)
+    aws-sdk-s3 (1.219.0)
       aws-sdk-core (~> 3, >= 3.244.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -567,7 +567,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (12.1.0-java)
+    logstash-integration-kafka (11.8.7-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
