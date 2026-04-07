@@ -533,11 +533,6 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-<<<<<<< HEAD
-tasks.register("downloadFilebeat") {
-    dependsOn  configureArtifactInfo
-    description "Download Filebeat Snapshot for current branch version: ${version}"
-=======
 tasks.register("prepareFilebeatDownload") {
     dependsOn configureArtifactInfo
 
@@ -586,28 +581,21 @@ tasks.register("checkFilebeatSHA") {
 tasks.register("downloadFilebeat", Download) {
     dependsOn prepareFilebeatDownload, checkFilebeatSHA
     description = "Download Filebeat Snapshot for current branch version: ${version}"
->>>>>>> fcfcea0c3 (Improve xpack integration test UX (#18919))
 
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    // Use lazy configuration to get values after prepareFilebeatDownload runs
+    src { projectRef.ext.filebeatSnapshotUrl }
+    dest { new File(projectRef.ext.filebeatDownloadLocation) }
+
+    onlyIfNewer true
+    retries 3
+
     doLast {
-        download {
-            String beatsVersion = project.ext.get("artifactApiVersion")
-            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
-            project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
-
-            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-            src project.ext.filebeatSnapshotUrl
-            onlyIfNewer true
-
-            dest new File(project.ext.filebeatDownloadLocation)
-            retries 3
-        }
-        System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.filebeatDownloadLocation}"
     }
 }
 
@@ -637,7 +625,6 @@ tasks.register("checkEsSHA") {
     description "Download ES version remote's fingerprint file"
 
     doLast {
-<<<<<<< HEAD
         String esVersion = project.ext.get("artifactApiVersion")
         String downloadedElasticsearchName = "elasticsearch-${esVersion}-${project.ext.get("esArchitecture")}"
         String remoteSHA
@@ -668,11 +655,6 @@ tasks.register("checkEsSHA") {
                 w.close()
             }
         }*/
-=======
-        String esVersion = projectRef.ext.get("artifactApiVersion")
-        String downloadedElasticsearchName = "elasticsearch-${esVersion}-${projectRef.ext.get("esArchitecture")}"
-        verifyPackageSHA("elasticsearch", esVersion, downloadedElasticsearchName)
->>>>>>> fcfcea0c3 (Improve xpack integration test UX (#18919))
     }
 }
 
