@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.logstash.Event;
-import org.logstash.instrument.metrics.MetricKeys;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -135,6 +134,13 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
         outputDelegator.doClose(RUBY.getCurrentContext());
 
         assertEquals(1, FakeOutClass.latestInstance.getCloseCallCount());
+    }
+
+    @Test
+    public void javaOutputDelegatorReturnsNilForRubyPlugin() {
+        JavaOutputDelegatorExt delegator = JavaOutputDelegatorExt.create(
+                "test_plugin", "test_id", metric, events -> {}, () -> {}, () -> {});
+        assertThat(delegator.rubyPlugin(RUBY.getCurrentContext()).isNil()).isTrue();
     }
 
     @Test
