@@ -270,6 +270,37 @@ module LogStash; class JavaPipeline < AbstractPipeline
       batch_output_chunking_growth_threshold_factor = settings.get("pipeline.batch.output_chunking.growth_threshold_factor")
       batch_metric_sampling = settings.get("pipeline.batch.metrics.sampling_mode")
 
+
+      queue_type = settings.get('queue.type')
+      queue_is_ephemeral = (queue_type == MEMORY)
+      pipeline_recoverable = settings.get('pipeline.recoverable')
+      pipeline_is_recoverable = case pipeline_recoverable
+                                when 'true'  then true
+                                when 'false' then false
+                                when 'auto'  then !queue_is_ephemeral
+                                end
+      config_reload_automatic = settings.get('config.reload.automatic')
+
+      if pipeline_is_recoverable
+        if !config_reload_automatic
+          @logger.warn("Pipeline is configured to be recoverable with `pipeline.recoverable: #{pipeline_recoverable}`, " +
+                         "but config reloading has been disabled with `config.reload.automatic: #{config_reload_automatic}`; " +
+                         "if this pipeline crashes it will NOT be recovered.",
+                       default_logging_keys)
+        elsif queue_is_ephemeral
+          @logger.warn("Pipeline with `queue.type: #{queue_type}` is configured to be recoverable " +
+                         "with `pipeline.recoverable: #{pipeline_recoverable}`; " +
+                         "in the event of a crash in-flight events will be lost, " +
+                         "so enabling auto-recovery increases the risk of data loss.",
+                       default_logging_keys)
+        else
+          @logger.info("Pipeline with `queue.type: #{queue_type}` is configured to be recoverable " +
+                         "with `pipeline.recoverable: #{pipeline_recoverable}`; " +
+                         "in the event of a crash some in-flight events may be re-processed",
+                       default_logging_keys)
+        end
+      end
+
       max_inflight = batch_size * pipeline_workers
 
       config_metric = metric.namespace([:stats, :pipelines, pipeline_id.to_s.to_sym, :config])
@@ -290,7 +321,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
         "pipeline.batch.output_chunking.growth_threshold_factor" => batch_output_chunking_growth_threshold_factor,
         "pipeline.max_inflight" => max_inflight,
         "batch_metric_sampling" => batch_metric_sampling,
-        "pipeline.sources" => pipeline_source_details)
+        "pipeline.sources" => pipeline_source_details,
+        "pipeline.recoverable" => pipeline_is_recoverable && config_reload_automatic)
       @logger.info("Starting pipeline", pipeline_log_params)
 
       filter_queue_client.set_batch_dimensions(batch_size, batch_delay)
