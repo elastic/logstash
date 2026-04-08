@@ -21,15 +21,9 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
-<<<<<<< HEAD
 ## 9.3.3 [logstash-9.3.3-release-notes]
 
 ### Plugins [logstash-plugin-9.3.3-changes]
-=======
-## 9.2.8 [logstash-9.2.8-release-notes]
-
-### Plugins [logstash-plugin-9.2.8-changes]
->>>>>>> 76550261 (Release notes for 9.2.8 (#18945))
 
 **Azure_event_hubs Input - 1.5.5**
 
@@ -60,7 +54,6 @@ To check for security updates, go to [Security announcements for the Elastic sta
 * [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
 
 
-<<<<<<< HEAD
 ## 9.3.2 [logstash-9.3.2-release-notes]
 
 ### Updates to dependencies [logstash-9.3.2-dependencies]
@@ -235,8 +228,40 @@ Related:
 
 * Add `drop_error_types` config option to avoid retrying on certain error types [#1228](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1228)
 
-=======
->>>>>>> 76550261 (Release notes for 9.2.8 (#18945))
+
+## 9.2.8 [logstash-9.2.8-release-notes]
+
+### Plugins [logstash-plugin-9.2.8-changes]
+
+**Azure_event_hubs Input - 1.5.5**
+
+* Upgrades kotlin-stdlib dependency [#114](https://github.com/logstash-plugins/logstash-input-azure_event_hubs/pull/114)
+
+**Beats Input - 7.0.8**
+
+* Update Netty dependency to 4.1.132.Final [#535](https://github.com/logstash-plugins/logstash-input-beats/pull/535)
+
+**Http Input - 4.1.7**
+
+* Update Netty dependency to 4.1.132.Final [#214](https://github.com/logstash-plugins/logstash-input-http/pull/214)
+
+**Tcp Input - 7.0.7**
+
+* Update Netty dependency to 4.1.132.Final [#249](https://github.com/logstash-plugins/logstash-input-tcp/pull/249)
+
+**Kafka Integration - 11.8.7**
+
+* Upgrade Avro dependency to 1.11.5 [#242](https://github.com/logstash-plugins/logstash-integration-kafka/pull/242)
+
+* [DOC] Add info about Kafka timestamp behavior  [#241](https://github.com/logstash-plugins/logstash-integration-kafka/pull/241)
+
+* Redact `sasl_jaas_config` to prevent credentials from appearing in debug logs. [#237](https://github.com/logstash-plugins/logstash-integration-kafka/pull/237)
+
+**Http Output - 6.0.1**
+
+* [DOC] Clarify that `ssl_certificate_authorities` takes at-most-one value [#150](https://github.com/logstash-plugins/logstash-output-http/pull/150)
+
+
 ## 9.2.7 [logstash-9.2.7-release-notes]
 
 ### Updates to dependencies [logstash-9.2.7-dependencies]
