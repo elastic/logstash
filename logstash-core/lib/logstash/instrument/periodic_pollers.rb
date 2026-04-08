@@ -50,9 +50,6 @@ module LogStash module Instrument
 
     def otel_metrics_enabled?
       @settings.get("otel.metrics.enabled")
-    rescue => e
-      logger.debug("Could not read otel.metrics.enabled setting", :error => e.message)
-      false
     end
 
     def start

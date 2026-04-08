@@ -41,11 +41,11 @@ module LogStash module Instrument module PeriodicPoller
   class Otel < Base
 
     def initialize(metric, agent, settings)
-      @agent = agent
-      @settings = settings
-
       # Call Base initializer - sets up @metric and configures the TimerTask
       super(metric, :polling_interval => settings.get("otel.metrics.interval"))
+
+      @agent = agent
+      @settings = settings
       @metric_store = @metric.collector
 
       # Initialize the Otel service - SDK handles its own export timing
@@ -102,13 +102,13 @@ module LogStash module Instrument module PeriodicPoller
     private
 
     def register_new_plugin_metrics
-      @agent.pipelines_registry.running_pipelines.each do |pipeline_id, _pipeline|
+      @agent.running_pipelines.each do |pipeline_id, _pipeline|
         register_plugin_metrics_for(pipeline_id)
       end
     end
 
     def register_new_pipeline_metrics
-      @agent.pipelines_registry.running_pipelines.each do |pipeline_id, _pipeline|
+      @agent.running_pipelines.each do |pipeline_id, _pipeline|
         next if @registered_pipelines.include?(pipeline_id)
 
         logger.debug("Registering Otel metrics for pipeline", :pipeline_id => pipeline_id)
@@ -124,21 +124,17 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def collect_dlq_metrics
-      pipelines = @agent.running_user_defined_pipelines
-      pipelines.each do |_, pipeline|
-        unless pipeline.nil?
-          pipeline.collect_dlq_stats
-        end
-      end
+      @agent.running_user_defined_pipelines
+        .values
+        .compact
+        .each(&:collect_dlq_stats)
     end
 
     def collect_pipeline_metrics
-      pipelines = @agent.running_user_defined_pipelines
-      pipelines.each do |_, pipeline|
-        unless pipeline.nil?
-          pipeline.collect_stats
-        end
-      end
+      @agent.running_user_defined_pipelines
+        .values
+        .compact
+        .each(&:collect_stats)
     end
 
     # Register observable counters - SDK computes deltas from cumulative values
@@ -374,7 +370,7 @@ module LogStash module Instrument module PeriodicPoller
 
     def get_total_queue_events
       total = 0
-      @agent.pipelines_registry.running_pipelines.each do |pipeline_id, pipeline|
+      @agent.running_pipelines.each do |pipeline_id, pipeline|
         next if pipeline.system?
         queue_events = get_pipeline_metric_value(pipeline_id, :queue, :events)
         total += queue_events if queue_events
