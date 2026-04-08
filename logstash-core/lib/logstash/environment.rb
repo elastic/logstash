@@ -57,6 +57,7 @@ module LogStash
    Setting::PositiveIntegerSetting.new("pipeline.batch.output_chunking.growth_threshold_factor", 1000),
            Setting::BooleanSetting.new("pipeline.unsafe_shutdown", false),
            Setting::BooleanSetting.new("pipeline.reloadable", true),
+   Setting::CoercibleStringSetting.new("pipeline.recoverable", "false", true, %w(auto true false)),
            Setting::BooleanSetting.new("pipeline.plugin_classloaders", false),
            Setting::BooleanSetting.new("pipeline.separate_logs", false),
    Setting::CoercibleStringSetting.new("pipeline.ordered", "auto", true, ["auto", "true", "false"]),

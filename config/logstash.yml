@@ -122,6 +122,15 @@
 #
 # config.reload.interval: 3s
 #
+# Whether to allow the pipeline reload feature to recover a pipeline that has crashed.
+# Requires `config.reload.automatic`. Pipeline cannot include non-reloadable plugins.
+# Accepts one of the following values:
+# - `false` (default): never recover after observing crash
+# - `auto`: recover if-and-only-if `queue.type` is set to `persisted`
+# - `true`: always recover after observing crash (WARNING: risk of data loss)
+#
+# pipeline.recoverable: false
+#
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
 #
