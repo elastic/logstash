@@ -139,11 +139,18 @@ public class OtelMetricsService {
         }
     }
 
-    private void parseResourceAttributes(String attributes, AttributesBuilder builder) {
+    // Package-private and static for testing
+    static void parseResourceAttributes(String attributes, AttributesBuilder builder) {
         for (String pair : attributes.split(",")) {
-            String[] keyValue = pair.trim().split("=", 2);
+            String trimmedPair = pair.trim();
+            if (trimmedPair.isEmpty()) {
+                continue;
+            }
+            String[] keyValue = trimmedPair.split("=", 2);
             if (keyValue.length == 2) {
                 builder.put(AttributeKey.stringKey(keyValue[0].trim()), keyValue[1].trim());
+            } else {
+                LOGGER.warn("Ignoring malformed resource attribute '{}': expected format 'key=value'", trimmedPair);
             }
         }
     }
