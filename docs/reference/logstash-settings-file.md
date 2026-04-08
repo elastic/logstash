@@ -105,7 +105,7 @@ The `logstash.yml` file includes these settings.
 =======
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. See [Monitoring with OpenTelemetry](/reference/monitoring-with-opentelemetry.md). | `false` |
 | `otel.metrics.endpoint` | The OTLP endpoint URL for metrics export. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
-| `otel.metrics.interval` | Export interval in seconds. Controls how frequently metrics are sent to the OTLP endpoint. | `10` |
+| `otel.metrics.interval` | Export interval with time unit (e.g., `"10s"`, `"1m"`). Controls how frequently metrics are sent to the OTLP endpoint. | `"10s"` |
 | `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.metrics.authorization_header` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |

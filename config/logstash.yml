@@ -320,9 +320,9 @@
 #
 # otel.metrics.endpoint: "http://localhost:4317"
 #
-# Export interval in seconds (default: 10)
+# Export interval with time unit, e.g., "10s", "1m" (default: "10s")
 #
-# otel.metrics.interval: 10
+# otel.metrics.interval: "10s"
 #
 # Protocol to use for OTLP export: "grpc" (default) or "http"
 #

@@ -49,10 +49,12 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     )
   end
 
+  let(:interval_time_value) { double("time_value", :to_seconds => 10) }
+
   let(:settings) do
     double("settings").tap do |s|
       allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("http://localhost:4317")
-      allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
+      allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
       allow(s).to receive(:get).with("otel.metrics.protocol").and_return("grpc")
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
       allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
@@ -97,7 +99,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("ApiKey my-secret-key")
@@ -123,7 +125,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(10)
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("Bearer my-bearer-token")

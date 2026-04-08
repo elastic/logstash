@@ -33,7 +33,7 @@ module LogStash module Instrument module PeriodicPoller
   # Configuration in logstash.yml:
   #   otel.metrics.enabled: true
   #   otel.metrics.endpoint: "http://localhost:4317"
-  #   otel.metrics.interval: 10
+  #   otel.metrics.interval: "10s"
   #   otel.metrics.protocol: "grpc"
   #   otel.metrics.authorization_header: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
@@ -41,8 +41,10 @@ module LogStash module Instrument module PeriodicPoller
   class Otel < Base
 
     def initialize(metric, agent, settings)
+      @interval_seconds = settings.get("otel.metrics.interval").to_seconds
+
       # Call Base initializer - sets up @metric and configures the TimerTask
-      super(metric, :polling_interval => settings.get("otel.metrics.interval"))
+      super(metric, :polling_interval => @interval_seconds)
 
       @agent = agent
       @settings = settings
@@ -53,7 +55,7 @@ module LogStash module Instrument module PeriodicPoller
         settings.get("otel.metrics.endpoint"),
         agent.id,
         agent.name,
-        settings.get("otel.metrics.interval"),
+        @interval_seconds,
         settings.get("otel.metrics.protocol"),
         settings.get("otel.resource.attributes"),
         settings.get("otel.metrics.authorization_header")
@@ -73,7 +75,7 @@ module LogStash module Instrument module PeriodicPoller
 
       logger.info("OpenTelemetry metrics poller initialized",
                   :endpoint => settings.get("otel.metrics.endpoint"),
-                  :interval => settings.get("otel.metrics.interval"))
+                  :interval => @interval_seconds)
     end
 
     def stop

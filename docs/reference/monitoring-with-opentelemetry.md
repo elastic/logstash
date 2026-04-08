@@ -20,7 +20,7 @@ To enable OpenTelemetry metrics export, add the following settings to your `logs
 ```yaml
 otel.metrics.enabled: true
 otel.metrics.endpoint: "http://localhost:4317"
-otel.metrics.interval: 10
+otel.metrics.interval: "10s"
 otel.metrics.protocol: "grpc"
 ```
 
@@ -30,7 +30,7 @@ otel.metrics.protocol: "grpc"
 | --- | --- | --- |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. | `false` |
 | `otel.metrics.endpoint` | The OTLP endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
-| `otel.metrics.interval` | Export interval in seconds. Controls how frequently metrics are sent to the endpoint. | `10` |
+| `otel.metrics.interval` | Export interval with time unit (e.g., `10s`, `1m`). Controls how frequently metrics are sent to the endpoint. | `"10s"` |
 | `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.metrics.authorization_header` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |

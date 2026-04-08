@@ -116,7 +116,7 @@ module LogStash
             Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"]),
            Setting::BooleanSetting.new("otel.metrics.enabled", false),
            Setting::StringSetting.new("otel.metrics.endpoint", "http://localhost:4317"),
-          Setting::NumericSetting.new("otel.metrics.interval", 10), # seconds
+          Setting::TimeValueSetting.new("otel.metrics.interval", "10s"),
            Setting::StringSetting.new("otel.metrics.protocol", "grpc", true, ["grpc", "http"]),
    Setting::PasswordSetting.new("otel.metrics.authorization_header", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
    Setting::NullableStringSetting.new("otel.resource.attributes", nil, false) # key=value,key2=value2 format
