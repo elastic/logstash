@@ -310,7 +310,7 @@
 # ------------ OpenTelemetry Metrics Settings --------------
 # Export Logstash metrics to an OpenTelemetry-compatible backend via OTLP.
 # This allows you to send Logstash metrics to any OTLP-compatible collector
-# or observability platform (e.g., Jaeger, Prometheus via OTel Collector, Grafana Cloud).
+# or monitoring platform (e.g., Prometheus via OTLP receiver, Elastic, Grafana Cloud).
 #
 # Enable OpenTelemetry metrics export (default: false)
 #
