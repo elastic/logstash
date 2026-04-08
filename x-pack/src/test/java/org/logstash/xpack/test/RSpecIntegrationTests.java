@@ -16,7 +16,8 @@ public class RSpecIntegrationTests extends RSpecTests {
 
     @Override
     protected List<String> rspecArgs() {
-        return Arrays.asList("-fd", "qa/integration");
+        String specs = System.getProperty("org.logstash.xpack.integration.specs", "qa/integration");
+        return Arrays.asList("-fd", specs);
     }
 
     @Test

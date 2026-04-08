@@ -533,30 +533,69 @@ tasks.register("installIntegrationTestGems") {
   }
 }
 
-tasks.register("downloadFilebeat") {
-    dependsOn  configureArtifactInfo
-    description "Download Filebeat Snapshot for current branch version: ${version}"
+tasks.register("prepareFilebeatDownload") {
+    dependsOn configureArtifactInfo
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        projectRef.ext.set("unpackedFilebeatName", downloadedFilebeatName)
+
+        def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
+        projectRef.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
+        projectRef.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
+    }
+}
+
+def verifyPackageSHA(String artifactProject, String version, String packageName) {
+    def res = SnapshotArtifactURLs.packageUrls(artifactProject, version, packageName)
+    String remoteSHACode = res.packageShaUrl.toURL().text.split(' ')[0]
+
+    def localArchive = new File("${projectDir}/build/${packageName}.tar.gz")
+    if (localArchive.exists()) {
+        ant.checksum(file: localArchive, algorithm: "SHA-512", forceoverwrite: true)
+        String localSHA = new File("${projectDir}/build/${packageName}.tar.gz.SHA-512").text.trim()
+        if (localSHA != remoteSHACode) {
+            println "${artifactProject} package calculated fingerprint is different from remote, deleting local archive"
+            delete(localArchive)
+        } else {
+            println "Local ${artifactProject} package is already the latest"
+        }
+    }
+}
+
+tasks.register("checkFilebeatSHA") {
+    dependsOn configureArtifactInfo
+
+    description = "Download Filebeat version remote's fingerprint file"
+
+    def projectRef = project
+    doLast {
+        String beatsVersion = projectRef.ext.get("artifactApiVersion")
+        String downloadedFilebeatName = "filebeat-${beatsVersion}-${projectRef.ext.get("beatsArchitecture")}"
+        verifyPackageSHA("beats", beatsVersion, downloadedFilebeatName)
+    }
+}
+
+tasks.register("downloadFilebeat", Download) {
+    dependsOn prepareFilebeatDownload, checkFilebeatSHA
+    description = "Download Filebeat Snapshot for current branch version: ${version}"
 
     project.ext.set("versionFound", true)
     inputs.file("${projectDir}/versions.yml")
 
+    def projectRef = project
+
+    // Use lazy configuration to get values after prepareFilebeatDownload runs
+    src { projectRef.ext.filebeatSnapshotUrl }
+    dest { new File(projectRef.ext.filebeatDownloadLocation) }
+
+    onlyIfNewer true
+    retries 3
+
     doLast {
-        download {
-            String beatsVersion = project.ext.get("artifactApiVersion")
-            String downloadedFilebeatName = "filebeat-${beatsVersion}-${project.ext.get("beatsArchitecture")}"
-            project.ext.set("unpackedFilebeatName", downloadedFilebeatName)
-
-            def res = SnapshotArtifactURLs.packageUrls("beats", beatsVersion, downloadedFilebeatName)
-            project.ext.set("filebeatSnapshotUrl", System.getenv("FILEBEAT_SNAPSHOT_URL") ?: res.packageUrl)
-            project.ext.set("filebeatDownloadLocation", "${projectDir}/build/${downloadedFilebeatName}.tar.gz")
-
-            src project.ext.filebeatSnapshotUrl
-            onlyIfNewer true
-
-            dest new File(project.ext.filebeatDownloadLocation)
-            retries 3
-        }
-        System.out.println "Downloaded to ${project.ext.filebeatDownloadLocation}"
+        System.out.println "Downloaded to ${projectRef.ext.filebeatDownloadLocation}"
     }
 }
 
@@ -565,16 +604,18 @@ tasks.register("deleteLocalFilebeat", Delete) {
 }
 
 tasks.register("copyFilebeat") {
-    dependsOn = [downloadFilebeat, deleteLocalFilebeat]
+    dependsOn downloadFilebeat
+    inputs.files(tasks.named("downloadFilebeat"))
+    outputs.dir('./build/filebeat')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
+        delete('./build/filebeat')
         copy {
             from tarTree(resources.gzip(project.ext.filebeatDownloadLocation))
             into "./build/"
         }
         file("./build/${project.ext.unpackedFilebeatName}").renameTo('./build/filebeat')
         System.out.println "Unzipped ${project.ext.filebeatDownloadLocation} to ./build/filebeat"
-        System.out.println "Deleting ${project.ext.filebeatDownloadLocation}"
-        delete(project.ext.filebeatDownloadLocation)
     }
 }
 
@@ -650,17 +691,19 @@ tasks.register("deleteLocalEs", Delete) {
 }
 
 tasks.register("copyEs") {
-    dependsOn = [downloadEs, deleteLocalEs]
+    dependsOn downloadEs
+    inputs.files(tasks.named("downloadEs"))
+    outputs.dir('./build/elasticsearch')
+    mustRunAfter tasks.named("unpackTarDistribution")
     doLast {
         println "copyEs executing.."
+        delete('./build/elasticsearch')
         copy {
             from tarTree(resources.gzip(project.ext.elasticsearchDownloadLocation))
             into "./build/"
         }
-
         file("./build/${project.ext.unpackedElasticsearchName}").renameTo('./build/elasticsearch')
         println "Unzipped ${project.ext.elasticsearchDownloadLocation} to ./build/elasticsearch"
-        println "Deleting ${project.ext.elasticsearchDownloadLocation}"
     }
 }
 
