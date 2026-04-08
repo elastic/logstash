@@ -399,7 +399,7 @@ module LogStash module Instrument module PeriodicPoller
     # Register plugin metrics for a specific pipeline
     # Called on each collect to discover newly available plugins
     def register_plugin_metrics_for(pipeline_id)
-      [:filters, :outputs, :inputs].each do |plugin_type|
+      %i[filters outputs inputs].each do |plugin_type|
         plugin_ids = get_plugin_ids(pipeline_id, plugin_type)
         plugin_ids.each do |plugin_id|
           plugin_key = "#{pipeline_id}:#{plugin_type}:#{plugin_id}"
