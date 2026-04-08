@@ -216,7 +216,7 @@ public final class OutputStrategyExt {
 
         @Override
         public IRubyObject getRubyPlugin(final ThreadContext context) {
-            return workers.isEmpty() ? context.nil : workers.eltInternal(0);
+            return workers.isEmpty() ? context.nil : workers.get(0);
         }
 
         @Override
