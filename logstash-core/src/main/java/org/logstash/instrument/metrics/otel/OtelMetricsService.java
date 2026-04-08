@@ -121,7 +121,7 @@ public class OtelMetricsService {
     private MetricExporter createExporter(String endpoint, String protocol) {
         if ("http".equalsIgnoreCase(protocol)) {
             var builder = OtlpHttpMetricExporter.builder()
-                    .setEndpoint(endpoint + "/v1/metrics")
+                    .setEndpoint(normalizeHttpEndpoint(endpoint))
                     .setTimeout(Duration.ofSeconds(10));
             if (authorizationHeader != null && !authorizationHeader.isEmpty()) {
                 builder.addHeader("Authorization", authorizationHeader);
@@ -137,6 +137,14 @@ public class OtelMetricsService {
             }
             return builder.build();
         }
+    }
+
+    /**
+     * Normalizes HTTP endpoint by appending /v1/metrics if not already present.
+     * This allows users to specify either the base URL or the full path.
+     */
+    static String normalizeHttpEndpoint(String endpoint) {
+        return endpoint.endsWith("/v1/metrics") ? endpoint : endpoint + "/v1/metrics";
     }
 
     // Package-private and static for testing

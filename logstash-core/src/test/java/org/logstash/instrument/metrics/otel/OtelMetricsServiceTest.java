@@ -128,6 +128,32 @@ public class OtelMetricsServiceTest {
         assertThat(attrs.get(AttributeKey.stringKey("url"))).isEqualTo("http://example.com?foo=bar");
     }
 
+    @Test
+    public void normalizeHttpEndpointAppendsPathWhenMissing() {
+        // Standard OTel Collector endpoint
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("http://localhost:4318"))
+                .isEqualTo("http://localhost:4318/v1/metrics");
+
+        // Prometheus OTLP endpoint
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("http://prometheus:9090/api/v1/otlp"))
+                .isEqualTo("http://prometheus:9090/api/v1/otlp/v1/metrics");
+
+        // Grafana Cloud endpoint
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("https://otlp-gateway.grafana.net/otlp"))
+                .isEqualTo("https://otlp-gateway.grafana.net/otlp/v1/metrics");
+    }
+
+    @Test
+    public void normalizeHttpEndpointPreservesFullPath() {
+        // Endpoint already has /v1/metrics - should not double-append
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("http://localhost:4318/v1/metrics"))
+                .isEqualTo("http://localhost:4318/v1/metrics");
+
+        // Elastic Cloud or other managed service with full path
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("https://my-cluster.apm.us-east-1.aws.elastic.cloud/v1/metrics"))
+                .isEqualTo("https://my-cluster.apm.us-east-1.aws.elastic.cloud/v1/metrics");
+    }
+
     /**
      * Test appender to capture log messages
      */
