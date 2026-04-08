@@ -329,6 +329,7 @@ module LogStash module Instrument module PeriodicPoller
     end
 
     def register_gauge(name, description, unit, attributes = Attributes.empty, &block)
+      fail(ArgumentError, "block required") unless block_given?
       supplier = -> {
         begin
           value = block.call
