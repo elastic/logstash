@@ -1124,4 +1124,26 @@ public class DeadLetterQueueReaderTest {
             }
         }
     }
+
+    @Test
+    public void testExtractSegmentIdWithValidFileName() {
+        Path validPath = Paths.get("123.log");
+        assertEquals(123, DeadLetterQueueUtils.extractSegmentId(validPath));
+
+        Path singleDigitPath = Paths.get("1.log");
+        assertEquals(1, DeadLetterQueueUtils.extractSegmentId(singleDigitPath));
+
+        Path largeNumberPath = Paths.get("999999.log");
+        assertEquals(999999, DeadLetterQueueUtils.extractSegmentId(largeNumberPath));
+    }
+
+    @Test
+    public void testExtractSegmentIdWithNoLogExtensionThrowsException() {
+        Path noExtensionPath = Paths.get("123.txt");
+        IllegalArgumentException exception = Assert.assertThrows(
+                IllegalArgumentException.class,
+                () -> DeadLetterQueueUtils.extractSegmentId(noExtensionPath)
+        );
+        assertThat(exception.getMessage(), containsString("Invalid segment file name"));
+    }
 }
