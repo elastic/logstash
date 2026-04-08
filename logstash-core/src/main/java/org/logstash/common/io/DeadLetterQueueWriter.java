@@ -73,9 +73,6 @@ import org.logstash.FieldReference;
 import org.logstash.FileLockFactory;
 import org.logstash.Timestamp;
 
-import static org.logstash.common.io.DeadLetterQueueUtils.listFiles;
-import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPaths;
-import static org.logstash.common.io.DeadLetterQueueUtils.listSegmentPathsSortedBySegmentId;
 import static org.logstash.common.io.RecordIOReader.SegmentStatus;
 import static org.logstash.common.io.RecordIOWriter.BLOCK_SIZE;
 import static org.logstash.common.io.RecordIOWriter.RECORD_HEADER_SIZE;
@@ -303,10 +300,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         cleanupTempFiles();
         updateOldestSegmentReference();
-        currentSegmentIndex = listSegmentPaths(queuePath)
-                .map(s -> s.getFileName().toString().split("\\.")[0])
-                .mapToInt(Integer::parseInt)
-                .max().orElse(0);
+        currentSegmentIndex = DeadLetterQueueUtils.maxSegmentId(queuePath);
         nextWriter();
         this.lastEntryTimestamp = Timestamp.now();
         this.flusherService = flusherService;
@@ -577,9 +571,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void updateOldestSegmentReference() throws IOException {
         final Optional<Path> previousOldestSegmentPath = oldestSegmentPath;
-        oldestSegmentPath = listSegmentPathsSortedBySegmentId(this.queuePath)
-                .filter(p -> p.toFile().length() > 1) // take the files that have content to process
-                .findFirst();
+        oldestSegmentPath = DeadLetterQueueUtils.oldestSegmentPath(this.queuePath, 1);
         if (!oldestSegmentPath.isPresent()) {
             oldestSegmentTimestamp = Optional.empty();
             return;
@@ -634,7 +626,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     // package-private for testing
     void dropTailSegment() throws IOException {
         // remove oldest segment
-        final Optional<Path> oldestSegment = listSegmentPathsSortedBySegmentId(queuePath).findFirst();
+        final Optional<Path> oldestSegment = DeadLetterQueueUtils.oldestSegmentPath(queuePath, 0);
         if (oldestSegment.isPresent()) {
             final Path beheadedSegment = oldestSegment.get();
             deleteTailSegment(beheadedSegment, "dead letter queue size exceeded dead_letter_queue.max_bytes size(" + maxQueueSize + ")");
@@ -716,7 +708,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private long computeQueueSize() throws IOException {
-        return listSegmentPaths(this.queuePath)
+        return DeadLetterQueueUtils.listSegmentPaths(this.queuePath)
                 .mapToLong(DeadLetterQueueWriter::safeFileSize)
                 .sum();
     }
@@ -753,12 +745,12 @@ public final class DeadLetterQueueWriter implements Closeable {
     // segment file with the same base name exists, or rename the
     // temp file to the segment file, which can happen when a process ends abnormally
     private void cleanupTempFiles() throws IOException {
-        listFiles(queuePath, ".log.tmp")
+        DeadLetterQueueUtils.listFiles(queuePath, ".log.tmp")
                 .forEach(this::cleanupTempFile);
     }
 
     // check if there is a corresponding .log file - if yes delete the temp file, if no atomic move the
-    // temp file to be a new segment file..
+    // temp file to be a new segment file.
     private void cleanupTempFile(final Path tempFile) {
         String segmentName = tempFile.getFileName().toString().split("\\.")[0];
         Path segmentFile = queuePath.resolve(String.format("%s.log", segmentName));

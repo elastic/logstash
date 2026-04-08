@@ -24,10 +24,11 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +49,7 @@ class DeadLetterQueueUtils {
 
     static Stream<Path> listFiles(Path path, String suffix) throws IOException {
         try(final Stream<Path> files = Files.list(path)) {
-            return files.filter(p -> p.toString().endsWith(suffix))
+            return files.filter(p -> p.getFileName().toString().endsWith(suffix))
                     .collect(Collectors.toList()).stream();
         }
     }
@@ -57,9 +58,41 @@ class DeadLetterQueueUtils {
         return listFiles(path, ".log");
     }
 
-    static Stream<Path> listSegmentPathsSortedBySegmentId(Path path) throws IOException {
-        return listSegmentPaths(path)
-                .sorted(Comparator.comparingInt(DeadLetterQueueUtils::extractSegmentId));
+    /**
+     * Single-pass scan using OS-level glob filtering; avoids materializing
+     * all paths into a collection when only the numeric maximum is needed.
+     */
+    static int maxSegmentId(Path path) throws IOException {
+        int max = 0;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.log")) {
+            for (Path p : stream) {
+                max = Math.max(max, extractSegmentId(p));
+            }
+        }
+        return max;
+    }
+
+    /**
+     * Single-pass scan that finds the segment path with the smallest segment ID,
+     * optionally skipping entries that don't satisfy {@code minFileSize}. `minFileSize` is to take files that have content to process.
+     * Returns empty when no matching segment exists.
+     */
+    static Optional<Path> oldestSegmentPath(Path path, long minFileSize) throws IOException {
+        Path oldest = null;
+        int oldestId = Integer.MAX_VALUE;
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.log")) {
+            for (Path p : stream) {
+                if (minFileSize > 0 && p.toFile().length() <= minFileSize) {
+                    continue;
+                }
+                int id = extractSegmentId(p);
+                if (id < oldestId) {
+                    oldestId = id;
+                    oldest = p;
+                }
+            }
+        }
+        return Optional.ofNullable(oldest);
     }
 
     /**
