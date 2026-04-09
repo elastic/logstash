@@ -20,6 +20,8 @@ require "logstash/instrument/periodic_poller/otel"
 require "logstash/instrument/collector"
 
 describe LogStash::Instrument::PeriodicPoller::Otel do
+  java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
+
   let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
   let(:agent_metric) { double("agent_metric", :collector => collector) }
