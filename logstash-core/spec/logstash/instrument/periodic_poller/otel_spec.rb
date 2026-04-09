@@ -27,7 +27,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
   let(:pipeline_id) { :main }
   let(:pipeline) do
     double("pipeline",
-      :system? => false,
       :collect_stats => nil,
       :collect_dlq_stats => nil
     )
@@ -374,7 +373,12 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     context "#get_total_queue_events" do
-      let(:pipeline2) { double("pipeline2", :system? => false) }
+      let(:pipeline2) do
+        double("pipeline2",
+          :collect_stats => nil,
+          :collect_dlq_stats => nil
+        )
+      end
 
       before do
         metric.gauge([:stats, :pipelines, :main, :queue], :events, 10)
@@ -415,7 +419,12 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
   describe "#get_total_queue_events" do
     let(:pipeline2_id) { :secondary }
-    let(:pipeline2) { double("pipeline2", :system? => false) }
+    let(:pipeline2) do
+      double("pipeline2",
+        :collect_stats => nil,
+        :collect_dlq_stats => nil
+      )
+    end
 
     let(:agent) do
       double("agent",
