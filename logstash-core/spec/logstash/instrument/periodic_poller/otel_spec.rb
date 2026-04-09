@@ -18,10 +18,10 @@
 require "spec_helper"
 require "logstash/instrument/periodic_poller/otel"
 require "logstash/instrument/collector"
-java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
-java_import 'io.opentelemetry.api.common.AttributeKey'
 
 describe LogStash::Instrument::PeriodicPoller::Otel do
+  java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
+  java_import 'io.opentelemetry.api.common.AttributeKey'
   let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
 
