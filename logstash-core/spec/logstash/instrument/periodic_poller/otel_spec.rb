@@ -20,8 +20,6 @@ require "logstash/instrument/periodic_poller/otel"
 require "logstash/instrument/collector"
 
 describe LogStash::Instrument::PeriodicPoller::Otel do
-  java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
-  java_import 'io.opentelemetry.api.common.AttributeKey'
   let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
 
@@ -65,6 +63,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
   end
 
   before do
+    java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
     allow(OtelMetricsService).to receive(:new).and_return(otel_service)
   end
 
@@ -516,6 +515,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     describe "#create_pipeline_attributes" do
+
+      before do
+        java_import 'io.opentelemetry.api.common.AttributeKey'
+      end
+
       it "creates Attributes with pipeline.id" do
         attrs = otel_poller.send(:create_pipeline_attributes, :main)
         expect(attrs.get(AttributeKey.stringKey("pipeline.id"))).to eq("main")
@@ -528,6 +532,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     end
 
     describe "#create_plugin_attributes" do
+
+      before do
+        java_import 'io.opentelemetry.api.common.AttributeKey'
+      end
+
       it "creates Attributes with pipeline.id, plugin.type, and plugin.id" do
         attrs = otel_poller.send(:create_plugin_attributes, :main, :filters, :mutate_abc123)
 
