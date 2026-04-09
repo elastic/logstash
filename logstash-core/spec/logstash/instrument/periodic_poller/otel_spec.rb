@@ -23,7 +23,6 @@ java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
 describe LogStash::Instrument::PeriodicPoller::Otel do
   let(:collector) { LogStash::Instrument::Collector.new }
   let(:metric) { LogStash::Instrument::Metric.new(collector) }
-  let(:agent_metric) { double("agent_metric", :collector => collector) }
 
   let(:pipeline_id) { :main }
   let(:pipeline) do
@@ -33,18 +32,12 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       :collect_dlq_stats => nil
     )
   end
-  let(:pipelines_registry) do
-    double("pipelines_registry",
-      :running_pipelines => { pipeline_id => pipeline }
-    )
-  end
 
   let(:agent) do
     double("agent",
       :id => "test-node-id",
       :name => "test-node-name",
-      :metric => agent_metric,
-      :pipelines_registry => pipelines_registry,
+      :running_pipelines => { pipeline_id => pipeline },
       :running_user_defined_pipelines => { pipeline_id => pipeline },
       :capture_flow_metrics => nil
     )
@@ -382,17 +375,14 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
     context "#get_total_queue_events" do
       let(:pipeline2) { double("pipeline2", :system? => false) }
-      let(:system_pipeline) { double("system_pipeline", :system? => true) }
 
       before do
         metric.gauge([:stats, :pipelines, :main, :queue], :events, 10)
         metric.gauge([:stats, :pipelines, :secondary, :queue], :events, 20)
-        metric.gauge([:stats, :pipelines, :monitoring, :queue], :events, 100)
 
-        allow(pipelines_registry).to receive(:running_pipelines).and_return({
+        allow(agent).to receive(:running_user_defined_pipelines).and_return({
           :main => pipeline,
-          :secondary => pipeline2,
-          :monitoring => system_pipeline
+          :secondary => pipeline2
         })
 
         otel_poller.collect
@@ -401,11 +391,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       it "sums queue events across all user pipelines" do
         total = otel_poller.send(:get_total_queue_events)
         expect(total).to eq(30)
-      end
-
-      it "excludes system pipelines from the total" do
-        total = otel_poller.send(:get_total_queue_events)
-        expect(total).not_to eq(130)
       end
     end
 
@@ -431,15 +416,20 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
   describe "#get_total_queue_events" do
     let(:pipeline2_id) { :secondary }
     let(:pipeline2) { double("pipeline2", :system? => false) }
-    let(:system_pipeline) { double("system_pipeline", :system? => true) }
 
-    let(:pipelines_registry) do
-      double("pipelines_registry",
+    let(:agent) do
+      double("agent",
+        :id => "test-node-id",
+        :name => "test-node-name",
         :running_pipelines => {
           pipeline_id => pipeline,
-          pipeline2_id => pipeline2,
-          :monitoring => system_pipeline
-        }
+          pipeline2_id => pipeline2
+        },
+        :running_user_defined_pipelines => {
+          pipeline_id => pipeline,
+          pipeline2_id => pipeline2
+        },
+        :capture_flow_metrics => nil
       )
     end
 
@@ -447,11 +437,10 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       otel_poller
       metric.gauge([:stats, :pipelines, pipeline_id, :queue], :events, 10)
       metric.gauge([:stats, :pipelines, pipeline2_id, :queue], :events, 20)
-      metric.gauge([:stats, :pipelines, :monitoring, :queue], :events, 5)
       otel_poller.collect
     end
 
-    it "sums queue events from non-system pipelines only" do
+    it "sums queue events from user-defined pipelines" do
       total = otel_poller.send(:get_total_queue_events)
       expect(total).to eq(30)
     end

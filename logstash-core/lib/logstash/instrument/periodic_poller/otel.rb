@@ -374,8 +374,7 @@ module LogStash module Instrument module PeriodicPoller
 
     def get_total_queue_events
       total = 0
-      @agent.running_pipelines.each do |pipeline_id, pipeline|
-        next if pipeline.system?
+      @agent.running_user_defined_pipelines.each do |pipeline_id, _pipeline|
         queue_events = get_pipeline_metric_value(pipeline_id, :queue, :events)
         total += queue_events if queue_events
       end
