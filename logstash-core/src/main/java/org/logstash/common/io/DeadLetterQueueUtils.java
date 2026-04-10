@@ -82,11 +82,11 @@ class DeadLetterQueueUtils {
         int oldestId = Integer.MAX_VALUE;
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(path, "*.log")) {
             for (Path p : stream) {
-                if (minFileSize > 0 && p.toFile().length() <= minFileSize) {
-                    continue;
-                }
                 int id = extractSegmentId(p);
                 if (id < oldestId) {
+                    if (minFileSize > 0 && Files.size(p) <= minFileSize) {
+                        continue;
+                    }
                     oldestId = id;
                     oldest = p;
                 }
