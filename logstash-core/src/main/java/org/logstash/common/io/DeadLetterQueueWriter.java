@@ -648,6 +648,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         return event.includes(DEAD_LETTER_QUEUE_METADATA_KEY);
     }
 
+    // main method for flush scheduler
     private void scheduledFlushCheck() {
         logger.trace("Running scheduled check");
         lock.lock();
