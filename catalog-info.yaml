@@ -551,12 +551,8 @@ spec:
         build_pull_requests: false
         build_tags: false
         trigger_mode: code
-<<<<<<< HEAD
-        filter_condition: 'build.branch !~ /^backport.*$/'
-=======
         filter_condition: >-
           build.branch =~ /^main$/ || build.branch =~ /^[0-9]+\.[0-9]+$/ || build.branch =~ /^[0-9]+\.x$/
->>>>>>> 2ed80127e (Limit exhaustive test triggers to active branches only (#18975))
         filter_enabled: true
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
