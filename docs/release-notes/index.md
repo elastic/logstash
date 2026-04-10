@@ -25,159 +25,62 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ### Features and enhancements [logstash-9.4.0-features-enhancements]
 
----------- GENERATED CONTENT STARTS HERE ------------
-=== Logstash Pull Requests with label v9.4.0
+#### Reactive pipeline recovery [logstash-9.4.0-reactive-pipeline-recovery]
 
-=== Logstash Commits between 9.4 and 9.3.3
+This release adds opt-in crashed-pipeline recovery with a new `pipeline.recovery` setting. It applies when `config.reload.automatic` is enabled and accepts:
 
-Computed with "git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v9.3.3..9.4"
+* `auto`: recovers crashed pipelines that are backed by the persistent queue
+* `false` (default): do not automate recovery of crashed pipelines
+* `true`: recovers all crashed pipelines, even if backed by the ephemeral memory queue (risk: data loss)
 
-aedbfa1f4 - (9.4) Upgrade gemfile dependencies (2 days ago) <edmocosta>
-1927e28fb - Lock file copied from 9.3 (2 days ago) <edmocosta>
-f654c28d7 - (origin/main, origin/HEAD, origin/9.4, main) [main] (backport #18945) Release notes for 9.2.8 (#18951) (3 days ago) <mergify[bot]>
-a608dd033 - Release notes for 9.3.3 (#18946) (#18952) (3 days ago) <mergify[bot]>
-70c8e1a7e - tests(health api): extract specific assertions from list validator (#18937) (3 days ago) <Rye Biesemeyer>
-eb3756b48 - Add jruby JAR path to the plugins Snyk scanning pipeline. (#18912) (3 days ago) <Mashhur>
-3ac9c2af2 - Bump docker/login-action in the github-actions group across 1 directory (#18940) (3 days ago) <dependabot[bot]>
-0f5362de8 - (upstream/updatecli_main_ironbank/template) Update the ES creation helper function to teardown it in case of service not available. (#18931) (7 days ago) <Andrea Selva>
-fcfcea0c3 - Improve xpack integration test UX (#18919) (7 days ago) <Kaise>
-f54cb2cd7 - Enabled lifetime window for batch's byte size metric (#18911) (8 days ago) <Andrea Selva>
-cc36cef17 - Fix comparison of ES SHA, (#18923) (8 days ago) <Andrea Selva>
-f614ad4ae - Removes ruby-maven-libs maven dependency, which doesn't exits. (#18913) (10 days ago) <Mashhur>
-fd3f189bc - chore: deps(updatecli): Bump updatecli version to v0.115.0 (#18914) (10 days ago) <github-actions[bot]>
-6ef0fbb9f - Move docs workflows to elastic/docs-actions (#18915) (10 days ago) <Martijn Laarman>
-c4d7362b5 - Adds verification of the file name (#18848) (13 days ago) <Andrea Selva>
-29048954d - Bump requests in /.buildkite/scripts/health-report-tests (#18904) (2 weeks ago) <dependabot[bot]>
-3b59fb59d - Add tests for Oracle Linux 9 (#18891) (2 weeks ago) <Rob Bavey>
-28d384411 - Add max value for batch size windowed histograms (#18850) (2 weeks ago) <Andrea Selva>
-1db2e098c - Doc/describe usage of batch structure metrics in pipeline tuning (#18828) (2 weeks ago) <Andrea Selva>
-ad00a443e - Bump https://github.com/pre-commit/pre-commit-hooks from v4.6.0 to 6.0.0 (#18853) (2 weeks ago) <dependabot[bot]>
-0cadaa455 - (upstream/mergify/bp/main/pr-18882, upstream/mergify/bp/main/pr-18881, upstream/mergify/bp/main/pr-18880, upstream/mergify/bp/main/pr-18879, upstream/mergify/bp/main/pr-18878, upstream/mergify/bp/main/pr-18877, upstream/mergify/bp/main/pr-18876, upstream/mergify/bp/main/pr-18875) Doc: Add page-level applies_to tags to Logstash content Group 4 (#18861) (2 weeks ago) <Karen Metts>
-13067534f - Doc: Add page-level applies_to tags to Logstash content (Group 3) (#18860) (2 weeks ago) <Karen Metts>
-5aa258487 - Doc: Add page-level applies_to tags to Logstash content Group 2 (#18859) (2 weeks ago) <Karen Metts>
-dcda062a7 - Doc: Add page-level applies_to tags to Logstash docs (Group 1) (#18858) (2 weeks ago) <Karen Metts>
-97603f924 - add DRA version bump pipeline (#18765) (2 weeks ago) <ninalee12>
-ee364ac80 - Bump anchore/scan-action in the github-actions group across 1 directory (#18873) (2 weeks ago) <dependabot[bot]>
-c13b69245 - upgrade jruby to 10.0.4.0 (#18856) (3 weeks ago) <João Duarte>
-42a5ecafe - Release notes for 9.3.2 (#18845) (#18864) (3 weeks ago) <mergify[bot]>
-dbc3be75b - [main] (backport #18843) Release notes for 9.2.7 (#18863) (3 weeks ago) <mergify[bot]>
-9ffa9d682 - Bump actions/setup-java in the github-actions group across 1 directory (#18854) (3 weeks ago) <dependabot[bot]>
-f8148b42c - bump jrjackson to 0.4.21 for jruby 10 support (#18862) (3 weeks ago) <João Duarte>
-7114f1b68 - Add AGENTS.md coding agent guidance for core, QA, and X-Pack (#18771) (4 weeks ago) <João Duarte>
-9ce49ad02 - Fix Bundler platform genericization for JRuby 10. (#18852) (4 weeks ago) <João Duarte>
-34add6ca8 - github-action: include the dependabot section for pre-commit (#18847) (4 weeks ago) <elastic-vault-github-plugin-prod[bot]>
-ecadb4ac3 - Upgrade Logstash to JRuby 10.0.3.0 and Ruby 3.4 (4 weeks ago) <João Duarte>
-298d894b0 - Fix observabilitySRE tests (#18835) (4 weeks ago) <Cas Donoghue>
-a371ac111 - Bump docker/login-action in the github-actions group across 1 directory (#18834) (4 weeks ago) <dependabot[bot]>
-cb3efde08 - Update .mergify.yml (#18831) (5 weeks ago) <Victor Martinez>
-096b30b8d - Adds histogram flow metrics to expose some percentiles of the batch's size and event count (#18770) (5 weeks ago) <Andrea Selva>
-bd6f6886e - Removes SplittableStringArray setting used only in Logstash modules, that doesn't exist anymore. (#18826) (5 weeks ago) <Andrea Selva>
-ceba9dcc8 - chore: deps(updatecli): Bump updatecli version to v0.114.0 (#18827) (5 weeks ago) <github-actions[bot]>
-5c73a8f06 - Periodically run exhaustive tests on artifacts prepared with DRA pipeline (#18803) (6 weeks ago) <Cas Donoghue>
-5d4f709e5 - Dont run exhaustive tests on *EVERY* commmit in a branch (#18817) (6 weeks ago) <Cas Donoghue>
-d0e5d88ff - Update bundled JDK to 21.0.10 build 7 (#18783) (6 weeks ago) <github-actions[bot]>
-7c7eff92b - Moves TimeValue setting to java (#18760) (6 weeks ago) <Andrea Selva>
-75172968c - Add new config option to split batch into chunks before outputs (#18680) (6 weeks ago) <Emily S>
-a44fbda69 - Add Vale docs linting support (#18806) (6 weeks ago) <Fabrizio Ferri-Benedetti>
-377066af3 - [main] (backport #18798) Release notes for 9.2.6 (#18812) (6 weeks ago) <mergify[bot]>
-2197643f3 - Release notes for 9.3.1 (#18799) (#18811) (6 weeks ago) <mergify[bot]>
-aba00f54e - Revise known issues for Logstash 9.3.0 and 9.2.5 (#18800) (#18801) (6 weeks ago) <mergify[bot]>
-4d0868371 - Add known issues running 9.2.5 on aarch64 architectures (#18731) (#18735) (#18736) (7 weeks ago) <mergify[bot]>
-9e368a51e - Add known issues about aarch64 to release notes (#18730) (#18802) (7 weeks ago) <mergify[bot]>
-9f14abf79 - Test rpm and deb packages on aarch64 in exhaustive test pipeline (#18780) (7 weeks ago) <Cas Donoghue>
-93bdbed6a - bk(pr-buildkite-bot): reverting to the original scope (#18790) (7 weeks ago) <Victor Martinez>
-b39e61ee5 - (upstream/mergify/bp/main/pr-18792, upstream/mergify/bp/main/pr-18791) Doc: Update svrless docs to use endpoint url (#18773) (7 weeks ago) <Karen Metts>
-201068a14 - Improve x-pack RSpec support with automatic path detection (#18785) (7 weeks ago) <kaisecheng>
-1f1ee1cb3 - Avoid duplicate steps in snyk artifact scanning (#18768) (7 weeks ago) <Cas Donoghue>
-eecd5eabd - bk(comment-trigger): support case insensitive (#18737) (7 weeks ago) <Victor Martinez>
-00c304883 - ci: Add almalinux-8 / 9 and rocky-9 to exhaustive compat linux group (#18752) (8 weeks ago) <Victor Martinez>
-b05f0ddf0 - Genericise Flow Metrics' RetentionWindow (#18624) (8 weeks ago) <Rye Biesemeyer>
-4eee56590 - Removed modules setting not existing anymore (#18761) (8 weeks ago) <Andrea Selva>
-0d99eb671 - Bump anchore/scan-action in the github-actions group across 1 directory (#18754) (8 weeks ago) <dependabot[bot]>
-1bc95f68e - Move Bytes setting to Java (#18709) (8 weeks ago) <Andrea Selva>
-41cb3b784 - remove dependency on org.reflections (#18295) (9 weeks ago) <João Duarte>
-7f1ca8eea - Respect ARCH env var when downloading JDK via gradle (#18733) (9 weeks ago) <Cas Donoghue>
-74a2bbfff - [CI] Sync acceptance test OS matrix with JDK matrix pipeline (#18739) (9 weeks ago) <Álex Cámara Lara>
-8c58270eb - Restore missing "skip windows" logic in test (#18724) (9 weeks ago) <Cas Donoghue>
-7ba6f3341 - Clarify input param to bump LS version GHA (#18715) (9 weeks ago) <Cas Donoghue>
-95801bace - WritableDirectory setting move to Java (#18630) (9 weeks ago) <Andrea Selva>
-d23ba272a - Add Debian 13 to linux matrix (#18698) (9 weeks ago) <Álex Cámara Lara>
-69aa99bb3 - Steel thread for sbom generation for snyk scanning (#18690) (9 weeks ago) <Cas Donoghue>
-58487f210 - Revert "Allow exhaustive tests to be triggered by org members (#18616)" (#18692) (9 weeks ago) <Victor Martinez>
-8b02b4d12 - [main] (backport #18703) 9.3.0 release notes (copied from messed PR-18581) (#18704) (9 weeks ago) <mergify[bot]>
-272394473 - Fix obserbabilitySRE DRA jobs after docker update on runners (#18699) (9 weeks ago) <Cas Donoghue>
-18a87eec4 - updatecli: bump ironbank policy (#18697) (9 weeks ago) <Victor Martinez>
-38834fb6a - Moved ByteValue utilities methods and constants from Ruby to Java (#18679) (9 weeks ago) <Andrea Selva>
-00d9f67d5 - [main] (backport #18678) Release notes for 9.2.5 (#18695) (9 weeks ago) <mergify[bot]>
-43a24a563 - Bump the github-actions group across 1 directory with 2 updates (#18691) (9 weeks ago) <dependabot[bot]>
-63f19c395 - Add Snyk scanning for Logstash release artifacts (#18557) (10 weeks ago) <Cas Donoghue>
-87b9f69d3 - Ensure jruby managed with gradle bootstrap is used everywher in CI (#18676) (10 weeks ago) <Cas Donoghue>
-44db4c916 - Fix smart exhaustive test pipeline (#18661) (10 weeks ago) <Cas Donoghue>
-38ced219a - Bump requests in /.buildkite/scripts/health-report-tests (#17702) (2 months ago) <dependabot[bot]>
-e9380e91a - Update RedHat Ironbank UBI image to long term support 10.1 (#18619) (2 months ago) <Álex Cámara Lara>
-0ef710ba6 - Bump anchore/scan-action in the github-actions group across 1 directory (#18647) (2 months ago) <dependabot[bot]>
-e2df0027c - Only raise PR to bump java version when all artifacts are ready (#18668) (2 months ago) <Cas Donoghue>
-23f53db49 - Revert "Update bundled JDK to 21.0.10 build 7 (#18649)" (#18662) (2 months ago) <Cas Donoghue>
-37305e7ba - Update bundled JDK to 21.0.10 build 7 (#18649) (2 months ago) <github-actions[bot]>
-b26334404 - Dont persist bundler config state across ci tasks (#18655) (2 months ago) <Cas Donoghue>
-95b706a77 - Change the default logger level for licensereader (#18644) (2 months ago) <kaisecheng>
-205d8ab78 - Consistent bundled jruby across all CI tasks (#18615) (3 months ago) <Cas Donoghue>
-190afc13e - test artifact upgrade from 8.19 instead of 7.17 (#18635) (3 months ago) <João Duarte>
-a86a6f65d - Reimplemented Ruby's ExistingFilePath setting into Java (#18614) (3 months ago) <Andrea Selva>
-1d963dcc5 - Reimplemented Ruby's CoercibleString setting into Java (#18187) (3 months ago) <Andrea Selva>
-7e9c38455 - Use gradle and bundled jruby for acceptance tests orchestration (#18536) (3 months ago) <Cas Donoghue>
-835934310 - Fix ironbank container build (#18625) (3 months ago) <Cas Donoghue>
-337d2e437 - Allow exhaustive tests to be triggered by org members (#18616) (3 months ago) <Cas Donoghue>
-e1684280d - Add Ironbank acceptance tests to CI (#18585) (3 months ago) <Álex Cámara Lara>
-4c158701b - Remove unused/unreachable rake tasks (#18537) (3 months ago) <Cas Donoghue>
-28c810d73 - Remove unused gradle tasks (#18526) (3 months ago) <Cas Donoghue>
-b6760b826 - chore: deps(updatecli): Bump updatecli version to v0.113.0 (#18597) (3 months ago) <github-actions[bot]>
-064c39abf - chore: delete SECURITY.md to use organization-wide policy (#18577) (3 months ago) <Paul McCann>
-bd4cec075 - Only ship x-pack library code with artifacts (#18548) (3 months ago) <Cas Donoghue>
-ae9fce6a4 - (upstream/mergify/bp/main/pr-18588, upstream/mergify/bp/main/pr-18587, upstream/mergify/bp/main/pr-18586) Doc: Use new version syntax (#18580) (3 months ago) <Colleen McGinnis>
-1d9eb5b1e - 7.17 reached EoL (#18559) (3 months ago) <Victor Martinez>
-602cda05b - Plugin snyk scan: Only runtime dependencies scanning, exclude test & compile deps for now. (#18562) (3 months ago) <Mashhur>
-d7a920e4f - docs: update security url (#18566) (3 months ago) <Paul McCann>
-b7f37ebfd - Bump anchore/scan-action in the github-actions group across 1 directory (#18561) (3 months ago) <dependabot[bot]>
-707a4c99c - Upgrade Log4j to 2.25.3 (#18522) (3 months ago) <João Duarte>
-f9d8b771e - Snyk scanning pipeline fixes. (#18499) (3 months ago) <Mashhur>
-9eeeb92b5 - Bump logstash version 9.4.0 (#18523) (4 months ago) <github-actions[bot]>
-f36ba65de - Stop tests from polluting maven settings (#18525) (4 months ago) <Cas Donoghue>
-ca1fe3761 - Make gradle the root of every dependency graph (#18471) (4 months ago) <Cas Donoghue>
-1be3a3547 - Fix, clean batch metrics on pipeline shutdown (#18515) (4 months ago) <Andrea Selva>
-cf1eee34f - Revert "Keep psych minor version in line with jruby 9.4.13.0 (#18507)" (#18516) (4 months ago) <Cas Donoghue>
-a089904f3 - Keep psych minor version in line with jruby 9.4.13.0 (#18507) (4 months ago) <Cas Donoghue>
-21b2d5ffe - Revert "[9.3 release] Copy Gemfile from 9.2 branch and update only LS core ve…" (#18505) (4 months ago) <Mashhur>
-603d2fcc1 - [9.3 release] Copy Gemfile from 9.2 branch and update only LS core version. (#18504) (4 months ago) <Mashhur>
+Related:
+* Support reactive pipeline recovery with `config.reload` manager [#18930](https://github.com/elastic/logstash/pull/18930)
 
-=== Logstash Plugin Release Changelogs ===
-Computed from "git diff v9.3.3..9.4 *.release"
-Changed plugin versions:
-logstash-filter-aggregate: 2.10.0 -> 2.11.0
-logstash-filter-date: 3.1.16 -> 3.2.0
-logstash-filter-dissect: 1.2.6 -> 1.3.0
-logstash-filter-fingerprint: 3.4.4 -> 3.5.0
-logstash-filter-mutate: 3.5.9 -> 3.6.0
-logstash-input-gelf: 3.3.2 -> 3.4.0
-logstash-integration-aws: 7.2.1 -> 7.3.4
----------- GENERATED CONTENT ENDS HERE ------------
+#### Batch chunking  [logstash-9.4.0-batch-chunking]
+
+We’ve added a new setting, `pipeline.batch.output_chunking.growth_threshold_factor`, that limits the factor by which a batch can increase in size after being passed through filters.
+If growth exceeds that factor, Logstash splits the batch into chunks that are sent individually to the outputs, each with at most `pipeline.batch.size` size.
+
+Use this to reduce out-of-memory risk when filters (for example, a split filter) greatly expand batch size.
+
+Related:
+* Add a new config option to split batch into chunks before outputs [#18680](https://github.com/elastic/logstash/pull/18680)
+
+#### Additional features and enhancements [logstash-9.4.0-more-features]
+
+* Introduced histogram flow metrics for batch size and event count. Some percentile values for such metrics are now exposed in the response from `_node/stats` API, on a pipeline basis [#18770](https://github.com/elastic/logstash/pull/18770)
+
+* Enabled the `lifetime` window for pipeline's batch size metrics [#18911](https://github.com/elastic/logstash/pull/18911)
+
+* Exposed the max value for batch's `byte_size`, reported in 1, 5, and 15 minutes time windows [#18850](https://github.com/elastic/logstash/pull/18850)
+
+### Updates to dependencies [logstash-9.4.0-dependencies]
+
+* Update bundled JDK to 21.0.10 build 7
+* Update JRuby to 10.0.5.0
 
 ### Plugins [logstash-plugin-9.4.0-changes]
 
+::::{important}
+
+The Kafka integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place.
+
+::::
+
 **Aggregate Filter - 2.11.0**
 
-* new feature: log a warning message when the number of tasks stored in memory exceeds the configured threshold (#125)
+* Feature: Add a warning log message when the number of tasks stored in memory exceeds the configured threshold [#125](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/125)
 
 **Date Filter - 3.2.0**
 
 * Add `precision` setting to support nanosecond precision timestamps [#165](https://github.com/logstash-plugins/logstash-filter-date/pull/165)
-* `ms` (default): timestamps are stored with millisecond precision
-* keeps the same behavior as before for backward compatibility
-* fractional seconds are truncated to 3 digits
-* custom parsing formats use `joda-time` library
-* `ns`: timestamps are stored with nanosecond precision
-* fractional seconds support up to 9 digits
-* custom parsing formats use `java.time`
+  * `ms` (default): timestamps are stored with millisecond precision
+    * it keeps the same behavior as before for backward compatibility
+    * fractional seconds are truncated to 3 digits
+    * custom parsing formats use `joda-time` library
+  * `ns`: timestamps are stored with nanosecond precision
+    * fractional seconds support up to 9 digits
+    * custom parsing formats use `java.time`
 * `ISO8601` now accepts up to 9 fractional-second digits
 
 **Dissect Filter - 1.3.0**
@@ -194,7 +97,7 @@ logstash-integration-aws: 7.2.1 -> 7.3.4
 
 **Gelf Input - 3.4.0**
 
-* Updates the gelf dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
+* Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
 
 **Aws Integration - 7.3.4**
 
@@ -202,12 +105,11 @@ logstash-integration-aws: 7.2.1 -> 7.3.4
     
 * Replace deprecated `Aws::S3::Object#upload_file` in favor of `Aws::S3::TransferManager#upload_file` [#67](https://github.com/logstash-plugins/logstash-integration-aws/pull/67)
 
-* Fix: replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
+* Replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
 
 * Re-packaging the plugin [#63](https://github.com/logstash-plugins/logstash-integration-aws/pull/63)
 
-* Add cutoff_second configuration option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
-
+* Add `cutoff_second configuration` option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
 
 ## 9.3.3 [logstash-9.3.3-release-notes]
 
