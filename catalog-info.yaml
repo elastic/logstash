@@ -601,7 +601,7 @@ spec:
         build_tags: false
         trigger_mode: code
         filter_condition: >-
-          build.branch !~ /^backport.*$/ && build.branch !~ /^mergify\/bp\/.*$/
+          build.branch =~ /^main$/ || build.branch =~ /^[0-9]+\.[0-9]+$/ || build.branch =~ /^[0-9]+\.x$/
         filter_enabled: true
       cancel_intermediate_builds: true
       skip_intermediate_builds: true
