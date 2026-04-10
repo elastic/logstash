@@ -74,7 +74,8 @@ class DeadLetterQueueUtils {
 
     /**
      * Single-pass scan that finds the segment path with the smallest segment ID,
-     * optionally skipping entries that don't satisfy {@code minFileSize}. `minFileSize` is to take files that have content to process.
+     * optionally skipping segments with size less than or equal to {@code minFileSize}
+     * when {@code minFileSize} is greater than zero.
      * Returns empty when no matching segment exists.
      */
     static Optional<Path> oldestSegmentPath(Path path, long minFileSize) throws IOException {
