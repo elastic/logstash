@@ -63,7 +63,7 @@ Related:
 
 ::::{important}
 
-The Kafka integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place.
+The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place.
 
 ::::
 
@@ -91,6 +91,10 @@ The Kafka integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Fix fingerprint instability for Hash and Array field values caused by JRuby 10 changing `Hash#inspect` formatting [#79](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/79)
 
+**Kafka Integration - 11.8.8**
+
+* Fix a regression introduced in `11.8.7` where `sasl_jaas_config` was incorrectly typed in the output plugin, crashing Logstash on startup when a SASL Kafka output configuration was present [#247](https://github.com/logstash-plugins/logstash-integration-kafka/pull/247)
+  
 **Mutate Filter - 3.6.0**
 
 * Add JRuby 10 support: fix integer conversion precision loss beyond 2^53 caused by `parse_signed_hex_str` routing all strings through `Float()` [#178](https://github.com/logstash-plugins/logstash-filter-mutate/pull/178)
