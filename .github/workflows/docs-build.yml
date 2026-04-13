@@ -15,3 +15,5 @@ jobs:
     uses: elastic/docs-actions/.github/workflows/docs-build.yml@v1
     with:
       enable-vale-linting: true
+      # Backport: merge this `use-release-branches` line into release branches 9.3 and 9.4 (same two workflow files).
+      use-release-branches: true
