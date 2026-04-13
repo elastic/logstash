@@ -59,8 +59,7 @@ class DeadLetterQueueUtils {
     }
 
     /**
-     * Single-pass scan using OS-level glob filtering; avoids materializing
-     * all paths into a collection when only the numeric maximum is needed.
+     * Finds the all `.log` files using OS-level glob filtering and returns the max segment ID.
      */
     static int maxSegmentId(Path path) throws IOException {
         int max = 0;
