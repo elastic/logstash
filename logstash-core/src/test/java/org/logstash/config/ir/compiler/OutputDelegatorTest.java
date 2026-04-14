@@ -154,8 +154,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public void outputStrategyTests() {
         StrategyPair[] outputStrategies = new StrategyPair[]{
                 new StrategyPair("shared", OutputStrategyExt.SharedOutputStrategyExt.class),
-                new StrategyPair("single", OutputStrategyExt.SingleOutputStrategyExt.class),
-                new StrategyPair("legacy", OutputStrategyExt.LegacyOutputStrategyExt.class)
+                new StrategyPair("single", OutputStrategyExt.SingleOutputStrategyExt.class)
         };
 
         for (StrategyPair pair : outputStrategies) {
@@ -184,8 +183,7 @@ public class OutputDelegatorTest extends PluginDelegatorTestCase {
     public void outputStrategyMethodDelegationTests() {
         RubySymbol[] outputStrategies = new RubySymbol[]{
                 RUBY.newSymbol("shared"),
-                RUBY.newSymbol("single"),
-                RUBY.newSymbol("legacy")
+                RUBY.newSymbol("single")
         };
         final ThreadContext context = RUBY.getCurrentContext();
         for (RubySymbol symbol : outputStrategies) {

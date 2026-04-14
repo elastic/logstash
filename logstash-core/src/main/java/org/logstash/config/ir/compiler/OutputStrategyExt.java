@@ -21,13 +21,9 @@
 package org.logstash.config.ir.compiler;
 
 import org.jruby.Ruby;
-import org.jruby.RubyArray;
 import org.jruby.RubyClass;
-import org.jruby.RubyFixnum;
 import org.jruby.RubyHash;
 import org.jruby.RubyObject;
-import org.jruby.api.Convert;
-import org.jruby.api.Create;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -37,8 +33,6 @@ import org.logstash.RubyUtil;
 import org.logstash.execution.ExecutionContextExt;
 import org.logstash.plugins.factory.ContextualizerExt;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
 public final class OutputStrategyExt {
@@ -164,85 +158,6 @@ public final class OutputStrategyExt {
         protected abstract IRubyObject close(ThreadContext context);
 
         protected abstract IRubyObject reg(ThreadContext context);
-    }
-
-    @JRubyClass(name = "Legacy", parent = "AbstractStrategy")
-    public static final class LegacyOutputStrategyExt extends OutputStrategyExt.AbstractOutputStrategyExt {
-
-        private static final long serialVersionUID = 1L;
-
-        private transient BlockingQueue<IRubyObject> workerQueue;
-
-        private transient IRubyObject workerCount;
-
-        private @SuppressWarnings({"rawtypes"}) RubyArray workers;
-
-        public LegacyOutputStrategyExt(final Ruby runtime, final RubyClass metaClass) {
-            super(runtime, metaClass);
-        }
-
-        @JRubyMethod(required = 4)
-        public IRubyObject initialize(final ThreadContext context, final IRubyObject[] args) {
-            final RubyClass outputClass = (RubyClass) args[0];
-            final IRubyObject metric = args[1];
-            final ExecutionContextExt executionContext = (ExecutionContextExt) args[2];
-            final RubyHash pluginArgs = (RubyHash) args[3];
-            workerCount = pluginArgs.op_aref(context, context.runtime.newString("workers"));
-            if (workerCount.isNil()) {
-                workerCount = RubyFixnum.one(context.runtime);
-            }
-            final int count = Convert.toInt(context, workerCount.convertToInteger());
-            workerQueue = new ArrayBlockingQueue<>(count);
-            workers = (RubyArray) Create.allocArray(context, count);
-            for (int i = 0; i < count; ++i) {
-                final IRubyObject output = ContextualizerExt.initializePlugin(context, executionContext, outputClass, pluginArgs);
-                initOutputCallsite(outputClass);
-                output.callMethod(context, "metric=", metric);
-                workers.append(context, output);
-                workerQueue.add(output);
-            }
-            return this;
-        }
-
-        @JRubyMethod(name = "worker_count")
-        public IRubyObject workerCount() {
-            return workerCount;
-        }
-
-        @JRubyMethod
-        public IRubyObject workers() {
-            return workers;
-        }
-
-        @Override
-        public IRubyObject getRubyPlugin(final ThreadContext context) {
-            return workers.isEmpty() ? context.nil : (IRubyObject) workers.get(0);
-        }
-
-        @Override
-        protected IRubyObject output(final ThreadContext context, final IRubyObject events) throws InterruptedException {
-            final IRubyObject worker = workerQueue.take();
-            try {
-                invokeOutput(context, events, worker);
-                return context.nil;
-            } finally {
-                workerQueue.put(worker);
-            }
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        protected IRubyObject close(final ThreadContext context) {
-            workers.forEach(worker -> ((IRubyObject) worker).callMethod(context, "do_close"));
-            return this;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        protected IRubyObject reg(final ThreadContext context) {
-            workers.forEach(worker -> ((IRubyObject) worker).callMethod(context, "register"));
-            return this;
-        }
     }
 
     @JRubyClass(name = "SimpleAbstractStrategy", parent = "AbstractStrategy")

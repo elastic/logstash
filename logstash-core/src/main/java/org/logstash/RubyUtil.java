@@ -149,8 +149,6 @@ public final class RubyUtil {
 
     public static final RubyClass OUTPUT_STRATEGY_SIMPLE_ABSTRACT;
 
-    public static final RubyClass OUTPUT_STRATEGY_LEGACY;
-
     public static final RubyClass OUTPUT_STRATEGY_SINGLE;
 
     public static final RubyClass OUTPUT_STRATEGY_SHARED;
@@ -373,10 +371,6 @@ public final class RubyUtil {
             context, "SimpleAbstractStrategy", OUTPUT_STRATEGY_ABSTRACT,
             ObjectAllocator.NOT_ALLOCATABLE_ALLOCATOR
         );
-        OUTPUT_STRATEGY_LEGACY = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
-            context, "Legacy", OUTPUT_STRATEGY_ABSTRACT,
-            OutputStrategyExt.LegacyOutputStrategyExt::new
-        );
         OUTPUT_STRATEGY_SINGLE = OUTPUT_DELEGATOR_STRATEGIES.defineClassUnder(
             context, "Single", OUTPUT_STRATEGY_SIMPLE_ABSTRACT,
             OutputStrategyExt.SingleOutputStrategyExt::new
@@ -389,16 +383,12 @@ public final class RubyUtil {
         OUTPUT_STRATEGY_ABSTRACT.defineMethods(context, OutputStrategyExt.SimpleAbstractOutputStrategyExt.class);
         OUTPUT_STRATEGY_SHARED.defineMethods(context, OutputStrategyExt.SharedOutputStrategyExt.class);
         OUTPUT_STRATEGY_SINGLE.defineMethods(context, OutputStrategyExt.SingleOutputStrategyExt.class);
-        OUTPUT_STRATEGY_LEGACY.defineMethods(context, OutputStrategyExt.LegacyOutputStrategyExt.class);
         final OutputStrategyExt.OutputStrategyRegistryExt outputStrategyRegistry =
             OutputStrategyExt.OutputStrategyRegistryExt.instance(
                 context, OUTPUT_DELEGATOR_STRATEGIES
             );
         outputStrategyRegistry.register(
             context, RUBY.newSymbol("shared"), OUTPUT_STRATEGY_SHARED
-        );
-        outputStrategyRegistry.register(
-            context, RUBY.newSymbol("legacy"), OUTPUT_STRATEGY_LEGACY
         );
         outputStrategyRegistry.register(
             context, RUBY.newSymbol("single"), OUTPUT_STRATEGY_SINGLE
