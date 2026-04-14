@@ -130,17 +130,17 @@ public class OtelMetricsServiceTest {
 
     @Test
     public void normalizeHttpEndpointAppendsPathWhenMissing() {
-        // Standard OTel Collector endpoint
+        // Standard OTel Collector endpoint with explicit port
         assertThat(OtelMetricsService.normalizeHttpEndpoint("http://localhost:4318"))
                 .isEqualTo("http://localhost:4318/v1/metrics");
 
-        // Prometheus OTLP endpoint
+        // Prometheus OTLP endpoint with explicit port
         assertThat(OtelMetricsService.normalizeHttpEndpoint("http://prometheus:9090/api/v1/otlp"))
                 .isEqualTo("http://prometheus:9090/api/v1/otlp/v1/metrics");
 
-        // Grafana Cloud endpoint
+        // Grafana Cloud endpoint - adds default port 443 for https
         assertThat(OtelMetricsService.normalizeHttpEndpoint("https://otlp-gateway.grafana.net/otlp"))
-                .isEqualTo("https://otlp-gateway.grafana.net/otlp/v1/metrics");
+                .isEqualTo("https://otlp-gateway.grafana.net:443/otlp/v1/metrics");
     }
 
     @Test
@@ -149,9 +149,33 @@ public class OtelMetricsServiceTest {
         assertThat(OtelMetricsService.normalizeHttpEndpoint("http://localhost:4318/v1/metrics"))
                 .isEqualTo("http://localhost:4318/v1/metrics");
 
-        // Elastic Cloud or other managed service with full path
+        // Elastic Cloud or other managed service with full path - adds default port 443
         assertThat(OtelMetricsService.normalizeHttpEndpoint("https://my-cluster.apm.us-east-1.aws.elastic.cloud/v1/metrics"))
-                .isEqualTo("https://my-cluster.apm.us-east-1.aws.elastic.cloud/v1/metrics");
+                .isEqualTo("https://my-cluster.apm.us-east-1.aws.elastic.cloud:443/v1/metrics");
+    }
+
+    @Test
+    public void normalizeHttpEndpointAddsDefaultPortForHttp() {
+        // HTTP without port should get port 80
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("http://collector.example.com"))
+                .isEqualTo("http://collector.example.com:80/v1/metrics");
+    }
+
+    @Test
+    public void normalizeHttpEndpointAddsDefaultPortForHttps() {
+        // HTTPS without port should get port 443
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("https://collector.example.com"))
+                .isEqualTo("https://collector.example.com:443/v1/metrics");
+    }
+
+    @Test
+    public void normalizeHttpEndpointPreservesExplicitPort() {
+        // Explicit port should be preserved
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("http://localhost:8080"))
+                .isEqualTo("http://localhost:8080/v1/metrics");
+
+        assertThat(OtelMetricsService.normalizeHttpEndpoint("https://collector.example.com:9443"))
+                .isEqualTo("https://collector.example.com:9443/v1/metrics");
     }
 
     // ==================== propertyToEnvVar tests ====================

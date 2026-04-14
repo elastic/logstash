@@ -219,6 +219,7 @@ logger.otel.level = debug
 Verify the endpoint is accessible:
 - For gRPC (default): Port 4317
 - For HTTP: Port 4318 with `/v1/metrics` path automatically appended
+- If no port is specified, defaults are used: 80 for `http://`, 443 for `https://`
 
 **Authentication errors**
 

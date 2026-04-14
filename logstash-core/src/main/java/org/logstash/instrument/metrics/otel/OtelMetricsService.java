@@ -353,11 +353,36 @@ public class OtelMetricsService {
     }
 
     /**
-     * Normalizes HTTP endpoint by appending /v1/metrics if not already present.
+     * Normalizes HTTP endpoint by:
+     * 1. Adding default port (80 for http, 443 for https) if not specified
+     * 2. Appending /v1/metrics if not already present
      * This allows users to specify either the base URL or the full path.
      */
     static String normalizeHttpEndpoint(String endpoint) {
-        return endpoint.endsWith("/v1/metrics") ? endpoint : endpoint + "/v1/metrics";
+        String normalizedEndpoint = endpoint;
+
+        // Add default port if not specified
+        try {
+            java.net.URI uri = new java.net.URI(endpoint);
+            if (uri.getPort() == -1) {
+                int defaultPort = "https".equalsIgnoreCase(uri.getScheme()) ? 443 : 80;
+                // Rebuild URI with explicit port
+                normalizedEndpoint = new java.net.URI(
+                        uri.getScheme(),
+                        uri.getUserInfo(),
+                        uri.getHost(),
+                        defaultPort,
+                        uri.getPath(),
+                        uri.getQuery(),
+                        uri.getFragment()
+                ).toString();
+            }
+        } catch (java.net.URISyntaxException e) {
+            LOGGER.warn("Could not parse endpoint URL '{}', using as-is: {}", endpoint, e.getMessage());
+        }
+
+        // Append /v1/metrics if not present
+        return normalizedEndpoint.endsWith("/v1/metrics") ? normalizedEndpoint : normalizedEndpoint + "/v1/metrics";
     }
 
     // Package-private and static for testing
