@@ -71,6 +71,14 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Feature: Add a warning log message when the number of tasks stored in memory exceeds the configured threshold [#125](https://github.com/logstash-plugins/logstash-filter-aggregate/issues/125)
 
+**Aws Integration - 7.3.4**
+
+* Use milliseconds timestamp precision in S3 input to fix the skip backup and delete object issue in S3-compatible storage services [#60](https://github.com/logstash-plugins/logstash-integration-aws/pull/60)
+* Replace deprecated `Aws::S3::Object#upload_file` in favor of `Aws::S3::TransferManager#upload_file` [#67](https://github.com/logstash-plugins/logstash-integration-aws/pull/67)
+* Replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
+* Re-packaging the plugin [#63](https://github.com/logstash-plugins/logstash-integration-aws/pull/63)
+* Add `cutoff_second configuration` option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
+
 **Date Filter - 3.2.0**
 
 * Add `precision` setting to support nanosecond precision timestamps [#165](https://github.com/logstash-plugins/logstash-filter-date/pull/165)
@@ -87,6 +95,11 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 
 * Add JRuby 10 support: replace removed `NativeException` with `RaiseException`, source JRuby from Logstash vendor directory instead of pinning Maven version [#96](https://github.com/logstash-plugins/logstash-filter-dissect/pull/96)
 
+**Elastic Integration Filter - 9.4.0**
+
+* Include Elasticsearch web-utils JAR into the plugin to keep `registered_domain` processor dependencies [#397](https://github.com/elastic/logstash-filter-elastic_integration/pull/397)
+* Fixed `set_security_user` processor to behave consistently with other unsupported processors (`inference`, `enrich`) by tagging events with `_ingest_pipeline_failure` [#269](https://github.com/elastic/logstash-filter-elastic_integration/pull/269)
+
 **Fingerprint Filter - 3.5.0**
 
 * Fix fingerprint instability for Hash and Array field values caused by JRuby 10 changing `Hash#inspect` formatting [#79](https://github.com/logstash-plugins/logstash-filter-fingerprint/pull/79)
@@ -102,18 +115,6 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
 **Gelf Input - 3.4.0**
 
 * Updates the `gelf` dependency [#77](https://github.com/logstash-plugins/logstash-input-gelf/pull/77)
-
-**Aws Integration - 7.3.4**
-
-* Use milliseconds timestamp precision in S3 input to fix the skip backup and delete object issue in S3-compatible storage services [#60](https://github.com/logstash-plugins/logstash-integration-aws/pull/60)
-    
-* Replace deprecated `Aws::S3::Object#upload_file` in favor of `Aws::S3::TransferManager#upload_file` [#67](https://github.com/logstash-plugins/logstash-integration-aws/pull/67)
-
-* Replace deprecated `File.exists?` with `File.exist?` for Ruby 3.4 (JRuby 10) compatibility [#65](https://github.com/logstash-plugins/logstash-integration-aws/pull/65)
-
-* Re-packaging the plugin [#63](https://github.com/logstash-plugins/logstash-integration-aws/pull/63)
-
-* Add `cutoff_second configuration` option to S3 input plugin [#59](https://github.com/logstash-plugins/logstash-integration-aws/pull/59)
 
 ## 9.3.3 [logstash-9.3.3-release-notes]
 
