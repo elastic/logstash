@@ -41,7 +41,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     )
   end
 
-  let(:interval_time_value) { double("time_value", :to_seconds => 10) }
+  let(:interval_time_value) { double("time_value", :to_seconds => 10, :to_millis => 10000) }
 
   let(:settings) do
     double("settings").tap do |s|
@@ -79,7 +79,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         "http://localhost:4317",
         "test-node-id",
         "test-node-name",
-        10,
+        10000,
         "grpc",
         nil,
         nil
@@ -104,7 +104,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "https://apm.example.com",
           "test-node-id",
           "test-node-name",
-          10,
+          10000,
           "http",
           nil,
           "ApiKey my-secret-key"
@@ -130,7 +130,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "https://apm.example.com",
           "test-node-id",
           "test-node-name",
-          10,
+          10000,
           "http",
           nil,
           "Bearer my-bearer-token"

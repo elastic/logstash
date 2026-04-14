@@ -41,7 +41,12 @@ module LogStash module Instrument module PeriodicPoller
     java_import 'io.opentelemetry.api.common.AttributeKey'
 
     def initialize(metric, agent, settings)
-      @interval_seconds = settings.get("otel.metrics.interval").to_seconds
+      # Convert interval to both seconds and milliseconds:
+      # - seconds: used by Ruby Base class (Concurrent::TimerTask) for polling
+      # - milliseconds: used by Java OTel SDK (PeriodicMetricReader) for export timing
+      interval_time_value = settings.get("otel.metrics.interval")
+      @interval_seconds = interval_time_value.to_seconds
+      @interval_ms = interval_time_value.to_millis
 
       # Call Base initializer - sets up @metric and configures the TimerTask
       super(metric, :polling_interval => @interval_seconds)
@@ -50,12 +55,12 @@ module LogStash module Instrument module PeriodicPoller
       @settings = settings
       @metric_store = @metric.collector
 
-      # Initialize the Otel service - SDK handles its own export timing
+      # Initialize the Otel service - SDK expects interval in milliseconds
       @otel_service = org.logstash.instrument.metrics.otel.OtelMetricsService.new(
         settings.get("otel.metrics.endpoint"),
         agent.id,
         agent.name,
-        @interval_seconds,
+        @interval_ms,
         settings.get("otel.metrics.protocol"),
         settings.get("otel.resource.attributes"),
         settings.get("otel.metrics.authorization_header")
