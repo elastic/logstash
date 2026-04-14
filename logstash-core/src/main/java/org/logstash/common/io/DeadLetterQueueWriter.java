@@ -541,8 +541,6 @@ public final class DeadLetterQueueWriter implements Closeable {
             updateOldestSegmentReference();
             cleanNextSegment = isOldestSegmentExpired();
         } while (cleanNextSegment);
-
-        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**
@@ -557,8 +555,10 @@ public final class DeadLetterQueueWriter implements Closeable {
      * */
     private long deleteTailSegment(Path segment, String motivation) throws IOException {
         try {
+            long segmentSize = Files.size(segment);
             long eventsInSegment = DeadLetterQueueUtils.countEventsInSegment(segment);
             Files.delete(segment);
+            currentQueueSize.addAndGet(-segmentSize);
             logger.debug("Removed segment file {} due to {}", segment, motivation);
             return eventsInSegment;
         } catch (NoSuchFileException nsfex) {
@@ -633,7 +633,6 @@ public final class DeadLetterQueueWriter implements Closeable {
         } else {
             logger.info("Queue size {} exceeded, but no complete DLQ segments found", maxQueueSize);
         }
-        this.currentQueueSize.set(computeQueueSize());
     }
 
     /**
