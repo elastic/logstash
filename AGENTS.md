@@ -44,15 +44,18 @@ Use Gradle tasks as the normal entry points from the repo root. Rake and bundle 
 
 **Test layout:** Unit specs live under **`spec/`** (root) and **`logstash-core/spec/`**. Integration and acceptance tests live under **`qa/`** (e.g. **`qa/integration`** for integration tests). Use the commands below from the repo root; the single-integration-test example uses a path under `qa/integration`.
 
-**Test task structure:** The top-level `test` task excludes all classes and delegates to `javaTests` and `rubyTests`. Do **not** use `--tests` on the `test` task — it will have no effect. Always use `--tests` on `javaTests` or `rubyTests` directly.
+**Test task structure:** There are two separate Gradle test tasks: `javaTests` (pure Java unit tests) and `rubyTests` (Ruby specs **and** Java tests that depend on Ruby infrastructure). The top-level `test` task excludes all classes itself and simply delegates to both, so `./gradlew test --tests ...` will silently match nothing. Always apply `--tests` to `javaTests` or `rubyTests` directly.
 
-**`javaTests` vs `rubyTests` split:** Some Java test classes that depend on Ruby infrastructure (e.g. `OutputDelegatorTest`, `ConfigCompilerTest`, `CompiledPipelineTest`) are excluded from `javaTests` and included in `rubyTests`. Check `logstash-core/build.gradle` for the exclude/include lists if `--tests` returns "No tests found" — the class may be in the other task.
+**`javaTests` vs `rubyTests` split:** Several Java test classes are excluded from `javaTests` and included in `rubyTests` because they load Ruby code at runtime. The exclude/include lists are in `logstash-core/build.gradle`. If `--tests` returns "No tests found for given includes", the class is likely in the other task. Examples of Java tests that live in `rubyTests`:
+- `OutputDelegatorTest`, `JavaCodecDelegatorTest` — test delegators that wrap Ruby plugin instances
+- `ConfigCompilerTest`, `CompiledPipelineTest`, `EventConditionTest` — test config compilation which invokes the Ruby parser
+- `PluginFactoryExtTest` — tests Ruby plugin instantiation
 
 ```bash
 # All unit tests (Java + Ruby)
 ./gradlew test
 
-# All Java tests
+# All Java tests (pure Java, no Ruby dependency)
 ./gradlew :logstash-core:javaTests
 
 # Single Java test class
@@ -64,10 +67,13 @@ Use Gradle tasks as the normal entry points from the repo root. Rake and bundle 
 # Java tests by pattern
 ./gradlew :logstash-core:javaTests --tests "org.logstash.settings.*"
 
-# Single Java test class that depends on Ruby (in rubyTests, not javaTests)
+# WRONG — will silently run nothing because `test` excludes all classes:
+# ./gradlew :logstash-core:test --tests org.logstash.TimestampTest
+
+# Java test that depends on Ruby — must use rubyTests, not javaTests:
 ./gradlew :logstash-core:rubyTests --tests org.logstash.config.ir.compiler.OutputDelegatorTest
 
-# All Ruby tests (core)
+# All Ruby tests (core) — also runs the Ruby-dependent Java tests listed above
 ./gradlew :logstash-core:rubyTests
 
 # Single Ruby spec file
