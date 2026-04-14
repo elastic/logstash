@@ -255,6 +255,50 @@ public class OtelMetricsServiceTest {
     // cannot be easily mocked in unit tests without additional libraries.
     // The environment variable lookup is tested implicitly through integration tests.
 
+    // ========================================
+    // resolveServiceName tests
+    // ========================================
+
+    @Test
+    public void resolveServiceNameReturnsDefaultWhenNothingProvided() {
+        String serviceName = OtelMetricsService.resolveServiceName(null);
+        assertThat(serviceName).isEqualTo("logstash");
+    }
+
+    @Test
+    public void resolveServiceNameReturnsDefaultForEmptyLogstashYml() {
+        String serviceName = OtelMetricsService.resolveServiceName("");
+        assertThat(serviceName).isEqualTo("logstash");
+    }
+
+    @Test
+    public void resolveServiceNameReturnsLogstashYmlWhenProvided() {
+        String serviceName = OtelMetricsService.resolveServiceName("my-logstash");
+        assertThat(serviceName).isEqualTo("my-logstash");
+    }
+
+    @Test
+    public void resolveServiceNameSystemPropertyTakesPrecedence() {
+        try {
+            System.setProperty("otel.service.name", "from-system-property");
+            String serviceName = OtelMetricsService.resolveServiceName("from-logstash-yml");
+            assertThat(serviceName).isEqualTo("from-system-property");
+        } finally {
+            System.clearProperty("otel.service.name");
+        }
+    }
+
+    @Test
+    public void resolveServiceNameSystemPropertyIgnoresEmptyValue() {
+        try {
+            System.setProperty("otel.service.name", "");
+            String serviceName = OtelMetricsService.resolveServiceName("from-logstash-yml");
+            assertThat(serviceName).isEqualTo("from-logstash-yml");
+        } finally {
+            System.clearProperty("otel.service.name");
+        }
+    }
+
     /**
      * Test appender to capture log messages
      */

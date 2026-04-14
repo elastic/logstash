@@ -72,6 +72,7 @@ public class OtelMetricsService {
     private static final Logger LOGGER = LogManager.getLogger(OtelMetricsService.class);
 
     // OTel standard configuration names (usable as system properties or environment variables)
+    private static final String OTEL_SERVICE_NAME = "otel.service.name";
     private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
     private static final String OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = "otel.exporter.otlp.metrics.endpoint";
     private static final String OTEL_EXPORTER_OTLP_PROTOCOL = "otel.exporter.otlp.protocol";
@@ -79,6 +80,8 @@ public class OtelMetricsService {
     private static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
     private static final String OTEL_EXPORTER_OTLP_HEADERS = "otel.exporter.otlp.headers";
     private static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
+
+    private static final String DEFAULT_SERVICE_NAME = "logstash";
 
     private final SdkMeterProvider meterProvider;
     private final Meter meter;
@@ -100,23 +103,25 @@ public class OtelMetricsService {
      * @param protocol             "grpc" or "http" from logstash.yml
      * @param resourceAttributes   Additional resource attributes from logstash.yml (comma-separated key=value pairs)
      * @param authorizationHeader  Authorization header value from logstash.yml (e.g., "ApiKey xxx" or "Bearer xxx"), or null
+     * @param serviceName          Service name from logstash.yml, or null to use default "logstash"
      */
     public OtelMetricsService(String endpoint, String nodeId, String nodeName,
                               long intervalMs, String protocol, String resourceAttributes,
-                              String authorizationHeader) {
+                              String authorizationHeader, String serviceName) {
         // Resolve configuration with precedence: system props > env vars > logstash.yml
         String effectiveEndpoint = resolveEndpoint(endpoint);
         String effectiveProtocol = resolveProtocol(protocol);
         long effectiveIntervalMs = resolveIntervalMs(intervalMs);
         String effectiveResourceAttrs = resolveResourceAttributes(resourceAttributes);
         this.effectiveAuthorizationHeader = resolveAuthorizationHeader(authorizationHeader);
+        String effectiveServiceName = resolveServiceName(serviceName);
 
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}ms)",
                 effectiveEndpoint, effectiveProtocol, effectiveIntervalMs);
 
         // Build resource attributes
         AttributesBuilder resourceAttrsBuilder = Attributes.builder()
-                .put(AttributeKey.stringKey("service.name"), "logstash")
+                .put(AttributeKey.stringKey("service.name"), effectiveServiceName)
                 .put(AttributeKey.stringKey("service.instance.id"), nodeId)
                 .put(AttributeKey.stringKey("host.name"), nodeName);
 
@@ -147,6 +152,25 @@ public class OtelMetricsService {
         this.meter = meterProvider.get("logstash");
 
         LOGGER.info("OpenTelemetry metrics service initialized successfully");
+    }
+
+    /**
+     * Resolves service name with precedence: system property > env var > logstash.yml > default.
+     */
+    static String resolveServiceName(String logstashYmlServiceName) {
+        String serviceName = getConfigValue(OTEL_SERVICE_NAME, null);
+        if (serviceName != null) {
+            LOGGER.debug("Using service name '{}' from {}", serviceName, getConfigSource(OTEL_SERVICE_NAME));
+            return serviceName;
+        }
+
+        // Fall back to logstash.yml if provided
+        if (logstashYmlServiceName != null && !logstashYmlServiceName.isEmpty()) {
+            return logstashYmlServiceName;
+        }
+
+        // Fall back to default
+        return DEFAULT_SERVICE_NAME;
     }
 
     /**
@@ -296,7 +320,7 @@ public class OtelMetricsService {
     /**
      * Returns the source of a configuration value for logging purposes.
      */
-    private String getConfigSource(String propertyName) {
+    static String getConfigSource(String propertyName) {
         if (System.getProperty(propertyName) != null) {
             return "system property " + propertyName;
         }

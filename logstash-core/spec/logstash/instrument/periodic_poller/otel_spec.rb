@@ -50,6 +50,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       allow(s).to receive(:get).with("otel.metrics.protocol").and_return("grpc")
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
       allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
+      allow(s).to receive(:get).with("otel.service.name").and_return(nil)
     end
   end
 
@@ -82,6 +83,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         10000,
         "grpc",
         nil,
+        nil,
         nil
       ).and_return(otel_service)
 
@@ -96,6 +98,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("ApiKey my-secret-key")
+          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
 
@@ -107,7 +110,8 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           10000,
           "http",
           nil,
-          "ApiKey my-secret-key"
+          "ApiKey my-secret-key",
+          nil
         ).and_return(otel_service)
 
         otel_poller
@@ -122,6 +126,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("Bearer my-bearer-token")
+          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
 
@@ -133,7 +138,8 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           10000,
           "http",
           nil,
-          "Bearer my-bearer-token"
+          "Bearer my-bearer-token",
+          nil
         ).and_return(otel_service)
 
         otel_poller

@@ -34,6 +34,27 @@ otel.metrics.protocol: "grpc"
 | `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.metrics.authorization_header` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
+| `otel.service.name` | Service name for metrics. Can also be set via `OTEL_SERVICE_NAME` env var. | `logstash` |
+
+### Configuration precedence
+
+OpenTelemetry settings can be configured via Java system properties, environment variables, or `logstash.yml`. The resolution order is:
+
+1. **Java system properties** (highest priority) - e.g., `-Dotel.service.name=my-service`
+2. **Environment variables** - e.g., `OTEL_SERVICE_NAME=my-service`
+3. **logstash.yml** (lowest priority)
+
+Standard OpenTelemetry environment variables are supported:
+
+| Environment Variable | System Property | logstash.yml Setting |
+| --- | --- | --- |
+| `OTEL_SERVICE_NAME` | `otel.service.name` | `otel.service.name` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `otel.exporter.otlp.endpoint` | `otel.metrics.endpoint` |
+| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | `otel.exporter.otlp.metrics.endpoint` | `otel.metrics.endpoint` |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `otel.exporter.otlp.protocol` | `otel.metrics.protocol` |
+| `OTEL_METRIC_EXPORT_INTERVAL` | `otel.metric.export.interval` | `otel.metrics.interval` |
+| `OTEL_RESOURCE_ATTRIBUTES` | `otel.resource.attributes` | `otel.resource.attributes` |
+| `OTEL_EXPORTER_OTLP_HEADERS` | `otel.exporter.otlp.headers` | `otel.metrics.authorization_header` |
 
 ## Sending metrics to Elastic Cloud
 

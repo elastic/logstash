@@ -119,6 +119,7 @@ module LogStash
           Setting::TimeValueSetting.new("otel.metrics.interval", "10s"),
            Setting::StringSetting.new("otel.metrics.protocol", "grpc", true, ["grpc", "http"]),
    Setting::PasswordSetting.new("otel.metrics.authorization_header", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
+    Setting::NullableStringSetting.new("otel.service.name"), # defaults to "logstash" if not set
    Setting::NullableStringSetting.new("otel.resource.attributes", nil, false) # key=value,key2=value2 format
   # post_process
   ].each {|setting| SETTINGS.register(setting) }

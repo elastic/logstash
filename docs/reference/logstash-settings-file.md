@@ -109,5 +109,6 @@ The `logstash.yml` file includes these settings.
 | `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
 | `otel.metrics.authorization_header` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
+| `otel.service.name` | Service name for metrics. Can also be set via `OTEL_SERVICE_NAME` environment variable or `otel.service.name` system property. | `logstash` |
 
 >>>>>>> bd159bd54 (Add documentation)

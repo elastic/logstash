@@ -339,6 +339,11 @@
 #
 # otel.resource.attributes:
 #
+# Service name for metrics (default: "logstash").
+# Can also be set via OTEL_SERVICE_NAME env var or otel.service.name system property.
+#
+# otel.service.name: "logstash"
+#
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:
