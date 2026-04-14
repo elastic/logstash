@@ -1,25 +1,18 @@
 name: docs-build
-
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches:
       - main
-      - '\d+.\d+'
-  pull_request_target: ~
+      - '[0-9]+.[0-9]+'
   merge_group: ~
-
+permissions:
+  contents: read
+  pull-requests: read
 jobs:
-  docs-preview:
-    uses: elastic/docs-builder/.github/workflows/preview-build.yml@main
+  build:
+    uses: elastic/docs-actions/.github/workflows/docs-build.yml@v1
     with:
-<<<<<<< HEAD
-      path-pattern: docs/**
-    permissions:
-      deployments: write
-      id-token: write
-      contents: read
-      pull-requests: write
-=======
       enable-vale-linting: true
       use-release-branches: true
->>>>>>> 3c4fbaf4 (ci: enable use-release-branches for docs workflows (#18992))
