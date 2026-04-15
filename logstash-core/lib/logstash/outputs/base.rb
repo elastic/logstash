@@ -69,6 +69,14 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   def initialize(params = {})
     super
+
+    # Outputs that never declared a concurrency strategy used the now-removed :legacy
+    # strategy, which accepted a `workers` setting. Strip it so existing configs with
+    # `workers => 1` don't blow up.
+    if !self.class.instance_variable_defined?(:@concurrency) && @params.delete("workers")
+      self.logger.warn("Output plugin #{self.class.name}: the `workers` setting is no longer used and will be removed in a future release.")
+    end
+
     config_init(@params)
 
     # If we're running with a single thread we must enforce single-threaded concurrency by default

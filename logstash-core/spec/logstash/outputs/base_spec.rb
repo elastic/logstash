@@ -60,6 +60,8 @@ describe "LogStash::Outputs::Base#new" do
     let(:klass) { LogStash::Outputs::NOOPSingle }
 
     it "should instantiate cleanly" do
+      params = { "dummy_option" => "potatoes", "codec" => "json" }
+
       expect { subject }.not_to raise_error
     end
 
