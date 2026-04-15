@@ -49,6 +49,17 @@ public class LifetimeHistogramMetric extends AbstractMetric<LifetimeHistogramMet
     }
 
     @Override
+    public int estimateBatchMetricsFootprintInBytes() {
+        // Recorder has at least a couple histograms, so we have no less than 3 instances
+        return 3 * estimateSingleHistogramFootprintInBytes();
+    }
+
+    @Override
+    public int estimateSingleHistogramFootprintInBytes() {
+        return this.lifetimeSnapshot.getEstimatedFootprintInBytes();
+    }
+
+    @Override
     public synchronized ValueHistogram getValue() {
         Histogram uncommitted = recorder.getIntervalHistogram();
         this.lifetimeSnapshot = copyAdding(lifetimeSnapshot, uncommitted);

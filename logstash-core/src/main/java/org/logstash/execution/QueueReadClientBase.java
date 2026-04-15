@@ -23,7 +23,6 @@ package org.logstash.execution;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyHash;
-import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -108,6 +107,14 @@ public abstract class QueueReadClientBase extends RubyObject implements QueueRea
             batchMetrics.setupMetrics(namespacedMetric);
         }
         return this;
+    }
+
+    /**
+     * Must be invoked after setPipelineMetric which configured the batch metric.
+     * */
+    @Override
+    public final int estimateBatchMetricsFootprintInBytes() {
+        return batchMetrics.estimateBatchMetricsFootprintInBytes();
     }
 
     @JRubyMethod(name = "set_batch_dimensions")

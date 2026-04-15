@@ -60,6 +60,12 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 * Updated the bundled JDK to 21.0.10 build 7
 
+::::{important}
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
+::::
+
 ### Plugins [logstash-plugin-9.3.2-changes]
 
 **Geoip Filter - 8.0.0**

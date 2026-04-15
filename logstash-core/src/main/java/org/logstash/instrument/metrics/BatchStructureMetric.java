@@ -104,6 +104,15 @@ public class BatchStructureMetric extends AbstractMetric<Map<String, BatchStruct
         return Collections.unmodifiableMap(rates);
     }
 
+    public int estimateBatchMetricsFootprintInBytes() {
+        int singleHistogramFootprint = batchHistogram.estimateSingleHistogramFootprintInBytes();
+        int totalDatapointsCount = 0;
+        for (FlowMetricRetentionPolicy supportedPolicy : SUPPORTED_POLICIES) {
+            totalDatapointsCount += supportedPolicy.datapointsCount();
+        }
+        return singleHistogramFootprint * totalDatapointsCount;
+    }
+
     /**
      * Presentation class to render histogram data, leverage its JSON serializability.
      * */

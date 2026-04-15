@@ -73,6 +73,13 @@ class BuiltInFlowMetricRetentionPolicies {
         public long maxAgeBarrierNanos(long referenceNanos) {
             return Long.MIN_VALUE;
         }
+
+        @Override
+        public int datapointsCount() {
+            // The lifetime retention window keeps one committed capture and, once updated,
+            // one staged capture prior to compaction/reporting.
+            return 2;
+        }
     };
 
     private static final Set<FlowMetricRetentionPolicy> ALL;

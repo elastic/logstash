@@ -35,6 +35,8 @@ interface FlowMetricRetentionPolicy {
 
     long maxAgeBarrierNanos(final long referenceNanos);
 
+    int datapointsCount();
+
     class RollingRetentionPolicy implements FlowMetricRetentionPolicy {
 
         final long resolutionNanos;
@@ -45,6 +47,7 @@ interface FlowMetricRetentionPolicy {
         final boolean reportBeforeSatisfied;
 
         final transient String nameLower;
+        final int datapointsCount;
 
         RollingRetentionPolicy(final String name,
                                final Duration maximumRetention,
@@ -52,6 +55,9 @@ interface FlowMetricRetentionPolicy {
                                final boolean reportBeforeSatisfied) {
             this.retentionNanos = maximumRetention.toNanos();
             this.resolutionNanos = minimumResolution.toNanos();
+            // Each window contains also the staging, so
+            // has to be summed up to the bare count of retention / resolution periods.
+            this.datapointsCount = (int) (retentionNanos / resolutionNanos) + 1;
             this.reportBeforeSatisfied = reportBeforeSatisfied;
 
             // we generally rely on query-time compaction, and only perform insertion-time compaction
@@ -100,6 +106,11 @@ interface FlowMetricRetentionPolicy {
         @Override
         public boolean reportBeforeSatisfied() {
             return this.reportBeforeSatisfied;
+        }
+
+        @Override
+        public int datapointsCount() {
+            return this.datapointsCount;
         }
     }
 }

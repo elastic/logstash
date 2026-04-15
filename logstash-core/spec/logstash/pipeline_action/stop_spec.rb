@@ -23,7 +23,10 @@ require "logstash/pipeline_action/stop"
 describe LogStash::PipelineAction::Stop do
   let(:pipeline_config) { "input { dummyblockinginput {} } output { null {} }" }
   let(:pipeline_id) { :main }
-  let(:pipeline) { mock_java_pipeline_from_string(pipeline_config) }
+  let(:pipeline) do
+    # Disable batch metrics mode to avoid having to initialize the entire flow metrics part as well
+    mock_java_pipeline_from_string(pipeline_config, mock_settings("pipeline.batch.metrics.sampling_mode" => "disabled"))
+  end
   let(:pipelines) { chm = LogStash::PipelinesRegistry.new; chm.create_pipeline(pipeline_id, pipeline) { true }; chm }
   let(:agent) { double("agent") }
 

@@ -25,6 +25,7 @@ require 'logstash/pipeline_action/reload'
 require "stud/try"
 require 'timeout'
 require "thread"
+require 'java'
 
 class DummyInput < LogStash::Inputs::Base
   config_name "dummyinput"
@@ -219,14 +220,19 @@ describe LogStash::JavaPipeline do
   let(:pipeline_settings) do
     {
       "dead_letter_queue.enable" => dead_letter_queue_enabled,
-      "path.dead_letter_queue" => dead_letter_queue_path
+      "path.dead_letter_queue" => dead_letter_queue_path,
+      "pipeline.batch.metrics.sampling_mode" => batch_sampling_mode,
     }
   end
+  let(:batch_sampling_mode) { "disabled" }
   let(:max_retry) {10} #times
   let(:timeout) {120} #seconds
 
   before :each do
     pipeline_workers_setting = LogStash::SETTINGS.get_setting("pipeline.workers")
+    allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
+
+    pipeline_workers_setting = pipeline_settings_obj.get_setting("pipeline.workers")
     allow(pipeline_workers_setting).to receive(:default).and_return(worker_thread_count)
 
     pipeline_settings.each {|k, v| pipeline_settings_obj.set(k, v) }
@@ -390,7 +396,7 @@ describe LogStash::JavaPipeline do
               mutate { add_tag => "miss" }
             }
           }
-        CONFIG
+    CONFIG
 
     context "raise an error when it's evaluated, should cancel the event execution and log the error" do
       context "when type of evaluation doesn't have same type" do
@@ -429,7 +435,7 @@ describe LogStash::JavaPipeline do
                       }
                     }
                   }
-                CONFIG
+        CONFIG
 
         sample_one( [{ "path" => {"to" => {"value" => "101"}}}] ) do
           expect(subject).to be nil
@@ -688,7 +694,7 @@ describe LogStash::JavaPipeline do
       context "when there is no command line -w N set" do
         it "starts one filter thread" do
           msg = "Defaulting pipeline worker threads to 1 because there are some filters that might not work with multiple worker threads"
-          pipeline = mock_java_pipeline_from_string(test_config_with_filters)
+          pipeline = mock_java_pipeline_from_string(test_config_with_filters, pipeline_settings_obj)
           expect(pipeline.logger).to receive(:warn).with(msg,
             hash_including({:count_was => worker_thread_count, :filters => ["dummyfilter"]}))
           pipeline.start
@@ -772,7 +778,7 @@ describe LogStash::JavaPipeline do
     }
 
     context "input and output close" do
-      let(:pipeline) { mock_java_pipeline_from_string(test_config_without_output_workers) }
+      let(:pipeline) { mock_java_pipeline_from_string(test_config_without_output_workers, mock_settings("pipeline.batch.metrics.sampling_mode" => batch_sampling_mode)) }
       let(:output) { pipeline.outputs.first }
       let(:input) { pipeline.inputs.first }
 
@@ -824,7 +830,7 @@ describe LogStash::JavaPipeline do
       let(:config) { "input { dummyinput {} } output { dummyoutput {} }"}
 
       it "should start the flusher thread only after the pipeline is running" do
-        pipeline = mock_java_pipeline_from_string(config)
+        pipeline = mock_java_pipeline_from_string(config, mock_settings("pipeline.batch.metrics.sampling_mode" => batch_sampling_mode))
 
         expect(pipeline).to receive(:transition_to_running).ordered.and_call_original
         expect(pipeline).to receive(:start_flusher).ordered.and_call_original
@@ -1049,7 +1055,7 @@ describe LogStash::JavaPipeline do
   context "metrics" do
     config = "input { } filter { } output { }"
 
-    let(:settings) { LogStash::SETTINGS.clone }
+    let(:settings) { mock_settings("pipeline.batch.metrics.sampling_mode" => batch_sampling_mode) }
     subject { mock_java_pipeline_from_string(config, settings, metric) }
 
     after :each do
@@ -1132,6 +1138,56 @@ describe LogStash::JavaPipeline do
           expect(subject.metric.collector).to be(collector)
         end
       end
+
+      context "batch structure metric estimation" do
+        let(:collector) { ::LogStash::Instrument::Collector.new }
+        let(:metric) { ::LogStash::Instrument::Metric.new(collector) }
+
+        let(:sample_occupation) do
+          java_import 'org.HdrHistogram.Recorder'
+          # HistogramMetric uses HdrHistogram with 3 digits precision, so create a sample to have
+          # the rough histogram memory consumption.
+          sample = Recorder.new(3).interval_histogram
+
+          sample.estimated_footprint_in_bytes
+        end
+
+        # BatchStructureMetric has 4 policies
+        # Each window contains also the staging, so
+        # has to be summed up to the bare count of retention / resolution periods.
+        # Note that the calculations correspond to the resolutions per 60 seconds multiplied by the number 
+        # of minutes. For example, for the 5 minute rentention policy:
+        # 60 / 15 (resolution per 60 seconds) * 5 (minutes). The + 1 corresponds to the staging datapoint.
+        let(:last_1_minute_datapoints) { 60 / 3 + 1 }
+        let(:last_5_minutes_datapoints) { 5 * 60 / 15 + 1}
+        let(:last_15_minutes_datapoints) { 15 * 60 / 30 + 1 }
+        let(:lifetime_datapoints) { 2 }
+        let(:single_batch_metric_datapoints) do
+          last_1_minute_datapoints + last_5_minutes_datapoints + last_15_minutes_datapoints + lifetime_datapoints
+        end
+
+        # byte size and event count batch metrics has single_batch_metric_datapoints each plus
+        # other 3 datapoints used by each lifetime histogram metric
+        let(:total_datapoints) { 2 * single_batch_metric_datapoints + 2 * 3 }
+        let(:expected_occupation) { sample_occupation * total_datapoints }
+
+        context "when enabled" do
+          # enable batch sampling else the batch metrics are not initialized
+          let(:batch_sampling_mode) { "full" }
+
+          it "should report the expected result" do
+            subject.initialize_flow_metrics
+            expect(subject.estimate_batch_metrics_occupation).to be(expected_occupation)
+          end
+        end
+
+        context "when disabled" do
+          it "must return nil" do
+            subject.initialize_flow_metrics
+            expect(subject.estimate_batch_metrics_occupation).to be_nil
+          end
+        end
+      end
     end
   end
 
@@ -1190,13 +1246,13 @@ describe LogStash::JavaPipeline do
     end
   end
   context "Pipeline created with too many filters" do
-    # create pipeline with 2000 filters
-    # 2000 filters is more than a thread stack of size 2MB can handle
+    # create pipeline with 2500 filters
+    # 2500 filters is more than a thread stack of size 2MB can handle
     let(:config) do
       <<-EOS
       input { dummy_input {} }
       filter {
-        #{"          nil_flushing_filter {}\n" * 2000}
+        #{"          nil_flushing_filter {}\n" * 2500}
       }
       output { dummy_output {} }
       EOS
@@ -1368,7 +1424,7 @@ describe LogStash::JavaPipeline do
       EOS
     end
 
-    subject { mock_java_pipeline_from_string(config) }
+    subject { mock_java_pipeline_from_string(config, mock_settings("pipeline.batch.metrics.sampling_mode" => batch_sampling_mode)) }
 
     context "when the pipeline is not started" do
       after :each do
@@ -1395,7 +1451,7 @@ describe LogStash::JavaPipeline do
       }
       EOS
     end
-    subject { mock_java_pipeline_from_string(config) }
+    subject { mock_java_pipeline_from_string(config, mock_settings("pipeline.batch.metrics.sampling_mode" => batch_sampling_mode)) }
 
     context "when the pipeline is not started" do
       after :each do

@@ -48,6 +48,16 @@ public interface HistogramMetric extends
          }
 
          @Override
+         public int estimateBatchMetricsFootprintInBytes() {
+             return 0;
+         }
+
+         @Override
+         public int estimateSingleHistogramFootprintInBytes() {
+             return 0;
+         }
+
+         @Override
          public ValueHistogram getValue() {
              // small empty histogram to avoid null checks in consumers
              return ValueHistogram.of(new Histogram(1));
@@ -58,4 +68,8 @@ public interface HistogramMetric extends
              return "NULL";
          }
      });
+
+    int estimateBatchMetricsFootprintInBytes();
+
+    int estimateSingleHistogramFootprintInBytes();
 }

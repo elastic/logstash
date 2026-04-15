@@ -20,6 +20,7 @@
 package org.logstash.instrument.metrics;
 
 import org.HdrHistogram.Histogram;
+import org.HdrHistogram.Recorder;
 import org.junit.Before;
 import org.junit.Test;
 import org.logstash.instrument.metrics.histogram.LifetimeHistogramMetric;
@@ -168,5 +169,28 @@ public class BatchStructureMetricTest {
         BatchStructureMetric.HistogramMetricData lifetimeData = histogramMap.get("lifetime");
         assertEquals(100, lifetimeData.get50Percentile(), 10);
         assertEquals(200, lifetimeData.get90Percentile(), 10);
+    }
+
+    @Test
+    public void givenInstantiatedStructureMetricInstanceThenVerifyOccupationEstimation() {
+        // HistogramMetric uses HdrHistogram with 3 digits precision, so create a sample to have
+        // the rough histogram occupation.
+        Histogram sample = new Recorder(3).getIntervalHistogram();
+
+        int sampleOccupation = sample.getEstimatedFootprintInBytes();
+
+        //BatchStructureMetric has 4 policies
+        int totalDatapoints = BuiltInFlowMetricRetentionPolicies.LAST_1_MINUTE.datapointsCount() +
+        BuiltInFlowMetricRetentionPolicies.LAST_5_MINUTES.datapointsCount() +
+        BuiltInFlowMetricRetentionPolicies.LAST_15_MINUTES.datapointsCount() +
+        BuiltInFlowMetricRetentionPolicies.LIFETIME.datapointsCount();
+
+        // 60 seconds retention divided by the resolution of 3 seconds, plus the staging accumulator.
+        // The same reasoning applies to 5 and 15 minutes.
+        assertEquals(60/3 + 1 + 5 * 60/15 + 1 + 15 * 60/30 + 1  + 2, totalDatapoints);
+
+        int expectedOccupation = sampleOccupation * totalDatapoints;
+
+        assertEquals(expectedOccupation, sut.estimateBatchMetricsFootprintInBytes());
     }
 }

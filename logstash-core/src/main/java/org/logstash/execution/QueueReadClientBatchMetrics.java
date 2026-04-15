@@ -92,4 +92,12 @@ class QueueReadClientBatchMetrics {
             LOG.error("Failed to calculate batch byte size for metrics", e);
         }
     }
+
+    public int estimateBatchMetricsFootprintInBytes() {
+        if (batchMetricMode != QueueFactoryExt.BatchMetricMode.DISABLED) {
+            return pipelineMetricBatchByteSizeFlowHistogram.estimateBatchMetricsFootprintInBytes() +
+                    pipelineMetricBatchEventCountFlowHistogram.estimateBatchMetricsFootprintInBytes();
+        }
+        return 0;
+    }
 }
