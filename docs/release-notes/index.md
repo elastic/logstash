@@ -29,7 +29,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 ::::{important}
 
-As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are disabled by default due to their lack of forward secrecy; connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
 ::::
 
