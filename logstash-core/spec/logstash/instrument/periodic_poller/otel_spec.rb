@@ -146,6 +146,63 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       end
     end
 
+    context "with PasswordSetting authorization header" do
+      let(:password_object) { LogStash::Util::Password.new("ApiKey extracted-secret") }
+      let(:settings) do
+        double("settings").tap do |s|
+          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(password_object)
+          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+        end
+      end
+
+      it "extracts string value from Password object and passes to OtelMetricsService" do
+        expect(OtelMetricsService).to receive(:new).with(
+          "https://apm.example.com",
+          "test-node-id",
+          "test-node-name",
+          10000,
+          "http",
+          nil,
+          "ApiKey extracted-secret",
+          nil
+        ).and_return(otel_service)
+
+        otel_poller
+      end
+    end
+
+    context "with nil authorization header" do
+      let(:settings) do
+        double("settings").tap do |s|
+          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
+          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+        end
+      end
+
+      it "passes nil to OtelMetricsService when authorization header is not set" do
+        expect(OtelMetricsService).to receive(:new).with(
+          "https://apm.example.com",
+          "test-node-id",
+          "test-node-name",
+          10000,
+          "http",
+          nil,
+          nil,
+          nil
+        ).and_return(otel_service)
+
+        otel_poller
+      end
+    end
+
     it "registers global metrics" do
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.events.in", anything, anything, anything, anything

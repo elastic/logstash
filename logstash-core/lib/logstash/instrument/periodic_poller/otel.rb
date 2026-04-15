@@ -63,7 +63,7 @@ module LogStash module Instrument module PeriodicPoller
         @interval_ms,
         settings.get("otel.metrics.protocol"),
         settings.get("otel.resource.attributes"),
-        settings.get("otel.metrics.authorization_header"),
+        settings.get("otel.metrics.authorization_header")&.value,
         settings.get("otel.service.name")
       )
 
