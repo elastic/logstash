@@ -84,6 +84,15 @@ describe "LogStash::Outputs::Base#new" do
     it "should default concurrency to :single" do
       expect(subject.concurrency).to eq(:single)
     end
+
+    it "should accept the deprecated workers setting without error" do
+      expect { klass.new("workers" => 1) }.not_to raise_error
+    end
+
+    it "should log a warning when workers is set" do
+      expect_any_instance_of(klass).to receive(:logger).and_return(double("logger").as_null_object)
+      klass.new("workers" => 1)
+    end
   end
 
   context "execution context" do
