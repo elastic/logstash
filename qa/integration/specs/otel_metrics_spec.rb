@@ -65,7 +65,7 @@ describe "OpenTelemetry Metrics Export" do
 
       begin
         # Start Logstash with the pipeline config file
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         # Wait for metrics to be received by collector
@@ -123,7 +123,7 @@ describe "OpenTelemetry Metrics Export" do
       IO.write(settings_file, effective_settings.to_yaml)
 
       begin
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         # Wait for metrics - if auth is working, collector will receive them
@@ -158,7 +158,7 @@ describe "OpenTelemetry Metrics Export" do
       IO.write(settings_file, effective_settings.to_yaml)
 
       begin
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
@@ -193,7 +193,7 @@ describe "OpenTelemetry Metrics Export" do
       begin
         # Set OTEL_SERVICE_NAME env var before starting Logstash
         @logstash.env_variables = { "OTEL_SERVICE_NAME" => custom_service_name }
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
@@ -227,7 +227,7 @@ describe "OpenTelemetry Metrics Export" do
       IO.write(settings_file, effective_settings.to_yaml)
 
       begin
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         # Wait a bit longer to ensure pipeline metrics are collected
@@ -270,7 +270,7 @@ describe "OpenTelemetry Metrics Export" do
       IO.write(settings_file, effective_settings.to_yaml)
 
       begin
-        @logstash.start_background(config_to_temp_file(@fixture.config))
+        @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
