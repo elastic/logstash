@@ -90,8 +90,10 @@ describe "LogStash::Outputs::Base#new" do
     end
 
     it "should log a warning when workers is set" do
-      expect_any_instance_of(klass).to receive(:logger).and_return(double("logger").as_null_object)
-      klass.new("workers" => 1)
+      logger = klass.logger
+      expect(logger).to receive(:warn).with(/workers.*no longer used/)
+      output = klass.new("workers" => 1)
+      expect(output.params).not_to include("workers")
     end
   end
 
