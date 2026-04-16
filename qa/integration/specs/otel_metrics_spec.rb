@@ -257,7 +257,7 @@ describe "OpenTelemetry Metrics Export" do
         "otel.exporter.otlp.metrics.endpoint" => @otel_collector.http_endpoint,
         "otel.exporter.otlp.metrics.protocol" => "http",
         "otel.metric.export.interval" => "3s",
-        "otel.exporter.otlp.headers" => @otel_collector.auth_header,
+        "otel.exporter.otlp.metrics.headers" => @otel_collector.auth_header,
         "otel.resource.attributes" => "deployment.environment=test,service.version=1.0.0",
         "otel.service.name" => "full-config-logstash"
       }
