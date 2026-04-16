@@ -14,6 +14,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.*;
 
@@ -164,14 +165,14 @@ public class FileWatchServiceTest {
     public void eventContainsRegisteredPath() throws Exception {
         File cert = tempDir.newFile("cert.pem");
         Path registered = cert.toPath();
-        Path[] captured = {null};
+        AtomicReference<Path> captured = new AtomicReference<>();
         CountDownLatch latch = new CountDownLatch(1);
 
-        svc.register(registered, event -> { captured[0] = event.path(); latch.countDown(); });
+        svc.register(registered, event -> { captured.set(event.path()); latch.countDown(); });
 
         Files.write(cert.toPath(), "x".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
 
         assertTrue(latch.await(3, TimeUnit.SECONDS));
-        assertEquals(registered.toAbsolutePath(), captured[0].toAbsolutePath());
+        assertEquals(registered.toAbsolutePath(), captured.get().toAbsolutePath());
     }
 }
