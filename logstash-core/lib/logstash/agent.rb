@@ -38,7 +38,6 @@ require "logstash/state_resolver"
 require "logstash/pipelines_registry"
 require "logstash/persisted_queue_config_validator"
 require "logstash/pipeline_resource_usage_validator"
-require "logstash/ssl_file_tracker"
 require "stud/trap"
 require "uri"
 require "socket"
@@ -61,10 +60,11 @@ class LogStash::Agent
   #   :name [String] - identifier for the agent
   #   :auto_reload [Boolean] - enable reloading of pipelines
   #   :reload_interval [Integer] - reload pipelines every X seconds
-  def initialize(settings = LogStash::SETTINGS, source_loader = nil)
+  def initialize(settings = LogStash::SETTINGS, source_loader = nil, ssl_file_tracker = nil)
     @logger = self.class.logger
     @settings = settings
     @auto_reload = setting("config.reload.automatic")
+    @ssl_file_tracker = ssl_file_tracker
     @ephemeral_id = SecureRandom.uuid
 
     java_import("org.logstash.health.HealthObserver")
@@ -123,11 +123,6 @@ class LogStash::Agent
     dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
-    if @auto_reload && setting("ssl.reload.automatic")
-      java_import org.logstash.common.FileWatchService
-      @file_watch_service = FileWatchService.create
-      @ssl_file_tracker   = LogStash::SslFileTracker.new(@file_watch_service)
-    end
   end
 
   def execute
@@ -289,7 +284,7 @@ class LogStash::Agent
 
     transition_to_stopped
     converge_result = shutdown_pipelines
-    @file_watch_service&.close
+    @ssl_file_tracker&.close
     stop_collecting_metrics
     stop_webserver
     converge_result
