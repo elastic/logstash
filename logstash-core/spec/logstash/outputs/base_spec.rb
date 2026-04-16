@@ -58,10 +58,9 @@ describe "LogStash::Outputs::Base#new" do
 
   context "single" do
     let(:klass) { LogStash::Outputs::NOOPSingle }
+    let(:params) { { "dummy_option" => "potatoes", "codec" => "json" } }
 
     it "should instantiate cleanly" do
-      params = { "dummy_option" => "potatoes", "codec" => "json" }
-
       expect { subject }.not_to raise_error
     end
 
@@ -87,13 +86,6 @@ describe "LogStash::Outputs::Base#new" do
 
     it "should accept the deprecated workers setting without error" do
       expect { klass.new("workers" => 1) }.not_to raise_error
-    end
-
-    it "should log a warning when workers is set" do
-      logger = klass.logger
-      expect(logger).to receive(:warn).with(/workers.*no longer used/)
-      output = klass.new("workers" => 1)
-      expect(output.params).not_to include("workers")
     end
   end
 

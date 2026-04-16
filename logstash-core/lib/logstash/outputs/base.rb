@@ -34,6 +34,8 @@ class LogStash::Outputs::Base < LogStash::Plugin
   # The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output, without needing a separate filter in your Logstash pipeline.
   config :codec, :validate => :codec, :default => "plain"
 
+  config :workers, :type => :number, :deprecated => "This parameter will be ignored."
+
   # Set or return concurrency type
   def self.concurrency(type = nil)
     if type
@@ -69,13 +71,6 @@ class LogStash::Outputs::Base < LogStash::Plugin
   public
   def initialize(params = {})
     super
-
-    # Outputs that never declared a concurrency strategy used the now-removed :legacy
-    # strategy, which accepted a `workers` setting. Strip it so existing configs with
-    # `workers => 1` don't blow up.
-    if !self.class.instance_variable_defined?(:@concurrency) && @params.delete("workers")
-      self.logger.warn("Output plugin #{self.class.name}: the `workers` setting is no longer used and will be removed in a future release.")
-    end
 
     config_init(@params)
 
