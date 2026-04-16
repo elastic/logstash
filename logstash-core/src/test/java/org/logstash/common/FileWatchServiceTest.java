@@ -142,7 +142,7 @@ public class FileWatchServiceTest {
     }
 
     @Test
-    public void watchesMultipleFilesInSameDirectory() throws Exception {
+    public void givenMultipleFilesWatchedInSameDirectoryWhenAnyIsChangedThenOnlyTheProperNotificationIsFired() throws Exception {
         File dir = tempDir.newFolder("certs");
         File cert1 = new File(dir, "cert1.pem");
         File cert2 = new File(dir, "cert2.pem");
