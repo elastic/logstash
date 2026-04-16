@@ -56,8 +56,14 @@ Related:
 
 ### Updates to dependencies [logstash-9.4.0-dependencies]
 
-* Update bundled JDK to 21.0.10 build 7
 * Update JRuby to 10.0.5.0
+* Update bundled JDK to 21.0.10 build 7
+
+::::{important}
+
+As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
+
+::::
 
 ### Plugins [logstash-plugin-9.4.0-changes]
 
