@@ -62,7 +62,7 @@ public final class FileWatchService implements Closeable {
     // absolute directory -> WatchedDir(WatchKey, registered file paths)
     private final Map<Path, WatchedDir> watchedDirs = new HashMap<>();
     // absolute file path -> callbacks
-    private final ConcurrentHashMap<Path, CopyOnWriteArrayList<FileChangeCallback>> filepathCallbacks = new ConcurrentHashMap<>();
+    private final Map<Path, CopyOnWriteArrayList<FileChangeCallback>> filepathCallbacks = new ConcurrentHashMap<>();
     private volatile Thread watcherThread;
 
     private FileWatchService(final WatchService watchService) {
