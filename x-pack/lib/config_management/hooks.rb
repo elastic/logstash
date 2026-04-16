@@ -35,7 +35,7 @@ module LogStash
           logger.debug("Removing the `Logstash::Config::Source::Local` and replacing it with `ElasticsearchSource`")
           runner.source_loader.remove_source(LogStash::Config::Source::Local)
           runner.source_loader.remove_source(LogStash::Config::Source::MultiLocal)
-          source = LogStash::ConfigManagement::ElasticsearchSource.new(runner.settings)
+          source = LogStash::ConfigManagement::ElasticsearchSource.new(runner.settings, runner.ssl_file_tracker)
           runner.source_loader.add_source(source)
         end
       end
