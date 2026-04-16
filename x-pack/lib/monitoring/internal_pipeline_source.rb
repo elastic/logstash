@@ -5,6 +5,7 @@
 require "logstash/config/source/base"
 require 'license_checker/licensed'
 require 'helpers/elasticsearch_options'
+require 'logstash/ssl_file_tracker'
 
 module LogStash module Monitoring
   class InternalPipelineSource < LogStash::Config::Source::Base
@@ -12,14 +13,23 @@ module LogStash module Monitoring
     include LogStash::Helpers::ElasticsearchOptions
     include LogStash::Util::Loggable
     FEATURE = 'monitoring'
+    SSL_TRACK_ID_LICENSE = :".monitoring_license"
 
-    def initialize(pipeline_config, agent, settings)
+    def initialize(pipeline_config, agent, settings, ssl_file_tracker = nil)
       super(pipeline_config.settings)
       @pipeline_config = pipeline_config
       @settings = settings
       @agent = agent
       @es_options = es_options_from_settings(FEATURE, @settings)
-      setup_license_checker(FEATURE)
+
+      if ssl_file_tracker
+        paths = LogStash::SslFileTracker.paths_from_settings(@settings, "xpack.#{FEATURE}")
+        ssl_file_tracker.register_paths(SSL_TRACK_ID_LICENSE, paths)
+      end
+
+      setup_license_checker(FEATURE,
+                            ssl_file_tracker: ssl_file_tracker,
+                            tracking_id: SSL_TRACK_ID_LICENSE)
     end
 
     def pipeline_configs
