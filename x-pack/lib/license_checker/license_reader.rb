@@ -4,6 +4,7 @@
 
 require 'logstash/logging/logger'
 require 'logstash/outputs/elasticsearch'
+require 'helpers/ssl_rebuildable'
 
 module LogStash
   module LicenseChecker
@@ -12,12 +13,14 @@ module LogStash
 
       XPACK_MISSING_STATUS_CODES = [400, 404]
 
-      def initialize(settings, feature, options)
+      def initialize(settings, feature, options, ssl_file_tracker: nil, tracking_id: nil)
         @namespace = "xpack.#{feature}"
         @settings = settings
 
         es_options = options.merge('resurrect_delay' => 30)
         @es_options = Helpers::ElasticsearchOptions::es_options_with_product_origin_header(es_options)
+
+        @rebuildable = LogStash::Helpers::SslRebuildable.new(ssl_file_tracker, tracking_id) { build_client }
       end
 
       ##
@@ -65,7 +68,11 @@ module LogStash
       ##
       # @api private
       def client
-        @client ||= build_client
+        @rebuildable.client
+      end
+
+      def maybe_rebuild_client
+        @rebuildable.maybe_rebuild
       end
 
       private

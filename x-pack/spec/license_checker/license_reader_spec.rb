@@ -8,6 +8,7 @@ require "license_checker/license_reader"
 require "helpers/elasticsearch_options"
 require "monitoring/monitoring"
 require "logstash/runner"
+require "logstash/ssl_file_tracker"
 
 describe LogStash::LicenseChecker::LicenseReader do
   let(:elasticsearch_url) { "https://localhost:9898" }
@@ -212,6 +213,36 @@ describe LogStash::LicenseChecker::LicenseReader do
     it "builds ES client" do
       expect(subject.client.client_settings[:headers]).to include("Authorization" => "ApiKey Zm9vOmJhcg==")
       expect(subject.client.client_settings[:headers]).to include(product_origin_header)
+    end
+  end
+
+  describe "SSL tracker wiring" do
+    let(:tracker) { instance_double(LogStash::SslFileTracker) }
+    let(:license_reader) do
+      described_class.new(system_settings, 'monitoring', elasticsearch_options,
+                          ssl_file_tracker: tracker, tracking_id: :".cpm_license")
+    end
+
+    it "passes the tracker and tracking_id to its SslRebuildable" do
+      rebuildable = license_reader.instance_variable_get(:@rebuildable)
+      expect(rebuildable.instance_variable_get(:@tracker)).to be(tracker)
+      expect(rebuildable.instance_variable_get(:@id)).to eq(:".cpm_license")
+    end
+
+    it "maybe_rebuild_client delegates to the rebuildable" do
+      rebuildable = subject.instance_variable_get(:@rebuildable)
+      expect(rebuildable).to receive(:maybe_rebuild)
+      subject.maybe_rebuild_client
+    end
+
+    it "client delegates to the rebuildable" do
+      rebuildable = subject.instance_variable_get(:@rebuildable)
+      expect(rebuildable).to receive(:client)
+      subject.client
+    end
+
+    it "maybe_rebuild_client is safe when no tracker was injected" do
+      expect { subject.maybe_rebuild_client }.not_to raise_error
     end
   end
 end
