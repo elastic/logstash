@@ -116,12 +116,13 @@ public class JvmOptionsParser {
     }
 
     static void bailOnOldJava() {
-        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_17) < 0) {
+        if (JavaVersion.CURRENT.compareTo(JavaVersion.JAVA_21) < 0) {
             final String message = String.format(
                     Locale.ROOT,
-                    "The minimum required Java version is 17; your Java version from [%s] does not meet this requirement",
-                    System.getProperty("java.home")
-            );
+                    "The minimum required Java version is 21; your Java version from [%s] is [%s] and does not meet this requirement",
+                    System.getProperty("java.home"),
+                    JavaVersion.CURRENT
+                    );
             System.err.println(message);
             System.exit(1);
         }
