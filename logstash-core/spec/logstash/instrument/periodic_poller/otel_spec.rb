@@ -45,11 +45,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
   let(:settings) do
     double("settings").tap do |s|
-      allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("http://localhost:4317")
-      allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
-      allow(s).to receive(:get).with("otel.metrics.protocol").and_return("grpc")
+      allow(s).to receive(:get).with("otel.exporter.otlp.metrics.endpoint").and_return("http://localhost:4317")
+      allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
+      allow(s).to receive(:get).with("otel.exporter.otlp.metrics.protocol").and_return("grpc")
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-      allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
+      allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
       allow(s).to receive(:get).with("otel.service.name").and_return(nil)
     end
   end
@@ -94,11 +94,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       let(:auth_password) { LogStash::Util::Password.new("ApiKey my-secret-key") }
       let(:settings) do
         double("settings").tap do |s|
-          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
-          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(auth_password)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
@@ -123,11 +123,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       let(:auth_password) { LogStash::Util::Password.new("Bearer my-bearer-token") }
       let(:settings) do
         double("settings").tap do |s|
-          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
-          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(auth_password)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
@@ -151,11 +151,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
     context "with nil authorization header" do
       let(:settings) do
         double("settings").tap do |s|
-          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
-          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.endpoint").and_return("https://apm.example.com")
+          allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(nil)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end

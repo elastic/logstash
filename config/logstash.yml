@@ -312,35 +312,44 @@
 # This allows you to send Logstash metrics to any OTLP-compatible collector
 # or monitoring platform (e.g., Prometheus via OTLP receiver, Elastic, Grafana Cloud).
 #
+# System properties take precedence over logstash.yml settings.
+# Use -D<property>=<value> to set system properties (e.g., -Dotel.service.name=my-logstash).
+#
 # Enable OpenTelemetry metrics export (default: false)
 #
 # otel.metrics.enabled: false
 #
-# OTLP endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318.
+# OTLP metrics endpoint URL (default: "http://localhost:4317").
+# For gRPC, typically port 4317. For HTTP, typically port 4318.
+# System property: otel.exporter.otlp.metrics.endpoint
 #
-# otel.metrics.endpoint: "http://localhost:4317"
+# otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
 #
 # Export interval with time unit, e.g., "10s", "1m" (default: "10s")
+# System property: otel.metric.export.interval
 #
-# otel.metrics.interval: "10s"
+# otel.metric.export.interval: "10s"
 #
 # Protocol to use for OTLP export: "grpc" (default) or "http"
+# System property: otel.exporter.otlp.metrics.protocol
 #
-# otel.metrics.protocol: "grpc"
+# otel.exporter.otlp.metrics.protocol: "grpc"
 #
 # Authorization header for authenticated OTLP endpoints.
 # Examples: "ApiKey xxx" or "Bearer xxx"
+# System property: otel.exporter.otlp.metrics.headers
 #
-# otel.metrics.authorization_header:
+# otel.exporter.otlp.metrics.headers:
 #
 # Additional resource attributes as comma-separated key=value pairs.
 # These are attached to all exported metrics to identify this Logstash instance.
 # Example: "environment=production,cluster=us-west,team=platform"
+# System property: otel.resource.attributes
 #
 # otel.resource.attributes:
 #
 # Service name for metrics (default: "logstash").
-# Can also be set via OTEL_SERVICE_NAME env var or otel.service.name system property.
+# System property: otel.service.name
 #
 # otel.service.name: "logstash"
 #

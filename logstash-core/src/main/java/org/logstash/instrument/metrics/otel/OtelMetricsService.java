@@ -49,36 +49,32 @@ import java.util.function.Supplier;
  * - Manages the lifecycle of the OTel exporter
  *
  * Configuration precedence (highest to lowest):
- * 1. Java system properties (e.g., -Dotel.exporter.otlp.endpoint=...)
- * 2. Environment variables (e.g., OTEL_EXPORTER_OTLP_ENDPOINT=...)
- * 3. logstash.yml settings (passed as constructor parameters)
+ * 1. Java system properties (e.g., -Dotel.exporter.otlp.metrics.endpoint=...)
+ * 2. logstash.yml settings (passed as constructor parameters)
  *
- * Supported OTel properties:
- * - otel.exporter.otlp.endpoint / OTEL_EXPORTER_OTLP_ENDPOINT
- * - otel.exporter.otlp.metrics.endpoint / OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
- * - otel.exporter.otlp.protocol / OTEL_EXPORTER_OTLP_PROTOCOL
- * - otel.exporter.otlp.metrics.protocol / OTEL_EXPORTER_OTLP_METRICS_PROTOCOL
- * - otel.metric.export.interval / OTEL_METRIC_EXPORT_INTERVAL (in milliseconds)
- * - otel.exporter.otlp.headers / OTEL_EXPORTER_OTLP_HEADERS
- * - otel.resource.attributes / OTEL_RESOURCE_ATTRIBUTES
+ * Supported OTel system properties:
+ * - otel.exporter.otlp.metrics.endpoint
+ * - otel.exporter.otlp.metrics.protocol
+ * - otel.metric.export.interval (in milliseconds)
+ * - otel.exporter.otlp.metrics.headers
+ * - otel.resource.attributes
+ * - otel.service.name
  *
  * Usage from Ruby:
  *   java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
- *   service = OtelMetricsService.new(endpoint, node_id, node_name, interval_secs, "grpc", nil, nil)
+ *   service = OtelMetricsService.new(endpoint, metricsEndpoint, node_id, node_name, interval_ms, "grpc", attrs, auth, serviceName)
  *   service.registerGauge("metric.name", "description", "unit", -> { get_value() }, Attributes.empty)
  */
 public class OtelMetricsService {
 
     private static final Logger LOGGER = LogManager.getLogger(OtelMetricsService.class);
 
-    // OTel standard configuration names (usable as system properties or environment variables)
+    // OTel standard configuration names (usable as system properties)
     private static final String OTEL_SERVICE_NAME = "otel.service.name";
-    private static final String OTEL_EXPORTER_OTLP_ENDPOINT = "otel.exporter.otlp.endpoint";
     private static final String OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = "otel.exporter.otlp.metrics.endpoint";
-    private static final String OTEL_EXPORTER_OTLP_PROTOCOL = "otel.exporter.otlp.protocol";
     private static final String OTEL_EXPORTER_OTLP_METRICS_PROTOCOL = "otel.exporter.otlp.metrics.protocol";
     private static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
-    private static final String OTEL_EXPORTER_OTLP_HEADERS = "otel.exporter.otlp.headers";
+    private static final String OTEL_EXPORTER_OTLP_METRICS_HEADERS = "otel.exporter.otlp.metrics.headers";
     private static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
 
     private static final String DEFAULT_SERVICE_NAME = "logstash";
@@ -94,9 +90,9 @@ public class OtelMetricsService {
     /**
      * Creates a new Otel metrics service.
      *
-     * Configuration values are resolved with precedence: system properties > env vars > parameters.
+     * Configuration values are resolved with precedence: system properties > logstash.yml parameters.
      *
-     * @param endpoint             OTLP endpoint from logstash.yml (e.g., "http://localhost:4317")
+     * @param endpoint             OTLP metrics endpoint from logstash.yml (otel.exporter.otlp.metrics.endpoint)
      * @param nodeId               Logstash node ID
      * @param nodeName             Logstash node name
      * @param intervalMs           Export interval in milliseconds from logstash.yml
@@ -108,7 +104,7 @@ public class OtelMetricsService {
     public OtelMetricsService(String endpoint, String nodeId, String nodeName,
                               long intervalMs, String protocol, String resourceAttributes,
                               String authorizationHeader, String serviceName) {
-        // Resolve configuration with precedence: system props > env vars > logstash.yml
+        // Resolve configuration with precedence: system props > logstash.yml
         String effectiveEndpoint = resolveEndpoint(endpoint);
         String effectiveProtocol = resolveProtocol(protocol);
         long effectiveIntervalMs = resolveIntervalMs(intervalMs);
@@ -155,12 +151,12 @@ public class OtelMetricsService {
     }
 
     /**
-     * Resolves service name with precedence: system property > env var > logstash.yml > default.
+     * Resolves service name with precedence: system property > logstash.yml > default.
      */
     static String resolveServiceName(String logstashYmlServiceName) {
-        String serviceName = getConfigValue(OTEL_SERVICE_NAME, null);
+        String serviceName = getSystemProperty(OTEL_SERVICE_NAME, null);
         if (serviceName != null) {
-            LOGGER.debug("Using service name '{}' from {}", serviceName, getConfigSource(OTEL_SERVICE_NAME));
+            LOGGER.debug("Using service name '{}' from system property {}", serviceName, OTEL_SERVICE_NAME);
             return serviceName;
         }
 
@@ -174,55 +170,33 @@ public class OtelMetricsService {
     }
 
     /**
-     * Resolves endpoint with precedence: system property > env var > logstash.yml.
-     * Metrics-specific endpoint takes precedence over general endpoint.
+     * Resolves endpoint with precedence: system property > logstash.yml.
      */
     private String resolveEndpoint(String logstashYmlEndpoint) {
-        // First check metrics-specific endpoint
-        String endpoint = getConfigValue(OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, null);
+        String endpoint = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, null);
         if (endpoint != null) {
-            LOGGER.debug("Using metrics endpoint '{}' from {}", endpoint, getConfigSource(OTEL_EXPORTER_OTLP_METRICS_ENDPOINT));
+            LOGGER.debug("Using metrics endpoint '{}' from system property {}", endpoint, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT);
             return endpoint;
         }
-
-        // Then check general endpoint
-        endpoint = getConfigValue(OTEL_EXPORTER_OTLP_ENDPOINT, null);
-        if (endpoint != null) {
-            LOGGER.debug("Using endpoint '{}' from {}", endpoint, getConfigSource(OTEL_EXPORTER_OTLP_ENDPOINT));
-            return endpoint;
-        }
-
-        // Fall back to logstash.yml
         return logstashYmlEndpoint;
     }
 
     /**
-     * Resolves protocol with precedence: system property > env var > logstash.yml.
-     * Metrics-specific protocol takes precedence over general protocol.
+     * Resolves protocol with precedence: system property > logstash.yml.
      */
     private String resolveProtocol(String logstashYmlProtocol) {
-        // First check metrics-specific protocol
-        String protocol = getConfigValue(OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, null);
+        String protocol = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_PROTOCOL, null);
         if (protocol != null) {
-            LOGGER.debug("Using metrics protocol '{}' from {}", protocol, getConfigSource(OTEL_EXPORTER_OTLP_METRICS_PROTOCOL));
+            LOGGER.debug("Using protocol '{}' from system property {}", protocol, OTEL_EXPORTER_OTLP_METRICS_PROTOCOL);
             return normalizeProtocol(protocol);
         }
-
-        // Then check general protocol
-        protocol = getConfigValue(OTEL_EXPORTER_OTLP_PROTOCOL, null);
-        if (protocol != null) {
-            LOGGER.debug("Using protocol '{}' from {}", protocol, getConfigSource(OTEL_EXPORTER_OTLP_PROTOCOL));
-            return normalizeProtocol(protocol);
-        }
-
-        // Fall back to logstash.yml
         return logstashYmlProtocol;
     }
 
     /**
      * Normalizes protocol value (OTel uses "http/protobuf", we accept "http" as shorthand).
      */
-    private String normalizeProtocol(String protocol) {
+    static String normalizeProtocol(String protocol) {
         if ("http/protobuf".equalsIgnoreCase(protocol)) {
             return "http";
         }
@@ -230,15 +204,15 @@ public class OtelMetricsService {
     }
 
     /**
-     * Resolves export interval with precedence: system property > env var > logstash.yml.
+     * Resolves export interval with precedence: system property > logstash.yml.
      * All values are in milliseconds.
      */
     private long resolveIntervalMs(long logstashYmlIntervalMs) {
-        String intervalStr = getConfigValue(OTEL_METRIC_EXPORT_INTERVAL, null);
+        String intervalStr = getSystemProperty(OTEL_METRIC_EXPORT_INTERVAL, null);
         if (intervalStr != null) {
             try {
                 long intervalMs = Long.parseLong(intervalStr);
-                LOGGER.debug("Using export interval from {}: {}ms", getConfigSource(OTEL_METRIC_EXPORT_INTERVAL), intervalMs);
+                LOGGER.debug("Using export interval from system property {}: {}ms", OTEL_METRIC_EXPORT_INTERVAL, intervalMs);
                 return intervalMs;
             } catch (NumberFormatException e) {
                 LOGGER.warn("Invalid {} value '{}', using logstash.yml value", OTEL_METRIC_EXPORT_INTERVAL, intervalStr);
@@ -250,37 +224,29 @@ public class OtelMetricsService {
     }
 
     /**
-     * Resolves resource attributes with precedence: system property > env var > logstash.yml.
-     * Values are merged, with higher precedence overwriting lower.
+     * Resolves resource attributes with precedence: system property > logstash.yml.
      */
     private String resolveResourceAttributes(String logstashYmlAttrs) {
-        String otelAttrs = getConfigValue(OTEL_RESOURCE_ATTRIBUTES, null);
-
-        if (otelAttrs != null && logstashYmlAttrs != null && !logstashYmlAttrs.isEmpty()) {
-            // Merge: OTel attrs take precedence, append logstash.yml attrs
-            String merged = otelAttrs + "," + logstashYmlAttrs;
-            LOGGER.debug("Merging resource attributes '{}' from {} with logstash.yml", otelAttrs, getConfigSource(OTEL_RESOURCE_ATTRIBUTES));
-            return merged;
-        } else if (otelAttrs != null) {
-            LOGGER.debug("Using resource attributes '{}' from {}", otelAttrs, getConfigSource(OTEL_RESOURCE_ATTRIBUTES));
-            return otelAttrs;
+        String sysPropAttrs = getSystemProperty(OTEL_RESOURCE_ATTRIBUTES, null);
+        if (sysPropAttrs != null) {
+            LOGGER.debug("Using resource attributes '{}' from system property {}", sysPropAttrs, OTEL_RESOURCE_ATTRIBUTES);
+            return sysPropAttrs;
         }
-
         return logstashYmlAttrs;
     }
 
     /**
-     * Resolves authorization header with precedence: system property > env var > logstash.yml.
-     * Extracts Authorization header from otel.exporter.otlp.headers if present.
+     * Resolves authorization header with precedence: system property > logstash.yml.
+     * Extracts Authorization header from otel.exporter.otlp.metrics.headers if present.
      */
     private String resolveAuthorizationHeader(String logstashYmlAuthHeader) {
-        String headers = getConfigValue(OTEL_EXPORTER_OTLP_HEADERS, null);
+        String headers = getSystemProperty(OTEL_EXPORTER_OTLP_METRICS_HEADERS, null);
         if (headers != null) {
             // Parse headers format: "key1=value1,key2=value2"
             for (String header : headers.split(",")) {
                 String[] parts = header.split("=", 2);
                 if (parts.length == 2 && "Authorization".equalsIgnoreCase(parts[0].trim())) {
-                    LOGGER.debug("Using Authorization header from {} (value redacted)", getConfigSource(OTEL_EXPORTER_OTLP_HEADERS));
+                    LOGGER.debug("Using Authorization header from system property {} (value redacted)", OTEL_EXPORTER_OTLP_METRICS_HEADERS);
                     return parts[1].trim();
                 }
             }
@@ -290,45 +256,14 @@ public class OtelMetricsService {
     }
 
     /**
-     * Gets a configuration value with precedence: system property > environment variable.
+     * Gets a configuration value from system property, falling back to default.
      */
-    static String getConfigValue(String propertyName, String defaultValue) {
-        // 1. Check system property
+    static String getSystemProperty(String propertyName, String defaultValue) {
         String value = System.getProperty(propertyName);
         if (value != null && !value.isEmpty()) {
             return value;
         }
-
-        // 2. Check environment variable (convert property name to env var format)
-        String envVarName = propertyToEnvVar(propertyName);
-        value = System.getenv(envVarName);
-        if (value != null && !value.isEmpty()) {
-            return value;
-        }
-
         return defaultValue;
-    }
-
-    /**
-     * Converts a system property name to environment variable format.
-     * e.g., "otel.exporter.otlp.endpoint" -> "OTEL_EXPORTER_OTLP_ENDPOINT"
-     */
-    static String propertyToEnvVar(String propertyName) {
-        return propertyName.toUpperCase().replace('.', '_').replace('-', '_');
-    }
-
-    /**
-     * Returns the source of a configuration value for logging purposes.
-     */
-    static String getConfigSource(String propertyName) {
-        if (System.getProperty(propertyName) != null) {
-            return "system property " + propertyName;
-        }
-        String envVarName = propertyToEnvVar(propertyName);
-        if (System.getenv(envVarName) != null) {
-            return "environment variable " + envVarName;
-        }
-        return "logstash.yml";
     }
 
     private MetricExporter createExporter(String endpoint, String protocol) {

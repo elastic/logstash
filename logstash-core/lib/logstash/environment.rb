@@ -115,10 +115,10 @@ module LogStash
     Setting::NullableStringSetting.new("monitoring.cluster_uuid"),
             Setting::StringSetting.new("pipeline.buffer.type", "heap", true, ["direct", "heap"]),
            Setting::BooleanSetting.new("otel.metrics.enabled", false),
-           Setting::StringSetting.new("otel.metrics.endpoint", "http://localhost:4317"),
-          Setting::TimeValueSetting.new("otel.metrics.interval", "10s"),
-           Setting::StringSetting.new("otel.metrics.protocol", "grpc", true, ["grpc", "http"]),
-   Setting::PasswordSetting.new("otel.metrics.authorization_header", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
+           Setting::StringSetting.new("otel.exporter.otlp.metrics.endpoint", "http://localhost:4317"),
+          Setting::TimeValueSetting.new("otel.metric.export.interval", "10s"),
+           Setting::StringSetting.new("otel.exporter.otlp.metrics.protocol", "grpc", true, ["grpc", "http"]),
+   Setting::PasswordSetting.new("otel.exporter.otlp.metrics.headers", nil, false).nullable, # e.g., "ApiKey xxx" or "Bearer xxx"
     Setting::NullableStringSetting.new("otel.service.name"), # defaults to "logstash" if not set
    Setting::NullableStringSetting.new("otel.resource.attributes", nil, false) # key=value,key2=value2 format
   # post_process

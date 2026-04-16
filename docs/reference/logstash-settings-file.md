@@ -104,11 +104,11 @@ The `logstash.yml` file includes these settings.
 <<<<<<< HEAD
 =======
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. See [Monitoring with OpenTelemetry](/reference/monitoring-with-opentelemetry.md). | `false` |
-| `otel.metrics.endpoint` | The OTLP endpoint URL for metrics export. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
-| `otel.metrics.interval` | Export interval with time unit (e.g., `"10s"`, `"1m"`). Controls how frequently metrics are sent to the OTLP endpoint. | `"10s"` |
-| `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
-| `otel.metrics.authorization_header` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
+| `otel.exporter.otlp.metrics.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
+| `otel.metric.export.interval` | Export interval with time unit (e.g., `"10s"`, `"1m"`). Controls how frequently metrics are sent to the OTLP endpoint. | `"10s"` |
+| `otel.exporter.otlp.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
+| `otel.exporter.otlp.metrics.headers` | Authorization header for authenticated OTLP endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional OpenTelemetry resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
-| `otel.service.name` | Service name for metrics. Can also be set via `OTEL_SERVICE_NAME` environment variable or `otel.service.name` system property. | `logstash` |
+| `otel.service.name` | Service name for metrics. Can also be set via `otel.service.name` system property. | `logstash` |
 
 >>>>>>> bd159bd54 (Add documentation)

@@ -19,9 +19,9 @@ To enable OpenTelemetry metrics export, add the following settings to your `logs
 
 ```yaml
 otel.metrics.enabled: true
-otel.metrics.endpoint: "http://localhost:4317"
-otel.metrics.interval: "10s"
-otel.metrics.protocol: "grpc"
+otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
+otel.metric.export.interval: "10s"
+otel.exporter.otlp.metrics.protocol: "grpc"
 ```
 
 ### Settings
@@ -29,32 +29,30 @@ otel.metrics.protocol: "grpc"
 | Setting | Description | Default |
 | --- | --- | --- |
 | `otel.metrics.enabled` | Enable or disable OpenTelemetry metrics export. | `false` |
-| `otel.metrics.endpoint` | The OTLP endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
-| `otel.metrics.interval` | Export interval with time unit (e.g., `10s`, `1m`). Controls how frequently metrics are sent to the endpoint. | `"10s"` |
-| `otel.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
-| `otel.metrics.authorization_header` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
+| `otel.exporter.otlp.metrics.endpoint` | OTLP metrics endpoint URL. For gRPC, typically port 4317. For HTTP, typically port 4318. | `http://localhost:4317` |
+| `otel.metric.export.interval` | Export interval with time unit (e.g., `10s`, `1m`). Controls how frequently metrics are sent to the endpoint. | `"10s"` |
+| `otel.exporter.otlp.metrics.protocol` | Protocol to use for OTLP export. Valid values are `grpc` or `http`. | `grpc` |
+| `otel.exporter.otlp.metrics.headers` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
-| `otel.service.name` | Service name for metrics. Can also be set via `OTEL_SERVICE_NAME` env var. | `logstash` |
+| `otel.service.name` | Service name for metrics. | `logstash` |
 
 ### Configuration precedence
 
-OpenTelemetry settings can be configured via Java system properties, environment variables, or `logstash.yml`. The resolution order is:
+OpenTelemetry settings can be configured via Java system properties or `logstash.yml`. The resolution order is:
 
 1. **Java system properties** (highest priority) - e.g., `-Dotel.service.name=my-service`
-2. **Environment variables** - e.g., `OTEL_SERVICE_NAME=my-service`
-3. **logstash.yml** (lowest priority)
+2. **logstash.yml** (lowest priority)
 
-Standard OpenTelemetry environment variables are supported:
+Supported system properties:
 
-| Environment Variable | System Property | logstash.yml Setting |
-| --- | --- | --- |
-| `OTEL_SERVICE_NAME` | `otel.service.name` | `otel.service.name` |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `otel.exporter.otlp.endpoint` | `otel.metrics.endpoint` |
-| `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` | `otel.exporter.otlp.metrics.endpoint` | `otel.metrics.endpoint` |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | `otel.exporter.otlp.protocol` | `otel.metrics.protocol` |
-| `OTEL_METRIC_EXPORT_INTERVAL` | `otel.metric.export.interval` | `otel.metrics.interval` |
-| `OTEL_RESOURCE_ATTRIBUTES` | `otel.resource.attributes` | `otel.resource.attributes` |
-| `OTEL_EXPORTER_OTLP_HEADERS` | `otel.exporter.otlp.headers` | `otel.metrics.authorization_header` |
+| System Property | logstash.yml Setting |
+| --- | --- |
+| `otel.service.name` | `otel.service.name` |
+| `otel.exporter.otlp.metrics.endpoint` | `otel.exporter.otlp.metrics.endpoint` |
+| `otel.exporter.otlp.metrics.protocol` | `otel.exporter.otlp.metrics.protocol` |
+| `otel.metric.export.interval` | `otel.metric.export.interval` |
+| `otel.resource.attributes` | `otel.resource.attributes` |
+| `otel.exporter.otlp.metrics.headers` | `otel.exporter.otlp.metrics.headers` |
 
 ## Sending metrics to Elastic Cloud
 
@@ -66,9 +64,9 @@ To send metrics directly to Elastic Cloud's native OTLP endpoint:
 
 ```yaml
 otel.metrics.enabled: true
-otel.metrics.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
-otel.metrics.protocol: "http"
-otel.metrics.authorization_header: "ApiKey your-base64-encoded-api-key"
+otel.exporter.otlp.metrics.endpoint: "https://your-deployment.apm.us-central1.gcp.cloud.es.io:443"
+otel.exporter.otlp.metrics.protocol: "http"
+otel.exporter.otlp.metrics.headers: "ApiKey your-base64-encoded-api-key"
 ```
 
 ## Sending metrics to an OpenTelemetry Collector
@@ -77,8 +75,8 @@ You can also send metrics to an OpenTelemetry Collector, which can then forward 
 
 ```yaml
 otel.metrics.enabled: true
-otel.metrics.endpoint: "http://otel-collector:4317"
-otel.metrics.protocol: "grpc"
+otel.exporter.otlp.metrics.endpoint: "http://otel-collector:4317"
+otel.exporter.otlp.metrics.protocol: "grpc"
 ```
 
 Example OpenTelemetry Collector configuration to forward to Elasticsearch:
@@ -223,7 +221,7 @@ Verify the endpoint is accessible:
 
 **Authentication errors**
 
-Ensure the `otel.metrics.authorization_header` is correctly formatted:
+Ensure the `otel.exporter.otlp.metrics.headers` is correctly formatted:
 - For API keys: `ApiKey base64-encoded-key`
 - For Bearer tokens: `Bearer your-token`
 

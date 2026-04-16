@@ -178,61 +178,26 @@ public class OtelMetricsServiceTest {
                 .isEqualTo("https://collector.example.com:9443/v1/metrics");
     }
 
-    // ==================== propertyToEnvVar tests ====================
+    // ==================== getSystemProperty tests ====================
 
     @Test
-    public void propertyToEnvVarConvertsDotsToUnderscores() {
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.exporter.otlp.endpoint"))
-                .isEqualTo("OTEL_EXPORTER_OTLP_ENDPOINT");
-    }
-
-    @Test
-    public void propertyToEnvVarConvertsToUpperCase() {
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.exporter.otlp.metrics.endpoint"))
-                .isEqualTo("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT");
-    }
-
-    @Test
-    public void propertyToEnvVarConvertsHyphensToUnderscores() {
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.some-property.name"))
-                .isEqualTo("OTEL_SOME_PROPERTY_NAME");
-    }
-
-    @Test
-    public void propertyToEnvVarHandlesAllOtelProperties() {
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.metric.export.interval"))
-                .isEqualTo("OTEL_METRIC_EXPORT_INTERVAL");
-
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.exporter.otlp.protocol"))
-                .isEqualTo("OTEL_EXPORTER_OTLP_PROTOCOL");
-
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.exporter.otlp.headers"))
-                .isEqualTo("OTEL_EXPORTER_OTLP_HEADERS");
-
-        assertThat(OtelMetricsService.propertyToEnvVar("otel.resource.attributes"))
-                .isEqualTo("OTEL_RESOURCE_ATTRIBUTES");
-    }
-
-    // ==================== getConfigValue tests ====================
-
-    @Test
-    public void getConfigValueReturnsDefaultWhenNotSet() {
-        String value = OtelMetricsService.getConfigValue("test.nonexistent.property.12345", "default-value");
+    public void getSystemPropertyReturnsDefaultWhenNotSet() {
+        String value = OtelMetricsService.getSystemProperty("test.nonexistent.property.12345", "default-value");
         assertThat(value).isEqualTo("default-value");
     }
 
     @Test
-    public void getConfigValueReturnsNullWhenNoDefaultAndNotSet() {
-        String value = OtelMetricsService.getConfigValue("test.nonexistent.property.12345", null);
+    public void getSystemPropertyReturnsNullWhenNoDefaultAndNotSet() {
+        String value = OtelMetricsService.getSystemProperty("test.nonexistent.property.12345", null);
         assertThat(value).isNull();
     }
 
     @Test
-    public void getConfigValueReadsSystemProperty() {
+    public void getSystemPropertyReadsSystemProperty() {
         String propName = "test.otel.config.property.read";
         try {
             System.setProperty(propName, "system-prop-value");
-            String value = OtelMetricsService.getConfigValue(propName, "default");
+            String value = OtelMetricsService.getSystemProperty(propName, "default");
             assertThat(value).isEqualTo("system-prop-value");
         } finally {
             System.clearProperty(propName);
@@ -240,11 +205,11 @@ public class OtelMetricsServiceTest {
     }
 
     @Test
-    public void getConfigValueIgnoresEmptySystemProperty() {
+    public void getSystemPropertyIgnoresEmptySystemProperty() {
         String propName = "test.otel.config.property.empty";
         try {
             System.setProperty(propName, "");
-            String value = OtelMetricsService.getConfigValue(propName, "default");
+            String value = OtelMetricsService.getSystemProperty(propName, "default");
             assertThat(value).isEqualTo("default");
         } finally {
             System.clearProperty(propName);
@@ -252,11 +217,11 @@ public class OtelMetricsServiceTest {
     }
 
     @Test
-    public void getConfigValueSystemPropertyTakesPrecedenceOverDefault() {
+    public void getSystemPropertyTakesPrecedenceOverDefault() {
         String propName = "test.otel.config.property.precedence";
         try {
             System.setProperty(propName, "from-system-property");
-            String value = OtelMetricsService.getConfigValue(propName, "from-default");
+            String value = OtelMetricsService.getSystemProperty(propName, "from-default");
             assertThat(value).isEqualTo("from-system-property");
         } finally {
             System.clearProperty(propName);
@@ -264,20 +229,36 @@ public class OtelMetricsServiceTest {
     }
 
     @Test
-    public void getConfigValuePreservesWhitespaceInValue() {
+    public void getSystemPropertyPreservesWhitespaceInValue() {
         String propName = "test.otel.config.property.whitespace";
         try {
             System.setProperty(propName, "  value with spaces  ");
-            String value = OtelMetricsService.getConfigValue(propName, "default");
+            String value = OtelMetricsService.getSystemProperty(propName, "default");
             assertThat(value).isEqualTo("  value with spaces  ");
         } finally {
             System.clearProperty(propName);
         }
     }
 
-    // Note: Environment variable tests are not included because System.getenv()
-    // cannot be easily mocked in unit tests without additional libraries.
-    // The environment variable lookup is tested implicitly through integration tests.
+    // ==================== normalizeProtocol tests ====================
+
+    @Test
+    public void normalizeProtocolConvertsHttpProtobufToHttp() {
+        assertThat(OtelMetricsService.normalizeProtocol("http/protobuf")).isEqualTo("http");
+    }
+
+    @Test
+    public void normalizeProtocolConvertsHttpProtobufCaseInsensitive() {
+        assertThat(OtelMetricsService.normalizeProtocol("HTTP/PROTOBUF")).isEqualTo("http");
+        assertThat(OtelMetricsService.normalizeProtocol("Http/Protobuf")).isEqualTo("http");
+    }
+
+    @Test
+    public void normalizeProtocolPreservesOtherValues() {
+        assertThat(OtelMetricsService.normalizeProtocol("http")).isEqualTo("http");
+        assertThat(OtelMetricsService.normalizeProtocol("grpc")).isEqualTo("grpc");
+        assertThat(OtelMetricsService.normalizeProtocol("GRPC")).isEqualTo("GRPC");
+    }
 
     // ========================================
     // resolveServiceName tests

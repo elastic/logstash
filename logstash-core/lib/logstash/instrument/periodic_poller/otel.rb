@@ -29,10 +29,10 @@ module LogStash module Instrument module PeriodicPoller
   #
   # Configuration in logstash.yml:
   #   otel.metrics.enabled: true
-  #   otel.metrics.endpoint: "http://localhost:4317"
-  #   otel.metrics.interval: "10s"
-  #   otel.metrics.protocol: "grpc"
-  #   otel.metrics.authorization_header: "ApiKey xxx"  # or "Bearer xxx"
+  #   otel.exporter.otlp.metrics.endpoint: "http://localhost:4317"
+  #   otel.metric.export.interval: "10s"
+  #   otel.exporter.otlp.metrics.protocol: "grpc"
+  #   otel.exporter.otlp.metrics.headers: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
   #
   class Otel < Base
@@ -44,7 +44,7 @@ module LogStash module Instrument module PeriodicPoller
       # Convert interval to both seconds and milliseconds:
       # - seconds: used by Ruby Base class (Concurrent::TimerTask) for polling
       # - milliseconds: used by Java OTel SDK (PeriodicMetricReader) for export timing
-      interval_time_value = settings.get("otel.metrics.interval")
+      interval_time_value = settings.get("otel.metric.export.interval")
       @interval_seconds = interval_time_value.to_seconds
       @interval_ms = interval_time_value.to_millis
 
@@ -57,13 +57,13 @@ module LogStash module Instrument module PeriodicPoller
 
       # Initialize the Otel service - SDK expects interval in milliseconds
       @otel_service = org.logstash.instrument.metrics.otel.OtelMetricsService.new(
-        settings.get("otel.metrics.endpoint"),
+        settings.get("otel.exporter.otlp.metrics.endpoint"),
         agent.id,
         agent.name,
         @interval_ms,
-        settings.get("otel.metrics.protocol"),
+        settings.get("otel.exporter.otlp.metrics.protocol"),
         settings.get("otel.resource.attributes"),
-        settings.get("otel.metrics.authorization_header")&.value,
+        settings.get("otel.exporter.otlp.metrics.headers")&.value,
         settings.get("otel.service.name")
       )
 
@@ -80,7 +80,7 @@ module LogStash module Instrument module PeriodicPoller
       register_cgroup_metrics
 
       logger.info("OpenTelemetry metrics poller initialized",
-                  :endpoint => settings.get("otel.metrics.endpoint"),
+                  :endpoint => settings.get("otel.exporter.otlp.metrics.endpoint"),
                   :interval => @interval_seconds)
     end
 

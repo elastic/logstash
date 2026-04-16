@@ -49,9 +49,9 @@ describe "OpenTelemetry Metrics Export" do
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => endpoint,
-        "otel.metrics.protocol" => protocol,
-        "otel.metrics.interval" => "5s",
+        "otel.exporter.otlp.metrics.endpoint" => endpoint,
+        "otel.exporter.otlp.metrics.protocol" => protocol,
+        "otel.metric.export.interval" => "5s",
         "otel.resource.attributes" => "environment=integration-test,test.protocol=#{protocol}"
       }
 
@@ -109,10 +109,10 @@ describe "OpenTelemetry Metrics Export" do
     it "sends metrics with authorization header" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => @otel_collector.http_endpoint,
-        "otel.metrics.protocol" => "http",
-        "otel.metrics.interval" => "5s",
-        "otel.metrics.authorization_header" => @otel_collector.auth_header
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.http_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.metric.export.interval" => "5s",
+        "otel.exporter.otlp.metrics.headers" => @otel_collector.auth_header
       }
 
       settings_file = @logstash.application_settings_file
@@ -144,9 +144,9 @@ describe "OpenTelemetry Metrics Export" do
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.metrics.protocol" => "grpc",
-        "otel.metrics.interval" => "5s",
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.metric.export.interval" => "5s",
         "otel.service.name" => custom_service_name
       }
 
@@ -173,14 +173,14 @@ describe "OpenTelemetry Metrics Export" do
       end
     end
 
-    it "uses OTEL_SERVICE_NAME environment variable" do
-      custom_service_name = "env-var-logstash"
+    it "uses otel.service.name system property" do
+      custom_service_name = "sysprop-logstash"
 
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.metrics.protocol" => "grpc",
-        "otel.metrics.interval" => "5s"
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.metric.export.interval" => "5s"
       }
 
       settings_file = @logstash.application_settings_file
@@ -191,8 +191,8 @@ describe "OpenTelemetry Metrics Export" do
       IO.write(settings_file, effective_settings.to_yaml)
 
       begin
-        # Set OTEL_SERVICE_NAME env var before starting Logstash
-        @logstash.env_variables = { "OTEL_SERVICE_NAME" => custom_service_name }
+        # Set otel.service.name system property via LS_JAVA_OPTS before starting Logstash
+        @logstash.env_variables = { "LS_JAVA_OPTS" => "-Dotel.service.name=#{custom_service_name}" }
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
@@ -214,9 +214,9 @@ describe "OpenTelemetry Metrics Export" do
     it "exports pipeline-specific metrics" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => @otel_collector.grpc_endpoint,
-        "otel.metrics.protocol" => "grpc",
-        "otel.metrics.interval" => "5s"
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.grpc_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "grpc",
+        "otel.metric.export.interval" => "5s"
       }
 
       settings_file = @logstash.application_settings_file
@@ -254,10 +254,10 @@ describe "OpenTelemetry Metrics Export" do
     it "uses all configuration options together" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.metrics.endpoint" => @otel_collector.http_endpoint,
-        "otel.metrics.protocol" => "http",
-        "otel.metrics.interval" => "3s",
-        "otel.metrics.authorization_header" => @otel_collector.auth_header,
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.http_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.metric.export.interval" => "3s",
+        "otel.exporter.otlp.headers" => @otel_collector.auth_header,
         "otel.resource.attributes" => "deployment.environment=test,service.version=1.0.0",
         "otel.service.name" => "full-config-logstash"
       }

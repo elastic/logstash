@@ -81,8 +81,12 @@ public class Env2Yaml {
                 "xpack.management.elasticsearch.ssl.truststore.path", "xpack.management.elasticsearch.ssl.truststore.password",
                 "xpack.management.elasticsearch.ssl.keystore.path", "xpack.management.elasticsearch.ssl.keystore.password",
                 "xpack.management.elasticsearch.ssl.certificate", "xpack.management.elasticsearch.ssl.key",
-                "xpack.management.elasticsearch.ssl.cipher_suites", "xpack.geoip.download.endpoint",
-                "xpack.geoip.downloader.enabled"
+                "xpack.management.elasticsearch.ssl.cipher_suites",                 "xpack.geoip.download.endpoint",
+                "xpack.geoip.downloader.enabled",
+                "otel.metrics.enabled", "otel.exporter.otlp.metrics.endpoint",
+                "otel.metric.export.interval", "otel.exporter.otlp.metrics.protocol",
+                "otel.exporter.otlp.metrics.headers", "otel.resource.attributes",
+                "otel.service.name"
             };
 
             for (String configName : allowedConfigs) {
