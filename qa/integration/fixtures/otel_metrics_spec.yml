@@ -22,8 +22,8 @@ services:
   - otelcollector
 config: |-
   input {
-    generator {
-      count => 100
+    heartbeat {
+      interval => 1
       message => "otel test event"
     }
   }
