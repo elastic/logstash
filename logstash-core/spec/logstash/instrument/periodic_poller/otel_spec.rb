@@ -90,19 +90,20 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       otel_poller
     end
 
-    context "with authorization header" do
+    context "with authorization header (ApiKey)" do
+      let(:auth_password) { LogStash::Util::Password.new("ApiKey my-secret-key") }
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
           allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("ApiKey my-secret-key")
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
 
-      it "passes authorization_header to OtelMetricsService" do
+      it "extracts string value from Password and passes to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
           "https://apm.example.com",
           "test-node-id",
@@ -118,19 +119,20 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       end
     end
 
-    context "with Bearer token authorization" do
+    context "with authorization header (Bearer token)" do
+      let(:auth_password) { LogStash::Util::Password.new("Bearer my-bearer-token") }
       let(:settings) do
         double("settings").tap do |s|
           allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
           allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
           allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return("Bearer my-bearer-token")
+          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
         end
       end
 
-      it "passes Bearer token to OtelMetricsService" do
+      it "extracts string value from Password and passes to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
           "https://apm.example.com",
           "test-node-id",
@@ -139,35 +141,6 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "http",
           nil,
           "Bearer my-bearer-token",
-          nil
-        ).and_return(otel_service)
-
-        otel_poller
-      end
-    end
-
-    context "with PasswordSetting authorization header" do
-      let(:password_object) { LogStash::Util::Password.new("ApiKey extracted-secret") }
-      let(:settings) do
-        double("settings").tap do |s|
-          allow(s).to receive(:get).with("otel.metrics.endpoint").and_return("https://apm.example.com")
-          allow(s).to receive(:get).with("otel.metrics.interval").and_return(interval_time_value)
-          allow(s).to receive(:get).with("otel.metrics.protocol").and_return("http")
-          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
-          allow(s).to receive(:get).with("otel.metrics.authorization_header").and_return(password_object)
-          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-        end
-      end
-
-      it "extracts string value from Password object and passes to OtelMetricsService" do
-        expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "http",
-          nil,
-          "ApiKey extracted-secret",
           nil
         ).and_return(otel_service)
 
