@@ -53,7 +53,7 @@ module LogStash
       end
     end
 
-    def initialize(file_watch_service = nil)
+    def initialize(file_watch_service)
       @file_watch_service = file_watch_service
       # id includes pipeline_id and xpack service, { id => [file_path] }, tracks which paths each id registered
       @id_paths = {}
@@ -101,9 +101,10 @@ module LogStash
       end
 
       new_registrations.each do |path, cb|
-        @file_watch_service&.register(java.nio.file.Paths.get(path), cb)
+        @file_watch_service.register(java.nio.file.Paths.get(path), cb)
       end
     end
+    private :register_paths
 
     # Starts watching all SSL file paths for the pipeline. Paths already watched
     # by another pipeline share the same WatchedFile entry and are not re-registered.
@@ -115,7 +116,7 @@ module LogStash
     # @return [void]
     def register(pipeline)
       unless pipeline.reloadable?
-        logger.debug("Skipping SSL file tracking for unreloadable pipeline", :pipeline_id => pipeline.pipeline_id)
+        logger.debug("Skipping SSL file tracking for non-reloadable pipeline", :pipeline_id => pipeline.pipeline_id)
         return
       end
 
@@ -152,7 +153,7 @@ module LogStash
       end
 
       deregistrations.each do |path, cb|
-        @file_watch_service&.deregister(java.nio.file.Paths.get(path), cb)
+        @file_watch_service.deregister(java.nio.file.Paths.get(path), cb)
       end
     end
 

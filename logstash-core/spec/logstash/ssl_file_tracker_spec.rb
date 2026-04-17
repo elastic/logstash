@@ -125,12 +125,12 @@ describe LogStash::SslFileTracker do
   end
 
   describe "#register" do
-    context "with an unreloadable pipeline" do
+    context "with a non-reloadable pipeline" do
       include_context "a registered cert file pipeline"
 
       let(:pipeline) { make_pipeline(:main, inputs: [plugin], reloadable: false) }
 
-      it "skips unreloadable pipelines" do
+      it "skips non-reloadable pipelines" do
         expect(file_watch_service).not_to have_received(:register)
 
         rotate_cert
@@ -139,7 +139,7 @@ describe LogStash::SslFileTracker do
       end
     end
 
-    it "registers symlink paths as :poll without FileWatchService registration" do
+    it "does not use FileWatchService when the path is a symlink" do
       Dir.mktmpdir do |dir|
         target  = File.join(dir, "cert-1.pem"); File.write(target, "original")
         symlink = File.join(dir, "cert.pem");   File.symlink(target, symlink)
