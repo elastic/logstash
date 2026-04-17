@@ -157,6 +157,13 @@ describe LogStash::SslFileTracker do
       expect(file_watch_service).not_to have_received(:register)
     end
 
+    it "skips Java-native plugins whose class does not respond to get_config" do
+      java_native = double("java_native_plugin")
+      pipeline = make_pipeline(:main, inputs: [java_native])
+      expect { tracker.register(pipeline) }.not_to raise_error
+      expect(file_watch_service).not_to have_received(:register)
+    end
+
     it_behaves_like "tracks delegator certs", :filters
     it_behaves_like "tracks delegator certs", :outputs
 

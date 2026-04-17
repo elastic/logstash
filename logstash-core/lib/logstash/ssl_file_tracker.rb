@@ -240,6 +240,7 @@ module LogStash
       (pipeline.inputs + pipeline.filters + pipeline.outputs).flat_map do |plugin|
         target = plugin.respond_to?(:ruby_plugin) ? plugin.ruby_plugin : plugin
         next [] if target.nil?
+        next [] unless target.class.respond_to?(:get_config)
 
         target.class.get_config.to_a
               .select { |name, opts| PLUGIN_SSL_PATH_CONFIG_NAMES.include?(name.to_s) || (opts[:validate] == :path && name.to_s.start_with?("ssl_")) }
