@@ -61,6 +61,8 @@ Related:
 
 ::::{important}
 
+Logstash 9.4.0 requires Java 21 or later. Java 17 is no longer supported.
+
 As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
 ::::
