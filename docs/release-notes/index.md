@@ -49,7 +49,9 @@ We've improved visibility of batch sizing at a pipeline level by exposing new hi
 
 Related:
 * [Implement metrics that exposes batch size and count of contained events](https://github.com/elastic/logstash/issues/17838)
+#### Additional features and enhancements [logstash-9.4.0-more-features]
 
+* Performance improvements which saves ~40% CPU resource on DLQ segment file lookup operations [19013](https://github.com/elastic/logstash/pull/19013)
 ### Updates to dependencies [logstash-9.4.0-dependencies]
 
 * Update JRuby to 10.0.5.0
