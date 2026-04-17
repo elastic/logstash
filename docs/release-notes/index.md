@@ -43,13 +43,12 @@ We have added a safety mechanism to limit memory expansion when using filters th
 Related:
 * Add a new config option to split batch into chunks before outputs [#18680](https://github.com/elastic/logstash/pull/18680)
 
-#### Additional features and enhancements [logstash-9.4.0-more-features]
+#### New batch histogram metrics [logstash-9.4.0-new-batch-histogram-metrics]
 
-* Introduced histogram flow metrics for batch size and event count. Some percentile values for such metrics are now exposed in the response from `_node/stats` API, on a pipeline basis [#18770](https://github.com/elastic/logstash/pull/18770)
+We've improved visibility of batch sizing at a pipeline level by exposing new histogram-type metrics in the `GET /_node/stats` endpoint. These metrics show the distribution of batch sizes in bytes and event-count for the lifetime of the pipeline, as well as for the most recent 1, 5, and 15-minute time windows.
 
-* Enabled the `lifetime` window for pipeline's batch size metrics [#18911](https://github.com/elastic/logstash/pull/18911)
-
-* Exposed the max value for batch's `byte_size`, reported in 1, 5, and 15 minutes time windows [#18850](https://github.com/elastic/logstash/pull/18850)
+Related:
+* [Implement metrics that exposes batch size and count of contained events](https://github.com/elastic/logstash/issues/17838)
 
 ### Updates to dependencies [logstash-9.4.0-dependencies]
 
