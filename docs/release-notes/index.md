@@ -38,10 +38,7 @@ Related:
 
 #### Batch chunking  [logstash-9.4.0-batch-chunking]
 
-We’ve added a new setting, `pipeline.batch.output_chunking.growth_threshold_factor`, that limits the factor by which a batch can increase in size after being passed through filters.
-If growth exceeds that factor, Logstash splits the batch into chunks that are sent individually to the outputs, each with at most `pipeline.batch.size` size.
-
-Use this to reduce out-of-memory risk when filters (for example, a split filter) greatly expand batch size.
+We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting. When a batch growth exceeds the configured factor, it is re-chunked into new batches of `pipeline.batch.size` events before being handled by the outputs.
 
 Related:
 * Add a new config option to split batch into chunks before outputs [#18680](https://github.com/elastic/logstash/pull/18680)
