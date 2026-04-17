@@ -6,7 +6,7 @@ source "$current_dir/helpers.sh"
 
 OTEL_VERSION="0.96.0"
 OTEL_DATA_DIR="/tmp/ls_integration/otel"
-OTEL_BINARY="$OTEL_DATA_DIR/otelcol"
+OTEL_BINARY="$OTEL_DATA_DIR/otelcol-contrib"
 OTEL_CONFIG="$OTEL_DATA_DIR/otel-config.yaml"
 OTEL_PID_FILE="$OTEL_DATA_DIR/otel.pid"
 OTEL_METRICS_FILE="$OTEL_DATA_DIR/metrics.json"
@@ -31,7 +31,7 @@ esac
 # Download OTel Collector if not present
 if [[ ! -f "$OTEL_BINARY" ]]; then
     echo "Downloading OpenTelemetry Collector v${OTEL_VERSION}..."
-    OTEL_URL="https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol_${OTEL_VERSION}_${OS}_${ARCH}.tar.gz"
+    OTEL_URL="https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_${OS}_${ARCH}.tar.gz"
     curl -L "$OTEL_URL" -o "$OTEL_DATA_DIR/otelcol.tar.gz"
     tar -xzf "$OTEL_DATA_DIR/otelcol.tar.gz" -C "$OTEL_DATA_DIR"
     chmod +x "$OTEL_BINARY"
@@ -57,6 +57,7 @@ exporters:
   file:
     path: "${OTEL_METRICS_FILE}"
     format: json
+    flush_interval: 1s
   debug:
     verbosity: detailed
 
