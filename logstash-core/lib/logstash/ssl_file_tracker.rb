@@ -66,10 +66,13 @@ module LogStash
       @mutex = Mutex.new
     end
 
-    # Registers an id (pipeline or xpack service) with explicit paths
+    # Registers an id (pipeline or xpack service) with explicit paths.
+    # Fully rolls back tracker state for +id+ and re-raises if the underlying
+    # FileWatchService register fails, so callers can fail the operation.
     # @param id [Symbol, String]
     # @param paths [Array<String>]
     # @return [void]
+    # @raise [java.io.IOException] if FileWatchService cannot watch a path
     def register_paths(id, paths)
       id = id.to_sym
       # Compute stamps before taking the lock so filesystem I/O stays outside the mutex.
@@ -100,8 +103,13 @@ module LogStash
         @stale_ids.delete(id)
       end
 
-      new_registrations.each do |path, cb|
-        @file_watch_service.register(java.nio.file.Paths.get(path), cb)
+      begin
+        new_registrations.each do |path, cb|
+          @file_watch_service.register(java.nio.file.Paths.get(path), cb)
+        end
+      rescue java.io.IOException
+        deregister(id)
+        raise
       end
     end
     private :register_paths
@@ -111,9 +119,12 @@ module LogStash
     #
     # register() is called before pipeline startup so certificate rotation that
     # happens after registration can be observed and trigger a reload.
+    # Propagates java.io.IOException if the underlying FileWatchService cannot
+    # watch a path, after rolling back tracker state.
     #
     # @param pipeline [JavaPipeline]
     # @return [void]
+    # @raise [java.io.IOException] if FileWatchService cannot watch a path
     def register(pipeline)
       unless pipeline.reloadable?
         logger.debug("Skipping SSL file tracking for non-reloadable pipeline", :pipeline_id => pipeline.pipeline_id)

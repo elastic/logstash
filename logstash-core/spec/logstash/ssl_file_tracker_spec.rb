@@ -231,6 +231,82 @@ describe LogStash::SslFileTracker do
         expect(register_count).to eq(1)
       end
     end
+
+    context "when FileWatchService.register raises IOException" do
+      let(:cert1) { Tempfile.new("cert1.pem").tap { |f| f.write("a"); f.flush } }
+      let(:cert2) { Tempfile.new("cert2.pem").tap { |f| f.write("b"); f.flush } }
+      after { [cert1, cert2].each(&:close!) }
+
+      def single_cert_pipeline(id = :main)
+        make_pipeline(id, inputs: [make_plugin("ssl_certificate" => cert1.path)])
+      end
+
+      def two_cert_pipeline(id = :main)
+        plugin = make_plugin("ssl_certificate" => cert1.path, "ssl_keystore_path" => cert2.path)
+        make_pipeline(id, inputs: [plugin])
+      end
+
+      context "on every register call" do
+        before do
+          allow(file_watch_service).to receive(:register).and_raise(java.io.IOException.new("inotify limit"))
+        end
+
+        it "re-raises the exception so the caller can fail the pipeline" do
+          expect { tracker.register(single_cert_pipeline) }.to raise_error(java.io.IOException)
+        end
+
+        it "rolls back tracker state so the pipeline is not marked stale" do
+          expect { tracker.register(single_cert_pipeline) }.to raise_error(java.io.IOException)
+          tracker.refresh_pipeline_symlink_stamps
+          expect(tracker.stale_pipeline_ids).to be_empty
+        end
+      end
+
+      it "allows a retry to re-attempt the Java register" do
+        attempts = 0
+        allow(file_watch_service).to receive(:register) do |_, _|
+          attempts += 1
+          raise java.io.IOException.new("transient") if attempts == 1
+        end
+        expect { tracker.register(single_cert_pipeline) }.to raise_error(java.io.IOException)
+        expect { tracker.register(single_cert_pipeline) }.not_to raise_error
+        expect(attempts).to eq(2)
+      end
+
+      it "deregisters earlier successfully-registered paths when a later path fails" do
+        call_count = 0
+        registered = []
+        allow(file_watch_service).to receive(:register) do |p, _|
+          call_count += 1
+          raise java.io.IOException.new("inotify limit") if call_count == 2
+          registered << p.to_s
+        end
+        deregistered = []
+        allow(file_watch_service).to receive(:deregister) { |p, _| deregistered << p.to_s }
+
+        expect { tracker.register(two_cert_pipeline) }.to raise_error(java.io.IOException)
+        expect(registered.size).to eq(1)
+        expect(deregistered.size).to eq(2)
+        expect(deregistered).to include(*registered)
+      end
+
+      it "preserves an earlier p1 shared cert when a later p2 register fails on extra cert" do
+        # p1 registers cert1
+        tracker.register(single_cert_pipeline(:p1))
+
+        # p2 shares cert1 and adds cert2, whose Java register fails
+        allow(file_watch_service).to receive(:register) do |p, _|
+          raise java.io.IOException.new("inotify limit") if p.to_s == cert2.path
+        end
+        deregistered = []
+        allow(file_watch_service).to receive(:deregister) { |p, _| deregistered << p.to_s }
+
+        expect { tracker.register(two_cert_pipeline(:p2)) }.to raise_error(java.io.IOException)
+
+        # cert1 is still referenced by p1 and must not be Java-deregistered
+        expect(deregistered).not_to include(cert1.path)
+      end
+    end
   end
 
   describe "#deregister" do

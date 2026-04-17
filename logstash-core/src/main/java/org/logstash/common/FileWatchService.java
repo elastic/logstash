@@ -79,22 +79,34 @@ public final class FileWatchService implements Closeable {
      * is not yet watched, a new {@link WatchKey} is created for it. The watcher thread
      * is started on the first call. Callbacks run on the watcher thread and must
      * stay fast and non-blocking.
+     *
+     * <p>If the underlying {@link WatchService} cannot watch the parent directory
+     * (for example inotify watch limit reached, directory removed, permission denied),
+     * an error is logged and the {@link IOException} is re-thrown so the caller
+     * can roll back any partially applied state.
+     *
+     * @throws IOException if the parent directory cannot be registered with the watch service
      */
     public synchronized void register(final Path filePath, final FileChangeCallback callback) throws IOException {
         final Path fileAbsPath = filePath.toAbsolutePath();
-        CopyOnWriteArrayList<FileChangeCallback> callbacks = filepathCallbacks.computeIfAbsent(fileAbsPath, k -> new CopyOnWriteArrayList<>());
-        callbacks.add(callback);
-
         final Path dir = fileAbsPath.getParent();
         WatchedDir watchedDir = watchedDirs.get(dir);
         if (watchedDir == null) {
-            final WatchKey key = dir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+            final WatchKey key;
+            try {
+                key = dir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+            } catch (final IOException e) {
+                logger.error("Unable to watch directory {} for SSL file changes. SSL reload will not trigger for {}", dir, fileAbsPath, e);
+                throw e;
+            }
             watchedDir = new WatchedDir(key);
             watchedDirs.put(dir, watchedDir);
             logger.debug("Watching directory {}", dir);
         }
-        if (!watchedDir.files.contains(fileAbsPath)) {
-            watchedDir.files.add(fileAbsPath);
+
+        final CopyOnWriteArrayList<FileChangeCallback> callbacks = filepathCallbacks.computeIfAbsent(fileAbsPath, k -> new CopyOnWriteArrayList<>());
+        callbacks.add(callback);
+        if (watchedDir.files.add(fileAbsPath)) {
             logger.debug("Watching file {}", fileAbsPath);
         }
         if (watcherThread == null) {
