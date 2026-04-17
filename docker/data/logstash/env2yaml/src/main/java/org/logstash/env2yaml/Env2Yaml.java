@@ -46,7 +46,7 @@ public class Env2Yaml {
                 "pipeline.recoverable", "pipeline.reloadable",
                 "pipeline.plugin_classloaders", "pipeline.separate_logs", "path.config",
                 "config.string", "config.test_and_exit", "config.reload.automatic",
-                "config.reload.interval", "config.debug", "config.support_escapes",
+                "config.reload.interval", "ssl.reload.automatic", "config.debug", "config.support_escapes",
                 "config.field_reference.escape_style", "queue.type", "path.queue",
                 "queue.page_capacity", "queue.max_events", "queue.max_bytes",
                 "queue.checkpoint.acks", "queue.checkpoint.writes", "queue.checkpoint.interval",

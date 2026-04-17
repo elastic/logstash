@@ -35,6 +35,8 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
   end
 
   def spawn_with_reload(logstash_service, settings_dir, work_dir)
+    IO.write(File.join(settings_dir, "logstash.yml"),
+             { "ssl.reload.automatic" => true }.to_yaml)
     logstash_service.spawn_logstash(
       "--path.settings", settings_dir,
       "--config.reload.automatic", "true",

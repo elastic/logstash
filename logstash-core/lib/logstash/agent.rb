@@ -123,7 +123,7 @@ class LogStash::Agent
     dispatcher.fire(:after_initialize)
 
     @running = Concurrent::AtomicBoolean.new(false)
-    if @auto_reload
+    if @auto_reload && setting("ssl.reload.automatic")
       java_import "org.logstash.common.FileWatchService"
       @file_watch_service = FileWatchService.create
       @ssl_file_tracker   = LogStash::SslFileTracker.new(@file_watch_service)

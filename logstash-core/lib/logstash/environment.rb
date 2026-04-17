@@ -46,6 +46,7 @@ module LogStash
            Setting::BooleanSetting.new("config.test_and_exit", false),
            Setting::BooleanSetting.new("config.reload.automatic", false),
          Setting::TimeValueSetting.new("config.reload.interval", "3s"), # in seconds
+           Setting::BooleanSetting.new("ssl.reload.automatic", false),
            Setting::BooleanSetting.new("config.support_escapes", false),
             Setting::StringSetting.new("config.field_reference.escape_style", "none", true, %w(none percent ampersand)),
            Setting::BooleanSetting.new("metric.collect", true),

@@ -131,6 +131,14 @@
 #
 # pipeline.recoverable: false
 #
+# Whether to automatically reload pipelines when SSL certificate or key files
+# referenced by pipeline configurations change on disk.
+# Requires `config.reload.automatic: true` (or Centralized Pipeline Management).
+# When enabled, Logstash watches referenced SSL files and triggers a pipeline
+# reload on change, which may increase inotify watch usage.
+#
+# ssl.reload.automatic: false
+#
 # Show fully compiled configuration as debug log message
 # NOTE: --log.level must be 'debug'
 #
