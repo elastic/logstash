@@ -43,21 +43,17 @@ module LogStash
     ].freeze
 
     # Holds all per-path watch state in one place.
-    # stamp:        latest observed stamp. SHA-256 string for :watch paths; mtime (Time) for :poll paths.
+    # stamp:        latest observed stamp. SHA-256 string for :file paths; mtime (Time) for :symlink paths.
     # callback:     the FileChangeCallback registered with FileWatchService. nil for polled paths.
     # pipeline_ids: Set of pipeline_ids referencing this path. The Java watch is removed only when pipeline_ids is empty.
-    # mode:         :watch for regular files (WatchService-driven), :poll for symlinks (mtime on each converge).
-    WatchedFile = Struct.new(:stamp, :callback, :pipeline_ids, :mode) do
-      def poll?
-        mode == :poll
-      end
-    end
+    # file_type:    :file for regular files (WatchService-driven), :symlink for symlinks (mtime on each converge).
+    WatchedFile = Struct.new(:stamp, :callback, :pipeline_ids, :file_type)
 
     def initialize(file_watch_service)
       @file_watch_service = file_watch_service
       # id includes pipeline_id and xpack service, { id => [file_path] }, tracks which paths each id registered
       @id_paths = {}
-      # one entry per path, { file_path => WatchedFile(:stamp, :callback, :pipeline_ids, :mode) }, tracks which ids each path registered
+      # one entry per path, { file_path => WatchedFile(:stamp, :callback, :pipeline_ids, :file_type) }, tracks which ids each path registered
       @path_watched = {}
       # set of registered pipeline IDs
       @pipeline_ids = Set.new
@@ -87,15 +83,15 @@ module LogStash
           entry = @path_watched[path]
           if entry.nil?
             if ::File.symlink?(path)
-              entry = WatchedFile.new(stamps[path], nil, Set.new, :poll)
+              entry = WatchedFile.new(stamps[path], nil, Set.new, :symlink)
             else
-              entry = WatchedFile.new(stamps[path], nil, Set.new, :watch)
+              entry = WatchedFile.new(stamps[path], nil, Set.new, :file)
               cb = build_callback(path)
               entry.callback = cb
               new_registrations[path] = cb
             end
             @path_watched[path] = entry
-            logger.info("Registered path", :id => id, :path => path, :type => entry.poll? ? "symlink" : "file")
+            logger.info("Registered path", :id => id, :path => path, :type => entry.file_type)
           end
           entry.pipeline_ids.add(id)
         end
@@ -159,7 +155,7 @@ module LogStash
 
           @path_watched.delete(path)
           logger.info("Deregistered path", :pipeline_id => pid, :path => path)
-          deregistrations << [path, entry.callback] unless entry.poll?
+          deregistrations << [path, entry.callback] if entry.file_type == :file
         end
       end
 
@@ -178,7 +174,7 @@ module LogStash
       # Collect unique polled paths only for the ids.
       polled_paths = @mutex.synchronize do
         target_ids.flat_map { |id| @id_paths[id] || [] }
-                 .select { |p| @path_watched[p]&.poll? }
+                 .select { |p| @path_watched[p]&.file_type == :symlink }
                  .uniq
       end
 
