@@ -12,9 +12,9 @@ ES_PID_FILE="$ES_HOME/elasticsearch.pid"
 
 if [ -n "$ES_TLS_CERT" ]; then
   # Check for HTTP response (curl exits 0 even on 401); auth is set after startup
-  ES_HEALTH_CMD="curl --silent -k https://localhost:9200"
+  ES_HEALTH_CMD="curl --silent --insecure https://localhost:9200"
 else
-  ES_HEALTH_CMD="curl --silent localhost:9200"
+  ES_HEALTH_CMD="curl --silent http://localhost:9200"
 fi
 
 start_es() {

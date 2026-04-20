@@ -58,7 +58,9 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
     MSG
   end
 
-  def wait_for_reload_state(logstash_service, *pipeline_ids, successes: 0, failures: 0, retries: 15)
+  def wait_for_pipeline_reloads(logstash_service, *pipeline_ids, retries: 15, &block)
+    raise ArgumentError, "block is required" unless block
+
     last_seen = {}
     Stud.try(retries.times, [StandardError, RSpec::Expectations::ExpectationNotMetError]) do
       pipeline_ids.each do |pid|
@@ -70,16 +72,54 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
           "reloads" => reloads,
           "pipeline" => pipeline
         }
-        expect(reloads["successes"]).to eq(successes)
-        expect(reloads["failures"]).to be >= failures
+        block.call(pid, reloads, pipeline)
       end
     end
   rescue StandardError, RSpec::Expectations::ExpectationNotMetError => e
     raise <<~MSG
-      Timed out waiting for reload state after #{retries} retries.
-      Expected: successes=#{successes}, failures>=#{failures}
+      Timed out waiting for pipeline reloads after #{retries} retries.
+      Pipelines: #{pipeline_ids.join(", ")}
       Last seen: #{last_seen.inspect}
     MSG
+  end
+
+  def wait_for_pipeline_reload_state(logstash_service, *pipeline_ids, successes:, failures:, retries: 15)
+    wait_for_pipeline_reloads(logstash_service, *pipeline_ids, retries: retries) do |_pid, reloads, _pipeline|
+      expect(reloads["successes"]).to eq(successes)
+      expect(reloads["failures"]).to eq(failures)
+    end
+  end
+
+  def wait_for_pipeline_reload_failures(logstash_service, *pipeline_ids, failures:, retries: 15)
+    wait_for_pipeline_reloads(logstash_service, *pipeline_ids, retries: retries) do |_pid, reloads, _pipeline|
+      expect(reloads["failures"]).to be >= failures
+    end
+  end
+
+  def wait_for_pipeline_reload_successes(logstash_service, *pipeline_ids, successes:, retries: 15)
+    wait_for_pipeline_reloads(logstash_service, *pipeline_ids, retries: retries) do |_pid, reloads, _pipeline|
+      expect(reloads["successes"]).to be >= successes
+    end
+  end
+
+  def assert_pipeline_reload_state_stable(logstash_service, *pipeline_ids, successes:, failures:, retries: 5)
+    wait_for_pipeline_reload_state(
+      logstash_service,
+      *pipeline_ids,
+      successes: successes,
+      failures: failures
+    )
+
+    retries.times do
+      wait_for_pipeline_reload_state(
+        logstash_service,
+        *pipeline_ids,
+        successes: successes,
+        failures: failures,
+        retries: 1
+      )
+      sleep 2
+    end
   end
 
   # Suite setup: generate all cert variants once into a shared temp dir
@@ -151,18 +191,13 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       spawn_with_reload(logstash_service, settings_dir, work_dir)
       logstash_service.wait_for_rest_api
 
-      wait_for_reload_state(logstash_service, "main")
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 0, failures: 0)
 
       FileUtils.cp(File.join(@cert_dir, "server-v2.crt"), crt)
       FileUtils.cp(File.join(@cert_dir, "server-v2.key"), key)
 
-      wait_for_reload_state(logstash_service, "main", successes: 1)
-
       # Wait several converge cycles and verify no second reload
-      sleep 10
-      stable = logstash_service.monitoring_api.pipeline_stats("main")["reloads"]
-      expect(stable["successes"]).to eq(1)
-      expect(stable["failures"]).to eq(0)
+      assert_pipeline_reload_state_stable(logstash_service, "main", successes: 1, failures: 0)
     end
   end
 
@@ -194,14 +229,14 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
 
       spawn_with_reload(logstash_service, settings_dir, work_dir)
       logstash_service.wait_for_rest_api
-      wait_for_reload_state(logstash_service, "main")
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 0, failures: 0)
 
       # Atomic symlink swap: point symlink at v2
       tmp_link = "#{symlink}.tmp"
       File.symlink(v2_crt, tmp_link)
       File.rename(tmp_link, symlink)
 
-      wait_for_reload_state(logstash_service, "main", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 1, failures: 0)
     end
   end
 
@@ -239,12 +274,12 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
 
       spawn_with_reload(logstash_service, settings_dir, work_dir)
       logstash_service.wait_for_rest_api
-      wait_for_reload_state(logstash_service, "beats-a")
+      wait_for_pipeline_reload_state(logstash_service, "beats-a", successes: 0, failures: 0)
 
       FileUtils.cp(File.join(@cert_dir, "server-v2.crt"), a_crt)
       FileUtils.cp(File.join(@cert_dir, "server-v2.key"), a_key)
 
-      wait_for_reload_state(logstash_service, "beats-a", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "beats-a", successes: 1, failures: 0)
 
       b_stats = logstash_service.monitoring_api.pipeline_stats("beats-b")["reloads"]
       expect(b_stats["successes"]).to eq(0)
@@ -282,12 +317,12 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       spawn_with_reload(logstash_service, settings_dir, work_dir)
       logstash_service.wait_for_rest_api
 
-      wait_for_reload_state(logstash_service, "beats-a", "beats-b")
+      wait_for_pipeline_reload_state(logstash_service, "beats-a", "beats-b", successes: 0, failures: 0)
 
       FileUtils.cp(File.join(@cert_dir, "server-v2.crt"), shared_crt)
       FileUtils.cp(File.join(@cert_dir, "server-v2.key"), shared_key)
 
-      wait_for_reload_state(logstash_service, "beats-a", "beats-b", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "beats-a", "beats-b", successes: 1, failures: 0)
     end
   end
 
@@ -330,7 +365,7 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       # ES server cert is still signed by v1, so Logstash stays connected after reload.
       create_truststore([@es_ca_v1_cert, @es_ca_v2_cert], ts_path, truststore_password)
 
-      wait_for_reload_state(logstash_service, "main", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 1, failures: 0)
       count_before = es_client.count(index: index_name)["count"].to_i
       wait_for_es_count(es_client, index_name, count: count_before + 1)
     end
@@ -372,7 +407,7 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       File.open(ls_ca_file, "a") { |f| f.write(@es_ca_v2_cert.to_pem) }
 
       # confirm ingestion succeeds
-      wait_for_reload_state(logstash_service, "main", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 1, failures: 0)
       count_before = es_client.count(index: index_name)["count"].to_i
       wait_for_es_count(es_client, index_name, count: count_before + 1)
     end
@@ -409,7 +444,7 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       File.write(ls_ca_file, "not a valid certificate")
 
       # invalid CA reload should fail and stop ingestion
-      wait_for_reload_state(logstash_service, "main", failures: 1)
+      wait_for_pipeline_reload_failures(logstash_service, "main", failures: 1)
       count_after_invalid_rotation = es_client.count(index: index_name)["count"].to_i
       expect(count_after_invalid_rotation).to be >= initial_count
       sleep 15
@@ -418,7 +453,7 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       # restoring a valid CA should trigger another reload and ingestion should recover
       File.write(ls_ca_file, @es_ca_v1_cert.to_pem)
 
-      wait_for_reload_state(logstash_service, "main", successes: 1, failures: 0)
+      wait_for_pipeline_reload_successes(logstash_service, "main", successes: 1)
       wait_for_es_count(es_client, index_name, count: count_after_invalid_rotation + 1)
     end
   end
