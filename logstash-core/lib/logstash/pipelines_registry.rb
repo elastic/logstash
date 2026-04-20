@@ -17,16 +17,13 @@
 
 module LogStash
   class PipelineState
-    include LogStash::Util::Loggable
     attr_reader :pipeline_id
-    attr_accessor :logger
 
     def initialize(pipeline_id, pipeline)
       @pipeline_id = pipeline_id
       @pipeline = pipeline
       @loading = Concurrent::AtomicBoolean.new(false)
       @recovery_log = java.util.ArrayList.new
-      @logger = self.class.logger
 
       # this class uses a reentrant lock to ensure thread safe visibility.
       @lock = Monitor.new
