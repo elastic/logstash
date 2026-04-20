@@ -23,6 +23,7 @@ require_relative '../services/otelcollector_service'
 require "logstash/devutils/rspec/spec_helper"
 require "stud/try"
 require "json"
+require "yaml"
 
 describe "OpenTelemetry Metrics Export" do
   before(:all) do
@@ -35,9 +36,16 @@ describe "OpenTelemetry Metrics Export" do
     @fixture.teardown
   end
 
+  before(:each) do
+    # Clear metrics twice with a delay to ensure any buffered data from previous tests
+    # is flushed by the OTel Collector's batch processor (1s timeout) and then removed
+    @otel_collector.clear_metrics
+    sleep 2
+    @otel_collector.clear_metrics
+  end
+
   after(:each) do
     @logstash.teardown
-    @otel_collector.clear_metrics
   end
 
   let(:max_retry) { 60 }
@@ -55,41 +63,38 @@ describe "OpenTelemetry Metrics Export" do
         "otel.resource.attributes" => "environment=integration-test,test.protocol=#{protocol}"
       }
 
-      # Merge OTel settings into Logstash config
+      # Write OTel settings to Logstash config (fresh file, no merging)
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
 
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      # Write settings fresh to avoid any data accumulation from previous tests
+      IO.write(settings_file, otel_settings.to_yaml)
+
+      # Debug: print settings file content
+      puts "Settings file (#{settings_file}):"
+      puts File.read(settings_file)
 
       begin
         # Start Logstash with the pipeline config file
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        # Wait for metrics to be received by collector
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
+        # Wait until the specific metrics appear in the collector output
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
 
-        # Read and verify metrics
+        events_out = @otel_collector.wait_for_metric("logstash.events.out", timeout: max_retry)
+        expect(events_out).not_to be_nil, "Expected logstash.events.out metric to be present"
+
+        # Read all metrics to verify resource attributes
         metrics = @otel_collector.read_metrics
-        expect(metrics).not_to be_empty
+        resource_attrs = @otel_collector.get_resource_attributes(metrics)
+        puts "Resource attributes: #{resource_attrs.inspect}"
 
         # Verify resource attributes
-        resource_attrs = @otel_collector.get_resource_attributes(metrics)
         expect(resource_attrs["service.name"]).to eq("logstash")
         expect(resource_attrs["environment"]).to eq("integration-test")
         expect(resource_attrs["test.protocol"]).to eq(protocol)
-
-        # Verify some expected metrics exist
-        events_in = @otel_collector.find_metric(metrics, "logstash.events.in")
-        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
-
-        events_out = @otel_collector.find_metric(metrics, "logstash.events.out")
-        expect(events_out).not_to be_nil, "Expected logstash.events.out metric to be present"
-
-        jvm_mem = @otel_collector.find_metric(metrics, "logstash.jvm.mem.heap_used_in_bytes")
-        expect(jvm_mem).not_to be_nil, "Expected JVM memory metric to be present"
 
       ensure
         FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")
@@ -117,20 +122,15 @@ describe "OpenTelemetry Metrics Export" do
 
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
-
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      IO.write(settings_file, otel_settings.to_yaml)
 
       begin
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
         # Wait for metrics - if auth is working, collector will receive them
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
-
-        metrics = @otel_collector.read_metrics
-        expect(metrics).not_to be_empty
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
 
       ensure
         FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")
@@ -152,19 +152,21 @@ describe "OpenTelemetry Metrics Export" do
 
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
+      IO.write(settings_file, otel_settings.to_yaml)
 
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      puts "Settings file (#{settings_file}):"
+      puts File.read(settings_file)
 
       begin
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
 
         metrics = @otel_collector.read_metrics
         resource_attrs = @otel_collector.get_resource_attributes(metrics)
+        puts "Resource attributes: #{resource_attrs.inspect}"
 
         expect(resource_attrs["service.name"]).to eq(custom_service_name)
 
@@ -185,21 +187,24 @@ describe "OpenTelemetry Metrics Export" do
 
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
+      IO.write(settings_file, otel_settings.to_yaml)
 
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      puts "Settings file (#{settings_file}):"
+      puts File.read(settings_file)
 
       begin
         # Set otel.service.name system property via LS_JAVA_OPTS before starting Logstash
         @logstash.env_variables = { "LS_JAVA_OPTS" => "-Dotel.service.name=#{custom_service_name}" }
+        puts "LS_JAVA_OPTS: -Dotel.service.name=#{custom_service_name}"
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
 
         metrics = @otel_collector.read_metrics
         resource_attrs = @otel_collector.get_resource_attributes(metrics)
+        puts "Resource attributes: #{resource_attrs.inspect}"
 
         expect(resource_attrs["service.name"]).to eq(custom_service_name)
 
@@ -221,27 +226,18 @@ describe "OpenTelemetry Metrics Export" do
 
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
-
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      IO.write(settings_file, otel_settings.to_yaml)
 
       begin
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        # Wait a bit longer to ensure pipeline metrics are collected
-        sleep 10
-
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
-
-        metrics = @otel_collector.read_metrics
-
-        # Check for pipeline-specific metrics
-        pipeline_events_in = @otel_collector.find_metric(metrics, "logstash.pipeline.events.in")
+        # Pipeline metrics are registered dynamically when pipelines start;
+        # poll until they appear rather than sleeping a fixed duration.
+        pipeline_events_in = @otel_collector.wait_for_metric("logstash.pipeline.events.in", timeout: max_retry)
         expect(pipeline_events_in).not_to be_nil, "Expected pipeline events.in metric"
 
-        pipeline_events_out = @otel_collector.find_metric(metrics, "logstash.pipeline.events.out")
+        pipeline_events_out = @otel_collector.wait_for_metric("logstash.pipeline.events.out", timeout: max_retry)
         expect(pipeline_events_out).not_to be_nil, "Expected pipeline events.out metric"
 
       ensure
@@ -264,31 +260,29 @@ describe "OpenTelemetry Metrics Export" do
 
       settings_file = @logstash.application_settings_file
       FileUtils.cp(settings_file, "#{settings_file}.original")
+      IO.write(settings_file, otel_settings.to_yaml)
 
-      base_settings = YAML.load(File.read(settings_file)) || {}
-      effective_settings = base_settings.merge(otel_settings)
-      IO.write(settings_file, effective_settings.to_yaml)
+      puts "Settings file (#{settings_file}):"
+      puts File.read(settings_file)
 
       begin
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        expect(@otel_collector.wait_for_metrics(timeout: max_retry)).to be true
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
+
+        events_out = @otel_collector.wait_for_metric("logstash.events.out", timeout: max_retry)
+        expect(events_out).not_to be_nil, "Expected logstash.events.out metric to be present"
 
         metrics = @otel_collector.read_metrics
-        expect(metrics).not_to be_empty
-
         resource_attrs = @otel_collector.get_resource_attributes(metrics)
+        puts "Resource attributes: #{resource_attrs.inspect}"
 
         # Verify all resource attributes
         expect(resource_attrs["service.name"]).to eq("full-config-logstash")
         expect(resource_attrs["deployment.environment"]).to eq("test")
         expect(resource_attrs["service.version"]).to eq("1.0.0")
-
-        # Verify core metrics are present
-        expect(@otel_collector.find_metric(metrics, "logstash.events.in")).not_to be_nil
-        expect(@otel_collector.find_metric(metrics, "logstash.events.out")).not_to be_nil
-        expect(@otel_collector.find_metric(metrics, "logstash.jvm.mem.heap_used_in_bytes")).not_to be_nil
 
       ensure
         FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")

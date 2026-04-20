@@ -4,9 +4,10 @@ current_dir="$(dirname "$0")"
 
 source "$current_dir/helpers.sh"
 
-OTEL_VERSION="0.96.0"
+OTEL_VERSION="0.150.1"
 OTEL_DATA_DIR="/tmp/ls_integration/otel"
 OTEL_BINARY="$OTEL_DATA_DIR/otelcol-contrib"
+OTEL_VERSION_FILE="$OTEL_DATA_DIR/otelcol-version"
 OTEL_CONFIG="$OTEL_DATA_DIR/otel-config.yaml"
 OTEL_PID_FILE="$OTEL_DATA_DIR/otel.pid"
 OTEL_METRICS_FILE="$OTEL_DATA_DIR/metrics.json"
@@ -28,14 +29,17 @@ case $ARCH in
     aarch64|arm64) ARCH="arm64" ;;
 esac
 
-# Download OTel Collector if not present
-if [[ ! -f "$OTEL_BINARY" ]]; then
+# Download OTel Collector if not present or if version has changed
+CACHED_VERSION=""
+[[ -f "$OTEL_VERSION_FILE" ]] && CACHED_VERSION=$(cat "$OTEL_VERSION_FILE")
+if [[ ! -f "$OTEL_BINARY" || "$CACHED_VERSION" != "$OTEL_VERSION" ]]; then
     echo "Downloading OpenTelemetry Collector v${OTEL_VERSION}..."
     OTEL_URL="https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTEL_VERSION}/otelcol-contrib_${OTEL_VERSION}_${OS}_${ARCH}.tar.gz"
     curl -L "$OTEL_URL" -o "$OTEL_DATA_DIR/otelcol.tar.gz"
     tar -xzf "$OTEL_DATA_DIR/otelcol.tar.gz" -C "$OTEL_DATA_DIR"
     chmod +x "$OTEL_BINARY"
     rm -f "$OTEL_DATA_DIR/otelcol.tar.gz"
+    echo "$OTEL_VERSION" > "$OTEL_VERSION_FILE"
 fi
 
 # Create OTel Collector config
@@ -56,7 +60,6 @@ processors:
 exporters:
   file:
     path: "${OTEL_METRICS_FILE}"
-    format: json
     flush_interval: 1s
   debug:
     verbosity: detailed

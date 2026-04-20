@@ -56,15 +56,18 @@ class OtelcollectorService < Service
     OTEL_DATA_DIR
   end
 
-  def wait_for_metrics(timeout: 60)
+  def wait_for_metric(name, timeout: 60)
     start_time = Time.now
+    puts "Waiting for metric '#{name}' in #{OTEL_METRICS_FILE}"
     while Time.now - start_time < timeout
       if File.exist?(OTEL_METRICS_FILE) && File.size(OTEL_METRICS_FILE) > 0
-        return true
+        metric = find_metric(read_metrics, name)
+        return metric if metric
       end
       sleep 1
     end
-    false
+    puts "Timed out waiting for metric '#{name}'"
+    nil
   end
 
   def read_metrics
@@ -100,7 +103,8 @@ class OtelcollectorService < Service
   def get_resource_attributes(metrics)
     return {} if metrics.empty?
     attrs = {}
-    resource = metrics.first.dig("resourceMetrics", 0, "resource", "attributes") || []
+    # Use the last batch to get the most recent resource attributes
+    resource = metrics.last.dig("resourceMetrics", 0, "resource", "attributes") || []
     resource.each do |attr|
       key = attr["key"]
       value = attr.dig("value", "stringValue") || attr.dig("value", "intValue")
@@ -110,6 +114,8 @@ class OtelcollectorService < Service
   end
 
   def clear_metrics
-    FileUtils.rm_f(OTEL_METRICS_FILE)
+    if File.exist?(OTEL_METRICS_FILE)
+      File.open(OTEL_METRICS_FILE, 'w') {}
+    end
   end
 end
