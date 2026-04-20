@@ -28,9 +28,12 @@ class OtelcollectorService < Service
   HTTP_PORT = 4318
   # gRPC receiver port
   GRPC_PORT = 4317
+  # Authenticated HTTP receiver port (requires Bearer token)
+  AUTH_HTTP_PORT = 4319
 
-  # Authorization header expected by the collector
-  AUTH_HEADER = "ApiKey test-integration-key"
+  # Bearer token required by the authenticated endpoint
+  AUTH_TOKEN = "test-integration-key"
+  AUTH_HEADER = "Bearer #{AUTH_TOKEN}"
 
   def initialize(settings)
     super("otelcollector", settings)
@@ -43,6 +46,10 @@ class OtelcollectorService < Service
 
   def grpc_endpoint
     "http://localhost:#{GRPC_PORT}"
+  end
+
+  def auth_http_endpoint
+    "http://localhost:#{AUTH_HTTP_PORT}"
   end
 
   def auth_header

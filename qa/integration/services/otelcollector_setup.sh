@@ -16,6 +16,8 @@ OTEL_LOG_FILE="$OTEL_DATA_DIR/otel.log"
 # Ports
 HTTP_PORT=4318
 GRPC_PORT=4317
+AUTH_HTTP_PORT=4319
+AUTH_TOKEN="test-integration-key"
 
 # Create data directory
 mkdir -p "$OTEL_DATA_DIR"
@@ -44,6 +46,10 @@ fi
 
 # Create OTel Collector config
 cat > "$OTEL_CONFIG" <<EOF
+extensions:
+  bearertokenauth:
+    token: "${AUTH_TOKEN}"
+
 receivers:
   otlp:
     protocols:
@@ -52,6 +58,12 @@ receivers:
       http:
         endpoint: "0.0.0.0:${HTTP_PORT}"
         include_metadata: true
+  otlp/auth:
+    protocols:
+      http:
+        endpoint: "0.0.0.0:${AUTH_HTTP_PORT}"
+        auth:
+          authenticator: bearertokenauth
 
 processors:
   batch:
@@ -65,9 +77,14 @@ exporters:
     verbosity: detailed
 
 service:
+  extensions: [bearertokenauth]
   pipelines:
     metrics:
       receivers: [otlp]
+      processors: [batch]
+      exporters: [file, debug]
+    metrics/auth:
+      receivers: [otlp/auth]
       processors: [batch]
       exporters: [file, debug]
 EOF

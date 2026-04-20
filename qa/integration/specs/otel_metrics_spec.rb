@@ -111,10 +111,10 @@ describe "OpenTelemetry Metrics Export" do
   end
 
   context "with authorization header" do
-    it "sends metrics with authorization header" do
+    it "sends metrics to authenticated endpoint with valid Bearer token" do
       otel_settings = {
         "otel.metrics.enabled" => true,
-        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.http_endpoint,
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.auth_http_endpoint,
         "otel.exporter.otlp.metrics.protocol" => "http",
         "otel.metric.export.interval" => "5s",
         "otel.exporter.otlp.metrics.headers" => @otel_collector.auth_header
@@ -128,9 +128,35 @@ describe "OpenTelemetry Metrics Export" do
         @logstash.start_background(@fixture.config)
         @logstash.wait_for_logstash
 
-        # Wait for metrics - if auth is working, collector will receive them
+        # The authenticated endpoint requires a valid Bearer token — verify metrics arrive
         events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: max_retry)
-        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present"
+        expect(events_in).not_to be_nil, "Expected logstash.events.in metric to be present on authenticated endpoint"
+
+      ensure
+        FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")
+      end
+    end
+
+    it "does not deliver metrics to authenticated endpoint without a Bearer token" do
+      otel_settings = {
+        "otel.metrics.enabled" => true,
+        "otel.exporter.otlp.metrics.endpoint" => @otel_collector.auth_http_endpoint,
+        "otel.exporter.otlp.metrics.protocol" => "http",
+        "otel.metric.export.interval" => "5s"
+        # No headers — request will be rejected by the collector's bearertokenauth extension
+      }
+
+      settings_file = @logstash.application_settings_file
+      FileUtils.cp(settings_file, "#{settings_file}.original")
+      IO.write(settings_file, otel_settings.to_yaml)
+
+      begin
+        @logstash.start_background(@fixture.config)
+        @logstash.wait_for_logstash
+
+        # Give Logstash enough time to attempt metric export; requests should be rejected
+        events_in = @otel_collector.wait_for_metric("logstash.events.in", timeout: 20)
+        expect(events_in).to be_nil, "Expected no metrics to arrive when auth header is missing"
 
       ensure
         FileUtils.mv("#{settings_file}.original", settings_file) if File.exist?("#{settings_file}.original")
