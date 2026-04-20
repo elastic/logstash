@@ -645,7 +645,7 @@ describe LogStash::Agent do
       allow(LogStash::WebServer).to receive(:from_settings).with(any_args).and_return(double("WebServer").as_null_object)
     end
 
-    context "when auto_reload is false" do
+    context "when ssl reload is disabled" do
       let(:agent) { described_class.new(mock_settings("config.reload.automatic" => false), nil) }
 
       after :each do
@@ -657,7 +657,7 @@ describe LogStash::Agent do
       end
     end
 
-    context "when auto_reload is true" do
+    context "when ssl reload is enabled" do
       let(:agent) { described_class.new(mock_settings("config.reload.automatic" => true, "ssl.reload.automatic" => true), nil) }
 
       after :each do

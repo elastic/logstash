@@ -1749,7 +1749,14 @@ describe LogStash::JavaPipeline do
     end
 
     context "of a failed reloading pipeline" do
-      let(:agent) { double("agent", :ssl_file_tracker => double("ssl_file_tracker").as_null_object) }
+      let(:agent) do
+        double(
+          "agent",
+          :track_ssl_resources => nil,
+          :untrack_ssl_resources => nil,
+          :ssl_file_tracker => double("ssl_file_tracker").as_null_object
+        )
+      end
       let(:dummyinput_class) { DummyCrashingInput }
       let(:pipeline_settings) { {
         "pipeline.id" => pipeline_id,
