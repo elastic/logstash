@@ -48,12 +48,12 @@ module LogStash module PipelineAction
     def execute(agent, pipelines_registry)
       attach_health_indicator(agent)
       new_pipeline = LogStash::JavaPipeline.new(@pipeline_config, @metric, agent)
-      agent.ssl_file_tracker&.register(new_pipeline)
+      agent.track_ssl_resources(new_pipeline)
       success = pipelines_registry.create_pipeline(pipeline_id, new_pipeline) do
         new_pipeline.start # block until the pipeline is correctly started or crashed
       end
 
-      agent.ssl_file_tracker&.deregister(pipeline_id) unless success
+      agent.untrack_ssl_resources(pipeline_id) unless success
       LogStash::ConvergeResult::ActionResult.create(self, success)
     end
 

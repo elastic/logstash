@@ -30,7 +30,7 @@ module LogStash module PipelineAction
         pipeline.shutdown
       end
 
-      agent.ssl_file_tracker&.deregister(pipeline_id)
+      agent.untrack_ssl_resources(pipeline_id)
       LogStash::ConvergeResult::SuccessfulAction.new
     end
 

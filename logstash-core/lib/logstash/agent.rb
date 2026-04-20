@@ -124,7 +124,7 @@ class LogStash::Agent
 
     @running = Concurrent::AtomicBoolean.new(false)
     if @auto_reload && setting("ssl.reload.automatic")
-      java_import "org.logstash.common.FileWatchService"
+      java_import org.logstash.common.FileWatchService
       @file_watch_service = FileWatchService.create
       @ssl_file_tracker   = LogStash::SslFileTracker.new(@file_watch_service)
     end
@@ -379,6 +379,14 @@ class LogStash::Agent
 
   def no_pipeline?
     @pipelines_registry.running_pipelines(include_loading: true).empty?
+  end
+
+  def track_ssl_resources(pipeline)
+    @ssl_file_tracker&.register(pipeline)
+  end
+
+  def untrack_ssl_resources(pipeline_id)
+    @ssl_file_tracker&.deregister(pipeline_id)
   end
 
   private
