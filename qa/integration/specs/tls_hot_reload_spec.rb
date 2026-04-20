@@ -96,12 +96,6 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
     end
   end
 
-  def wait_for_pipeline_reload_successes(logstash_service, *pipeline_ids, successes:, retries: 15)
-    wait_for_pipeline_reloads(logstash_service, *pipeline_ids, retries: retries) do |_pid, reloads, _pipeline|
-      expect(reloads["successes"]).to be >= successes
-    end
-  end
-
   def assert_pipeline_reload_state_stable(logstash_service, *pipeline_ids, successes:, failures:, retries: 5)
     wait_for_pipeline_reload_state(
       logstash_service,
@@ -453,7 +447,7 @@ describe "TLS hot-reload: SslFileTracker detects cert changes and reloads pipeli
       # restoring a valid CA should trigger another reload and ingestion should recover
       File.write(ls_ca_file, @es_ca_v1_cert.to_pem)
 
-      wait_for_pipeline_reload_successes(logstash_service, "main", successes: 1)
+      wait_for_pipeline_reload_state(logstash_service, "main", successes: 1, failures: 1)
       wait_for_es_count(es_client, index_name, count: count_after_invalid_rotation + 1)
     end
   end
