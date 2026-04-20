@@ -34,6 +34,7 @@ class OtelcollectorService < Service
 
   def initialize(settings)
     super("otelcollector", settings)
+    @metrics_start_pos = 0
   end
 
   def http_endpoint
@@ -60,7 +61,7 @@ class OtelcollectorService < Service
     start_time = Time.now
     puts "Waiting for metric '#{name}' in #{OTEL_METRICS_FILE}"
     while Time.now - start_time < timeout
-      if File.exist?(OTEL_METRICS_FILE) && File.size(OTEL_METRICS_FILE) > 0
+      if File.exist?(OTEL_METRICS_FILE) && File.size(OTEL_METRICS_FILE) > @metrics_start_pos
         metric = find_metric(read_metrics, name)
         return metric if metric
       end
@@ -74,12 +75,16 @@ class OtelcollectorService < Service
     return [] unless File.exist?(OTEL_METRICS_FILE)
 
     metrics = []
-    File.readlines(OTEL_METRICS_FILE).each do |line|
-      next if line.strip.empty?
-      begin
-        metrics << JSON.parse(line)
-      rescue JSON::ParserError => e
-        puts "Warning: Could not parse metrics line: #{e.message}"
+    File.open(OTEL_METRICS_FILE) do |f|
+      f.seek(@metrics_start_pos)
+      f.each_line do |line|
+        stripped = line.strip
+        next if stripped.empty?
+        begin
+          metrics << JSON.parse(stripped)
+        rescue JSON::ParserError => e
+          puts "Warning: Could not parse metrics line: #{e.message}"
+        end
       end
     end
     metrics
@@ -114,8 +119,6 @@ class OtelcollectorService < Service
   end
 
   def clear_metrics
-    if File.exist?(OTEL_METRICS_FILE)
-      File.open(OTEL_METRICS_FILE, 'w') {}
-    end
+    @metrics_start_pos = File.exist?(OTEL_METRICS_FILE) ? File.size(OTEL_METRICS_FILE) : 0
   end
 end

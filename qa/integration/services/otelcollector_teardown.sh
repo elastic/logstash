@@ -18,4 +18,7 @@ if [[ -f "$OTEL_PID_FILE" ]]; then
     rm -f "$OTEL_PID_FILE"
 fi
 
+OTEL_METRICS_FILE="$OTEL_DATA_DIR/metrics.json"
+rm -f "$OTEL_METRICS_FILE"
+
 echo "OTel Collector stopped"
