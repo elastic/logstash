@@ -3,6 +3,9 @@ name: Validate changelog fragment
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+      - 9.*
 
 jobs:
   validate:
@@ -10,24 +13,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for rn:skip
-        id: rn_skip
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Check for rn:skip or backport label
+        id: skip_check
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
-          if echo "${{ github.event.pull_request.body }}" | grep -q '\[rn:skip\]'; then
+          if echo "${PR_BODY}" | grep -qF '[rn:skip]'; then
             echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping: [rn:skip] found in PR body"
+          elif echo "${PR_LABELS}" | grep -qF 'backport'; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Skipping: backport label detected (original fragment included via cherry-pick)"
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Validate fragment exists and is valid
-        if: steps.rn_skip.outputs.skip == 'false'
+        if: steps.skip_check.outputs.skip == 'false'
         run: |
           PR_NUMBER="${{ github.event.pull_request.number }}"
           FRAGMENT="docs/changelog/${PR_NUMBER}.yaml"
 
           if [[ ! -f "${FRAGMENT}" ]]; then
             echo "ERROR: No changelog fragment found at ${FRAGMENT}."
-            echo "Add a fragment file (see docs/changelog/README.md) or add [rn:skip] to the PR description to skip."
+            echo ""
+            echo "Add a fragment file (see docs/changelog/README.md) or add [rn:skip] to the"
+            echo "PR description to skip release notes for this PR."
             exit 1
           fi
 
