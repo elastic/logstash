@@ -28,6 +28,19 @@ require 'json'
 require 'net/http'
 
 RELEASE_NOTES_PATH = "docs/release-notes/index.md"
+CHANGELOG_FRAGMENTS_PATH = "docs/changelog"
+
+SECTION_ORDER = %w[feature enhancement bug breaking_change deprecation dependency doc].freeze
+SECTION_LABELS = {
+  "feature"        => "New features",
+  "enhancement"    => "Enhancements",
+  "bug"            => "Bug fixes",
+  "breaking_change" => "Breaking changes",
+  "deprecation"    => "Deprecations",
+  "dependency"     => "Dependency updates",
+  "doc"            => "Documentation",
+}.freeze
+
 release_branch = ARGV[0]
 previous_release_tag = ARGV[1]
 user = ARGV[2]
@@ -45,28 +58,48 @@ coming_tag_index += 1 if coming_tag_index
 release_notes_entry_index = coming_tag_index || release_notes.find_index {|line| line.match(/^## .*\[logstash-.*-release-notes\]$/) }
 
 unless coming_tag_index
-  report << "## #{current_release} [logstash-#{current_release}-release-notes]\n\n"
-  report << "### Features and enhancements [logstash-#{current_release}-features-enhancements]\n"
+  report << "## #{current_release} [logstash-#{current_release}-release-notes]\n"
+end
+
+# Load changelog fragments and group by type
+fragments = Dir.glob("#{CHANGELOG_FRAGMENTS_PATH}/*.yaml").sort.map do |path|
+  YAML.safe_load(File.read(path), permitted_classes: [Integer])
+rescue => e
+  $stderr.puts "Warning: skipping #{path}: #{e.message}"
+  nil
+end.compact
+
+highlights = fragments.select { |f| f['highlight']&.fetch('notable', false) }
+unless highlights.empty?
+  report << "### Highlights [logstash-#{current_release}-highlights]\n"
+  highlights.each do |f|
+    h = f['highlight']
+    report << "#### #{h['title']}\n"
+    report << h['body'].to_s
+    report << ""
+  end
+end
+
+by_type = fragments.group_by { |f| f['type'] }
+
+SECTION_ORDER.each do |type|
+  entries = by_type[type]
+  next unless entries&.any?
+
+  anchor = "logstash-#{current_release}-#{type.tr('_', '-')}"
+  report << "### #{SECTION_LABELS[type]} [#{anchor}]\n"
+  entries.sort_by { |f| f['pr'] }.each do |f|
+    issue_links = Array(f['issues']).map { |i| "[##{i}](https://github.com/elastic/logstash/issues/#{i})" }.join(", ")
+    suffix = issue_links.empty? ? "" : " (#{issue_links})"
+    report << "* #{f['summary']} [##{f['pr']}](https://github.com/elastic/logstash/pull/#{f['pr']})#{suffix}"
+  end
+  report << ""
 end
 
 plugin_changes = {}
 
 report <<  "---------- GENERATED CONTENT STARTS HERE ------------"
-report <<  "=== Logstash Pull Requests with label v#{current_release}\n"
-
-uri = URI.parse("https://api.github.com/search/issues?q=repo:elastic/logstash+is:pr+is:closed+label:v#{current_release}&sort=created&order=asc")
-pull_requests = JSON.parse(Net::HTTP.get(uri))
-pull_requests['items'].each do |prs|
-  report << "* #{prs['title']} #{prs['html_url']}[##{prs['number']}]"
-end
-report << ""
-
-report <<  "=== Logstash Commits between #{release_branch} and #{previous_release_tag}\n"
-report <<  "Computed with \"git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v#{previous_release_tag}..#{release_branch}\""
-report <<  ""
-logstash_prs = `git log --pretty=format:'%h -%d %s (%cr) <%an>' --abbrev-commit --date=relative v#{previous_release_tag}..#{release_branch}`
-report << logstash_prs
-report << "\n=== Logstash Plugin Release Changelogs ==="
+report <<  "=== Logstash Plugin Release Changelogs ==="
 report << "Computed from \"git diff v#{previous_release_tag}..#{release_branch} *.release\""
 result = `git diff v#{previous_release_tag}..#{release_branch} *.release`.split("\n")
 

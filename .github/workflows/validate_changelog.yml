@@ -1,0 +1,34 @@
+name: Validate changelog fragment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for rn:skip
+        id: rn_skip
+        run: |
+          if echo "${{ github.event.pull_request.body }}" | grep -q '\[rn:skip\]'; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate fragment exists and is valid
+        if: steps.rn_skip.outputs.skip == 'false'
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          FRAGMENT="docs/changelog/${PR_NUMBER}.yaml"
+
+          if [[ ! -f "${FRAGMENT}" ]]; then
+            echo "ERROR: No changelog fragment found at ${FRAGMENT}."
+            echo "Add a fragment file (see docs/changelog/README.md) or add [rn:skip] to the PR description to skip."
+            exit 1
+          fi
+
+          ruby tools/release/validate_changelog_fragment.rb "${FRAGMENT}"
