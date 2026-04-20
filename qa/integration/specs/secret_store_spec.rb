@@ -30,7 +30,7 @@ require "logstash/devutils/rspec/spec_helper"
 # tag2 = mytag2
 # tag3 = mytag3
 ####################################
-describe "Test that Logstash" do
+describe "Test that Logstash", :skip_fips do
   before(:all) {
     @fixture = Fixture.new(__FILE__)
   }
