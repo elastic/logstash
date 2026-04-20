@@ -153,10 +153,15 @@ if token.nil?
   exit
 end
 
+fragment_files = Dir.glob("#{CHANGELOG_FRAGMENTS_PATH}/*.yaml")
+fragment_files.each { |f| File.delete(f) }
+
 puts "Creating commit.."
 branch_name = "update_release_notes_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
-`git commit #{RELEASE_NOTES_PATH} -m "Update release notes for #{current_release}"`
+files_to_commit = ([RELEASE_NOTES_PATH] + fragment_files).join(" ")
+`git add #{files_to_commit}`
+`git commit -m "Update release notes for #{current_release}"`
 
 puts "Pushing commit.."
 `git remote set-url origin https://x-access-token:#{token}@github.com/elastic/logstash.git`
