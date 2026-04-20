@@ -11,6 +11,7 @@
 #   ruby prune_changelog_fragments.rb --dry-run
 
 require 'yaml'
+require 'set'
 
 CHANGELOG_FRAGMENTS_PATH = "docs/changelog"
 CHANGELOG_BUNDLES_PATH   = "docs/release-notes/changelog-bundles"
@@ -24,7 +25,7 @@ if bundle_files.empty?
 end
 
 bundled_prs = bundle_files.flat_map do |path|
-  bundle = YAML.safe_load(File.read(path), permitted_classes: [Integer])
+  bundle = YAML.safe_load(File.read(path), permitted_classes: [Integer, Time])
   Array(bundle['changelogs']).map { |c| c['pr'].to_s }
 rescue => e
   $stderr.puts "Warning: skipping bundle #{path}: #{e.message}"

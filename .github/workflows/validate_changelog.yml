@@ -25,7 +25,7 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          if echo "${PR_BODY}" | grep -qF '[rn:skip]'; then
+          if echo "${PR_BODY}" | grep -qxF '[rn:skip]'; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "Skipping: [rn:skip] found in PR body"
           else
@@ -37,7 +37,7 @@ jobs:
         env:
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
-          if echo "${PR_LABELS}" | grep -qF 'backport'; then
+          if echo "${PR_LABELS}" | grep -qF '"backport"'; then
             echo "is_backport=true" >> $GITHUB_OUTPUT
           else
             echo "is_backport=false" >> $GITHUB_OUTPUT

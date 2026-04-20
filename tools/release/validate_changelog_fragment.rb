@@ -7,7 +7,6 @@
 # Exits non-zero if any fragment is invalid.
 
 require 'yaml'
-require 'set'
 
 VALID_TYPES = %w[bug enhancement feature breaking_change deprecation dependency doc].freeze
 VALID_AREAS = ["core", "performance", "pq", "dlq", "docs", "monitoring", "central management", "pipeline->pipeline"].freeze
@@ -35,12 +34,22 @@ files.each do |path|
 
   fragment = YAML.safe_load(File.read(path), permitted_classes: [Integer])
 
+  unless fragment.is_a?(Hash)
+    errors << "#{path}: YAML document must be a mapping, got #{fragment.class}"
+    next
+  end
+
   %w[pr summary area type].each do |field|
     errors << "#{path}: missing required field '#{field}'" unless fragment.key?(field)
   end
 
-  if fragment['pr'] && fragment['pr'].to_s != basename
-    errors << "#{path}: 'pr' field (#{fragment['pr']}) does not match filename (#{basename})"
+  if fragment['pr']
+    unless fragment['pr'].is_a?(Integer)
+      errors << "#{path}: 'pr' must be an unquoted integer, got #{fragment['pr'].class}"
+    end
+    if fragment['pr'].to_s != basename
+      errors << "#{path}: 'pr' field (#{fragment['pr']}) does not match filename (#{basename})"
+    end
   end
 
   if fragment['type'] && !VALID_TYPES.include?(fragment['type'])

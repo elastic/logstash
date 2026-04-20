@@ -9,7 +9,8 @@ Please label this PR with the release version and one of the following labels, d
 ## Changelog fragment
 <!-- Add a changelog fragment file at docs/changelog/<PR_NUMBER>.yaml describing this change for users.
      See docs/changelog/README.md for the format and allowed values.
-     If this PR should not appear in release notes (CI fix, test-only, etc.), add [rn:skip] here instead. -->
+     If this PR should not appear in release notes (CI fix, test-only, etc.), replace this comment
+     with the release-notes skip marker instead. -->
 
 
 ## What does this PR do?
