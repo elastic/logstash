@@ -10,7 +10,7 @@ require 'yaml'
 require 'set'
 
 VALID_TYPES = %w[bug enhancement feature breaking_change deprecation dependency doc].freeze
-VALID_AREAS = %w[Pipeline Config Monitoring API Performance Plugins Security Packaging Build Core Docs].freeze
+VALID_AREAS = ["core", "performance", "pq", "dlq", "docs", "monitoring", "central management", "pipeline->pipeline"].freeze
 
 errors = []
 

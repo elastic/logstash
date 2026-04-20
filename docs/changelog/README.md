@@ -7,7 +7,7 @@ Each pull request that affects the Logstash release notes should include a YAML 
 ```yaml
 pr: 12345
 summary: "Brief, user-facing description of the change"
-area: Pipeline
+area: core
 type: enhancement
 issues:
   - 12344
@@ -31,17 +31,14 @@ issues:
 
 ### Allowed values for `area`
 
-- `Pipeline` — pipeline execution, persistent queue, dead letter queue
-- `Config` — configuration parsing, settings, logstash.yml
-- `Monitoring` — x-pack monitoring, metrics, health API
-- `API` — HTTP API endpoints
-- `Performance` — throughput, memory, CPU improvements
-- `Plugins` — plugin framework, plugin management, gem handling
-- `Security` — TLS, authentication, keystore
-- `Packaging` — Docker images, RPM/DEB/ZIP distributions
-- `Build` — build system, Gradle, CI tooling
-- `Core` — other core Logstash changes
-- `Docs` — documentation-only changes
+- `core` — general Logstash core changes
+- `performance` — throughput, memory, or CPU improvements
+- `pq` — persistent queue
+- `dlq` — dead letter queue
+- `docs` — documentation-only changes
+- `monitoring` — x-pack monitoring, metrics, health API
+- `central management` — Kibana-based central pipeline management
+- `pipeline->pipeline` — pipeline-to-pipeline communication
 
 ### Allowed values for `type`
 
@@ -62,15 +59,17 @@ If your PR should not appear in release notes (e.g. CI fixes, test-only changes)
 For significant features, add a `highlight` block:
 
 ```yaml
-pr: 12345
-summary: "Add native OpenTelemetry output support"
-area: Plugins
+pr: 18377
+summary: "Add wait_for_status and timeout parameters to the Logstash root API endpoint"
+area: monitoring
 type: feature
 issues: []
 highlight:
-  title: "Native OpenTelemetry output"
+  title: "Wait for status on the Logstash API"
   notable: true
   body: |-
-    Logstash now ships a built-in output plugin for sending data directly to any
-    OpenTelemetry-compatible endpoint, without requiring a separate collector.
+    The Logstash root endpoint `/` now accepts `wait_for_status` and `timeout`
+    query parameters. When set, the call blocks until Logstash reaches (or
+    exceeds) the requested status, or the timeout expires. This makes it
+    straightforward to script startup readiness checks without polling.
 ```
