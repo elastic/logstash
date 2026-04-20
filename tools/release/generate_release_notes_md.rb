@@ -26,9 +26,11 @@ require 'tempfile'
 require 'yaml'
 require 'json'
 require 'net/http'
+require 'fileutils'
 
 RELEASE_NOTES_PATH = "docs/release-notes/index.md"
 CHANGELOG_FRAGMENTS_PATH = "docs/changelog"
+CHANGELOG_BUNDLES_PATH = "docs/release-notes/changelog-bundles"
 
 SECTION_ORDER = %w[feature enhancement bug breaking_change deprecation dependency doc].freeze
 SECTION_LABELS = {
@@ -148,19 +150,27 @@ release_notes.insert(release_notes_entry_index, report.join("\n").gsub(/\n{3,}/,
 
 IO.write(RELEASE_NOTES_PATH, release_notes.join("\n"))
 
+# Write a bundle file recording which fragments went into this release.
+# This is the input for prune_changelog_fragments.rb, which is run separately
+# once the release notes are finalised — keeping generation re-runnable.
+FileUtils.mkdir_p(CHANGELOG_BUNDLES_PATH)
+bundle = {
+  "version"    => current_release,
+  "generated"  => Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+  "changelogs" => fragments
+}
+bundle_path = File.join(CHANGELOG_BUNDLES_PATH, "#{current_release}.yml")
+IO.write(bundle_path, YAML.dump(bundle))
+
 if token.nil?
   puts "No token provided, skipping commit and push"
   exit
 end
 
-fragment_files = Dir.glob("#{CHANGELOG_FRAGMENTS_PATH}/*.yaml")
-fragment_files.each { |f| File.delete(f) }
-
 puts "Creating commit.."
 branch_name = "update_release_notes_#{Time.now.to_i}"
 `git checkout -b #{branch_name}`
-files_to_commit = ([RELEASE_NOTES_PATH] + fragment_files).join(" ")
-`git add #{files_to_commit}`
+`git add #{RELEASE_NOTES_PATH} #{bundle_path}`
 `git commit -m "Update release notes for #{current_release}"`
 
 puts "Pushing commit.."
