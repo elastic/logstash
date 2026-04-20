@@ -24,7 +24,7 @@ require "stud/temporary"
 require "fileutils"
 require "open3"
 
-describe "CLI > logstash-keystore" do
+describe "CLI > logstash-keystore", :skip_fips do
   before(:all) do
     @fixture = Fixture.new(__FILE__)
     @logstash = @fixture.get_service("logstash")
