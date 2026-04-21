@@ -255,7 +255,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
       registered << plugin
     end
   rescue => e
-    registered.each(&:do_close)
+    registered.each { |plugin| close_plugin_and_ignore(plugin) }
     raise e
   end
 
@@ -523,8 +523,8 @@ module LogStash; class JavaPipeline < AbstractPipeline
       t.join
     end
 
-    filters.each(&:do_close)
-    outputs.each(&:do_close)
+    filters.each { |plugin| close_plugin_and_ignore(plugin) }
+    outputs.each { |plugin| close_plugin_and_ignore(plugin) }
   end
 
   # for backward compatibility in devutils for the rspec helpers, this method is not used
@@ -618,7 +618,7 @@ module LogStash; class JavaPipeline < AbstractPipeline
     rescue => e
       @logger.warn(
         "plugin raised exception while closing, ignoring",
-        exception_logging_keys(e, :plugin => plugin.class.config_name))
+        exception_logging_keys(e, :plugin => plugin.config_name))
     end
   end
 
