@@ -117,7 +117,9 @@ public final class Logstash implements Runnable, AutoCloseable {
 
     private static void installGlobalUncaughtExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler((thread, e) -> {
-            if (e instanceof Error) {
+            if (e instanceof org.jruby.exceptions.SystemExit) {
+                halt(1);
+            } else if (e instanceof Error) {
                 handleFatalError("uncaught error (in thread " + thread.getName() + ")",  e);
             } else {
                 LOGGER.error("uncaught exception (in thread " + thread.getName() + ")", e);
