@@ -109,13 +109,14 @@ public class OtelMetricsService {
      * @param resourceAttributes   Additional resource attributes from logstash.yml (comma-separated key=value pairs)
      * @param authorizationHeader       Authorization header value from logstash.yml (e.g., "ApiKey xxx" or "Bearer xxx"), or null
      * @param serviceName               Service name from logstash.yml, or null to use default "logstash"
+     * @param dataset                   Value for the data_stream.dataset resource attribute; defaults to "logstash" if null or empty
      * @param certificatePath           Path to PEM-encoded trusted CA certificate, or null (used for server certificate verification)
      * @param clientKeyPath             Path to PEM-encoded client private key, or null (required for mTLS)
      * @param clientCertificatePath     Path to PEM-encoded client certificate, or null (required for mTLS)
      */
     public OtelMetricsService(String endpoint, String nodeId, String nodeName,
                               long intervalMs, String protocol, String resourceAttributes,
-                              String authorizationHeader, String serviceName,
+                              String authorizationHeader, String serviceName, String dataset,
                               String certificatePath, String clientKeyPath, String clientCertificatePath) {
         // Resolve configuration with precedence: system props > logstash.yml
         String effectiveEndpoint = resolveEndpoint(endpoint);
@@ -124,6 +125,7 @@ public class OtelMetricsService {
         String effectiveResourceAttrs = resolveResourceAttributes(resourceAttributes);
         this.effectiveAuthorizationHeader = resolveAuthorizationHeader(authorizationHeader);
         String effectiveServiceName = resolveServiceName(serviceName);
+        String effectiveDataset = resolveDataset(dataset);
         this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE, certificatePath));
         this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY, clientKeyPath));
         this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE, clientCertificatePath));
@@ -135,7 +137,8 @@ public class OtelMetricsService {
         AttributesBuilder resourceAttrsBuilder = Attributes.builder()
                 .put(AttributeKey.stringKey("service.name"), effectiveServiceName)
                 .put(AttributeKey.stringKey("service.instance.id"), nodeId)
-                .put(AttributeKey.stringKey("host.name"), nodeName);
+                .put(AttributeKey.stringKey("host.name"), nodeName)
+                .put(AttributeKey.stringKey("data_stream.dataset"), effectiveDataset);
 
         // Parse additional resource attributes if provided
         if (effectiveResourceAttrs != null && !effectiveResourceAttrs.isEmpty()) {
@@ -269,6 +272,17 @@ public class OtelMetricsService {
         }
 
         return logstashYmlAuthHeader;
+    }
+
+    /**
+     * Resolves the data_stream.dataset value, falling back to "logstash" if not provided.
+     * Package-private for testing.
+     */
+    static String resolveDataset(String logstashYmlDataset) {
+        if (logstashYmlDataset != null && !logstashYmlDataset.isEmpty()) {
+            return logstashYmlDataset;
+        }
+        return "logstash";
     }
 
     /**

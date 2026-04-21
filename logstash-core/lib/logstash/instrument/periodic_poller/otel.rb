@@ -68,6 +68,7 @@ module LogStash module Instrument module PeriodicPoller
         settings.get("otel.resource.attributes"),
         settings.get("otel.exporter.otlp.metrics.headers")&.value,
         settings.get("otel.service.name"),
+        settings.get("otel.metrics.dataset"),
         settings.get("otel.exporter.otlp.metrics.certificate"),
         settings.get("otel.exporter.otlp.metrics.client.key"),
         settings.get("otel.exporter.otlp.metrics.client.certificate")

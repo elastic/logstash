@@ -51,6 +51,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
       allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+      allow(s).to receive(:get).with("otel.metrics.dataset").and_return("logstash")
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
@@ -88,6 +89,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         nil,
         nil,
         nil,
+        "logstash",
         nil,
         nil,
         nil
@@ -106,6 +108,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.dataset").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
@@ -121,6 +124,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "http",
           nil,
           "ApiKey my-secret-key",
+          nil,
           nil,
           nil,
           nil,
@@ -141,6 +145,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(auth_password)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.dataset").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
@@ -156,6 +161,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "http",
           nil,
           "Bearer my-bearer-token",
+          nil,
           nil,
           nil,
           nil,
@@ -175,6 +181,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.dataset").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
@@ -188,6 +195,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "test-node-name",
           10000,
           "http",
+          nil,
           nil,
           nil,
           nil,
@@ -209,6 +217,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
           allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.dataset").and_return(nil)
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return("/path/to/ca.pem")
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return("/path/to/client.key")
           allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return("/path/to/client.crt")
@@ -222,6 +231,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           "test-node-name",
           10000,
           "grpc",
+          nil,
           nil,
           nil,
           nil,
@@ -246,7 +256,44 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
           nil,
           nil,
           nil,
+          nil,
           "/path/to/ca.pem",
+          nil,
+          nil
+        ).and_return(otel_service)
+
+        otel_poller
+      end
+    end
+
+    context "with dataset setting" do
+      let(:settings) do
+        double("settings").tap do |s|
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.endpoint").and_return("http://localhost:4317")
+          allow(s).to receive(:get).with("otel.metric.export.interval").and_return(interval_time_value)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.protocol").and_return("grpc")
+          allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
+          allow(s).to receive(:get).with("otel.service.name").and_return(nil)
+          allow(s).to receive(:get).with("otel.metrics.dataset").and_return("my-dataset")
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
+          allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
+        end
+      end
+
+      it "passes user-defined dataset to OtelMetricsService" do
+        expect(OtelMetricsService).to receive(:new).with(
+          "http://localhost:4317",
+          "test-node-id",
+          "test-node-name",
+          10000,
+          "grpc",
+          nil,
+          nil,
+          nil,
+          "my-dataset",
+          nil,
           nil,
           nil
         ).and_return(otel_service)
