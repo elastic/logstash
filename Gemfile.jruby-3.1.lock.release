@@ -574,7 +574,7 @@ GEM
       sequel (>= 5.74.0)
       tzinfo
       tzinfo-data
-    logstash-integration-kafka (11.8.7-java)
+    logstash-integration-kafka (11.8.8-java)
       logstash-codec-json
       logstash-codec-plain
       logstash-core (>= 8.3.0)
@@ -630,7 +630,7 @@ GEM
     logstash-output-csv (3.0.11)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-output-file
-    logstash-output-elasticsearch (11.22.13-java)
+    logstash-output-elasticsearch (11.22.15-java)
       logstash-core-plugin-api (>= 1.60, <= 2.99)
       logstash-mixin-ca_trusted_fingerprint_support (~> 1.0)
       logstash-mixin-deprecation_logger_support (~> 1.0)
