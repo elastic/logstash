@@ -486,9 +486,9 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       otel_poller
     end
 
-    it "flushes and shuts down the Otel service" do
-      expect(otel_service).to receive(:flush)
-      expect(otel_service).to receive(:shutdown)
+    it "flushes pending metrics before shutting down to avoid losing in-flight data" do
+      expect(otel_service).to receive(:flush).ordered
+      expect(otel_service).to receive(:shutdown).ordered
       otel_poller.stop
     end
   end
