@@ -821,9 +821,10 @@ describe LogStash::JavaPipeline do
         # Input close runs on a separate path (inputworker#ensure);
         # asserted here as a regression guard against future coupling.
         expect(input).to receive(:do_close).once
+        allow(pipeline.logger).to receive(:warn)
         expect(pipeline.logger).to receive(:warn).with(
           "plugin raised exception while closing, ignoring",
-          hash_including(:plugin => "dummyfilter"))
+          hash_including(:plugin => raising_filter.config_name))
 
         pipeline.start
         pipeline.shutdown
@@ -859,9 +860,10 @@ describe LogStash::JavaPipeline do
         # Input close runs on a separate path (inputworker#ensure);
         # asserted here as a regression guard against future coupling.
         expect(input).to receive(:do_close).once
+        allow(pipeline.logger).to receive(:warn)
         expect(pipeline.logger).to receive(:warn).with(
           "plugin raised exception while closing, ignoring",
-          hash_including(:plugin => "dummyoutput"))
+          hash_including(:plugin => raising_output.config_name))
 
         pipeline.start
         pipeline.shutdown
