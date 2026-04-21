@@ -35,6 +35,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,6 +79,9 @@ public class OtelMetricsService {
     private static final String OTEL_METRIC_EXPORT_INTERVAL = "otel.metric.export.interval";
     private static final String OTEL_EXPORTER_OTLP_METRICS_HEADERS = "otel.exporter.otlp.metrics.headers";
     private static final String OTEL_RESOURCE_ATTRIBUTES = "otel.resource.attributes";
+    private static final String OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE = "otel.exporter.otlp.metrics.certificate";
+    private static final String OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY = "otel.exporter.otlp.metrics.client.key";
+    private static final String OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE = "otel.exporter.otlp.metrics.client.certificate";
 
     private static final String DEFAULT_SERVICE_NAME = "logstash";
 
@@ -86,6 +92,9 @@ public class OtelMetricsService {
     private final Map<String, ObservableLongCounter> observableCounters = new ConcurrentHashMap<>();
 
     private final String effectiveAuthorizationHeader;
+    private final byte[] effectiveTrustedCertsPem;
+    private final byte[] effectiveClientKeyPem;
+    private final byte[] effectiveClientCertPem;
 
     /**
      * Creates a new Otel metrics service.
@@ -98,12 +107,16 @@ public class OtelMetricsService {
      * @param intervalMs           Export interval in milliseconds from logstash.yml
      * @param protocol             "grpc" or "http" from logstash.yml
      * @param resourceAttributes   Additional resource attributes from logstash.yml (comma-separated key=value pairs)
-     * @param authorizationHeader  Authorization header value from logstash.yml (e.g., "ApiKey xxx" or "Bearer xxx"), or null
-     * @param serviceName          Service name from logstash.yml, or null to use default "logstash"
+     * @param authorizationHeader       Authorization header value from logstash.yml (e.g., "ApiKey xxx" or "Bearer xxx"), or null
+     * @param serviceName               Service name from logstash.yml, or null to use default "logstash"
+     * @param certificatePath           Path to PEM-encoded trusted CA certificate, or null (used for server certificate verification)
+     * @param clientKeyPath             Path to PEM-encoded client private key, or null (required for mTLS)
+     * @param clientCertificatePath     Path to PEM-encoded client certificate, or null (required for mTLS)
      */
     public OtelMetricsService(String endpoint, String nodeId, String nodeName,
                               long intervalMs, String protocol, String resourceAttributes,
-                              String authorizationHeader, String serviceName) {
+                              String authorizationHeader, String serviceName,
+                              String certificatePath, String clientKeyPath, String clientCertificatePath) {
         // Resolve configuration with precedence: system props > logstash.yml
         String effectiveEndpoint = resolveEndpoint(endpoint);
         String effectiveProtocol = resolveProtocol(protocol);
@@ -111,6 +124,9 @@ public class OtelMetricsService {
         String effectiveResourceAttrs = resolveResourceAttributes(resourceAttributes);
         this.effectiveAuthorizationHeader = resolveAuthorizationHeader(authorizationHeader);
         String effectiveServiceName = resolveServiceName(serviceName);
+        this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE, certificatePath));
+        this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY, clientKeyPath));
+        this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE, clientCertificatePath));
 
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}ms)",
                 effectiveEndpoint, effectiveProtocol, effectiveIntervalMs);
@@ -256,6 +272,34 @@ public class OtelMetricsService {
     }
 
     /**
+     * Resolves a file path with precedence: system property > logstash.yml.
+     */
+    private String resolveFilePath(String systemPropertyName, String logstashYmlPath) {
+        String sysPropPath = getSystemProperty(systemPropertyName, null);
+        if (sysPropPath != null) {
+            LOGGER.debug("Using '{}' from system property {}", sysPropPath, systemPropertyName);
+            return sysPropPath;
+        }
+        return logstashYmlPath;
+    }
+
+    /**
+     * Reads PEM file bytes from the given path, returning null if path is null or empty.
+     * Throws at startup rather than silently ignoring misconfiguration.
+     * Package-private for testing.
+     */
+    static byte[] readPemFile(String path) {
+        if (path == null || path.isEmpty()) {
+            return null;
+        }
+        try {
+            return Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to read PEM file '" + path + "': " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Gets a configuration value from system property, falling back to default.
      */
     static String getSystemProperty(String propertyName, String defaultValue) {
@@ -274,6 +318,12 @@ public class OtelMetricsService {
             if (effectiveAuthorizationHeader != null && !effectiveAuthorizationHeader.isEmpty()) {
                 builder.addHeader("Authorization", effectiveAuthorizationHeader);
             }
+            if (effectiveTrustedCertsPem != null) {
+                builder.setTrustedCertificates(effectiveTrustedCertsPem);
+            }
+            if (effectiveClientKeyPem != null && effectiveClientCertPem != null) {
+                builder.setClientTls(effectiveClientKeyPem, effectiveClientCertPem);
+            }
             return builder.build();
         } else {
             // Default to gRPC
@@ -282,6 +332,12 @@ public class OtelMetricsService {
                     .setTimeout(Duration.ofSeconds(10));
             if (effectiveAuthorizationHeader != null && !effectiveAuthorizationHeader.isEmpty()) {
                 builder.addHeader("Authorization", effectiveAuthorizationHeader);
+            }
+            if (effectiveTrustedCertsPem != null) {
+                builder.setTrustedCertificates(effectiveTrustedCertsPem);
+            }
+            if (effectiveClientKeyPem != null && effectiveClientCertPem != null) {
+                builder.setClientTls(effectiveClientKeyPem, effectiveClientCertPem);
             }
             return builder.build();
         }

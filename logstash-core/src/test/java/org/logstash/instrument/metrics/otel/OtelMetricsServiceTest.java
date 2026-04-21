@@ -32,10 +32,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link OtelMetricsService}
@@ -302,6 +306,40 @@ public class OtelMetricsServiceTest {
         } finally {
             System.clearProperty("otel.service.name");
         }
+    }
+
+    // ========================================
+    // readPemFile tests
+    // ========================================
+
+    @Test
+    public void readPemFileReturnsNullForNullPath() {
+        assertThat(OtelMetricsService.readPemFile(null)).isNull();
+    }
+
+    @Test
+    public void readPemFileReturnsNullForEmptyPath() {
+        assertThat(OtelMetricsService.readPemFile("")).isNull();
+    }
+
+    @Test
+    public void readPemFileReadsBytesFromFile() throws IOException {
+        String pemContent = "-----BEGIN CERTIFICATE-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ==\n-----END CERTIFICATE-----\n";
+        Path tempFile = Files.createTempFile("test-cert", ".pem");
+        try {
+            Files.writeString(tempFile, pemContent);
+            byte[] result = OtelMetricsService.readPemFile(tempFile.toString());
+            assertThat(result).isEqualTo(pemContent.getBytes());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    public void readPemFileThrowsForNonExistentPath() {
+        assertThatThrownBy(() -> OtelMetricsService.readPemFile("/nonexistent/path/ca.pem"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("/nonexistent/path/ca.pem");
     }
 
     /**

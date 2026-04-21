@@ -34,6 +34,9 @@ module LogStash module Instrument module PeriodicPoller
   #   otel.exporter.otlp.metrics.protocol: "grpc"
   #   otel.exporter.otlp.metrics.headers: "ApiKey xxx"  # or "Bearer xxx"
   #   otel.resource.attributes: "environment=production,cluster=us-west"
+  #   otel.exporter.otlp.metrics.certificate: "/path/to/ca.pem"
+  #   otel.exporter.otlp.metrics.client.key: "/path/to/client.key"
+  #   otel.exporter.otlp.metrics.client.certificate: "/path/to/client.crt"
   #
   class Otel < Base
 
@@ -64,7 +67,10 @@ module LogStash module Instrument module PeriodicPoller
         settings.get("otel.exporter.otlp.metrics.protocol"),
         settings.get("otel.resource.attributes"),
         settings.get("otel.exporter.otlp.metrics.headers")&.value,
-        settings.get("otel.service.name")
+        settings.get("otel.service.name"),
+        settings.get("otel.exporter.otlp.metrics.certificate"),
+        settings.get("otel.exporter.otlp.metrics.client.key"),
+        settings.get("otel.exporter.otlp.metrics.client.certificate")
       )
 
       # Take initial snapshot
