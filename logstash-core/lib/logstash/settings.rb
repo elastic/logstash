@@ -46,6 +46,7 @@ module LogStash
       "config.string",
       "dead_letter_queue.enable",
       "dead_letter_queue.flush_interval",
+      "dead_letter_queue.flush_check_interval",
       "dead_letter_queue.max_bytes",
       "dead_letter_queue.storage_policy",
       "dead_letter_queue.retain.age",

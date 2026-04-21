@@ -124,6 +124,8 @@ public final class DeadLetterQueueWriter implements Closeable {
         }
     }
 
+    static final Duration MIN_FLUSH_INTERVAL = Duration.ofMillis(1000);
+
     @VisibleForTesting
     static final String SEGMENT_FILE_PATTERN = "%d.log";
     private static final Logger logger = LogManager.getLogger(DeadLetterQueueWriter.class);
@@ -142,6 +144,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     private volatile int currentSegmentIndex;
     private volatile Timestamp lastEntryTimestamp;
     private final Duration flushInterval;
+    private final Duration flushCheckInterval;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private final LongAdder droppedEvents = new LongAdder();
     private final LongAdder expiredEvents = new LongAdder();
@@ -173,9 +176,12 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     private static class FixedRateScheduler implements SchedulerService {
 
+        private static final long MIN_CHECK_INTERVAL_MS = 1000L;
         private final ScheduledExecutorService scheduledExecutor;
+        private final long checkIntervalMs;
 
-        FixedRateScheduler() {
+        FixedRateScheduler(final Duration flushCheckInterval) {
+            this.checkIntervalMs = Math.max(flushCheckInterval.toMillis(), MIN_CHECK_INTERVAL_MS);
             scheduledExecutor = Executors.newScheduledThreadPool(1, r -> {
                 Thread t = new Thread(r);
                 //Allow this thread to die when the JVM dies
@@ -188,7 +194,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         @Override
         public void repeatedAction(Runnable action) {
-            scheduledExecutor.scheduleAtFixedRate(action, 1L, 1L, TimeUnit.SECONDS);
+            scheduledExecutor.scheduleAtFixedRate(action, checkIntervalMs, checkIntervalMs, TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -218,6 +224,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         private boolean startScheduledFlusher;
         private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
         private Duration retentionTime = null;
+        private Duration flushCheckInterval = Duration.ofMillis(1000);
         private Clock clock = Clock.systemDefaultZone();
         private SchedulerService customSchedulerService = null;
 
@@ -243,6 +250,11 @@ public final class DeadLetterQueueWriter implements Closeable {
             return this;
         }
 
+        public Builder flushCheckInterval(final Duration interval) {
+            this.flushCheckInterval = interval;
+            return this;
+        }
+
         @VisibleForTesting
         Builder clock(Clock clock) {
             this.clock = clock;
@@ -259,18 +271,33 @@ public final class DeadLetterQueueWriter implements Closeable {
             if (customSchedulerService != null && startScheduledFlusher) {
                 throw new IllegalArgumentException("Both default scheduler and custom scheduler were defined, ");
             }
+
+            Duration effectiveFlushInterval = flushInterval;
+            if (startScheduledFlusher && flushInterval.compareTo(MIN_FLUSH_INTERVAL) < 0) {
+                logger.warn("dead_letter_queue.flush_interval ({} ms) is below the minimum of {} ms; using {} ms",
+                        flushInterval.toMillis(), MIN_FLUSH_INTERVAL.toMillis(), MIN_FLUSH_INTERVAL.toMillis());
+                effectiveFlushInterval = MIN_FLUSH_INTERVAL;
+            }
+
+            Duration effectiveFlushCheckInterval = flushCheckInterval;
+            if (startScheduledFlusher && flushCheckInterval.compareTo(effectiveFlushInterval) > 0) {
+                logger.warn("dead_letter_queue.flush_check_interval ({} ms) cannot be greater than dead_letter_queue.flush_interval ({} ms); using {} ms",
+                        flushCheckInterval.toMillis(), effectiveFlushInterval.toMillis(), effectiveFlushInterval.toMillis());
+                effectiveFlushCheckInterval = effectiveFlushInterval;
+            }
+
             SchedulerService schedulerService;
             if (customSchedulerService != null) {
                 schedulerService = customSchedulerService;
             } else {
                 if (startScheduledFlusher) {
-                    schedulerService = new FixedRateScheduler();
+                    schedulerService = new FixedRateScheduler(effectiveFlushCheckInterval);
                 } else {
                     schedulerService = new NoopScheduler();
                 }
             }
 
-            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, flushInterval, storageType, retentionTime, clock, schedulerService);
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, effectiveFlushInterval, effectiveFlushCheckInterval, storageType, retentionTime, clock, schedulerService);
         }
     }
 
@@ -285,7 +312,7 @@ public final class DeadLetterQueueWriter implements Closeable {
     }
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                  final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
+                                  final Duration flushInterval, final Duration flushCheckInterval, final QueueStorageType storageType, final Duration retentionTime,
                                   final Clock clock, SchedulerService flusherService) throws IOException {
         this.clock = clock;
 
@@ -295,6 +322,7 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.maxQueueSize = maxQueueSize;
         this.storageType = storageType;
         this.flushInterval = flushInterval;
+        this.flushCheckInterval = flushCheckInterval;
         this.currentQueueSize = new AtomicLong(computeQueueSize());
         this.retentionTime = retentionTime;
 
@@ -370,6 +398,11 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getCurrentQueueSize() {
         return currentQueueSize.longValue();
+    }
+
+    @VisibleForTesting
+    public Duration flushCheckInterval() {
+        return flushCheckInterval;
     }
 
     public String getStoragePolicy() {
@@ -645,6 +678,11 @@ public final class DeadLetterQueueWriter implements Closeable {
      */
     private static boolean alreadyProcessed(final Event event) {
         return event.includes(DEAD_LETTER_QUEUE_METADATA_KEY);
+    }
+
+    @VisibleForTesting
+    public void runScheduledFlushCheck() {
+        scheduledFlushCheck();
     }
 
     // main method for flush scheduler

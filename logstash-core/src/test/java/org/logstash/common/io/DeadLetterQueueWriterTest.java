@@ -616,4 +616,49 @@ public class DeadLetterQueueWriterTest {
         }
     }
 
+    @Test
+    public void testFlushCheckIntervalIsRespected() throws IOException {
+        final Duration flushCheckInterval = Duration.ofMillis(500);
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(5))
+                .flushCheckInterval(flushCheckInterval)
+                .build();
+
+        assertEquals("flushCheckInterval should be applied to the writer", flushCheckInterval.toMillis(),
+                writer.flushCheckInterval().toMillis());
+
+        writer.close();
+    }
+
+    @Test
+    public void testFlushCheckIntervalClampedToMinimum() throws IOException {
+        final Duration belowMinimum = Duration.ofMillis(500);
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(5))
+                .flushCheckInterval(belowMinimum)
+                .build();
+
+        // The writer should enforce a minimum of 1000ms in the scheduler
+        assertTrue("flushCheckInterval below 1000ms should be clamped to 1000ms",
+                writer.flushCheckInterval().toMillis() >= 1000);
+
+        writer.close();
+    }
+
+    @Test
+    public void testFlushCheckIntervalClampedToFlushInterval() throws IOException {
+        final Duration flushInterval = Duration.ofSeconds(3);
+        final Duration aboveFlushInterval = Duration.ofSeconds(5);
+        DeadLetterQueueWriter writer = DeadLetterQueueWriter
+                .newBuilder(dir, 1_000, 100_000, flushInterval)
+                .flushCheckInterval(aboveFlushInterval)
+                .build();
+
+        // The writer should clamp flushCheckInterval to not exceed flushInterval
+        assertTrue("flushCheckInterval should not exceed flushInterval",
+                writer.flushCheckInterval().compareTo(flushInterval) <= 0);
+
+        writer.close();
+    }
+
 }
