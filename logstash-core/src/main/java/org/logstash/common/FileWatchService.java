@@ -175,7 +175,12 @@ public final class FileWatchService implements Closeable {
                 final Path absPath = dir.resolve((Path) event.context()).toAbsolutePath();
                 fireCallbacks(absPath, event.kind());
             }
-            key.reset();
+            // reset() re-arms the key so future directory events can be queued.
+            // false means the key is no longer valid, which can happen after a normal
+            // key.cancel() during deregistration, or if the watched directory becomes inaccessible.
+            if (!key.reset()) {
+                logger.debug("Watch key for directory {} is no longer valid; future events will not be delivered unless the directory is registered again", dir);
+            }
         }
     }
 
