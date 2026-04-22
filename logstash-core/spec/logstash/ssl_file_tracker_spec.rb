@@ -420,6 +420,7 @@ describe LogStash::SslFileTracker do
 
       it "detects symlink content change" do
         File.write(target, "rotated content")
+        bump_mtime(target)
         tracker.refresh_pipeline_symlink_stamps
         expect(tracker.stale_pipeline_ids).to eq([:main])
       end
@@ -451,6 +452,7 @@ describe LogStash::SslFileTracker do
         tracker.register(make_pipeline(:p2, inputs: [make_plugin("ssl_certificate" => link2)]))
 
         File.write(target1, "v2")
+        bump_mtime(target1)
 
         tracker.refresh_pipeline_symlink_stamps
         stale = tracker.stale_pipeline_ids
