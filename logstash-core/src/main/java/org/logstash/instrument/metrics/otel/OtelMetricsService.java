@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 /**
@@ -62,11 +62,9 @@ import java.util.function.Supplier;
  * - otel.exporter.otlp.metrics.headers
  * - otel.resource.attributes
  * - otel.service.name
- *
- * Usage from Ruby:
- *   java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
- *   service = OtelMetricsService.new(endpoint, metricsEndpoint, node_id, node_name, interval_ms, "grpc", attrs, auth, serviceName)
- *   service.registerGauge("metric.name", "description", "unit", -> { get_value() }, Attributes.empty)
+ * - otel.exporter.otlp.metrics.certificate
+ * - otel.exporter.otlp.metrics.client.key
+ * - otel.exporter.otlp.metrics.client.certificate
  */
 public class OtelMetricsService {
 
@@ -87,9 +85,12 @@ public class OtelMetricsService {
 
     private final SdkMeterProvider meterProvider;
     private final Meter meter;
-    // Keep references to prevent garbage collection of observable instruments
-    private final Map<String, ObservableLongGauge> gauges = new ConcurrentHashMap<>();
-    private final Map<String, ObservableLongCounter> observableCounters = new ConcurrentHashMap<>();
+    // Strong references to prevent garbage collection of observable instruments.
+    // Multiple pipelines and plugins register instruments with the same metric name but
+    // different attributes, so a List is used rather than a name-keyed map to avoid
+    // overwriting earlier registrations and making them eligible for GC.
+    private final List<ObservableLongGauge> gauges = new CopyOnWriteArrayList<>();
+    private final List<ObservableLongCounter> observableCounters = new CopyOnWriteArrayList<>();
 
     private final String effectiveAuthorizationHeader;
     private final byte[] effectiveTrustedCertsPem;
@@ -432,7 +433,7 @@ public class OtelMetricsService {
                         LOGGER.debug("Error collecting gauge {}: {}", name, e.getMessage());
                     }
                 });
-        gauges.put(name, gauge);
+        gauges.add(gauge);
     }
 
     /**
@@ -462,7 +463,7 @@ public class OtelMetricsService {
                         LOGGER.debug("Error collecting observable counter {}: {}", name, e.getMessage());
                     }
                 });
-        observableCounters.put(name, counter);
+        observableCounters.add(counter);
     }
 
     /**

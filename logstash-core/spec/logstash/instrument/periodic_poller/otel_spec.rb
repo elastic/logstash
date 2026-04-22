@@ -302,6 +302,40 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       end
     end
 
+    context "with multiple pipelines" do
+      let(:pipeline2_id) { :secondary }
+      let(:pipeline2) do
+        double("pipeline2",
+          :collect_stats => nil,
+          :collect_dlq_stats => nil
+        )
+      end
+
+      let(:agent) do
+        double("agent",
+          :id => "test-node-id",
+          :name => "test-node-name",
+          :running_pipelines => { pipeline_id => pipeline, pipeline2_id => pipeline2 },
+          :running_user_defined_pipelines => { pipeline_id => pipeline, pipeline2_id => pipeline2 },
+          :capture_flow_metrics => nil
+        )
+      end
+
+      it "registers a separate metric instrument per pipeline for the same metric name" do
+        java_import 'io.opentelemetry.api.common.AttributeKey'
+        pipeline_id_attr = AttributeKey.stringKey("pipeline.id")
+
+        registered_pipeline_ids = []
+        allow(otel_service).to receive(:registerObservableCounter) do |name, _desc, _unit, _supplier, attrs|
+          registered_pipeline_ids << attrs.get(pipeline_id_attr) if name == "logstash.pipeline.events.in"
+        end
+
+        otel_poller.collect
+
+        expect(registered_pipeline_ids).to contain_exactly("main", "secondary")
+      end
+    end
+
     it "registers global metrics" do
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.events.in", anything, anything, anything, anything
