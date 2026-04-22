@@ -40,6 +40,7 @@ import org.logstash.plugins.factory.ContextualizerExt;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class OutputStrategyExt {
 
@@ -101,10 +102,12 @@ public final class OutputStrategyExt {
             if (!klass.isTrue()) {
                 throw new IllegalArgumentException(
                     String.format(
-                        "Could not find output delegator strategy of type '%s'. Value strategies: %s",
-                        type.asJavaString(),
-                        map.values(context).stream().map(v -> ((IRubyObject) v).asJavaString())
-                            .collect(Collectors.joining(", "))
+                        "Could not find output delegator strategy of type '%s'. Supported strategies: %s",
+                        type.inspect().asJavaString(),
+                        ((Stream<IRubyObject>)map.keys(context).stream())
+                                .map(IRubyObject::inspect)
+                                .map(IRubyObject::asString)
+                                .collect(Collectors.joining(", "))
                     )
                 );
             }
