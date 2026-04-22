@@ -35,7 +35,7 @@ output {elasticsearch { hosts => "ELASTICSEARCH_ENDPOINT_URL" api_key => "<api k
 
 or
 
-```
+```ruby
 output {elasticsearch { cloud_id => "SERVERLESS_CLOUD_ID" api_key => "<api key>" } }
 ```
 
