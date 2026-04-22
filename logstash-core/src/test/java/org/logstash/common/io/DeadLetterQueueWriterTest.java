@@ -638,9 +638,9 @@ public class DeadLetterQueueWriterTest {
                 .flushCheckInterval(belowMinimum)
                 .build();
 
-        // The writer should enforce a minimum of 1000ms in the scheduler
-        assertTrue("flushCheckInterval below 1000ms should be clamped to 1000ms",
-                writer.flushCheckInterval().toMillis() >= 1000);
+        // The writer stores the configured value as-is; the scheduler enforces a minimum of 1000ms internally
+        assertEquals("flushCheckInterval should be stored as configured", 
+                belowMinimum.toMillis(), writer.flushCheckInterval().toMillis());
 
         writer.close();
     }

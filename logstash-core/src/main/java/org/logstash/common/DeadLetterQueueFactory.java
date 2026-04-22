@@ -113,6 +113,7 @@ public class DeadLetterQueueFactory {
             return DeadLetterQueueWriter
                     .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
                     .flushCheckInterval(flushCheckInterval)
+                    .pipelineId(id)
                     .storageType(storageType)
                     .build();
         } catch (IOException e) {
@@ -128,6 +129,7 @@ public class DeadLetterQueueFactory {
             return DeadLetterQueueWriter
                     .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
                     .flushCheckInterval(flushCheckInterval)
+                    .pipelineId(id)
                     .storageType(storageType)
                     .retentionTime(age)
                     .build();

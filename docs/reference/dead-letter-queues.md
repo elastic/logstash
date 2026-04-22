@@ -78,14 +78,14 @@ Note that this value cannot be set to lower than 1000ms.
 dead_letter_queue.flush_interval: 5000
 ```
 
-Dead letter queue scheduler checks are controlled by the `dead_letter_queue.flush_check_interval` setting. This setting controls how frequently the background scheduler checks for stale segments that need to be flushed. This setting is in milliseconds, and defaults to 1000ms. A smaller value ensures faster segment rotation when infrequent writes occur, at the cost of CPU consumption with more frequent scheduler execution. A larger value reduces scheduler overhead but may delay segment sealing, for the worst case it will be `dead_letter_queue.flush_interval` + `dead_letter_queue.flush_check_interval`. This value cannot be set to lower than 1000ms.
+Dead letter queue scheduler checks are controlled by the `dead_letter_queue.flush_check_interval` setting. This setting controls how frequently the background scheduler checks for stale segments that need to be flushed. This setting is in milliseconds, and defaults to 1000ms. A smaller value ensures faster segment rotation when infrequent writes occur, at the cost of CPU consumption with more frequent scheduler execution. A larger value reduces scheduler overhead but delays segment sealing, for the worst case it will be `dead_letter_queue.flush_interval` + `dead_letter_queue.flush_check_interval`. This value cannot be set to lower than 1000ms.
 
 ```yaml
 dead_letter_queue.flush_check_interval: 1000
 ```
 
 ::::{note}
-You may not use the same `dead_letter_queue` path for two different Logstash instances.
+You cannot use the same `dead_letter_queue` path for two different Logstash instances.
 ::::
 
 
