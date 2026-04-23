@@ -283,7 +283,7 @@ public class OtelMetricsService {
         if (logstashYmlDataset != null && !logstashYmlDataset.isEmpty()) {
             return logstashYmlDataset;
         }
-        return "logstash";
+        return "logstash.otel";
     }
 
     /**

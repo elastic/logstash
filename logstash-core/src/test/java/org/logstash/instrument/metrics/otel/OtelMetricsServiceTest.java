@@ -314,12 +314,12 @@ public class OtelMetricsServiceTest {
 
     @Test
     public void resolveDatasetReturnsDefaultWhenNull() {
-        assertThat(OtelMetricsService.resolveDataset(null)).isEqualTo("logstash");
+        assertThat(OtelMetricsService.resolveDataset(null)).isEqualTo("logstash.otel");
     }
 
     @Test
     public void resolveDatasetReturnsDefaultWhenEmpty() {
-        assertThat(OtelMetricsService.resolveDataset("")).isEqualTo("logstash");
+        assertThat(OtelMetricsService.resolveDataset("")).isEqualTo("logstash.otel");
     }
 
     @Test

@@ -35,7 +35,7 @@ otel.exporter.otlp.metrics.protocol: "grpc"
 | `otel.exporter.otlp.metrics.headers` | Authorization header for authenticated endpoints. Examples: `ApiKey xxx` or `Bearer xxx`. | *N/A* |
 | `otel.resource.attributes` | Additional resource attributes as comma-separated key=value pairs. Example: `environment=production,cluster=us-west`. | *N/A* |
 | `otel.service.name` | Service name for metrics. | `logstash` |
-| `otel.metrics.dataset` | Value for the `data_stream.dataset` resource attribute. Use this to distinguish metrics from different Logstash deployments in the same data stream. | `logstash` |
+| `otel.metrics.dataset` | Value for the `data_stream.dataset` resource attribute. Controls which Elasticsearch data stream receives the metrics (`metrics-<dataset>-<namespace>`). | `logstash.otel` |
 | `otel.exporter.otlp.metrics.certificate` | Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate. Required when the endpoint uses a self-signed or private CA. | *N/A* |
 | `otel.exporter.otlp.metrics.client.key` | Path to a PEM-encoded client private key for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.certificate`. | *N/A* |
 | `otel.exporter.otlp.metrics.client.certificate` | Path to a PEM-encoded client certificate for mutual TLS (mTLS). Must be set together with `otel.exporter.otlp.metrics.client.key`. | *N/A* |
@@ -192,7 +192,7 @@ The following resource attributes are automatically added to all metrics:
 | `service.name` | Defaults to `logstash`; configurable via `otel.service.name` |
 | `service.instance.id` | The Logstash node ID |
 | `host.name` | The Logstash node name (`node.name`) |
-| `data_stream.dataset` | Defaults to `logstash`; configurable via `otel.metrics.dataset` |
+| `data_stream.dataset` | Defaults to `logstash.otel`; configurable via `otel.metrics.dataset` |
 
 Additional resource attributes can be added using the `otel.resource.attributes` setting.
 
