@@ -224,7 +224,8 @@ describe LogStash::SslFileTracker do
       cert.close!
     end
 
-    it "deduplicates relative and absolute paths pointing to the same cert" do
+    it "deduplicates relative and absolute paths pointing to the same cert",
+       skip: (LogStash::Environment.windows? && "Pathname#relative_path_from fails on Windows when Tempfile and checkout live on different drives") do
       Dir.mktmpdir do |dir|
         cert_path = File.join(dir, "cert.pem")
         File.write(cert_path, "x")
@@ -411,7 +412,8 @@ describe LogStash::SslFileTracker do
       end
     end
 
-    context "poll mode (symlinks)" do
+    context "poll mode (symlinks)",
+            skip: (LogStash::Environment.windows? && "symlink mtime tracking is unreliable on Windows / NTFS via JRuby") do
       let(:dir)      { Dir.mktmpdir }
       let(:target)   { File.join(dir, "cert-1.pem").tap { |p| File.write(p, "original") } }
       let(:symlink)  { File.join(dir, "cert.pem").tap   { |p| File.symlink(target, p) } }
@@ -539,7 +541,8 @@ describe LogStash::SslFileTracker do
       it_behaves_like "two pipelines sharing a path"
     end
 
-    context "two pipelines sharing a symlink" do
+    context "two pipelines sharing a symlink",
+            skip: (LogStash::Environment.windows? && "symlink mtime tracking is unreliable on Windows / NTFS via JRuby") do
       let(:dir)         { Dir.mktmpdir }
       let(:target)      { File.join(dir, "cert-1.pem").tap { |p| File.write(p, "original") } }
       let(:symlink)     { File.join(dir, "cert.pem").tap   { |p| File.symlink(target, p) } }
