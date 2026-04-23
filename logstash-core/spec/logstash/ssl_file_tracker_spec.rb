@@ -51,6 +51,13 @@ describe LogStash::SslFileTracker do
     File.utime(future, future, path)
   end
 
+  # Normalize an expected Ruby path to the same form java.nio.file.Paths.get
+  # produces. On Windows the NIO Path uses backslash separators while Ruby
+  # paths typically use forward slashes, so direct string comparison fails.
+  def native_path(p)
+    java.nio.file.Paths.get(p.to_s).to_s
+  end
+
   def make_delegator(inner_plugin)
     dbl = double("delegator")
     allow(dbl).to receive(:ruby_plugin).and_return(inner_plugin)
@@ -118,7 +125,7 @@ describe LogStash::SslFileTracker do
       allow(file_watch_service).to receive(:register) { |p, _| registered << p.to_s }
       tracker.register(pipeline)
 
-      expect(registered).to contain_exactly(cert.path)
+      expect(registered).to contain_exactly(native_path(cert.path))
     ensure
       cert.close!
     end
@@ -178,7 +185,7 @@ describe LogStash::SslFileTracker do
       allow(file_watch_service).to receive(:register) { |p, _| registered << p.to_s }
       tracker.register(pipeline)
 
-      expect(registered).to contain_exactly(keystore.path, truststore.path)
+      expect(registered).to contain_exactly(native_path(keystore.path), native_path(truststore.path))
     ensure
       [keystore, truststore].each(&:close!)
     end
@@ -199,7 +206,7 @@ describe LogStash::SslFileTracker do
       allow(file_watch_service).to receive(:register) { |p, _cb| registered_paths << p.to_s }
       tracker.register(pipeline)
 
-      expect(registered_paths).to contain_exactly(ca1.path, ca2.path)
+      expect(registered_paths).to contain_exactly(native_path(ca1.path), native_path(ca2.path))
     ensure
       [ca1, ca2].each(&:close!)
     end
@@ -296,7 +303,7 @@ describe LogStash::SslFileTracker do
 
         # p2 shares cert1 and adds cert2, whose Java register fails
         allow(file_watch_service).to receive(:register) do |p, _|
-          raise java.io.IOException.new("inotify limit") if p.to_s == cert2.path
+          raise java.io.IOException.new("inotify limit") if p.to_s == native_path(cert2.path)
         end
         deregistered = []
         allow(file_watch_service).to receive(:deregister) { |p, _| deregistered << p.to_s }
@@ -304,7 +311,7 @@ describe LogStash::SslFileTracker do
         expect { tracker.register(two_cert_pipeline(:p2)) }.to raise_error(java.io.IOException)
 
         # cert1 is still referenced by p1 and must not be Java-deregistered
-        expect(deregistered).not_to include(cert1.path)
+        expect(deregistered).not_to include(native_path(cert1.path))
       end
     end
   end
@@ -321,7 +328,7 @@ describe LogStash::SslFileTracker do
       tracker.register(make_pipeline(:main, inputs: [make_plugin("ssl_certificate" => cert.path)]))
       tracker.deregister(:main)
       expect(file_watch_service).to have_received(:deregister).with(
-        satisfy { |p| p.to_s == cert.path }, anything
+        satisfy { |p| p.to_s == native_path(cert.path) }, anything
       )
     end
 
