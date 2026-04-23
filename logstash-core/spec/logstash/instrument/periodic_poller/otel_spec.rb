@@ -51,7 +51,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       allow(s).to receive(:get).with("otel.resource.attributes").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.headers").and_return(nil)
       allow(s).to receive(:get).with("otel.service.name").and_return(nil)
-      allow(s).to receive(:get).with("otel.metrics.dataset").and_return("logstash.otel")
+      allow(s).to receive(:get).with("otel.metrics.dataset").and_return("logstash")
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.certificate").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.key").and_return(nil)
       allow(s).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
@@ -89,7 +89,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         nil,
         nil,
         nil,
-        "logstash.otel",
+        "logstash",
         nil,
         nil,
         nil

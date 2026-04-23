@@ -353,11 +353,12 @@
 #
 # otel.service.name: "logstash"
 #
-# Value for the data_stream.dataset resource attribute (default: "logstash.otel").
-# Controls which Elasticsearch data stream receives the metrics: metrics-<dataset>-<namespace>.
+# Value for the data_stream.dataset resource attribute (default: "logstash").
+# When sending to the Elastic ingest endpoint, ".otel" is automatically appended, so the default
+# produces data_stream.dataset "logstash.otel" and index metrics-logstash.otel-<namespace>.
 # Use this to distinguish metrics from different Logstash deployments in the same data stream.
 #
-# otel.metrics.dataset: "logstash.otel"
+# otel.metrics.dataset: "logstash"
 #
 # Path to a PEM-encoded trusted CA certificate for verifying the OTLP endpoint's TLS certificate.
 # Required when the endpoint uses a self-signed or private CA certificate.

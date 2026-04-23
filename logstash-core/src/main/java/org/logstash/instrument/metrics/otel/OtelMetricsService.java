@@ -277,13 +277,16 @@ public class OtelMetricsService {
 
     /**
      * Resolves the data_stream.dataset value, falling back to "logstash" if not provided.
+     * The Elastic ingest endpoint appends ".otel" to this value when routing, so "logstash"
+     * becomes "logstash.otel" in the stored data_stream.dataset field and the index name
+     * becomes metrics-logstash.otel-default.
      * Package-private for testing.
      */
     static String resolveDataset(String logstashYmlDataset) {
         if (logstashYmlDataset != null && !logstashYmlDataset.isEmpty()) {
             return logstashYmlDataset;
         }
-        return "logstash.otel";
+        return "logstash";
     }
 
     /**
