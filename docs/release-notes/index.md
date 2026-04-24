@@ -36,7 +36,7 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 **Kafka Integration - 11.8.8**
 
-* Fix `sasl_jaas_config` output configuration [#247](https://github.com/logstash-plugins/logstash-integration-kafka/pull/247)
+* Fix a regression introduced in 11.8.5 that prevented the Kafka Output plugin from being configured with `sasl_jaas_config` https://github.com/logstash-plugins/logstash-integration-kafka/pull/247[#247]
 
 **Elasticsearch Output - 12.1.3**
 
