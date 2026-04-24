@@ -126,7 +126,7 @@ This section summarizes the changes in the following releases:
 
 *Kafka Integration - 11.8.8*
 
-* Fix `sasl_jaas_config` output configuration https://github.com/logstash-plugins/logstash-integration-kafka/pull/247[#247]
+* Fix a regression introduced in 11.8.5 that prevented the Kafka Output plugin from being configured with `sasl_jaas_config` https://github.com/logstash-plugins/logstash-integration-kafka/pull/247[#247]
 
 *Elasticsearch Output - 11.22.15*
 
