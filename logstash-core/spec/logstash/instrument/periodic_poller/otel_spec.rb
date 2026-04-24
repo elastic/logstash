@@ -69,6 +69,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
   before do
     java_import 'org.logstash.instrument.metrics.otel.OtelMetricsService'
+    java_import 'org.logstash.instrument.metrics.otel.OtelMetricsConfig'
     allow(OtelMetricsService).to receive(:new).and_return(otel_service)
   end
 
@@ -81,18 +82,20 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
     it "creates an OtelMetricsService with correct parameters" do
       expect(OtelMetricsService).to receive(:new).with(
-        "http://localhost:4317",
-        "test-node-id",
-        "test-node-name",
-        10000,
-        "grpc",
-        nil,
-        nil,
-        nil,
-        "logstash",
-        nil,
-        nil,
-        nil
+        have_attributes(
+          endpoint: "http://localhost:4317",
+          node_id: "test-node-id",
+          node_name: "test-node-name",
+          interval_ms: 10000,
+          protocol: "grpc",
+          resource_attributes: nil,
+          authorization_header: nil,
+          service_name: nil,
+          dataset: "logstash",
+          certificate_path: nil,
+          client_key_path: nil,
+          client_certificate_path: nil
+        )
       ).and_return(otel_service)
 
       otel_poller
@@ -117,18 +120,10 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
       it "extracts string value from Password and passes to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "http",
-          nil,
-          "ApiKey my-secret-key",
-          nil,
-          nil,
-          nil,
-          nil,
-          nil
+          have_attributes(
+            endpoint: "https://apm.example.com",
+            authorization_header: "ApiKey my-secret-key"
+          )
         ).and_return(otel_service)
 
         otel_poller
@@ -154,18 +149,10 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
       it "extracts string value from Password and passes to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "http",
-          nil,
-          "Bearer my-bearer-token",
-          nil,
-          nil,
-          nil,
-          nil,
-          nil
+          have_attributes(
+            endpoint: "https://apm.example.com",
+            authorization_header: "Bearer my-bearer-token"
+          )
         ).and_return(otel_service)
 
         otel_poller
@@ -190,18 +177,10 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
       it "passes nil to OtelMetricsService when authorization header is not set" do
         expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "http",
-          nil,
-          nil,
-          nil,
-          nil,
-          nil,
-          nil,
-          nil
+          have_attributes(
+            endpoint: "https://apm.example.com",
+            authorization_header: nil
+          )
         ).and_return(otel_service)
 
         otel_poller
@@ -226,18 +205,12 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
       it "passes certificate paths to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "grpc",
-          nil,
-          nil,
-          nil,
-          nil,
-          "/path/to/ca.pem",
-          "/path/to/client.key",
-          "/path/to/client.crt"
+          have_attributes(
+            endpoint: "https://apm.example.com",
+            certificate_path: "/path/to/ca.pem",
+            client_key_path: "/path/to/client.key",
+            client_certificate_path: "/path/to/client.crt"
+          )
         ).and_return(otel_service)
 
         otel_poller
@@ -248,18 +221,11 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
         allow(settings).to receive(:get).with("otel.exporter.otlp.metrics.client.certificate").and_return(nil)
 
         expect(OtelMetricsService).to receive(:new).with(
-          "https://apm.example.com",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "grpc",
-          nil,
-          nil,
-          nil,
-          nil,
-          "/path/to/ca.pem",
-          nil,
-          nil
+          have_attributes(
+            certificate_path: "/path/to/ca.pem",
+            client_key_path: nil,
+            client_certificate_path: nil
+          )
         ).and_return(otel_service)
 
         otel_poller
@@ -284,18 +250,7 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
 
       it "passes user-defined dataset to OtelMetricsService" do
         expect(OtelMetricsService).to receive(:new).with(
-          "http://localhost:4317",
-          "test-node-id",
-          "test-node-name",
-          10000,
-          "grpc",
-          nil,
-          nil,
-          nil,
-          "my-dataset",
-          nil,
-          nil,
-          nil
+          have_attributes(dataset: "my-dataset")
         ).and_return(otel_service)
 
         otel_poller

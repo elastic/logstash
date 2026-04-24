@@ -98,38 +98,25 @@ public class OtelMetricsService {
     private final byte[] effectiveClientCertPem;
 
     /**
-     * Creates a new Otel metrics service.
+     * Creates a new Otel metrics service from the given configuration.
      *
-     * Configuration values are resolved with precedence: system properties > logstash.yml parameters.
+     * Configuration values from {@code config} are resolved with precedence:
+     * system properties > config values.
      *
-     * @param endpoint             OTLP metrics endpoint from logstash.yml (otel.exporter.otlp.metrics.endpoint)
-     * @param nodeId               Logstash node ID
-     * @param nodeName             Logstash node name
-     * @param intervalMs           Export interval in milliseconds from logstash.yml
-     * @param protocol             "grpc" or "http" from logstash.yml
-     * @param resourceAttributes   Additional resource attributes from logstash.yml (comma-separated key=value pairs)
-     * @param authorizationHeader       Authorization header value from logstash.yml (e.g., "ApiKey xxx" or "Bearer xxx"), or null
-     * @param serviceName               Service name from logstash.yml, or null to use default "logstash"
-     * @param dataset                   Value for the data_stream.dataset resource attribute; defaults to "logstash" if null or empty
-     * @param certificatePath           Path to PEM-encoded trusted CA certificate, or null (used for server certificate verification)
-     * @param clientKeyPath             Path to PEM-encoded client private key, or null (required for mTLS)
-     * @param clientCertificatePath     Path to PEM-encoded client certificate, or null (required for mTLS)
+     * @param config  service configuration built via {@link OtelMetricsConfig#builder}
      */
-    public OtelMetricsService(String endpoint, String nodeId, String nodeName,
-                              long intervalMs, String protocol, String resourceAttributes,
-                              String authorizationHeader, String serviceName, String dataset,
-                              String certificatePath, String clientKeyPath, String clientCertificatePath) {
-        // Resolve configuration with precedence: system props > logstash.yml
-        String effectiveEndpoint = resolveEndpoint(endpoint);
-        String effectiveProtocol = resolveProtocol(protocol);
-        long effectiveIntervalMs = resolveIntervalMs(intervalMs);
-        String effectiveResourceAttrs = resolveResourceAttributes(resourceAttributes);
-        this.effectiveAuthorizationHeader = resolveAuthorizationHeader(authorizationHeader);
-        String effectiveServiceName = resolveServiceName(serviceName);
-        String effectiveDataset = resolveDataset(dataset);
-        this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE, certificatePath));
-        this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY, clientKeyPath));
-        this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE, clientCertificatePath));
+    public OtelMetricsService(OtelMetricsConfig config) {
+        // Resolve configuration with precedence: system props > config values
+        String effectiveEndpoint = resolveEndpoint(config.getEndpoint());
+        String effectiveProtocol = resolveProtocol(config.getProtocol());
+        long effectiveIntervalMs = resolveIntervalMs(config.getIntervalMs());
+        String effectiveResourceAttrs = resolveResourceAttributes(config.getResourceAttributes());
+        this.effectiveAuthorizationHeader = resolveAuthorizationHeader(config.getAuthorizationHeader());
+        String effectiveServiceName = resolveServiceName(config.getServiceName());
+        String effectiveDataset = resolveDataset(config.getDataset());
+        this.effectiveTrustedCertsPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE, config.getCertificatePath()));
+        this.effectiveClientKeyPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY, config.getClientKeyPath()));
+        this.effectiveClientCertPem = readPemFile(resolveFilePath(OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE, config.getClientCertificatePath()));
 
         LOGGER.info("Initializing OpenTelemetry metrics export to {} (protocol: {}, interval: {}ms)",
                 effectiveEndpoint, effectiveProtocol, effectiveIntervalMs);
@@ -137,8 +124,8 @@ public class OtelMetricsService {
         // Build resource attributes
         AttributesBuilder resourceAttrsBuilder = Attributes.builder()
                 .put(AttributeKey.stringKey("service.name"), effectiveServiceName)
-                .put(AttributeKey.stringKey("service.instance.id"), nodeId)
-                .put(AttributeKey.stringKey("host.name"), nodeName)
+                .put(AttributeKey.stringKey("service.instance.id"), config.getNodeId())
+                .put(AttributeKey.stringKey("host.name"), config.getNodeName())
                 .put(AttributeKey.stringKey("data_stream.dataset"), effectiveDataset);
 
         // Parse additional resource attributes if provided

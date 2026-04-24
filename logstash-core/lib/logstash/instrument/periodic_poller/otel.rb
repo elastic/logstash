@@ -44,6 +44,7 @@ module LogStash module Instrument module PeriodicPoller
 
     java_import 'io.opentelemetry.api.common.Attributes'
     java_import 'io.opentelemetry.api.common.AttributeKey'
+    java_import 'org.logstash.instrument.metrics.otel.OtelMetricsConfig'
 
     def initialize(metric, agent, settings)
       # Convert interval to both seconds and milliseconds:
@@ -61,20 +62,23 @@ module LogStash module Instrument module PeriodicPoller
       @metric_store = @metric.collector
 
       # Initialize the Otel service - SDK expects interval in milliseconds
-      @otel_service = org.logstash.instrument.metrics.otel.OtelMetricsService.new(
-        settings.get("otel.exporter.otlp.metrics.endpoint"),
-        agent.id,
-        agent.name,
-        @interval_ms,
-        settings.get("otel.exporter.otlp.metrics.protocol"),
-        settings.get("otel.resource.attributes"),
-        settings.get("otel.exporter.otlp.metrics.headers")&.value,
-        settings.get("otel.service.name"),
-        settings.get("otel.metrics.dataset"),
-        settings.get("otel.exporter.otlp.metrics.certificate"),
-        settings.get("otel.exporter.otlp.metrics.client.key"),
-        settings.get("otel.exporter.otlp.metrics.client.certificate")
-      )
+      config = OtelMetricsConfig.builder(
+          agent.id,
+          agent.name,
+          settings.get("otel.exporter.otlp.metrics.endpoint"),
+          settings.get("otel.exporter.otlp.metrics.protocol")
+        )
+        .interval_ms(@interval_ms)
+        .resource_attributes(settings.get("otel.resource.attributes"))
+        .authorization_header(settings.get("otel.exporter.otlp.metrics.headers")&.value)
+        .service_name(settings.get("otel.service.name"))
+        .dataset(settings.get("otel.metrics.dataset"))
+        .certificate_path(settings.get("otel.exporter.otlp.metrics.certificate"))
+        .client_key_path(settings.get("otel.exporter.otlp.metrics.client.key"))
+        .client_certificate_path(settings.get("otel.exporter.otlp.metrics.client.certificate"))
+        .build
+
+      @otel_service = org.logstash.instrument.metrics.otel.OtelMetricsService.new(config)
 
       # Take initial snapshot
       @snapshot = @metric_store.snapshot_metric
