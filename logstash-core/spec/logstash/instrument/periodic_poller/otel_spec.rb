@@ -308,6 +308,26 @@ describe LogStash::Instrument::PeriodicPoller::Otel do
       otel_poller
     end
 
+    it "registers JVM metrics" do
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.heap.used", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.heap.committed", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.heap.max", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.heap.used_percent", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.non_heap.used", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.mem.non_heap.committed", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerObservableCounter).with("logstash.jvm.gc.collection_count", anything, anything, anything, anything).twice
+      expect(otel_service).to receive(:registerObservableCounter).with("logstash.jvm.gc.collection_time", anything, anything, anything, anything).twice
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.threads.count", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.threads.peak_count", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.open_file_descriptors", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.max_file_descriptors", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.process.cpu.percent", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerObservableCounter).with("logstash.jvm.process.cpu.total", anything, anything, anything, anything)
+      expect(otel_service).to receive(:registerGauge).with("logstash.jvm.uptime", anything, anything, anything, anything)
+
+      otel_poller
+    end
+
     it "registers cgroup metrics" do
       expect(otel_service).to receive(:registerObservableCounter).with(
         "logstash.os.cgroup.cpuacct.usage", anything, anything, anything, anything

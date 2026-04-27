@@ -170,6 +170,26 @@ Plugin metrics include `pipeline.id`, `plugin.type`, and `plugin.id` attributes.
 | `logstash.plugin.events.out` | Counter | `{event}` | Events output by plugin |
 | `logstash.plugin.events.duration` | Counter | `ms` | Time spent processing events |
 
+### JVM metrics
+
+| Metric name | Type | Unit | Description |
+| --- | --- | --- | --- |
+| `logstash.jvm.uptime` | Gauge | `ms` | JVM uptime since start |
+| `logstash.jvm.mem.heap.used` | Gauge | `By` | Heap memory currently used |
+| `logstash.jvm.mem.heap.committed` | Gauge | `By` | Heap memory committed to the JVM |
+| `logstash.jvm.mem.heap.max` | Gauge | `By` | Maximum heap memory available |
+| `logstash.jvm.mem.heap.used_percent` | Gauge | `%` | Heap memory used as a percentage of max |
+| `logstash.jvm.mem.non_heap.used` | Gauge | `By` | Non-heap memory currently used |
+| `logstash.jvm.mem.non_heap.committed` | Gauge | `By` | Non-heap memory committed to the JVM |
+| `logstash.jvm.gc.collection_count` | Counter | `{collection}` | Number of GC collections. Includes a `gc.generation` attribute (`young` or `old`). |
+| `logstash.jvm.gc.collection_time` | Counter | `ms` | Total time spent in GC. Includes a `gc.generation` attribute (`young` or `old`). |
+| `logstash.jvm.threads.count` | Gauge | `{thread}` | Current number of JVM threads |
+| `logstash.jvm.threads.peak_count` | Gauge | `{thread}` | Peak number of JVM threads since start |
+| `logstash.jvm.process.open_file_descriptors` | Gauge | `{file_descriptor}` | Number of open file descriptors |
+| `logstash.jvm.process.max_file_descriptors` | Gauge | `{file_descriptor}` | Maximum number of file descriptors |
+| `logstash.jvm.process.cpu.percent` | Gauge | `%` | Process CPU usage |
+| `logstash.jvm.process.cpu.total` | Counter | `ms` | Total CPU time consumed by the process |
+
 ### Cgroup metrics (Linux only)
 
 These metrics are available when running on Linux with cgroups enabled (e.g., in containers).

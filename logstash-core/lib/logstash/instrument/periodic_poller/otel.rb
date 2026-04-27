@@ -88,8 +88,9 @@ module LogStash module Instrument module PeriodicPoller
       @registered_pipelines = Set.new
       @registered_plugins = Set.new
 
-      # Register global and cgroup metrics immediately (not pipeline-specific)
+      # Register global, JVM and cgroup metrics immediately (not pipeline-specific)
       register_global_metrics
+      register_jvm_metrics
       register_cgroup_metrics
 
       logger.info("OpenTelemetry metrics poller initialized",
@@ -176,6 +177,79 @@ module LogStash module Instrument module PeriodicPoller
       # Global queue gauge (total across all pipelines)
       register_gauge("logstash.queue.events", "Total events in queues", "{event}") do
         get_total_queue_events
+      end
+    end
+
+    # Register JVM metrics — reads from the metric store populated by the JVM poller
+    def register_jvm_metrics
+      # Heap memory
+      register_gauge("logstash.jvm.mem.heap.used", "JVM heap memory used", "By") do
+        get_metric_value(:jvm, :memory, :heap, :used_in_bytes)
+      end
+      register_gauge("logstash.jvm.mem.heap.committed", "JVM heap memory committed", "By") do
+        get_metric_value(:jvm, :memory, :heap, :committed_in_bytes)
+      end
+      register_gauge("logstash.jvm.mem.heap.max", "JVM heap memory max", "By") do
+        get_metric_value(:jvm, :memory, :heap, :max_in_bytes)
+      end
+      register_gauge("logstash.jvm.mem.heap.used_percent", "JVM heap memory used percent", "%") do
+        get_metric_value(:jvm, :memory, :heap, :used_percent)
+      end
+
+      # Non-heap memory
+      register_gauge("logstash.jvm.mem.non_heap.used", "JVM non-heap memory used", "By") do
+        get_metric_value(:jvm, :memory, :non_heap, :used_in_bytes)
+      end
+      register_gauge("logstash.jvm.mem.non_heap.committed", "JVM non-heap memory committed", "By") do
+        get_metric_value(:jvm, :memory, :non_heap, :committed_in_bytes)
+      end
+
+      # GC — separate instrument per generation so counter_rate works per generation in dashboards
+      [:young, :old].each do |generation|
+        attrs = Attributes.of(AttributeKey.stringKey("gc.generation"), generation.to_s)
+        register_observable_counter(
+          "logstash.jvm.gc.collection_count",
+          "JVM GC collection count",
+          "{collection}",
+          attrs
+        ) do
+          get_metric_value(:jvm, :gc, :collectors, generation, :collection_count)
+        end
+        register_observable_counter(
+          "logstash.jvm.gc.collection_time",
+          "JVM GC collection time",
+          "ms",
+          attrs
+        ) do
+          get_metric_value(:jvm, :gc, :collectors, generation, :collection_time_in_millis)
+        end
+      end
+
+      # Threads
+      register_gauge("logstash.jvm.threads.count", "JVM thread count", "{thread}") do
+        get_metric_value(:jvm, :threads, :count)
+      end
+      register_gauge("logstash.jvm.threads.peak_count", "JVM peak thread count", "{thread}") do
+        get_metric_value(:jvm, :threads, :peak_count)
+      end
+
+      # Process
+      register_gauge("logstash.jvm.process.open_file_descriptors", "Open file descriptors", "{file_descriptor}") do
+        get_metric_value(:jvm, :process, :open_file_descriptors)
+      end
+      register_gauge("logstash.jvm.process.max_file_descriptors", "Max file descriptors", "{file_descriptor}") do
+        get_metric_value(:jvm, :process, :max_file_descriptors)
+      end
+      register_gauge("logstash.jvm.process.cpu.percent", "JVM process CPU usage", "%") do
+        get_metric_value(:jvm, :process, :cpu, :percent)
+      end
+      register_observable_counter("logstash.jvm.process.cpu.total", "JVM process CPU total time", "ms") do
+        get_metric_value(:jvm, :process, :cpu, :total_in_millis)
+      end
+
+      # Uptime
+      register_gauge("logstash.jvm.uptime", "JVM uptime", "ms") do
+        get_metric_value(:jvm, :uptime_in_millis)
       end
     end
 
