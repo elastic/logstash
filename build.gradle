@@ -316,11 +316,6 @@ task dockerBootstrap {
     dependsOn ':docker:data:logstash:env2yaml:compileJava'
 }
 
-tasks.register("removeOldBouncyCastleJars", Delete) {
-    dependsOn bootstrap
-    delete fileTree("${projectDir}/vendor/jruby/lib/ruby/stdlib/org/bouncycastle")
-}
-
 tasks.register("installDefaultGems") {
     dependsOn bootstrap
     doLast {
@@ -386,7 +381,6 @@ tasks.register("artifactDockerfiles") {
 tasks.register("artifactAll", Exec) {
     description = "Build all artifacts except docker"
     dependsOn bootstrap
-    dependsOn removeOldBouncyCastleJars
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'GEM_HOME', "${projectDir}/vendor/bundle/jruby/3.4.0"
@@ -397,7 +391,6 @@ tasks.register("artifactAll", Exec) {
 tasks.register("artifactDeb", Exec) {
     description = "Build DEB package"
     dependsOn bootstrap
-    dependsOn removeOldBouncyCastleJars
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
@@ -409,7 +402,6 @@ tasks.register("artifactDeb", Exec) {
 tasks.register("artifactRpm", Exec) {
     description = "Build RPM package"
     dependsOn bootstrap
-    dependsOn removeOldBouncyCastleJars
     dependsOn copyAllJdks
     workingDir projectDir
     environment 'ARCH', System.getenv("ARCH") ?: "x86_64"
@@ -476,7 +468,6 @@ tasks.register("artifactDockerObservabilitySRE") {
 
 tasks.register("assembleTarDistribution") {
   dependsOn bootstrap
-  dependsOn removeOldBouncyCastleJars
   dependsOn "copyAllJdks"
   inputs.files fileTree("${projectDir}/rakelib")
   inputs.files fileTree("${projectDir}/bin")
@@ -498,7 +489,6 @@ project(":logstash-core") {
       dependsOn copyPluginTestAlias
       dependsOn installDevelopmentGems
       dependsOn installDefaultGems
-      dependsOn removeOldBouncyCastleJars
     }
   }
 }
