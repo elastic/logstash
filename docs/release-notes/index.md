@@ -21,6 +21,28 @@ To check for security updates, go to [Security announcements for the Elastic sta
 % ### Fixes [logstash-next-fixes]
 % *
 
+## 9.3.4 [logstash-9.3.4-release-notes]
+
+### Updates to dependencies [logstash-9.3.4-dependencies]
+
+* Updated Log4j to 2.25.4 [#18991](https://github.com/elastic/logstash/pull/18991)
+
+### Features and enhancements [logstash-9.3.4-features-enhancements]
+
+* Improved dead letter queue performance during flush operations [#18874](https://github.com/elastic/logstash/pull/18874)
+* Optimized DLQ segment directory scans with single-pass logic, saving ~40% CPU on segment file lookup operations [#18970](https://github.com/elastic/logstash/pull/18970)
+
+### Plugins [logstash-plugin-9.3.4-changes]
+
+**Kafka Integration - 11.8.8**
+
+* Fix a regression introduced in 11.8.5 that prevented the Kafka Output plugin from being configured with `sasl_jaas_config` https://github.com/logstash-plugins/logstash-integration-kafka/pull/247[#247]
+
+**Elasticsearch Output - 12.1.3**
+
+* Improves the logging experience when DLQ used [#1253](https://github.com/logstash-plugins/logstash-output-elasticsearch/pull/1253)
+
+
 ## 9.3.3 [logstash-9.3.3-release-notes]
 
 ### Plugins [logstash-plugin-9.3.3-changes]
