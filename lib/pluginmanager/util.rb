@@ -17,6 +17,7 @@
 
 require "rubygems/package"
 require "yaml"
+require "digest"
 
 module LogStash::PluginManager
   def self.load_aliases_definitions(path = File.expand_path('plugin_aliases.yml', __dir__))
