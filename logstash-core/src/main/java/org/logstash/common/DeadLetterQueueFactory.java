@@ -111,8 +111,7 @@ public class DeadLetterQueueFactory {
                                                    final Duration flushInterval, final Duration flushCheckInterval, final QueueStorageType storageType) {
         try {
             return DeadLetterQueueWriter
-                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
-                    .flushCheckInterval(flushCheckInterval)
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, flushCheckInterval)
                     .pipelineId(id)
                     .storageType(storageType)
                     .build();
@@ -127,8 +126,7 @@ public class DeadLetterQueueFactory {
                                                    final Duration age) {
         try {
             return DeadLetterQueueWriter
-                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval)
-                    .flushCheckInterval(flushCheckInterval)
+                    .newBuilder(Paths.get(dlqPath, id), MAX_SEGMENT_SIZE_BYTES, maxQueueSize, flushInterval, flushCheckInterval)
                     .pipelineId(id)
                     .storageType(storageType)
                     .retentionTime(age)

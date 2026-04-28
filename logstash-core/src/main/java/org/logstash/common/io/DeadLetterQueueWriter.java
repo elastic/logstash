@@ -145,7 +145,6 @@ public final class DeadLetterQueueWriter implements Closeable {
     private volatile int currentSegmentIndex;
     private volatile Timestamp lastEntryTimestamp;
     private final Duration flushInterval;
-    private final Duration flushCheckInterval;
     private final AtomicBoolean open = new AtomicBoolean(true);
     private final LongAdder droppedEvents = new LongAdder();
     private final LongAdder expiredEvents = new LongAdder();
@@ -180,11 +179,11 @@ public final class DeadLetterQueueWriter implements Closeable {
         private final ScheduledExecutorService scheduledExecutor;
         private final long checkIntervalMs;
 
-        FixedRateScheduler(final Duration flushCheckInterval, final String pipelineId) {
+        FixedRateScheduler(final long flushCheckInterval, final String pipelineId) {
             //Set the name with pipeline ID for better visibility
             final String threadName = pipelineId != null ? "dlq-flush-check[" + pipelineId + "]" : "dlq-flush-check";
             
-            this.checkIntervalMs = Math.max(flushCheckInterval.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis());
+            this.checkIntervalMs = flushCheckInterval;
             scheduledExecutor = Executors.newScheduledThreadPool(1, r -> {
                 Thread t = new Thread(r);
                 //Allow this thread to die when the JVM dies
@@ -223,23 +222,24 @@ public final class DeadLetterQueueWriter implements Closeable {
         private final long maxSegmentSize;
         private final long maxQueueSize;
         private final Duration flushInterval;
+        private final Duration flushCheckInterval;
         private boolean startScheduledFlusher;
         private QueueStorageType storageType = QueueStorageType.DROP_NEWER;
         private Duration retentionTime = null;
-        private Duration flushCheckInterval = Duration.ofMillis(1000);
         private Clock clock = Clock.systemDefaultZone();
         private SchedulerService customSchedulerService = null;
         private String pipelineId;
 
-        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval) {
-            this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, true);
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, final Duration flushInterval, final Duration flushCheckInterval) {
+            this(queuePath, maxSegmentSize, maxQueueSize, flushInterval, flushCheckInterval, true);
         }
 
-        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, Duration flushInterval, boolean startScheduledFlusher) {
+        private Builder(Path queuePath, long maxSegmentSize, long maxQueueSize, final Duration flushInterval, final Duration flushCheckInterval, boolean startScheduledFlusher) {
             this.queuePath = queuePath;
             this.maxSegmentSize = maxSegmentSize;
             this.maxQueueSize = maxQueueSize;
             this.flushInterval = flushInterval;
+            this.flushCheckInterval = flushCheckInterval;
             this.startScheduledFlusher = startScheduledFlusher;
         }
 
@@ -250,11 +250,6 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         public Builder retentionTime(Duration retentionTime) {
             this.retentionTime = retentionTime;
-            return this;
-        }
-
-        public Builder flushCheckInterval(final Duration interval) {
-            this.flushCheckInterval = interval;
             return this;
         }
 
@@ -280,56 +275,67 @@ public final class DeadLetterQueueWriter implements Closeable {
                 throw new IllegalArgumentException("Both default scheduler and custom scheduler were defined, ");
             }
 
-            Duration effectiveFlushInterval = flushInterval;
-            if (startScheduledFlusher && flushInterval.compareTo(MIN_FLUSH_PERIOD) < 0) {
-                logger.warn("dead_letter_queue.flush_interval ({} ms) is below the minimum of {} ms; using {} ms",
-                        flushInterval.toMillis(), MIN_FLUSH_PERIOD.toMillis(), MIN_FLUSH_PERIOD.toMillis());
-                effectiveFlushInterval = MIN_FLUSH_PERIOD;
-            }
-
-            Duration effectiveFlushCheckInterval = flushCheckInterval;
-            if (startScheduledFlusher) {
-                // Clamp to maximum (can't exceed flush interval)
-                if (effectiveFlushCheckInterval.compareTo(effectiveFlushInterval) > 0) {
-                    logger.warn("dead_letter_queue.flush_check_interval ({} ms) cannot be greater than dead_letter_queue.flush_interval ({} ms); using {} ms",
-                            effectiveFlushCheckInterval.toMillis(), effectiveFlushInterval.toMillis(), effectiveFlushInterval.toMillis());
-                    effectiveFlushCheckInterval = effectiveFlushInterval;
-                }
-                // Clamp to minimum (for scheduler only, don't change stored value)
-                if (effectiveFlushCheckInterval.compareTo(MIN_FLUSH_CHECK_INTERVAL) < 0) {
-                    logger.warn("dead_letter_queue.flush_check_interval ({} ms) is below the minimum of {} ms; using {} ms for the scheduler",
-                            effectiveFlushCheckInterval.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis());
-                }
-            }
+            final Duration normalizedFlushInterval = normalizeFlushInterval(flushInterval);
 
             SchedulerService schedulerService;
             if (customSchedulerService != null) {
                 schedulerService = customSchedulerService;
             } else {
                 if (startScheduledFlusher) {
-                    // Use clamped-to-max value for scheduler (which will further clamp to MIN in FixedRateScheduler)
-                    schedulerService = new FixedRateScheduler(effectiveFlushCheckInterval, pipelineId);
+                    final Duration normalizedFlushCheckInterval = normalizeFlushCheckInterval(flushCheckInterval, normalizedFlushInterval);
+                    schedulerService = new FixedRateScheduler(normalizedFlushCheckInterval.toMillis(), pipelineId);
                 } else {
                     schedulerService = new NoopScheduler();
                 }
             }
 
-            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, effectiveFlushInterval, effectiveFlushCheckInterval, storageType, retentionTime, clock, schedulerService);
+            return new DeadLetterQueueWriter(queuePath, maxSegmentSize, maxQueueSize, normalizedFlushInterval, storageType, retentionTime, clock, schedulerService);
+        }
+
+        @VisibleForTesting
+        Duration normalizeFlushInterval(final Duration flushInterval) {
+            if (!startScheduledFlusher) return flushInterval;
+
+            Duration effectiveFlushInterval = flushInterval;
+            if (flushInterval.compareTo(MIN_FLUSH_PERIOD) < 0) {
+                logger.warn("dead_letter_queue.flush_interval ({} ms) is below the minimum of {} ms; using {} ms",
+                        flushInterval.toMillis(), MIN_FLUSH_PERIOD.toMillis(), MIN_FLUSH_PERIOD.toMillis());
+                effectiveFlushInterval = MIN_FLUSH_PERIOD;
+            }
+            return effectiveFlushInterval;
+        }
+
+        @VisibleForTesting
+        Duration normalizeFlushCheckInterval(final Duration flushCheckInterval, final Duration effectiveFlushInterval) {
+            Duration effectiveFlushCheckInterval = flushCheckInterval;
+            // can't exceed flush interval
+            if (effectiveFlushCheckInterval.compareTo(effectiveFlushInterval) > 0) {
+                logger.warn("dead_letter_queue.flush_check_interval ({} ms) cannot be greater than dead_letter_queue.flush_interval ({} ms); using {} ms",
+                        effectiveFlushCheckInterval.toMillis(), effectiveFlushInterval.toMillis(), effectiveFlushInterval.toMillis());
+                effectiveFlushCheckInterval = effectiveFlushInterval;
+            }
+            // can't be less than 1s
+            if (effectiveFlushCheckInterval.compareTo(MIN_FLUSH_CHECK_INTERVAL) < 0) {
+                logger.warn("dead_letter_queue.flush_check_interval ({} ms) is below the minimum of {} ms; using {} ms for the flush check interval",
+                        effectiveFlushCheckInterval.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis(), MIN_FLUSH_CHECK_INTERVAL.toMillis());
+                effectiveFlushCheckInterval = MIN_FLUSH_CHECK_INTERVAL;
+            }
+            return effectiveFlushCheckInterval;
         }
     }
 
     public static Builder newBuilder(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                     final Duration flushInterval) {
-        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval);
+                                     final Duration flushInterval, final Duration flushCheckInterval) {
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, flushInterval, flushCheckInterval);
     }
 
     @VisibleForTesting
     static Builder newBuilderWithoutFlusher(final Path queuePath, final long maxSegmentSize, final long maxQueueSize) {
-        return new Builder(queuePath, maxSegmentSize, maxQueueSize, Duration.ZERO, false);
+        return new Builder(queuePath, maxSegmentSize, maxQueueSize, Duration.ZERO, Duration.ZERO, false);
     }
 
     private DeadLetterQueueWriter(final Path queuePath, final long maxSegmentSize, final long maxQueueSize,
-                                  final Duration flushInterval, final Duration flushCheckInterval, final QueueStorageType storageType, final Duration retentionTime,
+                                  final Duration flushInterval, final QueueStorageType storageType, final Duration retentionTime,
                                   final Clock clock, SchedulerService flusherService) throws IOException {
         this.clock = clock;
 
@@ -339,7 +345,6 @@ public final class DeadLetterQueueWriter implements Closeable {
         this.maxQueueSize = maxQueueSize;
         this.storageType = storageType;
         this.flushInterval = flushInterval;
-        this.flushCheckInterval = flushCheckInterval;
         this.currentQueueSize = new AtomicLong(computeQueueSize());
         this.retentionTime = retentionTime;
 
@@ -415,11 +420,6 @@ public final class DeadLetterQueueWriter implements Closeable {
 
     public long getCurrentQueueSize() {
         return currentQueueSize.longValue();
-    }
-
-    @VisibleForTesting
-    public Duration flushCheckInterval() {
-        return flushCheckInterval;
     }
 
     public String getStoragePolicy() {

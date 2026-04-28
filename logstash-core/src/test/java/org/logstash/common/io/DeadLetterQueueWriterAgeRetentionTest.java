@@ -86,7 +86,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final long prevQueueSize;
         final long beheadedQueueSize;
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1), Duration.ofSeconds(1))
                 .retentionTime(Duration.ofDays(2))
                 .clock(fakeClock)
                 .build()) {
@@ -110,7 +110,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         long startTime = fakeClock.instant().minus(littleMoreThanRetainedPeriod).toEpochMilli();
         int messageSize = 0;
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1), Duration.ofSeconds(1))
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {
@@ -137,7 +137,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
         final Duration retention = Duration.ofDays(2);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1), Duration.ofSeconds(1))
                 .retentionTime(retention)
                 .clock(fakeClock)
                 .build()) {
@@ -180,7 +180,7 @@ public class DeadLetterQueueWriterAgeRetentionTest {
 
         final Duration retention = Duration.ofDays(2);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1))
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1), Duration.ofSeconds(1))
                 .retentionTime(retention)
                 .clock(fakeClock)
                 .build()) {
@@ -272,9 +272,8 @@ public class DeadLetterQueueWriterAgeRetentionTest {
         final ManualAdvanceClock fakeClock = new ManualAdvanceClock(ZoneId.of("Europe/Rome"));
 
         Duration retainedPeriod = Duration.ofDays(1);
-        Duration flushInterval = Duration.ofSeconds(1);
         try (DeadLetterQueueWriter writeManager = DeadLetterQueueWriter
-                .newBuilder(dir, 10 * MB, 1 * GB, flushInterval)
+                .newBuilder(dir, 10 * MB, 1 * GB, Duration.ofSeconds(1), Duration.ofSeconds(1))
                 .retentionTime(retainedPeriod)
                 .clock(fakeClock)
                 .build()) {
