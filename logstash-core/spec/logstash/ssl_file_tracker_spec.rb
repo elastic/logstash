@@ -573,7 +573,7 @@ describe LogStash::SslFileTracker do
       allow(settings).to receive(:get_value).with("xpack.management.elasticsearch.ssl.key").and_return(nil)
 
       paths = described_class.paths_from_settings(settings, namespace)
-      expect(paths).to contain_exactly("/tmp/ca.crt", File.expand_path("relative/ts.p12"))
+      expect(paths).to contain_exactly(File.expand_path("/tmp/ca.crt"), File.expand_path("relative/ts.p12"))
     end
 
     it "swallows settings.get_value errors and returns empty array when nothing configured" do
