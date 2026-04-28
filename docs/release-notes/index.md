@@ -99,6 +99,10 @@ The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash
     * custom parsing formats use `java.time`
 * `ISO8601` now accepts up to 9 fractional-second digits
 
+**De_dot Filter - 1.2.0**
+
+* Apply an 'error' tag to any event that fails the de-dotting process [#26](https://github.com/logstash-plugins/logstash-filter-de_dot/pull/26)
+
 **Dissect Filter - 1.3.0**
 
 * Add JRuby 10 support: replace removed `NativeException` with `RaiseException`, source JRuby from Logstash vendor directory instead of pinning Maven version [#96](https://github.com/logstash-plugins/logstash-filter-dissect/pull/96)
