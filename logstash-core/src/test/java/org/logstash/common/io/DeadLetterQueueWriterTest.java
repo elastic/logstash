@@ -617,14 +617,14 @@ public class DeadLetterQueueWriterTest {
     }
 
     @Test
-    public void testNormalizeFlushIntervalWithValidInterval() {
+    public void givenFlushIntervalGreatherThanMinimumWhenNormalizedThenRemainsUnmodified() {
         DeadLetterQueueWriter.Builder builder = DeadLetterQueueWriter.newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(5), Duration.ofSeconds(1));
         Duration result = builder.normalizeFlushInterval(Duration.ofSeconds(10));
         assertEquals("Valid flush interval should remain unchanged", Duration.ofSeconds(10), result);
     }
 
     @Test
-    public void testNormalizeFlushIntervalBelowMinimum() {
+    public void givenFlushIntervalBelowTheMinimumWhenNormalizedThenIsClampedToMinimum() {
         DeadLetterQueueWriter.Builder builder = DeadLetterQueueWriter.newBuilder(dir, 1_000, 100_000, Duration.ofSeconds(5), Duration.ofSeconds(1));
         Duration result = builder.normalizeFlushInterval(Duration.ofMillis(100));
         assertEquals("Flush interval below 1s should be clamped to 1s", Duration.ofSeconds(1), result);
