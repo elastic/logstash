@@ -177,13 +177,13 @@ public final class DeadLetterQueueWriter implements Closeable {
     private static class FixedRateScheduler implements SchedulerService {
 
         private final ScheduledExecutorService scheduledExecutor;
-        private final long checkIntervalMs;
+        private final Duration flushCheckInterval;
 
-        FixedRateScheduler(final long flushCheckInterval, final String pipelineId) {
+        FixedRateScheduler(final Duration flushCheckInterval, final String pipelineId) {
             //Set the name with pipeline ID for better visibility
             final String threadName = pipelineId != null ? "dlq-flush-check[" + pipelineId + "]" : "dlq-flush-check";
             
-            this.checkIntervalMs = flushCheckInterval;
+            this.flushCheckInterval = flushCheckInterval;
             scheduledExecutor = Executors.newScheduledThreadPool(1, r -> {
                 Thread t = new Thread(r);
                 //Allow this thread to die when the JVM dies
@@ -195,7 +195,7 @@ public final class DeadLetterQueueWriter implements Closeable {
 
         @Override
         public void repeatedAction(Runnable action) {
-            scheduledExecutor.scheduleAtFixedRate(action, checkIntervalMs, checkIntervalMs, TimeUnit.MILLISECONDS);
+            scheduledExecutor.scheduleAtFixedRate(action, flushCheckInterval.toMillis(), flushCheckInterval.toMillis(), TimeUnit.MILLISECONDS);
         }
 
         @Override
@@ -283,7 +283,7 @@ public final class DeadLetterQueueWriter implements Closeable {
             } else {
                 if (startScheduledFlusher) {
                     final Duration normalizedFlushCheckInterval = normalizeFlushCheckInterval(flushCheckInterval, normalizedFlushInterval);
-                    schedulerService = new FixedRateScheduler(normalizedFlushCheckInterval.toMillis(), pipelineId);
+                    schedulerService = new FixedRateScheduler(normalizedFlushCheckInterval, pipelineId);
                 } else {
                     schedulerService = new NoopScheduler();
                 }
