@@ -27,28 +27,22 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 #### Reactive pipeline recovery [logstash-9.4.0-reactive-pipeline-recovery]
 
-This release adds a feature to recover from pipeline crashes, under the setting `pipeline.recovery`. It applies when `config.reload.automatic` is enabled and accepts:
+This release adds a feature to recover from pipeline crashes, under the setting `pipeline.recovery` [#18930](https://github.com/elastic/logstash/pull/18930).
+Crash recovery is applied when `config.reload.automatic` is enabled and accepts:
 
 * `auto`: enables pipeline crash recovery for pipelines backed by the persistent queue
 * `false` (default): do not automate recovery of crashed pipelines
 * `true`: enables pipeline crash recovery for any pipeline, even if backed by the ephemeral memory queue (risk: data loss)
 
-Related:
-* Support reactive pipeline recovery with `config.reload` manager [#18930](https://github.com/elastic/logstash/pull/18930)
-
 #### Batch chunking  [logstash-9.4.0-batch-chunking]
 
-We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting. When a batch growth exceeds the configured factor, it is re-chunked into smaller batches of `pipeline.batch.size` events before being handled by the outputs.
-
-Related:
-* Add a new config option to split batch into chunks before outputs [#18680](https://github.com/elastic/logstash/pull/18680)
+We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting [#18680](https://github.com/elastic/logstash/pull/18680). 
+When a batch growth exceeds the configured factor, it is re-chunked into smaller batches of `pipeline.batch.size` events before being handled by the outputs.
 
 #### New batch histogram metrics [logstash-9.4.0-new-batch-histogram-metrics]
 
-We've improved visibility of batch sizing at a pipeline level by exposing new histogram-type metrics in the `GET /_node/stats` endpoint. These metrics show the distribution of batch sizes in bytes and event-count for the lifetime of the pipeline, as well as for the most recent 1, 5, and 15-minute time windows.
-
-Related:
-* [Implement metrics that exposes batch size and count of contained events](https://github.com/elastic/logstash/issues/17838)
+We've improved visibility of batch sizing at a pipeline level by exposing new histogram-type metrics in the `GET /_node/stats` endpoint [#17838](https://github.com/elastic/logstash/issues/17838). 
+These metrics show the distribution of batch sizes in bytes and event-count for the lifetime of the pipeline, as well as for the most recent 1, 5, and 15-minute time windows.
 
 #### Additional features and enhancements [logstash-9.4.0-more-features]
 
@@ -62,7 +56,7 @@ Related:
 ::::{important}
 
 Logstash 9.4.0 upgrades JRuby to 10 since 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
-For this reason, Logstash now also requires Java 21 or later and Java 17 is no longer supported.
+For this reason, Logstash now also requires Java 21 or later, and Java 17 is no longer supported.
 
 As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
