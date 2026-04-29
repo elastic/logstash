@@ -26,10 +26,6 @@ end
 describe LogStash::LicenseChecker::LicenseManager do
   let(:subject) { described_class.new(license_reader, 'monitoring') }
 
-  before do
-    allow(license_reader).to receive(:maybe_rebuild_client).and_return(nil)
-  end
-
   let(:status) { "active"}
   let(:type) { 'trial' }
 
@@ -190,22 +186,6 @@ describe LogStash::LicenseChecker::LicenseManager do
       it 'checks build flavour' do
         expect(subject.serverless?).to be_falsey
       end
-    end
-  end
-
-  describe "ssl tracking delegation" do
-    before do
-      allow(license_reader).to receive(:fetch_cluster_info).and_return({})
-      allow(license_reader).to receive(:fetch_xpack_info).and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
-    end
-
-    it "fetch_license asks the reader to maybe_rebuild_client before any HTTP call" do
-      subject
-      expect(license_reader).to receive(:maybe_rebuild_client).ordered
-      expect(license_reader).to receive(:fetch_cluster_info).ordered.and_return({})
-      expect(license_reader).to receive(:fetch_xpack_info).ordered
-        .and_return(LogStash::LicenseChecker::XPackInfo.failed_to_fetch)
-      subject.fetch_license
     end
   end
 end

@@ -4,7 +4,7 @@
 
 require 'logstash/logging/logger'
 require 'logstash/outputs/elasticsearch'
-require 'helpers/ssl_rebuildable'
+require 'helpers/elasticsearch_client_holder'
 
 module LogStash
   module LicenseChecker
@@ -20,7 +20,7 @@ module LogStash
         es_options = options.merge('resurrect_delay' => 30)
         @es_options = Helpers::ElasticsearchOptions::es_options_with_product_origin_header(es_options)
 
-        @rebuildable = LogStash::Helpers::SslRebuildable.new(ssl_file_tracker, tracking_id) { build_client }
+        @es_client_holder = LogStash::Helpers::ElasticsearchClientHolder.create(ssl_file_tracker, tracking_id) { build_client }
       end
 
       ##
@@ -68,11 +68,7 @@ module LogStash
       ##
       # @api private
       def client
-        @rebuildable.client
-      end
-
-      def maybe_rebuild_client
-        @rebuildable.maybe_rebuild
+        @es_client_holder.get
       end
 
       private

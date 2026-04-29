@@ -51,7 +51,6 @@ module LogStash
       end
 
       def fetch_license
-        @license_reader.maybe_rebuild_client
         fetch_cluster_info
         if serverless?
           update_xpack_info XPackInfo.serverless_response

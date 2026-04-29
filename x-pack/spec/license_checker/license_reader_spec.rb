@@ -6,6 +6,7 @@ require "spec_helper"
 require 'support/helpers'
 require "license_checker/license_reader"
 require "helpers/elasticsearch_options"
+require "helpers/elasticsearch_client_holder"
 require "monitoring/monitoring"
 require "logstash/runner"
 require "logstash/ssl_file_tracker"
@@ -218,31 +219,38 @@ describe LogStash::LicenseChecker::LicenseReader do
 
   describe "SSL tracker wiring" do
     let(:tracker) { instance_double(LogStash::SslFileTracker) }
-    let(:license_reader) do
+    subject(:license_reader) do
       described_class.new(system_settings, 'monitoring', elasticsearch_options,
                           ssl_file_tracker: tracker, tracking_id: :".cpm_license")
     end
 
     it "passes the tracker and tracking_id to its SslRebuildable" do
-      rebuildable = license_reader.instance_variable_get(:@rebuildable)
-      expect(rebuildable.instance_variable_get(:@tracker)).to be(tracker)
-      expect(rebuildable.instance_variable_get(:@id)).to eq(:".cpm_license")
+      client_holder = license_reader.instance_variable_get(:@es_client_holder)
+      expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder
+      expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder::SslRebuildable
+      expect(client_holder.id).to eq(:".cpm_license")
+      expect(client_holder.tracker).to eq(tracker)
     end
 
-    it "maybe_rebuild_client delegates to the rebuildable" do
-      rebuildable = subject.instance_variable_get(:@rebuildable)
-      expect(rebuildable).to receive(:maybe_rebuild)
-      subject.maybe_rebuild_client
-    end
+    it "client delegates to the es_client_holder" do
+      client_holder = license_reader.instance_variable_get(:@es_client_holder)
+      expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder
+      expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder::SslRebuildable
+      expect(client_holder).to receive(:get)
 
-    it "client delegates to the rebuildable" do
-      rebuildable = subject.instance_variable_get(:@rebuildable)
-      expect(rebuildable).to receive(:client)
       subject.client
     end
 
-    it "maybe_rebuild_client is safe when no tracker was injected" do
-      expect { subject.maybe_rebuild_client }.not_to raise_error
+    context "when tracker is not provided" do
+      let(:tracker) { nil }
+      it "uses a non-rebuildable elasticsearch client holder" do
+        client_holder = license_reader.instance_variable_get(:@es_client_holder)
+        expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder
+        expect(client_holder).to be_a_kind_of LogStash::Helpers::ElasticsearchClientHolder::Lazy
+        expect(client_holder).to receive(:get)
+
+        subject.client
+      end
     end
   end
 end

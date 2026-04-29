@@ -9,7 +9,7 @@ require "logstash/json"
 require 'helpers/elasticsearch_options'
 require 'helpers/loggable_try'
 require 'logstash/ssl_file_tracker'
-require 'helpers/ssl_rebuildable'
+require 'helpers/elasticsearch_client_holder'
 require "license_checker/licensed"
 
 module LogStash
@@ -51,7 +51,7 @@ module LogStash
           ssl_file_tracker.register_paths(SSL_TRACK_ID_LICENSE, paths)
         end
 
-        @rebuildable = LogStash::Helpers::SslRebuildable.new(ssl_file_tracker, SSL_TRACK_ID_CPM) { build_client }
+        @es_client_holder = LogStash::Helpers::ElasticsearchClientHolder.create(ssl_file_tracker, SSL_TRACK_ID_CPM) { build_client }
         setup_license_checker(FEATURE_INTERNAL,
                               ssl_file_tracker: ssl_file_tracker,
                               tracking_id: SSL_TRACK_ID_LICENSE)
@@ -73,8 +73,6 @@ module LogStash
 
       def pipeline_configs
         logger.trace("Fetch remote config pipeline", :pipeline_ids => pipeline_ids)
-
-        @rebuildable.maybe_rebuild
 
         license_check(true)
         es_version = get_es_version
@@ -196,7 +194,7 @@ module LogStash
       end
 
       def client
-        @rebuildable.client
+        @es_client_holder.get
       end
     end
 

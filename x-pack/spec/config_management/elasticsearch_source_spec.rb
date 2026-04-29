@@ -873,7 +873,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       old_client = double("old_client")
       expect(old_client).to receive(:close)
-      instance.instance_variable_get(:@rebuildable).instance_variable_set(:@client, old_client)
+      instance.instance_variable_get(:@es_client_holder).instance_variable_set(:@client, old_client)
       allow(instance).to receive(:build_client).and_return(double("new_client"))
 
       instance.pipeline_configs
@@ -888,7 +888,7 @@ describe LogStash::ConfigManagement::ElasticsearchSource do
 
       old_client = double("old_client")
       expect(old_client).not_to receive(:close)
-      instance.instance_variable_get(:@rebuildable).instance_variable_set(:@client, old_client)
+      instance.instance_variable_get(:@es_client_holder).instance_variable_set(:@client, old_client)
 
       instance.pipeline_configs
     end
