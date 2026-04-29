@@ -27,18 +27,18 @@ To check for security updates, go to [Security announcements for the Elastic sta
 
 #### Reactive pipeline recovery [logstash-9.4.0-reactive-pipeline-recovery]
 
-This release adds opt-in crashed-pipeline recovery with a new `pipeline.recovery` setting. It applies when `config.reload.automatic` is enabled and accepts:
+This release adds a feature to recover from pipeline crashes, under the setting `pipeline.recovery`. It applies when `config.reload.automatic` is enabled and accepts:
 
-* `auto`: recovers crashed pipelines that are backed by the persistent queue
+* `auto`: enables pipeline crash recovery for pipelines backed by the persistent queue
 * `false` (default): do not automate recovery of crashed pipelines
-* `true`: recovers all crashed pipelines, even if backed by the ephemeral memory queue (risk: data loss)
+* `true`: enables pipeline crash recovery for any pipeline, even if backed by the ephemeral memory queue (risk: data loss)
 
 Related:
 * Support reactive pipeline recovery with `config.reload` manager [#18930](https://github.com/elastic/logstash/pull/18930)
 
 #### Batch chunking  [logstash-9.4.0-batch-chunking]
 
-We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting. When a batch growth exceeds the configured factor, it is re-chunked into new batches of `pipeline.batch.size` events before being handled by the outputs.
+We have added a safety mechanism to limit memory expansion when using filters that produce more events than they consume (like the `split` filter), controlled by the new `pipeline.batch.output_chunking.growth_threshold_factor` setting. When a batch growth exceeds the configured factor, it is re-chunked into smaller batches of `pipeline.batch.size` events before being handled by the outputs.
 
 Related:
 * Add a new config option to split batch into chunks before outputs [#18680](https://github.com/elastic/logstash/pull/18680)
@@ -61,7 +61,8 @@ Related:
 
 ::::{important}
 
-Logstash 9.4.0 requires Java 21 or later. Java 17 is no longer supported.
+Logstash 9.4.0 upgrades JRuby to 10 since 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
+For this reason, Logstash now also requires Java 21 or later and Java 17 is no longer supported.
 
 As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
 
@@ -71,7 +72,7 @@ As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due 
 
 ::::{important}
 
-The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place.
+The Kafka Integration plugin `11.x` has been deprecated. The next minor Logstash release will bundle Kafka integration plugin `12.x` in its place, which introduces breaking changes, read more about them in the [CHANGELOG.md](https://github.com/logstash-plugins/logstash-integration-kafka/blob/v12.0.0/CHANGELOG.md#1200)
 
 ::::
 
