@@ -218,15 +218,17 @@ describe LogStash::Runner do
       "path.config"             => nil,
     }.freeze
 
-    before do
-      require "logstash/ssl_file_tracker"
-      allow(LogStash::SslFileTracker).to receive(:new).and_return(fake_tracker)
+    def reset_reload_settings
       SSL_FILE_TRACKER_TEST_SETTINGS.each { |k, v| LogStash::SETTINGS.set_value(k, v) }
     end
 
-    after do
-      SSL_FILE_TRACKER_TEST_SETTINGS.each { |k, v| LogStash::SETTINGS.set_value(k, v) }
+    before do
+      require "logstash/ssl_file_tracker"
+      allow(LogStash::SslFileTracker).to receive(:new).and_return(fake_tracker)
+      reset_reload_settings
     end
+
+    after { reset_reload_settings }
 
     it "creates the tracker when both config.reload.automatic and ssl.reload.automatic are true" do
       runner.run(["-f", config_file, "-Sconfig.reload.automatic=true", "-Sssl.reload.automatic=true"])
