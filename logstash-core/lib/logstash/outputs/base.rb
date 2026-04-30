@@ -43,8 +43,13 @@ class LogStash::Outputs::Base < LogStash::Plugin
         self.logger.warn("Output plugin #{self.name} declares `concurrency :legacy` which is removed. Defaulting to :single. Please update the plugin to use `concurrency :single` or `concurrency :shared`.")
         type = :single
       end
-      if ![:shared, :single].include?(type)
-        raise ArgumentError, "Invalid concurrency type '#{type}', must be one of :shared, :single"
+      if !LogStash::OutputDelegatorStrategyRegistry.instance.types.include?(type)
+        raise ArgumentError, <<~MESSAGE.gsub("\n", " ")
+            The concurrency type `#{type.inspect}` specified for output plugin `#{config_name}` is not supported
+            on this version of Logstash. If you installed this plugin specifically on this Logstash version,
+            it is not compatible. If you are a plugin author, please see update your plugin to use one of
+            the supported plugin types: #{LogStash::OutputDelegatorStrategyRegistry.instance.types}
+          MESSAGE
       end
       @concurrency = type
     else
