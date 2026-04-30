@@ -186,7 +186,7 @@ module LogStash
     end
 
     # Refreshes mtime stamps for symlink paths belonging to the given ids.
-    # @param ids [Symbol, String, Array, Set]
+    # @param ids [Symbol, String, Set]
     # @return [void]
     def refresh_symlink_stamps(ids)
       target_ids = Array(ids).map(&:to_sym)
@@ -198,6 +198,7 @@ module LogStash
                  .select { |p| @path_watched[p]&.file_type == :symlink }
                  .uniq
       end
+      return if polled_paths.empty?
 
       # Stat outside the mutex
       new_stamps = polled_paths.to_h { |p| [p, compute_mtime(p)] }.compact
