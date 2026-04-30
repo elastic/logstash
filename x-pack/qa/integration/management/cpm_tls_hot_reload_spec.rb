@@ -39,8 +39,10 @@ describe "TLS hot-reload: CPM (ElasticsearchSource) detects cert changes and reb
     File.write(@ca_file, @ca_cert.to_pem)
 
     # start Logstash with CPM
+    # log.level: debug because the rebuild line in ElasticsearchClientHolder logs at DEBUG.
     @logstash_service = logstash_with_empty_default("bin/logstash -w 1", {
       :settings => {
+        "log.level"                                                 => "debug",
         "ssl.reload.automatic"                                      => true,
         "xpack.management.enabled"                                  => true,
         "xpack.management.pipeline.id"                              => [PIPELINE_ID],
@@ -86,7 +88,7 @@ describe "TLS hot-reload: CPM (ElasticsearchSource) detects cert changes and reb
 
       # Two rebuild events: the CPM ES client (driven by Agent's reload tick)
       # and the LicenseReader client (driven by LicenseManager's scheduler tick).
-      wait_for_log_count(/Rebuilt client on certificate change/, 2)
+      wait_for_log_count(/rebuilt elasticsearch client.*on certificate change/, 2)
 
       # Push a pipeline update so CPM must fetch via the new client
       elasticsearch_client_tls.perform_request(:put, "_logstash/pipeline/#{PIPELINE_ID}", {},

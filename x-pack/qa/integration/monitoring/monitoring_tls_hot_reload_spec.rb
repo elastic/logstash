@@ -34,7 +34,9 @@ describe "Monitoring TLS hot-reload", :skip_fips do
     config_file = File.join(@cert_dir, "pipeline.conf")
     File.write(config_file, PIPELINE_CONF)
 
+    # log.level: debug because the rebuild line in ElasticsearchClientHolder logs at DEBUG.
     base_settings = {
+      "log.level"                                                 => "debug",
       "xpack.monitoring.enabled"                                  => true,
       "xpack.monitoring.allow_legacy_collection"                  => true,
       "xpack.monitoring.elasticsearch.hosts"                      => ["https://localhost:9200"],
@@ -90,7 +92,7 @@ describe "Monitoring TLS hot-reload", :skip_fips do
       File.open(@ca_file, "a") { |f| f.write(@ca2_cert.to_pem) }
 
       # LicenseManager scheduler fires every 30s
-      wait_for_log_line(/Rebuilt client on certificate change/)
+      wait_for_log_line(/rebuilt elasticsearch client.*on certificate change/)
 
       # Doc count must grow to prove the rebuilt client can still write monitoring data to ES
       Stud.try(15.times, [StandardError]) do
@@ -118,7 +120,7 @@ describe "Monitoring TLS hot-reload", :skip_fips do
       sleep 35
 
       output_after_rotation = @logstash_service.stdout_lines[initial_length..].join("\n")
-      expect(output_after_rotation).not_to match(/Rebuilt client on certificate change/)
+      expect(output_after_rotation).not_to match(/rebuilt elasticsearch client.*on certificate change/)
       expect(output_after_rotation).not_to match(/\[ERROR\]/)
     end
   end
