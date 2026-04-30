@@ -122,7 +122,7 @@ module LogStash::Config::Mixin
       opts = self.class.get_config[name]
       if opts && opts[:deprecated]
         extra = opts[:deprecated].is_a?(String) ? opts[:deprecated] : ""
-        extra.gsub!("%PLUGIN%", self.class.config_name.to_s)
+        extra.gsub!("%PLUGIN%", self.class.config_name || self.class.inspect)
         self.deprecation_logger.deprecated(
           "You are using a deprecated config setting #{name.inspect} set in " \
           "#{self.class.config_name}. Deprecated settings will continue to work, " \
