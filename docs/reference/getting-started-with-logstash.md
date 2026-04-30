@@ -51,9 +51,9 @@ java -version
 On systems with Java installed, this command produces output similar to:
 
 ```shell
-openjdk version "17.0.12" 2024-07-16
-OpenJDK Runtime Environment Temurin-17.0.12+7 (build 17.0.12+7)
-OpenJDK 64-Bit Server VM Temurin-17.0.12+7 (build 17.0.12+7, mixed mode)
+openjdk 21.0.10 2026-01-20 LTS
+OpenJDK Runtime Environment Temurin-21.0.10+7 (build 21.0.10+7-LTS)
+OpenJDK 64-Bit Server VM Temurin-21.0.10+7 (build 21.0.10+7-LTS, mixed mode, sharing)
 ```
 
 
