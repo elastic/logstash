@@ -120,7 +120,6 @@ namespace "artifact" do
     @exclude_paths << 'docker/data/logstash/env2yaml/build.gradle'
     @exclude_paths << 'docker/data/logstash/env2yaml/settings.gradle'
 
-    @exclude_paths << 'vendor/jruby/lib/ruby/stdlib/org/bouncycastle/**/*'
     @exclude_paths.freeze
   end
 

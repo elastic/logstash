@@ -321,6 +321,62 @@ tasks.register("installDefaultGems") {
     doLast {
         rake(projectDir, buildDir, 'plugin:install-default')
     }
+    finalizedBy "syncStdlibBouncyCastleJars"
+}
+
+tasks.register("syncStdlibBouncyCastleJars") {
+    description = "Replace JRuby stdlib BouncyCastle jars with the version from the bundled jruby-openssl gem"
+    doLast {
+        def bundleDir = file("${projectDir}/vendor/bundle/jruby")
+        def stdlibDir = file("${projectDir}/vendor/jruby/lib/ruby/stdlib")
+
+        // Find the bundled jruby-openssl gem (search all Ruby compat version dirs)
+        def gemDirs = []
+        bundleDir.eachDirRecurse { dir ->
+            if (dir.name.matches("jruby-openssl-.*-java") && dir.parentFile.name == "gems") {
+                gemDirs.add(dir)
+            }
+        }
+        if (gemDirs.isEmpty()) {
+            throw new GradleException("Cannot find bundled jruby-openssl gem in ${bundleDir}")
+        }
+        def gemDir = gemDirs.sort().last()
+
+        // Read BC version from bundled gem's version.rb
+        def versionFile = file("${gemDir}/lib/jopenssl/version.rb")
+        def versionContent = versionFile.text
+        def bcVersionMatcher = (versionContent =~ /BOUNCY_CASTLE_VERSION\s*=\s*'([^']+)'/)
+        if (!bcVersionMatcher.find()) {
+            throw new GradleException("Cannot parse BOUNCY_CASTLE_VERSION from ${versionFile}")
+        }
+        def bcVersion = bcVersionMatcher.group(1)
+        def gemVersion = (versionContent =~ /VERSION\s*=\s*'([^']+)'/)[0][1]
+        logger.lifecycle("Syncing stdlib BouncyCastle jars: using version ${bcVersion} from jruby-openssl ${gemVersion}")
+
+        // Remove old stdlib BC jars
+        def stdlibBcDir = file("${stdlibDir}/org/bouncycastle")
+        if (stdlibBcDir.exists()) {
+            delete(stdlibBcDir)
+        }
+        stdlibBcDir.mkdirs()
+
+        // Copy BC jars from bundled gem into stdlib path
+        def gemBcDir = file("${gemDir}/lib/org/bouncycastle")
+        if (gemBcDir.exists()) {
+            copy {
+                from gemBcDir
+                into stdlibBcDir
+            }
+        }
+
+        // Update stdlib's jopenssl/version.rb to match the bundled gem
+        def stdlibVersionFile = file("${stdlibDir}/jopenssl/version.rb")
+        if (stdlibVersionFile.exists()) {
+            stdlibVersionFile.text = versionContent
+        }
+
+        logger.lifecycle("Stdlib BouncyCastle jars synced to version ${bcVersion}")
+    }
 }
 
 tasks.register("installDevelopmentGems") {
