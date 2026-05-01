@@ -49,7 +49,27 @@ During automatic config reloading, the JVM is not restarted. The creating and sw
 
 Changes to [grok](logstash-docs-md://lsr/plugins-filters-grok.md) pattern files are also reloaded, but only when a change in the config file triggers a reload (or the pipeline is restarted).
 
-In general, Logstash is not watching or monitoring any configuration files used or referenced by inputs, filters or outputs.
+In general, Logstash does not watch or monitor configuration files used or referenced by inputs, filters, or outputs, except for supported TLS files when `ssl.reload.automatic` is enabled.
+
+## Automatic reload of TLS certificates [automatic-reload-of-tls-certificates]
+
+To automatically reload TLS certificate files for pipelines and X-Pack services, enable both `config.reload.automatic: true` and `ssl.reload.automatic: true`.
+
+This feature watches TLS files referenced by the following SSL settings:
+
+* `ssl_certificate`
+* `ssl_key`
+* `ssl_certificate_authorities`
+* `ssl_keystore_path`
+* `ssl_truststore_path`
+
+For pipelines, if one of these files changes on disk, Logstash reloads only the affected pipelines. Unrelated pipelines continue to run.
+
+For centralized pipeline management and legacy internal collection for monitoring, Logstash also picks up TLS certificate changes for the Elasticsearch connections they use to fetch pipeline definitions and ship monitoring data.
+
+This feature is not supported on Windows.
+
+Changes to the Logstash API server settings in `api.ssl.*` are not reloaded automatically. Restart Logstash to apply those changes.
 
 
 ## Plugins that prevent automatic reloading [plugins-block-reload]
@@ -57,5 +77,3 @@ In general, Logstash is not watching or monitoring any configuration files used 
 Input and output plugins usually interact with OS resources. In some circumstances those resources can’t be released without a restart. For this reason some plugins can’t be simply updated and this prevents pipeline reload.
 
 The [stdin input](logstash-docs-md://lsr/plugins-inputs-stdin.md) plugin, for example, prevents reloading for these reasons.
-
-
