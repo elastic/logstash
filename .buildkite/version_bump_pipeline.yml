@@ -18,7 +18,32 @@ notify:
     if: build.state == "blocked"
 
 steps:
-  # TODO: replace this block step by real version bump logic
+  - label: "Bump version minor"
+    if: build.env("WORKFLOW") == "minor"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+      - elastic/gh-cli#v0.1.1:
+          version: "2.88.1"
+          wait: true
+          workflow-file: "version_bumps.yml"
+          workflow-ref: "main"
+          workflow-inputs:
+            branch: "${BRANCH}"
+            bump: "minor"
+
+  - label: "Bump version patch"
+    if: build.env("WORKFLOW") == "patch"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+      - elastic/gh-cli#v0.1.1:
+          version: "2.88.1"
+          wait: true
+          workflow-file: "version_bumps.yml"
+          workflow-ref: "main"
+          workflow-inputs:
+            branch: "${BRANCH}"
+            bump: "patch"
+
   - block: "Ready to fetch for DRA artifacts?"
     prompt: |
       Unblock when your team is ready to proceed.
