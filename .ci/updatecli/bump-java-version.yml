@@ -56,28 +56,28 @@ conditions:
     kind: shell
     disablesourceinput: true
     spec:
-      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-linux-aarch64'
+      command: curl --silent --fail --head --retry 3 --retry-delay 5 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-linux-aarch64'
 
   darwin_x86_64_available:
     name: "Check darwin-x86_64 JDK is available"
     kind: shell
     disablesourceinput: true
     spec:
-      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin'
+      command: curl --silent --fail --head --retry 3 --retry-delay 5 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin'
 
   darwin_aarch64_available:
     name: "Check darwin-aarch64 JDK is available"
     kind: shell
     disablesourceinput: true
     spec:
-      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin-aarch64'
+      command: curl --silent --fail --head --retry 3 --retry-delay 5 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-darwin-aarch64'
 
   windows_x86_64_available:
     name: "Check windows-x86_64 JDK is available"
     kind: shell
     disablesourceinput: true
     spec:
-      command: curl --silent --fail --head 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-windows'
+      command: curl --silent --fail --head --retry 3 --retry-delay 5 'https://jvm-catalog.elastic.co/jdk/adoptiumjdk-{{ source "latest_jdk_version" }}+{{ source "latest_jdk_build" }}-windows'
 
 targets:
   update_jdk_revision:
