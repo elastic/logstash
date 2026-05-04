@@ -353,19 +353,40 @@ tasks.register("syncStdlibBouncyCastleJars") {
         def gemVersion = (versionContent =~ /VERSION\s*=\s*'([^']+)'/)[0][1]
         logger.lifecycle("Syncing stdlib BouncyCastle jars: using version ${bcVersion} from jruby-openssl ${gemVersion}")
 
-        // Remove old stdlib BC jars
+        // Replace stdlib BC jars with those from the bundled gem.
+        // We avoid deleting old version jars because on Windows they may still be locked
+        // by the JRuby process that ran installDefaultGems. Instead, we copy the new version
+        // jars alongside any existing ones. The jopenssl/load.rb uses BOUNCY_CASTLE_VERSION
+        // from version.rb to select which jars to load, so old jars are simply ignored at runtime.
         def stdlibBcDir = file("${stdlibDir}/org/bouncycastle")
-        if (stdlibBcDir.exists()) {
-            delete(stdlibBcDir)
-        }
         stdlibBcDir.mkdirs()
 
-        // Copy BC jars from bundled gem into stdlib path
         def gemBcDir = file("${gemDir}/lib/org/bouncycastle")
         if (gemBcDir.exists()) {
-            copy {
-                from gemBcDir
-                into stdlibBcDir
+            def bcArtifacts = ["bcprov-jdk18on", "bcpkix-jdk18on", "bctls-jdk18on", "bcutil-jdk18on"]
+            bcArtifacts.each { artifact ->
+                def gemArtifactVersionDir = file("${gemBcDir}/${artifact}/${bcVersion}")
+                if (gemArtifactVersionDir.exists()) {
+                    def stdlibArtifactDir = file("${stdlibBcDir}/${artifact}")
+                    def targetDir = file("${stdlibArtifactDir}/${bcVersion}")
+                    targetDir.mkdirs()
+                    copy {
+                        from gemArtifactVersionDir
+                        into targetDir
+                    }
+                    // Best-effort cleanup of old version dirs (may fail on Windows due to file locks)
+                    if (stdlibArtifactDir.exists()) {
+                        stdlibArtifactDir.eachDir { versionDir ->
+                            if (versionDir.name != bcVersion) {
+                                try {
+                                    delete(versionDir)
+                                } catch (Exception e) {
+                                    logger.warn("Could not remove old BC jars at ${versionDir} (file may be locked): ${e.message}")
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
