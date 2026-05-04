@@ -55,7 +55,7 @@ These metrics show the distribution of batch sizes in bytes and event-count for 
 
 ::::{important}
 
-Logstash 9.4.0 upgrades JRuby to 10 since 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
+Logstash 9.4.0 upgrades JRuby to 10 because 9.x is now EOL. JRuby 10 requires Java 21, dropping support for any version below, including 17.
 For this reason, Logstash now also requires Java 21 or later, and Java 17 is no longer supported.
 
 As of JDK 21.0.10, all `TLS_RSA_*` cipher suites are deactivated by default due to their lack of forward secrecy. Connections relying on these suites will fail with an `SSLHandshakeException` and must be migrated to ECDHE-based cipher suites.
