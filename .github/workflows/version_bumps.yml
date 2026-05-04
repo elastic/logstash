@@ -27,11 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch logstash-core team member list
-<<<<<<< HEAD
-        uses: tspascoal/get-user-teams-membership@v1
-=======
         uses: tspascoal/get-user-teams-membership@818140d631d5f29f26b151afbe4179f87d9ceb5e #v4.0.1
->>>>>>> 6fca7c1ec (Bump tspascoal/get-user-teams-membership (#19067))
         with: 
           username: ${{ github.actor }}
           organization: elastic
