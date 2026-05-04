@@ -76,12 +76,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "jrjackson", "= #{ALL_VERSIONS.fetch('jrjackson')}" #(Apache 2.0 license)
 
-<<<<<<< HEAD
-  gem.add_runtime_dependency "elasticsearch", '~> 8'
-=======
-  gem.add_runtime_dependency "multi_json", "~> 1.19.1" # pinned until concurrent-ruby pin is lifted, multi_json 1.20.0-java requires concurrent-ruby ~> 1.2
   gem.add_runtime_dependency "elasticsearch", '>= 8', '< 10'
->>>>>>> ddb85d8a (Allow to pull elasticsearch 9.x ruby client versions. This provides an opportunity to upgrade the client in the ES plugins. (#19051))
   gem.add_runtime_dependency "manticore", '~> 0.6'
 
   # xpack geoip database service
